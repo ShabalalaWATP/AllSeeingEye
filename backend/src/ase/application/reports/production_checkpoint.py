@@ -63,8 +63,16 @@ def collection_to_dict(snapshot: ProductionSnapshot) -> dict[str, Any]:
                 "items": evidence_to_list(snapshot.selection.items),
                 "flagged": snapshot.selection.flagged,
                 "considered": snapshot.selection.considered,
-                # Absent on checkpoints written before duplicate folding existed.
+                # Absent on checkpoints written before duplicate folding and reranking.
                 **({"merged": snapshot.selection.merged} if snapshot.selection.merged else {}),
+                **(
+                    {"reranked": snapshot.selection.reranked} if snapshot.selection.reranked else {}
+                ),
+                **(
+                    {"rerank_reason": snapshot.selection.rerank_reason}
+                    if snapshot.selection.rerank_reason
+                    else {}
+                ),
             },
             "direction": direction_to_dict(snapshot.direction) if snapshot.direction else None,
             "receipt": research_to_dict(snapshot.receipt) if snapshot.receipt else None,
@@ -96,16 +104,22 @@ def _collection_from_dict(data: Any) -> ProductionSnapshot:
         "flagged",
         "considered",
         "merged",
+        "reranked",
+        "rerank_reason",
     }:
         raise ValueError("Invalid frozen evidence selection")
     items = evidence_from_json(selected["items"])
     considered = count(selected["considered"], 100_000)
     flagged = count(selected["flagged"], considered)
     merged = count(selected.get("merged", 0), considered)
+    reranked = count(selected.get("reranked", 0), considered)
+    reason = selected.get("rerank_reason", "")
+    if type(reason) is not str or len(reason) > 120:
+        raise ValueError("Invalid frozen rerank reason")
     if considered < len(items):
         raise ValueError("Invalid frozen evidence selection counts")
     return ProductionSnapshot(
-        Selection(items, flagged, considered, merged),
+        Selection(items, flagged, considered, merged, reranked, reason),
         direction_from_json(value["direction"]),
         receipt_from_json(value["receipt"]),
         query_from_dict(value["query"]),

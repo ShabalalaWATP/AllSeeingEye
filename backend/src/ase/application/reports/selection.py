@@ -1,42 +1,55 @@
-"""Evidence selection: relevance, grade, recency and diversity inside the token budget."""
+"""Evidence selection: a deterministic prefilter, an optional rerank, then diversity.
+
+Stage one is the explainable filter of docs/03 section 9: scope, period, category and
+term groups. Stage two may reorder the survivors by embedding similarity to the
+question and its intelligence requirements. Stage three folds duplicates and spends
+the slots, keeping the per-organisation cap and the retained opposing reporting.
+"""
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.feeds import EventStore
 from ase.application.reports.selection_choice import choose_items, diversify, term_presence
+from ase.application.reports.selection_pool import (
+    CREDIBILITY_WEIGHT,
+    MAX_POOL,
+    RELIABILITY_WEIGHT,
+    candidate_pool,
+    score,
+)
 from ase.application.reports.subscription_updates import content_signature
 from ase.application.reports.templates import EvidenceStrategy
-from ase.domain.country_subjects import matches_country_subject
-from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
+from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence import EvidenceItem, injection_flags
 from ase.domain.evidence_clusters import duplicate_clusters
-from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.project import project_to_dict
 from ase.domain.trackers import Hazard, hazard_of
 
-CREDIBILITY_WEIGHT = {
-    Credibility.CONFIRMED: 1.0,
-    Credibility.PROBABLY_TRUE: 0.85,
-    Credibility.POSSIBLY_TRUE: 0.6,
-    Credibility.DOUBTFUL: 0.3,
-    Credibility.IMPROBABLE: 0.15,
-    Credibility.CANNOT_BE_JUDGED: 0.45,
-}
-RELIABILITY_WEIGHT = {
-    Reliability.A: 1.0,
-    Reliability.B: 0.9,
-    Reliability.C: 0.7,
-    Reliability.D: 0.5,
-    Reliability.E: 0.3,
-    Reliability.F: 0.5,  # Unknown track record is not a finding of unreliability.
-}
-MAX_POOL = 4_000
+__all__ = [
+    "CREDIBILITY_WEIGHT",
+    "MAX_POOL",
+    "MAX_RERANK_CANDIDATES",
+    "RELIABILITY_WEIGHT",
+    "RERANK_WEIGHT",
+    "Selection",
+    "SelectionPlan",
+    "finish_selection",
+    "plan_selection",
+    "score",
+    "select_evidence",
+    "term_matches",
+]
+
+# A bounded rerank: one embedding request covers the question and these survivors.
+MAX_RERANK_CANDIDATES = 120
+# Similarity reweights the deterministic priority; it never replaces grade or recency.
+RERANK_WEIGHT = 1.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,30 +58,8 @@ class Selection:
     flagged: int
     considered: int
     merged: int = 0
-
-
-def score(
-    event: Event,
-    now: datetime,
-    window: timedelta,
-    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
-) -> float:
-    """A retrieval priority, never a probability or a report confidence score."""
-    timestamp = evidence_time(event, time_basis)
-    if timestamp is None and not (
-        time_basis is EvidenceTimeBasis.RECORDED and event.project is not None
-    ):
-        return 0.0
-    # Admitted project-year intervals have no exact instant. Use neutral recency,
-    # retaining relevance and source weights without inventing a publication date.
-    age_hours = 0.0 if timestamp is None else max(0.0, (now - timestamp).total_seconds() / 3600)
-    recency = math.exp(-age_hours / max(1.0, window.total_seconds() / 3600))
-    severity = 1.0 + (event.severity or 0.0) * 0.5
-    return (
-        CREDIBILITY_WEIGHT[event.credibility] * RELIABILITY_WEIGHT[event.reliability]
-        * recency
-        * severity
-    )  # fmt: skip
+    reranked: int = 0
+    rerank_reason: str = ""
 
 
 def term_matches(event: Event, terms: Sequence[str]) -> int:
@@ -76,60 +67,178 @@ def term_matches(event: Event, terms: Sequence[str]) -> int:
     return term_presence(event, terms)
 
 
-def _pool(
-    store: EventStore,
-    categories: frozenset[Category],
-    since: datetime,
-    country_iso: str | None,
-    bbox: BoundingBox | None,
-    countries: Sequence[str],
-    time_basis: EvidenceTimeBasis,
-    until: datetime | None,
-    include_unknown_dates: bool,
-    include_country_subjects: bool = False,
-) -> list[Event]:
-    """Query selected scopes without a global fallback, under one aggregate pool cap."""
-    scopes = [(country_iso, bbox)] if bbox is not None or country_iso or not countries else []
-    scopes.extend((iso, None) for iso in dict.fromkeys(countries) if iso != country_iso)
-    per_scope = max(1, MAX_POOL // len(scopes))
-    queries = [
-        EventQuery(
-            categories=categories,
-            country_iso=iso,
-            bbox=bounds,
-            since=since,
-            limit=per_scope,
-            time_basis=time_basis,
-            until=until,
-            include_unknown_dates=include_unknown_dates,
+@dataclass(frozen=True, slots=True)
+class SelectionPlan:
+    """The deterministic survivors, before any similarity ordering is applied."""
+
+    safe: tuple[Event, ...]
+    considered: int
+    term_groups: tuple[tuple[str, ...], ...]
+    strategy: EvidenceStrategy
+    now: datetime
+    reference: datetime
+    window: timedelta
+    time_basis: EvidenceTimeBasis
+    seen_content_signatures: frozenset[str] = frozenset()
+    group_index: Mapping[str, int] = field(default_factory=dict)
+
+    @property
+    def flagged(self) -> int:
+        return self.considered - len(self.safe)
+
+    @property
+    def terms(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(term for group in self.term_groups for term in group))
+
+    def priority(self, event: Event, similarity: Mapping[str, float] | None = None) -> float:
+        group = self.group_index[event.id]
+        matches = (
+            term_matches(event, self.term_groups[group]) if group < len(self.term_groups) else 0
         )
-        for iso, bounds in scopes
-    ]
-    seen: dict[str, Event] = {}
-    for query in queries:
-        for event in store.query(query):
-            seen.setdefault(event.id, event)
-    selected_countries = tuple(
-        dict.fromkeys((*(countries or ()), *((country_iso,) if country_iso else ())))
+        nearness = max(0.0, (similarity or {}).get(event.id, 0.0))
+        return (
+            score(event, self.reference, self.window, self.time_basis)
+            * (1 + 0.25 * matches)
+            * (1 + RERANK_WEIGHT * nearness)
+        )
+
+    def rerank_candidates(self, limit: int = MAX_RERANK_CANDIDATES) -> tuple[Event, ...]:
+        """The highest-priority survivors, so one bounded embedding call can rank them."""
+        ordered = sorted(
+            self.safe,
+            key=lambda event: (self.group_index[event.id], -self.priority(event), event.id),
+        )
+        return tuple(ordered[: max(0, limit)])
+
+
+def plan_selection(
+    store: EventStore,
+    strategy: EvidenceStrategy,
+    *,
+    now: datetime,
+    country_iso: str | None = None,
+    categories: Sequence[Category] = (),
+    terms: Sequence[str] = (),
+    term_groups: Sequence[Sequence[str]] = (),
+    bbox: BoundingBox | None = None,
+    countries: Sequence[str] = (),
+    hazard: Hazard | None = None,
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
+    until: datetime | None = None,
+    since: datetime | None = None,
+    include_unknown_dates: bool = False,
+    include_country_subjects: bool = False,
+    seen_content_signatures: frozenset[str] = frozenset(),
+) -> SelectionPlan:
+    """The deterministic prefilter: scope, period, category, terms and injection safety."""
+    window = (
+        (until - since)
+        if since is not None and until is not None
+        else timedelta(hours=strategy.window_hours)
     )
-    if include_country_subjects and selected_countries and bbox is None:
-        # This opt-in is only used on a report's bounded private pool. Fresh RSS
-        # items carry app-produced exact-span hints; retained live rows do not.
-        candidates = store.query(
-            EventQuery(
-                categories=categories,
-                since=since,
-                until=until,
-                time_basis=time_basis,
-                limit=MAX_POOL,
+    pool = candidate_pool(
+        store,
+        frozenset(categories) or strategy.categories,
+        since if since is not None else now - window,
+        country_iso,
+        bbox,
+        countries,
+        time_basis,
+        until,
+        include_unknown_dates,
+        include_country_subjects,
+    )
+    if hazard is not None:
+        pool = [event for event in pool if hazard_of(event) is hazard]
+    lowered_groups = tuple(
+        tuple(term.lower().strip() for term in group if term.strip())
+        for group in (term_groups or (terms,))
+    )
+    safe = [
+        event
+        for event in pool
+        if not injection_flags(
+            event.title,
+            event.title_en,
+            event.summary,
+            *(value for value in project_to_dict(event.project).values() if isinstance(value, str))
+            if event.project is not None
+            else (),
+        )
+    ]
+    group_index = {
+        event.id: next(
+            (index for index, group in enumerate(lowered_groups) if term_matches(event, group)),
+            len(lowered_groups),
+        )
+        for event in safe
+    }
+    return SelectionPlan(
+        safe=tuple(safe),
+        considered=len(pool),
+        term_groups=lowered_groups,
+        strategy=strategy,
+        now=now,
+        reference=until if since is not None and until is not None else now,
+        window=window,
+        time_basis=time_basis,
+        seen_content_signatures=seen_content_signatures,
+        group_index=group_index,
+    )
+
+
+def finish_selection(
+    plan: SelectionPlan,
+    profiles: Mapping[str, SourceProfile],
+    *,
+    similarity: Mapping[str, float] | None = None,
+    rerank_reason: str = "",
+) -> Selection:
+    """Order, diversify, fold duplicates and spend the slots inside the strategy caps.
+
+    Earlier term groups still take precedence, so a rerank reorders inside a relevance
+    tier and never promotes unmatched context above matched reporting. Diversity, the
+    per-organisation cap and the retained opposing reporting are unchanged.
+    """
+    ordered = sorted(
+        plan.safe,
+        key=lambda event: (
+            plan.group_index[event.id],
+            -plan.priority(event, similarity),
+            event.id,
+        ),
+    )
+    buckets: list[list[Event]] = [[] for _ in range(len(plan.term_groups) + 1)]
+    for event in ordered:
+        buckets[plan.group_index[event.id]].append(event)
+    ranked = [event for bucket in buckets for event in diversify(bucket, profiles, plan.terms)]
+    if plan.seen_content_signatures:
+        # Preserve relevance ahead of novelty, and quality/diversity within each group.
+        # Repeated items may still supply essential context after new relevant evidence.
+        ranked.sort(
+            key=lambda event: (
+                plan.group_index[event.id],
+                content_signature(event) in plan.seen_content_signatures,
             )
         )
-        for event in candidates:
-            if len(seen) >= MAX_POOL:
-                break
-            if matches_country_subject(event, selected_countries):
-                seen.setdefault(event.id, event)
-    return list(seen.values())[:MAX_POOL]
+    clusters, cluster_reasons = duplicate_clusters(plan.safe)
+    chosen = choose_items(
+        ranked,
+        profiles,
+        plan.strategy,
+        now=plan.now,
+        clusters=clusters,
+        cluster_reasons=cluster_reasons,
+    )
+    scored = sum(1 for event in plan.safe if event.id in (similarity or {}))
+    return Selection(
+        items=chosen.items,
+        flagged=plan.flagged,
+        considered=plan.considered,
+        merged=chosen.merged,
+        reranked=scored,
+        rerank_reason=rerank_reason,
+    )
 
 
 def select_evidence(
@@ -151,97 +260,31 @@ def select_evidence(
     include_unknown_dates: bool = False,
     include_country_subjects: bool = False,
     seen_content_signatures: frozenset[str] = frozenset(),
+    similarity: Mapping[str, float] | None = None,
+    rerank_reason: str = "",
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
-    Earlier term groups take precedence. Matches within a group are ordered by
-    evidence score and stable ID; unmatched items fill the remaining places.
-    A bounding box and extra countries widen the pool (a
-    conflict area); a hazard narrows it to one kind of disaster.
+    A bounding box and extra countries widen the pool (a conflict area); a hazard
+    narrows it to one kind of disaster. Without a similarity map the ordering is
+    exactly the deterministic grade, recency and term ordering.
     """
-    window = (
-        (until - since)
-        if since is not None and until is not None
-        else timedelta(hours=strategy.window_hours)
-    )
-    wanted = frozenset(categories) or strategy.categories
-    pool = _pool(
+    plan = plan_selection(
         store,
-        wanted,
-        since if since is not None else now - window,
-        country_iso,
-        bbox,
-        countries,
-        time_basis,
-        until,
-        include_unknown_dates,
-        include_country_subjects,
-    )
-    if hazard is not None:
-        pool = [event for event in pool if hazard_of(event) is hazard]
-    lowered_groups = tuple(
-        tuple(term.lower().strip() for term in group if term.strip())
-        for group in (term_groups or (terms,))
-    )
-    lowered = tuple(dict.fromkeys(term for group in lowered_groups for term in group))
-
-    def relevance(event: Event) -> int:
-        return next(
-            (index for index, group in enumerate(lowered_groups) if term_matches(event, group)),
-            len(lowered_groups),
-        )
-
-    def rank(event: Event) -> tuple[int, float, str]:
-        group = group_index[event.id]
-        matches = term_matches(event, lowered_groups[group]) if group < len(lowered_groups) else 0
-        return (
-            group,
-            -score(
-                event, until if since is not None and until is not None else now, window, time_basis
-            )
-            * (1 + 0.25 * matches),
-            event.id,
-        )
-
-    safe = [
-        event
-        for event in pool
-        if not injection_flags(
-            event.title,
-            event.title_en,
-            event.summary,
-            *(value for value in project_to_dict(event.project).values() if isinstance(value, str))
-            if event.project is not None
-            else (),
-        )
-    ]
-    group_index = {event.id: relevance(event) for event in safe}
-    ordered = sorted(safe, key=rank)
-    buckets: list[list[Event]] = [[] for _ in range(len(lowered_groups) + 1)]
-    for event in ordered:
-        buckets[group_index[event.id]].append(event)
-    ranked = [event for bucket in buckets for event in diversify(bucket, profiles, lowered)]
-    if seen_content_signatures:
-        # Preserve relevance ahead of novelty, and quality/diversity within each group.
-        # Repeated items may still supply essential context after new relevant evidence.
-        ranked.sort(
-            key=lambda event: (
-                group_index[event.id],
-                content_signature(event) in seen_content_signatures,
-            )
-        )
-    clusters, cluster_reasons = duplicate_clusters(safe)
-    chosen = choose_items(
-        ranked,
-        profiles,
         strategy,
         now=now,
-        clusters=clusters,
-        cluster_reasons=cluster_reasons,
+        country_iso=country_iso,
+        categories=categories,
+        terms=terms,
+        term_groups=term_groups,
+        bbox=bbox,
+        countries=countries,
+        hazard=hazard,
+        time_basis=time_basis,
+        until=until,
+        since=since,
+        include_unknown_dates=include_unknown_dates,
+        include_country_subjects=include_country_subjects,
+        seen_content_signatures=seen_content_signatures,
     )
-    return Selection(
-        items=chosen.items,
-        flagged=len(pool) - len(safe),
-        considered=len(pool),
-        merged=chosen.merged,
-    )
+    return finish_selection(plan, profiles, similarity=similarity, rerank_reason=rerank_reason)

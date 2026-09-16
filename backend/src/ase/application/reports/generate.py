@@ -18,6 +18,7 @@ from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
 from ase.application.ports.claims import ClaimRepository
 from ase.application.ports.direction import AoiRepository, PlanRepository
+from ase.application.ports.embeddings import EmbeddingGateway
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
@@ -36,6 +37,7 @@ from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.automatic_claims import AutomaticClaims
+from ase.application.reports.evidence_rerank import EvidenceReranker
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.map_origin import ReportMapOrigin
@@ -94,8 +96,10 @@ class GenerateReportUseCase:
         original_followthrough: OriginalFollowThrough | None = None,
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
+        embeddings: EmbeddingGateway | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
+        routing = ModelRouting(llm_profiles, llm_bindings)
         self._producer = Producer(
             store=store,
             source_profiles=source_profiles,
@@ -112,10 +116,18 @@ class GenerateReportUseCase:
             else None,
             projector=projector,
             ai_usage=ai_usage,
+            # Without an embeddings gateway the pipeline keeps its deterministic order.
+            reranker=(
+                EvidenceReranker(
+                    routing=routing, cipher=cipher, gateway=embeddings, ai_usage=ai_usage
+                )
+                if embeddings is not None
+                else None
+            ),
         )
         self._builder = ReportJobBuilder(countries, conflicts, aois, self._backgrounds)
         self._plans = plans
-        self._routing = ModelRouting(llm_profiles, llm_bindings)
+        self._routing = routing
         self._cipher = cipher
         self._reports = reports
         self._clock = clock

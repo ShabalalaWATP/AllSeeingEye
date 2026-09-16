@@ -7,7 +7,12 @@ from ase.application.ports.feeds import EventStore
 from ase.application.reports.depth import depth_for
 from ase.application.reports.production_types import Job
 from ase.application.reports.reused_evidence import with_reused_evidence
-from ase.application.reports.selection import Selection, select_evidence
+from ase.application.reports.selection import (
+    Selection,
+    SelectionPlan,
+    finish_selection,
+    plan_selection,
+)
 from ase.application.reports.subscription_updates import previous_signatures
 from ase.domain.direction import Direction
 from ase.domain.evidence_time import EvidenceTimeBasis
@@ -72,9 +77,8 @@ def _term_groups(
     return tuple(dict.fromkeys(group for group in base if group))
 
 
-def select_for_job(
+def plan_for_job(
     store: EventStore,
-    profiles: Mapping[str, SourceProfile],
     job: Job,
     direction: Direction | None,
     extra_terms: tuple[str, ...] = (),
@@ -82,7 +86,8 @@ def select_for_job(
     runtime_query: ResearchQuery | None = None,
     receipt: ResearchReceipt | None = None,
     reserve_challenge_slots: bool = False,
-) -> Selection:
+) -> SelectionPlan:
+    """The deterministic prefilter for this job, before any similarity ordering."""
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
     area = job.request.effective_area is not None
     window = int(job.window.total_seconds() // 3600)
@@ -113,9 +118,8 @@ def select_for_job(
         # original grades and the lack of independent corroboration remain unchanged.
         strategy = replace(strategy, max_items=100, per_source_cap=100)
     groups = _term_groups(job, direction, runtime_query, receipt, extra_terms)
-    selected = select_evidence(
+    return plan_selection(
         store,
-        profiles,
         strategy,
         now=job.now,
         country_iso=None if private else job.request.country_iso,
@@ -146,4 +150,30 @@ def select_for_job(
             | frozenset(job.request.subscription_seen_signatures)
         ),
     )
+
+
+def select_for_job(
+    store: EventStore,
+    profiles: Mapping[str, SourceProfile],
+    job: Job,
+    direction: Direction | None,
+    extra_terms: tuple[str, ...] = (),
+    *,
+    runtime_query: ResearchQuery | None = None,
+    receipt: ResearchReceipt | None = None,
+    reserve_challenge_slots: bool = False,
+    similarity: Mapping[str, float] | None = None,
+    rerank_reason: str = "",
+) -> Selection:
+    """Freeze this job's evidence, optionally reordered by the supplied similarity map."""
+    plan = plan_for_job(
+        store,
+        job,
+        direction,
+        extra_terms,
+        runtime_query=runtime_query,
+        receipt=receipt,
+        reserve_challenge_slots=reserve_challenge_slots,
+    )
+    selected = finish_selection(plan, profiles, similarity=similarity, rerank_reason=rerank_reason)
     return with_reused_evidence(selected, job.reused_evidence)
