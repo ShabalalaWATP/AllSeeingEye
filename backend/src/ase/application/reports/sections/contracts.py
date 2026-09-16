@@ -33,14 +33,16 @@ TOPIC_SCHEMA = _object(
     {
         "reporting": {
             "type": "array",
-            "maxItems": 4,
+            "maxItems": 6,
             "items": deepcopy(_FIELDS["reporting"]["items"]["properties"]["items"]["items"]),
         },
         "assessment": {**deepcopy(_FIELDS["assessment"]), "minItems": 0, "maxItems": 1},
         "gaps": {**deepcopy(_FIELDS["gaps"]), "maxItems": 1},
     }
 )
-TOPIC_SCHEMA["properties"]["assessment"]["items"]["properties"]["text"]["maxLength"] = 1600
+# Room for a real analytical paragraph per topic. Raising a ceiling stays permissive,
+# so completed checkpoints from earlier runs still revalidate against this contract.
+TOPIC_SCHEMA["properties"]["assessment"]["items"]["properties"]["text"]["maxLength"] = 2_400
 SYNTHESIS_SCHEMA = _object(
     {
         key: deepcopy(_FIELDS[key])
