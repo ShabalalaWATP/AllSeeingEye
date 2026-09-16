@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
 
+from ase.domain.area_context import AreaContext, context_from_dict, context_to_dict
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.original_followup import (
     MAX_ORIGINAL_RECEIPTS,
@@ -55,6 +56,8 @@ class ResearchReceipt:
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
     web_research: WebResearchRecord | None = None
     original_followup: tuple[OriginalFollowupReceipt, ...] = ()
+    # Added after historical exports were hashed; absent by default, see canonical_provenance.
+    area_context: AreaContext | None = None
 
     @classmethod
     def build(
@@ -97,7 +100,8 @@ class ResearchReceipt:
         return "Dates filter publication time, not necessarily event time."
 
     def describe(self) -> str:
-        return describe_receipt(self)
+        context = f" {self.area_context.describe()}" if self.area_context else ""
+        return describe_receipt(self) + context
 
 
 def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
@@ -110,6 +114,9 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     else:
         result.pop("web_research", None)
     result.pop("original_followup", None)
+    result.pop("area_context", None)
+    if receipt.area_context is not None:
+        result["area_context"] = context_to_dict(receipt.area_context)
     result.update(
         {"original_followup": [original_receipt_to_dict(row) for row in receipt.original_followup]}
         if receipt.original_followup
@@ -230,6 +237,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
         time_basis=EvidenceTimeBasis(data.get("time_basis", "publication")),
         web_research=web_research_from_dict(data.get("web_research")),
         original_followup=tuple(original_receipt_from_dict(row) for row in originals),
+        area_context=context_from_dict(data.get("area_context")),
     )
 
 

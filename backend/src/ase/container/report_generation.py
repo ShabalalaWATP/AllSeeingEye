@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
+from ase.adapters.geo.area_geography import PackagedAreaGeography
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository
+from ase.application.reports.area_context import AreaContextService
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.original_followthrough import OriginalFollowThrough
@@ -62,4 +64,5 @@ class ReportGenerationWiring:
             projector=container.internal_report_projector,
             ai_usage=container.ai_usage_accounting if gateway is None else None,
             embeddings=container.embedding_gateway,
+            area_context=AreaContextService(PackagedAreaGeography(), r.baselines),
         )
