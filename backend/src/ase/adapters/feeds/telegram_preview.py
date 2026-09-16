@@ -30,6 +30,9 @@ MAX_MESSAGES = 200
 MAX_ELEMENT_DEPTH = 200
 MAX_CHANNEL_CHARS = 64
 MAX_TITLE_CHARS = 140
+# A view counter is one short token; anything longer means the element never closed.
+MAX_VIEW_PARTS = 4
+MAX_VIEW_CHARS = 24
 
 HISTORY_CLASS = "tgme_channel_history"
 MESSAGE_CLASS = "tgme_widget_message"
@@ -160,7 +163,7 @@ class _PreviewParser(HTMLParser):
                 return
 
     def handle_data(self, data: str) -> None:
-        if self._views_depth is not None:
+        if self._views_depth is not None and len(self._views) < MAX_VIEW_PARTS:
             self._views.append(data)
         if self._text_depth is None or self._captured >= MAX_CAPTURED_CHARS:
             return
@@ -233,7 +236,7 @@ class _PreviewParser(HTMLParser):
                 number=int(number),
                 text=text,
                 published_at=published,
-                views=_collapse(views, 24) or None,
+                views=_collapse(views, MAX_VIEW_CHARS) or None,
             )
         )
 
