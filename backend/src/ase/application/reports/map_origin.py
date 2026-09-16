@@ -7,6 +7,7 @@ from ase.application.access import AccessPolicy
 from ase.application.ports.map_views import MapViewRepository
 from ase.application.ports.reports import ReportRepository
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.templates import AREA_TEMPLATES
 from ase.application.research.map_view_evidence import evidence_digest
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.map_research_origin import MapResearchOrigin
@@ -52,7 +53,7 @@ class ReportMapOrigin:
         if (
             request.research_mode is None
             or request.research_focus is not ResearchFocus.GENERAL
-            or request.template_id != "ask"
+            or request.template_id not in AREA_TEMPLATES
             or request.parent_report_id is not None
             or request.research_input_id is not None
             or request.plan_id is not None
