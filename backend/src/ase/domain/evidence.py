@@ -14,6 +14,7 @@ from datetime import datetime
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Event
 from ase.domain.evidence_attributes import EvidenceAttribute, freeze_evidence_attributes
+from ase.domain.evidence_coverage import EvidenceCoverage
 from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.observation import ObservationMetadata
@@ -180,6 +181,7 @@ class QualityOfInformation:
     contradictions: int | None = None
     flagged: int = 0
     confidence_ceiling: Confidence = Confidence.HIGH
+    coverage: EvidenceCoverage | None = None
 
     def describe(self) -> str:
         grades = ", ".join(f"{count} {grade}" for grade, count in sorted(self.by_grade.items()))
@@ -191,6 +193,7 @@ class QualityOfInformation:
             "contradictions not automatically assessed; "
             f"{self.flagged} item(s) flagged for "
             "instruction-like text. Confidence limits are assessed per judgement."
+            + (f" {self.coverage.describe()}" if self.coverage else "")
         )
 
 
