@@ -1,0 +1,566 @@
+{
+  "reviewed": "2026-09-16",
+  "checked": "Every handle resolved and returned readable original posts through the application feed client on 2026-09-16.",
+  "accounts": [
+    {
+      "handle": "kyivindependent.com",
+      "operator": "The Kyiv Independent",
+      "topic": "ukraine_russia",
+      "viewpoint": "publisher",
+      "reason": "English-language Kyiv newsroom posting strikes, mobilisation and policy lines ahead of its own site feed."
+    },
+    {
+      "handle": "pravda.ua",
+      "operator": "Ukrainska Pravda",
+      "topic": "ukraine_russia",
+      "viewpoint": "publisher",
+      "reason": "Long-running Ukrainian investigative outlet; the English page carries political and front-line reporting."
+    },
+    {
+      "handle": "euromaidanpress.bsky.social",
+      "operator": "Euromaidan Press",
+      "topic": "ukraine_russia",
+      "viewpoint": "publisher",
+      "reason": "Community-funded English desk translating Ukrainian reporting and official statements."
+    },
+    {
+      "handle": "kyivpost.com",
+      "operator": "Kyiv Post",
+      "topic": "ukraine_russia",
+      "viewpoint": "publisher",
+      "reason": "Established Kyiv English-language paper covering the war, politics and the wartime economy."
+    },
+    {
+      "handle": "united24media.com",
+      "operator": "UNITED24 Media",
+      "topic": "ukraine_russia",
+      "viewpoint": "state_aligned",
+      "reason": "Media arm of the Ukrainian state fundraising platform; useful for official framing, not neutral reporting."
+    },
+    {
+      "handle": "meduza.io",
+      "operator": "Meduza",
+      "topic": "ukraine_russia",
+      "viewpoint": "publisher",
+      "reason": "Exiled Russian newsroom reporting on Russian politics, casualties and censorship in English."
+    },
+    {
+      "handle": "thestudyofwar.bsky.social",
+      "operator": "Institute for the Study of War",
+      "topic": "ukraine_russia",
+      "viewpoint": "researcher",
+      "reason": "Daily campaign assessments and control-of-terrain notes from the ISW Russia team."
+    },
+    {
+      "handle": "jimmyrushton.bsky.social",
+      "operator": "Jimmy Rushton",
+      "topic": "ukraine_russia",
+      "viewpoint": "researcher",
+      "reason": "Kyiv-based security analyst summarising strike and air-defence reporting with sourcing."
+    },
+    {
+      "handle": "chinadigitaltimes.net",
+      "operator": "China Digital Times",
+      "topic": "china_taiwan",
+      "viewpoint": "researcher",
+      "reason": "Berkeley project tracking Chinese censorship directives and deleted posts."
+    },
+    {
+      "handle": "9dashline.com",
+      "operator": "9DASHLINE",
+      "topic": "china_taiwan",
+      "viewpoint": "researcher",
+      "reason": "Indo-Pacific analysis desk focused on the South China Sea and cross-strait security."
+    },
+    {
+      "handle": "ryanhk.blue",
+      "operator": "Hong Kong Free Press (executive editor)",
+      "topic": "china_taiwan",
+      "viewpoint": "publisher",
+      "reason": "Hong Kong Free Press editor posting press-freedom and national-security-law developments."
+    },
+    {
+      "handle": "thediplomat.com",
+      "operator": "The Diplomat",
+      "topic": "china_taiwan",
+      "viewpoint": "publisher",
+      "reason": "Asia-Pacific current affairs magazine covering cross-strait, Chinese and regional defence topics."
+    },
+    {
+      "handle": "asia.nikkei.com",
+      "operator": "Nikkei Asia",
+      "topic": "indo_pacific",
+      "viewpoint": "publisher",
+      "reason": "Regional business and security reporting from the Nikkei Asia desk."
+    },
+    {
+      "handle": "lowyinstitute.bsky.social",
+      "operator": "Lowy Institute",
+      "topic": "indo_pacific",
+      "viewpoint": "researcher",
+      "reason": "Australian think tank publishing Indo-Pacific power, aid and security analysis."
+    },
+    {
+      "handle": "japantimes.co.jp",
+      "operator": "The Japan Times",
+      "topic": "indo_pacific",
+      "viewpoint": "publisher",
+      "reason": "Japan's main English daily, covering defence policy and regional incidents."
+    },
+    {
+      "handle": "timesofisrael.com",
+      "operator": "The Times of Israel",
+      "topic": "middle_east",
+      "viewpoint": "publisher",
+      "reason": "Israeli English daily with fast liveblog lines on strikes, hostages and politics."
+    },
+    {
+      "handle": "aljazeera.com",
+      "operator": "Al Jazeera English",
+      "topic": "middle_east",
+      "viewpoint": "publisher",
+      "reason": "Qatari-funded international broadcaster with heavy Gaza, Lebanon and Iran coverage."
+    },
+    {
+      "handle": "crisisgroup.org",
+      "operator": "International Crisis Group",
+      "topic": "middle_east",
+      "viewpoint": "researcher",
+      "reason": "Conflict-prevention organisation posting field analysis across the Middle East, Africa and Asia."
+    },
+    {
+      "handle": "nknewsorg.bsky.social",
+      "operator": "NK News",
+      "topic": "korea",
+      "viewpoint": "publisher",
+      "reason": "Seoul-based specialist desk on North Korean politics, trade and missile activity."
+    },
+    {
+      "handle": "38north.org",
+      "operator": "38 North",
+      "topic": "korea",
+      "viewpoint": "researcher",
+      "reason": "Stimson Center programme publishing imagery-based analysis of North Korean sites."
+    },
+    {
+      "handle": "thekoreaherald.bsky.social",
+      "operator": "The Korea Herald",
+      "topic": "korea",
+      "viewpoint": "publisher",
+      "reason": "South Korea's largest English daily; useful for Seoul's defence and economic lines."
+    },
+    {
+      "handle": "thehindu.com",
+      "operator": "The Hindu",
+      "topic": "south_asia",
+      "viewpoint": "publisher",
+      "reason": "Indian national daily with defence, border and policy coverage."
+    },
+    {
+      "handle": "thewire.in",
+      "operator": "The Wire",
+      "topic": "south_asia",
+      "viewpoint": "publisher",
+      "reason": "Independent Indian outlet covering security policy, Kashmir and press freedom."
+    },
+    {
+      "handle": "thecontinent.org",
+      "operator": "The Continent",
+      "topic": "africa",
+      "viewpoint": "publisher",
+      "reason": "Pan-African weekly from the Mail and Guardian stable, distributed across the continent."
+    },
+    {
+      "handle": "acleddata.bsky.social",
+      "operator": "ACLED",
+      "topic": "africa",
+      "viewpoint": "researcher",
+      "reason": "Armed Conflict Location and Event Data project posting conflict trends, strong on the Sahel and Horn."
+    },
+    {
+      "handle": "hrw.org",
+      "operator": "Human Rights Watch",
+      "topic": "africa",
+      "viewpoint": "researcher",
+      "reason": "Investigations and country statements, often the first detailed account of civilian harm."
+    },
+    {
+      "handle": "insightcrime.org",
+      "operator": "InSight Crime",
+      "topic": "latin_america",
+      "viewpoint": "researcher",
+      "reason": "Organised crime research across Latin America and the Caribbean."
+    },
+    {
+      "handle": "elpais.com",
+      "operator": "EL PAIS",
+      "topic": "latin_america",
+      "viewpoint": "publisher",
+      "reason": "Spanish-language daily with a large Latin American desk; posts in Spanish."
+    },
+    {
+      "handle": "financialtimes.com",
+      "operator": "Financial Times",
+      "topic": "finance_markets",
+      "viewpoint": "publisher",
+      "reason": "Markets, sanctions and corporate headlines as they publish."
+    },
+    {
+      "handle": "bloomberg.com",
+      "operator": "Bloomberg News",
+      "topic": "finance_markets",
+      "viewpoint": "publisher",
+      "reason": "Market-moving economic and commodity headlines."
+    },
+    {
+      "handle": "reuters.com",
+      "operator": "Reuters",
+      "topic": "finance_markets",
+      "viewpoint": "publisher",
+      "reason": "Wire headlines across markets, conflict and policy."
+    },
+    {
+      "handle": "federalreserve.gov",
+      "operator": "US Federal Reserve",
+      "topic": "finance_markets",
+      "viewpoint": "official_issuer",
+      "reason": "Official Federal Reserve announcements, statements and release notices."
+    },
+    {
+      "handle": "ecb.europa.eu",
+      "operator": "European Central Bank",
+      "topic": "finance_markets",
+      "viewpoint": "official_issuer",
+      "reason": "Official ECB policy decisions, speeches and statistical releases."
+    },
+    {
+      "handle": "ncsc.gov.uk",
+      "operator": "UK National Cyber Security Centre",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "official_issuer",
+      "reason": "Official UK advisories, joint attribution statements and guidance."
+    },
+    {
+      "handle": "bleepingcomputer.com",
+      "operator": "BleepingComputer",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "publisher",
+      "reason": "Fast reporting on breaches, ransomware and exploited vulnerabilities."
+    },
+    {
+      "handle": "therecordmedia.bsky.social",
+      "operator": "The Record (Recorded Future News)",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "publisher",
+      "reason": "Cyber and intelligence newsroom covering state-linked intrusions."
+    },
+    {
+      "handle": "cyberscoop.bsky.social",
+      "operator": "CyberScoop",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "publisher",
+      "reason": "US cyber policy, spyware and federal security reporting."
+    },
+    {
+      "handle": "shadowserver.bsky.social",
+      "operator": "The Shadowserver Foundation",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "researcher",
+      "reason": "Non-profit internet-scanning charity posting exposure and botnet statistics."
+    },
+    {
+      "handle": "citizenlab.ca",
+      "operator": "The Citizen Lab",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "researcher",
+      "reason": "University of Toronto lab publishing spyware and targeted-surveillance findings."
+    },
+    {
+      "handle": "talosintelligence.com",
+      "operator": "Cisco Talos",
+      "topic": "cyber_threat_intel",
+      "viewpoint": "researcher",
+      "reason": "Vendor threat-intelligence group publishing intrusion and malware research."
+    },
+    {
+      "handle": "sambendett.bsky.social",
+      "operator": "Samuel Bendett (CNA)",
+      "topic": "drones_uncrewed",
+      "viewpoint": "researcher",
+      "reason": "Established researcher on Russian uncrewed systems and drone-unit doctrine."
+    },
+    {
+      "handle": "rikefranke.bsky.social",
+      "operator": "Ulrike Franke (ECFR)",
+      "topic": "drones_uncrewed",
+      "viewpoint": "researcher",
+      "reason": "European drone-policy researcher covering uncrewed systems and European defence."
+    },
+    {
+      "handle": "warontherocks.bsky.social",
+      "operator": "War on the Rocks",
+      "topic": "defence_analysis",
+      "viewpoint": "publisher",
+      "reason": "National-security commentary and analysis platform."
+    },
+    {
+      "handle": "defensenews.bsky.social",
+      "operator": "Defense News",
+      "topic": "defence_analysis",
+      "viewpoint": "publisher",
+      "reason": "Procurement, programme and budget reporting for defence ministries."
+    },
+    {
+      "handle": "breakingdefense.com",
+      "operator": "Breaking Defense",
+      "topic": "defence_analysis",
+      "viewpoint": "publisher",
+      "reason": "US and allied defence programme and policy reporting."
+    },
+    {
+      "handle": "twz.com",
+      "operator": "The War Zone",
+      "topic": "defence_analysis",
+      "viewpoint": "publisher",
+      "reason": "Military aviation, naval movement and hardware analysis with imagery sourcing."
+    },
+    {
+      "handle": "navalnews.com",
+      "operator": "Naval News",
+      "topic": "defence_analysis",
+      "viewpoint": "publisher",
+      "reason": "Specialist naval programme, shipbuilding and fleet-movement reporting."
+    },
+    {
+      "handle": "rand.org",
+      "operator": "RAND Corporation",
+      "topic": "security_policy",
+      "viewpoint": "researcher",
+      "reason": "Policy research organisation publishing defence, China and Russia studies."
+    },
+    {
+      "handle": "csis.org",
+      "operator": "Center for Strategic and International Studies",
+      "topic": "security_policy",
+      "viewpoint": "researcher",
+      "reason": "Washington think tank with Indo-Pacific, missile and maritime programmes."
+    },
+    {
+      "handle": "sipri.org",
+      "operator": "SIPRI",
+      "topic": "security_policy",
+      "viewpoint": "researcher",
+      "reason": "Stockholm institute publishing arms transfer, military spending and nuclear data."
+    },
+    {
+      "handle": "chathamhouse.org",
+      "operator": "Chatham House",
+      "topic": "security_policy",
+      "viewpoint": "researcher",
+      "reason": "UK international affairs institute posting Russia, Ukraine and Middle East analysis."
+    },
+    {
+      "handle": "lawfaremedia.org",
+      "operator": "Lawfare",
+      "topic": "security_policy",
+      "viewpoint": "publisher",
+      "reason": "Law and national-security analysis, including cyber and intelligence oversight."
+    },
+    {
+      "handle": "ec.europa.eu",
+      "operator": "European Commission",
+      "topic": "world_leaders",
+      "viewpoint": "official_issuer",
+      "reason": "Official Commission announcements on sanctions, enlargement, trade and defence funding."
+    },
+    {
+      "handle": "europarl.europa.eu",
+      "operator": "European Parliament",
+      "topic": "world_leaders",
+      "viewpoint": "official_issuer",
+      "reason": "Official parliamentary resolutions, votes and statements."
+    },
+    {
+      "handle": "consilium.europa.eu",
+      "operator": "Council of the European Union",
+      "topic": "world_leaders",
+      "viewpoint": "official_issuer",
+      "reason": "Official Council conclusions, sanctions decisions and summit outcomes."
+    },
+    {
+      "handle": "flightradar24.com",
+      "operator": "Flightradar24",
+      "topic": "maritime_aviation",
+      "viewpoint": "publisher",
+      "reason": "Flight-tracking service posting notable diversions, closures and tracked movements."
+    },
+    {
+      "handle": "itamilradar.com",
+      "operator": "itamilradar",
+      "topic": "maritime_aviation",
+      "viewpoint": "researcher",
+      "reason": "Volunteer team tracking military aviation over Italy and the central Mediterranean."
+    },
+    {
+      "handle": "avherald.com",
+      "operator": "The Aviation Herald",
+      "topic": "maritime_aviation",
+      "viewpoint": "publisher",
+      "reason": "Incident and accident log for civil aviation, entry by entry."
+    },
+    {
+      "handle": "covertshores.bsky.social",
+      "operator": "H I Sutton",
+      "topic": "maritime_aviation",
+      "viewpoint": "researcher",
+      "reason": "Independent naval analyst on submarines, uncrewed vessels and undersea infrastructure."
+    },
+    {
+      "handle": "esa.int",
+      "operator": "European Space Agency",
+      "topic": "space",
+      "viewpoint": "official_issuer",
+      "reason": "Official launch, mission and Earth-observation announcements."
+    },
+    {
+      "handle": "spacenewsinc.bsky.social",
+      "operator": "SpaceNews",
+      "topic": "space",
+      "viewpoint": "publisher",
+      "reason": "Space industry, launch and military-space reporting."
+    },
+    {
+      "handle": "nasaspaceflight.com",
+      "operator": "NASASpaceflight.com",
+      "topic": "space",
+      "viewpoint": "publisher",
+      "reason": "Independent launch coverage with on-site observation of pad activity."
+    },
+    {
+      "handle": "planet4589.bsky.social",
+      "operator": "Jonathan McDowell",
+      "topic": "space",
+      "viewpoint": "researcher",
+      "reason": "Astronomer maintaining the standing catalogue of launches, reentries and orbital objects."
+    },
+    {
+      "handle": "iea.org",
+      "operator": "International Energy Agency",
+      "topic": "energy",
+      "viewpoint": "official_issuer",
+      "reason": "Official IEA market reports, oil and electricity data releases."
+    },
+    {
+      "handle": "ember-energy.org",
+      "operator": "Ember",
+      "topic": "energy",
+      "viewpoint": "researcher",
+      "reason": "Energy think tank publishing electricity and coal transition data."
+    },
+    {
+      "handle": "carbonbrief.org",
+      "operator": "Carbon Brief",
+      "topic": "energy",
+      "viewpoint": "researcher",
+      "reason": "Climate and energy analysis desk with data-led explainers."
+    },
+    {
+      "handle": "unocha.org",
+      "operator": "UN OCHA",
+      "topic": "humanitarian",
+      "viewpoint": "official_issuer",
+      "reason": "Official humanitarian situation updates and access constraints."
+    },
+    {
+      "handle": "unhcr.org",
+      "operator": "UNHCR",
+      "topic": "humanitarian",
+      "viewpoint": "official_issuer",
+      "reason": "Official displacement figures and refugee operation updates."
+    },
+    {
+      "handle": "wfp.org",
+      "operator": "World Food Programme",
+      "topic": "humanitarian",
+      "viewpoint": "official_issuer",
+      "reason": "Official food security and famine-risk operational updates."
+    },
+    {
+      "handle": "who.int",
+      "operator": "World Health Organization",
+      "topic": "humanitarian",
+      "viewpoint": "official_issuer",
+      "reason": "Official outbreak, health emergency and attack-on-healthcare statements."
+    },
+    {
+      "handle": "icrc.org",
+      "operator": "International Committee of the Red Cross",
+      "topic": "humanitarian",
+      "viewpoint": "official_issuer",
+      "reason": "Mandated humanitarian body posting operational statements on conflicts."
+    },
+    {
+      "handle": "msf.org",
+      "operator": "Medecins Sans Frontieres",
+      "topic": "humanitarian",
+      "viewpoint": "researcher",
+      "reason": "Field medical teams reporting conditions directly from conflict and outbreak sites."
+    },
+    {
+      "handle": "bellingcat.com",
+      "operator": "Bellingcat",
+      "topic": "disinformation",
+      "viewpoint": "researcher",
+      "reason": "Open-source investigation collective publishing method and verification work."
+    },
+    {
+      "handle": "disinfo.eu",
+      "operator": "EU DisinfoLab",
+      "topic": "disinformation",
+      "viewpoint": "researcher",
+      "reason": "NGO documenting coordinated influence operations in Europe."
+    },
+    {
+      "handle": "noupside.bsky.social",
+      "operator": "Renee DiResta",
+      "topic": "disinformation",
+      "viewpoint": "researcher",
+      "reason": "Established influence-operations researcher on propaganda and platform design."
+    },
+    {
+      "handle": "shayan86.bsky.social",
+      "operator": "Shayan Sardarizadeh (BBC Verify)",
+      "topic": "disinformation",
+      "viewpoint": "researcher",
+      "reason": "BBC Verify journalist debunking viral conflict claims with sourcing."
+    },
+    {
+      "handle": "occrp.org",
+      "operator": "OCCRP",
+      "topic": "disinformation",
+      "viewpoint": "researcher",
+      "reason": "Cross-border investigative network on corruption, sanctions evasion and shell companies."
+    },
+    {
+      "handle": "apnews.com",
+      "operator": "Associated Press",
+      "topic": "global_news",
+      "viewpoint": "publisher",
+      "reason": "Wire service headlines across conflict, politics and disasters."
+    },
+    {
+      "handle": "theguardian.com",
+      "operator": "The Guardian",
+      "topic": "global_news",
+      "viewpoint": "publisher",
+      "reason": "International desk headlines and investigations."
+    },
+    {
+      "handle": "france24.com",
+      "operator": "FRANCE 24",
+      "topic": "global_news",
+      "viewpoint": "publisher",
+      "reason": "French international broadcaster with strong Africa and Middle East desks."
+    }
+  ]
+}

@@ -16,6 +16,7 @@ from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.aisstream import AisStreamConnector
 from ase.adapters.feeds.barentswatch import BarentsWatchConnector
 from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
+from ase.adapters.feeds.bluesky import BlueskyConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.conflict_acled import AcledConnector
 from ase.adapters.feeds.conflict_reliefweb import ReliefWebReportsConnector
@@ -141,6 +142,7 @@ def build_connectors(
             if not reliefweb_appname or connector.spec.id != "reliefweb_updates"
         ],
         *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
+        BlueskyConnector(http, clock),
     ]
     if aircraft_interests is not None and "adsb_viewport" not in excluded:
         connectors.append(

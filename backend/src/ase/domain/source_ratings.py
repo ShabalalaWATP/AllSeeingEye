@@ -64,8 +64,31 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
     )
 
 
+def _curated_account_rating() -> SourceRating:
+    """A reviewed watch list is a collection choice, not an assessment of the accounts."""
+    return SourceRating(
+        policy_version=SOURCE_RATING_POLICY_VERSION,
+        status="unassessed",
+        assessed_grade=None,
+        basis="The operator reviewed which public accounts are read and why. That selection "
+        "is a collection decision; no account's reliability has been assessed.",
+        scope="Public posts published by the reviewed accounts on one social platform.",
+        limitations=(
+            *COMMON_LIMITATIONS,
+            "Curating an account list does not confer publisher credibility. Official and "
+            "state-aligned accounts state their own positions and are tagged as such.",
+            "Coverage follows the watch list and the platform's own feed responses; it is "
+            "neither a platform-wide sample nor an account authentication.",
+        ),
+        provenance_role="platform",
+        publisher_reliability_assessed=False,
+    )
+
+
 def source_rating_for(source_id: str, configured_grade: Reliability) -> SourceRating:
     """Describe registered assignments; never infer reliability from a domain or platform."""
+    if source_id.startswith("bluesky_"):
+        return _curated_account_rating()
     if source_id.startswith("mastodon_") or source_id in {
         "reddit_worldnews",
         "reddit_geopolitics",
