@@ -5,6 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
+
 from ai_usage_helpers import accounting
 from ase.domain.ai_defaults import (
     DEFAULT_PERSON_DAILY_TOKENS,
