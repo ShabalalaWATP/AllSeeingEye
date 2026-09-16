@@ -4,14 +4,15 @@ from collections.abc import Sequence
 
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.reports.advocacy import advocate, apply_advocacy
+from ase.application.reports.contradiction_pass import explain_contradictions
 from ase.application.reports.direction import direct
 from ase.application.reports.entailment import check_entailment
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem
-from ase.domain.llm import LlmRole
-from ase.domain.report_quality_rules import ENTAILMENT_RULE
+from ase.domain.llm import LlmProfile, LlmRole
+from ase.domain.report_quality_rules import CONTRADICTION_RULE, ENTAILMENT_RULE
 from ase.domain.reports import ReportBody
 from ase.domain.validation import Finding, Severity
 
@@ -85,6 +86,45 @@ async def advocate_for_job(
     return apply_advocacy(body, draft.advocacy)
 
 
+async def _review_profile(profile_for: ProfileLookup) -> LlmProfile | None:
+    return await profile_for(LlmRole.ASSESSMENT)
+
+
+async def explain_for_job(
+    job: Job,
+    profile_for: ProfileLookup,
+    body: ReportBody,
+    evidence: Sequence[EvidenceItem],
+    totals: Totals,
+    gateway: LlmGateway,
+    cipher: SecretCipher,
+) -> None:
+    """Explain a cited disagreement, or leave the mechanical naming of it to stand."""
+    profile = await _review_profile(profile_for)
+    if profile is None or not any(row.contradicting_evidence for row in body.key_judgements):
+        if profile is None and any(row.contradicting_evidence for row in body.key_judgements):
+            totals.findings.append(
+                Finding(
+                    CONTRADICTION_RULE,
+                    Severity.WARNING,
+                    "key_judgements",
+                    "No enabled model profile plays the assessment role, so the cited "
+                    "disagreement was not explained. The sources and their grades are "
+                    "still named.",
+                )
+            )
+        return
+    draft = await explain_contradictions(
+        gateway, profile, cipher.decrypt(profile.api_key_encrypted), body, evidence
+    )
+    purpose = f"report:{job.template.id}:contradiction"
+    totals.usage.append(usage_entry(job, profile, purpose, draft.ran, draft))
+    totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
+    for finding in draft.reasons:
+        if finding not in totals.findings:
+            totals.findings.append(finding)
+
+
 async def entail_for_job(
     job: Job,
     profile_for: ProfileLookup,
@@ -97,7 +137,7 @@ async def entail_for_job(
     """Run the bounded entailment pass, or record plainly that it could not run."""
     if not body.key_judgements:
         return
-    profile = await profile_for(LlmRole.ASSESSMENT)
+    profile = await _review_profile(profile_for)
     if profile is None:
         totals.findings.append(
             Finding(
