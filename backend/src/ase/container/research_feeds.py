@@ -12,6 +12,7 @@ from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.publisher import PublisherFeedResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.adapters.research.social_bluesky import BlueskyResearchProvider
 from ase.application.ports import Clock
 from ase.application.ports.research import ResearchProvider
 
@@ -22,8 +23,11 @@ def public_research_feeds(
     regional: list[ResearchProvider] = [
         RegionalFeedResearchProvider(http, clock, seed) for seed in REGIONAL_SEEDS
     ]
+    # One aggregated Bluesky route covers the whole curated account registry; the
+    # catalogue must not grow by one provider per watched account.
     social: list[ResearchProvider] = [
-        SocialFeedResearchProvider(http, clock, seed) for seed in SOCIAL_SEEDS
+        *[SocialFeedResearchProvider(http, clock, seed) for seed in SOCIAL_SEEDS],
+        BlueskyResearchProvider(http, clock),
     ]
     if spatial:
         # Existing unsupported capabilities explain the spatial boundary. The new

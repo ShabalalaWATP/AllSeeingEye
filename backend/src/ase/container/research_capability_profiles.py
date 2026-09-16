@@ -135,6 +135,17 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
             "GB country only.",
             english_terms=True,
         ),
+        "research_social_bluesky": _profile(
+            "social",
+            (Scope.TOPIC, Scope.COUNTRY_CONTEXT),
+            Dates.PUBLICATION_INTERVAL,
+            "Explicit bounded phrases select at most three reviewed public accounts; one "
+            "admitted task reads those author feeds and matches phrases locally. No "
+            "platform-wide search, archive, repost, foreign reply, linked page or media. "
+            "A curated topic is a collection choice, not incident geography.",
+            unknown_origin=True,
+            content=Content.DISCOVERY,
+        ),
         "research-retained-area-feeds": _profile(
             "area",
             (Scope.AREA,),

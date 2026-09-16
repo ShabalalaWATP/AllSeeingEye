@@ -232,6 +232,15 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         prefix="research_social_",
     )
     add(
+        "bluesky",
+        "conflict war|military|drone drones|cyber|sanctions|economy|energy|humanitarian|"
+        "disinformation|maritime|aviation|space|Ukraine|Russia|China|Taiwan|Israel|Iran|"
+        "Korea|Africa|government|protests|technology|intelligence",
+        "One aggregated curated-account route; phrases choose at most three public feeds, "
+        "and no account, claim or location is verified.",
+        prefix="research_social_",
+    )
+    add(
         "reddit_ukrainianconflict",
         DEFENCE + "|civilian|displacement",
         "Unverified forum discovery; discussion location is not event geography.",
