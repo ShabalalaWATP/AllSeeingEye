@@ -8,7 +8,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.feeds.mastodon import load_watch
+from ase.adapters.feeds.mastodon_watch import watch_terms
 from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
@@ -153,7 +153,7 @@ class FeatureWiring(ReportWiring):
     def social(self) -> SocialService:
         terms = SqlSocialTerms(
             self.session_factory,
-            [tag for _, tags in load_watch() for tag in tags],
+            watch_terms(),
             self.access_policy,
         )
         return SocialService(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)
@@ -161,7 +161,7 @@ class FeatureWiring(ReportWiring):
     def build_social_monitor(self) -> SocialMonitor:
         terms = SqlSocialTerms(
             self.session_factory,
-            [tag for _, tags in load_watch() for tag in tags],
+            watch_terms(),
             self.access_policy,
         )
         return SocialMonitor(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)

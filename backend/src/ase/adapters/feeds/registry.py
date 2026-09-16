@@ -40,7 +40,8 @@ from ase.adapters.feeds.gdelt_news import GdeltNewsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
 from ase.adapters.feeds.isw_assessments import IswAssessmentsConnector
-from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
+from ase.adapters.feeds.mastodon import MastodonConnector
+from ase.adapters.feeds.mastodon_watch import load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
 from ase.adapters.feeds.network_outages import CloudflareRadarConnector, IodaEventsConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
@@ -140,7 +141,10 @@ def build_connectors(
             for connector in build_rss_connectors(http, clock)
             if not reliefweb_appname or connector.spec.id != "reliefweb_updates"
         ],
-        *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
+        *[
+            MastodonConnector(http, clock, watch.instance, watch.tags, watch.minutes)
+            for watch in load_watch()
+        ],
     ]
     if aircraft_interests is not None and "adsb_viewport" not in excluded:
         connectors.append(
