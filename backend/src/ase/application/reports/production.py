@@ -28,6 +28,7 @@ from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.frozen_challenge import review_frozen
 from ase.application.reports.original_followthrough import OriginalFollowThrough
+from ase.application.reports.production_analysis import analyse_body
 from ase.application.reports.production_checkpoint import (
     ExpansionCheckpoints,
     ProductionCheckpoints,
@@ -330,6 +331,16 @@ class Producer:
             body, advocacy = await advocate_for_job(
                 job, profile_for, body, selection.items, totals, gateway, self._cipher
             )
+        body = await analyse_body(
+            job,
+            gateway,
+            self._cipher,
+            body,
+            selection,
+            direction,
+            totals,
+            checkpoints,
+        )
         version = await build_version(
             job,
             draft,
