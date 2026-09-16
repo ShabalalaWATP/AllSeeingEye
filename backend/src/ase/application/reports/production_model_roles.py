@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.reports.advocacy import advocate, apply_advocacy
-from ase.application.reports.contradiction_pass import explain_contradictions
+from ase.application.reports.contradiction_pass import contested, explain_contradictions
 from ase.application.reports.direction import direct
 from ase.application.reports.entailment import check_entailment
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
@@ -100,19 +100,20 @@ async def explain_for_job(
     cipher: SecretCipher,
 ) -> None:
     """Explain a cited disagreement, or leave the mechanical naming of it to stand."""
+    if not contested(body):
+        return
     profile = await _review_profile(profile_for)
-    if profile is None or not any(row.contradicting_evidence for row in body.key_judgements):
-        if profile is None and any(row.contradicting_evidence for row in body.key_judgements):
-            totals.findings.append(
-                Finding(
-                    CONTRADICTION_RULE,
-                    Severity.WARNING,
-                    "key_judgements",
-                    "No enabled model profile plays the assessment role, so the cited "
-                    "disagreement was not explained. The sources and their grades are "
-                    "still named.",
-                )
+    if profile is None:
+        totals.findings.append(
+            Finding(
+                CONTRADICTION_RULE,
+                Severity.WARNING,
+                "key_judgements",
+                "No enabled model profile plays the assessment role, so the cited "
+                "disagreement was not explained. The sources and their grades are "
+                "still named.",
             )
+        )
         return
     draft = await explain_contradictions(
         gateway, profile, cipher.decrypt(profile.api_key_encrypted), body, evidence

@@ -2,13 +2,17 @@
 
 import json
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
 
 from ase.application.ports.llm import LlmGatewayError
 from ase.application.reports.contradiction_pass import contested, explain_contradictions
+from ase.application.reports.production_model_roles import explain_for_job
+from ase.application.reports.production_types import Job, Totals
+from ase.application.reports.request import ReportRequest
+from ase.application.reports.templates import TEMPLATES
 from ase.domain.contradiction_analysis import ContradictionParseError, parse_disagreements
 from ase.domain.evidence import EvidenceItem
 from ase.domain.llm import LlmProfile, LlmRequest, LlmResult, LlmRole
@@ -22,6 +26,7 @@ from ase.domain.reports import (
     ReportingItem,
     ReportingTheme,
 )
+from ase.domain.users import Role, User
 
 NOW = datetime(2026, 9, 11, tzinfo=UTC)
 PROFILE = LlmProfile(
@@ -38,6 +43,45 @@ PROFILE = LlmProfile(
     created_at=NOW,
     updated_at=NOW,
 )
+
+
+ACTOR = User(
+    UUID(int=7),
+    "quality@example.invalid",
+    "Quality",
+    Role.USER,
+    True,
+    "hash",
+    0,
+    None,
+    None,
+    NOW,
+    None,
+)
+JOB = Job(
+    ACTOR,
+    TEMPLATES["intsum"],
+    ReportRequest("intsum"),
+    PROFILE,
+    NOW,
+    timedelta(hours=48),
+    "Intelligence summary",
+    {},
+    None,
+)
+
+
+class Cipher:
+    available = True
+
+    def encrypt(self, plaintext: str) -> str:
+        return plaintext
+
+    def decrypt(self, ciphertext: str) -> str:
+        return ciphertext
+
+
+CIPHER = Cipher()
 
 
 class FakeGateway:
@@ -171,3 +215,29 @@ def test_rows_about_other_judgements_or_with_no_point_are_dropped() -> None:
     assert [row.point for row in parsed] == ["the count"]
     with pytest.raises(ContradictionParseError):
         parse_disagreements({"disagreements": {}}, frozenset({"KJ1"}))
+
+
+async def test_the_job_step_skips_the_call_when_nothing_is_contested() -> None:
+    gateway = FakeGateway(answer(("KJ1", "nothing", "")))
+    uncontested = replace(
+        BODY, key_judgements=(replace(BODY.key_judgements[0], contradicting_evidence=()),)
+    )
+    totals = Totals()
+
+    async def profile_for(role: LlmRole) -> LlmProfile | None:
+        return PROFILE
+
+    await explain_for_job(JOB, profile_for, uncontested, EVIDENCE, totals, gateway, CIPHER)
+    assert gateway.requests == [] and totals.usage == [] and totals.findings == []
+
+
+async def test_the_job_step_says_so_when_no_profile_plays_the_role() -> None:
+    totals = Totals()
+
+    async def profile_for(role: LlmRole) -> LlmProfile | None:
+        return None
+
+    await explain_for_job(JOB, profile_for, BODY, EVIDENCE, totals, FakeGateway("{}"), CIPHER)
+    assert totals.usage == []
+    assert [finding.rule for finding in totals.findings] == [CONTRADICTION_RULE]
+    assert "still named" in totals.findings[0].message
