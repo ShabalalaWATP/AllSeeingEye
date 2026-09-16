@@ -21,6 +21,8 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname.startsWith('/geolocation')) return 'Geolocation';
   if (pathname.startsWith('/sources')) return 'Sources';
   if (pathname.startsWith('/trackers')) return 'Live monitor';
+  if (pathname.startsWith('/annotation-monitors')) return 'Annotation monitoring';
+  if (pathname.startsWith('/conflicts/ukraine')) return 'Ukraine war';
   if (pathname.startsWith('/direction')) return 'Plans & areas';
   if (pathname.startsWith('/warning')) return 'Alerts';
   if (pathname.startsWith('/teams')) return 'Teams';

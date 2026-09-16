@@ -131,6 +131,8 @@ describe('AppShell', () => {
     expect(viewTitle('/economy', 'globe')).toBe('Economy');
     expect(viewTitle('/settings', 'globe')).toBe('Your settings');
     expect(viewTitle('/warning', 'globe')).toBe('Alerts');
+    expect(viewTitle('/annotation-monitors', 'globe')).toBe('Annotation monitoring');
+    expect(viewTitle('/conflicts/ukraine', 'globe')).toBe('Ukraine war');
     expect(viewTitle('/elsewhere', 'globe')).toBe('The All Seeing Eye');
 
     const editable = document.createElement('div');

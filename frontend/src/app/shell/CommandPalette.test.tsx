@@ -35,7 +35,7 @@ it('opens from the rail, jumps to a tracker and returns focus to its trigger', a
   const { user, router } = renderApp('/reports', 'user');
   const trigger = await screen.findByRole('button', { name: /Find anything/ });
   await user.click(trigger);
-  const palette = screen.getByRole('dialog', { name: 'Find anything' });
+  const palette = await screen.findByRole('dialog', { name: 'Find anything' });
   const search = within(palette).getByRole('combobox');
   expect(search).toHaveFocus();
   await user.type(search, 'maritime');
@@ -71,7 +71,7 @@ it('closes on dismissal without navigating', async () => {
   await user.click(await screen.findByRole('button', { name: /Find anything/ }));
   // jsdom does not raise the native Escape cancel, so dispatch what the browser would.
   fireEvent(
-    screen.getByRole('dialog', { name: 'Find anything' }),
+    await screen.findByRole('dialog', { name: 'Find anything' }),
     new Event('cancel', { cancelable: true }),
   );
   await waitFor(() => {
@@ -79,7 +79,7 @@ it('closes on dismissal without navigating', async () => {
   });
   expect(router.state.location.pathname).toBe('/reports');
   await user.click(screen.getByRole('button', { name: /Find anything/ }));
-  await user.click(screen.getByRole('button', { name: 'Close search' }));
+  await user.click(await screen.findByRole('button', { name: 'Close search' }));
   await waitFor(() => {
     expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
   });

@@ -1,4 +1,4 @@
-import { Suspense, useRef } from 'react';
+import { Suspense, lazy, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
@@ -8,13 +8,17 @@ import { PersonalAppearance } from '@/components/account/PersonalAppearance';
 
 import { useShellStore } from '@/stores/shell';
 
-import { CommandPalette } from './CommandPalette';
 import { LeftRail } from './LeftRail';
 import { OpsRoomOverlay } from './OpsRoomOverlay';
 import { TopBar } from './TopBar';
 import { useViewShortcuts } from './useViewShortcuts';
 import { MobileHeader } from './MobileNavigation';
 import { useNarrowShell } from './useNarrowShell';
+
+// Rarely opened and it pulls in the whole destination catalogue, so keep it out of the shell chunk.
+const CommandPalette = lazy(() =>
+  import('./CommandPalette').then((module) => ({ default: module.CommandPalette })),
+);
 
 /** Authenticated frame: left rail, top bar and the routed main area. */
 export function AppShell() {
@@ -45,7 +49,11 @@ export function AppShell() {
           {opsRoom && <OpsRoomOverlay />}
         </main>
       </div>
-      {paletteOpen && <CommandPalette />}
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette />
+        </Suspense>
+      )}
       <EyeAssistant />
     </div>
   );
