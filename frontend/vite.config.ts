@@ -64,6 +64,8 @@ export default defineConfig({
           groups: [
             { name: 'maplibre', test: /node_modules[\\/]maplibre-gl[\\/]/ },
             { name: 'deck', test: /node_modules[\\/]@(?:deck|luma|loaders|math)\.gl[\\/]/ },
+            // three.js is only ever reached through the lazily imported Ukraine timeline scene.
+            { name: 'three', test: /node_modules[\\/]three[\\/]/ },
           ],
         },
       },
