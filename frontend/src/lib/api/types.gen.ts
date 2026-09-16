@@ -7207,6 +7207,8 @@ export interface components {
              * @enum {string}
              */
             viewpoint: "official_issuer" | "state_aligned" | "publisher";
+            /** Relevance */
+            relevance: string;
         };
         /** EconomyNewsOut */
         EconomyNewsOut: {
@@ -7221,6 +7223,10 @@ export interface components {
             window_hours: number;
             /** Coverage Note */
             coverage_note: string;
+            /** Considered */
+            considered: number;
+            /** Passed */
+            passed: number;
         };
         /** EconomyPointOut */
         EconomyPointOut: {

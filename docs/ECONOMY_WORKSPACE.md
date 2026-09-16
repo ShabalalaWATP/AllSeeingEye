@@ -100,29 +100,63 @@ quotes. Provider methodology: [ECB reference rates](https://www.ecb.europa.eu/st
 
 ## Economic reporting
 
-Nine public feeds supplement the existing source catalogue:
+Twenty-six public feeds supply the economic panels, all verified live on
+16 September 2026:
 
-- [BBC Business](https://feeds.bbci.co.uk/news/business/rss.xml)
-- [The Guardian business](https://www.theguardian.com/uk/business/rss)
-- [Bank of England news](https://www.bankofengland.co.uk/rss/news)
-- [HM Treasury announcements](https://www.gov.uk/government/organisations/hm-treasury.atom)
-- [Federal Reserve releases](https://www.federalreserve.gov/feeds/press_all.xml)
-- [Bank of Russia releases](https://www.cbr.ru/rss/EngRssPress)
-- [SCMP China economy](https://www.scmp.com/rss/318421/feed/)
-- [CGTN Business](https://www.cgtn.com/subscribe/rss/section/business.xml)
-- [Tehran Times economy](https://www.tehrantimes.com/rss/tp/697)
+- **United Kingdom:** [Bank of England](https://www.bankofengland.co.uk/rss/news),
+  [HM Treasury](https://www.gov.uk/government/organisations/hm-treasury.atom),
+  [ONS releases](https://www.ons.gov.uk/releasecalendar?rss)
+- **United States:** [Federal Reserve](https://www.federalreserve.gov/feeds/press_all.xml),
+  BLS [consumer prices](https://www.bls.gov/feed/cpi.rss),
+  [employment](https://www.bls.gov/feed/empsit.rss) and
+  [producer prices](https://www.bls.gov/feed/ppi.rss),
+  [Census economic indicators](https://www.census.gov/economic-indicators/indicator.xml),
+  [EIA Today in Energy](https://www.eia.gov/rss/todayinenergy.xml)
+- **Multilateral and other central banks:**
+  [ECB](https://www.ecb.europa.eu/rss/press.html),
+  [BIS speeches](https://www.bis.org/doclist/cbspeeches.rss),
+  [WTO](https://www.wto.org/library/rss/latest_news_e.xml),
+  [Bank of Japan](https://www.boj.or.jp/en/rss/whatsnew.xml),
+  [Bank of Canada](https://www.bankofcanada.ca/content_type/press-releases/feed/),
+  [Reserve Bank of India](https://www.rbi.org.in/pressreleases_rss.xml),
+  [Bank of Russia](https://www.cbr.ru/rss/EngRssPress)
+- **Publishers:** [BBC Business](https://feeds.bbci.co.uk/news/business/rss.xml),
+  [Guardian business](https://www.theguardian.com/uk/business/rss),
+  [The Economist finance and economics](https://www.economist.com/finance-and-economics/rss.xml),
+  [DW Business](https://rss.dw.com/rdf/rss-en-bus),
+  [France 24 Business](https://www.france24.com/en/business/rss),
+  [bne IntelliNews](https://www.intellinews.com/feed/),
+  [The Bell](https://en.thebell.io/feed/),
+  [SCMP China economy](https://www.scmp.com/rss/318421/feed/),
+  [CGTN Business](https://www.cgtn.com/subscribe/rss/section/business.xml),
+  [Tehran Times economy](https://www.tehrantimes.com/rss/tp/697)
 
-All nine responded successfully to the development probes on 12 September 2026.
-Successful HTTP access does not guarantee fresh content: CGTN was stale during
-the probe and HM Treasury omitted publication dates in the examined entries.
-Stale or undated items are excluded from recent headlines. Only headline metadata
-and links are collected; publisher terms remain visible in the catalogue. Public
-access does not establish unrestricted commercial republication rights.
+Successful HTTP access does not guarantee fresh content, and stale or undated items
+are excluded from recent headlines. Only headline metadata and links are collected;
+publisher terms remain visible in the catalogue. Public access does not establish
+unrestricted commercial republication rights.
 
-New sources default to unassessed F6. Official releases and state-aligned
-perspectives are labelled, not automatically promoted in credibility. Existing
-publisher organisation keys keep business and general feeds from the same
-publisher from being counted as independent corroboration.
+### Which headlines count as economic
+
+General business feeds carry lifestyle and technology features beside economic
+reporting: a two-day window in September 2026 led with banned app advertising,
+aircraft window engineering and first-week-at-work advice. `domain/economy_relevance.py`
+judges every headline with readable rules and no model call, so the same headline always
+produces the same verdict and an excluded story can be argued with:
+
+- A feature or lifestyle framing never qualifies, whoever published it.
+- An official economic issuer's own release qualifies by the nature of its feed.
+- Everything else needs at least one core subject-matter phrase from
+  `domain/economy_lexicon.py` (inflation, interest rates, growth, jobs, trade, tariffs,
+  currencies, bonds, budgets, debt, energy prices, markets, company finances). Company
+  names, institutions and figures raise the rank but never carry a headline alone, so
+  "Complaints to watchdog about water firms jump 84%" is still refused.
+
+Each kept item shows the reason it was kept. The panel reports how many headlines
+reached the window and how many carried economic substance, so a quiet window reads as
+quiet rather than broken. Official data releases rank above market reporting, which ranks
+above general coverage, and each feed takes one turn per round so no publisher fills the
+panel.
 
 ## Reporting periods and AI summaries
 

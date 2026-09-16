@@ -85,6 +85,8 @@ export default function EconomyPage() {
           coverage={currentNews?.coverage_note}
           days={days}
           asOf={currentNews?.as_of}
+          considered={currentNews?.considered}
+          passed={currentNews?.passed}
           report={briefingState.report}
           briefing={briefingState.briefing}
           explainerLeads={worldExplainer.section !== null}
@@ -171,6 +173,8 @@ export default function EconomyPage() {
             region={focus.id}
             days={days}
             asOf={currentNews?.as_of}
+            considered={currentNews?.considered}
+            passed={currentNews?.passed}
             report={briefingState.report}
             briefing={briefingState.briefing}
             explainerLeads={focusExplainer.section !== null}

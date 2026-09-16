@@ -30,6 +30,8 @@ export function EconomyNewsPanel({
   coverage,
   days,
   asOf,
+  considered,
+  passed,
   report,
   briefing,
   explainerLeads = false,
@@ -42,6 +44,8 @@ export function EconomyNewsPanel({
   coverage?: string | undefined;
   days: EconomyDays;
   asOf?: string | undefined;
+  considered?: number | undefined;
+  passed?: number | undefined;
   report: Report | null;
   briefing: EconomyBriefing | null;
   explainerLeads?: boolean;
@@ -84,10 +88,17 @@ export function EconomyNewsPanel({
           </Button>
         </Alert>
       )}
+      {!loading && !error && considered !== undefined && considered > 0 && (
+        <p className="text-xs text-muted">
+          {considered} headline{considered === 1 ? '' : 's'} reached this window;{' '}
+          {passed ?? filtered.length} carried economic substance. The rest were business-section
+          features rather than economic reporting.
+        </p>
+      )}
       {!loading && !error && filtered.length === 0 && (
         <p className="border-y border-line py-6 text-sm text-muted">
-          No economic headlines were collected for this focus in the current window. This is a
-          coverage gap, not evidence of an unchanged economy.
+          No substantial economic reporting in this window for this focus. This is a coverage gap,
+          not evidence of an unchanged economy.
         </p>
       )}
       {filtered.length > 0 && (
@@ -104,6 +115,7 @@ export function EconomyNewsPanel({
                 <span>{item.source_name}</span>
                 <span className="mx-2">·</span>
                 <time dateTime={item.published_at}>{newsDate(item.published_at)}</time>
+                <p className="mt-1 text-[11px] text-muted">{item.relevance}</p>
                 <p className={item.viewpoint === 'state_aligned' ? 'text-amber' : ''}>
                   {viewpoints[item.viewpoint]}
                 </p>
