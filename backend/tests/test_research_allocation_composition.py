@@ -36,8 +36,8 @@ def test_every_executable_e00_provider_has_a_reviewed_profile():
     ids = tuple(key for key, cap in registry.capabilities.items() if cap.provider_id is not None)
     result = compose_research_allocation(ids, enabled=dict.fromkeys(ids, True))
     assert set(profiles) == set(ids) == {row.capability.id for row in result.resolved}
-    # 138 after seventeen official and publisher economic feeds joined the catalogue.
-    assert len(ids) == 138
+    # 139: one aggregated Bluesky route joined the catalogue, not one per curated account.
+    assert len(ids) == 139
     assert result.profile_review_date == REVIEW_DATE
     assert all(row.review_note.startswith(REVIEW_DATE) for row in profiles.values())
     assert not {"research_import", "research_media", "research-web-search"} & set(profiles)

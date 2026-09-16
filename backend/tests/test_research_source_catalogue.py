@@ -29,6 +29,8 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
     expected = {
         *(f"research_google_news_{language}" for language in EDITIONS),
         *(f"research_social_{seed.spec.id}" for seed in SOCIAL_SEEDS),
+        # One aggregated route for the whole curated Bluesky registry.
+        "research_social_bluesky",
         *(f"research_regional_{seed.spec.id}" for seed in REGIONAL_SEEDS),
         *(f"research_publisher_{seed.spec.id}" for seed in PUBLISHER_SEEDS),
         "research-usgs-area",
