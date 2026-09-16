@@ -20,13 +20,16 @@ describe('research workspace navigation', () => {
       'aria-current',
     );
   });
-  it('keeps reusable plans under Research and exposes the next research tools', async () => {
+  it('gives reusable plans their own rail entry and exposes the next research tools', async () => {
     renderApp('/direction', 'user');
     await screen.findByRole('heading', { name: 'Plans & areas' });
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getByRole('link', { name: 'Research' })).toHaveAttribute(
+    expect(within(primary).getByRole('link', { name: 'Plans & areas' })).toHaveAttribute(
       'aria-current',
       'page',
+    );
+    expect(within(primary).getByRole('link', { name: 'Research' })).not.toHaveAttribute(
+      'aria-current',
     );
     const tools = screen.getByRole('navigation', { name: 'Research tools' });
     expect(within(tools).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
@@ -58,7 +61,7 @@ describe('research workspace navigation', () => {
     renderApp('/reports', 'user');
     await screen.findByRole('table', { name: 'Reports' });
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getByRole('link', { name: 'Research' })).toHaveAttribute(
+    expect(within(primary).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
       'aria-current',
       'page',
     );

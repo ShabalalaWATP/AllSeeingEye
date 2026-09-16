@@ -2,48 +2,36 @@ import { Link, useLocation } from 'react-router';
 
 import { BrandMark } from '@/components/brand/BrandMark';
 import { Wordmark } from '@/components/brand/Wordmark';
+import {
+  isWorkspacePath,
+  workspaceHome,
+  workspaceSections,
+  type WorkspaceDestination,
+} from '@/lib/workspaceNavigation';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import { useShellStore } from '@/stores/shell';
 
-import { ChevronIcon, RailIcon, type RailIconName } from './railIcons';
+import { ChevronIcon, RailIcon } from './railIcons';
 
-interface RailItem {
-  to: string;
-  label: string;
-  icon: RailIconName;
-  /** Sibling routes that also count as this destination. */
-  also?: readonly string[];
-}
-
-const ITEMS: readonly RailItem[] = [
-  { to: '/', label: 'Map', icon: 'map' },
-  {
-    to: '/research',
-    label: 'Research',
-    icon: 'research',
-    also: ['/direction', '/reports', '/trackers', '/annotation-monitors'],
-  },
-  { to: '/subscriptions', label: 'Subscriptions', icon: 'subscriptions' },
-  { to: '/geolocation', label: 'Geolocation', icon: 'geolocation' },
-  { to: '/economy', label: 'Economy', icon: 'economy' },
-  { to: '/cyber', label: 'Cyber intelligence', icon: 'cyber' },
-  { to: '/conflicts/ukraine', label: 'Ukraine war', icon: 'ukraine' },
-];
+const ADMIN_ITEM: WorkspaceDestination = {
+  to: '/admin',
+  label: 'Administration',
+  description: 'The separate administration workspace.',
+  icon: 'admin',
+};
 
 function RailLink({
   item,
   collapsed,
   onNavigate,
 }: {
-  item: RailItem;
+  item: WorkspaceDestination;
   collapsed: boolean;
   onNavigate?: (() => void) | undefined;
 }) {
   const { pathname } = useLocation();
-  const active = [item.to, ...(item.also ?? [])].some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
+  const active = isWorkspacePath(item.to, pathname);
   return (
     <Link
       to={item.to}
@@ -96,25 +84,25 @@ export function LeftRail({
         <BrandMark size={collapsed ? 34 : 38} still={lite} />
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
-      {!collapsed && (
-        <p className="px-4 pt-1 pb-1.5 font-mono text-[10px] tracking-[0.22em] text-muted/80 uppercase">
-          Workspace
-        </p>
-      )}
-      <nav
-        aria-label="Primary"
-        className={`flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3 ${collapsed ? 'px-2' : 'px-2'}`}
-      >
-        {ITEMS.map((item) => (
-          <RailLink key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
+      <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
+        <RailLink item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
+        {workspaceSections.map((section) => (
+          <div key={section.title} className="mt-3 flex flex-col gap-0.5">
+            {collapsed ? (
+              <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
+            ) : (
+              <p className="px-3 pb-1 font-mono text-[10px] tracking-[0.18em] text-muted/90 uppercase">
+                {section.title}
+              </p>
+            )}
+            {section.items.map((item) => (
+              <RailLink key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
+            ))}
+          </div>
         ))}
         {isAdmin && (
           <div className="mt-3 border-t border-line/70 pt-3">
-            <RailLink
-              item={{ to: '/admin', label: 'Administration', icon: 'admin' }}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
+            <RailLink item={ADMIN_ITEM} collapsed={collapsed} onNavigate={onNavigate} />
           </div>
         )}
       </nav>

@@ -36,7 +36,25 @@ describe('AppShell', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Map', 'Research', 'Subscriptions', 'Geolocation', 'Economy', 'Cyber intelligence', 'Ukraine war']);
+    ).toEqual([
+      'Map',
+      'Research',
+      'Saved reports',
+      'Subscriptions',
+      'Plans & areas',
+      'Geolocation',
+      'Live monitor',
+      'Alerts & rules',
+      'Annotation monitors',
+      'Ukraine war',
+      'Cyber intelligence',
+      'Economy',
+      'Sources & data',
+      'Teams',
+    ]);
+    for (const group of ['Monitoring', 'Standing desks', 'Directory']) {
+      expect(within(nav).getByText(group)).toBeInTheDocument();
+    }
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',
