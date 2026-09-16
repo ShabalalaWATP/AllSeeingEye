@@ -1,13 +1,6 @@
 /** Line icons for the primary rail. Purely decorative; the link text carries the name. */
 export type RailIconName =
-  | 'map'
-  | 'research'
-  | 'subscriptions'
-  | 'geolocation'
-  | 'economy'
-  | 'cyber'
-  | 'ukraine'
-  | 'admin';
+  'map' | 'research' | 'subscriptions' | 'geolocation' | 'economy' | 'cyber' | 'ukraine' | 'admin';
 
 const PATHS: Record<RailIconName, string> = {
   map: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9m0-18c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M3.5 9h17M3.5 15h17',
@@ -18,8 +11,7 @@ const PATHS: Record<RailIconName, string> = {
   economy: 'M4 19h16M5 15l4-4 3 3 4-5 3 2M17 8h3v3',
   cyber: 'M12 3 20 6.2v5.6c0 4.6-3.3 8-8 9.7-4.7-1.7-8-5.1-8-9.7V6.2L12 3Zm-3.5 9 2.4 2.4 4.6-4.9',
   admin: 'M4 7h9m4 0h3M4 12h3m4 0h9M4 17h11m4 0h1M13 5v4M7 10v4M15 15v4',
-  ukraine:
-    'M3 16c2.5-1.5 4-4 6.5-4s3.5 3 6 3 3.5-2.5 5.5-3M12 13.5V4m0 0 5 2.5L12 9m-4 12h8',
+  ukraine: 'M3 16c2.5-1.5 4-4 6.5-4s3.5 3 6 3 3.5-2.5 5.5-3M12 13.5V4m0 0 5 2.5L12 9m-4 12h8',
 };
 
 export function RailIcon({ name, className = '' }: { name: RailIconName; className?: string }) {

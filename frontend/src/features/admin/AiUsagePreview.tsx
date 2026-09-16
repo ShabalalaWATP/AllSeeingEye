@@ -111,9 +111,7 @@ export function AiUsagePreview({
           {onEditLimit && !system ? (
             <Button
               variant="ghost"
-              onClick={() =>
-                onEditLimit(team ? 'team' : 'user', team ? team : account)
-              }
+              onClick={() => onEditLimit(team ? 'team' : 'user', team ? team : account)}
             >
               {team ? 'Set a limit for this team' : 'Set a limit for this account'}
             </Button>

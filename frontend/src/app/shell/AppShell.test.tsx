@@ -36,7 +36,15 @@ describe('AppShell', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Map', 'Research', 'Subscriptions', 'Geolocation', 'Economy', 'Cyber intelligence', 'Ukraine war']);
+    ).toEqual([
+      'Map',
+      'Research',
+      'Subscriptions',
+      'Geolocation',
+      'Economy',
+      'Cyber intelligence',
+      'Ukraine war',
+    ]);
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',

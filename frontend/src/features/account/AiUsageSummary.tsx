@@ -46,11 +46,7 @@ export function AiUsageSummary() {
       ) : null}
       {page === null && error === null ? <LoadingNote label="Loading AI allowance" /> : null}
       {page ? (
-        <ObservedTotals
-          label="Your recorded usage"
-          totals={page.observed}
-          prices={page.prices}
-        />
+        <ObservedTotals label="Your recorded usage" totals={page.observed} prices={page.prices} />
       ) : null}
       {page?.items.length === 0 ? (
         <p className="text-sm text-muted">

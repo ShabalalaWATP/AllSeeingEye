@@ -46,8 +46,8 @@ function Provenance({ entry, intervalDays }: { entry: UkraineDigestEntry; interv
       </dl>
       <p className="mt-3 text-xs text-muted">
         The model was shown only trimmed, dated items from these sources. Its answer was checked
-        mechanically before it was stored: every evidence id, number and date had to come from
-        that evidence.
+        mechanically before it was stored: every evidence id, number and date had to come from that
+        evidence.
       </p>
     </details>
   );
@@ -196,8 +196,8 @@ export function DigestPanel({
       {loading && !data ? <LoadingNote label="Loading the digest" /> : null}
       {data && entry && data.stale ? (
         <Alert tone="warning">
-          This digest covers a fortnight that has already ended. A new one is written when the
-          page is next read.
+          This digest covers a fortnight that has already ended. A new one is written when the page
+          is next read.
         </Alert>
       ) : null}
       {data && entry && data.reason ? <Alert tone="warning">{data.reason}</Alert> : null}

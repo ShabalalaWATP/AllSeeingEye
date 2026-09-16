@@ -8,7 +8,10 @@ export const SPEND_CAVEAT = 'Estimated from recorded tokens at the configured pr
  * A formatted amount, or null when no price is configured and money must stay hidden.
  * The backend rounds the estimate; this only formats what it sent.
  */
-export function formatSpend(amount: string | null | undefined, prices: AiTokenPrices): string | null {
+export function formatSpend(
+  amount: string | null | undefined,
+  prices: AiTokenPrices,
+): string | null {
   if (!prices.configured || amount === null || amount === undefined) return null;
   const value = Number(amount);
   if (!Number.isFinite(value)) return null;

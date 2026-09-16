@@ -22,8 +22,7 @@ export function AiEffectiveModel({ model }: { model: Model | null | undefined })
   return (
     <div className="text-sm">
       <p>
-        <span className="font-medium">Model:</span>{' '}
-        <span className="font-mono">{model.model}</span>
+        <span className="font-medium">Model:</span> <span className="font-mono">{model.model}</span>
         {model.profile_name ? <span className="text-muted"> · {model.profile_name}</span> : null}
         <span className="text-muted"> · {ROUTING[model.policy ?? ''] ?? model.policy}</span>
       </p>

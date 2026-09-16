@@ -17,9 +17,7 @@ function mount(onApplied = vi.fn()) {
 
 describe('AiPolicyDefaults', () => {
   it('says plainly that nothing is enforced until a policy exists', async () => {
-    server.use(
-      http.get('/api/admin/ai-usage/defaults', () => HttpResponse.json(aiDefaults())),
-    );
+    server.use(http.get('/api/admin/ai-usage/defaults', () => HttpResponse.json(aiDefaults())));
     mount();
     expect(
       await screen.findByText(
@@ -75,7 +73,7 @@ describe('AiPolicyDefaults', () => {
     const { user } = mount();
     expect(await screen.findByRole('alert')).toHaveTextContent('Nope.');
     fail = false;
-    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    await user.click(screen.getByRole('button', { name: 'Retry loading suggested policies' }));
     expect(await screen.findByText(/Would be created/)).toBeInTheDocument();
   });
 });
