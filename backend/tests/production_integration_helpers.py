@@ -78,6 +78,16 @@ class StageGateway:
                 ],
                 alternative_hypotheses=[],
             ),
+            "report_analysis": {
+                "sections": [
+                    {
+                        "heading": "Why the activity matters now",
+                        "text": "The reporting establishes movement and suggests intent.",
+                        "evidence": ["E1"],
+                    }
+                ],
+                "diagram": None,
+            },
             "advocacy": {
                 "argument": "The second source supports a pause.",
                 "evidence": ["E2"],

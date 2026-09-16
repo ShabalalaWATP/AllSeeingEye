@@ -58,7 +58,7 @@ def test_invalid_and_oversized_json_cannot_become_a_section(content):
         lambda body: body["reporting"][0].update(text="The event is likely to expand."),
         lambda body: body["reporting"][0].update(text="The event is very likely to expand."),
         lambda body: body.update(gaps=[{"eei": "EEI-999", "text": "A gap"}]),
-        lambda body: body["assessment"][0].update(text="x" * 1601),
+        lambda body: body["assessment"][0].update(text="x" * 2401),
         lambda body: body.update(reporting=[], assessment=[]),
     ],
 )

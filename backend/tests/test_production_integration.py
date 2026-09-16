@@ -55,7 +55,7 @@ async def test_producer_resolves_advocacy_only_citations_after_model_calls_witho
         url_resolver=resolver,
     )
     version = await producer.produce(job, profile_for)
-    assert gateway.calls == ["direction", "report", "advocacy"]
+    assert gateway.calls == ["direction", "report", "advocacy", "report_analysis"]
     assert version.body.cited_labels() == {"E1"}
     assert version.advocacy is not None and version.advocacy.evidence == ("E2",)
     assert len(resolver.calls) == 2
@@ -66,11 +66,12 @@ async def test_producer_resolves_advocacy_only_citations_after_model_calls_witho
         "report:ask:direction",
         "report:ask",
         "report:ask:advocacy",
+        "report:ask:analysis",
     ]
     assert all(
         row.ok and row.prompt_tokens == 5 and row.completion_tokens == 3 for row in usage.rows
     )
-    assert version.prompt_tokens == 15 and version.completion_tokens == 9
+    assert version.prompt_tokens == 20 and version.completion_tokens == 12
 
 
 @pytest.mark.parametrize("fail_stage", ["direction", "report", "advocacy"])
@@ -156,7 +157,7 @@ async def test_file_sqlite_writer_progresses_during_resolution_and_report_usage_
         async with sessions() as observer:
             assert await observer.scalar(select(func.count()).select_from(ReportRow)) == int(commit)
             rows = list(await observer.scalars(select(LlmUsageRow)))
-            assert len(rows) == (4 if commit else 1)
+            assert len(rows) == (5 if commit else 1)
             assert sum(row.purpose == "unrelated-writer" for row in rows) == 1
     finally:
         await engine.dispose()
