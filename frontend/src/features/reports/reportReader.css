@@ -592,6 +592,15 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 0.35rem;
   }
+
+  /* Keep a usable measure inside the lead panel on a phone. */
+  .report-reader-lead {
+    padding-inline: 0.85rem;
+  }
+
+  .report-reader-section > h2 {
+    font-size: 1.16rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
