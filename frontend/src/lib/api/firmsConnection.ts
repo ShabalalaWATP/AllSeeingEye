@@ -31,7 +31,10 @@ const testSchema = z.object({
 export function fetchFirmsConnection(signal: AbortSignal) {
   return apiCall(base, { signal, schema: firmsConnectionSchema });
 }
-export function saveFirmsDraft(body: components['schemas']['FirmsDraftIn'], signal: AbortSignal) {
+export function saveFirmsDraft(
+  body: components['schemas']['FirmsDraftIn'],
+  signal: AbortSignal,
+) {
   return scopedMutation(() =>
     apiCall(`${base}/draft`, { method: 'PUT', body, signal, schema: firmsConnectionSchema }),
   );

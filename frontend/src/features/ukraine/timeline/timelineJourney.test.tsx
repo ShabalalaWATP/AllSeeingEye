@@ -70,9 +70,7 @@ describe('the timeline journey without WebGL', () => {
     render(<TimelineSection reference={reference} />);
     const phases = screen.getByRole('list', { name: 'Phases of the war' });
     expect(within(phases).getAllByRole('heading', { level: 3 })).toHaveLength(2);
-    expect(
-      within(phases).getByText('Russia attacked from the north, east and south.'),
-    ).toBeVisible();
+    expect(within(phases).getByText('Russia attacked from the north, east and south.')).toBeVisible();
     const invasion = screen.getByRole('list', { name: 'Events: Full-scale invasion' });
     expect(invasion.querySelectorAll(':scope > li')).toHaveLength(2);
     expect(within(invasion).getByText('24 February 2022')).toBeVisible();

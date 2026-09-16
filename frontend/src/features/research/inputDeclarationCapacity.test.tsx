@@ -117,9 +117,9 @@ it.each(['date', 'transformation'] as const)(
     expect(saved).toHaveBeenCalledOnce();
     const body = saved.mock.calls[0]![0];
     expect(body.declarations).toHaveLength(1);
-    expect(
-      body.declarations[0]![kind === 'date' ? 'source_dates' : 'transformations'],
-    ).toHaveLength(3);
+    expect(body.declarations[0]![kind === 'date' ? 'source_dates' : 'transformations']).toHaveLength(
+      3,
+    );
     expect(JSON.stringify(body)).not.toContain(kind === 'date' ? 'source_spec' : 'Source supplied');
   },
 );

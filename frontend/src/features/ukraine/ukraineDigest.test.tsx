@@ -39,7 +39,9 @@ describe('Ukraine AI digest panel', () => {
       await screen.findByRole('heading', { name: 'AI digest' }, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(screen.getByText('Fortnight to 16 September 2026')).toBeInTheDocument();
-    expect(screen.getByText(/Nothing in it is verified by this application/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Nothing in it is verified by this application/),
+    ).toBeInTheDocument();
     const battlefield = within(screen.getByRole('list', { name: 'Battlefield changes' }));
     expect(battlefield.getByText(/continued Russian attacks near the eastern city/)).toBeVisible();
     const sources = battlefield.getAllByRole('list', { name: 'Sources for this change' })[0];

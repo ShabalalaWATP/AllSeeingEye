@@ -45,11 +45,7 @@ export function regionExplainer(
   };
 }
 
-const normalise = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z]+/g, ' ')
-    .trim();
+const normalise = (value: string) => value.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
 
 /**
  * The model's everyday wording for one indicator, when it wrote one. The careful
@@ -70,14 +66,15 @@ export function generalGlossary(
   glossary: readonly ExplainerGlossaryEntry[],
   indicators: readonly { id: string; name: string }[],
 ): readonly ExplainerGlossaryEntry[] {
-  const covered = new Set(indicators.flatMap((item) => [normalise(item.id), normalise(item.name)]));
+  const covered = new Set(
+    indicators.flatMap((item) => [normalise(item.id), normalise(item.name)]),
+  );
   return glossary.filter((entry) => !covered.has(normalise(entry.term)));
 }
 
 export const STATUS_NOTES: Record<ExplainerStatus, string> = {
   ready: 'Checked against the figures shown on this page.',
-  stale:
-    'The figures have moved on since this was written. A fresh version is written at most once a day.',
+  stale: 'The figures have moved on since this was written. A fresh version is written at most once a day.',
   generating: 'A fresh plain-English summary is being written from the current figures.',
   empty: 'No plain-English summary has been written yet.',
   unavailable: 'No plain-English summary is available at the moment.',
