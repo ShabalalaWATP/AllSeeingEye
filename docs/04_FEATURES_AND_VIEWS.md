@@ -73,10 +73,10 @@ A single panel that answers "what is going on in X right now": flag and key fact
 
 ### 5.7 Social listening
 
-- Built: Mastodon hashtag timelines from the packaged instance watchlist (four reviewed instances, 16 hashtags), Reddit subreddit Atom feeds and six outlet YouTube channel feeds. Reddit and YouTube were not widened on 16 September 2026 because both hosts' `robots.txt` disallow the polled paths; see [SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md). Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
+- Built: Mastodon hashtag timelines from the packaged instance watchlist (four reviewed instances, 16 hashtags), and 29 reviewed YouTube channels through the official Data API v3 when `ASE_YOUTUBE_API_KEY` is set. The Reddit subreddit feeds and the six YouTube channel Atom feeds were retired on 16 September 2026 because both hosts' `robots.txt` disallow the polled paths; see [SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md). Reddit's compliant OAuth route is not built. Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
 - `/trackers/social` shows the retained day's posts by platform and instance, top hashtags, the latest 50 posts and counts of located posts. Located events use the existing social globe category; upstream posts without coordinates are not assigned guessed positions.
 - Keyword bursts compare the previous complete UTC hour with sampled history from the preceding 30 days. Up to 32 watchlist/collection terms have durable hourly count aggregates. A burst requires six baseline hours, three posts and at least twice the mean. Personal collection terms are restricted to their owner or an administrator; team terms follow current team membership. Inactive owners, removed members and archived teams stop background collection.
-- Mastodon and Reddit begin at reliability E and credibility 6. Named outlet YouTube channels retain outlet reliability. Translation and activity spikes do not establish truth or increase a grade.
+- Mastodon posts and independent YouTube analysis channels begin at reliability E and credibility 6. Named outlet YouTube channels retain outlet reliability, official bodies' own channels are graded as their other publications are, and state broadcasters are tagged `state_controlled`. Translation and activity spikes do not establish truth or increase a grade.
 
 ## 6. Stories and the ticker
 - Built: near-duplicate detection groups related topics. Topic matches and declared publisher groups do not establish independent corroboration. Ambiguous or conflicting headlines remain unconfirmed; instrument metadata supports only provisional grading. See the current doctrine document.
@@ -163,7 +163,7 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 | Tracker analysis | Hazard and curated conflict boards/details; aviation, maritime, space, cyber and social boards computed from retained events |
 | Baselines | Tiny durable hourly aviation and configured social-keyword aggregates; GNSS observations remain in memory |
 | Direction and warning | Saved areas/plans, on-demand evidence per SIR, plan-scoped reports, threshold indicators, alerts, acknowledgement and scheduled products |
-| Social and languages | Mastodon/Reddit/YouTube feeds, social board, keyword bursts, language detection and optional title translation |
+| Social and languages | Mastodon timelines, keyed YouTube Data API channels, social board, keyword bursts, language detection and optional title translation |
 | Keyword collection | Enabled plan terms feed bounded Google News RSS queries. Legacy cited URLs can resolve locally; opaque modern URLs remain unchanged |
 | Export and change review | Markdown/PDF/DOCX downloads and deterministic version comparison, including frozen evidence and validation changes |
 | Semantic report search | Explicit batches of eight, personal/team visibility on counts and results, shared 1,000-vector capacity checked before calls, portable JSON vectors and a configured embeddings endpoint |
