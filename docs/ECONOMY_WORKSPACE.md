@@ -182,10 +182,124 @@ Each regional snapshot remains within 38 attributes and the existing value bound
 The expanded public probe returned 864 rows in 197,553 bytes, within the unchanged
 512 KiB HTTP cap.
 
+## Plain-English explainer
+
+A separate, lighter feature from the Deep research briefing above. It writes short
+plain-English paragraphs explaining what the figures already on the page mean, for
+readers who are not finance experts. It never replaces the figures, never runs the
+cited report pipeline and never produces a downloadable report.
+
+### What the model is given
+
+One compact grounded fact pack is built from the current snapshot. Per region it
+carries each of the twelve indicators with its latest value, observation year and
+unit; the previous observation and the change, stated explicitly as a percentage
+change or a percentage-point change; years inside the published range with no
+observation; the series status (available, stale or unavailable); counts of
+indicators with and without data; the ECB reference rates with their observation
+dates; and up to five recent dated economy headlines with their publisher names.
+No links, article bodies, retrieval times or raw events reach the model. The prompt
+tells the model to build on the indicator figures, which are the reliable part of
+the evidence, and to mention a headline only when it is clearly about growth,
+prices, jobs, trade, energy, public finances, business or currencies, because the
+publisher feed can carry soft features that are not economic.
+
+The prompt rules require UK English, no em dashes, everyday words with any
+unavoidable term explained in the same sentence, no invented numbers, no forecast
+stated as fact, no live market claim, plain statements when data is old or missing,
+and a clear separation between what the figures show and a possible reason for it.
+The supplied facts are stated to be data, never instructions.
+
+### Cadence and cost
+
+At most one model call per fact-pack fingerprint, and never more often than once in
+24 hours, whichever is longer. The fingerprint is a SHA-256 of the canonical facts
+excluding the retrieval time, so a refetch that changes nothing spends nothing. A
+rejected answer is retried once with the rejection reasons, so one generation costs
+at most two calls. The completion budget is capped at 6,000 tokens and the fact pack
+is roughly 4,000 prompt tokens, so an ordinary day is one call of about 4,000 prompt
+and 2,000 to 4,000 completion tokens, and the realistic worst case is about 20,000
+tokens a day. Every call is reserved and settled through the AI allowance ledger with
+system attribution and the purpose `economy_explainer`; see
+`docs/adr/0019-ai-usage-allowances.md`.
+
+Generation is serialised by a process-local admission lock, so two readers cannot
+generate at once. An ordinary signed-in reader's `GET` may start one generation only
+when nothing matching the current fingerprint is cached and the cadence allows it.
+Everyone else is served the cached text.
+
+### Mechanical validation
+
+Nothing generated is stored or shown until it passes checks against the supplied
+facts:
+
+- every number must match a supplied figure within the rounding the writer used, at
+  any readable scale, so a value may be written in full or in thousands, millions,
+  billions or trillions;
+- every four-digit year must appear in the supplied observation years, gap years,
+  reference-rate dates or headline dates;
+- region keys must be the six known regions, and every supplied region must be
+  written;
+- no web address, link, angle bracket, HTML entity, em dash or en dash;
+- paragraph counts, list counts and character bounds per section and for the
+  glossary;
+- listed jargon, for example current account, real terms, basis points or
+  quantitative easing, must be explained in the same sentence. The glossary is
+  exempt from that check because it is itself the explanation.
+
+On failure the errors are sent back to the model for one retry. If the retry also
+fails, nothing is stored and the page says the written summary could not be checked
+against the figures. Sign is not checked mechanically: magnitudes are compared, so
+the direction words remain the model's own wording under the prompt rules.
+
+### Storage
+
+`economy_explainers` (migration `0056`) is a small operational aggregate holding the
+fingerprint, the window start, the checked payload as JSON, the model name, the
+generation time, the snapshot retrieval time and the reported prompt and completion
+tokens. At most the newest two rows are kept; older rows are deleted on each save.
+Prompts and fact packs are never stored. A row whose payload no longer parses within
+bounds is treated as absent rather than shown.
+
+### What a reader sees
+
+"The world economy right now" leads the page with the takeaway as a strong lead line,
+two or three short paragraphs at a readable measure, and compact "What is driving it"
+and "What to watch" lists. Each country summary sits beside that country's figures,
+with the takeaway and first paragraph always visible and any remaining paragraphs
+behind a native disclosure. Every indicator carries a keyboard usable "What does this
+mean?" disclosure showing the project's careful `INDICATOR_NOTES` explanation first
+and, underneath and labelled as model-written, the model's everyday wording for the
+same term. The careful note therefore always wins a disagreement.
+
+Every panel states that it was written by the model from the figures on the page,
+that the figures are the source of truth, the model name, the generation time and the
+snapshot retrieval time. Administrators additionally see a Rewrite summary control.
+While a checked summary exists it supersedes the templated headline lead in the news
+panels; that template remains only as a fallback when neither a checked summary nor a
+cited briefing paragraph is available.
+
+| State | What the page shows |
+| --- | --- |
+| `ready` | The summary, with the figures beside it |
+| `stale` | The previous summary plus a "Figures moved on" badge and a note that a fresh version is written at most once a day |
+| `generating` | An "Updating" badge and a note that a fresh summary is being written |
+| `empty` | A note that nothing has been written yet; the figures are unaffected |
+| `unavailable` | The honest reason, either no assigned model or a spent AI allowance; never an error page |
+| `validation_failed` | A note that the summary failed its checks and was discarded, with the figures only |
+
+Panels are responsive from 360 pixels, use the existing theme tokens, render
+structured React text rather than HTML from data, and carry no animation.
+
 ## Operational and security boundaries
 
-`GET /api/economy`, `GET /api/economy/news?days=2` and `POST /api/economy/briefing?days=2`
-require a current authenticated session. Public collection happens outside the
+`GET /api/economy`, `GET /api/economy/news?days=2`,
+`POST /api/economy/briefing?days=2`, `GET /api/economy/explainer` and
+`POST /api/economy/explainer/refresh` require a current authenticated session; the
+refresh additionally requires an administrator and is audited as
+`economy_explainer_refreshed` with the resulting state. The explainer read is rate
+limited per account like the dashboard read, 30 requests a minute, and the
+administrator refresh is limited to three an hour. Public collection happens outside the
 source lock; final source filtering, session revalidation and response construction
 hold the source admission guard. Disabling a source during a request therefore
 prevents its release. Personal report ownership is checked by the existing jobs
