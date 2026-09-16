@@ -17,6 +17,7 @@ from ase.adapters.feeds.http_contracts import (
     parse_retry_after,
     status_error,
 )
+from ase.adapters.feeds.mastodon_watch import load_watch, watch_host_intervals
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.feeds.health import CircuitBreaker, HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Normaliser, Pipeline
@@ -141,13 +142,26 @@ async def test_host_pacer_spaces_request_starts_for_listed_hosts_only() -> None:
         slept.append(seconds)
         now[0] += seconds
 
-    pacer = HostPacer(DEFAULT_HOST_INTERVALS, monotonic=lambda: now[0], sleep=sleep)
+    pacer = HostPacer(
+        {**DEFAULT_HOST_INTERVALS, **watch_host_intervals()},
+        monotonic=lambda: now[0],
+        sleep=sleep,
+    )
     await pacer.wait("https://api.adsb.lol/v2/ladd")
     await pacer.wait("https://API.adsb.lol/v2/pia")
-    await pacer.wait("https://www.reddit.com/r/x/new/.rss")
+    await pacer.wait("https://example.invalid/feed.xml")
     now[0] += 5
     await pacer.wait("https://api.adsb.lol/v2/mil")
     assert slept == [1.0]
+    # Reddit answered HTTP 429 to this application before; its listings share one host.
+    await pacer.wait("https://www.reddit.com/r/worldnews/new/.rss")
+    await pacer.wait("https://www.reddit.com/r/geopolitics/new/.rss")
+    assert slept == [1.0, 5.0]
+    # Every watched Mastodon instance is spaced, and no unwatched host is.
+    for watch in load_watch():
+        await pacer.wait(f"https://{watch.instance}/api/v1/timelines/tag/osint")
+        await pacer.wait(f"https://{watch.instance}/api/v1/timelines/tag/ukraine")
+    assert slept[2:] == [1.0] * len(load_watch())
     with pytest.raises(ValueError):
         HostPacer({"api.adsb.lol": 0})
 
