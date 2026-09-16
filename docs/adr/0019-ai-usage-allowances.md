@@ -156,3 +156,20 @@ treated as unknown after dispatch; a transport error after the request was writt
 counted as a failed request with zero tokens. The PostgreSQL lock ordering is verified by
 design and by the SQLite concurrency tests; the suite has no disposable PostgreSQL run
 recorded for this change.
+
+## Amendment: one policy per target per period (migration 0060)
+
+Migration `0051` made an enabled policy unique per scope and target, which allowed a
+target only one period at a time and contradicted the three calendar periods this
+decision describes. Migration `0060` widens both partial unique indexes to include
+`period`, so a person, a team, the site or system work may carry, for example, a daily
+and a monthly ceiling at once. `find_policy` takes the period, and the conflict message
+now names the target and the period. Admission is unchanged: every enabled policy that
+applies is reserved against, so several periods simply produce several reservations for
+one call.
+
+`ai_usage_totals` also gains `used_input_tokens` and `used_output_tokens`. They always
+sum to `used_tokens`: a charge the provider did not split, such as a completed call that
+reported no counts, is recorded as output, the dearer direction, so an estimate built
+from these counts never understates. The split exists only to price recorded tokens for
+display; limits are still enforced on the combined total.
