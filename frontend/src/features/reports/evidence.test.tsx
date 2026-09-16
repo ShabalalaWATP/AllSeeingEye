@@ -46,6 +46,7 @@ describe('frozen evidence reader', () => {
     expect(screen.getByText('Translated headline')).toBeVisible();
     expect(screen.getByText('Translation (unverified)')).toBeVisible();
     expect(screen.getByText('Unverified claim')).toBeVisible();
+    await user.click(screen.getByText('Identifiers and integrity'));
     expect(screen.getByText('a'.repeat(64))).toBeVisible();
     expect(screen.getByText('country')).toBeVisible();
     expect(screen.getByText('Publisher group')).toBeVisible();

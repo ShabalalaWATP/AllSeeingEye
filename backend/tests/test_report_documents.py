@@ -57,9 +57,12 @@ def test_structured_exports_share_professional_content_and_hide_operational_deta
         for operational in ("Model:", "Attempts:", "Validator findings", "Content hash:"):
             assert operational not in text
     assert word.tables and word.tables[0].cell(0, 0).text == "Date"
-    assert word.paragraphs[0].style.name == "Title"
+    assert [p.style.name for p in word.paragraphs[:2]] == ["ASE Eyebrow", "Title"]
     assert any(p.style.name == "Heading 1" for p in word.paragraphs)
-    assert "version 1" in word.sections[0].footer.paragraphs[0].text
+    section = word.sections[0]
+    assert "version 1" in section.footer.paragraphs[0].text
+    assert record.title in section.header.paragraphs[0].text
+    assert section.different_first_page_header_footer
 
 
 def test_markup_is_literal_no_external_resources_and_unicode_remains_recoverable() -> None:

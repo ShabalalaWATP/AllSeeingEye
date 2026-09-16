@@ -1,17 +1,46 @@
+/*
+ * Report reader presentation.
+ *
+ * The document itself is a paper facsimile: it keeps one light palette in every
+ * theme so the reader, the PDF and the DOCX show the same product. The chrome
+ * around it (masthead controls, contents rail, footer, export menu) uses the
+ * workspace theme tokens and follows the account appearance.
+ */
+
 .report-reader-shell {
   background: var(--color-ground);
 }
 
 .report-reader-frame {
-  width: min(100%, 92rem);
+  width: min(100%, 86rem);
   margin-inline: auto;
 }
 
 .report-reader-paper {
+  --paper-ink: #24211c;
+  --paper-ink-strong: #14120f;
+  --paper-ink-soft: #655f55;
+  --paper-ground: #faf7f1;
+  --paper-ground-2: #f1ece1;
+  --paper-rule: #ddd6c8;
+  --paper-rule-soft: #e8e1d4;
+  --paper-accent: #97370f;
+  --paper-accent-soft: #b9633e;
+  --paper-caution-ink: #6b3f10;
+  --paper-caution-ground: #fdf4e2;
+  --paper-caution-rule: #cf9736;
+
+  /* A comfortable measure: roughly 68 characters at the reader body size. */
+  --measure: 37.5rem;
+  --pad-inline: clamp(1.25rem, 5vw, 3.75rem);
+  --reader-body: 1.0625rem;
+
   color-scheme: light;
-  color: #292722;
-  background: #f7f4ed;
-  border: 1px solid #d9d2c5;
+  max-width: calc(var(--measure) + 2 * var(--pad-inline) + 8rem);
+  margin-inline: auto;
+  color: var(--paper-ink);
+  background: var(--paper-ground);
+  border: 1px solid var(--paper-rule);
   box-shadow: 0 32px 80px -38px rgb(0 0 0 / 0.9);
 }
 
@@ -23,58 +52,249 @@
 }
 
 .report-reader-content {
-  width: min(100%, 49rem);
+  width: min(100%, calc(var(--measure) + 2 * var(--pad-inline)));
   margin-inline: auto;
-  padding: clamp(2rem, 5vw, 5.5rem) clamp(1.25rem, 5vw, 5rem) 6rem;
+  padding: clamp(2rem, 5vw, 4rem) var(--pad-inline) 5rem;
+  font-size: var(--reader-body);
 }
 
 .report-reader-content p,
-.report-reader-content li,
-.report-reader-content td {
-  line-height: 1.75;
+.report-reader-content li {
+  line-height: 1.7;
 }
 
+.report-reader-content td {
+  line-height: 1.55;
+}
+
+/* Wide elements reclaim the page margins instead of squeezing into the measure. */
+.report-reader-wide {
+  margin-inline: calc(-1 * var(--pad-inline));
+  padding-inline: var(--pad-inline);
+}
+
+/* Document masthead ------------------------------------------------------- */
+
+.report-reader-masthead {
+  padding-bottom: 1.6rem;
+  border-bottom: 2px solid var(--paper-ink-strong);
+}
+
+.report-reader-title {
+  margin-top: 0.5rem;
+  color: var(--paper-ink-strong);
+  font-size: clamp(1.85rem, 4.4vw, 2.6rem);
+  font-weight: 640;
+  line-height: 1.12;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+
+.report-reader-eyebrow {
+  color: var(--paper-accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.report-reader-colophon {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--paper-rule-soft);
+  color: var(--paper-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Reading key ------------------------------------------------------------- */
+
+.report-reader-legend-summary {
+  display: inline-block;
+  padding: 0.35rem 0;
+  color: var(--paper-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.report-reader-legend-summary:focus-visible {
+  outline: 2px solid var(--paper-accent);
+  outline-offset: 2px;
+}
+
+.report-reader-legend-body {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+  padding: 0.85rem 1rem;
+  background: var(--paper-ground-2);
+  border-radius: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.report-reader-legend-body dt {
+  color: var(--paper-ink-strong);
+  font-weight: 650;
+}
+
+.report-reader-legend-body dd {
+  color: var(--paper-ink-soft);
+}
+
+/* Sections ---------------------------------------------------------------- */
+
 .report-reader-section {
-  scroll-margin-top: 6rem;
-  padding-top: 2.35rem;
+  scroll-margin-top: 5rem;
+  padding-top: 2.5rem;
 }
 
 .report-reader-section + .report-reader-section {
-  margin-top: 2.35rem;
-  border-top: 1px solid #d8d1c5;
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--paper-rule);
 }
 
 .report-reader-section > h2 {
-  color: #1d1b18;
-  font-size: 1.22rem;
-  font-weight: 680;
-  letter-spacing: -0.02em;
+  color: var(--paper-ink-strong);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.report-reader-section > h2::after {
+  content: '';
+  display: block;
+  width: 2.25rem;
+  height: 2px;
+  margin-top: 0.55rem;
+  background: var(--paper-accent);
 }
 
 .report-reader-section > h3,
 .report-reader-subheading {
-  color: #3e3932;
-  font-size: 0.96rem;
+  margin-top: 1.75rem;
+  color: var(--paper-ink-strong);
+  font-size: 0.97rem;
   font-weight: 680;
+  letter-spacing: -0.005em;
 }
 
 .report-reader-paragraph {
-  margin-top: 0.8rem;
+  margin-top: 0.85rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+/* Key judgements ---------------------------------------------------------- */
+
+.report-reader-judgement {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  gap: 0 0.85rem;
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--paper-rule-soft);
+}
+
+.report-reader-judgement:first-child {
+  border-top: 0;
+}
+
+.report-reader-judgement-index {
+  padding-top: 0.15rem;
+  color: var(--paper-accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.report-reader-judgement-statement {
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: -0.008em;
+}
+
+.report-reader-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.report-reader-fact {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.16rem 0.5rem;
+  background: var(--paper-ground-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 999px;
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+
+.report-reader-fact > span:first-child {
+  color: var(--paper-ink-soft);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.report-reader-note {
+  margin-top: 0.6rem;
+  color: var(--paper-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+/* Callouts ---------------------------------------------------------------- */
+
+.report-reader-callout {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--paper-caution-ground);
+  border: 1px solid var(--paper-caution-rule);
+  border-left-width: 3px;
+  border-radius: 0 0.35rem 0.35rem 0;
+  color: var(--paper-caution-ink);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.report-reader-callout-title {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.report-reader-callout ul {
+  margin-top: 0.4rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.report-reader-callout li + li {
+  margin-top: 0.35rem;
+}
+
+/* Citations and references ------------------------------------------------ */
+
 .report-reader-citation {
-  margin-left: 0.18rem;
-  color: #a63e17;
-  font-size: 0.72em;
+  margin-left: 0.14rem;
+  color: var(--paper-accent);
+  font-size: 0.68em;
   font-weight: 700;
   text-decoration: none;
   vertical-align: super;
-}
-
-.report-reader-citation:hover {
-  text-decoration: underline;
+  white-space: nowrap;
 }
 
 .report-reader-citation a {
@@ -82,63 +302,105 @@
   text-decoration: none;
 }
 
+.report-reader-citation a:hover,
+.report-reader-citation a:focus-visible {
+  text-decoration: underline;
+}
+
 .report-reader-paper a[aria-label^='View evidence'] {
-  background: #ebe5da;
-  color: #923913;
-}
-
-.report-reader-table-wrap {
-  margin-top: 1rem;
-  overflow-x: auto;
-  border-block: 1px solid #cfc7ba;
-}
-
-.report-reader-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.84rem;
-}
-
-.report-reader-table th {
-  padding: 0.75rem 0.8rem;
-  background: #ebe6dc;
-  color: #4b453c;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-.report-reader-table td {
-  padding: 0.8rem;
-  border-top: 1px solid #ded7ca;
-  vertical-align: top;
+  background: var(--paper-ground-2);
+  color: var(--paper-accent);
 }
 
 .report-reader-reference {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
+  grid-template-columns: 2.2rem minmax(0, 1fr);
   gap: 0.65rem;
-  padding-block: 0.7rem;
-  border-top: 1px solid #ded7ca;
-  font-size: 0.82rem;
+  padding-block: 0.85rem;
+  border-top: 1px solid var(--paper-rule-soft);
+  font-size: 0.85rem;
+  line-height: 1.6;
   scroll-margin-top: 5rem;
 }
 
+.report-reader-reference:target {
+  background: var(--paper-ground-2);
+  box-shadow: 0 0 0 0.4rem var(--paper-ground-2);
+}
+
 .report-reader-reference a {
-  color: #8f3515;
+  color: var(--paper-accent);
   overflow-wrap: anywhere;
   text-decoration: underline;
-  text-decoration-color: rgb(143 53 21 / 0.35);
+  text-decoration-color: rgb(151 55 15 / 0.4);
   text-underline-offset: 0.15rem;
 }
 
 .report-reader-legacy-reference {
   padding-block: 0.7rem;
-  border-top: 1px solid #ded7ca;
-  font-size: 0.82rem;
+  border-top: 1px solid var(--paper-rule-soft);
+  font-size: 0.85rem;
 }
+
+/* Tables ------------------------------------------------------------------ */
+
+.report-reader-table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--paper-rule);
+  border-radius: 0.35rem;
+  /* Keep a horizontal scrollbar reachable by keyboard on narrow screens. */
+  scrollbar-gutter: stable;
+}
+
+.report-reader-table-wrap:focus-visible {
+  outline: 2px solid var(--paper-accent);
+  outline-offset: 2px;
+}
+
+.report-reader-table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.report-reader-table th {
+  position: sticky;
+  top: 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--paper-ground-2);
+  color: var(--paper-ink-strong);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.report-reader-table td {
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid var(--paper-rule-soft);
+  vertical-align: top;
+}
+
+.report-reader-table tbody tr:nth-child(even) {
+  background: rgb(0 0 0 / 0.018);
+}
+
+.report-reader-table td:first-child {
+  white-space: nowrap;
+}
+
+.report-reader-caption {
+  margin-top: 0.55rem;
+  color: var(--paper-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+/* Motion ------------------------------------------------------------------ */
 
 .report-reader-enter {
   animation: report-reader-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -157,16 +419,43 @@
 
 @media (max-width: 640px) {
   .report-reader-paper {
+    --reader-body: 1rem;
     border-inline: 0;
   }
 
   .report-reader-content {
-    padding-bottom: 4rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .report-reader-judgement {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .report-reader-enter {
     animation: none;
+  }
+}
+
+@media print {
+  .report-reader-shell {
+    background: #ffffff;
+    overflow: visible;
+  }
+
+  .report-reader-paper {
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .report-reader-section {
+    break-inside: avoid-page;
+  }
+
+  .report-reader-print-hide {
+    display: none !important;
   }
 }

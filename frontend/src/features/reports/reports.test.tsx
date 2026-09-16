@@ -108,7 +108,8 @@ describe('ReportPage', () => {
     const judgements = screen.getByRole('region', { name: 'Executive summary' });
     expect(within(judgements).getByText(/highly likely that fighting/)).toBeInTheDocument();
     expect(within(judgements).getByText('highly likely')).toBeInTheDocument();
-    expect(within(judgements).getByText('moderate confidence')).toBeInTheDocument();
+    expect(within(judgements).getByText('moderate')).toBeInTheDocument();
+    expect(within(judgements).getByText('Confidence')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Findings' })).toHaveTextContent(
       'Shelling was reported overnight.',
     );
@@ -140,7 +141,7 @@ describe('ReportPage', () => {
     ).not.toBeInTheDocument();
     await user.click(within(annex).getByText('Ministry statement'));
     expect(within(annex).getByText('Source flags: state controlled')).toBeVisible();
-    expect(screen.getByText('1 validator note(s)')).toBeInTheDocument();
+    expect(screen.getByText('1 validator note')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => {

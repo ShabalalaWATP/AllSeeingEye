@@ -114,7 +114,7 @@ describe('report evidence navigation and review meaning', () => {
   it('labels a legacy missing period without borrowing the current report dates', async () => {
     renderApp(`/reports/${reportSummary.id}`, 'user');
     expect(
-      await screen.findByText(/Reporting period unknown for this legacy version/),
+      await screen.findByText(/Unknown for this legacy version/),
     ).toBeInTheDocument();
     expect(screen.queryByText(/3 Sept 2026/)).not.toBeInTheDocument();
   });

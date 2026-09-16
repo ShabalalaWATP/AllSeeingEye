@@ -34,7 +34,7 @@ describe('portable Markdown export', () => {
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'Export' }));
     expect(
-      screen.getByText('Portable report; figures include local images in a ZIP'),
+      screen.getByText(/Figures arrive as local images inside a ZIP/),
     ).toBeVisible();
     await userEvent.setup().click(screen.getByRole('menuitem', { name: 'Download Markdown' }));
 

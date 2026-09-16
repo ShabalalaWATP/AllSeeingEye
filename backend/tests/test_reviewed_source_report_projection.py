@@ -79,7 +79,11 @@ async def test_selected_snapshot_projects_to_reader_markdown_word_and_pdf_withou
     assert "A: Completely reliable" in word_text
     pdf = await client.get(report_path + "/export/pdf", headers=headers, params=query)
     assert pdf.status_code == 200, pdf.text
-    pdf_text = " ".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf.content)).pages)
+    # Normalise whitespace: a five-column table wraps on A4, and this asserts that the
+    # export carries the reviewed wording, not that it lands on a single line.
+    pdf_text = " ".join(
+        " ".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf.content)).pages).split()
+    )
     assert "Reviewed source assessment snapshot" in pdf_text
     assert "A: Completely reliable" in pdf_text
 

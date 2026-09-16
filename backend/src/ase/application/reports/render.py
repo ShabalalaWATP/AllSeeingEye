@@ -102,7 +102,7 @@ def _analysis_lines(body: ReportBody) -> list[str]:
     if body.reporting:
         lines += ["## Reporting", ""]
         for theme in body.reporting:
-            lines.append(f"### {theme.theme}")
+            lines += [f"### {theme.theme}", ""]
             for item in theme.items:
                 grade = f" ({item.grade})" if item.grade else ""
                 lines.append(f"- {item.text}{_cites(item.evidence)}{grade}")
@@ -110,7 +110,12 @@ def _analysis_lines(body: ReportBody) -> list[str]:
     if body.assessment:
         lines += ["## Assessment", ""]
         for section in body.assessment:
-            lines += [f"### {section.heading}", f"{section.text}{_cites(section.evidence)}", ""]
+            lines += [
+                f"### {section.heading}",
+                "",
+                f"{section.text}{_cites(section.evidence)}",
+                "",
+            ]
     if body.assumptions:
         lines += ["## Assumptions", ""]
         for assumption in body.assumptions:
@@ -191,4 +196,20 @@ def render_markdown(
         ],
         *annex_lines(evidence, quality, findings),
     ]
-    return "\n".join(lines)
+    return _tidy(lines)
+
+
+def _tidy(lines: list[str]) -> str:
+    """Portable, diff-friendly Markdown: no runs of blank lines, no trailing spaces.
+
+    Renderers treat one blank line and three alike, but a diff does not, so the same
+    report content produces the same file every time.
+    """
+    output: list[str] = []
+    for line in lines:
+        stripped = line.rstrip()
+        if stripped or (output and output[-1]):
+            output.append(stripped)
+    while output and not output[-1]:
+        output.pop()
+    return "\n".join(output) + "\n"
