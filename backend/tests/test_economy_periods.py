@@ -103,10 +103,22 @@ async def test_headline_publication_range_is_half_open_and_undated_items_are_not
     boundary = NEWS_NOW - timedelta(days=days)
     rows = (
         news("boundary", title="Inflation report at start", published_at=boundary),
-        news("older", title="Inflation report before start", published_at=boundary - timedelta(microseconds=1)),
-        news("end", title="Inflation report before end", published_at=NEWS_NOW - timedelta(microseconds=1)),
+        news(
+            "older",
+            title="Inflation report before start",
+            published_at=boundary - timedelta(microseconds=1),
+        ),
+        news(
+            "end",
+            title="Inflation report before end",
+            published_at=NEWS_NOW - timedelta(microseconds=1),
+        ),
         news("at-end", title="Inflation report at end", published_at=NEWS_NOW),
-        news("future", title="Inflation report after end", published_at=NEWS_NOW + timedelta(seconds=1)),
+        news(
+            "future",
+            title="Inflation report after end",
+            published_at=NEWS_NOW + timedelta(seconds=1),
+        ),
         news("undated", title="Inflation report with no publication date", published_at=None),
     )
     selected, _ = service(rows)
@@ -120,7 +132,9 @@ async def test_headline_publication_range_is_half_open_and_undated_items_are_not
 async def test_wider_window_adds_retained_older_news_and_disabled_sources_stay_empty():
     rows = tuple(
         news(
-            str(day), title=f"Inflation report published {day} days ago", published_at=NEWS_NOW - timedelta(days=day)
+            str(day),
+            title=f"Inflation report published {day} days ago",
+            published_at=NEWS_NOW - timedelta(days=day),
         )
         for day in (1, 4, 6, 13)
     )

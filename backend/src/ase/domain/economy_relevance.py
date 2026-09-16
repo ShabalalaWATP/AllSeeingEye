@@ -92,8 +92,10 @@ def _tier(official: bool, core: tuple[str, ...], figures: bool) -> int:
 def _reason(official: bool, core: tuple[str, ...], figures: bool) -> str:
     subject = ", ".join(core)
     if official:
-        lead = f"Official economic issuer release on {subject}" if core else (
-            "Official economic issuer release"
+        lead = (
+            f"Official economic issuer release on {subject}"
+            if core
+            else ("Official economic issuer release")
         )
     else:
         lead = f"Economic subject matter: {subject}"
