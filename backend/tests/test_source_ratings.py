@@ -24,7 +24,13 @@ from feeds_helpers import NOW, FakeClock, FakeHttp, make_event, make_spec
 
 
 def test_every_registered_source_has_explicit_versioned_rating_context():
-    connectors = build_connectors(FakeHttp(), FakeClock(NOW))  # type: ignore[arg-type]
+    # A key is supplied so the keyed YouTube channels join: without one they are absent,
+    # and their catalogue entries would have no source to describe.
+    connectors = build_connectors(
+        FakeHttp(),  # type: ignore[arg-type]
+        FakeClock(NOW),
+        youtube_api_key="AIzaSyTestKeyValue0000000",
+    )
     specs = [
         *(connector.spec for connector in connectors),
         GOOGLE_NEWS,
@@ -41,7 +47,7 @@ def test_every_registered_source_has_explicit_versioned_rating_context():
         assert rating.reviewed_at is None
         assert "measured accuracy percentage" in " ".join(rating.limitations)
         if (
-            rating.provenance_role == "platform"
+            rating.provenance_role in {"platform", "unassessed"}
             or spec.id in {seed.spec.id for seed in REGIONAL_SEEDS}
             # Publisher headline feeds are registered with an explicit F grade and stay
             # unassessed until an editorial review records a basis; that is by design.

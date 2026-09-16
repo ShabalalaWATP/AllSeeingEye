@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Literal
 
 from ase.domain.events import Reliability
-from ase.domain.source_rating_catalog import CATALOGUE, ProvenanceRole
+from ase.domain.source_rating_catalog import ANALYSIS_CHANNELS, CATALOGUE, ProvenanceRole
 
 SOURCE_RATING_POLICY_VERSION = "ase-source-ratings-v1"
 COMMON_LIMITATIONS = (
@@ -64,10 +64,34 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
     )
 
 
+def _analysis_channel_rating(configured_grade: Reliability) -> SourceRating:
+    """An independent commentary channel publishes its own work but has no assessed record."""
+    return SourceRating(
+        policy_version=SOURCE_RATING_POLICY_VERSION,
+        status="unassessed",
+        assessed_grade=None,
+        basis=f"The configured {configured_grade.value} grade places an independent analysis "
+        "channel at doctrine's floor as a collection caution. No track record, sourcing "
+        "practice or correction record has been assessed for this channel.",
+        scope="A named independent channel's own published commentary and analysis.",
+        limitations=(
+            *COMMON_LIMITATIONS,
+            "Commentary and analysis are argument, not reporting: conclusions need their "
+            "own evidence and the channel's own sources are not acquired.",
+            "Conference and institute channels publish invited speakers whose claims are "
+            "theirs. YouTube hosting confers no credibility.",
+        ),
+        provenance_role="unassessed",
+        publisher_reliability_assessed=False,
+    )
+
+
 def source_rating_for(source_id: str, configured_grade: Reliability) -> SourceRating:
     """Describe registered assignments; never infer reliability from a domain or platform."""
     if source_id.startswith("mastodon_"):
         return _platform_rating(configured_grade)
+    if source_id in ANALYSIS_CHANNELS:
+        return _analysis_channel_rating(configured_grade)
     entry = CATALOGUE.get(source_id)
     if entry is None:
         return unassessed_source_rating()

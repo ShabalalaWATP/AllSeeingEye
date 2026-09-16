@@ -9,6 +9,8 @@ from ase.adapters.feeds.barentswatch import SPEC as BARENTSWATCH_SPEC
 from ase.adapters.feeds.conflict_acled import SPEC as ACLED_SPEC
 from ase.adapters.feeds.conflict_reliefweb import SPEC as RELIEFWEB_SPEC
 from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR
+from ase.adapters.feeds.youtube_channel_seeds import load_channels
+from ase.adapters.research.youtube import SOURCE_ID as YOUTUBE_RESEARCH_ID
 from ase.application.source_inventory import RequirementKind, SourceRequirement
 from ase.container.research_inputs import media_tools
 from ase.domain.web_research import WEB_SOURCE_ID
@@ -235,6 +237,16 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
         ),
         "research_media": media_requirement(settings),
     }
+    youtube = _key(
+        "ASE_YOUTUBE_API_KEY",
+        bool(settings.youtube_api_key),
+        "the reviewed YouTube channels and video research",
+    )
+    # youtube.com/robots.txt disallows the channel Atom path, so there is no public
+    # fallback: every YouTube source waits for the operator's Data API key.
+    for channel in load_channels():
+        requirements[channel.source_id] = youtube
+    requirements[YOUTUBE_RESEARCH_ID] = youtube
     for suffix in ("", "-officers", "-psc"):
         requirements[f"research-companies-house{suffix}"] = _key(
             "ASE_COMPANIES_HOUSE_KEY",

@@ -1,0 +1,76 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "fixture-items",
+  "nextPageToken": "EAAaBlBUOkNBVQ",
+  "pageInfo": {"totalResults": 3, "resultsPerPage": 25},
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "fixture-item-1",
+      "id": "UExfZml4dHVyZS0x",
+      "snippet": {
+        "publishedAt": "2026-09-05T21:55:12Z",
+        "channelId": "UC16niRr50-MSBwiO3YDb3RA",
+        "title": "  Drone strike reported near   Odesa  ",
+        "description": "Our correspondent reports from the port. Subscribe for more.\nhttps://example.invalid/story",
+        "thumbnails": {"default": {"url": "https://i.ytimg.com/vi/aBcDeFgHiJk/default.jpg"}},
+        "channelTitle": "BBC News",
+        "playlistId": "UU16niRr50-MSBwiO3YDb3RA",
+        "position": 0,
+        "resourceId": {"kind": "youtube#video", "videoId": "aBcDeFgHiJk"}
+      },
+      "contentDetails": {
+        "videoId": "aBcDeFgHiJk",
+        "videoPublishedAt": "2026-09-05T21:40:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "fixture-item-2",
+      "id": "UExfZml4dHVyZS0y",
+      "snippet": {
+        "publishedAt": "2026-09-05T18:02:00Z",
+        "channelId": "UC16niRr50-MSBwiO3YDb3RA",
+        "title": "Private video",
+        "description": "",
+        "channelTitle": "BBC News",
+        "playlistId": "UU16niRr50-MSBwiO3YDb3RA",
+        "position": 1,
+        "resourceId": {"kind": "youtube#video", "videoId": "zzzzzzzzzzz"}
+      },
+      "contentDetails": {"videoId": "zzzzzzzzzzz"}
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "fixture-item-3",
+      "id": "UExfZml4dHVyZS0z",
+      "snippet": {
+        "publishedAt": "2026-09-05T16:00:00Z",
+        "channelId": "UC16niRr50-MSBwiO3YDb3RA",
+        "title": "A repeated upload identity",
+        "description": "Same video listed twice by the playlist.",
+        "channelTitle": "BBC News",
+        "playlistId": "UU16niRr50-MSBwiO3YDb3RA",
+        "position": 2,
+        "resourceId": {"kind": "youtube#video", "videoId": "aBcDeFgHiJk"}
+      },
+      "contentDetails": {"videoId": "aBcDeFgHiJk", "videoPublishedAt": "2026-09-05T15:00:00Z"}
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "fixture-item-4",
+      "id": "UExfZml4dHVyZS00",
+      "snippet": {
+        "publishedAt": "2026-09-05T12:00:00Z",
+        "channelId": "UC16niRr50-MSBwiO3YDb3RA",
+        "title": "An item with no resource identity",
+        "description": "",
+        "channelTitle": "BBC News",
+        "playlistId": "UU16niRr50-MSBwiO3YDb3RA",
+        "position": 3,
+        "resourceId": {"kind": "youtube#video"}
+      },
+      "contentDetails": {}
+    }
+  ]
+}

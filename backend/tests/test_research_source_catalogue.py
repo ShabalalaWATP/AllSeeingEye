@@ -58,6 +58,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-designations-uksl",
         "research-designations-ofac_sdn",
         "research-rdap",
+        "research-youtube",
         "research-certificate-transparency",
         "research_import",
         "research_media",
@@ -85,6 +86,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-companies-house-officers",
         "research-companies-house-psc",
         "research-certificate-transparency",
+        "research-youtube",
     }
 
 

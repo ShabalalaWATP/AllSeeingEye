@@ -28,6 +28,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.mastodon_watch import watch_host_intervals
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.satellite_http import SatelliteHttpClient
+from ase.adapters.feeds.youtube_channels import channel_host_intervals
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
@@ -176,7 +177,13 @@ class Container(
         self.http, self.marine_http, self.satellite_http = (
             FeedHttpClient(
                 settings.feeds_user_agent,
-                host_pacer=HostPacer({**DEFAULT_HOST_INTERVALS, **watch_host_intervals()}),
+                host_pacer=HostPacer(
+                    {
+                        **DEFAULT_HOST_INTERVALS,
+                        **channel_host_intervals(),
+                        **watch_host_intervals(),
+                    }
+                ),
             ),
             DigitrafficHttpClient("TheAllSeeingEye/0.1"),
             SatelliteHttpClient(settings.feeds_user_agent),
@@ -225,6 +232,9 @@ class Container(
             openaq_api_key=(
                 settings.openaq_api_key.get_secret_value() if settings.openaq_api_key else None
             ),
+            youtube_api_key=(
+                settings.youtube_api_key.get_secret_value() if settings.youtube_api_key else None
+            ),
         )
         self.connectors: list[FeedConnector] = (
             list(connectors)
@@ -270,6 +280,9 @@ class Container(
                     },
                     aisstream_key=settings.aisstream_api_key.get_secret_value()
                     if settings.aisstream_api_key
+                    else None,
+                    youtube_api_key=settings.youtube_api_key.get_secret_value()
+                    if settings.youtube_api_key
                     else None,
                 ),
                 *[

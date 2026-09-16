@@ -40,6 +40,11 @@ def load_fixture(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text("utf-8"))
 
 
+def load_fixture_bytes(name: str) -> bytes:
+    """The recorded bytes, for upstreams the connector reads as raw JSON."""
+    return (FIXTURES / name).read_bytes()
+
+
 def make_event(
     key: str = "e1",
     *,
@@ -133,6 +138,10 @@ class FakeHttp:
                 return str(payload)
         msg = f"no fixture for {url}"
         raise KeyError(msg)
+
+    async def get_secret_bytes(self, target: Any) -> bytes:
+        """Keyed upstreams request a SecretFeedUrl; serve its fixture by URL as usual."""
+        return await self.get_bytes(target.url)
 
     async def get_bytes(self, url: str, *, conditional: bool = True) -> bytes:
         self.requests.append(url)

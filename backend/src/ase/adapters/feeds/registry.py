@@ -53,8 +53,24 @@ from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
 from ase.adapters.feeds.ukraine_general_staff import GeneralStaffLossesConnector
 from ase.adapters.feeds.usgs import UsgsConnector
 from ase.adapters.feeds.volcanoes import VolcanoReportConnector
+from ase.adapters.feeds.youtube import YouTubeChannelConnector
+from ase.adapters.feeds.youtube_channel_seeds import load_channels
 from ase.application.ports import Clock
 from ase.application.ports.feeds import FeedConnector
+
+
+def youtube_connectors(
+    http: FeedHttpClient, clock: Clock, key: str | None, excluded: set[str]
+) -> list[FeedConnector]:
+    """YouTube's robots.txt disallows the channel Atom path, so the keyed Data API route
+    is the only compliant one: without a key there is no YouTube collection at all."""
+    if not key:
+        return []
+    return [
+        YouTubeChannelConnector(http, clock, key, channel)
+        for channel in load_channels()
+        if channel.source_id not in excluded
+    ]
 
 
 def build_connectors(
@@ -81,6 +97,7 @@ def build_connectors(
     acled_tokens: AcledTokens | None = None,
     reliefweb_appname: str | None = None,
     cloudflare_radar_token: str | None = None,
+    youtube_api_key: str | None = None,
     iso3_to_iso2: Mapping[str, str] | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
@@ -145,6 +162,7 @@ def build_connectors(
             MastodonConnector(http, clock, watch.instance, watch.tags, watch.minutes)
             for watch in load_watch()
         ],
+        *youtube_connectors(http, clock, youtube_api_key, excluded),
     ]
     if aircraft_interests is not None and "adsb_viewport" not in excluded:
         connectors.append(

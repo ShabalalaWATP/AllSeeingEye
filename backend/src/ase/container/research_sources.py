@@ -9,6 +9,7 @@ from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
+from ase.adapters.research.youtube import SOURCE_ID as YOUTUBE_RESEARCH_ID
 from ase.adapters.research_records.cloudflare_radar import PROVIDER_IDS as RADAR_PROVIDER_IDS
 from ase.adapters.research_records.ecb_reference_rate import EcbReferenceRateProvider
 from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchProvider
@@ -74,6 +75,25 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             )
             for language in EDITIONS
         )
+    specs.append(
+        _spec(
+            YOUTUBE_RESEARCH_ID,
+            "YouTube video search",
+            Category.SOCIAL,
+            "One platform-wide YouTube search returns uploader-supplied metadata; neither "
+            "YouTube nor a channel label authenticates an uploader or an item's origin.",
+            "Bounded search-result titles, channel labels, upload dates and links within "
+            "the requested publication interval.",
+            "Requires a configured YouTube Data API key; the channel Atom feeds are "
+            "disallowed by youtube.com/robots.txt, so there is no public alternative.",
+            "At most 20 results from one request, subject to a local daily search "
+            "allowance. No complete archive, transcripts, captions, comments or media.",
+            "YouTube Data API v3 terms; titles, links and a bounded excerpt only",
+            role="platform",
+            language="und",
+            requires_key=True,
+        )
+    )
     specs.extend(record_specs())
     specs.extend(subject_specs())
     specs.extend(

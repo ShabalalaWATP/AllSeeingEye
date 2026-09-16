@@ -225,6 +225,13 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
             local=local,
         )
 
+    add(
+        "research-youtube",
+        NEWS + "|video|footage|briefing|interview|analysis",
+        "Platform-wide video search metadata; uploader claims, no channel or origin proof.",
+        prefix="",
+    )
+
     # Primary means attributable records/measurements, not verified claims.
     record = partial(add, prefix="")
     record(
