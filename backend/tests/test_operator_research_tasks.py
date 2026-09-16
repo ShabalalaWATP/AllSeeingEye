@@ -21,6 +21,7 @@ from ase.application.research.replanning import collect_with_replan
 from ase.application.research.service import ResearchCollectionService
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import CollectionStatus, ResearchFocus
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS
 from ase.domain.research_plan import QueryTransformation, QueryVariant
 from ase.domain.research_records import ResearchReceipt, research_from_dict, research_to_dict
 from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate
@@ -87,7 +88,10 @@ async def test_operator_tasks_interleave_and_share_quick_run_budget():
 
 
 async def test_unknown_inventory_and_expanded_cap_reject_before_fetch():
-    providers = [Provider("source"), *(Provider(str(index)) for index in range(128))]
+    providers = [
+        Provider("source"),
+        *(Provider(str(index)) for index in range(MAX_COLLECTION_PROVIDERS)),
+    ]
     for selected, inventory in ((query(), providers), (query(), [Provider("other")])):
         with pytest.raises((InvalidRequest, ValueError)):
             await ResearchCollector(inventory).collect(selected)

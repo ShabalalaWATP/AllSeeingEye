@@ -19,6 +19,7 @@ from ase.application.research.source_admission import ControlledResearchProvider
 from ase.container.research import private_research_store
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchMode
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_COLLECTION_RECEIPTS
 from ase.domain.research_records import ResearchReceipt, research_from_dict, research_to_dict
 from feeds_helpers import make_event
 from production_integration_helpers import production_job
@@ -113,11 +114,14 @@ def test_optional_fields_remain_absent_when_legacy_receipts_are_reserialised():
 
 async def test_expanded_plan_reserves_frozen_receipt_capacity_before_any_requests():
 
-    providers = [Provider("source"), *(Provider(str(index)) for index in range(127))]
+    providers = [
+        Provider("source"),
+        *(Provider(str(index)) for index in range(MAX_COLLECTION_PROVIDERS - 1)),
+    ]
     service = ResearchCollectionService(lambda _: providers)
     retained = CollectionAttempt("retained", "Retained evidence", CollectionStatus.COMPLETED)
     selected = replace(query(), planned_tasks=tuple(replace(TASK, id=str(i)) for i in range(8)))
-    with pytest.raises(InvalidRequest, match="136-receipt"):
+    with pytest.raises(InvalidRequest, match=f"{MAX_COLLECTION_RECEIPTS}-receipt"):
         await collect_report_evidence(
             selected,
             ReportRequest("ask"),

@@ -19,6 +19,7 @@ from ase.domain.research import (
     ResearchBatch,
     ResearchMode,
 )
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLAN_TASKS
 from ase.domain.research_records import ResearchReceipt, research_from_dict, research_to_dict
 from ase.domain.research_tasks import PlannedQueryTask
 from test_operator_research_tasks import Provider
@@ -27,7 +28,7 @@ from test_research_collection import event
 from test_research_plan import QUERY
 
 
-def inventory(count=128):
+def inventory(count=MAX_COLLECTION_PROVIDERS):
     return [Provider(f"source-{index}") for index in range(count)]
 
 
@@ -45,12 +46,12 @@ async def test_large_catalogue_preserves_actual_request_and_item_allowances(mode
     providers = inventory()
     query = replace(QUERY, mode=ResearchMode(mode))
     result = await ResearchCollector(providers).collect(query)
-    assert len(result.attempts) == 128
+    assert len(result.attempts) == MAX_COLLECTION_PROVIDERS
     assert sum(len(provider.queries) for provider in providers) == requests
     assert result.plan.request_limit == requests and result.plan.item_limit == items
     assert (
         sum(row.status is CollectionStatus.BUDGET_EXHAUSTED for row in result.attempts)
-        == 128 - requests
+        == MAX_COLLECTION_PROVIDERS - requests
     )
     assert CollectionBudget.for_mode(query.mode).items == items
 
@@ -59,7 +60,7 @@ async def test_full_catalogue_and_eight_tasks_roundtrip_with_all_coverage_receip
     providers = inventory()
     query = replace(QUERY, planned_tasks=tasks())
     batch = await ResearchCollector(providers).collect(query)
-    assert len(batch.plan.tasks) == len(batch.attempts) == 136
+    assert len(batch.plan.tasks) == len(batch.attempts) == MAX_PLAN_TASKS
     assert sum(len(provider.queries) for provider in providers) == 6
     assert [row.task_id for row in batch.attempts[:4]] == [
         "source:source-0",
@@ -94,11 +95,11 @@ def test_catalogue_bound_and_explicit_selection_are_separate():
     providers = inventory()
     ResearchCollector(providers)
     with pytest.raises(ValueError):
-        ResearchCollector(inventory(129))
+        ResearchCollector(inventory(MAX_COLLECTION_PROVIDERS + 1))
     selected = tuple(provider.id for provider in providers[:64])
     query = replace(QUERY, source_ids=selected, planned_tasks=tasks())
     plan = ResearchCollectionService(lambda _: providers).plan(query)
-    assert len(plan.tasks) == 136
+    assert len(plan.tasks) == MAX_PLAN_TASKS
     assert sum(row.selected for row in plan.tasks) == 72
     with pytest.raises(ValueError, match="64"):
         replace(query, source_ids=(*selected, providers[64].id))
@@ -144,20 +145,25 @@ def test_model_tasks_fit_large_catalogue_and_cannot_exceed_explicit_or_receipt_c
 @pytest.mark.parametrize("mode,items", [("quick", 200), ("detailed", 800), ("advanced", 1000)])
 async def test_large_catalogue_cannot_enlarge_retained_item_budget(mode, items):
     first = ItemProvider("first", ResearchBatch(items=tuple(event(str(i)) for i in range(1000))))
-    remainder = [ItemProvider(f"other-{i}") for i in range(127)]
+    remainder = [ItemProvider(f"other-{i}") for i in range(MAX_COLLECTION_PROVIDERS - 1)]
     batch = await ResearchCollector([first, *remainder]).collect(
         replace(QUERY, mode=ResearchMode(mode))
     )
     assert len(batch.items) == items and first.called == 1
     assert all(provider.called == 0 for provider in remainder)
-    assert len(batch.attempts) == 128
+    assert len(batch.attempts) == MAX_COLLECTION_PROVIDERS
 
 
 async def test_large_catalogue_retains_unsupported_rows_without_spending_requests():
-    providers = [ItemProvider(f"source-{i}", supported=i % 2 == 0) for i in range(128)]
+    providers = [
+        ItemProvider(f"source-{i}", supported=i % 2 == 0) for i in range(MAX_COLLECTION_PROVIDERS)
+    ]
     batch = await ResearchCollector(providers).collect(QUERY)
-    assert len(batch.plan.tasks) == len(batch.attempts) == 128
-    assert sum(row.status is CollectionStatus.UNSUPPORTED for row in batch.attempts) == 64
+    assert len(batch.plan.tasks) == len(batch.attempts) == MAX_COLLECTION_PROVIDERS
+    assert (
+        sum(row.status is CollectionStatus.UNSUPPORTED for row in batch.attempts)
+        == MAX_COLLECTION_PROVIDERS // 2
+    )
     assert sum(provider.called for provider in providers) == 6
 
 
@@ -173,5 +179,5 @@ async def test_retained_seed_and_large_public_catalogue_can_form_a_readable_repo
         InMemoryEventStore(),
         seed_attempts=(retained,),
     )
-    assert len(receipt.attempts) == 129 and receipt.attempts[0] == retained
+    assert len(receipt.attempts) == MAX_COLLECTION_PROVIDERS + 1 and receipt.attempts[0] == retained
     assert research_from_dict(research_to_dict(receipt)) == receipt
