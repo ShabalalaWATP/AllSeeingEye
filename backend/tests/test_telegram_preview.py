@@ -17,6 +17,7 @@ from ase.adapters.feeds.telegram_preview import (
     MAX_DOCUMENT_CHARS,
     MAX_ELEMENT_DEPTH,
     MAX_EXCERPT_CHARS,
+    MAX_MESSAGES,
     MAX_POSTS,
     TelegramMarkupError,
     parse_channel_preview,
@@ -115,9 +116,17 @@ def _synthetic(channel: str, posts: int, text: str) -> str:
     return f'<section class="tgme_channel_history">{messages}</section>'
 
 
-def test_the_number_of_posts_taken_from_one_page_is_capped() -> None:
+def test_only_the_newest_posts_are_kept_when_a_page_carries_more() -> None:
     preview = parse_channel_preview(_synthetic("examplechannel", 60, "text"), "examplechannel")
     assert len(preview.posts) == MAX_POSTS
+    # Telegram lists the newest posts last, so the cap must drop the oldest, not the newest.
+    assert [post.number for post in preview.posts] == list(range(41, 61))
+
+
+def test_a_page_with_an_implausible_number_of_posts_is_refused() -> None:
+    document = _synthetic("examplechannel", MAX_MESSAGES + 1, "text")
+    with pytest.raises(TelegramMarkupError, match="more posts than expected"):
+        parse_channel_preview(document, "examplechannel")
 
 
 def test_a_very_long_post_is_truncated_to_the_excerpt_limit() -> None:

@@ -16,6 +16,7 @@ The parser never follows a link, never resolves a relative URL and never emits r
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from html.parser import HTMLParser
@@ -23,7 +24,9 @@ from html.parser import HTMLParser
 MAX_DOCUMENT_CHARS = 1_500_000
 MAX_POSTS = 20
 MAX_EXCERPT_CHARS = 700
-MAX_CAPTURED_CHARS = MAX_POSTS * MAX_EXCERPT_CHARS * 4
+# Per post, not per page, so one enormous post cannot starve the ones after it.
+MAX_CAPTURED_CHARS = MAX_EXCERPT_CHARS * 8
+MAX_MESSAGES = 200
 MAX_ELEMENT_DEPTH = 200
 MAX_CHANNEL_CHARS = 64
 MAX_TITLE_CHARS = 140
@@ -119,7 +122,8 @@ class _PreviewParser(HTMLParser):
         self.history_seen = False
         self.messages_seen = 0
         self.title: str | None = None
-        self.posts: list[TelegramPost] = []
+        # The newest posts are the useful ones, and the page lists them last.
+        self.posts: deque[TelegramPost] = deque(maxlen=MAX_POSTS)
         self._stack: list[str] = []
         self._captured = 0
         self._message_depth: int | None = None
@@ -193,8 +197,11 @@ class _PreviewParser(HTMLParser):
             self._published = stamp
 
     def _begin_message(self, key: str, depth: int) -> None:
+        if self.messages_seen >= MAX_MESSAGES:
+            raise TelegramMarkupError("Channel preview page holds more posts than expected")
         self._message_depth = depth
         self.messages_seen += 1
+        self._captured = 0
         self._key = key.strip()[: MAX_CHANNEL_CHARS + 24]
         self._parts, self._views = [], []
         self._published = self._dated = None
@@ -218,12 +225,7 @@ class _PreviewParser(HTMLParser):
         self._published = self._dated = None
         channel, _, number = key.partition("/")
         text = _collapse(parts, MAX_EXCERPT_CHARS)
-        if (
-            len(self.posts) >= MAX_POSTS
-            or channel.casefold() != self._channel
-            or not number.isdigit()
-            or not text
-        ):
+        if channel.casefold() != self._channel or not number.isdigit() or not text:
             return
         self.posts.append(
             TelegramPost(
@@ -269,4 +271,4 @@ def parse_channel_preview(document: str, channel: str) -> TelegramPreview:
             "The channel history contained no readable post; the preview markup has "
             "probably changed"
         )
-    return TelegramPreview(channel=channel, title=parser.title, posts=tuple(parser.posts))
+    return TelegramPreview(channel, parser.title, tuple(parser.posts))
