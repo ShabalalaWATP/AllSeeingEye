@@ -13,6 +13,14 @@ def synthetic_plan(query):
     return ResearchCollectionService(lambda _: [Provider("fixture")]).plan(query)
 
 
+# The post-draft review passes run on every report. A test that is not about them
+# need not script them, so an empty finding set stands in.
+REVIEW_DEFAULTS = {
+    "entailment": {"assessments": []},
+    "contradiction_analysis": {"disagreements": []},
+}
+
+
 class SchemaGateway:
     def __init__(self, responses):
         self.responses = {name: deque(values) for name, values in responses.items()}
@@ -20,7 +28,11 @@ class SchemaGateway:
 
     async def complete(self, base_url, api_key, model, request):
         self.requests.append(request)
-        answer = self.responses[request.schema_name].popleft()
+        scripted = self.responses.get(request.schema_name)
+        if not scripted and request.schema_name in REVIEW_DEFAULTS:
+            answer = REVIEW_DEFAULTS[request.schema_name]
+        else:
+            answer = self.responses[request.schema_name].popleft()
         return LlmResult(json.dumps(answer), model, 50, 20, 100)
 
 

@@ -84,6 +84,17 @@ class StageGateway:
                 "lower_confidence": False,
                 "rationale": "Independent contrary reporting.",
             },
+            "entailment": {
+                "assessments": [
+                    {
+                        "judgement_id": "KJ1",
+                        "label": "E1",
+                        "verdict": "supports",
+                        "reason": "The extract states it.",
+                    }
+                ]
+            },
+            "contradiction_analysis": {"disagreements": []},
         }
         return LlmResult(json.dumps(responses[request.schema_name]), model, 10, 5, 3)
 
