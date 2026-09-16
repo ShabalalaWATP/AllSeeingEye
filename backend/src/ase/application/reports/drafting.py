@@ -13,6 +13,7 @@ from ase.application.reports.prompts import compose_messages
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_volume import WIDE_POOL_ITEMS
 from ase.domain.llm import LlmProfile, LlmRequest
 from ase.domain.report_input import parse_model_body
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
@@ -39,6 +40,11 @@ class Draft:
         return any(f.severity is Severity.ERROR for f in self.findings)
 
 
+FLAT_DRAFT_NOTICE = (
+    "This version was drafted in a single pass over a wide evidence pool. Layered "
+    "drafting, which reads each theme in its own bounded pass before synthesis, needs "
+    "the checkpointed report job path. Treat coverage of later items as less thorough."
+)
 NO_EVIDENCE_MESSAGE = (
     "No eligible evidence was retained for this scope and observation period. "
     "The requested questions cannot be assessed from this collection."
@@ -156,4 +162,8 @@ async def draft_body(
         draft.findings = list(validated.findings)
         if validated.passed:
             break
+    if len(evidence) > WIDE_POOL_ITEMS:
+        draft.findings.append(
+            Finding("evidence_volume", Severity.WARNING, "evidence", FLAT_DRAFT_NOTICE)
+        )
     return draft

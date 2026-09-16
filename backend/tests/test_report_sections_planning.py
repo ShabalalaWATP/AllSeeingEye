@@ -9,6 +9,7 @@ from ase.application.reports.sections.planning import (
     packet_digest,
     plan_topics,
     split_topic,
+    topic_ceiling,
 )
 from ase.application.reports.sections.quality import requirement_support_from_topics
 from ase.application.reports.templates import TEMPLATES
@@ -28,7 +29,8 @@ def test_plan_covers_every_label_once_without_inventing_small_packet_topics(coun
     assert len(labels) == len(set(labels)) == count and set(labels) == {
         row.label for row in evidence
     }
-    assert len(topics) == 1 if count <= 2 else min(4, count) <= len(topics) <= 6
+    ceiling = topic_ceiling(count)
+    assert len(topics) == 1 if count <= 2 else min(4, count) <= len(topics) <= ceiling
     assert all(topic.evidence_labels and len(topic.title) <= 120 for topic in topics)
 
 
