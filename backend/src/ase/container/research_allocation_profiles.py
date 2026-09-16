@@ -31,7 +31,7 @@ COMPANY = "company corporate|registry|identity|ownership|control|officers|parent
 TECHNICAL = "domain|DNS|infrastructure|network|registration|registrar|hosting|ownership|mail"
 
 
-def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
+def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: PLR0915
     """Return immutable purpose profiles, with no settings, query text or external IO."""
     result: dict[str, AllocationProfile] = {}
 
@@ -129,11 +129,18 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
         "Humanitarian feed titles; upstream claims and original reports require review.",
     )
     for ids, country in (
-        ("economic_bank_england economic_hm_treasury", "GB"),
-        ("economic_federal_reserve", "US"),
-        ("economic_bank_russia", "RU"),
+        ("economic_bank_england economic_hm_treasury economic_ons_releases", "GB"),
+        (
+            "economic_federal_reserve economic_bls_consumer_prices economic_bls_employment "
+            "economic_bls_producer_prices economic_census_indicators economic_eia_energy",
+            "US",
+        ),
+        ("economic_bank_russia economic_the_bell", "RU"),
         ("economic_scmp_china economic_cgtn_business", "CN"),
         ("economic_tehran_times", "IR"),
+        ("economic_bank_japan", "JP"),
+        ("economic_bank_canada", "CA"),
+        ("economic_reserve_bank_india", "IN"),
     ):
         add(
             ids,
@@ -142,9 +149,15 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
             countries=(country,),
         )
     add(
-        "economic_bbc_business economic_guardian_business",
+        "economic_bbc_business economic_guardian_business economic_economist_finance "
+        "economic_dw_business economic_france24_business economic_intellinews",
         ECONOMY,
         "Business-news headline discovery, not a statistical dataset.",
+    )
+    add(
+        "economic_ecb_press economic_bis_speeches economic_wto_news",
+        ECONOMY,
+        "Multilateral and central-bank release headlines; no statistical series acquired.",
     )
     for ids, country, extra in (
         ("cyber_cisa_advisories", "US", "ICS|industrial|appliance"),

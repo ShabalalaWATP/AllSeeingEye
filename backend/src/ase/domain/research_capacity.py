@@ -1,6 +1,8 @@
 """Catalogue metadata is bounded separately from operator choices and outbound work."""
 
-MAX_COLLECTION_PROVIDERS = 128
+# The catalogue bound, not a per-run cost: an operator still selects at most
+# MAX_SELECTED_SOURCES, and a plan still runs at most MAX_PLANNED_TASKS.
+MAX_COLLECTION_PROVIDERS = 160
 MAX_SELECTED_SOURCES = 64
 MAX_PLANNED_TASKS = 8
 MAX_RESEARCH_CANDIDATES = 8
