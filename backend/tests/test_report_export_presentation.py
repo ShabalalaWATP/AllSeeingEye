@@ -146,3 +146,7 @@ def test_markdown_is_portable_with_one_blank_line_between_blocks() -> None:
         assert f"{heading}\n\n" in markdown
     assert "**Original title:** " in markdown
     assert "**Recorded metadata**\n\n- Published:" in markdown
+    # A judgement's likelihood and confidence read as their own lines, not as a run-on
+    # continuation of the statement they belong to.
+    assert "\n\n  Probability: " in markdown
+    assert "Watch condition: elevated.\n\n- " in markdown
