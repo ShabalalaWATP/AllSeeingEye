@@ -66,7 +66,7 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
 
 def source_rating_for(source_id: str, configured_grade: Reliability) -> SourceRating:
     """Describe registered assignments; never infer reliability from a domain or platform."""
-    if source_id.startswith("mastodon_") or source_id in {
+    if source_id.startswith(("mastodon_", "telegram_")) or source_id in {
         "reddit_worldnews",
         "reddit_geopolitics",
         "reddit_ukrainianconflict",

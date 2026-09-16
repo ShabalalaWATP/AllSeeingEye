@@ -14,7 +14,10 @@ from collections.abc import Awaitable, Callable, Mapping
 from urllib.parse import urlsplit
 
 ADSB_LOL_HOST = "api.adsb.lol"
-DEFAULT_HOST_INTERVALS: Mapping[str, float] = {ADSB_LOL_HOST: 1.0}
+# Telegram serves every curated channel preview from one host, and the pages are large
+# and uncacheable. Five seconds between them keeps this process well inside polite use.
+TELEGRAM_HOST = "t.me"
+DEFAULT_HOST_INTERVALS: Mapping[str, float] = {ADSB_LOL_HOST: 1.0, TELEGRAM_HOST: 5.0}
 
 
 class HostPacer:
