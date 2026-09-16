@@ -53,7 +53,9 @@ async def test_schedules_are_validated_and_owned(
     created = await client.post("/api/schedules", json=body, headers=bearer(token))
     assert created.status_code == 201, created.text
     assert created.json()["country_iso"] == "UA"
-    expected = next_run_after(container.clock.now(), 6, "daily")
+    # New subscriptions default to weekly, the cheapest useful recurring shape.
+    assert created.json()["cadence"] == "weekly"
+    expected = next_run_after(container.clock.now(), 6, "weekly")
     assert datetime.fromisoformat(created.json()["next_run_at"]) == expected
     schedule_id = created.json()["id"]
 
@@ -86,7 +88,7 @@ async def test_runner_enqueues_due_slot_once_without_inline_production(
     hour = (container.clock.now().hour + 1) % 24
     body = {
         "name": "Morning INTSUM", "template_id": "intsum", "country_iso": "UA",
-        "hour_utc": hour, "window_hours": 336,
+        "hour_utc": hour, "window_hours": 336, "cadence": "daily",
     }  # fmt: skip
     created = await client.post("/api/schedules", json=body, headers=bearer(token))
     assert created.status_code == 201, created.text

@@ -14,7 +14,7 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_scope import MAX_RESEARCH_HOURS, normalise_countries
-from ase.domain.schedules import CADENCES, Schedule
+from ase.domain.schedules import CADENCES, DEFAULT_CADENCE, Schedule
 from ase.domain.subscription_recurrence import LocalRecurrence, WindowPolicy
 
 MAX_WINDOW_HOURS = MAX_RESEARCH_HOURS
@@ -27,7 +27,7 @@ class ScheduleInput:
     country_iso: str | None = None
     plan_id: UUID | None = None
     hour_utc: int = 6
-    cadence: str = "daily"
+    cadence: str = DEFAULT_CADENCE
     weekday: int = 0
     window_hours: int | None = None
     enabled: bool = True
