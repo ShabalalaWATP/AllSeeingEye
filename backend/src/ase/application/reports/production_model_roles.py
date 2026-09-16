@@ -5,11 +5,13 @@ from collections.abc import Sequence
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.reports.advocacy import advocate, apply_advocacy
 from ase.application.reports.direction import direct
+from ase.application.reports.entailment import check_entailment
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem
 from ase.domain.llm import LlmRole
+from ase.domain.report_quality_rules import ENTAILMENT_RULE
 from ase.domain.reports import ReportBody
 from ase.domain.validation import Finding, Severity
 
@@ -81,3 +83,39 @@ async def advocate_for_job(
     if draft.advocacy is None:
         return body, None
     return apply_advocacy(body, draft.advocacy)
+
+
+async def entail_for_job(
+    job: Job,
+    profile_for: ProfileLookup,
+    body: ReportBody,
+    evidence: Sequence[EvidenceItem],
+    totals: Totals,
+    gateway: LlmGateway,
+    cipher: SecretCipher,
+) -> None:
+    """Run the bounded entailment pass, or record plainly that it could not run."""
+    if not body.key_judgements:
+        return
+    profile = await profile_for(LlmRole.ASSESSMENT)
+    if profile is None:
+        totals.findings.append(
+            Finding(
+                ENTAILMENT_RULE,
+                Severity.WARNING,
+                "key_judgements",
+                "No enabled model profile plays the assessment role, so the entailment "
+                "check on the key judgements did not run. Citations were checked "
+                "literally only.",
+            )
+        )
+        return
+    draft = await check_entailment(
+        gateway, profile, cipher.decrypt(profile.api_key_encrypted), body, evidence
+    )
+    purpose = f"report:{job.template.id}:entailment"
+    totals.usage.append(usage_entry(job, profile, purpose, draft.ran, draft))
+    totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
+    for finding in draft.reasons:
+        if finding not in totals.findings:
+            totals.findings.append(finding)
