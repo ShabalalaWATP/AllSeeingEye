@@ -25,6 +25,7 @@ from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.host_pacing import DEFAULT_HOST_INTERVALS, HostPacer
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.mastodon_watch import watch_host_intervals
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.satellite_http import SatelliteHttpClient
 from ase.adapters.geo.camera_http import CameraHttpClient
@@ -173,7 +174,10 @@ class Container(
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
         self.http, self.marine_http, self.satellite_http = (
-            FeedHttpClient(settings.feeds_user_agent, host_pacer=HostPacer(DEFAULT_HOST_INTERVALS)),
+            FeedHttpClient(
+                settings.feeds_user_agent,
+                host_pacer=HostPacer({**DEFAULT_HOST_INTERVALS, **watch_host_intervals()}),
+            ),
             DigitrafficHttpClient("TheAllSeeingEye/0.1"),
             SatelliteHttpClient(settings.feeds_user_agent),
         )

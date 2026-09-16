@@ -3,20 +3,22 @@
 Posts are social listening at doctrine's floor (reliability E, credibility 6) until
 corroborated. The instance decides what its public timeline shows; the connector never
 authenticates. Content arrives as HTML and is reduced to text before it is stored.
+
+One connector reads several hashtags from one instance, so a tag the instance has
+retired must not cost the rest of that instance's tags: 404 and 410 skip that tag.
+Everything else, including a rate limit, still fails the poll so the scheduler owns the
+backoff and the upstream's `Retry-After`.
 """
 
 from __future__ import annotations
 
-import json
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
-
-# Requires Python >=3.12; this standard-library API is supported.
-# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
-from importlib import resources
 from typing import Any
 
 from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.http_contracts import FeedHttpStatusError
+from ase.adapters.feeds.mastodon_watch import DEFAULT_POLL_MINUTES, MAX_TAGS_PER_INSTANCE
 from ase.application.feeds.pipeline import strip_html
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -32,22 +34,12 @@ from ase.domain.events import (
 from ase.domain.sources import SourceKind, SourceSpec
 
 LIMIT = 40
+MISSING_TAG_STATUSES = frozenset({404, 410})
 TITLE_CHARS = 140
 MAX_STATUSES = 400
 
 
-def load_watch() -> list[tuple[str, tuple[str, ...]]]:
-    """(instance, hashtags) pairs from the packaged watch list."""
-    raw = resources.files("ase.resources").joinpath("social_watch.json").read_text("utf-8")
-    data = json.loads(raw)
-    return [
-        (str(entry["instance"]), tuple(str(tag) for tag in entry.get("tags", [])))
-        for entry in data.get("mastodon", [])
-        if isinstance(entry, dict) and entry.get("instance")
-    ]
-
-
-def spec_for(instance: str) -> SourceSpec:
+def spec_for(instance: str, minutes: int = DEFAULT_POLL_MINUTES) -> SourceSpec:
     slug = instance.replace(".", "_").replace("-", "_")
     return SourceSpec(
         id=f"mastodon_{slug}",
@@ -57,7 +49,7 @@ def spec_for(instance: str) -> SourceSpec:
         kind=SourceKind.API,
         url=f"https://{instance}/api/v1/timelines/tag/",
         reliability=Reliability.E,
-        poll_interval=timedelta(minutes=10),
+        poll_interval=timedelta(minutes=minutes),
         licence_note="Instance rules; public posts, text and links only",
         homepage=f"https://{instance}/",
         language="und",
@@ -82,12 +74,18 @@ def _title(text: str) -> str:
 
 class MastodonConnector:
     def __init__(
-        self, http: FeedHttpClient, clock: Clock, instance: str, tags: Sequence[str]
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        instance: str,
+        tags: Sequence[str],
+        minutes: int = DEFAULT_POLL_MINUTES,
     ) -> None:
-        self.spec = spec_for(instance)
+        self.spec = spec_for(instance, minutes)
         self._http = http
         self._clock = clock
-        self._tags = tuple(tag.strip().lstrip("#").lower() for tag in tags if tag.strip())
+        cleaned = tuple(tag.strip().lstrip("#").lower() for tag in tags if tag.strip())
+        self._tags = cleaned[:MAX_TAGS_PER_INSTANCE]
 
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
@@ -96,6 +94,13 @@ class MastodonConnector:
             try:
                 data = await self._http.get_json(f"{self.spec.url}{tag}?limit={LIMIT}")
             except NotModified:
+                continue
+            except FeedHttpStatusError as exc:
+                # A retired or hidden tag on this instance; its siblings still poll.
+                # Anything else (auth, rate limit, instance fault) fails the whole poll
+                # so health, the breaker and the scheduler's backoff all see it.
+                if exc.status_code not in MISSING_TAG_STATUSES:
+                    raise
                 continue
             statuses = [s for s in data if isinstance(s, dict)] if isinstance(data, list) else []
             for status in statuses[:MAX_STATUSES]:

@@ -73,7 +73,7 @@ A single panel that answers "what is going on in X right now": flag and key fact
 
 ### 5.7 Social listening
 
-- Built: Mastodon hashtag timelines from the packaged instance watchlist, Reddit subreddit Atom feeds and six outlet YouTube channel feeds. Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
+- Built: Mastodon hashtag timelines from the packaged instance watchlist (four reviewed instances, 16 hashtags), Reddit subreddit Atom feeds and six outlet YouTube channel feeds. Reddit and YouTube were not widened on 16 September 2026 because both hosts' `robots.txt` disallow the polled paths; see [SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md). Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
 - `/trackers/social` shows the retained day's posts by platform and instance, top hashtags, the latest 50 posts and counts of located posts. Located events use the existing social globe category; upstream posts without coordinates are not assigned guessed positions.
 - Keyword bursts compare the previous complete UTC hour with sampled history from the preceding 30 days. Up to 32 watchlist/collection terms have durable hourly count aggregates. A burst requires six baseline hours, three posts and at least twice the mean. Personal collection terms are restricted to their owner or an administrator; team terms follow current team membership. Inactive owners, removed members and archived teams stop background collection.
 - Mastodon and Reddit begin at reliability E and credibility 6. Named outlet YouTube channels retain outlet reliability. Translation and activity spikes do not establish truth or increase a grade.
