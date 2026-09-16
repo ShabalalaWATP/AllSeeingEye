@@ -32,23 +32,23 @@ export function ControlPanel({ children }: PanelProps) {
 }
 
 /** Non-modal tools leave map gestures available, including while measuring. */
+export type OpenPanel = (label: string, button?: HTMLButtonElement | null) => void;
+
 export function GlobeControls({
   children,
   layers,
   navigation,
   onActiveChange,
+  initial = null,
 }: {
-  children: ReactNode;
-  layers:
-    | ReactNode
-    | ((
-        open: (label: string, button: HTMLButtonElement) => void,
-        active: string | null,
-      ) => ReactNode);
+  children: ReactNode | ((open: OpenPanel) => ReactNode);
+  layers: ReactNode | ((open: OpenPanel, active: string | null) => ReactNode);
   navigation?: ReactNode;
   onActiveChange?: (label: string | null) => void;
+  /** Panel opened on first render, so a link can point at one tool. */
+  initial?: string | null;
 }) {
-  const [active, setActive] = useState<string | null>(null);
+  const [active, setActive] = useState<string | null>(initial);
   const changed = useRef(onActiveChange);
   useEffect(() => {
     changed.current = onActiveChange;
@@ -59,7 +59,12 @@ export function GlobeControls({
   const id = useId();
   const [opener, setOpener] = useState<HTMLButtonElement | null>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
-  const panels = Children.toArray(children).filter(isValidElement<PanelProps>);
+  const openPanel: OpenPanel = (label, button) => {
+    if (button) setOpener(button);
+    setActive((current) => (current === label ? null : label));
+  };
+  const resolved = typeof children === 'function' ? children(openPanel) : children;
+  const panels = Children.toArray(resolved).filter(isValidElement<PanelProps>);
   const selected = panels.find((panel) => panel.props.label === active);
   const close = () => {
     setActive(null);
@@ -108,12 +113,7 @@ export function GlobeControls({
       <div className="map-layer-rail" role="group" aria-label="Map layers">
         {panelButtons('left')}
         <div className="map-rail-divider" />
-        {typeof layers === 'function'
-          ? layers((label, button) => {
-              setOpener(button);
-              setActive(active === label ? null : label);
-            }, active)
-          : layers}
+        {typeof layers === 'function' ? layers(openPanel, active) : layers}
       </div>
       <div className="map-tool-rail" role="group" aria-label="Map tools">
         {panelButtons('right')}
