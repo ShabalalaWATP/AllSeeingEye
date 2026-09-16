@@ -163,7 +163,7 @@ class Container(
         self.countries: CountryDirectory = CountryIndex.from_resource()
         self.conflicts: ConflictDirectory = ConflictIndex.from_resource()
         self.streams = StreamLimiter(settings.max_streams_per_user)
-        self.initialise_models(settings.encryption_key_value)
+        self.initialise_models(settings.encryption_key_value, settings.reasoning_effort_policy)
         self.embedding_gateway = OpenAiEmbeddingGateway()
         self._embedding_gateway = self.embedding_gateway
         self.embedding_lock = asyncio.Lock()

@@ -10,6 +10,7 @@ from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.llm.bedrock import BedrockConverseGateway
+from ase.adapters.llm.effort import MechanicalEffortGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.llm.router import RoutingLlmGateway
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
@@ -35,6 +36,7 @@ from ase.application.admin.requests import (
 )
 from ase.application.admin.source_controls import AdminSourceControls
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
+from ase.domain.reasoning import ReasoningEffortPolicy
 
 if TYPE_CHECKING:
     from ase.application.access import AccessPolicy
@@ -76,10 +78,14 @@ class AdminWiring:
         def _auditor(self, repos: Repositories) -> Auditor: ...
         def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
 
-    def initialise_models(self, encryption_key: str | None) -> None:
+    def initialise_models(
+        self, encryption_key: str | None, effort: ReasoningEffortPolicy | None = None
+    ) -> None:
         self.cipher = FernetCipher(encryption_key)
         self._llm_gateway = RoutingLlmGateway(OpenAiCompatibleGateway(), BedrockConverseGateway())
-        self.llm = self._llm_gateway
+        # Every provider call passes through here, so mechanical purposes are capped once.
+        self.reasoning_effort = effort if effort is not None else ReasoningEffortPolicy()
+        self.llm = MechanicalEffortGateway(self._llm_gateway, self.reasoning_effort)
         self.model_discovery = self._llm_gateway
 
     def _resume_firms(self) -> None:
