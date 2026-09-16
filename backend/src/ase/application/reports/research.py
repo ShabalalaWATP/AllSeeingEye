@@ -13,17 +13,20 @@ from ase.application.ports.research import (
 )
 from ase.application.reports.request import ReportRequest
 from ase.domain.country_subjects import annotate_fresh_country_subject
+from ase.domain.direction import Direction
+from ase.domain.direction_requirements import effective_requirements
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Event
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import CollectionAttempt, ResearchBatch, ResearchFocus, ResearchQuery
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.research_capacity import MAX_COLLECTION_RECEIPTS, MAX_SEED_RECEIPTS
 from ase.domain.research_records import ResearchReceipt
 
 
 async def _collect_batch(
     query: ResearchQuery,
-    request: ReportRequest,
+    requirements: tuple[IntelligenceRequirement, ...],
     collection: ResearchCollection | None,
     replan: ReplanCallback | None,
     source_operations: SourceOperationCheckpoints | None,
@@ -36,12 +39,10 @@ async def _collect_batch(
         if not isinstance(collection, CheckpointedResearchCollection):
             raise InvalidRequest("Checkpointed source acquisition is unavailable")
         return await collection.collect_checkpointed(
-            query, request.canonical_requirements, source_operations, replan=replan
+            query, requirements, source_operations, replan=replan
         )
-    if request.canonical_requirements and isinstance(collection, RankedResearchCollection):
-        return await collection.collect_with_requirements(
-            query, request.canonical_requirements, replan=replan
-        )
+    if requirements and isinstance(collection, RankedResearchCollection):
+        return await collection.collect_with_requirements(query, requirements, replan=replan)
     if replan:
         return await collection.collect(query, replan=replan)
     return await collection.collect(query)
@@ -80,6 +81,7 @@ async def collect_report_evidence_with_query(
     seed_attempts: tuple[CollectionAttempt, ...] = (),
     replan: ReplanCallback | None = None,
     source_operations: SourceOperationCheckpoints | None = None,
+    direction: Direction | None = None,
 ) -> tuple[EventStore, ResearchReceipt, ResearchQuery]:
     if store_factory is None:
         raise InvalidRequest("On-demand research collection is unavailable")
@@ -96,8 +98,11 @@ async def collect_report_evidence_with_query(
                 "Expanded plan and retained receipts exceed the "
                 f"{MAX_COLLECTION_RECEIPTS}-receipt limit"
             )
+    # The direction call's PIRs, SIRs and EEIs steer source choice when no Research
+    # Brief pins canonical requirements, so a source is planned for what it can answer.
+    requirements = effective_requirements(request.canonical_requirements, direction)
     # Extracted private text must not become an unsolicited public search query.
-    batch = await _collect_batch(query, request, collection, replan, source_operations)
+    batch = await _collect_batch(query, requirements, collection, replan, source_operations)
     effective_query = batch.effective_query or query
     if effective_query != query and (
         batch.plan is None

@@ -128,6 +128,7 @@ async def prepare_collection(
             seed_attempts=job.seed_attempts,
             replan=replan,
             source_operations=source_operations,
+            direction=direction,
         )
         if transformation is not None and receipt.plan is not None:
             plan = (
