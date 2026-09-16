@@ -13463,6 +13463,58 @@
         }
       }
     },
+    "/api/admin/ai-usage/defaults": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Preview Default Policies",
+        "description": "The documented starting set, beside the usage it is compared against.",
+        "operationId": "preview_default_policies_api_admin_ai_usage_defaults_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiPolicyDefaultsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Apply Default Policies",
+        "description": "Create every missing policy in the set. Existing policies are never overwritten.",
+        "operationId": "apply_default_policies_api_admin_ai_usage_defaults_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppliedDefaultsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/admin/sources/firms_viirs_noaa20/connection": {
       "get": {
         "tags": [
@@ -14210,6 +14262,101 @@
         ],
         "title": "AiAllowancePeriod"
       },
+      "AiEffectiveModelOut": {
+        "properties": {
+          "policy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "legacy",
+                  "global",
+                  "team",
+                  "personal"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "profile_name": {
+            "type": "string",
+            "title": "Profile Name"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LlmProvider"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningEffort"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mechanical_effort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningEffort"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Effort mechanical work uses after the configured cap."
+          },
+          "unavailable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy",
+          "profile_id",
+          "profile_name",
+          "model",
+          "provider",
+          "reasoning_effort",
+          "unavailable"
+        ],
+        "title": "AiEffectiveModelOut",
+        "description": "The text model a person or team would use on their next call."
+      },
       "AiLimitOverrideIn": {
         "properties": {
           "state": {
@@ -14293,6 +14440,43 @@
           "observed"
         ],
         "title": "AiMemberUsageOut"
+      },
+      "AiPolicyDefaultsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestedPolicyOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "observed": {
+            "$ref": "#/components/schemas/AiUsageTotalsOut"
+          },
+          "observed_daily_tokens": {
+            "type": "integer",
+            "title": "Observed Daily Tokens",
+            "description": "Recorded tokens this month divided by the days elapsed."
+          },
+          "enforcing": {
+            "type": "boolean",
+            "title": "Enforcing",
+            "description": "False while no enabled policy exists: nothing is capped."
+          },
+          "prices": {
+            "$ref": "#/components/schemas/AiTokenPricesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "observed",
+          "observed_daily_tokens",
+          "enforcing",
+          "prices"
+        ],
+        "title": "AiPolicyDefaultsOut",
+        "description": "What one click would create, beside the usage it is being compared against."
       },
       "AiPolicyOverrideIn": {
         "properties": {
@@ -14413,6 +14597,36 @@
           "team"
         ],
         "title": "AiPolicyScope"
+      },
+      "AiTokenPricesOut": {
+        "properties": {
+          "input_per_million": {
+            "type": "number",
+            "title": "Input Per Million"
+          },
+          "output_per_million": {
+            "type": "number",
+            "title": "Output Per Million"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured",
+            "description": "False when both prices are zero, so no estimate is shown."
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_per_million",
+          "output_per_million",
+          "currency",
+          "configured"
+        ],
+        "title": "AiTokenPricesOut",
+        "description": "Operator-configured prices used to estimate spend. Never a billing figure."
       },
       "AiUsagePolicyIn": {
         "properties": {
@@ -14571,13 +14785,28 @@
             "type": "integer",
             "title": "Unknown Calls",
             "description": "Provider calls held as unknown pending review."
+          },
+          "prices": {
+            "$ref": "#/components/schemas/AiTokenPricesOut"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiEffectiveModelOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The model this destination would use. Never a credential."
           }
         },
         "type": "object",
         "required": [
           "items",
           "observed",
-          "unknown_calls"
+          "unknown_calls",
+          "prices"
         ],
         "title": "AiUsagePreviewOut"
       },
@@ -14907,12 +15136,16 @@
           },
           "observed": {
             "$ref": "#/components/schemas/AiUsageTotalsOut"
+          },
+          "prices": {
+            "$ref": "#/components/schemas/AiTokenPricesOut"
           }
         },
         "type": "object",
         "required": [
           "items",
-          "observed"
+          "observed",
+          "prices"
         ],
         "title": "AiUsageSummaryPageOut"
       },
@@ -14939,6 +15172,26 @@
           "unknown_requests": {
             "type": "integer",
             "title": "Unknown Requests"
+          },
+          "used_input_tokens": {
+            "type": "integer",
+            "title": "Used Input Tokens"
+          },
+          "used_output_tokens": {
+            "type": "integer",
+            "title": "Used Output Tokens"
+          },
+          "estimated_cost": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost",
+            "description": "Estimated spend from recorded tokens at the configured prices."
           }
         },
         "type": "object",
@@ -14947,7 +15200,9 @@
           "period_end",
           "used_requests",
           "used_tokens",
-          "unknown_requests"
+          "unknown_requests",
+          "used_input_tokens",
+          "used_output_tokens"
         ],
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
@@ -16068,6 +16323,22 @@
           "items"
         ],
         "title": "AoisOut"
+      },
+      "AppliedDefaultsOut": {
+        "properties": {
+          "created": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsagePolicyOut"
+            },
+            "type": "array",
+            "title": "Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created"
+        ],
+        "title": "AppliedDefaultsOut"
       },
       "ApproveIn": {
         "properties": {
@@ -40294,7 +40565,7 @@
             "type": "string",
             "maxLength": 16,
             "title": "Cadence",
-            "default": "daily"
+            "default": "weekly"
           },
           "weekday": {
             "type": "integer",
@@ -40435,7 +40706,7 @@
             "type": "string",
             "maxLength": 16,
             "title": "Cadence",
-            "default": "daily"
+            "default": "weekly"
           },
           "weekday": {
             "type": "integer",
@@ -43926,6 +44197,56 @@
         ],
         "title": "SubscriptionEventsOut"
       },
+      "SuggestedPolicyOut": {
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/AiPolicyScope"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "target_name": {
+            "type": "string",
+            "title": "Target Name"
+          },
+          "period": {
+            "$ref": "#/components/schemas/AiAllowancePeriod"
+          },
+          "token_limit": {
+            "type": "integer",
+            "title": "Token Limit"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "already_configured": {
+            "type": "boolean",
+            "title": "Already Configured",
+            "description": "An enabled policy already covers this scope, target and period."
+          }
+        },
+        "type": "object",
+        "required": [
+          "scope",
+          "target_id",
+          "target_name",
+          "period",
+          "token_limit",
+          "reason",
+          "already_configured"
+        ],
+        "title": "SuggestedPolicyOut"
+      },
       "TallyOut": {
         "properties": {
           "key": {
@@ -44005,6 +44326,9 @@
               }
             ],
             "title": "Members"
+          },
+          "prices": {
+            "$ref": "#/components/schemas/AiTokenPricesOut"
           }
         },
         "type": "object",
@@ -44014,7 +44338,8 @@
           "items",
           "own",
           "team",
-          "members"
+          "members",
+          "prices"
         ],
         "title": "TeamAiUsageOut"
       },
