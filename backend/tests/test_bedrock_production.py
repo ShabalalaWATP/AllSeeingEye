@@ -56,6 +56,7 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         "report": [invalid, good_body(), good_body()],
         "challenge_plan": [plans()],
         "challenge_reviews": [reviews()],
+        "entailment": [{"assessments": []}],
     }
     requests = []
 
@@ -123,11 +124,12 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         "challenge_plan",
         "report",
         "challenge_reviews",
+        "entailment",
     ]
     assert all(not answers for answers in responses.values())
     assert version.challenge.redrafted
     assert len(version.challenge.reviews) == len(version.body.key_judgements) == 2
     assert all(len(row.statement) <= MAX_JUDGEMENT_CHARS for row in version.body.key_judgements)
     assert "schema" in json.dumps(requests[3]["messages"]).lower()
-    assert version.prompt_tokens == 70 and version.completion_tokens == 35
+    assert version.prompt_tokens == 80 and version.completion_tokens == 40
     assert version.model == profile.model

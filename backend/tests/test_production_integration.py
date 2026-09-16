@@ -66,11 +66,12 @@ async def test_producer_resolves_advocacy_only_citations_after_model_calls_witho
         "report:ask:direction",
         "report:ask",
         "report:ask:advocacy",
+        "report:ask:entailment",
     ]
     assert all(
         row.ok and row.prompt_tokens == 5 and row.completion_tokens == 3 for row in usage.rows
     )
-    assert version.prompt_tokens == 15 and version.completion_tokens == 9
+    assert version.prompt_tokens == 20 and version.completion_tokens == 12
 
 
 @pytest.mark.parametrize("fail_stage", ["direction", "report", "advocacy"])
