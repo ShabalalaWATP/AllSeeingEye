@@ -17,6 +17,7 @@ from ase.domain.claim_generation import ClaimGenerationReceipt, claim_generation
 from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_coverage import coverage_from_dict, coverage_to_dict
 from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.evidence_records import evidence_from_list, evidence_to_list
 from ase.domain.model_routing import ModelRoutingRecord
@@ -284,6 +285,10 @@ def quality_to_dict(quality: QualityOfInformation) -> dict[str, Any]:
     data["newest"] = quality.newest.isoformat() if quality.newest else None
     data["oldest"] = quality.oldest.isoformat() if quality.oldest else None
     data["confidence_ceiling"] = quality.confidence_ceiling.value
+    # Absent on versions saved before coverage counts were recorded.
+    data.pop("coverage")
+    if quality.coverage is not None:
+        data["coverage"] = coverage_to_dict(quality.coverage)
     return data
 
 
@@ -300,4 +305,5 @@ def quality_from_dict(data: Mapping[str, Any]) -> QualityOfInformation:
         ),
         flagged=int(data.get("flagged", 0)),
         confidence_ceiling=Confidence(str(data.get("confidence_ceiling", "low"))),
+        coverage=coverage_from_dict(data.get("coverage")),
     )

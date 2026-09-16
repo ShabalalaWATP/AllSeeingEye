@@ -45,7 +45,7 @@ def test_parent_feeds_share_cap_and_first_pass_prefers_other_organisations():
     assert {item.event_id for item in capped.items} == {primary.id, outside.id}
 
 
-def test_republished_titles_are_deferred_but_remain_when_space_allows():
+def test_republished_titles_fold_into_one_representative_with_the_copy_attached():
     primary = make_event(
         "primary", source_id="parent-feed", title="Bridge closes after damage", severity=1
     )
@@ -57,11 +57,12 @@ def test_republished_titles_are_deferred_but_remain_when_space_allows():
         primary.id,
         different.id,
     ]
-    assert [item.event_id for item in select([copy, different, primary]).items] == [
-        primary.id,
-        different.id,
-        copy.id,
-    ]
+    # A spare slot no longer goes to the same story again: the copy rides along.
+    selected = select([copy, different, primary])
+    assert [item.event_id for item in selected.items] == [primary.id, different.id]
+    assert selected.merged == 1
+    assert [row.event_id for row in selected.items[0].corroboration] == [copy.id]
+    assert selected.items[1].corroboration == ()
 
 
 def test_translated_titles_and_content_hashes_also_defer_copies():

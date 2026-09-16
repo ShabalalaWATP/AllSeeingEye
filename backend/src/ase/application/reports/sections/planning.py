@@ -12,13 +12,32 @@ from typing import Any
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_volume import MAX_TOPIC_EVIDENCE, WIDE_POOL_ITEMS
 from ase.domain.llm import LlmProfile
 from ase.domain.reports import KeyJudgement, ReportHeader
 from ase.domain.research_brief_values import IntelligenceRequirement
 
 MAX_INITIAL_TOPICS = 6
+# A wide pool is layered: more, smaller passes, then one synthesis over their outputs.
+# The leaf ceiling is unchanged, so a wide plan still cannot outspend a narrow one.
+MAX_WIDE_TOPICS = 9
+WIDE_SUFFIX = "+wide-layers"
 MAX_TOPIC_LEAVES = 12
 MAX_SPLIT_DEPTH = 2
+__all__ = [
+    "MAX_TOPIC_EVIDENCE",
+    "MAX_TOPIC_LEAVES",
+    "MAX_WIDE_TOPICS",
+    "WIDE_POOL_ITEMS",
+    "WIDE_SUFFIX",
+    "Topic",
+    "canonical_json",
+    "method_for",
+    "packet_digest",
+    "plan_topics",
+    "split_topic",
+    "topic_ceiling",
+]
 MAX_EVIDENCE = 100
 LEGACY_METHOD_VERSION = "report-sections-v1"
 PREVIOUS_METHOD_VERSION = "report-sections-v2"
@@ -56,6 +75,16 @@ class Topic:
     parent: str | None = None
     depth: int = 0
     requirement_evidence: tuple[tuple[str, tuple[str, ...]], ...] = ()
+
+
+def topic_ceiling(evidence_count: int) -> int:
+    """How many first-pass topics one plan may have, before deterministic subdivision."""
+    return MAX_WIDE_TOPICS if evidence_count > WIDE_POOL_ITEMS else MAX_INITIAL_TOPICS
+
+
+def method_for(method_version: str, evidence_count: int) -> str:
+    """A wide plan declares its layering, so a narrow plan's saved digests are untouched."""
+    return f"{method_version}{WIDE_SUFFIX}" if evidence_count > WIDE_POOL_ITEMS else method_version
 
 
 def _terms(text: str) -> set[str]:
@@ -165,8 +194,9 @@ def plan_topics(
         (title, ids, tuple(items), _bindings(tuple(items), assignments))
         for (title, ids), items in groups.items()
     ]
-    if len(parts) > MAX_INITIAL_TOPICS:
-        retained, rest = parts[: MAX_INITIAL_TOPICS - 1], parts[MAX_INITIAL_TOPICS - 1 :]
+    ceiling = topic_ceiling(len(labels))
+    if len(parts) > ceiling:
+        retained, rest = parts[: ceiling - 1], parts[ceiling - 1 :]
         parts = [
             *retained,
             (
@@ -176,7 +206,7 @@ def plan_topics(
                 tuple(binding for _, _, _, bindings in rest for binding in bindings),
             ),
         ]
-    target = min(MAX_INITIAL_TOPICS, len(labels), max(4, math.ceil(len(labels) / 8)))
+    target = min(ceiling, len(labels), max(4, math.ceil(len(labels) / 8)))
     while len(parts) < target:
         index = max(range(len(parts)), key=lambda at: len(parts[at][2]))
         title, ids, items, bindings = parts[index]
@@ -288,7 +318,9 @@ def packet_digest(
 ) -> str:
     packet = canonical_json(
         {
-            "method": CANONICAL_METHOD_VERSION if requirements else method_version,
+            "method": method_for(
+                CANONICAL_METHOD_VERSION if requirements else method_version, len(evidence)
+            ),
             "profile": profile.config_hash,
             "template": asdict(template),
             "header": asdict(header),

@@ -6410,6 +6410,56 @@ export interface components {
             /** Changes */
             changes: components["schemas"]["ControlChangeOut"][];
         };
+        /**
+         * CorroborationMember
+         * @description A near-identical item folded into one representative before the prompt was built.
+         *
+         *     The member stays in the frozen record so provenance keeps every retrieved copy.
+         *     Repetition of the same text across outlets is not independent corroboration.
+         */
+        CorroborationMember: {
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Independence Key */
+            independence_key: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url?: string | null;
+            /** Published At */
+            published_at?: string | null;
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: string[];
+        };
+        /**
+         * CorroborationMemberOut
+         * @description A near-identical retrieved copy folded into one item, kept for provenance.
+         */
+        CorroborationMemberOut: {
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Independence Key */
+            independence_key: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url?: string | null;
+            /** Published At */
+            published_at?: string | null;
+            /** Reasons */
+            reasons?: string[];
+        };
         /** CountriesOut */
         CountriesOut: {
             /** Items */
@@ -7619,6 +7669,11 @@ export interface components {
              * @default []
              */
             source_dates: components["schemas"]["SourceDate"][];
+            /**
+             * Corroboration
+             * @default []
+             */
+            corroboration: components["schemas"]["CorroborationMember"][];
         };
         /**
          * EvidenceTimeBasis
@@ -11758,6 +11813,8 @@ export interface components {
             transformations?: components["schemas"]["TextTransformation"][];
             /** Source Dates */
             source_dates?: components["schemas"]["SourceDate"][];
+            /** Corroboration */
+            corroboration?: components["schemas"]["CorroborationMemberOut"][];
         };
         /** ReportJobCreateIn */
         ReportJobCreateIn: {

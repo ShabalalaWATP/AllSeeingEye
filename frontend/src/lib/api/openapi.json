@@ -20621,6 +20621,135 @@
         ],
         "title": "ControlSummaryOut"
       },
+      "CorroborationMember": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "independence_key": {
+            "type": "string",
+            "title": "Independence Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "source_id",
+          "source_name",
+          "independence_key",
+          "title"
+        ],
+        "title": "CorroborationMember",
+        "description": "A near-identical item folded into one representative before the prompt was built.\n\nThe member stays in the frozen record so provenance keeps every retrieved copy.\nRepetition of the same text across outlets is not independent corroboration."
+      },
+      "CorroborationMemberOut": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "independence_key": {
+            "type": "string",
+            "title": "Independence Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "source_id",
+          "source_name",
+          "independence_key",
+          "title"
+        ],
+        "title": "CorroborationMemberOut",
+        "description": "A near-identical retrieved copy folded into one item, kept for provenance."
+      },
       "CountriesOut": {
         "properties": {
           "items": {
@@ -24366,6 +24495,14 @@
             },
             "type": "array",
             "title": "Source Dates",
+            "default": []
+          },
+          "corroboration": {
+            "items": {
+              "$ref": "#/components/schemas/CorroborationMember"
+            },
+            "type": "array",
+            "title": "Corroboration",
             "default": []
           }
         },
@@ -36043,6 +36180,13 @@
             },
             "type": "array",
             "title": "Source Dates"
+          },
+          "corroboration": {
+            "items": {
+              "$ref": "#/components/schemas/CorroborationMemberOut"
+            },
+            "type": "array",
+            "title": "Corroboration"
           }
         },
         "type": "object",

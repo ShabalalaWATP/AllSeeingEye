@@ -14,6 +14,7 @@ from datetime import datetime
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Event
 from ase.domain.evidence_attributes import EvidenceAttribute, freeze_evidence_attributes
+from ase.domain.evidence_coverage import EvidenceCoverage
 from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.observation import ObservationMetadata
@@ -56,6 +57,24 @@ def injection_flags(*texts: str | None) -> tuple[str, ...]:
 
 
 @dataclass(frozen=True, slots=True)
+class CorroborationMember:
+    """A near-identical item folded into one representative before the prompt was built.
+
+    The member stays in the frozen record so provenance keeps every retrieved copy.
+    Repetition of the same text across outlets is not independent corroboration.
+    """
+
+    event_id: str
+    source_id: str
+    source_name: str
+    independence_key: str
+    title: str
+    url: str | None = None
+    published_at: datetime | None = None
+    reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class EvidenceItem:
     label: str
     event_id: str
@@ -91,6 +110,7 @@ class EvidenceItem:
     project: ProjectMetadata | None = None
     transformations: tuple[TextTransformation, ...] = ()
     source_dates: tuple[SourceDate, ...] = ()
+    corroboration: tuple[CorroborationMember, ...] = ()
 
     def __post_init__(self) -> None:
         validate_provenance(self.transformations, self.source_dates)
@@ -161,6 +181,7 @@ class QualityOfInformation:
     contradictions: int | None = None
     flagged: int = 0
     confidence_ceiling: Confidence = Confidence.HIGH
+    coverage: EvidenceCoverage | None = None
 
     def describe(self) -> str:
         grades = ", ".join(f"{count} {grade}" for grade, count in sorted(self.by_grade.items()))
@@ -172,6 +193,7 @@ class QualityOfInformation:
             "contradictions not automatically assessed; "
             f"{self.flagged} item(s) flagged for "
             "instruction-like text. Confidence limits are assessed per judgement."
+            + (f" {self.coverage.describe()}" if self.coverage else "")
         )
 
 

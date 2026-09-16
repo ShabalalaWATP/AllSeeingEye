@@ -7,7 +7,7 @@ user dictionary keys and pre-existing optional fields retain their historical sh
 from dataclasses import fields, is_dataclass
 from typing import Any
 
-from ase.domain.evidence import EvidenceItem
+from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.report_records import ReportVersion
 from ase.domain.research import CollectionAttempt
 from ase.domain.research_plan import QueryVariant, ResearchPlan, ResearchTask
@@ -15,7 +15,8 @@ from ase.domain.research_records import ResearchReceipt
 
 # Fields added after historical exports were hashed; absent values keep the old bytes.
 _ADDED_DEFAULTS: tuple[tuple[type, tuple[tuple[str, Any], ...]], ...] = (
-    (EvidenceItem, (("transformations", ()), ("source_dates", ()))),
+    (EvidenceItem, (("transformations", ()), ("source_dates", ()), ("corroboration", ()))),
+    (QualityOfInformation, (("coverage", None),)),
     (
         QueryVariant,
         (

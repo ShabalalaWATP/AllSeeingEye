@@ -25,6 +25,7 @@ from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.challenge import run_challenge
 from ase.application.reports.challenge_expansion import expand_and_review
 from ase.application.reports.drafting import Draft, draft_body
+from ase.application.reports.evidence_rerank import EvidenceReranker
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.frozen_challenge import review_frozen
 from ase.application.reports.original_followthrough import OriginalFollowThrough
@@ -36,6 +37,7 @@ from ase.application.reports.production_checkpoint import (
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_completion import complete_production
 from ase.application.reports.production_model_roles import advocate_for_job, direct_for_job
+from ase.application.reports.production_rerank import rerank_for_job
 from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
@@ -73,6 +75,7 @@ class Producer:
         original_followthrough: OriginalFollowThrough | None = None,
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
+        reranker: EvidenceReranker | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -87,6 +90,7 @@ class Producer:
         self._original_followthrough = original_followthrough
         self._projector = projector
         self._ai_usage = ai_usage
+        self._reranker = reranker
 
     async def produce(
         self,
@@ -161,6 +165,20 @@ class Producer:
             direction, receipt, query = snapshot.direction, snapshot.receipt, snapshot.query
             store = self._store
 
+        # A resumed job keeps its frozen selection, so no second embedding call is made.
+        # Only the unresumed path hands `select` to the challenge, so the challenge's
+        # re-selection sees the same similarity map that produced the first selection.
+        rerank = await rerank_for_job(
+            self._reranker,
+            job,
+            store,
+            direction,
+            query,
+            receipt,
+            totals,
+            resumed=snapshot is not None,
+        )
+
         def select(extra_terms: tuple[str, ...] = ()) -> Selection:
             return select_for_job(
                 store,
@@ -171,6 +189,8 @@ class Producer:
                 runtime_query=query,
                 receipt=receipt,
                 reserve_challenge_slots=source_operations is not None,
+                similarity=rerank.similarity,
+                rerank_reason=rerank.reason,
             )
 
         selection = snapshot.selection if snapshot is not None else select()
