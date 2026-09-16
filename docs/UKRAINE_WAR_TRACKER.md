@@ -225,7 +225,7 @@ retry and every mechanical check. `tests/test_ukraine_digest_service.py` covers 
 fortnightly cadence, the retention bound, the system attribution, the administrator refresh
 with its authorisation, audit and limits, the model-off, no-evidence, exhausted-allowance and
 provider-failure states, the SQL store and the two endpoints;
-`tests/test_ukraine_digest_migration.py` covers migration `0057` both ways.
+`tests/test_ukraine_digest_migration.py` covers migration `0056` both ways.
 `frontend/src/features/ukraine/ukraineDigest.test.tsx` covers the panel in every state
 (ready, none, generating, stale, unavailable, rejected, load failure), the history selector
 and the administrator control, including a refused refresh.

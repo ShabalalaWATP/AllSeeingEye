@@ -1,4 +1,4 @@
-"""Migration 0057 creates the bounded Ukraine digest history and removes it cleanly."""
+"""Migration 0056 creates the bounded Ukraine digest history and removes it cleanly."""
 
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ def _load(name: str) -> ModuleType:
 
 
 def test_ukraine_digest_migration_round_trip() -> None:
-    module = _load("0057")
-    assert module.revision == "0057" and module.down_revision == "0055"
+    module = _load("0056")
+    assert module.revision == "0056" and module.down_revision == "0055"
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:
