@@ -435,3 +435,28 @@ claimed, visually confirmed and documented figures, a timeline, force trees and 
 catalogue. `docs/UKRAINE_WAR_TRACKER.md` describes it; `docs/UKRAINE_WAR_TRACKER_PLAN.md`
 records the source research. The globe's Conflict panel and Frontlines directory are
 unchanged and still list the access routes for DeepState, ISW and OCHA.
+
+## Map guide and navigation findability, 16 September 2026
+
+The layer switches were spread across nine panels with nothing naming what the map
+can show. `frontend/src/lib/mapLayerDirectory.ts` now holds one description of every
+layer and tool, grouped as live events, reference layers, map setup and planning
+tools, with the label of the panel that owns each one. The **Map guide** control at
+the top of the left rail renders that directory: each row says what the layer is,
+switches it on where the state is a page hook or a store, and otherwise opens the
+panel holding its filters. `GlobeControls` accepts its panels as a render function
+so one panel can open another, and an `initial` panel, so `/?panel=<label>` opens a
+named tool. Only labels the map defines are accepted, so a stale or hostile link
+opens nothing.
+
+The primary rail was reworked at the same time. It now lists Map plus four visible
+groups, Research, Monitoring, Standing desks and Directory, taken from
+`frontend/src/lib/workspaceNavigation.ts`, so saved reports, plans, the live
+monitor, alerts, annotation monitors, teams and the source catalogue are one click
+away instead of nested behind Research or a personal settings card. Administration
+keeps its own separate rail and never appears in research navigation. Ctrl or Cmd K
+opens a search palette over the same directories plus the source catalogue by
+family. The source catalogue reads its filters from the address, so
+`/sources?family=camera_index` is linkable, and each family links on to where it is
+used. `/dev/navigation-preview` frames the rail, the palette, the mobile drawer and
+the guide without an account.

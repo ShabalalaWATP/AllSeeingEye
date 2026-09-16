@@ -1,4 +1,8 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
+import { useSearchParams } from 'react-router';
+
+import { readMapPanel } from '@/lib/mapLayerDirectory';
+
 import { SavedMapAreaNotice } from './SavedMapAreaNotice';
 import { GlobeInspectors } from './GlobeInspectors';
 import { MapCanvas } from './MapCanvas';
@@ -12,6 +16,7 @@ import { MapNavigationTools } from './MapNavigationTools';
 import { ModeToolbar } from './ModeToolbar';
 import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
+import { mapGuidePanel } from './MapGuidePanel';
 import { useGlobePage } from './useGlobePage';
 import './dashboard.css';
 
@@ -83,6 +88,8 @@ export default function GlobePage() {
     },
     now,
   } = useGlobePage();
+  const [params] = useSearchParams();
+  const requestedPanel = readMapPanel(params);
   return (
     <div className="globe-dashboard absolute inset-0 bg-ground">
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
@@ -106,60 +113,75 @@ export default function GlobePage() {
             />
           )}
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
+          initial={requestedPanel}
         >
-          {dashboardCataloguePanels({
-            data,
-            infrastructure,
-            focusInfrastructure,
-            technology,
-            onContextSelect: selectContext,
-            onSatelliteSelect: selectSatellite,
-            onTrafficSelect: selectTraffic,
-            picking: tools.picking,
-            engine,
-            onJam,
-            conflictOverview: { regions, onSelect: regionSelection.focus },
-            cyber: { cyber, onSelect: cyberSelection.selectRecord, picking: tools.picking, radar },
-            gnss: {
-              enabled: interference,
-              data: gnss,
-              filters: gnssFilters,
-              selected: details?.kind === 'jam' ? details.cell : null,
-            },
-          })}
-          {mapReferencePanels({
-            display: {
-              terminator,
-              lite,
-              onToggleTerminator: toggleTerminator,
-              onToggleLite: toggleLite,
-            },
-            base: {
-              initialExpanded: true,
-              value: baseLayer,
-              osAvailable: osMaps,
-              osChecking: osLoading,
-              osError,
-              onCheckOs: recheckOs,
-              onChange: setBaseLayer,
-            },
-            nation: { countries, value: country, onChange: changeNation, error: countriesError },
-            country: nation
-              ? { country: nation, events: quality.filtered, selectedId, now, onSelect: focus }
-              : null,
-            precision: {
-              events: quality.visible,
-              hidden: [],
-              filter: quality.filter,
-              onFilterChange: quality.setFilter,
-              onSelect: focus,
-            },
-            grid: { grid: britishGrid, engine },
-            cameras: { cameras, onSelect: focusCamera },
-            figures: { figures, onSelect: focusFigure },
-          })}
-          {mapPlanningPanels(tools)}
-          {eventControlPanels(data, networkSelection.selectRecord)}
+          {(openPanel) => [
+            mapGuidePanel(openPanel, {
+              events: data,
+              cameras,
+              figures,
+              regions,
+              grid: britishGrid,
+            }),
+            dashboardCataloguePanels({
+              data,
+              infrastructure,
+              focusInfrastructure,
+              technology,
+              onContextSelect: selectContext,
+              onSatelliteSelect: selectSatellite,
+              onTrafficSelect: selectTraffic,
+              picking: tools.picking,
+              engine,
+              onJam,
+              conflictOverview: { regions, onSelect: regionSelection.focus },
+              cyber: {
+                cyber,
+                onSelect: cyberSelection.selectRecord,
+                picking: tools.picking,
+                radar,
+              },
+              gnss: {
+                enabled: interference,
+                data: gnss,
+                filters: gnssFilters,
+                selected: details?.kind === 'jam' ? details.cell : null,
+              },
+            }),
+            mapReferencePanels({
+              display: {
+                terminator,
+                lite,
+                onToggleTerminator: toggleTerminator,
+                onToggleLite: toggleLite,
+              },
+              base: {
+                initialExpanded: true,
+                value: baseLayer,
+                osAvailable: osMaps,
+                osChecking: osLoading,
+                osError,
+                onCheckOs: recheckOs,
+                onChange: setBaseLayer,
+              },
+              nation: { countries, value: country, onChange: changeNation, error: countriesError },
+              country: nation
+                ? { country: nation, events: quality.filtered, selectedId, now, onSelect: focus }
+                : null,
+              precision: {
+                events: quality.visible,
+                hidden: [],
+                filter: quality.filter,
+                onFilterChange: quality.setFilter,
+                onSelect: focus,
+              },
+              grid: { grid: britishGrid, engine },
+              cameras: { cameras, onSelect: focusCamera },
+              figures: { figures, onSelect: focusFigure },
+            }),
+            mapPlanningPanels(tools),
+            eventControlPanels(data, networkSelection.selectRecord),
+          ]}
         </GlobeControls>
       )}
       <MapStatusReadouts

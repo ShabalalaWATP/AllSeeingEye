@@ -68,6 +68,7 @@ const FiguresPreviewPage = lazy(() => import('@/app/dev/FiguresPreviewPage'));
 const UkrainePreviewPage = lazy(() => import('@/app/dev/UkrainePreviewPage'));
 const AdminPreviewPage = lazy(() => import('@/app/dev/AdminPreviewPage'));
 const EconomyPreviewPage = lazy(() => import('@/app/dev/EconomyPreviewPage'));
+const NavigationPreviewPage = lazy(() => import('@/app/dev/NavigationPreviewPage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -78,6 +79,7 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
       { path: '/dev/ukraine-preview', element: <UkrainePreviewPage /> },
       { path: '/dev/admin-preview', element: <AdminPreviewPage /> },
       { path: '/dev/economy-preview', element: <EconomyPreviewPage /> },
+      { path: '/dev/navigation-preview', element: <NavigationPreviewPage /> },
     ]
   : [];
 

@@ -72,7 +72,8 @@ describe('ops-room alert strip', () => {
     const fetch = vi.spyOn(warningApi, 'fetchAlerts');
     renderApp('/reports', 'user');
     await screen.findByRole('heading', { name: 'Saved reports' });
-    expect(screen.queryByRole('link', { name: /Alerts/ })).not.toBeInTheDocument();
+    // The rail links to alerts, but nothing in the regular workspace shows a live count.
+    expect(screen.queryByRole('link', { name: /unacknowledged/ })).not.toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
 

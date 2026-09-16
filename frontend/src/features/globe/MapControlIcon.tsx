@@ -30,7 +30,8 @@ export type ControlIcon =
   | 'research'
   | 'infrastructure'
   | 'figure'
-  | 'technology';
+  | 'technology'
+  | 'guide';
 const paths: Record<ControlIcon, string> = {
   aircraft:
     'M12 2c1 0 1.5 1 1.5 2v4l7.5 5v2l-7.5-2v5l2.5 2v1l-4-1-4 1v-1l2.5-2v-5L3 15v-2l7.5-5V4c0-1 .5-2 1.5-2Z',
@@ -64,6 +65,7 @@ const paths: Record<ControlIcon, string> = {
   figure: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0Z',
   technology:
     'M7 9h8v8H7V9Zm3 3h2v2h-2v-2ZM4 12h3M4 15h3m8-3h3m-3 3h3M10 6v3m3-3v3m-3 8v3m3-3v3M15 2a7 7 0 0 1 7 7m-7-4a4 4 0 0 1 4 4',
+  guide: 'M3 4.5h6a3 3 0 0 1 3 3 3 3 0 0 1 3-3h6v13h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3H3ZM12 7.5v13',
 };
 export function MapControlIcon({ name }: { name: ControlIcon }) {
   return (

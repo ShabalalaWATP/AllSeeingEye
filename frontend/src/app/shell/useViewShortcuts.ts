@@ -17,17 +17,34 @@ export function isEditableTarget(target: EventTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 }
 
-/** Keyboard shortcuts: G globe, M map, O ops room, [ toggles the rail. Ignored in form fields. */
+/**
+ * Keyboard shortcuts: Ctrl or Cmd K search, G globe, M map, O ops room, [ toggles
+ * the rail. The single-letter ones are ignored in form fields.
+ */
 export function useViewShortcuts(): void {
   const { showGlobe, showMap } = useViewNavigation();
   const setOpsRoom = useGlobeStore((state) => state.setOpsRoom);
   const toggleRail = useShellStore((state) => state.toggleRail);
+  const openPalette = useShellStore((state) => state.openPalette);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      const inDialog =
+        event.target instanceof Element && event.target.closest('dialog[open]') !== null;
+      if (
+        !event.defaultPrevented &&
+        !inDialog &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        event.key.toLowerCase() === 'k'
+      ) {
+        event.preventDefault();
+        openPalette();
+        return;
+      }
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
       if (isEditableTarget(event.target)) return;
-      if (event.target instanceof Element && event.target.closest('dialog[open]') !== null) return;
+      if (inDialog) return;
       const key = event.key.toLowerCase();
       if (key === 'g') {
         event.preventDefault();
@@ -50,5 +67,5 @@ export function useViewShortcuts(): void {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [setOpsRoom, showGlobe, showMap, toggleRail]);
+  }, [openPalette, setOpsRoom, showGlobe, showMap, toggleRail]);
 }

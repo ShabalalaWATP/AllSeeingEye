@@ -258,3 +258,28 @@ it('keeps worldwide and unspecified sources distinct from country coverage', asy
   expect(screen.getByRole('heading', { name: 'Uncatalogued source' })).toBeVisible();
   expect(screen.queryByRole('heading', { name: 'BBC World' })).not.toBeInTheDocument();
 });
+
+it('links a filtered catalogue and points each family at where it is used', async () => {
+  const { user, router } = renderApp('/sources?family=camera_index', 'user');
+  await screen.findByRole('heading', { name: 'Sources and connections' });
+  const where = await screen.findByRole('navigation', { name: 'Where Camera indexes appear' });
+  expect(within(where).getByRole('link', { name: 'Open cameras on the map' })).toHaveAttribute(
+    'href',
+    '/?panel=CCTV',
+  );
+  expect(screen.getByLabelText('Family')).toHaveValue('camera_index');
+  await user.selectOptions(screen.getByLabelText('Family'), 'research');
+  expect(router.state.location.search).toBe('?family=research');
+  expect(
+    screen.getByRole('navigation', { name: 'Where On-demand research appear' }),
+  ).toBeInTheDocument();
+  await user.selectOptions(screen.getByLabelText('Family'), '');
+  expect(router.state.location.search).toBe('');
+  expect(screen.queryByRole('navigation', { name: /Where/ })).not.toBeInTheDocument();
+});
+
+it('carries a search term in the address so a filtered catalogue can be shared', async () => {
+  const { user, router } = renderApp('/sources', 'user');
+  await user.type(await screen.findByRole('searchbox'), 'ships');
+  expect(router.state.location.search).toBe('?q=ships');
+});

@@ -17,15 +17,17 @@ describe('personal settings', () => {
       expect(await screen.findByRole('radio', { name: /^Obsidian/ })).toBeChecked();
       expect(screen.getAllByRole('radio')).toHaveLength(8);
       expect(screen.getByRole('radio', { name: /^Midnight/ })).not.toBeChecked();
-      expect(screen.getByRole('link', { name: /Sources and connections/ })).toHaveAttribute(
+      // The rail also links to sources and alerts, so scope these to the page itself.
+      const page = within(screen.getByRole('main'));
+      expect(page.getByRole('link', { name: /Sources and connections/ })).toHaveAttribute(
         'href',
         '/sources',
       );
-      expect(screen.getByRole('link', { name: /Alerts & rules/ })).toHaveAttribute(
+      expect(page.getByRole('link', { name: /Alerts & rules/ })).toHaveAttribute(
         'href',
         '/warning',
       );
-      expect(screen.getByRole('link', { name: 'Profile & teams' })).toHaveAttribute(
+      expect(page.getByRole('link', { name: 'Profile & teams' })).toHaveAttribute(
         'href',
         '/account',
       );
