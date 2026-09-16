@@ -418,6 +418,484 @@
       "search": "Chief Directorate of Intelligence of the Ministry of Defence of Ukraine",
       "as_of": "2026-06-30",
       "links": []
+    },
+    {
+      "id": "ru-districts",
+      "side": "ru",
+      "parent_id": "ru-general-staff",
+      "name": "Military districts",
+      "role": "The administrative chain that raises, mans and equips the force, separate from the operational groupings that fight the war. The Western Military District was split back into the Moscow and Leningrad districts in 2024, restoring the five-district layout of the Soviet period.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Military districts of Russia",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-leningrad-md",
+      "side": "ru",
+      "parent_id": "ru-districts",
+      "name": "Leningrad Military District",
+      "role": "Recreated in 2024 out of the Western district, with headquarters in St Petersburg. It generates the forces used on the Kharkiv and Sumy axes and faces the Finnish and Baltic borders after NATO's northern enlargement.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Leningrad Military District",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-moscow-md",
+      "side": "ru",
+      "parent_id": "ru-districts",
+      "name": "Moscow Military District",
+      "role": "The second half of the 2024 split of the Western district, covering central Russia and the force generation behind the Kupiansk and Lyman axes.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Moscow Military District",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-southern-md",
+      "side": "ru",
+      "parent_id": "ru-districts",
+      "name": "Southern Military District",
+      "role": "Headquartered in Rostov-on-Don, the district that has run the war in Donbas since 2014 and administers occupied Crimea and the southern occupied areas.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Southern Military District",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-central-md",
+      "side": "ru",
+      "parent_id": "ru-districts",
+      "name": "Central Military District",
+      "role": "Headquartered in Yekaterinburg; its armies have carried the main effort on the Avdiivka and Pokrovsk axes since 2023.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Central Military District",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-eastern-md",
+      "side": "ru",
+      "parent_id": "ru-districts",
+      "name": "Eastern Military District",
+      "role": "Headquartered in Khabarovsk; its armies were moved west in 2022 and have fought on the southern Donetsk and Zaporizhzhia boundary ever since.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Eastern Military District",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-6th-army",
+      "side": "ru",
+      "parent_id": "ru-north",
+      "name": "6th Combined Arms Army",
+      "role": "A Leningrad district army committed to the Kharkiv incursion of May 2024 and then to holding the Russian side of the Sumy and Kharkiv border.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "6th Combined Arms Army",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-1st-guards-tank-army",
+      "side": "ru",
+      "parent_id": "ru-west",
+      "name": "1st Guards Tank Army",
+      "role": "Russia's showpiece armoured army before 2022. It lost much of its equipment in the Kharkiv collapse of September 2022, was rebuilt with mobilised soldiers and now fights as ordinary infantry-heavy formations on the Kupiansk axis.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "1st Guards Tank Army",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-8th-army",
+      "side": "ru",
+      "parent_id": "ru-south",
+      "name": "8th Guards Combined Arms Army",
+      "role": "The Southern district army that absorbed the former Luhansk and Donetsk corps units and fought the long battles for Bakhmut, Chasiv Yar and Toretsk.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "8th Guards Combined Arms Army",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-51st-army",
+      "side": "ru",
+      "parent_id": "ru-centre",
+      "name": "51st Combined Arms Army",
+      "role": "Formed in 2023 from the 1st Army Corps, the former Donetsk separatist force, and folded into the regular army. It fought at Avdiivka and on the Pokrovsk axis.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "51st Combined Arms Army",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-58th-army",
+      "side": "ru",
+      "parent_id": "ru-dnepr",
+      "name": "58th Combined Arms Army",
+      "role": "Holds the Zaporizhzhia front that absorbed Ukraine's 2023 counter-offensive. Its commander Ivan Popov was dismissed in July 2023 after complaining publicly about counter-battery losses and the treatment of his soldiers.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "58th Guards Combined Arms Army",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-gru",
+      "side": "ru",
+      "parent_id": "ru-general-staff",
+      "name": "Main Directorate of the General Staff (GRU)",
+      "role": "Military intelligence: agent networks, the Spetsnaz brigades, deep reconnaissance, and the sabotage campaign in Europe that European security services have attributed to it.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "GRU (Russian Federation)",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: GRU",
+          "url": "https://en.wikipedia.org/wiki/GRU_(Russian_Federation)"
+        }
+      ]
+    },
+    {
+      "id": "ru-spetsnaz",
+      "side": "ru",
+      "parent_id": "ru-gru",
+      "name": "Spetsnaz brigades",
+      "role": "The 2nd, 3rd, 10th, 14th, 16th and 22nd special purpose brigades. Western and Ukrainian reporting says they were used as assault infantry from 2022 and rebuilt repeatedly after heavy losses, well outside their reconnaissance role.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Spetsnaz",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-africa-corps",
+      "side": "ru",
+      "parent_id": "ru-gru",
+      "name": "Africa Corps",
+      "role": "The Ministry of Defence structure that took over most of Wagner's African deployments after Yevgeny Prigozhin's death in August 2023, reported to run under General Staff and GRU direction. It fights in the Sahel and Libya rather than in Ukraine, but it absorbed Wagner's people and contracts.",
+      "commander": null,
+      "figure_id": null,
+      "strength": "Western and regional reporting put it in the low thousands across Mali, Libya, Burkina Faso and Niger during 2024 and 2025; no official figure is published.",
+      "search": "Africa Corps (Russia)",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-redut",
+      "side": "ru",
+      "parent_id": "ru-mod",
+      "name": "Redut and company formations",
+      "role": "Ministry of Defence-linked contractor structures, Redut chief among them, that recruited Wagner veterans after the 2023 mutiny, alongside state-company units such as Gazprom's Potok. They fight as assault units under regular commanders.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Redut (private military company)",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: Redut",
+          "url": "https://en.wikipedia.org/wiki/Redut"
+        }
+      ]
+    },
+    {
+      "id": "ru-rubicon",
+      "side": "ru",
+      "parent_id": "ru-mod",
+      "name": "Rubicon centre for unmanned systems",
+      "role": "A drone centre created on the defence minister's order in 2024 to concentrate the best crews, training and equipment. Ukrainian and Western reporting through 2025 described its detachments as the most effective Russian drone units, deployed to Kursk and to the Pokrovsk axis to hunt Ukrainian logistics.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Rubicon Center of Advanced Unmanned Technologies",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: Rubicon unmanned technologies centre",
+          "url": "https://en.wikipedia.org/wiki/Center_for_Advanced_Unmanned_Technologies_%22Rubicon%22"
+        }
+      ]
+    },
+    {
+      "id": "ru-long-range-aviation",
+      "side": "ru",
+      "parent_id": "ru-vks",
+      "name": "Long-Range Aviation",
+      "role": "The bomber force, Tu-95MS, Tu-160 and Tu-22M3, that launches the cruise missiles in the mass strikes on the power grid and cities. Its home bases, deep inside Russia, have been struck repeatedly by Ukrainian drones, including the June 2025 operation against aircraft parked at several airfields.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Long-Range Aviation",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-missile-troops",
+      "side": "ru",
+      "parent_id": "ru-general-staff",
+      "name": "Missile Troops and Artillery",
+      "role": "The ground forces' artillery arm, including the Iskander brigades that fire the ballistic and cruise missiles used against cities and airfields.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Missile Troops and Artillery",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ru-akhmat",
+      "side": "ru",
+      "parent_id": "ru-rosgvardia",
+      "name": "Akhmat formations",
+      "role": "Chechen units raised under Ramzan Kadyrov, formally inside Rosgvardia and the Ministry of Defence, used for assaults, for blocking detachments behind other units and heavily for publicity. Apty Alaudinov, their public commander, also holds a political post in the Ministry of Defence.",
+      "commander": "Apty Alaudinov",
+      "figure_id": null,
+      "strength": null,
+      "search": "Akhmat (special forces)",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: Akhmat",
+          "url": "https://en.wikipedia.org/wiki/Akhmat"
+        }
+      ]
+    },
+    {
+      "id": "ru-fsb",
+      "side": "ru",
+      "parent_id": "ru-supreme",
+      "name": "Federal Security Service (FSB)",
+      "role": "Holds the state border with its Border Service, runs counter-sabotage in the border oblasts and places military counter-intelligence officers inside formations. It reports to the president, not to the Ministry of Defence.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Federal Security Service",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-east-grouping",
+      "side": "ua",
+      "parent_id": "ua-groupings",
+      "name": "Eastern grouping of forces",
+      "role": "The joint command for the Donetsk and Luhansk fronts, previously named Khortytsia. It holds the Pokrovsk, Kostiantynivka, Siversk and Lyman axes, the heaviest fighting of the war since 2023.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Operational Strategic Group Khortytsia",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: eastern front",
+          "url": "https://en.wikipedia.org/wiki/Eastern_front_of_the_Russo-Ukrainian_war_(2022%E2%80%93present)"
+        }
+      ]
+    },
+    {
+      "id": "ua-south-grouping",
+      "side": "ua",
+      "parent_id": "ua-groupings",
+      "name": "Southern grouping of forces",
+      "role": "The joint command for Zaporizhzhia, Kherson and the Dnipro line, built from the earlier Tavriia and Odesa commands. It also covers the Black Sea coast and the Kinburn spit.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Operational Strategic Group Tavria",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: Dnipro operational-strategic group",
+          "url": "https://en.wikipedia.org/wiki/Dnipro_operational-strategic_group"
+        }
+      ]
+    },
+    {
+      "id": "ua-north-grouping",
+      "side": "ua",
+      "parent_id": "ua-groupings",
+      "name": "Northern grouping of forces",
+      "role": "Covers Sumy, Chernihiv and northern Kharkiv, the border raids of 2024 and the Kursk operation begun in August 2024, which Russian and North Korean forces largely reversed through the spring of 2025.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Kursk campaign",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-3rd-corps",
+      "side": "ua",
+      "parent_id": "ua-corps",
+      "name": "3rd Army Corps",
+      "role": "Built in 2025 around the 3rd Assault Brigade, the formation raised by Andrii Biletskyi from the original Azov Regiment's veterans. It holds part of the Kharkiv and Lyman sector and recruits publicly on its own account.",
+      "commander": "Andrii Biletskyi",
+      "figure_id": null,
+      "strength": null,
+      "search": "3rd Army Corps (Ukraine)",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-azov-corps",
+      "side": "ua",
+      "parent_id": "ua-national-guard",
+      "name": "1st Azov Corps (National Guard)",
+      "role": "The National Guard corps formed in 2025 around the 12th Azov Brigade, the successor to the Mariupol garrison. It is a National Guard formation that fights under whichever operational grouping holds its sector.",
+      "commander": "Denys Prokopenko",
+      "figure_id": null,
+      "strength": null,
+      "search": "Azov Brigade",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-magyar-birds",
+      "side": "ua",
+      "parent_id": "ua-unmanned",
+      "name": "414th Magyar's Birds Brigade",
+      "role": "The strike drone formation founded by Robert Brovdi, call sign Magyar, which grew from a volunteer unit into the 414th brigade and publishes counted strikes. Brovdi was appointed to command the Unmanned Systems Forces in 2025.",
+      "commander": "Robert Brovdi",
+      "figure_id": null,
+      "strength": null,
+      "search": "Birds of Magyar",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: 414th Unmanned Strike Aviation Brigade",
+          "url": "https://en.wikipedia.org/wiki/414th_Unmanned_Strike_Aviation_Brigade"
+        },
+        {
+          "label": "Wikipedia: Robert Brovdi",
+          "url": "https://en.wikipedia.org/wiki/Robert_Brovdi"
+        }
+      ]
+    },
+    {
+      "id": "ua-achilles",
+      "side": "ua",
+      "parent_id": "ua-unmanned",
+      "name": "429th Achilles Regiment",
+      "role": "A strike drone unit grown out of a battalion of the 92nd Brigade into a regiment and then a brigade-sized formation, working the Kharkiv and Donetsk axes and known for publishing verified strike footage.",
+      "commander": "Yurii Fedorenko",
+      "figure_id": null,
+      "strength": null,
+      "search": "Achilles Regiment",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: 429th Unmanned Systems Brigade",
+          "url": "https://en.wikipedia.org/wiki/429th_Unmanned_Systems_Brigade_(Ukraine)"
+        }
+      ]
+    },
+    {
+      "id": "ua-marines",
+      "side": "ua",
+      "parent_id": "ua-navy",
+      "name": "Marine Corps",
+      "role": "The marine brigades, raised to a corps command in 2023, which fought at Mariupol, held the Krynky bridgehead on the left bank of the Dnipro through 2024 and were committed to the Kursk operation.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Ukrainian Naval Infantry",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-air-commands",
+      "side": "ua",
+      "parent_id": "ua-air-force",
+      "name": "Air commands and anti-aircraft missile brigades",
+      "role": "The four regional air commands, Centre, West, South and East, with the anti-aircraft missile brigades, radar brigades and the mobile fire groups that shoot down Shahed-type drones over the cities.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Ukrainian Air Force",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-support-forces",
+      "side": "ua",
+      "parent_id": "ua-general-staff",
+      "name": "Support and logistics forces",
+      "role": "Engineering, explosive ordnance disposal, chemical defence, movement and supply, plus the Medical Forces. Demining alone is a decades-long task: Ukraine is among the most heavily mined countries in the world by United Nations and government statements.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Logistics Forces of the Armed Forces of Ukraine",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-tcc",
+      "side": "ua",
+      "parent_id": "ua-mod",
+      "name": "Territorial recruitment centres",
+      "role": "The conscription and mobilisation offices. Recruitment practice became a public scandal in 2023 to 2025, with corruption cases against centre officials and widely reported complaints about street conscription; mobilisation shortfalls are a recurring theme in Ukrainian and Western reporting.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Conscription in Ukraine",
+      "as_of": "2025-06-30",
+      "links": [
+        {
+          "label": "Wikipedia: Ukrainian conscription crisis",
+          "url": "https://en.wikipedia.org/wiki/Ukrainian_conscription_crisis"
+        }
+      ]
+    },
+    {
+      "id": "ua-sbu",
+      "side": "ua",
+      "parent_id": "ua-president",
+      "name": "Security Service of Ukraine (SBU)",
+      "role": "Counter-intelligence and internal security, with its own combat and special operations units: the Alpha special centre, drone units of its 13th directorate and the Sea Baby naval drone programme used against the Kerch bridge and Black Sea Fleet ships.",
+      "commander": "Vasyl Maliuk",
+      "figure_id": null,
+      "strength": null,
+      "search": "Security Service of Ukraine",
+      "as_of": "2025-06-30",
+      "links": []
+    },
+    {
+      "id": "ua-hur-units",
+      "side": "ua",
+      "parent_id": "ua-hur",
+      "name": "HUR special units",
+      "role": "Defence Intelligence's own formations, including Tymur, Artan, Shaman, Prymary and the Russian-manned Freedom of Russia and Russian Volunteer Corps units, used for raids into Russia, Crimea and occupied territory.",
+      "commander": null,
+      "figure_id": null,
+      "strength": null,
+      "search": "Tymur Special Unit",
+      "as_of": "2025-06-30",
+      "links": []
     }
   ]
 }

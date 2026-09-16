@@ -15,6 +15,7 @@ import { ukraineReference } from '@/test/fixtures.ukraineReference';
 
 import invasionDay from './invasion-day.jpg';
 import orlan from './ru-orlan-10.jpg';
+import supreme from './ru-supreme.jpg';
 import t90m from './ru-t-90m.jpg';
 import controlPreview from './ukraineControlPreview.json';
 
@@ -32,6 +33,7 @@ const mapLoaders = {
 const previewImages: Record<string, string> = {
   'ru-orlan-10': orlan,
   'ru-t-90m': t90m,
+  'ru-supreme': supreme,
   'invasion-day': invasionDay,
 };
 /** Serves the three bundled sample images in place of the authenticated image endpoint. */

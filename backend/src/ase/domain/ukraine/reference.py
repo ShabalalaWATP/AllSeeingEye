@@ -17,7 +17,7 @@ MAX_EQUIPMENT = 200
 MAX_FORCE_NODES = 160
 MAX_TIMELINE_EVENTS = 160
 MAX_PHASES = 16
-MAX_IMAGES = 240
+MAX_IMAGES = 400
 MAX_LINKS = 8
 MAX_TITLE = 160
 MAX_TEXT = 900
@@ -76,6 +76,7 @@ SPECIALITIES: Mapping[str, tuple[str, Mapping[str, str]]] = MappingProxyType(
                 {
                     "ballistic": "Ballistic missiles",
                     "cruise": "Cruise missiles",
+                    "anti_radiation": "Anti-radiation and anti-ship missiles",
                     "guided_rockets": "Guided rockets",
                     "glide_bombs": "Glide bombs",
                 }
@@ -100,6 +101,7 @@ SPECIALITIES: Mapping[str, tuple[str, Mapping[str, str]]] = MappingProxyType(
                     "machine_guns": "Machine guns",
                     "anti_tank": "Anti-tank weapons",
                     "mortars": "Mortars and grenade launchers",
+                    "sniper": "Sniper and anti-materiel rifles",
                 }
             ),
         ),
@@ -135,6 +137,31 @@ SPECIALITIES: Mapping[str, tuple[str, Mapping[str, str]]] = MappingProxyType(
                     "surface": "Surface combatants",
                     "submarines": "Submarines",
                     "coastal": "Coastal and riverine",
+                    "mines": "Naval mines and countermeasures",
+                }
+            ),
+        ),
+        "sensors": (
+            "Radars, sensors and imagery",
+            MappingProxyType(
+                {
+                    "counter_battery": "Counter-battery and ground surveillance radars",
+                    "air_surveillance": "Air surveillance radars",
+                    "acoustic": "Acoustic and passive detection",
+                    "optics": "Night vision and thermal optics",
+                    "space_isr": "Satellite imagery and space services",
+                }
+            ),
+        ),
+        "engineering": (
+            "Engineering, mine warfare and logistics",
+            MappingProxyType(
+                {
+                    "bridging": "Bridging and crossing",
+                    "fortification": "Fortification and obstacles",
+                    "mine_laying": "Mine laying",
+                    "demining": "Demining and breaching",
+                    "logistics": "Logistics and recovery vehicles",
                 }
             ),
         ),
@@ -198,6 +225,7 @@ class ForceNode:
     figure_id: str | None
     strength: str | None
     wikidata_id: str | None
+    image_id: str | None
     as_of: date
     links: tuple[Link, ...]
 
@@ -257,6 +285,10 @@ class ReferenceCatalogue:
                 raise ValueError(f"Unknown speciality {entry.group}/{entry.subgroup}")
         if any(event.theme not in TIMELINE_THEMES for event in self.events):
             raise ValueError("Unknown timeline theme")
-        images = {*(e.image_id for e in self.equipment), *(e.image_id for e in self.events)}
+        images = {
+            *(e.image_id for e in self.equipment),
+            *(n.image_id for n in self.forces),
+            *(e.image_id for e in self.events),
+        }
         if any(image is not None and image not in self.images for image in images):
             raise ValueError("Image reference missing from the manifest")

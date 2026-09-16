@@ -73,3 +73,10 @@ afterEach(() => {
 afterAll(() => {
   server.close();
 });
+
+// jsdom has no layout, so scrolling an element into view does nothing here.
+Object.defineProperty(Element.prototype, 'scrollIntoView', {
+  configurable: true,
+  writable: true,
+  value: (): void => undefined,
+});

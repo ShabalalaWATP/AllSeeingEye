@@ -46,10 +46,15 @@ def test_seed_files_are_complete_and_dated() -> None:
         assert item["group"] in SPECIALITIES and item["subgroup"] in SPECIALITIES[item["group"]][1]
         assert item["side"] in ("ru", "ua") and date.fromisoformat(item["as_of"])
         assert 40 < len(item["description"]) <= 900 and item["search"]
+        assert item.get("image", False) in (True, False)
+    equipment_ids = [item["id"] for item in equipment["items"]]
+    assert len(set(equipment_ids)) == len(equipment_ids)
     ids = {item["id"] for item in forces["items"]}
+    assert len(ids) == len(forces["items"])
     for node in forces["items"]:
         assert node["parent_id"] is None or node["parent_id"] in ids
-        assert date.fromisoformat(node["as_of"]) and node["role"]
+        assert date.fromisoformat(node["as_of"]) and node["role"] and node["search"]
+    assert {"ru", "ua"} == {node["side"] for node in forces["items"]}
     phases = {phase["id"] for phase in timeline["phases"]}
     for event in timeline["events"]:
         assert event["phase_id"] in phases and event["theme"] in TIMELINE_THEMES
@@ -65,6 +70,8 @@ def test_packaged_catalogue_loads_with_links_dates_and_licensed_images() -> None
     assert all(node.as_of.year >= 2025 for node in catalogue.forces)
     with_image = [e for e in catalogue.equipment if e.image_id]
     assert len(with_image) >= len(catalogue.equipment) // 2
+    assert any(node.image_id for node in catalogue.forces)
+    assert all(n.image_id is None or n.image_id in catalogue.images for n in catalogue.forces)
     for entry in with_image:
         image = catalogue.images[entry.image_id or ""]
         assert image.licence and image.credit and image.source_url.startswith("https://commons")
@@ -160,6 +167,45 @@ def test_resolve_entries_adds_ids_articles_and_bounded_images(tmp_path: Path) ->
         assert importer.cache_image(client, "x.jpg", tmp_path / "x.jpg") is None
 
 
+def test_reuse_keeps_resolved_entries_and_skips_opted_out_images(tmp_path: Path) -> None:
+    entities = FakeEntities({}, {"Q5": fact("Q5", "Fresh", "Fresh.jpg")})
+    (tmp_path / "ru-kept.jpg").write_bytes(jpeg_bytes(10, 10))
+    known = {
+        "ru-kept": {
+            "id": "ru-kept",
+            "wikidata_id": "Q1",
+            "image_id": "ru-kept",
+            "links": [{"label": "Wikipedia article", "url": "https://en.wikipedia.org/wiki/Kept"}],
+        }
+    }
+    cached = {"ru-kept": {"licence": "CC0", "credit": "c", "source_url": "https://commons/x"}}
+    items: list[dict[str, Any]] = [
+        {"id": "ru-kept", "search": "Ignored", "links": [{"label": "Oryx", "url": "https://x"}]},
+        {"id": "ru-generic", "wikidata_id": "Q5", "image": False},
+    ]
+    images: dict[str, Any] = {}
+    with commons_client("CC BY-SA 4.0") as client:
+        resolved = importer.resolve_entries(
+            items,
+            entities,  # type: ignore[arg-type]
+            client,
+            tmp_path,
+            images,
+            True,
+            known,
+            cached,
+        )
+    assert resolved[0]["wikidata_id"] == "Q1" and resolved[0]["image_id"] == "ru-kept"
+    assert [link["label"] for link in resolved[0]["links"]] == ["Oryx", "Wikipedia article"]
+    assert images["ru-kept"] == cached["ru-kept"]
+    assert resolved[1]["image_id"] is None and "image" not in resolved[1]
+    assert not (tmp_path / "ru-generic.jpg").exists()
+
+
+def test_read_resolved_returns_nothing_without_a_previous_catalogue(tmp_path: Path) -> None:
+    assert importer.read_resolved(tmp_path / "missing.json") == ({}, {})
+
+
 def test_import_writes_a_catalogue_from_seeds(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -196,7 +242,9 @@ def catalogue_kwargs(**overrides: Any) -> dict[str, Any]:
             ),
         ),
         "forces": (
-            ForceNode("f", Side.UA, None, "N", "r", None, None, None, None, date(2026, 6, 30), ()),
+            ForceNode(
+                "f", Side.UA, None, "N", "r", None, None, None, None, None, date(2026, 6, 30), ()
+            ),
         ),
         "phases": (phase,),
         "events": (
@@ -210,7 +258,7 @@ def catalogue_kwargs(**overrides: Any) -> dict[str, Any]:
 def test_catalogue_validation_catches_broken_references() -> None:
     ReferenceCatalogue(**catalogue_kwargs())
     bad_parent = ForceNode(
-        "f", Side.UA, "missing", "N", "r", None, None, None, None, date(2026, 1, 1), ()
+        "f", Side.UA, "missing", "N", "r", None, None, None, None, None, date(2026, 1, 1), ()
     )
     with pytest.raises(ValueError, match="parent"):
         ReferenceCatalogue(**catalogue_kwargs(forces=(bad_parent,)))
@@ -243,7 +291,7 @@ def test_catalogue_validation_catches_broken_references() -> None:
     with pytest.raises(ValueError, match="manifest"):
         ReferenceCatalogue(**catalogue_kwargs(equipment=(with_image,)))
     duplicate = ForceNode(
-        "e", Side.UA, None, "N", "r", None, None, None, None, date(2026, 1, 1), ()
+        "e", Side.UA, None, "N", "r", None, None, None, None, None, date(2026, 1, 1), ()
     )
     with pytest.raises(ValueError, match="unique"):
         ReferenceCatalogue(**catalogue_kwargs(forces=(duplicate,)))
@@ -292,7 +340,8 @@ async def test_reference_endpoints_serve_the_catalogue_and_images(
     assert response.status_code == 200
     body = response.json()
     assert body["specialities"][0]["key"] == "drones" and "ground" in body["themes"]
-    assert len(body["equipment"]) > 80 and len(body["forces"]) > 20 and len(body["events"]) > 30
+    assert {"sensors", "engineering"} <= {item["key"] for item in body["specialities"]}
+    assert len(body["equipment"]) > 150 and len(body["forces"]) > 60 and len(body["events"]) > 30
     entry = next(e for e in body["equipment"] if e["image_id"])
     image = await client.get(
         f"/api/conflicts/ukraine/images/{entry['image_id']}.jpg", headers=bearer(token)

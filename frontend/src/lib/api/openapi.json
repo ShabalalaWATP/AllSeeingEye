@@ -25247,6 +25247,17 @@
             ],
             "title": "Wikidata Id"
           },
+          "image_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Id"
+          },
           "as_of": {
             "type": "string",
             "format": "date",
@@ -25271,6 +25282,7 @@
           "figure_id",
           "strength",
           "wikidata_id",
+          "image_id",
           "as_of",
           "links"
         ],

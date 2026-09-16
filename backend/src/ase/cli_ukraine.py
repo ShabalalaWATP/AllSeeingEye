@@ -49,10 +49,13 @@ def import_reference(
         Path, typer.Option(help="Reference catalogue JSON to write.")
     ] = RESOURCES / "ukraine_reference.json",
     contact: Contact = DEFAULT_CONTACT,
+    reuse: Annotated[
+        bool, typer.Option(help="Keep entries already resolved with a cached image.")
+    ] = True,
 ) -> None:
     """Resolve the equipment, forces and timeline seeds through Wikidata and cache images."""
     try:
-        count = import_ukraine_reference(str(destination), contact=contact)
+        count = import_ukraine_reference(str(destination), contact=contact, reuse=reuse)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
         raise typer.Exit(1) from exc

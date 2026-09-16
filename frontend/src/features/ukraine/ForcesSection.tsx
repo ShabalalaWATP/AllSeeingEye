@@ -1,134 +1,96 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { useState } from 'react';
 
-import { SIDE_LABELS, type ForceNode, type Side, type UkraineReference } from '@/lib/api/ukraine';
+import { SIDE_LABELS, type Side, type UkraineReference } from '@/lib/api/ukraine';
 
-function childrenOf(nodes: readonly ForceNode[], parent: string | null): ForceNode[] {
-  return nodes.filter((node) => node.parent_id === parent);
-}
+import type { ChartLayout } from './ForceChart';
+import { ForceSidePanel } from './ForceSidePanel';
+import { useChartLayout } from './useChartLayout';
 
-function NodeCard({
-  node,
-  nodes,
-  depth,
-  open,
-  toggle,
+type View = Side | 'both';
+
+const VIEWS: readonly (readonly [View, string])[] = [
+  ['ru', SIDE_LABELS.ru],
+  ['ua', SIDE_LABELS.ua],
+  ['both', 'Compare both'],
+];
+
+const LAYOUTS: readonly (readonly [ChartLayout, string])[] = [
+  ['chart', 'Chart'],
+  ['stacked', 'Outline'],
+];
+
+function Toggle<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
 }: {
-  node: ForceNode;
-  nodes: readonly ForceNode[];
-  depth: number;
-  open: ReadonlySet<string>;
-  toggle: (id: string) => void;
+  label: string;
+  options: readonly (readonly [T, string])[];
+  value: T;
+  onChange: (next: T) => void;
 }) {
-  const children = childrenOf(nodes, node.id);
-  const expanded = open.has(node.id);
   return (
-    <li className={depth > 0 ? 'ml-4 border-l border-line/60 pl-3' : ''}>
-      <div className="rounded-card border border-line bg-surface p-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h4 className="font-medium text-text">{node.name}</h4>
-            {node.commander ? (
-              <p className="text-xs text-muted">
-                Commander (reported): {node.commander}
-                {node.figure_id ? (
-                  <>
-                    {' '}
-                    <Link to="/trackers/figures" className="text-ember hover:underline">
-                      figure record
-                    </Link>
-                  </>
-                ) : null}
-              </p>
-            ) : null}
-          </div>
-          <span className="font-mono text-[10px] text-muted">as of {node.as_of}</span>
-        </div>
-        <p className="mt-1 text-sm text-muted">{node.role}</p>
-        {node.strength ? (
-          <p className="mt-1 text-xs text-muted">Strength: {node.strength}</p>
-        ) : null}
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          {node.links.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-ember hover:underline"
-            >
-              {link.label}
-            </a>
-          ))}
-          {children.length > 0 ? (
-            <button
-              type="button"
-              aria-expanded={expanded}
-              onClick={() => toggle(node.id)}
-              className="min-h-9 rounded border border-line px-2 text-xs text-muted hover:text-text"
-            >
-              {expanded ? 'Hide' : 'Show'} {children.length} subordinate
-              {children.length === 1 ? '' : 's'}
-            </button>
-          ) : null}
-        </div>
-      </div>
-      {expanded && children.length > 0 ? (
-        <ul className="mt-2 flex flex-col gap-2">
-          {children.map((child) => (
-            <NodeCard
-              key={child.id}
-              node={child}
-              nodes={nodes}
-              depth={depth + 1}
-              open={open}
-              toggle={toggle}
-            />
-          ))}
-        </ul>
-      ) : null}
-    </li>
+    <div role="group" aria-label={label} className="flex flex-wrap gap-1">
+      {options.map(([key, text]) => (
+        <button
+          key={key}
+          type="button"
+          aria-pressed={value === key}
+          onClick={() => onChange(key)}
+          className="min-h-10 rounded border border-line px-3 text-xs text-muted aria-pressed:border-cyan aria-pressed:bg-cyan/10 aria-pressed:text-cyan"
+        >
+          {text}
+        </button>
+      ))}
+    </div>
   );
 }
 
-function Tree({ side, nodes }: { side: Side; nodes: readonly ForceNode[] }) {
-  const own = useMemo(() => nodes.filter((node) => node.side === side), [nodes, side]);
-  const [open, setOpen] = useState<ReadonlySet<string>>(
-    () => new Set(own.filter((node) => node.parent_id === null).map((node) => node.id)),
-  );
-  const toggle = (id: string) =>
-    setOpen((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  return (
-    <section aria-label={`${SIDE_LABELS[side]} force structure`} className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-text">{SIDE_LABELS[side]}</h3>
-      <ul className="flex flex-col gap-2">
-        {childrenOf(own, null).map((root) => (
-          <NodeCard key={root.id} node={root} nodes={own} depth={0} open={open} toggle={toggle} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/** Two expandable trees of reported command structure, each node dated and sourced. */
-export function ForcesSection({ reference }: { reference: UkraineReference }) {
+/**
+ * Organisation charts for both sides. Each chart is a nested list drawn with connector lines,
+ * collapsible branch by branch, with a detail panel for the entry the reader focuses.
+ */
+export function ForcesSection({
+  reference,
+  fetcher,
+}: {
+  reference: UkraineReference;
+  fetcher?: ((path: string) => Promise<Blob>) | undefined;
+}) {
+  const [view, setView] = useState<View>('both');
+  const [override, setOverride] = useState<ChartLayout | null>(null);
+  const layout = useChartLayout(override);
+  const sides: readonly Side[] = view === 'both' ? ['ru', 'ua'] : [view];
   return (
     <section id="forces" aria-labelledby="ukraine-forces-heading" className="flex flex-col gap-3">
-      <h2 id="ukraine-forces-heading" className="text-base font-semibold">
-        Force organisation
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="ukraine-forces-heading" className="text-base font-semibold">
+          Force organisation
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Toggle label="Side" options={VIEWS} value={view} onChange={setView} />
+          <Toggle label="Layout" options={LAYOUTS} value={layout} onChange={setOverride} />
+        </div>
+      </div>
       <p className="max-w-3xl text-xs text-muted">
         Reported public structure, not an order of battle from observation. Commanders and strengths
-        are as public reporting stated them on the date shown.
+        are as public reporting stated them on the date shown against each box, and those dates
+        differ: an entry marked as possibly out of date has not been reviewed within a year of the
+        catalogue being built. Command arrangements change often and quietly, so treat the shape as
+        indicative. Portraits and emblems are Wikimedia Commons files; the licence and credit appear
+        in the detail panel when you open an entry.
       </p>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Tree side="ru" nodes={reference.forces} />
-        <Tree side="ua" nodes={reference.forces} />
+      <div className={view === 'both' ? 'grid gap-6 lg:grid-cols-2' : 'flex flex-col'}>
+        {sides.map((side) => (
+          <ForceSidePanel
+            key={side}
+            side={side}
+            reference={reference}
+            layout={layout}
+            fetcher={fetcher}
+          />
+        ))}
       </div>
     </section>
   );
