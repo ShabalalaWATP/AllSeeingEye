@@ -6,6 +6,7 @@ from uuid import uuid4
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.reports.citation_checks import check_generated_report_citations
+from ase.application.reports.contradiction_checks import check_contradictions
 from ase.application.reports.document import build_document
 from ase.application.reports.drafting import Draft
 from ase.application.reports.post_draft_checks import mechanical_quality_findings
@@ -118,6 +119,9 @@ async def build_version(
         evidence = await resolve_cited_links(url_resolver, evidence, cited)
     await reached(progress, ResearchStage.VALIDATING)
     assessment = build_report_assessment(body, evidence, totals.findings)
+    for finding in check_contradictions(body, assessment, evidence):
+        if finding not in totals.findings:
+            totals.findings.append(finding)
     citation_checks = check_generated_report_citations(body, evidence)
     status = final_report_status(
         base_status, assessment, citation_checks, challenge, totals.findings
