@@ -89,7 +89,15 @@ async def build_version(
     final_findings = (
         *final_validation.findings,
         *check_analytical_prose(body),
-        *mechanical_quality_findings(body, header, job.template, evidence),
+        *mechanical_quality_findings(
+            body,
+            header,
+            job.template,
+            evidence,
+            direction=direction,
+            requirements=job.request.canonical_requirements,
+            existing=totals.findings,
+        ),
     )
     for finding in final_findings:
         if finding not in totals.findings:
