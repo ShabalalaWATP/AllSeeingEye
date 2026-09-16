@@ -2,7 +2,61 @@
   "mastodon": [
     {
       "instance": "mastodon.social",
-      "tags": ["ukraine", "osint", "breakingnews", "gaza", "sudan", "taiwan", "earthquake"]
+      "minutes": 15,
+      "tags": [
+        "ukraine",
+        "russia",
+        "geopolitics",
+        "china",
+        "taiwan",
+        "gaza",
+        "iran",
+        "sudan",
+        "osint",
+        "drones",
+        "breakingnews",
+        "earthquake"
+      ]
+    },
+    {
+      "instance": "defcon.social",
+      "minutes": 20,
+      "tags": [
+        "infosec",
+        "cybersecurity",
+        "threatintel",
+        "osint",
+        "drones",
+        "sanctions",
+        "ukraine",
+        "russia"
+      ]
+    },
+    {
+      "instance": "journa.host",
+      "minutes": 20,
+      "tags": [
+        "ukraine",
+        "gaza",
+        "iran",
+        "sudan",
+        "russia",
+        "china",
+        "geopolitics",
+        "breakingnews"
+      ]
+    },
+    {
+      "instance": "eupolicy.social",
+      "minutes": 30,
+      "tags": [
+        "sanctions",
+        "ukraine",
+        "russia",
+        "geopolitics",
+        "china",
+        "taiwan"
+      ]
     }
   ]
 }

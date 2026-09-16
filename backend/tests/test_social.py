@@ -5,15 +5,30 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
-from ase.adapters.feeds.mastodon import MastodonConnector, load_watch, spec_for
+import pytest
+
+from ase.adapters.feeds.http_contracts import FeedHttpStatusError
+from ase.adapters.feeds.mastodon import MastodonConnector, spec_for
+from ase.adapters.feeds.mastodon_watch import (
+    DEFAULT_POLL_MINUTES,
+    MAX_DISTINCT_TAGS,
+    MAX_INSTANCES,
+    MAX_TAGS_PER_INSTANCE,
+    InstanceWatch,
+    load_watch,
+    parse_watch,
+    watch_host_intervals,
+    watch_terms,
+)
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.feeds.language import LanguageStage
 from ase.application.feeds.pipeline import strip_html
 from ase.domain.events import Category, Credibility, Reliability
+from ase.domain.social import MAX_TERMS
 from feeds_helpers import FakeClock, FakeHttp, load_fixture, make_event
 
 NOW = datetime(2026, 9, 5, 22, 30, tzinfo=UTC)
@@ -61,7 +76,7 @@ async def test_mastodon_hashtag_posts_become_social_events() -> None:
 def test_social_sources_are_registered() -> None:
     ids = {connector.spec.id for connector in build_connectors(FakeHttp(), FakeClock(NOW))}  # type: ignore[arg-type]
     assert {"yt_bbc_news", "yt_reuters", "reddit_worldnews", "mastodon_mastodon_social"} <= ids
-    assert load_watch()[0][0] == "mastodon.social" and "ukraine" in load_watch()[0][1]
+    assert {f"mastodon_{w.instance.replace('.', '_')}" for w in load_watch()} <= ids
     by_id = {seed.spec.id: seed for seed in SOCIAL_SEEDS}
     assert by_id["reddit_worldnews"].spec.reliability is Reliability.E
     assert by_id["reddit_worldnews"].options.credibility is Credibility.CANNOT_BE_JUDGED
@@ -98,3 +113,90 @@ def test_langid_detects_short_headlines() -> None:
     assert detector.detect("Ракетний удар по Києву: двоє загиблих, пошкоджено 28 об'єктів") == "uk"
     assert detector.detect("Frappes russes sur la région de Kyiv : deux morts") == "fr"
     assert detector.detect("short") is None
+
+
+def test_packaged_watch_list_is_bounded_and_reviewed() -> None:
+    watches = load_watch()
+    assert 1 < len(watches) <= MAX_INSTANCES
+    assert watches[0].instance == "mastodon.social"
+    assert "ukraine" in watches[0].tags
+    assert all(5 <= watch.minutes <= 120 for watch in watches)
+    assert all(1 <= len(watch.tags) <= MAX_TAGS_PER_INSTANCE for watch in watches)
+    terms = watch_terms(watches)
+    assert terms == tuple(sorted(set(terms)))
+    # The packaged tags share MAX_TERMS with each operator's own collection vocabulary,
+    # so half the board's capacity stays free for the terms an operator chose.
+    assert len(terms) <= MAX_DISTINCT_TAGS <= MAX_TERMS // 2
+    assert watch_host_intervals(watches) == {watch.instance: 1.0 for watch in watches}
+    assert set(watch_host_intervals(watches)) <= {watch.instance for watch in watches}
+
+
+@pytest.mark.parametrize(
+    "document",
+    [
+        {"mastodon": []},
+        {"mastodon": [{"instance": "a.social", "tags": ["x"]}] * (MAX_INSTANCES + 1)},
+        {"mastodon": [{"instance": "a.social", "tags": ["ok"]}, {"instance": "A.social"}]},
+        {"mastodon": ["a.social"]},
+        {"mastodon": [{"instance": "localhost", "tags": ["ok"]}]},
+        {"mastodon": [{"instance": "http://a.social", "tags": ["ok"]}]},
+        {"mastodon": [{"instance": "a.social", "tags": []}]},
+        {"mastodon": [{"instance": "a.social", "tags": ["ok"], "minutes": 1}]},
+        {"mastodon": [{"instance": "a.social", "tags": ["ok"], "minutes": 999}]},
+        {"mastodon": [{"instance": "a.social", "tags": ["../secret"]}]},
+        {"mastodon": [{"instance": "a.social", "tags": ["x"]}]},
+        {"mastodon": [{"instance": "a.social", "tags": "ukraine"}]},
+        {"mastodon": [{"instance": "a.social", "tags": [f"t{n}" for n in range(13)]}]},
+    ],
+)
+def test_malformed_watch_documents_are_refused(document: dict[str, object]) -> None:
+    with pytest.raises(ValueError, match=r"."):
+        parse_watch(document)
+
+
+def test_watch_entries_normalise_tags_and_default_the_interval() -> None:
+    watches = parse_watch(
+        {"mastodon": [{"instance": "One.Social", "tags": ["#OSINT", "osint", " Ukraine "]}]}
+    )
+    assert watches == (InstanceWatch("one.social", ("osint", "ukraine"), DEFAULT_POLL_MINUTES),)
+    repeated = parse_watch({"mastodon": [{"instance": "a.social", "tags": ["aa", "AA", "#aa"]}]})
+    assert repeated[0].tags == ("aa",)
+    with pytest.raises(ValueError, match="distinct"):
+        parse_watch(
+            {
+                "mastodon": [
+                    {"instance": f"i{n}.social", "tags": [f"t{n}{m}" for m in range(6)]}
+                    for n in range(3)
+                ]
+            }
+        )
+
+
+async def test_a_retired_hashtag_does_not_cost_the_other_tags_on_that_instance() -> None:
+    class Flaky:
+        def __init__(self, status: int) -> None:
+            self.requests: list[str] = []
+            self._status = status
+
+        async def get_json(self, url: str, *, conditional: bool = True) -> object:
+            self.requests.append(url)
+            if "gone" in url:
+                raise FeedHttpStatusError(self._status, url)
+            return load_fixture("mastodon_tag.json")
+
+    http = Flaky(410)
+    events = await MastodonConnector(http, FakeClock(NOW), "a.social", ["gone", "ukraine"]).fetch()  # type: ignore[arg-type]
+    assert len(http.requests) == 2 and len(events) == 3
+    # An instance fault or a rate limit is the scheduler's business, not the connector's.
+    for status in (429, 500, 403):
+        with pytest.raises(FeedHttpStatusError):
+            await MastodonConnector(Flaky(status), FakeClock(NOW), "a.social", ["gone"]).fetch()  # type: ignore[arg-type]
+
+
+def test_connector_takes_the_configured_interval_and_caps_its_tag_list() -> None:
+    connector = MastodonConnector(
+        FakeHttp(), FakeClock(NOW), "a.social", [f"t{n}" for n in range(40)], 30
+    )  # type: ignore[arg-type]
+    assert connector.spec.poll_interval == timedelta(minutes=30)
+    assert len(connector._tags) == MAX_TAGS_PER_INSTANCE
+    assert spec_for("a.social").poll_interval == timedelta(minutes=DEFAULT_POLL_MINUTES)
