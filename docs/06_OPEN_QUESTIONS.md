@@ -47,7 +47,8 @@ Each question below keeps its options and recommendation for the record.
 | 3 | Global Fishing Watch | API token |
 | 3 | alerts.in.ua | Token via their form |
 | 3 | Cloudflare Radar | Account plus a token with Radar read permission |
-| 5 | Reddit | An app registration for OAuth (100 requests per minute) |
+| 5 | YouTube | A Google Cloud project with the YouTube Data API v3 enabled and an API key restricted to it, set as `ASE_YOUTUBE_API_KEY`. Without it there is no YouTube collection at all: `youtube.com/robots.txt` disallows the channel Atom path this application used to poll, so those nine feeds were retired on 16 September 2026 and rebuilt on the API. The default 10,000 units a day covers the 29 packaged channels (about 1,392 units) and the capped 40 video searches (4,000 units) with room to spare |
+| 5 | Reddit | **Decision needed, nothing is built.** `reddit.com/robots.txt` is `User-agent: *` then `Disallow: /` for every path, so the three subreddit feeds were retired on 16 September 2026. The only compliant route is a registered OAuth application under Reddit's Public Content Policy: an account with two-factor authentication, a "script" app at `reddit.com/prefs/apps`, agreement to the Data API Terms in your own name, and a keyed connector reading `oauth.reddit.com` (free tier: 100 queries per minute). Say if you want it; it is not assumed |
 | Optional | N2YO, OpenAQ, Met Office DataHub, HDX HAPI identifier, IOM DTM, ACAPS, Metaculus | Keys only if those features are switched on |
 
 ## C. Preferences that can default

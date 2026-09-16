@@ -179,8 +179,9 @@ clustering with counts, a time window control, country-level events placed at ce
 `ase/resources/social_watch.json` (posts reduced to text, reliability E, credibility 6),
 outlet YouTube channels (BBC, Reuters, DW, Al Jazeera, France 24, Sky) and subreddit
 listings (worldnews, geopolitics, UkrainianConflict) as Atom seeds in
-`adapters/feeds/rss_seeds_social.py`, and a pipeline `LanguageStage` that fills the
-language of events whose feed could not name one, backed by py3langid restricted to 24
+`adapters/feeds/rss_seeds_social.py` (the Reddit and YouTube seeds were later retired on
+16 September 2026 and YouTube rebuilt on the Data API), and a pipeline `LanguageStage`
+that fills the language of events whose feed could not name one, backed by py3langid restricted to 24
 languages with a confidence floor (lingua was tried first and dropped because its wheel
 installs 291 MB of models). Under test the container uses a null detector.
 
@@ -276,8 +277,10 @@ inside two hours, so cache), Launch Library 2, EMSC, NHC and JTWC, Smithsonian v
 the two tsunami centres, NWS alerts (no `limit` parameter), GIBS tiles, RainViewer,
 ransomware.live, IODA, NVD, Polymarket, WHO Disease Outbreak News (needs
 `$orderby=PublicationDate desc`), HDX HAPI, IFRC GO, UNHCR, UK Sanctions List, OFAC SDN,
-Google News RSS, Mastodon, Reddit RSS, YouTube RSS, Overpass, geoBoundaries, Wikimedia
-pageviews.
+Google News RSS, Mastodon, Overpass, geoBoundaries, Wikimedia pageviews. (Reddit and the
+YouTube channel Atom feeds also answered, but were retired on 16 September 2026 because
+both hosts' `robots.txt` disallow those paths; YouTube is now read through the keyed Data
+API v3 and Reddit is not collected.)
 
 Not answering from this host: the Bluesky public AppView (403 with and without a
 User-Agent, re-checked at the start of Phase 5, so Bluesky stays out until a later probe
@@ -285,8 +288,11 @@ answers), the ISW current control layer, Kyiv Independent feeds, Focus Taiwan, G
 (429 on the first call; the raw 2.0 export zips work), ReliefWeb without an approved
 appname, Copernicus EMS, FEWS NET, airplanes.live (403). Telegram stays out by decision.
 
-Reddit rate-limits (429) when several subreddit feeds are polled within seconds, which is
-why each polls on its own quarter-hour.
+Reddit is no longer polled at all: `reddit.com/robots.txt` is `Disallow: /` for every
+path, so the three subreddit feeds were retired on 16 September 2026 and the compliant
+OAuth route was not built. YouTube channels are now the keyed Data API v3 route and need
+`ASE_YOUTUBE_API_KEY`; without it no YouTube connector exists. See
+[SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md).
 
 ## 9. Environment traps that cost real time
 

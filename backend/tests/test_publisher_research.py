@@ -9,7 +9,6 @@ from ase.adapters.feeds import http as feed_http
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.publisher import PUBLISHER_SEEDS, PublisherFeedResearchProvider
 from ase.application.research.collection import ResearchCollector
 from ase.domain.research import CollectionStatus
@@ -240,7 +239,7 @@ async def test_empty_headline_match_has_a_truthful_receipt(monkeypatch: pytest.M
 def test_reviewed_seeds_are_distinct_and_inherit_original_admission() -> None:
     # Publisher research sources follow the reviewed feed catalogue as it grows.
     assert len(PUBLISHER_SEEDS) == len(SEEDS) == 72
-    assert not SEEDS.keys() & {seed.spec.id for seed in (*REGIONAL_SEEDS, *SOCIAL_SEEDS)}
+    assert not SEEDS.keys() & {seed.spec.id for seed in REGIONAL_SEEDS}
     for source_id in SEEDS:
         derived = f"research_publisher_{source_id}"
         assert source_control_keys(derived) == (derived, source_id)
@@ -250,7 +249,6 @@ def test_reviewed_seeds_are_distinct_and_inherit_original_admission() -> None:
     "seed",
     [
         REGIONAL_SEEDS[0],
-        SOCIAL_SEEDS[0],
         replace(
             PUBLISHER_SEEDS[0],
             spec=replace(PUBLISHER_SEEDS[0].spec, url="https://other.example/rss"),

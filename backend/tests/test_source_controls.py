@@ -65,9 +65,7 @@ async def test_disabled_during_live_fetch_does_not_publish(
     assert container.health.get(connector.spec.id).polls == 0
 
 
-@pytest.mark.parametrize(
-    "prefix", ["research_social_", "research_regional_", "research_publisher_"]
-)
+@pytest.mark.parametrize("prefix", ["research_regional_", "research_publisher_"])
 async def test_private_parent_admission_before_and_after_fetch(
     container: Container, admin: User, prefix: str
 ) -> None:

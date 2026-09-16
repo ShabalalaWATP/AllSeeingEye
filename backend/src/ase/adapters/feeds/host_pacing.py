@@ -5,9 +5,9 @@ emergency, watched-area, viewport and worldwide-sweep feeds). Each paces itself,
 together they started within the same few seconds after a restart and the provider
 answered HTTP 429. One shared, per-host gap keeps this process within polite limits.
 
-Reddit is here for the same reason: the subreddit listings share one host, that host
-has answered HTTP 429 to this application before, and the scheduler only spreads first
-polls across five seconds. The per-host gap is the floor beneath that spread.
+The YouTube Data API is here for the same reason: every watched channel is polled
+through one host under one project quota, and the scheduler only spreads first polls
+across five seconds. The per-host gap is the floor beneath that spread.
 """
 
 from __future__ import annotations
@@ -18,18 +18,19 @@ from collections.abc import Awaitable, Callable, Mapping
 from urllib.parse import urlsplit
 
 ADSB_LOL_HOST = "api.adsb.lol"
-REDDIT_HOST = "www.reddit.com"
 # Telegram serves every curated channel preview from one host, and the pages are large
 # and uncacheable. Five seconds between them keeps this process well inside polite use.
 TELEGRAM_HOST = "t.me"
 # The Bluesky public AppView serves the rotating curated-account poll and the on-demand
 # research route. Its robots.txt asks for a handful of concurrent requests at most.
 BLUESKY_HOST = "public.api.bsky.app"
+# The YouTube Data API, used only when the operator has configured a key.
+GOOGLE_APIS_HOST = "www.googleapis.com"
 DEFAULT_HOST_INTERVALS: Mapping[str, float] = {
     ADSB_LOL_HOST: 1.0,
-    REDDIT_HOST: 5.0,
     TELEGRAM_HOST: 5.0,
     BLUESKY_HOST: 1.0,
+    GOOGLE_APIS_HOST: 1.0,
 }
 
 

@@ -1,4 +1,4 @@
-"""On-demand news/social collection stays bounded, private and provenance-aware."""
+"""On-demand news collection stays bounded, private and provenance-aware."""
 
 from dataclasses import replace
 
@@ -7,10 +7,9 @@ import pytest
 
 from ase.adapters.feeds import http as feed_http
 from ase.adapters.feeds.http import FeedFetchError
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import GoogleNewsResearchProvider
-from ase.adapters.research.social import SocialFeedResearchProvider
-from ase.domain.events import Category, Reliability
+from ase.adapters.research.publisher import PUBLISHER_SEEDS, PublisherFeedResearchProvider
+from ase.domain.events import Reliability
 from ase.domain.research import CollectionStatus
 from research_feed_helpers import CLOCK, QUERY, PublicFeed, item, rss
 
@@ -176,7 +175,7 @@ async def test_collection_timeout_has_safe_receipt(monkeypatch: pytest.MonkeyPat
     assert "Sensitive" not in repr(result) and not feed.requests
 
 
-async def test_social_atom_matches_terms_and_preserves_account_claims(
+async def test_atom_author_claims_are_kept_as_unverified_provenance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     body = """<feed xmlns="http://www.w3.org/2005/Atom"><entry>
@@ -187,30 +186,14 @@ async def test_social_atom_matches_terms_and_preserves_account_claims(
     </entry><entry><id>post-2</id><title>Unrelated post</title>
       <published>2026-09-05T12:00:00Z</published></entry></feed>"""
     feed = PublicFeed(monkeypatch, httpx.Response(200, text=body))
-    seed = SOCIAL_SEEDS[0]
-    provider = SocialFeedResearchProvider(feed.http, CLOCK, seed)
-    result = await provider.collect(QUERY)
+    seed = PUBLISHER_SEEDS[0]
+    result = await PublisherFeedResearchProvider(feed.http, CLOCK, seed).collect(QUERY)
     await feed.http.aclose()
     assert len(feed.requests) == len(result.items) == 1
     assert str(feed.requests[0].url) == seed.spec.url
     assert result.items[0].attributes["original_account"] == "Named account"
     assert result.items[0].attributes["original_account_url"] == "https://social.example/@account"
     assert result.items[0].reliability is Reliability.F
-    assert "not a platform-wide search" in result.attempts[0].explanation
-
-
-async def test_social_language_selection_and_empty_recent_feed(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    feed = PublicFeed(monkeypatch, httpx.Response(200, text=rss(item(title="Unrelated"))))
-    seed = SOCIAL_SEEDS[0]
-    provider = SocialFeedResearchProvider(feed.http, CLOCK, seed)
-    unsupported = await provider.collect(replace(QUERY, languages=("fr",)))
-    assert unsupported.attempts[0].status is CollectionStatus.UNSUPPORTED and not feed.requests
-    empty = await provider.collect(QUERY)
-    await feed.http.aclose()
-    assert empty.attempts[0].status is CollectionStatus.EMPTY
-    assert empty.attempts[0].result_count == 0
 
 
 async def test_blocked_guard_never_reaches_transport_and_errors_are_safe(
@@ -231,8 +214,3 @@ async def test_blocked_guard_never_reaches_transport_and_errors_are_safe(
 def test_invalid_provider_configuration_is_rejected() -> None:
     with pytest.raises(ValueError, match="language"):
         GoogleNewsResearchProvider(None, CLOCK, "en?private")  # type: ignore[arg-type]
-    seed = SOCIAL_SEEDS[0]
-    with pytest.raises(ValueError, match="social RSS"):
-        SocialFeedResearchProvider(
-            None, CLOCK, replace(seed, spec=replace(seed.spec, category=Category.NEWS))
-        )  # type: ignore[arg-type]

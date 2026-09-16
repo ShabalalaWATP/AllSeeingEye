@@ -12,6 +12,14 @@ be counted after their implementation, not added to these baseline numbers.
 The complete per-ID inventory, implementation references, configuration names,
 coverage metadata and stated limits are in [inventory-code.json](inventory-code.json).
 
+> **Superseded in part, 16 September 2026.** Nine sources in this baseline are no longer
+> collected: `reddit_worldnews`, `reddit_geopolitics`, `reddit_ukrainianconflict` and the
+> six `yt_*` channel Atom feeds, along with their nine `research_social_*` providers. Both
+> hosts' `robots.txt` disallow the paths they polled. YouTube coverage was rebuilt on the
+> keyed Data API v3 route with 29 channels and one aggregated research provider. See
+> [SOCIAL_SOURCE_COVERAGE.md](../SOCIAL_SOURCE_COVERAGE.md). The counts below are the
+> 10 September baseline and have deliberately not been rewritten.
+
 ## Exact counts and what they mean
 
 | Inventory | Baseline count | Interpretation |

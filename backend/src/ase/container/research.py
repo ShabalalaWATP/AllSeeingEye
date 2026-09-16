@@ -13,6 +13,7 @@ from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
+from ase.adapters.research.youtube import YouTubeSearchResearchProvider
 from ase.adapters.research_records.aiddata_provider import AidDataProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.cloudflare_radar import (
@@ -76,6 +77,7 @@ def research_service(
     certificate_transparency_key: str | None = None,
     openalex_api_key: str | None = None,
     openaq_api_key: str | None = None,
+    youtube_api_key: str | None = None,
     radar_reader: RadarAttackTrends | None = None,
     radar_noncommercial_use_acknowledged: bool = False,
     ioda_public_data_use_acknowledged: bool = False,
@@ -85,6 +87,8 @@ def research_service(
     # Preserve the credential-specific rolling request allowance across research runs.
     registry_client = CompaniesHouseClient(http, clock, companies_house_key)
     openaq = OpenAqAreaResearchProvider(http, clock, openaq_api_key)
+    # Preserve the rolling daily search allowance across research runs.
+    youtube = YouTubeSearchResearchProvider(http, clock, youtube_api_key)
     companies_house = CompaniesHouseProvider(
         http, clock, companies_house_key, client=registry_client
     )
@@ -174,6 +178,7 @@ def research_service(
                 ),
                 *radar_providers,
                 ParliamentQuestionsProvider(http, clock),
+                youtube,
                 OoniAggregateProvider(
                     http, clock, allow_noncommercial_data=ooni_noncommercial_use_acknowledged
                 ),

@@ -41,7 +41,7 @@ Acceptance: each tracker has a board, a detail view, a globe layer and a report 
 Acceptance: an indicator fires on synthetic data within one pipeline cycle and produces an alert and a report.
 
 ## Phase 5: Social and foreign language (2 sessions)
-- Bluesky, Mastodon, Reddit, YouTube RSS, Telegram public channels (option chosen in the open questions), language detection, batched translation with caching, watchlists, burst detection.
+- Bluesky, Mastodon, Reddit, YouTube, Telegram public channels (option chosen in the open questions), language detection, batched translation with caching, watchlists, burst detection. Delivered as Mastodon plus the keyed YouTube Data API route; the Reddit and YouTube feed paths were retired on 16 September 2026 as `robots.txt` disallows them.
 
 ## Phase 6: Hardening and polish (2 sessions)
 - Optional TOTP for admins, PDF and DOCX export, report diffing, semantic search over reports, performance passes, accessibility audit, backup and restore scripts, documentation pass. The implementation uses bounded JSON vectors with SQLite/PostgreSQL parity instead of pgvector; see [ADR 0008](adr/0008-bounded-report-search.md).

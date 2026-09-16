@@ -79,6 +79,18 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
             Dates.CURRENT_SNAPSHOT,
             "Company focus and name or ticker without a resolved CIK; identity candidates only.",
         ),
+        "research-youtube": _profile(
+            "social",
+            (Scope.TOPIC, Scope.COUNTRY_CONTEXT),
+            Dates.PUBLICATION_INTERVAL,
+            "Bounded explicit phrases and a publication interval; one platform-wide search "
+            "request, at most 20 results, under a local daily search allowance. Uploader "
+            "metadata only: no channel curation, transcripts, captions, comments or media, "
+            "and no geographic or language verification.",
+            prerequisite=CapabilityPrerequisite(Need.API_KEY, "ASE_YOUTUBE_API_KEY"),
+            unknown_origin=True,
+            content=Content.DISCOVERY,
+        ),
         "research-rdap": _profile(
             "technical",
             (Scope.DOMAIN,),

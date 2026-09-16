@@ -18,7 +18,7 @@ MIN_BASELINE_HOURS = 6
 MIN_BURST_POSTS = 3
 BURST_RATIO = 2.0
 HASHTAG = re.compile(r"(?<!\w)#(\w{1,60})(?!\w)", re.UNICODE)
-PLATFORMS = ("bluesky", "mastodon", "reddit", "telegram", "youtube")
+PLATFORMS = ("bluesky", "mastodon", "telegram", "youtube")
 
 
 @dataclass(frozen=True, slots=True)

@@ -12,7 +12,6 @@ from ase.domain.source_discovery import source_coverage
         ("research_regional_meduza_ru", ("RU",)),
         ("research_regional_hrana_en", ("IR",)),
         ("cdt_zh", ("CN",)),
-        ("research_social_reddit_ukrainianconflict", ("UA", "RU")),
         ("research-companies-house-officers", ("GB",)),
         ("research-sec-submissions", ("US",)),
     ],

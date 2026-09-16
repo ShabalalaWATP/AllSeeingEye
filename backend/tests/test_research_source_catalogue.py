@@ -8,7 +8,6 @@ from httpx import AsyncClient
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.publisher import PUBLISHER_SEEDS
 from ase.application.feeds.grading import profiles_from_specs
@@ -28,7 +27,6 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
     specs = research_source_specs()
     expected = {
         *(f"research_google_news_{language}" for language in EDITIONS),
-        *(f"research_social_{seed.spec.id}" for seed in SOCIAL_SEEDS),
         # Each curated platform set is one aggregated provider, not one per channel.
         "research_social_telegram",
         "research_social_bluesky",
@@ -63,6 +61,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-designations-uksl",
         "research-designations-ofac_sdn",
         "research-rdap",
+        "research-youtube",
         "research-certificate-transparency",
         "research_import",
         "research_media",
@@ -90,21 +89,22 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-companies-house-officers",
         "research-companies-house-psc",
         "research-certificate-transparency",
+        "research-youtube",
     }
 
 
 def test_disabled_parent_feeds_and_individual_capabilities_are_excluded():
     disabled = (
         GOOGLE_NEWS.id,
-        SOCIAL_SEEDS[0].spec.id,
+        REGIONAL_SEEDS[0].spec.id,
         "research-dns-a",
         "research_media",
-        f"research_social_{SOCIAL_SEEDS[1].spec.id}",
+        f"research_regional_{REGIONAL_SEEDS[1].spec.id}",
     )
     ids = {spec.id for spec in research_source_specs(disabled)}
     assert not any(id_.startswith("research_google_news_") for id_ in ids)
-    assert f"research_social_{SOCIAL_SEEDS[0].spec.id}" not in ids
-    assert f"research_social_{SOCIAL_SEEDS[1].spec.id}" not in ids
+    assert f"research_regional_{REGIONAL_SEEDS[0].spec.id}" not in ids
+    assert f"research_regional_{REGIONAL_SEEDS[1].spec.id}" not in ids
     assert "research-dns-a" not in ids and "research_media" not in ids
     assert "research-dns-aaaa" in ids and "research_import" in ids
     remaining = research_source_specs(("research_google_news_fr",))
@@ -115,7 +115,7 @@ def test_disabled_parent_feeds_and_individual_capabilities_are_excluded():
 def test_unknown_origins_do_not_gain_independence_from_edition_or_platform_names():
     profiles = profiles_from_specs(research_source_specs())
     for id_, profile in profiles.items():
-        if id_.startswith(("research_google_news_", "research_social_")) or id_ in {
+        if id_.startswith("research_google_news_") or id_ in {
             "research_import",
             "research_media",
         }:

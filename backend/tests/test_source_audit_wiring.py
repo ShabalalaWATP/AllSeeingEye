@@ -85,21 +85,18 @@ def test_publisher_derivatives_do_not_gain_independent_organisation_identity():
         )
 
 
-async def test_default_plan_interleaves_official_outlet_regional_and_social(monkeypatch):
+async def test_default_plan_interleaves_official_outlet_and_regional(monkeypatch):
     feed = PublicFeed(monkeypatch, httpx.Response(200, text=rss("")))
     try:
         plan = research_service(feed.http, CLOCK).plan(QUERY)
         feeds = [
             task.source_id
             for task in plan.tasks
-            if task.source_id.startswith(
-                ("research_publisher_", "research_regional_", "research_social_")
-            )
+            if task.source_id.startswith(("research_publisher_", "research_regional_"))
         ]
         assert feeds[0] == "research_publisher_gov_uk_fcdo_news"
         assert feeds[1] == "research_publisher_bbc_world"
         assert feeds[2].startswith("research_regional_")
-        assert feeds[3].startswith("research_social_")
         assert plan.request_limit == 6
     finally:
         await feed.http.aclose()

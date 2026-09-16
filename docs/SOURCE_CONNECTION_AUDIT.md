@@ -161,7 +161,7 @@ account or production deployment was introduced.
 | Browser account registration | Blocked before reaching any provider form | Computer-use browser service failed to start because its app-server path was missing |
 
 The initial RSS failures were UN News and UN Press (unsupported encoding) and
-three Reddit feeds (HTTP 429, not retried). Post-repair UN results are recorded
+three Reddit feeds (HTTP 429, not retried; retired on 16 September 2026 because `robots.txt` disallows every path). Post-repair UN results are recorded
 separately in [RSS health](source-audit/rss-health.md) and its JSON evidence,
 preserving the initial observation.
 

@@ -1,4 +1,4 @@
-"""Social listening: Mastodon hashtags, outlet channels and subreddits, and language detection."""
+"""Social listening: Mastodon hashtags and language detection."""
 
 # ruff: noqa: RUF001 (Ukrainian samples are the point)
 
@@ -23,7 +23,6 @@ from ase.adapters.feeds.mastodon_watch import (
     watch_terms,
 )
 from ase.adapters.feeds.registry import build_connectors
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.feeds.language import LanguageStage
 from ase.application.feeds.pipeline import strip_html
@@ -73,15 +72,16 @@ async def test_mastodon_hashtag_posts_become_social_events() -> None:
     )  # type: ignore[arg-type]
 
 
-def test_social_sources_are_registered() -> None:
-    ids = {connector.spec.id for connector in build_connectors(FakeHttp(), FakeClock(NOW))}  # type: ignore[arg-type]
-    assert {"yt_bbc_news", "yt_reuters", "reddit_worldnews", "mastodon_mastodon_social"} <= ids
+def test_social_sources_are_registered_without_the_retired_scraped_feeds() -> None:
+    """Reddit and the YouTube channel Atom feeds are disallowed by both hosts' robots.txt."""
+    connectors = build_connectors(FakeHttp(), FakeClock(NOW))  # type: ignore[arg-type]
+    ids = {connector.spec.id for connector in connectors}
+    urls = {connector.spec.url or "" for connector in connectors}
+    assert "mastodon_mastodon_social" in ids
     assert {f"mastodon_{w.instance.replace('.', '_')}" for w in load_watch()} <= ids
-    by_id = {seed.spec.id: seed for seed in SOCIAL_SEEDS}
-    assert by_id["reddit_worldnews"].spec.reliability is Reliability.E
-    assert by_id["reddit_worldnews"].options.credibility is Credibility.CANNOT_BE_JUDGED
-    assert by_id["yt_bbc_news"].spec.reliability is Reliability.B
-    assert all(seed.spec.category is Category.SOCIAL for seed in SOCIAL_SEEDS)
+    assert not any(id_.startswith("reddit_") for id_ in ids)
+    assert not any("reddit.com" in url for url in urls)
+    assert not any("/feeds/videos.xml" in url for url in urls)
     assert spec_for("masto.ai").homepage == "https://masto.ai/"
 
 

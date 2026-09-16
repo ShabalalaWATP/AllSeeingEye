@@ -36,9 +36,9 @@ def test_every_executable_e00_provider_has_a_reviewed_profile():
     ids = tuple(key for key, cap in registry.capabilities.items() if cap.provider_id is not None)
     result = compose_research_allocation(ids, enabled=dict.fromkeys(ids, True))
     assert set(profiles) == set(ids) == {row.capability.id for row in result.resolved}
-    # 140: one aggregated provider each for the curated Telegram and Bluesky sets, not
-    # one per channel or account.
-    assert len(ids) == 140
+    # 132: the nine Reddit and YouTube feed routes whose robots.txt disallows them are
+    # gone; one aggregated route each for Telegram, Bluesky and the keyed YouTube API.
+    assert len(ids) == 132
     assert result.profile_review_date == REVIEW_DATE
     assert all(row.review_note.startswith(REVIEW_DATE) for row in profiles.values())
     assert not {"research_import", "research_media", "research-web-search"} & set(profiles)

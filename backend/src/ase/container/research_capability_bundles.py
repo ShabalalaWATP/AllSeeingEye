@@ -126,7 +126,7 @@ def capability_bundles(capabilities: tuple[SourceCapability, ...]) -> tuple[Sour
     def families(*names: str) -> tuple[str, ...]:
         return tuple(row.id for row in capabilities if row.family in names)
 
-    news = families("news_discovery", "outlet", "regional", "social")
+    news = families("news_discovery", "outlet", "regional")
     official = families("official")
     humanitarian = tuple(
         row.id

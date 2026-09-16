@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Literal
 
 from ase.domain.events import Reliability
-from ase.domain.source_rating_catalog import CATALOGUE, ProvenanceRole
+from ase.domain.source_rating_catalog import ANALYSIS_CHANNELS, CATALOGUE, ProvenanceRole
 
 SOURCE_RATING_POLICY_VERSION = "ase-source-ratings-v1"
 COMMON_LIMITATIONS = (
@@ -51,10 +51,10 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
         basis=f"The retained {configured_grade.value} feed grade is a legacy collection caution, "
         "not an assessment "
         "of each public post's author. Author reliability remains unassessed.",
-        scope="Public posts exposed by a configured community or instance.",
+        scope="Public posts exposed by a configured instance.",
         limitations=(
             *COMMON_LIMITATIONS,
-            "A platform, subreddit or instance does not confer publisher credibility. "
+            "A platform or instance does not confer publisher credibility. "
             "Accounts, repost origins and item claims require their own attribution.",
             "Timeline selection, moderation and federation affect coverage. No platform-wide "
             "sampling or account authentication is performed.",
@@ -85,16 +85,36 @@ def _curated_account_rating() -> SourceRating:
     )
 
 
+def _analysis_channel_rating(configured_grade: Reliability) -> SourceRating:
+    """An independent commentary channel publishes its own work but has no assessed record."""
+    return SourceRating(
+        policy_version=SOURCE_RATING_POLICY_VERSION,
+        status="unassessed",
+        assessed_grade=None,
+        basis=f"The configured {configured_grade.value} grade places an independent analysis "
+        "channel at doctrine's floor as a collection caution. No track record, sourcing "
+        "practice or correction record has been assessed for this channel.",
+        scope="A named independent channel's own published commentary and analysis.",
+        limitations=(
+            *COMMON_LIMITATIONS,
+            "Commentary and analysis are argument, not reporting: conclusions need their "
+            "own evidence and the channel's own sources are not acquired.",
+            "Conference and institute channels publish invited speakers whose claims are "
+            "theirs. YouTube hosting confers no credibility.",
+        ),
+        provenance_role="unassessed",
+        publisher_reliability_assessed=False,
+    )
+
+
 def source_rating_for(source_id: str, configured_grade: Reliability) -> SourceRating:
     """Describe registered assignments; never infer reliability from a domain or platform."""
     if source_id.startswith("bluesky_"):
         return _curated_account_rating()
-    if source_id.startswith(("mastodon_", "telegram_")) or source_id in {
-        "reddit_worldnews",
-        "reddit_geopolitics",
-        "reddit_ukrainianconflict",
-    }:
+    if source_id.startswith(("mastodon_", "telegram_")):
         return _platform_rating(configured_grade)
+    if source_id in ANALYSIS_CHANNELS:
+        return _analysis_channel_rating(configured_grade)
     entry = CATALOGUE.get(source_id)
     if entry is None:
         return unassessed_source_rating()

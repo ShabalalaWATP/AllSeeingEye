@@ -7,9 +7,9 @@ import httpx
 import pytest
 from httpx import AsyncClient
 
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.research.news import EDITIONS, GoogleNewsResearchProvider
-from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.translate.language import DEFAULT_LANGUAGES
 from ase.api.schemas_profile import ProfileUpdateIn
 from ase.api.schemas_reports import ReportCreateIn
@@ -79,8 +79,8 @@ async def test_persian_matching_preserves_original_evidence(
 ) -> None:
     original = "شركت می\u200cرود ايران"
     feed = PublicFeed(monkeypatch, httpx.Response(200, text=rss(item(title=original))))
-    seed = replace(SOCIAL_SEEDS[0], spec=replace(SOCIAL_SEEDS[0].spec, language="fa"))
-    result = await SocialFeedResearchProvider(feed.http, CLOCK, seed).collect(
+    seed = next(row for row in REGIONAL_SEEDS if row.spec.id == "hrana_fa")
+    result = await RegionalFeedResearchProvider(feed.http, CLOCK, seed).collect(
         replace(QUERY, languages=("fa",), terms=("شرکت", "ایران"))
     )
     await feed.http.aclose()

@@ -1,0 +1,50 @@
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "fixture-search",
+  "regionCode": "GB",
+  "pageInfo": {"totalResults": 2, "resultsPerPage": 20},
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "fixture-search-1",
+      "id": {"kind": "youtube#video", "videoId": "Qw3rTy7uIoP"},
+      "snippet": {
+        "publishedAt": "2026-09-05T12:30:00Z",
+        "channelId": "UCsearchresultchannel00",
+        "title": "Rail disruption after reported sabotage",
+        "description": "An uploader's account of the incident, with no verification.",
+        "thumbnails": {"default": {"url": "https://i.ytimg.com/vi/Qw3rTy7uIoP/default.jpg"}},
+        "channelTitle": "An uploader",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-05T12:30:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "fixture-search-2",
+      "id": {"kind": "youtube#video", "videoId": "OutOfRange1"},
+      "snippet": {
+        "publishedAt": "2026-08-01T09:00:00Z",
+        "channelId": "UCsearchresultchannel00",
+        "title": "An older upload outside the requested interval",
+        "description": "",
+        "channelTitle": "An uploader",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-08-01T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "fixture-search-3",
+      "id": {"kind": "youtube#channel", "channelId": "UCsearchresultchannel00"},
+      "snippet": {
+        "publishedAt": "2026-09-05T12:00:00Z",
+        "channelId": "UCsearchresultchannel00",
+        "title": "A channel result with no video identity",
+        "description": "",
+        "channelTitle": "An uploader",
+        "liveBroadcastContent": "none"
+      }
+    }
+  ]
+}

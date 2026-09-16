@@ -31,6 +31,7 @@ COMPANY = "company corporate|registry|identity|ownership|control|officers|parent
 TECHNICAL = "domain|DNS|infrastructure|network|registration|registrar|hosting|ownership|mail"
 
 
+# One reviewed statement per provider family, read top to bottom as a register.
 def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: PLR0915
     """Return immutable purpose profiles, with no settings, query text or external IO."""
     result: dict[str, AllocationProfile] = {}
@@ -224,13 +225,7 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
             countries=(country,),
             local=local,
         )
-    add(
-        "yt_bbc_news yt_reuters yt_dw_news yt_al_jazeera yt_france24 yt_sky_news "
-        "reddit_worldnews reddit_geopolitics",
-        NEWS,
-        "Public video/forum titles only; no transcripts, originals or independent-origin claim.",
-        prefix="research_social_",
-    )
+
     add(
         "telegram",
         DEFENCE + "|Russia|war|strikes|drone|missile|sanctions|cyber|Israel|Iran|protests",
@@ -248,11 +243,10 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         prefix="research_social_",
     )
     add(
-        "reddit_ukrainianconflict",
-        DEFENCE + "|civilian|displacement",
-        "Unverified forum discovery; discussion location is not event geography.",
-        prefix="research_social_",
-        countries=("UA",),
+        "research-youtube",
+        NEWS + "|video|footage|briefing|interview|analysis",
+        "Platform-wide video search metadata; uploader claims, no channel or origin proof.",
+        prefix="",
     )
 
     # Primary means attributable records/measurements, not verified claims.

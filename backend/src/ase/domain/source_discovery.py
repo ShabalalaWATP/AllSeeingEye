@@ -92,12 +92,23 @@ GLOBAL_IDS = frozenset(
         "google_news_watchlists",
         "yt_bbc_news",
         "yt_reuters",
+        "yt_ap",
         "yt_dw_news",
         "yt_al_jazeera",
         "yt_france24",
         "yt_sky_news",
-        "reddit_worldnews",
-        "reddit_geopolitics",
+        "yt_guardian",
+        "yt_euronews",
+        "yt_pbs_newshour",
+        "yt_cnbc",
+        "yt_financial_times",
+        "yt_economist",
+        "yt_defcon",
+        "yt_black_hat",
+        "yt_war_on_the_rocks",
+        "yt_chatham_house",
+        "yt_nato",
+        "yt_united_nations",
         "bellingcat",
         "aisstream",
         "research-openalex",
@@ -152,7 +163,6 @@ REGIONAL = {
     "iranwire_en": _focus("IR"),
     "iranwire_fa": _focus("IR"),
     "pravda_ua_en": _focus("UA"),
-    "reddit_ukrainianconflict": _focus("UA", "RU"),
     "scmp_news": _focus("CN", "HK", regions=("Asia",)),
     "nikkei_asia": _focus(regions=("Asia",)),
     "times_of_israel": _focus("IL", regions=("Middle East",)),
@@ -163,6 +173,16 @@ REGIONAL = {
     "whitehouse_news": _focus("US"),
     "us_dod_news": _focus("US"),
     "cgtn_china": _focus("CN"),
+    "yt_cgtn": _focus("CN"),
+    "yt_scmp": _focus("CN", "HK", regions=("Asia",)),
+    "yt_taiwan_plus": _focus("TW", regions=("Asia",)),
+    "yt_kyiv_independent": _focus("UA"),
+    "yt_meduza": _focus("RU"),
+    "yt_middle_east_eye": _focus(regions=("Middle East",)),
+    "yt_perun": _focus("UA", "RU"),
+    "yt_white_house": _focus("US"),
+    "yt_number_10": _focus("GB"),
+    "yt_european_commission": _focus(regions=("Europe",)),
     "russia_mfa_ru": _focus("RU"),
     "belta_ru": _focus("BY"),
     "interfax_ru": _focus("RU"),
@@ -204,7 +224,7 @@ REGIONAL = {
 
 def source_coverage(source_id: str) -> SourceCoverage:
     """Derivatives inherit configured feed scope, never their language or edition."""
-    for prefix in ("research_regional_", "research_social_", "research_publisher_"):
+    for prefix in ("research_regional_", "research_publisher_"):
         if source_id.startswith(prefix):
             source_id = source_id.removeprefix(prefix)
             break
