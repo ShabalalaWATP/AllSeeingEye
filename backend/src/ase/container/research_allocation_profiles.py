@@ -31,7 +31,7 @@ COMPANY = "company corporate|registry|identity|ownership|control|officers|parent
 TECHNICAL = "domain|DNS|infrastructure|network|registration|registrar|hosting|ownership|mail"
 
 
-def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: PLR0915
+def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
     """Return immutable purpose profiles, with no settings, query text or external IO."""
     result: dict[str, AllocationProfile] = {}
 
@@ -224,20 +224,6 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
             countries=(country,),
             local=local,
         )
-    add(
-        "yt_bbc_news yt_reuters yt_dw_news yt_al_jazeera yt_france24 yt_sky_news "
-        "reddit_worldnews reddit_geopolitics",
-        NEWS,
-        "Public video/forum titles only; no transcripts, originals or independent-origin claim.",
-        prefix="research_social_",
-    )
-    add(
-        "reddit_ukrainianconflict",
-        DEFENCE + "|civilian|displacement",
-        "Unverified forum discovery; discussion location is not event geography.",
-        prefix="research_social_",
-        countries=("UA",),
-    )
 
     # Primary means attributable records/measurements, not verified claims.
     record = partial(add, prefix="")

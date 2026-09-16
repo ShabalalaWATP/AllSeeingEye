@@ -5,7 +5,6 @@ from dataclasses import replace
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
@@ -75,24 +74,6 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             )
             for language in EDITIONS
         )
-    specs.extend(
-        _spec(
-            f"research_social_{seed.spec.id}",
-            seed.spec.name,
-            Category.SOCIAL,
-            f"The configured {seed.spec.name} feed supplies account or publisher claims; "
-            "neither the platform nor the configured label authenticates an item's origin.",
-            "Local phrase matching within a configured RSS or Atom feed and requested dates.",
-            "Only the first 200 feed items are considered; no platform-wide search, complete "
-            "history, linked posts, replies or account authentication.",
-            seed.spec.licence_note,
-            role="platform",
-            language=seed.spec.language,
-            kind=SourceKind.RSS,
-        )
-        for seed in SOCIAL_SEEDS
-        if seed.spec.id not in disabled
-    )
     specs.extend(record_specs())
     specs.extend(subject_specs())
     specs.extend(

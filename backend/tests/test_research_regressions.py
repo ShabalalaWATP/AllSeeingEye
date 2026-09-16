@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_SPEC
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.api.schemas_reports import ReportCreateIn
 from ase.container import Container
 from ase.container.research import research_service
@@ -38,7 +38,7 @@ DIRECTION = json.dumps(
         "categories": ["news"],
     }
 )
-SOCIAL_IDS = tuple(seed.spec.id for seed in SOCIAL_SEEDS)
+REGIONAL_IDS = tuple(seed.spec.id for seed in REGIONAL_SEEDS)
 
 
 class CollectionProbe:
@@ -99,7 +99,7 @@ async def test_language_case_variants_make_one_guarded_edition_request(
     response = httpx.Response(200, text="<rss><channel></channel></rss>")
     service = RecordService(monkeypatch, response=response)
     try:
-        batch = await research_service(service.http, CLOCK, SOCIAL_IDS).collect(query)
+        batch = await research_service(service.http, CLOCK, REGIONAL_IDS).collect(query)
         assert query.languages == ("zh-cn",)
         assert len(service.requests) == len(service.guarded) == 1
         assert service.requests[0].url.host == "news.google.com"
@@ -127,7 +127,7 @@ async def test_disabling_base_or_research_google_source_prevents_http(
     )
     try:
         with pytest.raises(InvalidRequest, match="Selected sources are unavailable"):
-            await research_service(service.http, CLOCK, (*SOCIAL_IDS, disabled_google)).collect(
+            await research_service(service.http, CLOCK, (*REGIONAL_IDS, disabled_google)).collect(
                 query
             )
         assert service.requests == service.guarded == []

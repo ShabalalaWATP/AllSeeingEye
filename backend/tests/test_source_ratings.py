@@ -91,19 +91,9 @@ def test_platforms_and_aggregators_do_not_assess_the_original_publishers():
         assert source.rating is not None and source.rating.status == "unassessed"
         assert not source.rating.publisher_reliability_assessed
         assert "does not confer publisher credibility" in " ".join(source.rating.limitations)
+    # Retired subreddit listings keep no catalogue entry of their own.
     for source_id in ("reddit_worldnews", "reddit_geopolitics", "reddit_ukrainianconflict"):
-        assert source_rating_for(source_id, Reliability.E).assessed_grade is None
-
-
-def test_known_outlet_channel_is_assessed_as_publisher_not_as_its_hosting_platform():
-    known = source_rating_for("yt_reuters", Reliability.B)
-    assert known.provenance_role == "publisher" and known.publisher_reliability_assessed
-    assert "not a grade inherited from YouTube" in known.basis
-    assert source_rating_for("yt_unrecognised_channel", Reliability.B).status == "unassessed"
-    dw_channel = source_rating_for("yt_dw_news", Reliability.C)
-    dw_rss = source_rating_for("dw_world", Reliability.B)
-    assert dw_channel.assessed_grade is Reliability.C and dw_rss.assessed_grade is Reliability.B
-    assert "assignments can differ" in " ".join(dw_channel.limitations)
+        assert source_rating_for(source_id, Reliability.E) == unassessed_source_rating()
 
 
 def test_changed_configured_grade_does_not_invent_a_reassessment():

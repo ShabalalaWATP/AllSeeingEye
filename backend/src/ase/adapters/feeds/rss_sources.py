@@ -18,7 +18,6 @@ from ase.adapters.feeds.rss_seeds_news import NEWS_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.application.ports import Clock
 
 __all__ = ["RSS_SEEDS", "US_ADVISORY", "RssSeed", "build_rss_connectors"]
@@ -26,7 +25,6 @@ __all__ = ["RSS_SEEDS", "US_ADVISORY", "RssSeed", "build_rss_connectors"]
 RSS_SEEDS: tuple[RssSeed, ...] = (
     *OFFICIAL_SEEDS,
     *OUTLET_SEEDS,
-    *SOCIAL_SEEDS,
     *REGIONAL_SEEDS,
     *ECONOMY_SEEDS,
     *CYBER_SEEDS,

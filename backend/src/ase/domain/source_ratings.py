@@ -51,10 +51,10 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
         basis=f"The retained {configured_grade.value} feed grade is a legacy collection caution, "
         "not an assessment "
         "of each public post's author. Author reliability remains unassessed.",
-        scope="Public posts exposed by a configured community or instance.",
+        scope="Public posts exposed by a configured instance.",
         limitations=(
             *COMMON_LIMITATIONS,
-            "A platform, subreddit or instance does not confer publisher credibility. "
+            "A platform or instance does not confer publisher credibility. "
             "Accounts, repost origins and item claims require their own attribution.",
             "Timeline selection, moderation and federation affect coverage. No platform-wide "
             "sampling or account authentication is performed.",
@@ -66,11 +66,7 @@ def _platform_rating(configured_grade: Reliability) -> SourceRating:
 
 def source_rating_for(source_id: str, configured_grade: Reliability) -> SourceRating:
     """Describe registered assignments; never infer reliability from a domain or platform."""
-    if source_id.startswith("mastodon_") or source_id in {
-        "reddit_worldnews",
-        "reddit_geopolitics",
-        "reddit_ukrainianconflict",
-    }:
+    if source_id.startswith("mastodon_"):
         return _platform_rating(configured_grade)
     entry = CATALOGUE.get(source_id)
     if entry is None:

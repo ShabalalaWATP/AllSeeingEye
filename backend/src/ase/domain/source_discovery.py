@@ -90,14 +90,6 @@ GLOBAL_IDS = frozenset(
         "launch_library",
         "gdelt_events",
         "google_news_watchlists",
-        "yt_bbc_news",
-        "yt_reuters",
-        "yt_dw_news",
-        "yt_al_jazeera",
-        "yt_france24",
-        "yt_sky_news",
-        "reddit_worldnews",
-        "reddit_geopolitics",
         "bellingcat",
         "aisstream",
         "research-openalex",
@@ -152,7 +144,6 @@ REGIONAL = {
     "iranwire_en": _focus("IR"),
     "iranwire_fa": _focus("IR"),
     "pravda_ua_en": _focus("UA"),
-    "reddit_ukrainianconflict": _focus("UA", "RU"),
     "scmp_news": _focus("CN", "HK", regions=("Asia",)),
     "nikkei_asia": _focus(regions=("Asia",)),
     "times_of_israel": _focus("IL", regions=("Middle East",)),
@@ -204,7 +195,7 @@ REGIONAL = {
 
 def source_coverage(source_id: str) -> SourceCoverage:
     """Derivatives inherit configured feed scope, never their language or edition."""
-    for prefix in ("research_regional_", "research_social_", "research_publisher_"):
+    for prefix in ("research_regional_", "research_publisher_"):
         if source_id.startswith(prefix):
             source_id = source_id.removeprefix(prefix)
             break

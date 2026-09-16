@@ -153,10 +153,10 @@ async def test_host_pacer_spaces_request_starts_for_listed_hosts_only() -> None:
     now[0] += 5
     await pacer.wait("https://api.adsb.lol/v2/mil")
     assert slept == [1.0]
-    # Reddit answered HTTP 429 to this application before; its listings share one host.
-    await pacer.wait("https://www.reddit.com/r/worldnews/new/.rss")
-    await pacer.wait("https://www.reddit.com/r/geopolitics/new/.rss")
-    assert slept == [1.0, 5.0]
+    # Every watched YouTube channel is polled through one host under one project quota.
+    await pacer.wait("https://www.googleapis.com/youtube/v3/playlistItems")
+    await pacer.wait("https://www.googleapis.com/youtube/v3/playlistItems")
+    assert slept == [1.0, 1.0]
     # Every watched Mastodon instance is spaced, and no unwatched host is.
     for watch in load_watch():
         await pacer.wait(f"https://{watch.instance}/api/v1/timelines/tag/osint")

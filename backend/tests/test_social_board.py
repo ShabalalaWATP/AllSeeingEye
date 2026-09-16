@@ -62,7 +62,7 @@ def test_keyword_counts_use_word_boundaries_and_count_each_post_once() -> None:
 def test_hashtags_are_deduplicated_and_platforms_keep_locations() -> None:
     posts = [
         social_post("a", "#Ukraine #ukraine #тайвань"),
-        social_post("b").with_changes(tags=frozenset({"reddit"}), point=None),
+        social_post("b").with_changes(tags=frozenset({"youtube"}), point=None),
         social_post("c").with_changes(tags=frozenset({"youtube"})),
         social_post("d").with_changes(tags=frozenset(), attributes={}),
         social_post("e").with_changes(attributes={}),

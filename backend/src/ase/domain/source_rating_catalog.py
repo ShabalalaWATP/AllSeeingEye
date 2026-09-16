@@ -227,24 +227,6 @@ CATALOGUE = {
         "Attribution, claim content and conflicting evidence remain separate questions.",
     ),
     **_entries(
-        {
-            "yt_bbc_news": "B",
-            "yt_reuters": "B",
-            "yt_dw_news": "C",
-            "yt_al_jazeera": "C",
-            "yt_france24": "C",
-            "yt_sky_news": "C",
-        },
-        "Inherited channel-specific editorial assignment for a configured named outlet "
-        "channel, not a grade inherited from YouTube.",
-        "The configured outlet channel's own publication metadata.",
-        "publisher",
-        "The connector does not authenticate video content or examine frames. "
-        "YouTube hosting does not confer credibility on other channels or quoted sources.",
-        "Legacy channel and RSS assignments can differ; this metadata does not silently "
-        "reconcile them or claim a fresh performance assessment.",
-    ),
-    **_entries(
         {"gdelt_events": "C", "google_news_watchlists": "C", "gdelt_news": "C"},
         "Inherited collection-service assignment for machine-coded or aggregated reporting; "
         "the original publisher has not inherited a reliability grade from the platform.",

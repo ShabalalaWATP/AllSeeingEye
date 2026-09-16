@@ -5,7 +5,6 @@ from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.regional import LANGUAGE_ALIASES, REGIONAL_COUNTRIES
 from ase.application.source_capabilities import SourceCapabilityRegistry
@@ -65,7 +64,6 @@ def _feed_capabilities(specs: dict[str, SourceSpec]) -> list[SourceCapability]:
         ("economy_news", "research_publisher_", ECONOMY_SEEDS),
         ("cyber_news", "research_publisher_", CYBER_SEEDS),
         ("regional", "research_regional_", REGIONAL_SEEDS),
-        ("social", "research_social_", SOCIAL_SEEDS),
     )
     for family, prefix, seeds in groups:
         for seed in seeds:
@@ -87,7 +85,7 @@ def _feed_capabilities(specs: dict[str, SourceSpec]) -> list[SourceCapability]:
                     f" Regional country selection {REGIONAL_COUNTRIES[original.id]} or explicit "
                     "source override routes this feed; neither establishes incident geography."
                 )
-            unknown_origin = family == "social" or original.id in {"cdt_zh", "reliefweb_updates"}
+            unknown_origin = original.id in {"cdt_zh", "reliefweb_updates"}
             result.append(
                 SourceCapability(
                     spec.id,

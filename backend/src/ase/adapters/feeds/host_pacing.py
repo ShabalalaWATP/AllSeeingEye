@@ -5,9 +5,9 @@ emergency, watched-area, viewport and worldwide-sweep feeds). Each paces itself,
 together they started within the same few seconds after a restart and the provider
 answered HTTP 429. One shared, per-host gap keeps this process within polite limits.
 
-Reddit is here for the same reason: the subreddit listings share one host, that host
-has answered HTTP 429 to this application before, and the scheduler only spreads first
-polls across five seconds. The per-host gap is the floor beneath that spread.
+The YouTube Data API is here for the same reason: every watched channel is polled
+through one host under one project quota, and the scheduler only spreads first polls
+across five seconds. The per-host gap is the floor beneath that spread.
 """
 
 from __future__ import annotations
@@ -18,8 +18,8 @@ from collections.abc import Awaitable, Callable, Mapping
 from urllib.parse import urlsplit
 
 ADSB_LOL_HOST = "api.adsb.lol"
-REDDIT_HOST = "www.reddit.com"
-DEFAULT_HOST_INTERVALS: Mapping[str, float] = {ADSB_LOL_HOST: 1.0, REDDIT_HOST: 5.0}
+GOOGLE_APIS_HOST = "www.googleapis.com"
+DEFAULT_HOST_INTERVALS: Mapping[str, float] = {ADSB_LOL_HOST: 1.0, GOOGLE_APIS_HOST: 1.0}
 
 
 class HostPacer:
