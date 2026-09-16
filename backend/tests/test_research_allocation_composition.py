@@ -36,8 +36,9 @@ def test_every_executable_e00_provider_has_a_reviewed_profile():
     ids = tuple(key for key, cap in registry.capabilities.items() if cap.provider_id is not None)
     result = compose_research_allocation(ids, enabled=dict.fromkeys(ids, True))
     assert set(profiles) == set(ids) == {row.capability.id for row in result.resolved}
-    # 138 after seventeen official and publisher economic feeds joined the catalogue.
-    assert len(ids) == 138
+    # 139 after one aggregated provider for the whole curated Telegram set joined the
+    # catalogue. Telegram deliberately adds one entry, not one per channel.
+    assert len(ids) == 139
     assert result.profile_review_date == REVIEW_DATE
     assert all(row.review_note.startswith(REVIEW_DATE) for row in profiles.values())
     assert not {"research_import", "research_media", "research-web-search"} & set(profiles)

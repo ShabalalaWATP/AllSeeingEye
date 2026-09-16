@@ -49,6 +49,8 @@ from ase.adapters.feeds.rss_sources import build_rss_connectors
 from ase.adapters.feeds.satellites import SATELLITE_SPECS, SatelliteConnector
 from ase.adapters.feeds.space import KpConnector, LaunchConnector
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
+from ase.adapters.feeds.telegram import TelegramChannelConnector
+from ase.adapters.feeds.telegram_channels import TELEGRAM_CHANNELS
 from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
 from ase.adapters.feeds.ukraine_general_staff import GeneralStaffLossesConnector
 from ase.adapters.feeds.usgs import UsgsConnector
@@ -145,6 +147,7 @@ def build_connectors(
             MastodonConnector(http, clock, watch.instance, watch.tags, watch.minutes)
             for watch in load_watch()
         ],
+        *[TelegramChannelConnector(http, clock, entry) for entry in TELEGRAM_CHANNELS],
     ]
     if aircraft_interests is not None and "adsb_viewport" not in excluded:
         connectors.append(

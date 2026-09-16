@@ -12,6 +12,7 @@ from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.publisher import PublisherFeedResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.adapters.research.social_telegram import TelegramResearchProvider
 from ase.application.ports import Clock
 from ase.application.ports.research import ResearchProvider
 
@@ -23,7 +24,9 @@ def public_research_feeds(
         RegionalFeedResearchProvider(http, clock, seed) for seed in REGIONAL_SEEDS
     ]
     social: list[ResearchProvider] = [
-        SocialFeedResearchProvider(http, clock, seed) for seed in SOCIAL_SEEDS
+        *(SocialFeedResearchProvider(http, clock, seed) for seed in SOCIAL_SEEDS),
+        # The whole curated Telegram set is one catalogue entry, not one per channel.
+        TelegramResearchProvider(http, clock),
     ]
     if spatial:
         # Existing unsupported capabilities explain the spatial boundary. The new

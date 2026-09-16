@@ -60,8 +60,10 @@ flowchart LR
 The tracker-to-database path represents reports, alerts and small aggregate
 samples, not the raw event stream. Source availability and key requirements are
 recorded in [the data-source catalogue](02_DATA_SOURCES.md). Bluesky remains
-unavailable from the development host; Telegram is excluded by the accepted
-scope. Optional keyed feeds are not prerequisites for the core application.
+unavailable from the development host. Telegram, previously excluded, is now
+collected from public channel web previews for a curated, viewpoint-labelled
+channel set; see [TELEGRAM_CHANNEL_COVERAGE.md](TELEGRAM_CHANNEL_COVERAGE.md)
+for the parser's failure-safe behaviour and the grading rules. Optional keyed feeds are not prerequisites for the core application.
 
 ## 3. Runtime topology
 
