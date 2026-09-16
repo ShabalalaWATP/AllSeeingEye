@@ -8,6 +8,7 @@ from typing import Literal
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.radar_attack_trends import RadarAttackTrends
+from ase.adapters.research.asset_register import AssetRegisterProvider
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
@@ -164,6 +165,7 @@ def research_service(
             )
         selected.extend(
             (
+                AssetRegisterProvider(),
                 procurement,
                 aiddata,
                 CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
@@ -205,6 +207,7 @@ def research_service(
             for provider in providers(replace(query, focus=ResearchFocus.GENERAL))
             if provider.id
             not in {
+                AssetRegisterProvider.id,
                 RetainedAreaFeedProvider.id,
                 UsgsAreaResearchProvider.id,
                 EonetAreaResearchProvider.id,

@@ -169,6 +169,15 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
             content=Content.RETAINED,
             route=Route.RETAINED_AREA,
         ),
+        "research-asset-register": _profile(
+            "infrastructure",
+            (Scope.TOPIC, Scope.COUNTRY_CONTEXT, Scope.AREA),
+            Dates.CURRENT_SNAPSHOT,
+            "General focus, plus a drawn/saved area or a country code with a packaged outline, "
+            "plus a reviewed asset phrase in the question, terms or requirements (a drawn area "
+            "needs no phrase). Packaged registers only: counts and at most six named records "
+            "per class. A register record is not evidence of a site's current state.",
+        ),
         "research-aiddata-projects": _profile(
             "development",
             (Scope.TOPIC, Scope.COUNTRY_CONTEXT, Scope.AREA),

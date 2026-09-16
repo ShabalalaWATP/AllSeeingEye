@@ -326,6 +326,13 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         primary=True,
     )
     record(
+        "research-asset-register",
+        "cable cables|data centre datacentre|nuclear reactor|semiconductor chip fab|"
+        "power station grid|refinery pipeline terminal|ground station teleport|"
+        "infrastructure site facility|connectivity outage blackout",
+        "Packaged map registers, gated by a reviewed asset phrase; not current site state.",
+    )
+    record(
         "research-aiddata-projects",
         "development|aid|China|loan|finance|infrastructure|project|energy|commitment",
         "Research project catalogue, not original loan agreements or disbursement evidence.",
