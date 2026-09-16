@@ -67,10 +67,11 @@ RUSSIA_MILBLOGGERS: tuple[TelegramChannel, ...] = (
     channel(
         "rybar",
         "Rybar",
-        "Rybar, a Russian military analysis project founded by a former MoD press officer",
+        "Rybar, a Russian military analysis project",
         "russia_milblogger",
-        "The most-cited Russian military mapping and analysis channel; well informed and "
-        "an instrument of the Russian war effort.",
+        "The most-cited Russian military mapping and analysis channel; well informed, "
+        "reportedly founded by a former defence-ministry press officer, and an "
+        "instrument of the Russian war effort.",
         "state_media",
         alignment="Russia",
         language="ru",

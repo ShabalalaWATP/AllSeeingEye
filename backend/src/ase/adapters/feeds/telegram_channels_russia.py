@@ -188,9 +188,9 @@ RUSSIA_INDEPENDENT: tuple[TelegramChannel, ...] = (
     channel(
         "bazabazon",
         "Baza",
-        "Baza, a Russian incident-news outlet with law-enforcement sourcing",
+        "Baza, a Russian incident-news outlet",
         "russia_independent",
-        "First Russian source on many domestic incidents; its security-services "
+        "First Russian source on many domestic incidents; its reported security-services "
         "sourcing is a bias as well as an advantage.",
         "publisher",
         language="ru",
@@ -199,7 +199,7 @@ RUSSIA_INDEPENDENT: tuple[TelegramChannel, ...] = (
     channel(
         "shot_shot",
         "SHOT",
-        "SHOT, a Russian incident-news outlet with law-enforcement sourcing",
+        "SHOT, a Russian incident-news outlet",
         "russia_independent",
         "High-tempo Russian incident reporting, including drone attacks inside Russia; "
         "frequently first and frequently wrong.",

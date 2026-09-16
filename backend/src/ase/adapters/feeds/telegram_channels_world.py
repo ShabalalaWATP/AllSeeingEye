@@ -97,8 +97,8 @@ WIDER_WORLD: tuple[TelegramChannel, ...] = (
         "OSINTdefender",
         "OSINTdefender, an independent conflict-monitoring account",
         "conflict_monitoring",
-        "High-tempo English aggregation of conflict claims worldwide; frequently first "
-        "and with a documented record of early errors.",
+        "High-tempo English aggregation of conflict claims worldwide; frequently first, "
+        "and its early claims are often corrected afterwards.",
         "publisher",
         minutes=60,
     ),

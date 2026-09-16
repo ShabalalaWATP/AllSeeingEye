@@ -93,7 +93,7 @@ media. That is a deliberate boundary, not an oversight.
 
 ## The registry
 
-64 channels, all fetched and parsed with the application's own parser on 16 September 2026
+63 channels, all fetched and parsed with the application's own parser on 16 September 2026
 and all with a post inside the previous 16 days. Grouped by topic:
 
 | Topic | Count | Examples |
@@ -107,7 +107,7 @@ and all with a post inside the previous 16 days. Grouped by topic:
 | `conflict_monitoring` | 5 | DeepState, Gerashchenko, Tsaplienko, Operatyvno ZSU, OSINTdefender |
 | `middle_east` | 5 | IDF, Israel War Room, Quds News Network, Press TV, IRNA |
 | `cyber_threat` | 4 | vx-underground, The Hacker News, BleepingComputer, RedPacket Security |
-| `finance_sanctions` | 4 | Bank of Russia, National Bank of Ukraine, Minfin, Bloomberg |
+| `finance_sanctions` | 3 | Bank of Russia, National Bank of Ukraine, Bloomberg |
 | `emergency_response` | 2 | DSNS Ukraine, EMERCOM Russia |
 | `asia_pacific` | 1 | South China Morning Post |
 | `africa_sahel` | 1 | Mali Actu |
@@ -117,7 +117,7 @@ The full list, with the operator and the one-line reason for each entry, is in
 
 ## What was rejected, and why
 
-229 candidate channels were probed across four rounds and 64 were kept. The failure modes:
+229 candidate channels were probed across four rounds and 63 were kept. The failure modes:
 
 - **No public preview.** The `@name` resolves but `t.me/s/<name>` serves the generic
   contact page with no channel history: `ssu_telegram`, `butusov_plus`, `hromadskeua`,
@@ -138,9 +138,14 @@ The full list, with the operator and the one-line reason for each entry, is in
 - **Operator not establishable.** Active and useful, but the account behind it could not be
   established well enough to describe honestly: `war_monitor`, `air_alert_ua`, `bbbreaking`,
   `warmonitors`, `insiderUKR`, `russica2`, `palestineonline`, `Cyber_Security_Channel`,
-  `if_market_news`. `operativnoZSU` was kept as the single exception, labelled explicitly as
-  an unofficial aggregator often mistaken for a General Staff channel, because that
-  confusion is itself worth surfacing.
+  `if_market_news`. `operativnoZSU` and `UkraineNow` were kept as exceptions, both labelled
+  explicitly as unattributed Ukrainian war-news channels rather than the official or
+  government channels their names suggest, because that confusion is itself worth surfacing.
+- **Mislabelled during review, caught before release.** `minfin_news` was first entered as
+  the Ukrainian finance portal minfin.com.ua. Its own channel description says it
+  republishes Russian Ministry of Finance and Federal Tax Service material, so it was
+  dropped. Every registry claim was cross-checked against the channel's own description for
+  exactly this reason.
 
 ## Known gaps
 
@@ -152,7 +157,7 @@ publicly, not oversights, and the RSS catalogue already covers several of them.
 
 ## Load
 
-64 channels at 30 to 240 minute intervals is about 57 requests an hour to `t.me`, roughly
+63 channels at 30 to 240 minute intervals is about 57 requests an hour to `t.me`, roughly
 one a minute, spaced at five seconds by the shared per-host pacer. At around 200 KB per
 uncacheable page that is roughly 11 MB an hour.
 

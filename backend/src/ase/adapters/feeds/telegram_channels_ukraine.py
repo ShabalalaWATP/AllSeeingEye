@@ -120,11 +120,11 @@ UKRAINE_MEDIA: tuple[TelegramChannel, ...] = (
     channel(
         "UkraineNow",
         "Ukraine NOW",
-        "Ukrainian government information channel",
+        "Unattributed Ukrainian war-news channel",
         "ukraine_media",
-        "Government-run public information channel used for air alerts, evacuation and "
-        "official messaging; a party's own communication.",
-        "state_media",
+        "One of the largest Ukrainian war-news channels; widely described as a government "
+        "information project, which its own channel does not confirm.",
+        "aligned_commentator",
         alignment="Ukraine",
         language="uk",
     ),
@@ -189,17 +189,6 @@ UKRAINE_MEDIA: tuple[TelegramChannel, ...] = (
         "campaigning against both governments.",
         "aligned_commentator",
         alignment="Belarusian opposition",
-        language="ru",
-        minutes=120,
-    ),
-    channel(
-        "minfin_news",
-        "Minfin",
-        "minfin.com.ua, a Ukrainian financial portal",
-        "finance_sanctions",
-        "Ukrainian exchange rates, banking and budget coverage during capital controls "
-        "and wartime finance.",
-        "publisher",
         language="ru",
         minutes=120,
     ),
