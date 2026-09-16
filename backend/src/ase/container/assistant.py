@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from ase.application.reports.access import GetReportUseCase
     from ase.container.repositories import Repositories
     from ase.domain.grading import SourceProfile
+    from ase.domain.reasoning import ReasoningEffortPolicy
 
 
 class AssistantWiring:
@@ -44,6 +45,7 @@ class AssistantWiring:
         limiter: RateLimiter
         cipher: SecretCipher
         llm: LlmGateway
+        reasoning_effort: ReasoningEffortPolicy
         session_factory: async_sessionmaker[AsyncSession]
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
@@ -76,7 +78,14 @@ class AssistantWiring:
 
     def ai_usage_views(self, session: AsyncSession) -> AiUsageViews:
         repos = self.repositories(session)
-        return AiUsageViews(repos.ai_usage, SqlTeamRepository(session), repos.users, self.clock)
+        return AiUsageViews(
+            repos.ai_usage,
+            SqlTeamRepository(session),
+            repos.users,
+            self.clock,
+            ModelRouting(repos.llm_profiles, repos.llm_bindings),
+            self.reasoning_effort,
+        )
 
     def map_assistant(self, session: AsyncSession) -> MapAssistant:
         repos = self.repositories(session)

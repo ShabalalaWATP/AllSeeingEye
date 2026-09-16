@@ -12,7 +12,8 @@ from uuid import UUID
 from ase.application.ports.llm import LlmBindingRepository, LlmProfileRepository
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import TEXT_ROLES, LlmProfile, LlmRole
-from ase.domain.model_routing import ModelRoutingRecord, RoutedModel
+from ase.domain.model_routing import EffectiveModel, ModelRoutingRecord, RoutedModel
+from ase.domain.reasoning import ReasoningEffortPolicy
 
 UNAVAILABLE = "The assigned model is unavailable or its tested configuration has changed."
 
@@ -142,6 +143,32 @@ class ModelRouting:
                 (key, tuple((item.name, getattr(value, item.name)) for item in fields(value)))
                 for key, value in selected.items()
             ),
+        )
+
+    async def effective(
+        self,
+        *,
+        team_id: UUID | None = None,
+        personal_owner_id: UUID | None = None,
+        effort: ReasoningEffortPolicy | None = None,
+    ) -> EffectiveModel:
+        """Describe, without calling a provider, the model a destination would use."""
+        try:
+            profiles = await self.snapshot(
+                team_id=team_id, personal_owner_id=personal_owner_id, role=LlmRole.ASSESSMENT
+            )
+        except NoModelAvailable as exc:
+            return EffectiveModel(unavailable=str(exc) or "No model is available.")
+        profile = profiles.required(LlmRole.ASSESSMENT)
+        policy = effort if effort is not None else ReasoningEffortPolicy()
+        return EffectiveModel(
+            policy=profiles.provenance.policy,
+            profile_id=profile.id,
+            profile_name=profile.name,
+            model=profile.model,
+            provider=profile.provider,
+            reasoning_effort=profile.reasoning_effort,
+            mechanical_effort=policy.effort_for("translation", profile.reasoning_effort),
         )
 
     async def embeddings(self) -> LlmProfile | None:

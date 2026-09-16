@@ -21,6 +21,7 @@ from ase.adapters.persistence.ai_usage_models import (
 from ase.adapters.persistence.models import UserRow
 from ase.adapters.persistence.teams import TeamMembershipRow
 from ase.domain.ai_usage import (
+    AiAllowancePeriod,
     AiAttribution,
     AiPolicyScope,
     AiUsagePolicy,
@@ -45,8 +46,9 @@ class SqlAiPolicyStore:
         return policy_from_row(row) if row else None
 
     async def find_policy(
-        self, scope: AiPolicyScope, target_id: UUID | None
+        self, scope: AiPolicyScope, target_id: UUID | None, period: AiAllowancePeriod
     ) -> AiUsagePolicy | None:
+        """One enabled policy per scope, target and period, matching the unique index."""
         row = await self._session.scalar(
             select(AiUsagePolicyRow)
             .where(
@@ -54,6 +56,7 @@ class SqlAiPolicyStore:
                 AiUsagePolicyRow.target_id == target_id
                 if target_id is not None
                 else AiUsagePolicyRow.target_id.is_(None),
+                AiUsagePolicyRow.period == period.value,
                 AiUsagePolicyRow.enabled,
             )
             .order_by(AiUsagePolicyRow.revision.desc())

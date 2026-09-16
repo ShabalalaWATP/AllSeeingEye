@@ -21,10 +21,13 @@ from ase.domain.ai_usage import (
     AiUsageTotals,
 )
 from ase.domain.errors import NotFound, Unauthenticated
+from ase.domain.model_routing import EffectiveModel
+from ase.domain.reasoning import ReasoningEffortPolicy
 from ase.domain.teams import MembershipRole
 from ase.domain.users import User
 
 if TYPE_CHECKING:
+    from ase.application.model_routing import ModelRouting
     from ase.application.ports import Clock
 
 TeamUsageView = Literal["member", "manager", "admin"]
@@ -51,6 +54,7 @@ class AiUsagePreview:
     summaries: list[AiUsageSummary]
     totals: AiUsageTotals
     unknown_calls: int
+    model: EffectiveModel | None = None
 
 
 class AiUsageViews:
@@ -60,9 +64,12 @@ class AiUsageViews:
         teams: TeamRepository,
         users: UserRepository,
         clock: Clock,
+        routing: ModelRouting | None = None,
+        effort: ReasoningEffortPolicy | None = None,
     ) -> None:
         self._repository, self._teams = repository, teams
         self._users, self._clock = users, clock
+        self._routing, self._effort = routing, effort
 
     async def _fresh(self, actor: User) -> User:
         fresh = await self._users.get_by_id(actor.id)
@@ -126,6 +133,7 @@ class AiUsageViews:
                 await self._repository.summaries_for(policies, now),
                 await self._repository.system_totals(now),
                 unknown,
+                await self._effective_model(None, None),
             )
         if user_id is None or await self._users.get_by_id(user_id) is None:
             raise NotFound()
@@ -140,4 +148,21 @@ class AiUsageViews:
             if team_id is not None
             else await self._repository.account_totals(user_id, now)
         )
-        return AiUsagePreview(await self._repository.summaries_for(policies, now), totals, unknown)
+        return AiUsagePreview(
+            await self._repository.summaries_for(policies, now),
+            totals,
+            unknown,
+            await self._effective_model(user_id, team_id),
+        )
+
+    async def _effective_model(
+        self, user_id: UUID | None, team_id: UUID | None
+    ) -> EffectiveModel | None:
+        """Non-secret routing description for this destination, when routing is wired."""
+        if self._routing is None:
+            return None
+        return await self._routing.effective(
+            team_id=team_id,
+            personal_owner_id=user_id if team_id is None else None,
+            effort=self._effort,
+        )

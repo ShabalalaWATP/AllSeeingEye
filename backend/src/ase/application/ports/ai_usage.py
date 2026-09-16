@@ -7,6 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from ase.domain.ai_usage import (
+    AiAllowancePeriod,
     AiAttribution,
     AiCallOutcome,
     AiMemberUsage,
@@ -24,7 +25,7 @@ class AiPolicyRepository(Protocol):
     async def get_policy(self, policy_id: UUID) -> AiUsagePolicy | None: ...
 
     async def find_policy(
-        self, scope: AiPolicyScope, target_id: UUID | None
+        self, scope: AiPolicyScope, target_id: UUID | None, period: AiAllowancePeriod
     ) -> AiUsagePolicy | None: ...
 
     async def list_policies(self, scope: AiPolicyScope | None = None) -> list[AiUsagePolicy]: ...
@@ -103,6 +104,8 @@ class AiLedgerRepository(Protocol):
     async def team_totals(
         self, team_id: UUID, now: datetime, *, user_id: UUID | None = None
     ) -> AiUsageTotals: ...
+
+    async def site_totals(self, now: datetime) -> AiUsageTotals: ...
 
     async def system_totals(self, now: datetime) -> AiUsageTotals: ...
 

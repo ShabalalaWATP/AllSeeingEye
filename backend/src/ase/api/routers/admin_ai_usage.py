@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
+from ase.api.schemas_ai_defaults import AiPolicyDefaultsOut, AppliedDefaultsOut
 from ase.api.schemas_ai_usage import (
     AiUsagePolicyIn,
     AiUsagePolicyOut,
@@ -21,6 +22,7 @@ from ase.api.schemas_ai_usage_overrides import (
     AiPolicyOverridesOut,
 )
 from ase.application.ai_usage_admin import AiUsagePolicyAdmin
+from ase.application.ai_usage_defaults import AiUsageDefaults
 from ase.application.auditing import Auditor
 from ase.domain.ai_usage import AiUsagePolicy
 from ase.domain.ai_usage_overrides import AiPolicyOverride
@@ -31,6 +33,13 @@ router = APIRouter(prefix="/admin/ai-usage", tags=["admin"])
 
 def _service(session: SessionDep, container: ContainerDep) -> AiUsagePolicyAdmin:
     return AiUsagePolicyAdmin(container.repositories(session).ai_usage, container.clock)
+
+
+def _defaults(session: SessionDep, container: ContainerDep) -> AiUsageDefaults:
+    repos = container.repositories(session)
+    return AiUsageDefaults(
+        repos.ai_usage, repos.users, _service(session, container), container.clock
+    )
 
 
 async def _audit(
@@ -221,4 +230,34 @@ async def preview_effective_usage(
     preview = await container.ai_usage_views(session).preview(
         admin, user_id=user_id, team_id=team_id, system=system
     )
-    return AiUsagePreviewOut.from_preview(preview)
+    return AiUsagePreviewOut.from_preview(preview, container.settings.ai_token_prices)
+
+
+@router.get("/defaults", response_model=AiPolicyDefaultsOut)
+async def preview_default_policies(
+    admin: AdminUser, session: SessionDep, container: ContainerDep
+) -> AiPolicyDefaultsOut:
+    """The documented starting set, beside the usage it is compared against."""
+    defaults = await _defaults(session, container).preview(admin)
+    return AiPolicyDefaultsOut.from_defaults(defaults, container.settings.ai_token_prices)
+
+
+@router.post("/defaults", status_code=201)
+async def apply_default_policies(
+    admin: AdminUser, session: SessionDep, container: ContainerDep, context: ContextDep
+) -> AppliedDefaultsOut:
+    """Create every missing policy in the set. Existing policies are never overwritten."""
+    created = await _defaults(session, container).apply(admin)
+    await _audit(
+        session,
+        container,
+        AuditAction.AI_USAGE_DEFAULTS_APPLIED,
+        actor=admin.id,
+        subject=str(admin.id),
+        ip=context.ip,
+        details={
+            "created": len(created),
+            "policies": [_policy_details(policy) for policy in created[:50]],
+        },
+    )
+    return AppliedDefaultsOut.from_policies(created)

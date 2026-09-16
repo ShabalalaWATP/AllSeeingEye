@@ -28,3 +28,21 @@ class ModelRoutingRecord:
     binding_team_id: UUID | None
     profiles: tuple[RoutedModel, ...]
     binding_user_id: UUID | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class EffectiveModel:
+    """What a destination's next text call would use, or why it could not make one.
+
+    Non-secret configuration only: no base URL, no key and no key hint. ``unavailable``
+    carries the routing reason when no usable connection is assigned.
+    """
+
+    policy: Literal["legacy", "global", "team", "personal"] | None = None
+    profile_id: UUID | None = None
+    profile_name: str = ""
+    model: str = ""
+    provider: LlmProvider | None = None
+    reasoning_effort: ReasoningEffort | None = None
+    mechanical_effort: ReasoningEffort | None = None
+    unavailable: str | None = None
