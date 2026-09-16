@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import io
+from typing import Any, cast
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate
 
+from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.document_validation import validate_document_content
 from ase.adapters.reports.figure_validation import verify_document_figures
 from ase.adapters.reports.font_support import FONT_REGULAR as _FONT_NAME
 from ase.adapters.reports.font_support import cjk_font
 from ase.adapters.reports.font_support import font_characters as _font_characters
 from ase.adapters.reports.pdf_content import build_flowables, inline_markup
-from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.pdf_masthead import masthead_flowables
 from ase.adapters.reports.pdf_styles import (
     BOTTOM_MARGIN,
@@ -98,6 +99,9 @@ def render_pdf(document: ReportDocument) -> bytes:
     furniture = page_furniture(document, selected_font)
     canvas_class = type("_ASECanvas", (NumberedCanvas,), {"page_font": selected_font})
     pdf.build(
-        flowables, onFirstPage=furniture, onLaterPages=furniture, canvasmaker=canvas_class
+        flowables,
+        onFirstPage=furniture,
+        onLaterPages=furniture,
+        canvasmaker=cast("Any", canvas_class),
     )
     return stream.getvalue()

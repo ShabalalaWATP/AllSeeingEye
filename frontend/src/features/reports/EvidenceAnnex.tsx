@@ -2,6 +2,7 @@ import type { EvidenceItem, Finding } from '@/lib/api/reports';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
 import { EvidenceItemDetails } from './EvidenceItemDetails';
+import './evidenceSignals.css';
 
 /**
  * The frozen sources behind one report version. The index is scannable; the recorded
@@ -54,9 +55,7 @@ export function EvidenceAnnex({
           </p>
         </header>
         {evidence.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">
-            No frozen evidence was saved for this version.
-          </p>
+          <p className="mt-4 text-sm text-muted">No frozen evidence was saved for this version.</p>
         ) : (
           <div className="mt-1">
             {evidence.map((item) => (

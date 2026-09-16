@@ -140,7 +140,10 @@ describe('ReportPage', () => {
       within(annex).queryByRole('link', { name: 'Ministry statement' }),
     ).not.toBeInTheDocument();
     await user.click(within(annex).getByText('Ministry statement'));
-    expect(within(annex).getByText('Source flags: state controlled')).toBeVisible();
+    const flag = within(annex).getByText('state controlled');
+    expect(flag).toBeVisible();
+    // Colour never carries the meaning on its own: the flag keeps its own label.
+    expect(flag.closest('.evidence-signal')).toHaveTextContent('Flagstate controlled');
     expect(screen.getByText('1 validator note')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));

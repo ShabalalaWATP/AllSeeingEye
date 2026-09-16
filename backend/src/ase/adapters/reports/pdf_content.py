@@ -25,7 +25,7 @@ from reportlab.platypus import (
 )
 
 from ase.adapters.reports.figure_validation import VerifiedFigure
-from ase.adapters.reports.pdf_styles import PAGE_WIDTH, Rule
+from ase.adapters.reports.pdf_styles import ACCENT, PAGE_WIDTH, Rule
 from ase.domain.report_documents import (
     BlockKind,
     DocumentBlock,
@@ -278,6 +278,7 @@ def build_flowables(
     flowables: list[Flowable] = []
     missing = False
     reference_index = 0
+    section = 0
     for block in document.blocks if blocks is None else blocks:
         if block.kind is BlockKind.TABLE and block.table:
             added, replaced = _table_flowables(block.table, styles, characters)
@@ -307,8 +308,8 @@ def build_flowables(
                 ListFlowable(
                     cast("list[Any]", items),
                     bulletType="1" if block.ordered else "bullet",
-                    bulletFontSize=6,
-                    bulletOffsetY=1,
+                    bulletFontSize=8,
+                    bulletOffsetY=-1,
                     leftIndent=16,
                     bulletDedent=10,
                     spaceBefore=2,
@@ -324,10 +325,15 @@ def build_flowables(
         else:
             text, replaced = inline_markup(block.text, block.inlines, characters)
         missing = missing or replaced
-        flowables.append(Paragraph(text or " ", styles[block.kind]))
         if block.kind in {BlockKind.HEADING, BlockKind.ANNEX}:
-            # The same short accent rule the reader draws under a section heading.
-            rule = Rule(46, 1.4, accent=46, space_below=5)
+            # Section headings anchor the page in the export exactly as they do on
+            # screen: an accent number, the heading, then a rule across the measure.
+            section += 1
+            number = f'<font color="#{ACCENT.hexval()[2:]}">{section:02d}</font>&nbsp;&nbsp;'
+            flowables.append(Paragraph(number + (text or " "), styles[block.kind]))
+            rule = Rule(_PAGE_WIDTH, 1.1, accent=0, space_below=6)
             rule.keepWithNext = 1
             flowables.append(rule)
+            continue
+        flowables.append(Paragraph(text or " ", styles[block.kind]))
     return flowables, missing

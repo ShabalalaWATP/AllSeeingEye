@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -58,22 +58,22 @@ def styles() -> dict[BlockKind, ParagraphStyle]:
             "ASEHeading",
             parent=body,
             fontName=_FONT_BOLD,
-            fontSize=11.5,
-            leading=15,
+            fontSize=13.5,
+            leading=17,
             textColor=INK,
-            spaceBefore=18,
-            spaceAfter=2,
+            spaceBefore=20,
+            spaceAfter=3,
             keepWithNext=True,
         ),
         BlockKind.ANNEX: ParagraphStyle(
             "ASEAnnex",
             parent=body,
             fontName=_FONT_BOLD,
-            fontSize=11.5,
-            leading=15,
+            fontSize=13.5,
+            leading=17,
             textColor=INK,
             spaceBefore=0,
-            spaceAfter=2,
+            spaceAfter=3,
             keepWithNext=True,
             pageBreakBefore=True,
         ),
@@ -83,8 +83,8 @@ def styles() -> dict[BlockKind, ParagraphStyle]:
             fontName=_FONT_BOLD,
             fontSize=9.9,
             leading=14,
-            textColor=INK,
-            spaceBefore=11,
+            textColor=ACCENT,
+            spaceBefore=13,
             spaceAfter=1,
             keepWithNext=True,
         ),
@@ -185,19 +185,23 @@ class NumberedCanvas(Canvas):
 
     def showPage(self) -> None:  # noqa: N802
         self._pages.append(dict(self.__dict__))
-        self._startPage()
+        # ReportLab's own page reset; deferring the real showPage is how the total
+        # page count becomes available before anything is written.
+        start_page = cast("Callable[[], None]", getattr(self, "_startPage"))  # noqa: B009
+        start_page()
 
     def save(self) -> None:
         total = len(self._pages)
         for state in self._pages:
             self.__dict__.update(state)
+            number = cast(int, self.__dict__.get("_pageNumber", 0))
             self.saveState()
             self.setFont(self.page_font, 7)
             self.setFillColor(INK_SOFT)
             self.drawRightString(
                 A4[0] - RIGHT_MARGIN,
                 FOOT_BASELINE,
-                f"Page {self._pageNumber} of {total}",
+                f"Page {number} of {total}",
             )
             self.restoreState()
             super().showPage()

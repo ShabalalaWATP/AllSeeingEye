@@ -32,8 +32,7 @@ export const EXPORT_FORMATS: Record<ExportChoice, ExportDescription> = {
     label: 'Markdown',
     short: 'Markdown',
     purpose: 'Archive or diff',
-    detail:
-      'Plain text with the full evidence annex. Figures arrive as local images inside a ZIP.',
+    detail: 'Plain text with the full evidence annex. Figures arrive as local images inside a ZIP.',
   },
 };
 

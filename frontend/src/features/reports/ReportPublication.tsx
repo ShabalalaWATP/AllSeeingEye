@@ -9,13 +9,7 @@ import type { ReactNode } from 'react';
 
 import type { ReportPublication, ReportStatus } from '@/lib/api/reports';
 
-import {
-  FigureBlock,
-  Inlines,
-  References,
-  TableBlock,
-  type Inline,
-} from './publicationBlocks';
+import { FigureBlock, Inlines, References, TableBlock, type Inline } from './publicationBlocks';
 import { ReportGradingLegend } from './ReportGradingLegend';
 import { ReportReviewStatus } from './ReportReviewStatus';
 
@@ -94,10 +88,15 @@ function Masthead({
   );
 }
 
-type Rendered = {
-  nodes: ReactNode[];
-  section: { key: string; id: string; title: string; children: ReactNode[] } | null;
+type Section = {
+  key: string;
+  id: string;
+  title: string;
+  index: number;
+  children: ReactNode[];
 };
+
+type Rendered = { nodes: ReactNode[]; section: Section | null };
 
 function blockNode(block: Block, key: string): ReactNode {
   if (block.kind === 'subheading')
@@ -145,6 +144,7 @@ export function ReportPublicationView({
 }) {
   const blocks = publication.blocks;
   const state: Rendered = { nodes: [], section: null };
+  let sectionCount = 0;
   const flush = () => {
     const current = state.section;
     if (!current) return;
@@ -153,9 +153,16 @@ export function ReportPublicationView({
         key={current.key}
         id={current.id}
         aria-label={current.title}
-        className="report-reader-section"
+        // The opening section of an intelligence product carries its judgements, so
+        // it leads the page. Later sections read as the supporting material.
+        className={`report-reader-section${current.index === 1 ? ' report-reader-lead' : ''}`}
       >
-        <h2>{current.title}</h2>
+        <h2>
+          <span className="report-reader-section-number" aria-hidden="true">
+            {String(current.index).padStart(2, '0')}
+          </span>
+          <span>{current.title}</span>
+        </h2>
         {current.children}
       </section>,
     );
@@ -203,8 +210,16 @@ export function ReportPublicationView({
     }
     if (block.kind === 'heading' || block.kind === 'annex') {
       flush();
-      if (block.text !== 'References')
-        state.section = { key, id: sectionId(index, block.text), title: block.text, children: [] };
+      if (block.text !== 'References') {
+        sectionCount += 1;
+        state.section = {
+          key,
+          id: sectionId(index, block.text),
+          title: block.text,
+          index: sectionCount,
+          children: [],
+        };
+      }
       index += 1;
       continue;
     }
@@ -225,7 +240,7 @@ export function ReportPublicationView({
   return (
     <div dir="auto" lang={publication.language}>
       {state.nodes}
-      <References publication={publication} />
+      <References publication={publication} index={sectionCount + 1} />
     </div>
   );
 }

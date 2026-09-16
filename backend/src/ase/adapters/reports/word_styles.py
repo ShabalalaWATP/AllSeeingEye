@@ -9,9 +9,11 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor
+from docx.section import Section
+from docx.shared import Inches, Length, Pt, RGBColor
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
+from docx.text.parfmt import ParagraphFormat
 
 from ase.domain.report_documents import BlockKind, DocumentBlock, ReportDocument
 
@@ -39,8 +41,9 @@ def _shade(paragraph: Paragraph, fill: str) -> None:
     paragraph.paragraph_format.element.get_or_add_pPr().append(shading)
 
 
-def _border(paragraph: Paragraph, edge: str, colour: str, size: int) -> None:
-    properties = paragraph.paragraph_format.element.get_or_add_pPr()
+def _border(target: Paragraph | ParagraphFormat, edge: str, colour: str, size: int) -> None:
+    fmt = target.paragraph_format if isinstance(target, Paragraph) else target
+    properties = fmt.element.get_or_add_pPr()
     borders = properties.find(qn("w:pBdr"))
     if borders is None:
         borders = OxmlElement("w:pBdr")
@@ -61,19 +64,22 @@ def configure_styles(word: WordDocument) -> dict[BlockKind, str]:
         normal.font.color.rgb = RGBColor.from_string(INK)
         normal.paragraph_format.space_after = Pt(7)
         normal.paragraph_format.line_spacing = 1.16
-    for name, size, space_before in (
-        ("Title", 22, 0),
-        ("Heading 1", 13, 16),
-        ("Heading 2", 10.5, 10),
+    for name, size, space_before, ink in (
+        ("Title", 22, 0, INK),
+        ("Heading 1", 14, 18, INK),
+        ("Heading 2", 10.5, 12, ACCENT),
     ):
         style = word.styles[name]
         if isinstance(style, ParagraphStyle):
             style.font.name, style.font.size = "Aptos Display", Pt(size)
-            style.font.color.rgb = RGBColor.from_string(INK)
+            style.font.color.rgb = RGBColor.from_string(ink)
             style.font.bold = True
             style.paragraph_format.keep_with_next = True
             style.paragraph_format.space_before = Pt(space_before)
             style.paragraph_format.space_after = Pt(3)
+    heading = word.styles["Heading 1"]
+    if isinstance(heading, ParagraphStyle):
+        _border(heading.paragraph_format, "bottom", ACCENT, 8)
     metadata = word.styles.add_style("ASE Metadata", WD_STYLE_TYPE.PARAGRAPH)
     metadata.base_style = normal
     metadata.font.size, metadata.font.color.rgb = Pt(8.5), RGBColor.from_string(INK_SOFT)
@@ -113,6 +119,12 @@ def add_masthead(
     _border(closing, "bottom", INK, 12)
 
 
+def add_section_number(paragraph: Paragraph, number: int) -> None:
+    """The accent section number the reader shows beside each heading."""
+    run = paragraph.add_run(f"{number:02d}   ")
+    run.font.color.rgb = RGBColor.from_string(ACCENT)
+
+
 def add_review_band(paragraph: Paragraph) -> None:
     """Give a review notice the same banded treatment the reader shows."""
     _shade(paragraph, "FDF4E2")
@@ -127,23 +139,28 @@ def add_page_furniture(word: WordDocument, document: ReportDocument) -> None:
     head = section.header.paragraphs[0]
     head.style = word.styles["ASE Metadata"]
     head.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    head.paragraph_format.tab_stops.add_tab_stop(
-        section.page_width - section.left_margin - section.right_margin, WD_TAB_ALIGNMENT.RIGHT
-    )
+    head.paragraph_format.tab_stops.add_tab_stop(_text_width(section), WD_TAB_ALIGNMENT.RIGHT)
     head.add_run(f"{document.title}\t{document.reference}")
     _border(head, "bottom", "D9D2C5", 4)
     for footer in (section.footer, section.first_page_footer):
         paragraph = footer.paragraphs[0]
         paragraph.style = word.styles["ASE Metadata"]
         paragraph.paragraph_format.tab_stops.add_tab_stop(
-            section.page_width - section.left_margin - section.right_margin,
-            WD_TAB_ALIGNMENT.RIGHT,
+            _text_width(section), WD_TAB_ALIGNMENT.RIGHT
         )
         _border(paragraph, "top", "D9D2C5", 4)
         paragraph.add_run(f"{document.reference}\tPage ")
         _field(paragraph, "PAGE")
         paragraph.add_run(" of ")
         _field(paragraph, "NUMPAGES")
+
+
+def _text_width(section: Section) -> Length:
+    """The printable width, so a right tab stop lands on the right margin."""
+    width = section.page_width or Inches(8.27)
+    left = section.left_margin or Inches(0.78)
+    right = section.right_margin or Inches(0.78)
+    return Length(width - left - right)
 
 
 def _field(paragraph: Paragraph, instruction: str) -> None:

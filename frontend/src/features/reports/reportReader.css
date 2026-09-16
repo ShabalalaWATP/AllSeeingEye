@@ -30,6 +30,27 @@
   --paper-caution-ground: #fdf4e2;
   --paper-caution-rule: #cf9736;
 
+  /*
+   * Signal tones. Every one of these is rendered beside a label and the recorded
+   * value it describes, so colour never carries the meaning on its own. All four
+   * inks clear 4.5:1 against their own ground and against the paper.
+   */
+  --sig-strong-ink: #14613f;
+  --sig-strong-ground: #e4f1e9;
+  --sig-strong-rule: #93c3ab;
+  --sig-mid-ink: #1a4c76;
+  --sig-mid-ground: #e5eef6;
+  --sig-mid-rule: #9bb9d3;
+  --sig-caution-ink: #7d4c0c;
+  --sig-caution-ground: #fbefd9;
+  --sig-caution-rule: #d2a95f;
+  --sig-neutral-ink: #57524a;
+  --sig-neutral-ground: #efebe2;
+  --sig-neutral-rule: #cdc5b7;
+  --sig-info-ink: #1a4c76;
+  --sig-info-ground: #e5eef6;
+  --sig-info-rule: #9bb9d3;
+
   /* A comfortable measure: roughly 68 characters at the reader body size. */
   --measure: 37.5rem;
   --pad-inline: clamp(1.25rem, 5vw, 3.75rem);
@@ -151,38 +172,76 @@
 
 .report-reader-section {
   scroll-margin-top: 5rem;
-  padding-top: 2.5rem;
+  padding-top: 2.75rem;
 }
 
 .report-reader-section + .report-reader-section {
-  margin-top: 2.5rem;
-  border-top: 1px solid var(--paper-rule);
+  margin-top: 2.75rem;
+  border-top: 2px solid var(--paper-rule);
 }
 
+/*
+ * Section headings anchor the page: an accent number, a heading well above body
+ * weight, and a rule across the measure. Long sections need a heading a reader can
+ * find while scrolling, not one that blends into the paragraph below it.
+ */
 .report-reader-section > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 2px solid var(--paper-accent);
   color: var(--paper-ink-strong);
-  font-size: 1.05rem;
+  font-size: 1.32rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
 }
 
-.report-reader-section > h2::after {
-  content: '';
-  display: block;
-  width: 2.25rem;
-  height: 2px;
-  margin-top: 0.55rem;
+.report-reader-section-number {
+  flex: none;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.4rem;
   background: var(--paper-accent);
+  border-radius: 0.25rem;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  transform: translateY(-0.18rem);
+}
+
+/* The opening section of an intelligence product is its judgements: lead with it. */
+.report-reader-lead {
+  padding: 1.6rem 1.35rem 1.5rem;
+  margin-top: 1.75rem;
+  background: var(--paper-ground-2);
+  border: 1px solid var(--paper-rule);
+  border-left: 4px solid var(--paper-accent);
+  border-radius: 0.4rem;
+}
+
+.report-reader-lead + .report-reader-section {
+  border-top: 0;
+}
+
+.report-reader-lead > p:not(.report-reader-note),
+.report-reader-lead > ul,
+.report-reader-lead > ol {
+  font-size: 1.04rem;
 }
 
 .report-reader-section > h3,
 .report-reader-subheading {
-  margin-top: 1.75rem;
-  color: var(--paper-ink-strong);
-  font-size: 0.97rem;
-  font-weight: 680;
-  letter-spacing: -0.005em;
+  margin-top: 1.9rem;
+  color: var(--paper-accent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 
 .report-reader-paragraph {
@@ -229,22 +288,63 @@
 
 .report-reader-fact {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  padding: 0.16rem 0.5rem;
-  background: var(--paper-ground-2);
-  border: 1px solid var(--paper-rule);
-  border-radius: 999px;
-  font-size: 0.73rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--sig-neutral-ground);
+  border: 1px solid var(--sig-neutral-rule);
+  border-radius: 0.3rem;
+  color: var(--sig-neutral-ink);
+  font-size: 0.76rem;
+  font-weight: 600;
   line-height: 1.5;
 }
 
-.report-reader-fact > span:first-child {
-  color: var(--paper-ink-soft);
-  font-size: 0.64rem;
+.report-reader-fact > .report-reader-fact-label {
+  color: inherit;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
+  opacity: 0.85;
   text-transform: uppercase;
+}
+
+.report-reader-fact[data-tone='strong'] {
+  background: var(--sig-strong-ground);
+  border-color: var(--sig-strong-rule);
+  color: var(--sig-strong-ink);
+}
+
+.report-reader-fact[data-tone='mid'],
+.report-reader-fact[data-tone='info'] {
+  background: var(--sig-mid-ground);
+  border-color: var(--sig-mid-rule);
+  color: var(--sig-mid-ink);
+}
+
+.report-reader-fact[data-tone='caution'] {
+  background: var(--sig-caution-ground);
+  border-color: var(--sig-caution-rule);
+  color: var(--sig-caution-ink);
+}
+
+/* The PHIA yardstick as a position on its seven bands, never as good or bad news. */
+.report-reader-scale {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 0.1rem;
+}
+
+.report-reader-scale > span {
+  width: 3px;
+  height: 0.62rem;
+  background: currentColor;
+  border-radius: 1px;
+  opacity: 0.22;
+}
+
+.report-reader-scale > span[data-filled='true'] {
+  opacity: 0.95;
 }
 
 .report-reader-note {
@@ -307,9 +407,24 @@
   text-decoration: underline;
 }
 
-.report-reader-paper a[aria-label^='View evidence'] {
+/* Evidence labels belong to the paper, not to the workspace chrome around it. */
+.report-reader-paper a[aria-label^='View evidence'],
+.report-reader-paper span[title='Evidence is not available in this view'] {
+  padding: 0.05rem 0.35rem;
   background: var(--paper-ground-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 0.2rem;
   color: var(--paper-accent);
+}
+
+.report-reader-paper span[title='Evidence is not available in this view'] {
+  color: var(--paper-ink-soft);
+}
+
+.report-reader-paper a[aria-label^='View evidence']:hover,
+.report-reader-paper a[aria-label^='View evidence']:focus-visible {
+  background: #fff;
+  border-color: var(--paper-accent);
 }
 
 .report-reader-reference {
@@ -398,6 +513,52 @@
   color: var(--paper-ink-soft);
   font-size: 0.78rem;
   line-height: 1.55;
+}
+
+/* Figures and diagrams ----------------------------------------------------- */
+
+.report-reader-figure {
+  margin-top: 2rem;
+  padding: 1rem 1.1rem 1.1rem;
+  background: #fff;
+  border: 1px solid var(--paper-rule);
+  border-radius: 0.4rem;
+}
+
+.report-reader-figure-label {
+  color: var(--paper-accent);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.report-reader-figure img,
+.report-reader-figure svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 42rem;
+  margin-top: 0.75rem;
+  object-fit: contain;
+}
+
+.report-reader-figure details {
+  margin-top: 0.6rem;
+  color: var(--paper-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.report-reader-figure summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.report-reader-figure summary:focus-visible {
+  outline: 2px solid var(--paper-accent);
+  outline-offset: 2px;
 }
 
 /* Motion ------------------------------------------------------------------ */

@@ -9,22 +9,21 @@ from urllib.parse import urlsplit
 
 from docx import Document
 from docx.document import Document as WordDocument
-from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor
-from docx.styles.style import ParagraphStyle
+from docx.shared import Inches, Pt
 from docx.text.paragraph import Paragraph
 
+from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.document_validation import validate_document_content
 from ase.adapters.reports.figure_validation import VerifiedFigure, verify_document_figures
-from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.word_styles import (
     add_masthead,
     add_page_furniture,
     add_review_band,
+    add_section_number,
     configure_styles,
 )
 from ase.domain.report_documents import (
@@ -204,8 +203,11 @@ def render_docx(document: ReportDocument) -> bytes:
     section.left_margin = section.right_margin = Inches(0.78)
     styles = configure_styles(word)
     head, remaining = leading_identity(document)
-    add_masthead(word, head, lambda paragraph, block: _add_inlines(paragraph, block.text, block.inlines))
+    add_masthead(
+        word, head, lambda paragraph, block: _add_inlines(paragraph, block.text, block.inlines)
+    )
     reference_index = 0
+    section_number = 0
     for block in remaining:
         if block.kind is BlockKind.TABLE and block.table:
             _add_table(word, block.table)
@@ -221,6 +223,9 @@ def render_docx(document: ReportDocument) -> bytes:
             continue
         paragraph = word.add_paragraph(style=styles[block.kind])
         paragraph.paragraph_format.widow_control = True
+        if block.kind in {BlockKind.HEADING, BlockKind.ANNEX}:
+            section_number += 1
+            add_section_number(paragraph, section_number)
         if block.kind is BlockKind.REFERENCE and reference_index < len(document.references):
             _add_reference(paragraph, document.references[reference_index], block.text)
             reference_index += 1

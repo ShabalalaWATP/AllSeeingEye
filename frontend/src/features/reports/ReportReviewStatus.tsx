@@ -39,7 +39,8 @@ const chromeMarks: Record<ReportStatus, string> = {
 };
 
 const paperTones: Record<ReportStatus, string> = {
-  ready: 'border-[color:var(--paper-rule)] bg-[color:var(--paper-ground-2)] text-[color:var(--paper-ink)]',
+  ready:
+    'border-[color:var(--paper-rule)] bg-[color:var(--paper-ground-2)] text-[color:var(--paper-ink)]',
   needs_review:
     'border-[color:var(--paper-caution-rule)] bg-[color:var(--paper-caution-ground)] text-[color:var(--paper-caution-ink)]',
   failed: 'border-[#b7554b] bg-[#fdefec] text-[#6f2b24]',

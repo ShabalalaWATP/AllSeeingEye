@@ -86,14 +86,19 @@ export function TableBlock({ block }: { block: Block }) {
   );
 }
 
+/**
+ * A figure or diagram: a titled card, its caption, and the text alternative on the
+ * page rather than only in the accessibility tree, since a described diagram is often
+ * the only way a reader can check what it claims.
+ */
 export function FigureBlock({ block }: { block: Block }) {
   if (!block.figure) return null;
   const figure = block.figure;
   return (
-    <figure className="report-reader-wide mt-8" aria-label={figure.title}>
-      <h3 className="report-reader-subheading">{figure.title}</h3>
+    <figure className="report-reader-figure report-reader-wide" aria-label={figure.title}>
+      <p className="report-reader-figure-label">Figure</p>
+      <p className="mt-0.5 font-semibold leading-6">{figure.title}</p>
       <img
-        className="mt-3 h-auto max-h-[42rem] w-full rounded border border-[color:var(--paper-rule)] bg-white object-contain p-2"
         src={`data:${figure.media_type};base64,${figure.content_base64}`}
         alt={figure.alt_text}
         width={figure.width_px}
@@ -103,15 +108,32 @@ export function FigureBlock({ block }: { block: Block }) {
         {figure.caption}
         <CitationNumbers numbers={figure.citation_numbers} />
       </figcaption>
+      {figure.alt_text && (
+        <details>
+          <summary>Text alternative</summary>
+          <p className="mt-1">{figure.alt_text}</p>
+        </details>
+      )}
     </figure>
   );
 }
 
-export function References({ publication }: { publication: ReportPublication }) {
+export function References({
+  publication,
+  index,
+}: {
+  publication: ReportPublication;
+  index: number;
+}) {
   if (!publication.references.length) return null;
   return (
     <section id="report-references" aria-label="References" className="report-reader-section">
-      <h2>References</h2>
+      <h2>
+        <span className="report-reader-section-number" aria-hidden="true">
+          {String(index).padStart(2, '0')}
+        </span>
+        <span>References</span>
+      </h2>
       <p className="report-reader-note">
         {publication.references.length} cited source
         {publication.references.length === 1 ? '' : 's'}, numbered in order of first citation.
@@ -125,11 +147,7 @@ export function References({ publication }: { publication: ReportPublication }) 
   );
 }
 
-function ReferenceRow({
-  reference,
-}: {
-  reference: ReportPublication['references'][number];
-}) {
+function ReferenceRow({ reference }: { reference: ReportPublication['references'][number] }) {
   return (
     <li id={`report-reference-${String(reference.number)}`} className="report-reader-reference">
       <span className="font-mono text-xs text-[color:var(--paper-accent)]">

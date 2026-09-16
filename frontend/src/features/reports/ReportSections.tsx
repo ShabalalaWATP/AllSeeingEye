@@ -1,17 +1,37 @@
 import type { ReactNode } from 'react';
 
 import type { DevilsAdvocacy, Direction, ReportBody } from '@/lib/api/reports';
-import { probabilityTerm } from '@/lib/doctrine';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
+import { ConfidenceChip, LikelihoodChip } from './DoctrineChips';
 import { Labels } from './EvidenceLinks';
 import type { CitationChecks } from '@/lib/api/reportResearch';
 export { EvidenceAnnex } from './EvidenceAnnex';
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  children,
+  index,
+  lead = false,
+}: {
+  title: string;
+  children: ReactNode;
+  index?: number;
+  lead?: boolean;
+}) {
   return (
-    <section aria-label={title} className="report-reader-section">
-      <h2>{title}</h2>
+    <section
+      aria-label={title}
+      className={`report-reader-section${lead ? ' report-reader-lead' : ''}`}
+    >
+      <h2>
+        {index !== undefined && (
+          <span className="report-reader-section-number" aria-hidden="true">
+            {String(index).padStart(2, '0')}
+          </span>
+        )}
+        <span>{title}</span>
+      </h2>
       {children}
     </section>
   );
@@ -83,14 +103,8 @@ function KeyJudgement({
           <Labels labels={judgement.supporting_evidence} />
         </p>
         <div className="report-reader-facts">
-          <span className="report-reader-fact">
-            <span>Likelihood</span>
-            <span>{probabilityTerm(judgement.probability)}</span>
-          </span>
-          <span className="report-reader-fact">
-            <span>Confidence</span>
-            <span>{judgement.confidence}</span>
-          </span>
+          <LikelihoodChip probability={judgement.probability} />
+          <ConfidenceChip confidence={judgement.confidence} />
         </div>
         <p className="report-reader-note">{judgement.confidence_statement}</p>
         {judgement.contradicting_evidence.length > 0 && (
@@ -117,7 +131,7 @@ export function ReportBodyView({
   return (
     <div>
       {body.key_judgements.length > 0 && (
-        <Section title="Executive summary">
+        <Section title="Executive summary" index={1} lead>
           <ol className="mt-3">
             {body.key_judgements.map((judgement, index) => (
               <KeyJudgement key={judgement.id} judgement={judgement} index={index} />
@@ -126,7 +140,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.reporting.length > 0 && (
-        <Section title="Findings">
+        <Section title="Findings" index={2}>
           {body.reporting.map((theme) => (
             <div key={theme.theme}>
               <h3 className="report-reader-subheading">{theme.theme}</h3>
@@ -143,7 +157,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.assessment.length > 0 && (
-        <Section title="Analysis">
+        <Section title="Analysis" index={3}>
           {body.assessment.map((section) => (
             <div key={section.heading}>
               <h3 className="report-reader-subheading">{section.heading}</h3>
@@ -156,7 +170,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.assumptions.length > 0 && (
-        <Section title="Assumptions">
+        <Section title="Assumptions" index={4}>
           <ul className={BULLETS}>
             {body.assumptions.map((assumption) => (
               <li key={assumption.id}>
@@ -172,7 +186,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.alternative_hypotheses.length > 0 && (
-        <Section title="Alternative explanations">
+        <Section title="Alternative explanations" index={5}>
           <ul className={BULLETS}>
             {body.alternative_hypotheses.map((alternative, index) => (
               <li key={index}>
@@ -187,7 +201,7 @@ export function ReportBodyView({
           </ul>
         </Section>
       )}
-      <Section title="Indicators and warning">
+      <Section title="Indicators and warning" index={6}>
         <p className="report-reader-paragraph">
           Current watch condition:{' '}
           <strong className="capitalize">{body.indicators_and_warning.watch_condition}</strong>
@@ -201,7 +215,7 @@ export function ReportBodyView({
         )}
       </Section>
       {(body.gaps.length > 0 || body.collection_recommendations.length > 0) && (
-        <Section title="Limitations and further research">
+        <Section title="Limitations and further research" index={7}>
           <ul className={BULLETS}>
             {body.gaps.map((gap, index) => (
               <li key={`gap-${index}`}>{gap.text}</li>
@@ -213,7 +227,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.sourcing_statement && (
-        <Section title="Source note">
+        <Section title="Source note" index={8}>
           <p className="report-reader-paragraph">{body.sourcing_statement}</p>
         </Section>
       )}

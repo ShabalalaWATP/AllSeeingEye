@@ -33,9 +33,7 @@ describe('portable Markdown export', () => {
     render(<ReportExports id="safe" version={2} title="Ignored title" preferred="md" />);
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'Export' }));
-    expect(
-      screen.getByText(/Figures arrive as local images inside a ZIP/),
-    ).toBeVisible();
+    expect(screen.getByText(/Figures arrive as local images inside a ZIP/)).toBeVisible();
     await userEvent.setup().click(screen.getByRole('menuitem', { name: 'Download Markdown' }));
 
     await waitFor(() => {
