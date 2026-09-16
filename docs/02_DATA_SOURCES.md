@@ -133,9 +133,9 @@ Headline changes discovered during research: UCDP now requires an access token; 
 |---|---|---|---|---|---|---|---|---|---|
 | Bluesky public AppView | `searchPosts`, author feeds, custom feeds | None | 3,000 requests per 5 min per IP | Real time | No | Bluesky terms; users own content | E (named OSINT accounts may be raised) | Deferred | Repeated 403 responses from this host on 5 September 2026. No connector is enabled |
 | Bluesky Jetstream | Full-network JSON firehose filtered by collection | None | Up to 100 collections and 10,000 DIDs per subscription | Real time | No | As above | E | Could | Only worth it with server-side keyword filtering |
-| Mastodon | Hashtag timelines per configured instance | None unless the instance disables public preview | 40 items per hashtag request; local polling every ten minutes | Feed publication | No coordinates supplied by this connector | Per-instance rules | E, credibility 6 until graded | 5, built | Instances and tags are packaged in `backend/src/ase/resources/social_watch.json`; HTML is reduced to text |
-| Reddit RSS | Subreddit Atom listings | None | Upstream may return 429; polls every 15 or 30 minutes by source | Feed publication | No | Reddit terms; descriptive User-Agent | E, credibility 6 until graded | 5, built | `worldnews`, `geopolitics` and `UkrainianConflict`; no OAuth or article scraping |
-| YouTube channel RSS | Latest outlet video titles and links | None | Local polling every 30 minutes | Feed publication | No | YouTube terms | B/C inherited from the named outlet | 5, built | BBC, Reuters, DW, Al Jazeera, France 24 and Sky; no video download or Data API |
+| Mastodon | Hashtag timelines per configured instance | None unless the instance disables public preview | 40 items per hashtag request; polling every 15 to 30 minutes by instance | Feed publication | No coordinates supplied by this connector | Per-instance rules | E, credibility 6 until graded | 5, built | Four reviewed instances and 16 hashtags packaged in `backend/src/ase/resources/social_watch.json`, verified 16 September 2026 (see [SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md)); HTML is reduced to text |
+| Reddit RSS | Subreddit Atom listings | None | Upstream may return 429; polls every 15 or 30 minutes by source, paced 5 s apart per host | Feed publication | No | Reddit terms; descriptive User-Agent | E, credibility 6 until graded | 5, built | `worldnews`, `geopolitics` and `UkrainianConflict`; no OAuth or article scraping. Not widened: `robots.txt` disallows every path for every user agent (16 September 2026) |
+| YouTube channel RSS | Latest outlet video titles and links | None | Local polling every 30 minutes | Feed publication | No | YouTube terms | B/C inherited from the named outlet | 5, built | BBC, Reuters, DW, Al Jazeera, France 24 and Sky; no video download or Data API. Not widened: `robots.txt` disallows `/feeds/videos.xml` (16 September 2026) |
 | Telegram | Public channel APIs and preview pages | Varies | Varies | Real time | No | Preview pages require HTML scraping | E | Excluded by decision 7 | No Telegram connector or preview scraping |
 | VK | Public group walls | Service token (phone-verified account) | About 3 requests/s (UNVERIFIED) | Live | No | VK terms, Russian jurisdiction | E | Skip | |
 | X / Twitter | Posts | Pay-per-use only since February 2026 (0.005 USD per read) | | | | Commercial | | Skip | No free tier |
@@ -259,9 +259,10 @@ Every row was fetched from the development host with the project's User-Agent on
 | CFR Global Conflict Tracker | RSS | 404 | Reference only, link out |
 | Google News RSS | keyword search with `when:1d`, Ukrainian edition | 200 | Keyword collection for PIRs and foreign-language headlines |
 | Bluesky public AppView | `searchPosts` with and without the User-Agent | 403 | Blocked from this host; re-checked at the start of Phase 5 on 5 September, still 403, so Bluesky stays out until a later probe answers |
-| Mastodon | `mastodon.social` hashtag timeline | 200 | Social watchlists |
-| Reddit | `r/worldnews/new/.rss` | 200 with the project's User-Agent | Social watchlists without OAuth |
-| YouTube | channel RSS | 200 | Channel watchlists |
+| Mastodon | `mastodon.social`, `defcon.social`, `journa.host` and `eupolicy.social` hashtag timelines | 200; `robots.txt` allows the path | Social watchlists |
+| Mastodon | `infosec.exchange`, `ioc.exchange`, `respublicae.eu` hashtag timelines | 422, unauthenticated API disabled | Refused, 16 September 2026 |
+| Reddit | `r/worldnews/new/.rss` | 200 with the project's User-Agent, but `robots.txt` is `Disallow: /` for every user agent | Social watchlists without OAuth; not widened |
+| YouTube | channel RSS | 200, but `robots.txt` disallows `/feeds/videos.xml` | Channel watchlists; not widened |
 | Telegram | `t.me/s/channel` | 200 (HTML) | Stays out per decision 7 (preview scraping) |
 | Kyiv Independent | `/feed/`, `/rss/` | 404 | Feed URL unknown |
 | ISW | `/feed` | 200 but HTML, not a feed | No feed; ArcGIS search finds only historical control-of-terrain services |
