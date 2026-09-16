@@ -30,10 +30,14 @@ class SqlAiTotalsReader:
                     func.coalesce(func.sum(AiUsageTotalRow.used_requests), 0),
                     func.coalesce(func.sum(AiUsageTotalRow.used_tokens), 0),
                     func.coalesce(func.sum(AiUsageTotalRow.unknown_requests), 0),
+                    func.coalesce(func.sum(AiUsageTotalRow.used_input_tokens), 0),
+                    func.coalesce(func.sum(AiUsageTotalRow.used_output_tokens), 0),
                 ).where(AiUsageTotalRow.period_start == start, *conditions)
             )
         ).one()
-        return AiUsageTotals(start, end, int(row[0]), int(row[1]), int(row[2]))
+        return AiUsageTotals(
+            start, end, int(row[0]), int(row[1]), int(row[2]), int(row[3]), int(row[4])
+        )
 
     async def account_totals(self, user_id: UUID, now: datetime) -> AiUsageTotals:
         """Everything this account initiated, personal and for any team."""
@@ -46,6 +50,10 @@ class SqlAiTotalsReader:
         if user_id is not None:
             conditions.append(AiUsageTotalRow.user_key == user_id)
         return await self._sum(now, *conditions)
+
+    async def site_totals(self, now: datetime) -> AiUsageTotals:
+        """Everything recorded this month: personal, team and system work together."""
+        return await self._sum(now)
 
     async def system_totals(self, now: datetime) -> AiUsageTotals:
         return await self._sum(
@@ -66,7 +74,13 @@ class SqlAiTotalsReader:
                 total.user_key,
                 name,
                 AiUsageTotals(
-                    start, end, total.used_requests, total.used_tokens, total.unknown_requests
+                    start,
+                    end,
+                    total.used_requests,
+                    total.used_tokens,
+                    total.unknown_requests,
+                    total.used_input_tokens,
+                    total.used_output_tokens,
                 ),
             )
             for total, name in rows.tuples()

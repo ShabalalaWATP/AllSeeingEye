@@ -8,9 +8,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ase.api.schemas_ai_cost import AiEffectiveModelOut, AiTokenPricesOut
 from ase.api.schemas_ai_usage_overrides import AiPolicyOverrideOut
 from ase.application.ai_usage_admin import AiPolicyInput
 from ase.application.ai_usage_views import AccountAiUsage, AiUsagePreview, TeamAiUsage
+from ase.domain.ai_pricing import AiTokenPrices
 from ase.domain.ai_usage import (
     MAX_ALLOWANCE,
     UNTARGETED_SCOPES,
@@ -123,15 +125,29 @@ class AiUsageTotalsOut(BaseModel):
     used_requests: int
     used_tokens: int
     unknown_requests: int
+    used_input_tokens: int
+    used_output_tokens: int
+    estimated_cost: str | None = Field(
+        default=None,
+        description="Estimated spend from recorded tokens at the configured prices.",
+    )
 
     @classmethod
-    def from_totals(cls, totals: AiUsageTotals) -> Self:
+    def from_totals(cls, totals: AiUsageTotals, prices: AiTokenPrices | None = None) -> Self:
+        cost = (
+            prices.estimate(totals.used_input_tokens, totals.used_output_tokens)
+            if prices is not None
+            else None
+        )
         return cls(
             period_start=totals.period_start,
             period_end=totals.period_end,
             used_requests=totals.used_requests,
             used_tokens=totals.used_tokens,
             unknown_requests=totals.unknown_requests,
+            used_input_tokens=totals.used_input_tokens,
+            used_output_tokens=totals.used_output_tokens,
+            estimated_cost=None if cost is None else f"{cost}",
         )
 
 
@@ -142,11 +158,14 @@ def _summaries(items: list[AiUsageSummary]) -> list[AiUsageSummaryOut]:
 class AiUsageSummaryPageOut(BaseModel):
     items: list[AiUsageSummaryOut]
     observed: AiUsageTotalsOut
+    prices: AiTokenPricesOut
 
     @classmethod
-    def from_account(cls, usage: AccountAiUsage) -> Self:
+    def from_account(cls, usage: AccountAiUsage, prices: AiTokenPrices) -> Self:
         return cls(
-            items=_summaries(usage.summaries), observed=AiUsageTotalsOut.from_totals(usage.totals)
+            items=_summaries(usage.summaries),
+            observed=AiUsageTotalsOut.from_totals(usage.totals, prices),
+            prices=AiTokenPricesOut.from_prices(prices),
         )
 
 
@@ -154,13 +173,19 @@ class AiUsagePreviewOut(BaseModel):
     items: list[AiUsageSummaryOut]
     observed: AiUsageTotalsOut
     unknown_calls: int = Field(description="Provider calls held as unknown pending review.")
+    prices: AiTokenPricesOut
+    model: AiEffectiveModelOut | None = Field(
+        default=None, description="The model this destination would use. Never a credential."
+    )
 
     @classmethod
-    def from_preview(cls, preview: AiUsagePreview) -> Self:
+    def from_preview(cls, preview: AiUsagePreview, prices: AiTokenPrices) -> Self:
         return cls(
             items=_summaries(preview.summaries),
-            observed=AiUsageTotalsOut.from_totals(preview.totals),
+            observed=AiUsageTotalsOut.from_totals(preview.totals, prices),
             unknown_calls=preview.unknown_calls,
+            prices=AiTokenPricesOut.from_prices(prices),
+            model=AiEffectiveModelOut.from_model(preview.model),
         )
 
 
@@ -170,11 +195,11 @@ class AiMemberUsageOut(BaseModel):
     observed: AiUsageTotalsOut
 
     @classmethod
-    def from_member(cls, member: AiMemberUsage) -> Self:
+    def from_member(cls, member: AiMemberUsage, prices: AiTokenPrices) -> Self:
         return cls(
             user_id=member.user_id,
             display_name=member.display_name,
-            observed=AiUsageTotalsOut.from_totals(member.totals),
+            observed=AiUsageTotalsOut.from_totals(member.totals, prices),
         )
 
 
@@ -185,18 +210,20 @@ class TeamAiUsageOut(BaseModel):
     own: AiUsageTotalsOut
     team: AiUsageTotalsOut | None
     members: list[AiMemberUsageOut] | None
+    prices: AiTokenPricesOut
 
     @classmethod
-    def from_usage(cls, usage: TeamAiUsage) -> Self:
+    def from_usage(cls, usage: TeamAiUsage, prices: AiTokenPrices) -> Self:
         return cls(
             team_id=usage.team_id,
             view=usage.view,
             items=_summaries(usage.summaries),
-            own=AiUsageTotalsOut.from_totals(usage.own),
-            team=AiUsageTotalsOut.from_totals(usage.team) if usage.team else None,
-            members=[AiMemberUsageOut.from_member(item) for item in usage.members]
+            own=AiUsageTotalsOut.from_totals(usage.own, prices),
+            team=AiUsageTotalsOut.from_totals(usage.team, prices) if usage.team else None,
+            members=[AiMemberUsageOut.from_member(item, prices) for item in usage.members]
             if usage.members is not None
             else None,
+            prices=AiTokenPricesOut.from_prices(prices),
         )
 
 

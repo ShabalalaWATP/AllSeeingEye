@@ -188,13 +188,20 @@ class AiUsageSummary:
 
 @dataclass(frozen=True, slots=True)
 class AiUsageTotals:
-    """Observed usage for one attribution bucket, recorded whether or not limits exist."""
+    """Observed usage for one attribution bucket, recorded whether or not limits exist.
+
+    ``used_input_tokens`` and ``used_output_tokens`` always sum to ``used_tokens``: a
+    charge the provider did not split is counted as output, the dearer rate, so any
+    estimate made from these counts errs upwards rather than downwards.
+    """
 
     period_start: datetime
     period_end: datetime
     used_requests: int = 0
     used_tokens: int = 0
     unknown_requests: int = 0
+    used_input_tokens: int = 0
+    used_output_tokens: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -250,3 +257,21 @@ def charged_tokens(
     if outcome is AiCallOutcome.FAILED:
         return min(MAX_ALLOWANCE, sum(value for value in known if value is not None))
     return 0
+
+
+def charged_split(
+    outcome: AiCallOutcome, prompt: int | None, completion: int | None, reserved: int
+) -> tuple[int, int]:
+    """The charge for one call split into input and output, summing to ``charged_tokens``.
+
+    A completed call that reported no counts is charged its conservative reservation,
+    which has no split; that whole amount is treated as output so cost is not understated.
+    """
+    total = charged_tokens(outcome, prompt, completion, reserved)
+    known_input = token_count(prompt) or 0
+    if outcome is AiCallOutcome.COMPLETED and (
+        token_count(prompt) is None or token_count(completion) is None
+    ):
+        known_input = 0
+    known_input = min(known_input, total)
+    return known_input, total - known_input

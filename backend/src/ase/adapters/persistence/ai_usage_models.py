@@ -32,6 +32,7 @@ class AiUsagePolicyRow(Base):
         Index(
             "uq_ai_usage_policy_global",
             "scope",
+            "period",
             unique=True,
             sqlite_where=text("scope IN ('global','system') AND enabled = 1"),
             postgresql_where=text("scope IN ('global','system') AND enabled = true"),
@@ -40,6 +41,7 @@ class AiUsagePolicyRow(Base):
             "uq_ai_usage_policy_target",
             "scope",
             "target_id",
+            "period",
             unique=True,
             sqlite_where=text("scope IN ('user','team') AND enabled = 1"),
             postgresql_where=text("scope IN ('user','team') AND enabled = true"),
@@ -123,6 +125,8 @@ class AiUsageTotalRow(Base):
     __table_args__ = (
         CheckConstraint("used_requests >= 0", name="ck_ai_total_used_requests"),
         CheckConstraint("used_tokens >= 0", name="ck_ai_total_used_tokens"),
+        CheckConstraint("used_input_tokens >= 0", name="ck_ai_total_input_tokens"),
+        CheckConstraint("used_output_tokens >= 0", name="ck_ai_total_output_tokens"),
         CheckConstraint("unknown_requests >= 0", name="ck_ai_total_unknown_requests"),
     )
 
@@ -132,6 +136,10 @@ class AiUsageTotalRow(Base):
     period_end: Mapped[datetime] = mapped_column(UTCDateTime)
     used_requests: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     used_tokens: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    # The split always sums to used_tokens: a charge the provider did not split is
+    # counted as output, the dearer rate, so a spend estimate never understates.
+    used_input_tokens: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    used_output_tokens: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     unknown_requests: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
