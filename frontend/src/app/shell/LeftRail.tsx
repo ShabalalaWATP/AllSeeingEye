@@ -64,6 +64,7 @@ export function LeftRail({
   const lite = useGlobeStore((state) => state.lite);
   const railCollapsed = useShellStore((state) => state.railCollapsed);
   const toggleRail = useShellStore((state) => state.toggleRail);
+  const openPalette = useShellStore((state) => state.openPalette);
   const collapsed = railCollapsed && !mobile;
 
   return (
@@ -85,6 +86,25 @@ export function LeftRail({
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate?.();
+            openPalette();
+          }}
+          title={collapsed ? 'Find anything (Ctrl K)' : undefined}
+          className={`group mb-1 flex min-h-10 items-center gap-3 rounded-lg border border-line/70 text-sm text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center px-0' : 'px-3'}`}
+        >
+          <RailIcon name="search" className="text-muted group-hover:text-text" />
+          <span className={collapsed ? 'sr-only' : 'min-w-0 flex-1 truncate text-left'}>
+            Find anything
+          </span>
+          {!collapsed && (
+            <span aria-hidden="true" className="shrink-0 font-mono text-[10px] text-muted/80">
+              Ctrl K
+            </span>
+          )}
+        </button>
         <RailLink item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
         {workspaceSections.map((section) => (
           <div key={section.title} className="mt-3 flex flex-col gap-0.5">

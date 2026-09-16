@@ -6,6 +6,9 @@ import { useGlobeStore } from '@/stores/globe';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 import { PersonalAppearance } from '@/components/account/PersonalAppearance';
 
+import { useShellStore } from '@/stores/shell';
+
+import { CommandPalette } from './CommandPalette';
 import { LeftRail } from './LeftRail';
 import { OpsRoomOverlay } from './OpsRoomOverlay';
 import { TopBar } from './TopBar';
@@ -19,6 +22,7 @@ export function AppShell() {
   const { pathname } = useLocation();
   const narrow = useNarrowShell();
   const opsRoom = useGlobeStore((state) => state.opsRoom) && pathname === '/';
+  const paletteOpen = useShellStore((state) => state.paletteOpen);
   const mainRef = useRef<HTMLElement>(null);
 
   return (
@@ -41,6 +45,7 @@ export function AppShell() {
           {opsRoom && <OpsRoomOverlay />}
         </main>
       </div>
+      {paletteOpen && <CommandPalette />}
       <EyeAssistant />
     </div>
   );

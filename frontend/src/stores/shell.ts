@@ -11,6 +11,10 @@ export interface ShellState {
   railCollapsed: boolean;
   setRailCollapsed: (collapsed: boolean) => void;
   toggleRail: () => void;
+  /** Search palette visibility. Session only; never written to storage. */
+  paletteOpen: boolean;
+  openPalette: () => void;
+  closePalette: () => void;
 }
 
 export const useShellStore = create<ShellState>()(
@@ -22,6 +26,13 @@ export const useShellStore = create<ShellState>()(
       },
       toggleRail: () => {
         set((state) => ({ railCollapsed: !state.railCollapsed }));
+      },
+      paletteOpen: false,
+      openPalette: () => {
+        set({ paletteOpen: true });
+      },
+      closePalette: () => {
+        set({ paletteOpen: false });
       },
     }),
     {
