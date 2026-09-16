@@ -41,6 +41,8 @@ from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 PROVIDER_ID = "research_social_telegram"
 PROVIDER_NAME = "Curated Telegram channels"
 MAX_ITEMS = 20
+# Short words carry no subject signal, so they never steer which channel is read.
+MIN_SELECTION_WORD = 3
 LIMITATIONS = (
     "One curated public Telegram channel preview per request, chosen from the registry by "
     "declared language and subject fit; this is not a Telegram search, a channel-wide "
@@ -103,20 +105,22 @@ class TelegramResearchProvider:
         return bool(search_terms(query)) and self._select(query) is not None
 
     def _select(self, query: ResearchQuery) -> TelegramChannel | None:
-        """Deterministic: declared language first, then phrase overlap, then registry order."""
+        """Deterministic: declared language first, then subject overlap, then registry order."""
         languages = {language.casefold() for language in query.languages}
         eligible = [
             entry for entry in self._channels if entry.language.casefold() in languages | {"und"}
         ]
         if not eligible:
             return None
-        terms = [term.casefold() for term in search_terms(query)]
+        words = {
+            word
+            for term in search_terms(query)
+            for word in term.casefold().split()
+            if len(word) > MIN_SELECTION_WORD
+        }
         return max(
             enumerate(eligible),
-            key=lambda row: (
-                sum(term in _haystack(row[1]) for term in terms),
-                -row[0],
-            ),
+            key=lambda row: (sum(word in _haystack(row[1]) for word in words), -row[0]),
         )[1]
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:
