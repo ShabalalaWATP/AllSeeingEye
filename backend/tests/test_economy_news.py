@@ -149,3 +149,34 @@ def test_registered_ids_match_reviewed_topics_and_economy_not_politics_url():
     private = {spec.id: spec for spec in additional_feed_specs()}
     assert "state_aligned" in private["research_publisher_economic_cgtn_business"].flags
     assert "official_issuer" in private["research_publisher_economic_bank_russia"].flags
+
+
+async def test_counts_report_how_many_headlines_were_judged_and_kept():
+    """A quiet window should read as quiet, not broken."""
+    kept = news("kept", title="Inflation eases to 2.1% in August")
+    dropped = news("dropped", title="The extreme engineering of aircraft windows")
+    feature = news("feature", title="Here's how we got through our first week at work")
+    svc, _ = service((kept, dropped, feature))
+    result = await svc.read()
+    assert [item.title for item in result.items] == ["Inflation eases to 2.1% in August"]
+    assert (result.considered, result.passed) == (3, 1)
+    assert result.items[0].relevance.startswith("Economic subject matter")
+
+
+async def test_no_single_publisher_fills_the_panel():
+    bbc = [
+        news(f"bbc-{index}", title=f"Inflation and interest rates update {index}")
+        for index in range(4)
+    ]
+    scmp = [
+        news(
+            "scmp",
+            source_id="economic_scmp_china",
+            title="China cuts its policy interest rate to support growth",
+        )
+    ]
+    svc, _ = service((*bbc, *scmp))
+    result = await svc.read(limit=3)
+    sources = [item.source_id for item in result.items]
+    assert "economic_scmp_china" in sources
+    assert sources.count("economic_bbc_business") < 3

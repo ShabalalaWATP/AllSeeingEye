@@ -82,7 +82,7 @@ async def test_headline_api_filters_each_actual_publication_period(client, user,
                 str(day),
                 source_id="economic_bbc_business",
                 category=Category.ECONOMIC,
-                title=f"Financial reporting {day} days ago",
+                title=f"Inflation and interest rates report {day} days ago",
                 published_at=now - timedelta(days=day),
                 observed_at=now,
             )

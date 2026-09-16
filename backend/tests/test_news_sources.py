@@ -99,7 +99,8 @@ def test_disabling_new_feeds_removes_their_connectors_without_private_inventory_
     ids = {seed.spec.id for seed in NEWS_SEEDS}
     connectors = build_connectors(FakeHttp(), CLOCK, disabled=ids)
     assert not ids & {connector.spec.id for connector in connectors}
-    assert len(PUBLISHER_SEEDS) == 55
+    # Publisher research sources track the reviewed feed catalogue as it grows.
+    assert len(PUBLISHER_SEEDS) == 72
 
 
 async def test_missing_dates_are_unknown_and_feed_item_cap_and_dedup_still_apply(

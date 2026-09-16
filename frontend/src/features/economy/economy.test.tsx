@@ -182,7 +182,7 @@ it('retains a usable economy page when the news feed is empty or unavailable', a
   expect(await screen.findByText('News unavailable')).toBeVisible();
   server.use(http.get('/api/economy/news', () => HttpResponse.json({ ...economyNews, items: [] })));
   await user.click(screen.getByRole('button', { name: 'Retry news' }));
-  expect(await screen.findByText(/No economic headlines were collected/)).toBeVisible();
+  expect(await screen.findByText(/No substantial economic reporting in this window/)).toBeVisible();
   expect(screen.getByRole('heading', { name: 'Economic fundamentals' })).toBeInTheDocument();
 });
 
@@ -209,4 +209,20 @@ it('does not refresh panels in a hidden tab and cleans up periodic work', async 
   await act(() => vi.advanceTimersByTimeAsync(300_000));
   expect(reads).toHaveBeenCalledTimes(2);
   vi.useRealTimers();
+});
+
+it('says how many headlines were judged and why each one was kept', async () => {
+  server.use(
+    http.get('/api/economy/news', () =>
+      HttpResponse.json({ ...economyNews, considered: 9, passed: 2 }),
+    ),
+  );
+  renderApp('/economy', 'user');
+  const panel = await screen.findByRole('region', { name: 'Worldwide economic news' });
+  expect(
+    await within(panel).findByText(/9 headlines reached this window; 2 carried economic substance/),
+  ).toBeVisible();
+  expect(
+    within(panel).getByText('Official economic issuer release on growth and output'),
+  ).toBeVisible();
 });

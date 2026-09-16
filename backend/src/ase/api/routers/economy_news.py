@@ -27,6 +27,7 @@ class EconomyNewsItemOut(BaseModel):
     published_at: datetime
     region_codes: list[Literal["GB", "US", "RU", "CN", "IR"]]
     viewpoint: PublisherViewpoint
+    relevance: str
 
 
 class EconomyNewsOut(BaseModel):
@@ -34,6 +35,8 @@ class EconomyNewsOut(BaseModel):
     as_of: datetime
     window_hours: int
     coverage_note: str
+    considered: int
+    passed: int
 
 
 class EconomyBriefingOut(DailyBriefingOut):
@@ -63,6 +66,8 @@ async def economic_news(
             as_of=result.as_of,
             window_hours=result.window_hours,
             coverage_note=result.coverage_note,
+            considered=result.considered,
+            passed=result.passed,
         )
 
 

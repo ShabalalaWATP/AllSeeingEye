@@ -46,9 +46,12 @@ const newsSchema: z.ZodType<EconomyNews> = z.object({
         published_at: z.iso.datetime({ offset: true }),
         region_codes: z.array(z.enum(['GB', 'US', 'RU', 'CN', 'IR'])),
         viewpoint: z.enum(['official_issuer', 'state_aligned', 'publisher']),
+        relevance: z.string(),
       }),
     )
     .max(100),
+  considered: z.number().int().nonnegative(),
+  passed: z.number().int().nonnegative(),
 });
 
 export const fetchEconomy = () => apiCall('/api/economy', { schema: snapshotSchema });

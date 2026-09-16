@@ -11,6 +11,7 @@ from ase.application.daily_briefing import DailyBriefingService
 from ase.application.dto import RequestContext
 from ase.application.economy_briefing import COVERAGE_NOTE, economy_briefing_request
 from ase.domain.daily_briefing import briefing_key, economy_briefing_key, retains_daily_admission
+from ase.domain.economy_news import ECONOMIC_NEWS_IDS
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Category
 from ase.domain.research import ResearchMode
@@ -25,7 +26,9 @@ def test_economy_request_is_one_deep_global_report_with_named_country_sections()
     assert request.report_style == "assessment"
     assert len(request.question) <= 2000
     assert request.categories == (Category.ECONOMIC,) and request.window_hours == 48
-    assert len(request.research_source_ids) == 9 and len(request.research_terms) <= 12
+    # One research source per reviewed economic feed, whatever the catalogue holds today.
+    assert len(request.research_source_ids) == len(ECONOMIC_NEWS_IDS)
+    assert len(request.research_terms) <= 12
     assert request.team_id is None and not request.research_web_search
     for phrase in (
         "United Kingdom",

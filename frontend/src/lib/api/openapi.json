@@ -22720,6 +22720,10 @@
               "publisher"
             ],
             "title": "Viewpoint"
+          },
+          "relevance": {
+            "type": "string",
+            "title": "Relevance"
           }
         },
         "type": "object",
@@ -22732,7 +22736,8 @@
           "organisation",
           "published_at",
           "region_codes",
-          "viewpoint"
+          "viewpoint",
+          "relevance"
         ],
         "title": "EconomyNewsItemOut"
       },
@@ -22757,6 +22762,14 @@
           "coverage_note": {
             "type": "string",
             "title": "Coverage Note"
+          },
+          "considered": {
+            "type": "integer",
+            "title": "Considered"
+          },
+          "passed": {
+            "type": "integer",
+            "title": "Passed"
           }
         },
         "type": "object",
@@ -22764,7 +22777,9 @@
           "items",
           "as_of",
           "window_hours",
-          "coverage_note"
+          "coverage_note",
+          "considered",
+          "passed"
         ],
         "title": "EconomyNewsOut"
       },

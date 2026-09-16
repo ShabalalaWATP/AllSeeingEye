@@ -1,6 +1,14 @@
-"""Bounded current economic headlines from reviewed topic-specific publishers."""
+"""Bounded current economic headlines from reviewed topic-specific publishers.
 
-from collections.abc import Mapping
+Selection is deterministic and explainable. Every candidate in the window is judged by
+the domain relevance rules; the ones that do not clear the bar are counted but not
+released, so an empty panel can be explained rather than looking broken. What remains is
+ordered official data releases first, then market-moving reporting, then general
+coverage, taking one turn per feed so a single publisher cannot fill the list.
+"""
+
+from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit
@@ -13,15 +21,20 @@ from ase.domain.economy_news import (
     EconomyRegion,
     PublisherViewpoint,
     economic_regions,
+    economic_relevance,
     economic_viewpoint,
 )
 from ase.domain.economy_periods import EconomyWindowDays, economy_window
-from ase.domain.events import Category
+from ase.domain.economy_relevance import EconomicRelevance
+from ase.domain.events import Category, Event
 from ase.domain.sources import SourceSpec
 
 WINDOW_HOURS = 48
 _COVERAGE_DETAIL = (
     "Available publisher headlines, refreshed by enabled feed collectors. "
+    "Headlines are kept only when the maintained economic lexicon, the feed's declared "
+    "remit or an official issuer's own release establishes economic subject matter; the "
+    "considered and passed counts show how many were judged. "
     "Publisher feeds and the bounded local cache may not retain the entire selected period. "
     "Region labels use an explicit headline mention or the feed's topic remit, not event "
     "locations. Official and state-aligned sources represent their issuers' perspectives. "
@@ -47,6 +60,7 @@ class EconomyNewsItem:
     published_at: datetime
     region_codes: tuple[str, ...]
     viewpoint: PublisherViewpoint
+    relevance: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +69,14 @@ class EconomyNews:
     as_of: datetime
     window_hours: int = WINDOW_HOURS
     coverage_note: str = COVERAGE_NOTE
+    considered: int = 0
+    passed: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class _Candidate:
+    relevance: EconomicRelevance
+    item: EconomyNewsItem
 
 
 class EconomyNewsService:
@@ -93,41 +115,62 @@ class EconomyNewsService:
                 limit=1000,
             )
         )
-        result: list[EconomyNewsItem] = []
-        seen: set[str] = set()
+        considered, passed = self._judge(events, region, since, now)
+        ranked = _balanced(passed, limit)
+        # A source disabled while this request was preparing must not be released.
+        return await self.refilter(
+            replace(
+                result_view,
+                items=tuple(row.item for row in ranked),
+                considered=considered,
+                passed=len(passed),
+            )
+        )
+
+    def _judge(
+        self, events: Iterable[Event], region: EconomyRegion, since: datetime, until: datetime
+    ) -> tuple[int, list[_Candidate]]:
+        """Count every candidate in scope, keep the ones with economic substance."""
+        considered, kept, seen = 0, [], set[str]()
         for event in events:
             spec = self._sources.get(event.source_id)
             if (
                 spec is None
                 or event.published_at is None
-                or not since <= event.published_at < now
+                or not since <= event.published_at < until
                 or not _safe_link(event.url)
             ):
                 continue
             regions = economic_regions(event)
             if region != "WORLD" and region not in regions:
                 continue
-            fingerprint = " ".join((event.title_en or event.title).casefold().split())
+            title = (event.title_en or event.title)[:300]
+            fingerprint = " ".join(title.casefold().split())
             if fingerprint in seen:
                 continue
             seen.add(fingerprint)
-            result.append(
-                EconomyNewsItem(
-                    event.id,
-                    (event.title_en or event.title)[:300],
-                    event.url or "",
-                    event.source_id,
-                    spec.name,
-                    spec.organisation,
-                    event.published_at,
-                    regions,
-                    economic_viewpoint(event),
+            considered += 1
+            relevance = economic_relevance(event)
+            if not relevance.passed:
+                continue
+            kept.append(
+                _Candidate(
+                    relevance,
+                    EconomyNewsItem(
+                        event.id,
+                        title,
+                        event.url or "",
+                        event.source_id,
+                        spec.name,
+                        spec.organisation,
+                        event.published_at,
+                        regions,
+                        economic_viewpoint(event),
+                        relevance.reason,
+                    ),
                 )
             )
-            if len(result) >= limit:
-                break
-        # A source disabled while this request was preparing must not be released.
-        return await self.refilter(replace(result_view, items=tuple(result)))
+        return considered, kept
 
     async def refilter(self, result: EconomyNews) -> EconomyNews:
         """Final release under the caller's source guard; no network or store query."""
@@ -135,6 +178,28 @@ class EconomyNewsService:
         return replace(
             result, items=tuple(row for row in result.items if enabled.get(row.source_id, False))
         )
+
+
+def _rank(row: _Candidate) -> tuple[int, int, float]:
+    return row.relevance.tier, -row.relevance.score, -row.item.published_at.timestamp()
+
+
+def _balanced(rows: list[_Candidate], limit: int) -> list[_Candidate]:
+    """Best first, but one turn per feed each round, so no publisher fills the panel."""
+    queues: dict[str, list[_Candidate]] = defaultdict(list)
+    for row in sorted(rows, key=_rank):
+        queues[row.item.source_id].append(row)
+    result: list[_Candidate] = []
+    while len(result) < limit:
+        heads = sorted((queue[0] for queue in queues.values() if queue), key=_rank)
+        if not heads:
+            break
+        for head in heads:
+            if len(result) >= limit:
+                break
+            result.append(head)
+            queues[head.item.source_id].pop(0)
+    return result
 
 
 def _safe_link(value: str | None) -> bool:

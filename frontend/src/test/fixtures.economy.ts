@@ -93,6 +93,7 @@ export const economyNews: EconomyNews = {
       published_at: '2026-09-12T10:00:00Z',
       region_codes: ['GB'],
       viewpoint: 'official_issuer',
+      relevance: 'Official economic issuer release on growth and output',
     },
     {
       id: 'iran-news',
@@ -104,6 +105,9 @@ export const economyNews: EconomyNews = {
       published_at: '2026-09-12T09:00:00Z',
       region_codes: ['IR'],
       viewpoint: 'state_aligned',
+      relevance: 'Economic subject matter: trade and tariffs',
     },
   ],
+  considered: 6,
+  passed: 2,
 };
