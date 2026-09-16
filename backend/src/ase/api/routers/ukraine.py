@@ -3,8 +3,9 @@
 from fastapi import APIRouter, Response
 from fastapi.responses import Response as RawResponse
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, ContextDep, CurrentUser
 from ase.api.schemas_ukraine import ControlOut, UkraineBoardOut
+from ase.api.schemas_ukraine_digest import UkraineDigestOut
 from ase.api.schemas_ukraine_frontline import FrontlineOut, SpottedOut
 from ase.api.schemas_ukraine_reference import UkraineReferenceOut
 from ase.api.session_guard import validate_request_session
@@ -54,6 +55,32 @@ async def ukraine_spotted(
     await validate_request_session(container, claims)
     response.headers["Cache-Control"] = "private, max-age=900"
     return payload
+
+
+@router.get("/digest")
+async def ukraine_digest(
+    user: CurrentUser, claims: ClaimsDep, response: Response, container: ContainerDep
+) -> UkraineDigestOut:
+    """The fortnightly model digest and the few before it; a reader never forces new spend."""
+    view = await container.ukraine_digest.view()
+    await validate_request_session(container, claims)
+    response.headers["Cache-Control"] = "private, no-store"
+    return UkraineDigestOut.from_view(view)
+
+
+@router.post("/digest/refresh")
+async def refresh_ukraine_digest(
+    admin: AdminUser,
+    claims: ClaimsDep,
+    context: ContextDep,
+    response: Response,
+    container: ContainerDep,
+) -> UkraineDigestOut:
+    """Administrators may ask for a digest before the fortnight is up; audited and limited."""
+    await validate_request_session(container, claims, admin_only=True)
+    view = await container.ukraine_digest.refresh(admin, context.ip)
+    response.headers["Cache-Control"] = "no-store"
+    return UkraineDigestOut.from_view(view)
 
 
 @router.get("/reference")

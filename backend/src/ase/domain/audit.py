@@ -101,6 +101,7 @@ class AuditAction(StrEnum):
     AI_USAGE_POLICY_DISABLED = "ai_usage_policy_disabled"
     AI_USAGE_OVERRIDE_CREATED = "ai_usage_override_created"
     AI_USAGE_OVERRIDE_REVOKED = "ai_usage_override_revoked"
+    UKRAINE_DIGEST_REFRESH_REQUESTED = "ukraine_digest_refresh_requested"
 
 
 @dataclass(slots=True)

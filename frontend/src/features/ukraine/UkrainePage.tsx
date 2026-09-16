@@ -10,6 +10,9 @@ import {
 } from '@/lib/api/ukraine';
 import { formatAgo } from '@/lib/format';
 
+import type { UkraineDigestView } from '@/lib/api/ukraineDigest';
+
+import { DigestPanel } from './DigestPanel';
 import { EquipmentSection } from './EquipmentSection';
 import { FiguresStrip } from './FiguresStrip';
 import { ForcesSection } from './ForcesSection';
@@ -24,6 +27,7 @@ import { useUkraineReference } from './useUkraineReference';
 
 const SECTIONS = [
   ['map', 'Map'],
+  ['digest', 'AI digest'],
   ['updates', 'Updates'],
   ['figures', 'Figures'],
   ['timeline', 'Timeline'],
@@ -60,12 +64,16 @@ export default function UkrainePage({
   loadBoard = fetchUkraineBoard,
   loadControl = fetchUkraineControl,
   loadReference = fetchUkraineReference,
+  loadDigest,
+  refreshDigest,
   imageFetcher,
   mapLoaders,
 }: {
   loadBoard?: () => Promise<UkraineBoard>;
   loadControl?: () => Promise<UkraineControl>;
   loadReference?: () => Promise<UkraineReference>;
+  loadDigest?: (() => Promise<UkraineDigestView>) | undefined;
+  refreshDigest?: (() => Promise<UkraineDigestView>) | undefined;
   imageFetcher?: ((path: string) => Promise<Blob>) | undefined;
   mapLoaders?: MapLoaders | undefined;
 }) {
@@ -112,6 +120,7 @@ export default function UkrainePage({
       {error ? <Alert tone="error">{describeError(error)}</Alert> : null}
       {loading && !data ? <LoadingNote label="Loading the Ukraine board" /> : null}
       <UkraineMap loaders={{ control: loadControl, ...mapLoaders }} />
+      <DigestPanel load={loadDigest} {...(refreshDigest ? { refresh: refreshDigest } : {})} />
       {data ? <UpdatesTabs updates={data.updates} /> : null}
       {data ? <FiguresStrip board={data} /> : null}
       {reference.error ? (

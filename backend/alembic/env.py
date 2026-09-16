@@ -29,6 +29,7 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     teams,
     token_families,
     totp,
+    ukraine_digest,
 )
 from ase.adapters.persistence.base import Base
 from ase.infrastructure.settings import Settings

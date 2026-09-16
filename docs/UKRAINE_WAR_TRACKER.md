@@ -15,6 +15,8 @@ the three news lenses with charts and the sources footer.
   its reported status, the three source votes and the date the status began. The legend
   and a method note say that this is a reported line, not observed positions. Without
   WebGL the oblast table carries the same numbers.
+- **AI digest.** A fortnightly summary of battlefield and political change, written by the
+  assigned model from the sources already on this page. See "The fortnightly AI digest".
 - **Latest updates.** Retained items from the last 14 days that concern the war, grouped
   by who reports them: assessments (ISW, MoD news), Ukrainian reporting (Kyiv Independent,
   Ukrinform, Pravda), Russian and independent Russian (Meduza; Interfax, the MFA and TASS
@@ -102,6 +104,12 @@ shows the last recorded day; the mirror's freshness is visible on the card.
 - `GET /api/conflicts/ukraine/control` returns the settlements, areas and outlines.
   `private, max-age=3600`; the payload changes only when the operator re-imports.
 
+- `GET /api/conflicts/ukraine/digest` returns the latest digest with its provenance and the
+  few before it, plus the status (`ready`, `none`, `generating`, `unavailable`,
+  `validation_failed`), a reason when there is one and whether the fortnight has ended.
+  `private, no-store`. Reading it starts a generation only when the fortnight is up.
+- `POST /api/conflicts/ukraine/digest/refresh` asks for a digest now. Administrators only,
+  audited and rate limited; the work runs in the background and the same payload comes back.
 - `GET /api/conflicts/ukraine/frontline` and `/spotted` return a provider state (disabled,
   ready, stale, unavailable) with its reason, terms and, when ready, the geometry or markers.
   `private, max-age=900`.
@@ -112,6 +120,66 @@ shows the last recorded day; the mirror's freshness is visible on the card.
   object URL, so no external host joins the Content Security Policy.
 
 All require a session and revalidate it like the other trackers.
+
+## The fortnightly AI digest
+
+One bounded model call every 14 days writes a short digest of what changed, so a reader who
+cannot follow the page daily still gets a plain-language account with its evidence attached.
+
+**Evidence pack.** At most 40 trimmed, dated items drawn only from what the board already
+gathered: up to six ISW assessment excerpts, up to fourteen battlefield headlines and up to
+ten political headlines from the Ukraine-relevant feeds, the latest General Staff claim with
+the statement that it is one side's claim, settlement control change inside the fortnight
+from the imported VIINA snapshot, Oryx totals per side with their as-of date, and the latest
+HRMMU month with its period. Labels are capped at 180 characters and details at 420. Each
+item carries an id (`e1`, `e2` and so on), its feed source id, its date and its link. Where a
+strand has nothing, the pack says so in plain words rather than leaving a gap: no control
+snapshot imported, no settlement change recorded inside the fortnight, no Oryx import, no
+HRMMU import, no assessment collected, no claim collected. The pack records the exact feed
+source ids and the date range that fed it.
+
+**The call.** One request to the globally assigned assessment profile, capped at 3,000
+completion tokens, with a strict JSON schema: a restated period, a battlefield strand and a
+political strand (each a summary plus two to five changes, every change carrying its text and
+the evidence ids it rests on), two to four things to watch and one to three caveats. The
+prompt requires UK English, plain language, no em dashes, attribution of every claim to its
+evidence ids, Russian and Ukrainian official statements written as claims rather than facts,
+no invented place names, unit names, casualty figures, territorial percentages or links,
+"reporting suggests" where sources disagree, and a plain statement when the fortnight held
+little verifiable change. The pack is labelled untrusted evidence, never instructions.
+
+**Mechanical validation before storing.** Every evidence id must exist in the pack and appear
+at most once per change; every number in the text must appear in the pack (compared after
+stripping commas and leading zeros, so "1,000,000" and "1000000" are the same figure); every
+ISO date must fall inside the period; the restated period must match the pack exactly; no
+text may contain a URL or an em dash; the payload must stay inside its length bounds. A
+failure is fed back once as a correction and the call is made again. If the second answer
+also fails, nothing is stored and the page says the checks rejected the answer.
+
+**Cadence and cost.** `DIGEST_INTERVAL` is 14 days. A reader who opens the page after that
+starts one generation in the background; readers never start anything else, and a failed
+attempt waits six hours before another is tried. An administrator can ask for one sooner: the
+request is audited (`ukraine_digest_refresh_requested`), limited to two per administrator per
+hour and four across the installation per day, and the work still runs in the background.
+Cost per fortnight is therefore one call, or two when the first answer fails validation:
+roughly 8,000 to 12,000 prompt tokens and up to 3,000 completion tokens, charged to the
+system allowance as `system:ukraine_digest` (ADR 0019). The provider audit trail records the
+call under purpose `ukraine_digest`.
+
+**What is stored.** The last six digests only (`DIGEST_RETENTION`), in `ukraine_digests`:
+period, payload JSON, model, generated time, token counts, the feed source ids, the evidence
+item count and the citations the digest actually named. Prompts are never stored, and the
+full evidence window is not stored: only the frozen citations behind the stored assessment.
+The generation holds no database transaction across the model call and takes the shared
+admission guard only for the final write.
+
+**Honest limitations.** The digest reads retained reporting, not the war. It can only be as
+good as a fortnight of free feeds, which are uneven, English-weighted and incomplete. The
+checks are arithmetic and string checks: they can show that a figure was copied from the
+pack, never that the model understood the fortnight or weighted it sensibly. Control change
+depends on the operator having imported a VIINA snapshot; without one the digest says so.
+No digest has yet been produced against a real model in this repository, so the wording
+quality is unproven.
 
 ## Doctrine
 
@@ -151,6 +219,16 @@ seed resolution on fakes, the bounds and validation, and the two endpoints.
 `tests/test_ukraine_figures.py` covers the Oryx and HRMMU importers on mock transports,
 the packaged figures, the bounds, the lens series, the three provider parsers, the flagged
 providers' caching and stale states, and the board and provider endpoints.
+`tests/test_ukraine_digest.py` covers the evidence pack (every strand, the bounds, the
+trimming, the plain statements when a strand is missing), the prompt and schema, the single
+retry and every mechanical check. `tests/test_ukraine_digest_service.py` covers the
+fortnightly cadence, the retention bound, the system attribution, the administrator refresh
+with its authorisation, audit and limits, the model-off, no-evidence, exhausted-allowance and
+provider-failure states, the SQL store and the two endpoints;
+`tests/test_ukraine_digest_migration.py` covers migration `0056` both ways.
+`frontend/src/features/ukraine/ukraineDigest.test.tsx` covers the panel in every state
+(ready, none, generating, stale, unavailable, rejected, load failure), the history selector
+and the administrator control, including a refused refresh.
 `frontend/src/features/ukraine/ukraine.test.tsx` covers the page without
 WebGL, the tabs and lenses, the claim badges and links, a failed board, the rail entry
 and the layer colours; `reference.test.tsx` covers the timeline filters, the force

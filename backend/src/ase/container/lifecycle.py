@@ -7,6 +7,10 @@ if TYPE_CHECKING:
 
 
 async def dispose_resources(container: "Container") -> None:
+    # Only stop the digest generator when something has actually built it.
+    digest = container.__dict__.get("ukraine_digest")
+    if digest is not None:
+        digest.cancel()
     await container.close_economy()
     await container.http.aclose()
     await container.satellite_http.aclose()

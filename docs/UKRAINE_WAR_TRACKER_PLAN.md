@@ -309,7 +309,10 @@ route with a temporary launch configuration that is deleted afterwards.
 ## 8. Phases
 
 Status: phases 1 to 4 delivered by 14 September 2026 (`docs/UKRAINE_WAR_TRACKER.md`).
-Phase 5 (DEV polish and the wider documentation pass) remains.
+Phase 5 (DEV polish and the wider documentation pass) remains. The fortnightly AI digest
+(phase 6 below) was added on 16 September 2026; its cadence, cost, validation and
+limitations are in `docs/UKRAINE_WAR_TRACKER.md` and its allowance row in ADR 0019. It has
+not yet been run against a real model, so its wording quality is unproven.
 
 1. **Skeleton and map.** Domain, oblast import, VIINA importer and snapshot,
    board endpoint, page shell, rail entry, map with control cells and legend,
@@ -329,6 +332,11 @@ Phase 5 (DEV polish and the wider documentation pass) remains.
    operators, updates to `MAP_TOOLS_AND_LAYERS.md`, `CONFLICT_COVERAGE.md`,
    `FRONTLINES_AND_UNREST.md` (the DeepState licence text now read in full),
    `DEVELOPMENT_STORY.md` and the master research plan checklist.
+6. **Fortnightly AI digest.** A bounded evidence pack from the sources already on the
+   page, one structured model call every 14 days, mechanical validation with a single
+   retry, a small stored history and a panel that shows the digest, its evidence and its
+   provenance. Acceptance: nothing is stored that fails the checks, readers never start
+   spend beyond the fortnightly rule, and every state is honest about why it is empty.
 
 Each phase is a small set of conventional commits touching only this feature's
 paths, so the concurrent session's work on the map controls is not disturbed.

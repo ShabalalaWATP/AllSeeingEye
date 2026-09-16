@@ -13838,6 +13838,60 @@
         ]
       }
     },
+    "/api/conflicts/ukraine/digest": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Digest",
+        "description": "The fortnightly model digest and the few before it; a reader never forces new spend.",
+        "operationId": "ukraine_digest_api_conflicts_ukraine_digest_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UkraineDigestOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/conflicts/ukraine/digest/refresh": {
+      "post": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Refresh Ukraine Digest",
+        "description": "Administrators may ask for a digest before the fortnight is up; audited and limited.",
+        "operationId": "refresh_ukraine_digest_api_conflicts_ukraine_digest_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UkraineDigestOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/conflicts/ukraine/reference": {
       "get": {
         "tags": [
@@ -21785,6 +21839,214 @@
           "clock"
         ],
         "title": "DecisionMethod"
+      },
+      "DigestChangeOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "source_ids"
+        ],
+        "title": "DigestChangeOut"
+      },
+      "DigestCitationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "dated_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dated On"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "source_id",
+          "label",
+          "dated_on",
+          "url"
+        ],
+        "title": "DigestCitationOut"
+      },
+      "DigestEntryOut": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Period End"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "evidence_items": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Evidence Items"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Ids"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "battlefield": {
+            "$ref": "#/components/schemas/DigestStrandOut"
+          },
+          "political": {
+            "$ref": "#/components/schemas/DigestStrandOut"
+          },
+          "watch": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Watch"
+          },
+          "caveats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Caveats"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/DigestCitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end",
+          "generated_at",
+          "model",
+          "evidence_items",
+          "source_ids",
+          "prompt_tokens",
+          "completion_tokens",
+          "battlefield",
+          "political",
+          "watch",
+          "caveats",
+          "citations"
+        ],
+        "title": "DigestEntryOut",
+        "description": "One stored digest with its provenance; the prompt is never kept or returned."
+      },
+      "DigestStatus": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "none",
+          "generating",
+          "unavailable",
+          "validation_failed"
+        ],
+        "title": "DigestStatus"
+      },
+      "DigestStrandOut": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/DigestChangeOut"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "changes"
+        ],
+        "title": "DigestStrandOut"
       },
       "DirectoryField": {
         "type": "string",
@@ -45106,6 +45368,65 @@
           "lens_series"
         ],
         "title": "UkraineBoardOut"
+      },
+      "UkraineDigestOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/DigestStatus"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          },
+          "generating": {
+            "type": "boolean",
+            "title": "Generating"
+          },
+          "interval_days": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Interval Days"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DigestEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous": {
+            "items": {
+              "$ref": "#/components/schemas/DigestEntryOut"
+            },
+            "type": "array",
+            "title": "Previous"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "reason",
+          "stale",
+          "generating",
+          "interval_days",
+          "latest",
+          "previous"
+        ],
+        "title": "UkraineDigestOut"
       },
       "UkraineReferenceOut": {
         "properties": {
