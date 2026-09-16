@@ -286,6 +286,18 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
                 else None
             ),
         )
+    profiles["research_social_telegram"] = _profile(
+        "social",
+        (Scope.TOPIC, Scope.COUNTRY_CONTEXT),
+        Dates.PUBLICATION_INTERVAL,
+        "Explicit bounded phrases and a post-time interval, matched locally inside one "
+        "curated public Telegram channel preview chosen by declared language and subject "
+        "fit. Not a Telegram search, an archive, or a sweep of the curated set. Every "
+        "curated channel is a party to, or aligned with, what it reports, so a match is a "
+        "participant's claim and establishes neither geography nor corroboration.",
+        unknown_origin=True,
+        content=Content.DISCOVERY,
+    )
     for name in ("usgs", "eonet", "openaq"):
         profiles[f"research-{name}-area"] = _profile(
             "environment" if name == "openaq" else "hazard",

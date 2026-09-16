@@ -10,6 +10,8 @@ from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
+from ase.adapters.research.social_telegram import LIMITATIONS as TELEGRAM_LIMITATIONS
+from ase.adapters.research.social_telegram import PROVIDER_ID, PROVIDER_NAME
 from ase.adapters.research_records.cloudflare_radar import PROVIDER_IDS as RADAR_PROVIDER_IDS
 from ase.adapters.research_records.ecb_reference_rate import EcbReferenceRateProvider
 from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchProvider
@@ -92,6 +94,23 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
         )
         for seed in SOCIAL_SEEDS
         if seed.spec.id not in disabled
+    )
+    specs.append(
+        _spec(
+            PROVIDER_ID,
+            PROVIDER_NAME,
+            Category.SOCIAL,
+            "Curated public Telegram channels run by governments, armed forces, state "
+            "outlets, aligned commentators and unassessed publishers. A post is a "
+            "participant's claim; neither Telegram nor this registry authenticates it.",
+            "Local phrase matching within one curated channel's public preview page and "
+            "the requested publication interval.",
+            TELEGRAM_LIMITATIONS,
+            "Telegram terms; public channel web preview only. Text excerpts, timestamps "
+            "and post links; no media, no account, no private content.",
+            role="platform",
+            language="und",
+        )
     )
     specs.extend(record_specs())
     specs.extend(subject_specs())

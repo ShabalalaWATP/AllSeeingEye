@@ -232,6 +232,13 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         prefix="research_social_",
     )
     add(
+        "telegram",
+        DEFENCE + "|Russia|war|strikes|drone|missile|sanctions|cyber|Israel|Iran|protests",
+        "Curated participant channels: governments, armed forces, state media and aligned "
+        "commentators. One channel preview per request; claims, not corroboration.",
+        prefix="research_social_",
+    )
+    add(
         "reddit_ukrainianconflict",
         DEFENCE + "|civilian|displacement",
         "Unverified forum discovery; discussion location is not event geography.",
