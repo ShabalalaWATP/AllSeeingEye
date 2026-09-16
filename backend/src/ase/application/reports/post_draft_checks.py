@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from ase.application.reports.numeric_checks import check_figures
+from ase.application.reports.style_checks import check_house_style, check_structure
 from ase.application.reports.templates import Template
 from ase.domain.evidence import EvidenceItem
 from ase.domain.reports import ReportBody, ReportHeader
@@ -22,5 +23,9 @@ def mechanical_quality_findings(
     template: Template,
     evidence: Sequence[EvidenceItem],
 ) -> tuple[Finding, ...]:
-    """Cheapest first: figure and date traceability, then structure, style and sourcing."""
-    return tuple(check_figures(body, header, evidence))
+    """Cheapest first: figure and date traceability, then structure and style."""
+    return (
+        *check_figures(body, header, evidence),
+        *check_structure(body, template.id),
+        *check_house_style(body),
+    )
