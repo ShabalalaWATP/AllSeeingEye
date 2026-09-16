@@ -252,14 +252,20 @@ def _step(value: Decimal) -> Decimal:
 
 
 def _tolerance(prose: Figure) -> Decimal:
+    """How far a stated figure may sit from a written one and still be the same figure.
+
+    A figure written to a round place carries half that place. An approximated figure
+    also carries two per cent. A figure written exactly carries nothing.
+    """
     if prose.value is None:
         return Decimal(0)
     step = _step(prose.value)
-    if step > 1:
-        return step / 2
-    if prose.approximate:
-        return max(Decimal("0.5"), (prose.value.copy_abs() * Decimal("0.02")))
-    return Decimal(0)
+    approximate = (
+        max(Decimal("0.5"), prose.value.copy_abs() * Decimal("0.02"))
+        if prose.approximate
+        else Decimal(0)
+    )
+    return max(step / 2 if step > 1 else Decimal(0), approximate)
 
 
 def _matches(prose: Figure, candidate: Decimal, tolerance: Decimal) -> bool:

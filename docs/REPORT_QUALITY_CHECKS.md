@@ -28,8 +28,9 @@ summaries, attributes and dates. A prose figure passes when the evidence states 
 when the evidence value rounds to it, or when the checker can reproduce it as a sum or
 difference of stated figures.
 
-- Rounding is allowed only towards the place the figure is written to. "About 3,000"
-  accepts a stated 2,987; "3,000" does not accept a stated 8,400.
+- A figure written to a round place carries half that place, capped at a tenth of the
+  figure; an approximated figure also carries two per cent. So "about 3,000" accepts a
+  stated 2,987 and reports a stated 2,500, which is a fifth of the way off.
 - A percentage and a percentage point are different kinds and never match each other.
   A currency amount must match its currency.
 - A range is checked at both ends.
