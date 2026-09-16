@@ -44,7 +44,12 @@ SYSTEM_PROMPT = (
     "Describe the change in the words the facts use: a change marked percentage_point is a "
     "change in percentage points, and a change marked percentage_change is a percentage "
     "change. Never include a web address, a link, HTML or any markup. Write only about the "
-    "six supplied regions. Keep every sentence short enough to read aloud in one breath."
+    "six supplied regions. Keep every sentence short enough to read aloud in one breath. "
+    "Build the summary on the indicator figures, which are the reliable part of the "
+    "evidence. Headlines are a bounded publisher feed and can include soft features that "
+    "are not about the economy, so mention a headline only when it is clearly about "
+    "growth, prices, jobs, trade, energy, public finances, business or currencies, and "
+    "ignore the rest rather than stretching them into an economic point."
 )
 GUIDANCE = (
     "Write one short summary of the world economy and one for each region present in the "

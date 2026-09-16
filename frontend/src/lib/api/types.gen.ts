@@ -7064,7 +7064,7 @@ export interface components {
             /** Stale */
             stale: boolean;
             /** Reason */
-            reason?: string | null;
+            reason: string | null;
             explainer: components["schemas"]["ExplainerBodyOut"] | null;
             provenance: components["schemas"]["ExplainerProvenanceOut"] | null;
         };

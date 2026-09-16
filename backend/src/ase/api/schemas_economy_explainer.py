@@ -57,7 +57,7 @@ class ExplainerProvenanceOut(BaseModel):
 class EconomyExplainerOut(BaseModel):
     status: ExplainerStatus
     stale: bool
-    reason: str | None = Field(default=None, max_length=400)
+    reason: str | None = Field(max_length=400)
     explainer: ExplainerBodyOut | None
     provenance: ExplainerProvenanceOut | None
 

@@ -1,6 +1,8 @@
 import type { EconomyRegion, EconomySeries } from '@/lib/api/economy';
+import type { ExplainerGlossaryEntry } from '@/lib/api/economyExplainer';
 import { annualChange, formatAnnualChange, observationAge } from './economicChanges';
 import { formatEconomicValue, latestObservation } from './economyPresentation';
+import { IndicatorMeaning } from './IndicatorMeaning';
 import { IndicatorSparkline } from './IndicatorSparkline';
 
 const GROUPS = [
@@ -15,10 +17,12 @@ export function CountryIndicators({
   region,
   selected,
   onSelect,
+  glossary = [],
 }: {
   region: EconomyRegion;
   selected: string | undefined;
   onSelect: (id: string) => void;
+  glossary?: readonly ExplainerGlossaryEntry[];
 }) {
   const groups = [
     ...GROUPS.map((group) => ({
@@ -46,12 +50,17 @@ export function CountryIndicators({
               className={`grid grid-cols-2 border-t border-l border-line ${group.items.length > 2 ? 'lg:grid-cols-4' : ''}`}
             >
               {group.items.map((item) => (
-                <IndicatorButton
+                <div
                   key={item.id}
-                  series={item}
-                  selected={selected === item.id}
-                  onSelect={onSelect}
-                />
+                  className={`flex min-w-0 flex-col border-r border-b border-line ${selected === item.id ? 'bg-surface-2' : ''}`}
+                >
+                  <IndicatorButton
+                    series={item}
+                    selected={selected === item.id}
+                    onSelect={onSelect}
+                  />
+                  <IndicatorMeaning series={item} glossary={glossary} />
+                </div>
               ))}
             </div>
           </div>
@@ -77,7 +86,7 @@ function IndicatorButton({
       type="button"
       aria-pressed={selected}
       onClick={() => onSelect(series.id)}
-      className={`min-w-0 border-r border-b border-line px-3 py-4 text-left transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember sm:px-4 ${selected ? 'bg-surface-2' : ''}`}
+      className="min-w-0 flex-1 px-3 py-4 text-left transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember sm:px-4"
     >
       <span className="block min-h-8 text-xs leading-4 text-muted">{series.name}</span>
       <span

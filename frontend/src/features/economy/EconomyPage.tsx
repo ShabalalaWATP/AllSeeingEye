@@ -17,6 +17,9 @@ import { CurrencyAnalysis } from './CurrencyAnalysis';
 import { parseEconomyDays } from '@/lib/api/economyBriefing';
 import { EconomyPeriodPicker } from './EconomyPeriodPicker';
 import { useEconomyBriefing } from './useEconomyBriefing';
+import { useEconomyExplainer } from './useEconomyExplainer';
+import { WorldExplainer } from './WorldExplainer';
+import { regionExplainer } from './explainerModel';
 
 export default function EconomyPage() {
   const [params, setParams] = useSearchParams();
@@ -27,6 +30,9 @@ export default function EconomyPage() {
   const news = useScopedResource(loadNews);
   const currentNews = news.data?.window_hours === days * 24 ? news.data : null;
   const briefingState = useEconomyBriefing(days);
+  const explainerState = useEconomyExplainer();
+  const worldExplainer = regionExplainer(explainerState.data, 'WORLD');
+  const focusExplainer = regionExplainer(explainerState.data, focus.id);
   const [refreshing, setRefreshing] = useState(false);
   const owner = useAuthStore((state) => state.user?.id);
   const refreshData = data.refresh;
@@ -71,6 +77,7 @@ export default function EconomyPage() {
             })
           }
         />
+        <WorldExplainer state={explainerState} />
         <EconomyNewsPanel
           items={currentNews?.items ?? []}
           loading={news.loading}
@@ -80,6 +87,7 @@ export default function EconomyPage() {
           asOf={currentNews?.as_of}
           report={briefingState.report}
           briefing={briefingState.briefing}
+          explainerLeads={worldExplainer.section !== null}
           region="WORLD"
           onRetry={() => void news.reload()}
         />
@@ -151,6 +159,7 @@ export default function EconomyPage() {
             <CountryEconomy
               key={focus.id}
               region={data.data.regions.find((region) => region.id === focus.id)}
+              explainer={focusExplainer}
             />
           </div>
         )}
@@ -164,6 +173,7 @@ export default function EconomyPage() {
             asOf={currentNews?.as_of}
             report={briefingState.report}
             briefing={briefingState.briefing}
+            explainerLeads={focusExplainer.section !== null}
             onRetry={() => void news.reload()}
           />
         )}

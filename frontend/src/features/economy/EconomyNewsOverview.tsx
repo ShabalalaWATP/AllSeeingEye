@@ -13,17 +13,22 @@ const countryHeading: Record<Exclude<RegionCode, 'WORLD'>, RegExp> = {
   IR: /\biran\b/i,
 };
 
-/** Reuse the cited briefing. While it is unavailable, show attributed headline extracts. */
+/**
+ * Reuse the cited briefing. While it is unavailable, show attributed headline extracts,
+ * unless a checked plain-English summary already leads this part of the page.
+ */
 export function EconomyNewsOverview({
   items,
   region,
   report,
   briefing,
+  explainerLeads = false,
 }: {
   items: readonly EconomyNewsItem[];
   region: RegionCode;
   report: Report | null;
   briefing: EconomyBriefing | null;
+  explainerLeads?: boolean;
 }) {
   const judgement = region === 'WORLD' ? report?.version.body.key_judgements[0] : undefined;
   const assessment =
@@ -37,7 +42,7 @@ export function EconomyNewsOverview({
     : (assessment?.evidence ?? []);
   const references = report?.version.evidence.filter((item) => labels.includes(item.label)) ?? [];
   const sourced = text && references.length > 0;
-  if (!sourced && items.length === 0) return null;
+  if (!sourced && (explainerLeads || items.length === 0)) return null;
   return (
     <div className="border-l-2 border-ember pl-4 py-1">
       <p className="max-w-4xl text-[0.95rem] leading-7 text-text">

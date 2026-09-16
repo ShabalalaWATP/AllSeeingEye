@@ -5,9 +5,17 @@ import { EconomicChart } from './EconomicChart';
 import { CountryIndicators } from './CountryIndicators';
 import { CountryInsights } from './CountryInsights';
 import { CountryOverview } from './CountryOverview';
-import { latestObservation, metricExplanation } from './economyPresentation';
+import { emptyExplainer, type RegionExplainerView } from './explainerModel';
+import { RegionExplainer } from './RegionExplainer';
+import { latestObservation } from './economyPresentation';
 
-export function CountryEconomy({ region }: { region: EconomyRegion | undefined }) {
+export function CountryEconomy({
+  region,
+  explainer = emptyExplainer,
+}: {
+  region: EconomyRegion | undefined;
+  explainer?: RegionExplainerView;
+}) {
   const [choice, setChoice] = useState<string | null>(null);
   if (!region)
     return (
@@ -30,6 +38,8 @@ export function CountryEconomy({ region }: { region: EconomyRegion | undefined }
           Annual official indicators
         </span>
       </header>
+      {/* The worldwide summary already leads the page; do not repeat it here. */}
+      {region.id !== 'WORLD' && <RegionExplainer name={region.name} view={explainer} />}
       <CountryOverview region={region} />
       <div className="flex flex-wrap gap-x-6 gap-y-2 border-l-2 border-ember pl-4 text-xs leading-5 text-muted">
         <span>
@@ -49,13 +59,18 @@ export function CountryEconomy({ region }: { region: EconomyRegion | undefined }
         Every available history loads automatically. Select an indicator to explore exact values and
         its methodology. Changes marked pp are percentage points, not percentage growth.
       </p>
-      <CountryIndicators region={region} selected={series?.id} onSelect={setChoice} />
+      <CountryIndicators
+        region={region}
+        selected={series?.id}
+        onSelect={setChoice}
+        glossary={explainer.glossary}
+      />
       {series && (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_240px]">
           <EconomicChart key={`${region.id}:${series.id}`} series={series} />
           <aside className="space-y-4 text-sm leading-6 text-muted">
+            {/* The plain-English meaning sits with the indicator card, not twice. */}
             <h4 className="font-semibold text-text">{series.name}</h4>
-            <p>{metricExplanation(series.id)}</p>
             <p>{series.note}</p>
             <dl className="space-y-3 text-xs">
               <div>
