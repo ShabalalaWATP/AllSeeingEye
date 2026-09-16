@@ -9,6 +9,7 @@ import { TopBar } from '@/app/shell/TopBar';
 import UkrainePage from '@/features/ukraine/UkrainePage';
 import { ukraineControlSchema, type UkraineBoard, type UkraineControl } from '@/lib/api/ukraine';
 import { ukraineBoard } from '@/test/fixtures.ukraine';
+import { ukraineDigest } from '@/test/fixtures.ukraineDigest';
 import { ukraineFrontlineReady, ukraineSpottedReady } from '@/test/fixtures.ukraineFigures';
 import { ukraineReference } from '@/test/fixtures.ukraineReference';
 
@@ -23,6 +24,7 @@ const board: UkraineBoard = { ...ukraineBoard, control: control.summary };
 const loadBoard = () => Promise.resolve(board);
 const loadControl = () => Promise.resolve(control);
 const loadReference = () => Promise.resolve(ukraineReference);
+const loadDigest = () => Promise.resolve(ukraineDigest);
 const mapLoaders = {
   frontline: () => Promise.resolve(ukraineFrontlineReady),
   spotted: () => Promise.resolve(ukraineSpottedReady),
@@ -54,6 +56,8 @@ export default function UkrainePreviewPage() {
             loadBoard={loadBoard}
             loadControl={loadControl}
             loadReference={loadReference}
+            loadDigest={loadDigest}
+            refreshDigest={loadDigest}
             imageFetcher={imageFetcher}
             mapLoaders={mapLoaders}
           />

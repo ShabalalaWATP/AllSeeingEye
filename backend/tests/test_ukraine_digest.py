@@ -24,12 +24,7 @@ from ase.domain.ukraine.confirmed import (
     LossRow,
     loss_group,
 )
-from ase.domain.ukraine.control import (
-    ControlChange,
-    ControlSnapshot,
-    ControlStatus,
-    SettlementControl,
-)
+from ase.domain.ukraine.control import ControlChange, ControlStatus
 from ase.domain.ukraine.digest import UkraineDigest
 from ase.domain.ukraine.reference import Side
 from helpers import FakeClock
@@ -41,36 +36,10 @@ from ukraine_digest_helpers import (
     answer,
     board,
     result,
+    snapshot,
 )
 
 SECRET = "fixture-digest-secret"
-SETTLEMENT = SettlementControl(
-    geoname_id=1,
-    name="Somewhere",
-    oblast="Donetska",
-    lat=48.0,
-    lon=37.8,
-    status=ControlStatus.RU,
-    since=None,
-    votes=(ControlStatus.RU, ControlStatus.RU, ControlStatus.RU, ControlStatus.UNKNOWN),
-)
-
-
-def snapshot(assessed: date, changes: tuple[ControlChange, ...]) -> ControlSnapshot:
-    return ControlSnapshot(
-        assessment_date=assessed,
-        release_stamp="v1",
-        retrieved_at=NOW,
-        attribution="VIINA",
-        licence="CC-BY",
-        source_url="https://example.invalid/control",
-        method_note="Majority vote of public maps.",
-        places_total=1,
-        settlements=(SETTLEMENT,),
-        areas=(),
-        oblasts=(),
-        changes=changes,
-    )
 
 
 @pytest.fixture

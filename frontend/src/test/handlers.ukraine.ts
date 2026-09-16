@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 
+import { ukraineDigest } from './fixtures.ukraineDigest';
 import { ukraineBoard, ukraineControl } from './fixtures.ukraine';
 import { ukraineFrontlineOff, ukraineSpottedOff } from './fixtures.ukraineFigures';
 import { ukraineReference } from './fixtures.ukraineReference';
@@ -7,6 +8,8 @@ import { ukraineReference } from './fixtures.ukraineReference';
 export const ukraineHandlers = [
   http.get('/api/conflicts/ukraine', () => HttpResponse.json(ukraineBoard)),
   http.get('/api/conflicts/ukraine/control', () => HttpResponse.json(ukraineControl)),
+  http.get('/api/conflicts/ukraine/digest', () => HttpResponse.json(ukraineDigest)),
+  http.post('/api/conflicts/ukraine/digest/refresh', () => HttpResponse.json(ukraineDigest)),
   http.get('/api/conflicts/ukraine/reference', () => HttpResponse.json(ukraineReference)),
   http.get('/api/conflicts/ukraine/frontline', () => HttpResponse.json(ukraineFrontlineOff)),
   http.get('/api/conflicts/ukraine/spotted', () => HttpResponse.json(ukraineSpottedOff)),

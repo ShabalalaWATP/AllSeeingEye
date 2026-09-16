@@ -15,6 +15,12 @@ from ase.application.ukraine_digest import UkraineDigestService
 from ase.application.ukraine_digest_writer import DigestWriter
 from ase.domain.events import Category
 from ase.domain.llm import LlmResult
+from ase.domain.ukraine.control import (
+    ControlChange,
+    ControlSnapshot,
+    ControlStatus,
+    SettlementControl,
+)
 from ase.domain.ukraine.digest import StoredDigest
 from ase.domain.ukraine.lenses import Lens
 from ase.domain.ukraine.losses import ClaimedLosses
@@ -199,6 +205,35 @@ def answer(
             ],
             "caveats": ["This digest reads only the sources listed and cannot verify any of them."],
         }
+    )
+
+
+SETTLEMENT = SettlementControl(
+    geoname_id=1,
+    name="Somewhere",
+    oblast="Donetska",
+    lat=48.0,
+    lon=37.8,
+    status=ControlStatus.RU,
+    since=None,
+    votes=(ControlStatus.RU, ControlStatus.RU, ControlStatus.RU, ControlStatus.UNKNOWN),
+)
+
+
+def snapshot(assessed: date, changes: tuple[ControlChange, ...]) -> ControlSnapshot:
+    return ControlSnapshot(
+        assessment_date=assessed,
+        release_stamp="v1",
+        retrieved_at=NOW,
+        attribution="VIINA",
+        licence="CC-BY",
+        source_url="https://example.invalid/control",
+        method_note="Majority vote of public maps.",
+        places_total=1,
+        settlements=(SETTLEMENT,),
+        areas=(),
+        oblasts=(),
+        changes=changes,
     )
 
 

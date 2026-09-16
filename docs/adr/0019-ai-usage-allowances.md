@@ -128,6 +128,7 @@ call passes through an allowance decorator.
 | Feed title translation | `adapters/llm/translator.py`, built in `container/features.py` | System | Yes |
 | Conflict screening of shared feeds | `application/conflict_screening/model.py` | System | Yes |
 | Model discovery (`list_models`) | `adapters/llm/openai_compatible.py` | Not a completion; lists models only | No, not billable model usage |
+| Fortnightly Ukraine digest | `application/ukraine_digest_writer.py`, built in `container/ukraine.py` | System, purpose `system:ukraine_digest`; at most one call a fortnight, plus one retry when the mechanical checks reject the first answer | Yes |
 
 Tests cover each newly metered path except conflict screening, which uses the same
 `system_llm_gateway()` wiring as feed translation but has no dedicated allowance test.
