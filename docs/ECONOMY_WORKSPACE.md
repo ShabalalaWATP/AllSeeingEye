@@ -254,7 +254,7 @@ the direction words remain the model's own wording under the prompt rules.
 
 ### Storage
 
-`economy_explainers` (migration `0056`) is a small operational aggregate holding the
+`economy_explainers` (migration `0057`) is a small operational aggregate holding the
 fingerprint, the window start, the checked payload as JSON, the model name, the
 generation time, the snapshot retrieval time and the reported prompt and completion
 tokens. At most the newest two rows are kept; older rows are deleted on each save.

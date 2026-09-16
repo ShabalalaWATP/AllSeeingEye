@@ -1,4 +1,4 @@
-"""Migration 0056 creates the small explainer cache table and drops it cleanly."""
+"""Migration 0057 creates the small explainer cache table and drops it cleanly."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from sqlalchemy import create_engine, inspect
 
 
 def _migration():
-    path = Path(__file__).parents[1] / "alembic/versions/0056_economy_explainer_cache.py"
+    path = Path(__file__).parents[1] / "alembic/versions/0057_economy_explainer_cache.py"
     spec = importlib.util.spec_from_file_location("economy_explainer_migration", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -21,7 +21,7 @@ def _migration():
 
 def test_economy_explainer_cache_table_is_created_and_reversible():
     module = _migration()
-    assert module.revision == "0056" and module.down_revision == "0055"
+    assert module.revision == "0057" and module.down_revision == "0056"
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:
