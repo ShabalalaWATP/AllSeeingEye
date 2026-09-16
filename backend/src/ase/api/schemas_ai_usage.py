@@ -128,8 +128,7 @@ class AiUsageTotalsOut(BaseModel):
     used_input_tokens: int
     used_output_tokens: int
     estimated_cost: str | None = Field(
-        default=None,
-        description="Estimated spend from recorded tokens at the configured prices.",
+        description="Estimated spend from recorded tokens at the configured prices."
     )
 
     @classmethod
@@ -175,7 +174,7 @@ class AiUsagePreviewOut(BaseModel):
     unknown_calls: int = Field(description="Provider calls held as unknown pending review.")
     prices: AiTokenPricesOut
     model: AiEffectiveModelOut | None = Field(
-        default=None, description="The model this destination would use. Never a credential."
+        description="The model this destination would use. Never a credential."
     )
 
     @classmethod

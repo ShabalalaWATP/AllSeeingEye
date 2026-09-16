@@ -47,7 +47,7 @@ class AiEffectiveModelOut(BaseModel):
     provider: LlmProvider | None
     reasoning_effort: ReasoningEffort | None
     mechanical_effort: ReasoningEffort | None = Field(
-        default=None, description="Effort mechanical work uses after the configured cap."
+        description="Effort mechanical work uses after the configured cap."
     )
     unavailable: str | None
 

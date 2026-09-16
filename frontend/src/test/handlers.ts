@@ -1,5 +1,6 @@
 import { profileHandlers } from './handlers.profile';
 import { economyExplainer } from './fixtures.economyExplainer';
+import { aiDefaults, aiPreview } from './fixtures.aiUsage';
 import { platformConnections } from './fixtures.researchMetadata';
 import { figureBoard } from './fixtures.figures';
 import { ukraineHandlers } from './handlers.ukraine';
@@ -281,17 +282,19 @@ export const handlers = [
   http.get('/api/admin/ai-usage/preview', ({ request }) => {
     const gate = requireAdmin(request);
     if (!gate.ok) return gate.response;
-    return HttpResponse.json({
-      items: [],
-      observed: {
-        period_start: '2026-09-01T00:00:00Z',
-        period_end: '2026-10-01T00:00:00Z',
-        used_requests: 0,
-        used_tokens: 0,
-        unknown_requests: 0,
-      },
-      unknown_calls: 0,
-    });
+    return HttpResponse.json(aiPreview());
+  }),
+
+  http.get('/api/admin/ai-usage/defaults', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json(aiDefaults());
+  }),
+
+  http.post('/api/admin/ai-usage/defaults', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({ created: [] }, { status: 201 });
   }),
 
   http.get('/api/admin/sources', ({ request }) => {

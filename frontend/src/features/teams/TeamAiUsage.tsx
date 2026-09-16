@@ -2,6 +2,7 @@
 import { useState } from 'react';
 
 import { AllowanceCard, ObservedTotals } from '@/components/aiUsage/AllowanceCards';
+import { SPEND_CAVEAT, spendOf } from '@/components/aiUsage/spend';
 import { describeError } from '@/lib/api/errors';
 import { getTeamAiUsage, type TeamAiUsage as Usage } from '@/lib/api/aiUsage';
 
@@ -35,8 +36,10 @@ export function TeamAiUsage({ teamId }: { teamId: string }) {
         {error ? <p className="text-sm text-critical">{error}</p> : null}
         {usage ? (
           <>
-            <ObservedTotals label="Your team usage" totals={usage.own} />
-            {usage.team ? <ObservedTotals label="Whole team" totals={usage.team} /> : null}
+            <ObservedTotals label="Your team usage" totals={usage.own} prices={usage.prices} />
+            {usage.team ? (
+              <ObservedTotals label="Whole team" totals={usage.team} prices={usage.prices} />
+            ) : null}
             {usage.items.length === 0 ? (
               <p className="text-sm text-muted">
                 No allowance policy is active for this workspace; usage is recorded only.
@@ -48,7 +51,7 @@ export function TeamAiUsage({ teamId }: { teamId: string }) {
                 ))}
               </div>
             )}
-            {usage.members ? <MemberTotals members={usage.members} /> : null}
+            {usage.members ? <MemberTotals members={usage.members} prices={usage.prices} /> : null}
           </>
         ) : null}
       </div>
@@ -56,31 +59,42 @@ export function TeamAiUsage({ teamId }: { teamId: string }) {
   );
 }
 
-function MemberTotals({ members }: { members: NonNullable<Usage['members']> }) {
+function MemberTotals({
+  members,
+  prices,
+}: {
+  members: NonNullable<Usage['members']>;
+  prices: Usage['prices'];
+}) {
   if (members.length === 0) {
     return <p className="text-sm text-muted">No member has used AI for this team this month.</p>;
   }
   return (
-    <div className="overflow-x-auto border border-line/70">
-      <table className="w-full text-left text-sm">
-        <caption className="sr-only">AI usage by team member this month</caption>
-        <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
-          <tr>
-            <th className="px-3 py-2">Member</th>
-            <th className="px-3 py-2">Requests</th>
-            <th className="px-3 py-2">Tokens</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
-          {members.map((member) => (
-            <tr key={member.user_id}>
-              <td className="px-3 py-2">{member.display_name}</td>
-              <td className="px-3 py-2">{member.observed.used_requests.toLocaleString()}</td>
-              <td className="px-3 py-2">{member.observed.used_tokens.toLocaleString()}</td>
+    <div className="space-y-2">
+      <p className="text-xs text-muted">{SPEND_CAVEAT}</p>
+      <div className="overflow-x-auto border border-line/70">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">AI usage by team member this month</caption>
+          <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
+            <tr>
+              <th className="px-3 py-2">Member</th>
+              <th className="px-3 py-2">Requests</th>
+              <th className="px-3 py-2">Tokens</th>
+              <th className="px-3 py-2">Estimated spend</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {members.map((member) => (
+              <tr key={member.user_id}>
+                <td className="px-3 py-2">{member.display_name}</td>
+                <td className="px-3 py-2">{member.observed.used_requests.toLocaleString()}</td>
+                <td className="px-3 py-2">{member.observed.used_tokens.toLocaleString()}</td>
+                <td className="px-3 py-2">{spendOf(member.observed, prices) ?? '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

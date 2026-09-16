@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
 import { previewAiUsage, type AiUsagePreview as Preview } from '@/lib/api/aiUsage';
 import { asApiError, describeError } from '@/lib/api/errors';
+import { AiEffectiveModel } from './AiEffectiveModel';
 import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
 
@@ -15,9 +16,11 @@ const SYSTEM = '__system__';
 export function AiUsagePreview({
   users,
   teams,
+  onEditLimit,
 }: {
   users: readonly User[];
   teams: readonly Team[];
+  onEditLimit?: ((scope: 'user' | 'team', targetId: string) => void) | undefined;
 }) {
   const [account, setAccount] = useState('');
   const [team, setTeam] = useState('');
@@ -55,7 +58,8 @@ export function AiUsagePreview({
         </h3>
         <p className="mt-1 text-xs leading-5 text-muted">
           Check which active policies would apply to an account, a team destination or shared system
-          work such as feed translation.
+          work such as feed translation, which model that destination would use, and what it has
+          spent this period.
         </p>
       </div>
       {error ? <Alert tone="error">{error}</Alert> : null}
@@ -98,7 +102,22 @@ export function AiUsagePreview({
       </div>
       {preview ? (
         <div className="space-y-3">
-          <ObservedTotals label="Recorded usage" totals={preview.observed} />
+          <ObservedTotals
+            label="Recorded usage"
+            totals={preview.observed}
+            prices={preview.prices}
+          />
+          <AiEffectiveModel model={preview.model} />
+          {onEditLimit && !system ? (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                onEditLimit(team ? 'team' : 'user', team ? team : account)
+              }
+            >
+              {team ? 'Set a limit for this team' : 'Set a limit for this account'}
+            </Button>
+          ) : null}
           {preview.unknown_calls > 0 ? (
             <p className="text-sm text-amber" role="status">
               {preview.unknown_calls} provider calls have unconfirmed usage and remain charged

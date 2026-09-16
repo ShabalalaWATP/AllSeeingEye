@@ -4195,7 +4195,7 @@ export interface components {
             provider: components["schemas"]["LlmProvider"] | null;
             reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
             /** @description Effort mechanical work uses after the configured cap. */
-            mechanical_effort?: components["schemas"]["ReasoningEffort"] | null;
+            mechanical_effort: components["schemas"]["ReasoningEffort"] | null;
             /** Unavailable */
             unavailable: string | null;
         };
@@ -4388,7 +4388,7 @@ export interface components {
             unknown_calls: number;
             prices: components["schemas"]["AiTokenPricesOut"];
             /** @description The model this destination would use. Never a credential. */
-            model?: components["schemas"]["AiEffectiveModelOut"] | null;
+            model: components["schemas"]["AiEffectiveModelOut"] | null;
         };
         /** AiUsageReservationOut */
         AiUsageReservationOut: {
@@ -4531,7 +4531,7 @@ export interface components {
              * Estimated Cost
              * @description Estimated spend from recorded tokens at the configured prices.
              */
-            estimated_cost?: string | null;
+            estimated_cost: string | null;
         };
         /** AlertOut */
         AlertOut: {

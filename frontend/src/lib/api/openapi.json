@@ -14352,6 +14352,7 @@
           "model",
           "provider",
           "reasoning_effort",
+          "mechanical_effort",
           "unavailable"
         ],
         "title": "AiEffectiveModelOut",
@@ -14806,7 +14807,8 @@
           "items",
           "observed",
           "unknown_calls",
-          "prices"
+          "prices",
+          "model"
         ],
         "title": "AiUsagePreviewOut"
       },
@@ -15202,7 +15204,8 @@
           "used_tokens",
           "unknown_requests",
           "used_input_tokens",
-          "used_output_tokens"
+          "used_output_tokens",
+          "estimated_cost"
         ],
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."

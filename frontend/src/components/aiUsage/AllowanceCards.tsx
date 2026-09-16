@@ -1,5 +1,7 @@
 /** Shared presentation of AI allowances and observed usage for account, team and admin views. */
-import type { AiScope, AiUsageSummary, AiUsageTotals } from '@/lib/api/aiUsage';
+import type { AiScope, AiTokenPrices, AiUsageSummary, AiUsageTotals } from '@/lib/api/aiUsage';
+
+import { SPEND_CAVEAT, spendOf } from './spend';
 
 const SCOPE_LABELS: Record<AiScope, string> = {
   global: 'Site-wide',
@@ -96,13 +98,31 @@ export function AllowanceCard({ item }: { item: AiUsageSummary }) {
   );
 }
 
-export function ObservedTotals({ label, totals }: { label: string; totals: AiUsageTotals }) {
+export function ObservedTotals({
+  label,
+  totals,
+  prices,
+}: {
+  label: string;
+  totals: AiUsageTotals;
+  prices?: AiTokenPrices | undefined;
+}) {
+  const spend = prices ? spendOf(totals, prices) : null;
   return (
-    <p className="text-sm text-muted">
-      <span className="font-medium text-text">{label}:</span>{' '}
-      {totals.used_requests.toLocaleString()} requests, {totals.used_tokens.toLocaleString()} tokens
-      this month
-      {totals.unknown_requests > 0 ? `, ${totals.unknown_requests} with unconfirmed usage` : ''}.
-    </p>
+    <div className="text-sm text-muted">
+      <p>
+        <span className="font-medium text-text">{label}:</span>{' '}
+        {totals.used_requests.toLocaleString()} requests, {totals.used_tokens.toLocaleString()}{' '}
+        tokens this month ({totals.used_input_tokens.toLocaleString()} in,{' '}
+        {totals.used_output_tokens.toLocaleString()} out)
+        {totals.unknown_requests > 0 ? `, ${totals.unknown_requests} with unconfirmed usage` : ''}.
+      </p>
+      {spend ? (
+        <p className="mt-1">
+          <span className="font-medium text-text">Estimated spend: {spend}</span>{' '}
+          <span className="text-xs">{SPEND_CAVEAT}</span>
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -240,8 +240,18 @@ export function previewUsage(): AiUsagePreview {
       used_requests: 842,
       used_tokens: 612_400,
       unknown_requests: 2,
+      used_input_tokens: 92_400,
+      used_output_tokens: 520_000,
+      estimated_cost: '0.6425',
     },
     unknown_calls: 2,
+    prices: {
+      input_per_million: 0.2,
+      output_per_million: 1.2,
+      currency: 'USD',
+      configured: true,
+    },
+    model: null,
   };
 }
 

@@ -14,7 +14,8 @@ import { asApiError, describeError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
 
-import { AiPolicyForm } from './AiPolicyForm';
+import { AiPolicyDefaults } from './AiPolicyDefaults';
+import { AiPolicyForm, type AiPolicyPrefill } from './AiPolicyForm';
 import { AiPolicyOverrides } from './AiPolicyOverrides';
 import { AiUsagePreview } from './AiUsagePreview';
 import { policyLabel } from './aiUsagePresentation';
@@ -32,6 +33,7 @@ export function AiUsagePolicies({
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<AiPolicy | null>(null);
   const [overridesFor, setOverridesFor] = useState<AiPolicy | null>(null);
+  const [prefill, setPrefill] = useState<AiPolicyPrefill | null>(null);
 
   async function load() {
     setLoading(true);
@@ -63,6 +65,7 @@ export function AiUsagePolicies({
         ),
       );
       setEditing(null);
+      setPrefill(null);
       return true;
     } catch (caught) {
       setError(describeError(asApiError(caught)));
@@ -112,14 +115,26 @@ export function AiUsagePolicies({
           </Button>
         </Alert>
       ) : null}
+      <AiPolicyDefaults
+        onApplied={(created) =>
+          setPolicies((current) => [
+            ...current.filter((item) => !created.some((made) => made.id === item.id)),
+            ...created,
+          ])
+        }
+      />
       <AiPolicyForm
-        key={`policy-form:${editing?.id ?? 'new'}`}
+        key={`policy-form:${editing?.id ?? prefill?.targetId ?? 'new'}`}
         users={users}
         teams={teams}
         editing={editing}
+        prefill={prefill ?? undefined}
         busy={busy}
         onSave={save}
-        onCancel={() => setEditing(null)}
+        onCancel={() => {
+          setEditing(null);
+          setPrefill(null);
+        }}
         onInvalid={setError}
       />
       {loading ? <LoadingNote label="Loading allowance policies" /> : null}
@@ -200,7 +215,17 @@ export function AiUsagePolicies({
           label={policyLabel(overridesFor, users, teams)}
         />
       ) : null}
-      <AiUsagePreview users={users} teams={teams} />
+      <AiUsagePreview
+        users={users}
+        teams={teams}
+        onEditLimit={(scope, targetId) => {
+          const existing = active.find(
+            (item) => item.scope === scope && item.target_id === targetId,
+          );
+          setEditing(existing ?? null);
+          setPrefill(existing ? null : { scope, targetId });
+        }}
+      />
     </section>
   );
 }

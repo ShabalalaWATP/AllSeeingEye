@@ -11,10 +11,16 @@ import { parseLimit } from './aiUsagePresentation';
 const UNTARGETED: readonly AiScope[] = ['global', 'system'];
 
 /** Create or edit one policy. Mount with a key per edited policy to reset its fields. */
+export interface AiPolicyPrefill {
+  scope: 'user' | 'team';
+  targetId: string;
+}
+
 export function AiPolicyForm({
   users,
   teams,
   editing,
+  prefill,
   busy,
   onSave,
   onCancel,
@@ -23,13 +29,14 @@ export function AiPolicyForm({
   users: readonly User[];
   teams: readonly Team[];
   editing: AiPolicy | null;
+  prefill?: AiPolicyPrefill | undefined;
   busy: boolean;
   onSave: (input: AiPolicyInput) => Promise<boolean>;
   onCancel: () => void;
   onInvalid: (message: string) => void;
 }) {
-  const [scope, setScope] = useState<AiScope>(editing?.scope ?? 'global');
-  const [target, setTarget] = useState(editing?.target_id ?? '');
+  const [scope, setScope] = useState<AiScope>(editing?.scope ?? prefill?.scope ?? 'global');
+  const [target, setTarget] = useState(editing?.target_id ?? prefill?.targetId ?? '');
   const [period, setPeriod] = useState<AiPeriod>(editing?.period ?? 'month');
   const [requests, setRequests] = useState(
     editing?.request_limit == null ? '' : String(editing.request_limit),
