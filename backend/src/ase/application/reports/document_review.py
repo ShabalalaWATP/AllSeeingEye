@@ -16,7 +16,10 @@ def opening_review_notice(doc: DocumentBuilder, version: ReportVersion) -> None:
         doc.add(review_notice(version.status), BlockKind.WARNING)
         if version.status is ReportStatus.NEEDS_REVIEW:
             for reason in material_review_reasons(
-                version.assessment, version.citation_checks, version.challenge
+                version.assessment,
+                version.citation_checks,
+                version.challenge,
+                version.findings,
             ):
                 doc.add(reason, BlockKind.WARNING)
 

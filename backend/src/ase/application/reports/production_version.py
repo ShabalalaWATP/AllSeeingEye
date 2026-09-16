@@ -8,6 +8,7 @@ from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.reports.citation_checks import check_generated_report_citations
 from ase.application.reports.document import build_document
 from ase.application.reports.drafting import Draft
+from ase.application.reports.post_draft_checks import mechanical_quality_findings
 from ase.application.reports.post_draft_doctrine import check_analytical_prose
 from ase.application.reports.production_types import Job, Totals
 from ase.application.reports.progress import Progress, reached
@@ -85,7 +86,11 @@ async def build_version(
         {item.label: item.url for item in evidence},
         previous_exists=job.previous is not None or bool(job.followup_judgements),
     )
-    final_findings = (*final_validation.findings, *check_analytical_prose(body))
+    final_findings = (
+        *final_validation.findings,
+        *check_analytical_prose(body),
+        *mechanical_quality_findings(body, header, job.template, evidence),
+    )
     for finding in final_findings:
         if finding not in totals.findings:
             totals.findings.append(finding)
@@ -106,7 +111,9 @@ async def build_version(
     await reached(progress, ResearchStage.VALIDATING)
     assessment = build_report_assessment(body, evidence, totals.findings)
     citation_checks = check_generated_report_citations(body, evidence)
-    status = final_report_status(base_status, assessment, citation_checks, challenge)
+    status = final_report_status(
+        base_status, assessment, citation_checks, challenge, totals.findings
+    )
     research_context = build_research_context(evidence) if receipt else None
     version_id = job.version_id or uuid4()
     # This is the effective capture cutoff, which may follow the job's start time.
