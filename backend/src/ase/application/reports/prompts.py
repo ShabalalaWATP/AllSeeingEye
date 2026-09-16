@@ -12,6 +12,7 @@ from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_clusters import cluster_reason_text
 from ase.domain.evidence_matrix import contribution_for
 from ase.domain.languages import language_capability
 from ase.domain.llm import LlmMessage
@@ -21,6 +22,7 @@ from ase.domain.validation import Finding
 
 MAX_SUMMARY_CHARS = 600
 MAX_ECONOMIC_SUMMARY_CHARS = 2_000
+MAX_NAMED_CORROBORATION = 3
 
 
 def doctrine_preamble() -> str:
@@ -98,7 +100,28 @@ def evidence_block(item: EvidenceItem) -> str:
     )
     return (
         f"{item.label} [{item.grade}, {item.source_name}, {item.category}{where}, {when}]"
-        f"{flags}: {item.title}.{body}{translation}{provenance}"
+        f"{flags}: {item.title}.{body}{translation}{provenance}{corroboration_line(item)}"
+    )
+
+
+def corroboration_line(item: EvidenceItem) -> str:
+    """Name the folded copies without letting repetition read as independent agreement."""
+    if not item.corroboration:
+        return ""
+    names = tuple(dict.fromkeys(row.source_name for row in item.corroboration))
+    listed = ", ".join(names[:MAX_NAMED_CORROBORATION])
+    if len(names) > MAX_NAMED_CORROBORATION:
+        listed += ", and others"
+    why = cluster_reason_text(
+        tuple(dict.fromkeys(reason for row in item.corroboration for reason in row.reasons))
+    )
+    return (
+        f" Also carried by {len(item.corroboration)} further retrieved item(s) from "
+        f"{len(names)} source(s), including {listed}"
+        + (f" (folded on {why})" if why else "")
+        + ". These are near-identical or republished copies folded into this item; "
+        "repetition of the same text is circulation, not independent corroboration, "
+        "and only this label may be cited."
     )
 
 

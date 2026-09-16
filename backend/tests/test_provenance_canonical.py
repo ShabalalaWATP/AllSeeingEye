@@ -13,6 +13,8 @@ from ase.application.reports.claim_export_integrity import export_content_digest
 from ase.application.reports.comparison_manifest import comparison_digest, comparison_json
 from ase.domain.annotation_comparison import COMPARISON_METHOD, AnnotationComparison
 from ase.domain.canonical_provenance import canonical_snapshot
+from ase.domain.evidence import CorroborationMember
+from ase.domain.evidence_records import evidence_from_list, evidence_to_list
 from ase.domain.research_records import research_from_dict
 from ase.domain.sec_filing_time import filing_source_date
 from ase.domain.source_dates import resolve_source_date
@@ -145,3 +147,30 @@ def test_historical_single_country_digest_survives_redundant_plural_scope(monkey
     assert plural["country_iso"] is None and plural["country_isos"] == ("UA", "RU")
     metadata = {"country_iso": "UA", "country_isos": ("UA",)}
     assert canonical_snapshot(metadata) == metadata
+
+
+def test_absent_corroboration_keeps_historical_evidence_bytes(monkeypatch):
+    _, version = records(monkeypatch)
+    item = version.evidence[0]
+    assert item.corroboration == ()
+    assert "corroboration" not in canonical_snapshot(item)
+    assert "corroboration" not in evidence_to_list((item,))[0]
+    folded = replace(
+        item,
+        corroboration=(
+            CorroborationMember(
+                event_id="e-2",
+                source_id="paper",
+                source_name="The Daily Paper",
+                independence_key="paper-group",
+                title="Republished headline",
+                url="https://paper.example/1",
+                published_at=item.published_at,
+                reasons=("same_title",),
+            ),
+        ),
+    )
+    row = evidence_to_list((folded,))[0]
+    assert row["corroboration"][0]["source_name"] == "The Daily Paper"
+    assert evidence_from_list([row])[0] == folded
+    assert canonical_snapshot(folded)["corroboration"][0]["event_id"] == "e-2"

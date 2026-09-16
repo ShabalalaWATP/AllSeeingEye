@@ -28,4 +28,5 @@ def with_reused_evidence(selected: Selection, reused: tuple[EvidenceItem, ...]) 
         tuple(replace(row, label=f"E{index}") for index, row in enumerate(rows.values(), 1)),
         selected.flagged,
         max(selected.considered, len(rows)),
+        selected.merged,
     )

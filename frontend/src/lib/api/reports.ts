@@ -86,8 +86,21 @@ export const reportBodySchema = z.object({
 });
 export type ReportBody = z.infer<typeof reportBodySchema>;
 
+export const corroborationMemberSchema = z.object({
+  event_id: z.string(),
+  source_id: z.string(),
+  source_name: z.string(),
+  independence_key: z.string(),
+  title: z.string(),
+  url: z.string().nullable().default(null),
+  published_at: z.string().nullable().default(null),
+  reasons: z.array(z.string()).default([]),
+});
+export type CorroborationMember = z.infer<typeof corroborationMemberSchema>;
+
 export const evidenceItemSchema = z.object({
   transformations: z.array(textTransformationSchema).default([]),
+  corroboration: z.array(corroborationMemberSchema).default([]),
   source_dates: z.array(sourceDateSchema).default([]),
   geometry: evidenceGeometrySchema.nullable().optional(),
   observation: observationSchema.nullable().optional(),

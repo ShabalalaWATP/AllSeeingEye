@@ -5,11 +5,12 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any
 
-from ase.domain.evidence import EvidenceItem
+from ase.domain.evidence import CorroborationMember, EvidenceItem
 from ase.domain.evidence_attributes import (
     evidence_attributes_from_list,
     evidence_attributes_to_list,
 )
+from ase.domain.evidence_clusters import MAX_CORROBORATION_MEMBERS
 from ase.domain.evidence_geometry import geometry_from_dict, geometry_to_dict
 from ase.domain.observation import observation_from_dict, observation_to_dict
 from ase.domain.project import project_from_dict, project_to_dict
@@ -38,6 +39,9 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
             data["transformations"] = [provenance_to_dict(row) for row in item.transformations]
         if item.source_dates:
             data["source_dates"] = [provenance_to_dict(row) for row in item.source_dates]
+        data.pop("corroboration")
+        if item.corroboration:
+            data["corroboration"] = [_member_to_dict(row) for row in item.corroboration]
         data.pop("geometry")
         data.pop("observation")
         data.pop("project")
@@ -49,6 +53,37 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
             data["observation"] = observation_to_dict(item.observation)
         rows.append(data)
     return rows
+
+
+def _member_to_dict(member: CorroborationMember) -> dict[str, Any]:
+    data = asdict(member)
+    data["published_at"] = member.published_at.isoformat() if member.published_at else None
+    data["reasons"] = list(member.reasons)
+    return data
+
+
+def corroboration_from_list(rows: Any) -> tuple[CorroborationMember, ...]:
+    if rows in (None, ()):
+        return ()
+    if not isinstance(rows, list | tuple) or len(rows) > MAX_CORROBORATION_MEMBERS:
+        raise ValueError("Invalid frozen corroboration members")
+    return tuple(
+        CorroborationMember(
+            event_id=str(row["event_id"]),
+            source_id=str(row["source_id"]),
+            source_name=str(row["source_name"]),
+            independence_key=str(row.get("independence_key", "")),
+            title=str(row["title"]),
+            url=row.get("url"),
+            published_at=(
+                datetime.fromisoformat(str(row["published_at"]))
+                if row.get("published_at")
+                else None
+            ),
+            reasons=tuple(str(reason) for reason in row.get("reasons", ())),
+        )
+        for row in rows
+    )
 
 
 def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...]:
@@ -92,6 +127,7 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             project=project_from_dict(row.get("project")),
             transformations=transformations_from_list(row.get("transformations", ())),
             source_dates=dates_from_list(row.get("source_dates", ())),
+            corroboration=corroboration_from_list(row.get("corroboration", ())),
         )
         for row in rows
     )

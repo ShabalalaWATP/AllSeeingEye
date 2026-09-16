@@ -15,7 +15,7 @@ from ase.domain.research_records import ResearchReceipt
 
 # Fields added after historical exports were hashed; absent values keep the old bytes.
 _ADDED_DEFAULTS: tuple[tuple[type, tuple[tuple[str, Any], ...]], ...] = (
-    (EvidenceItem, (("transformations", ()), ("source_dates", ()))),
+    (EvidenceItem, (("transformations", ()), ("source_dates", ()), ("corroboration", ()))),
     (
         QueryVariant,
         (

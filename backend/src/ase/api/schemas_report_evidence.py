@@ -18,6 +18,21 @@ class EvidenceAttributeOut(BaseModel):
     value: StrictStr | StrictInt | StrictFloat | StrictBool | None
 
 
+class CorroborationMemberOut(BaseModel):
+    """A near-identical retrieved copy folded into one item, kept for provenance."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    event_id: str
+    source_id: str
+    source_name: str
+    independence_key: str
+    title: str
+    url: str | None = None
+    published_at: datetime | None = None
+    reasons: list[str] = Field(default_factory=list)
+
+
 class ReportEvidenceOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -55,3 +70,4 @@ class ReportEvidenceOut(BaseModel):
     project: ProjectOut | None = None
     transformations: list[TextTransformation] = Field(default_factory=list)
     source_dates: list[SourceDate] = Field(default_factory=list)
+    corroboration: list[CorroborationMemberOut] = Field(default_factory=list)

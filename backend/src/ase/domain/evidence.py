@@ -56,6 +56,24 @@ def injection_flags(*texts: str | None) -> tuple[str, ...]:
 
 
 @dataclass(frozen=True, slots=True)
+class CorroborationMember:
+    """A near-identical item folded into one representative before the prompt was built.
+
+    The member stays in the frozen record so provenance keeps every retrieved copy.
+    Repetition of the same text across outlets is not independent corroboration.
+    """
+
+    event_id: str
+    source_id: str
+    source_name: str
+    independence_key: str
+    title: str
+    url: str | None = None
+    published_at: datetime | None = None
+    reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class EvidenceItem:
     label: str
     event_id: str
@@ -91,6 +109,7 @@ class EvidenceItem:
     project: ProjectMetadata | None = None
     transformations: tuple[TextTransformation, ...] = ()
     source_dates: tuple[SourceDate, ...] = ()
+    corroboration: tuple[CorroborationMember, ...] = ()
 
     def __post_init__(self) -> None:
         validate_provenance(self.transformations, self.source_dates)

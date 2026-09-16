@@ -8,15 +8,16 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.reports.selection_choice import choose_items, diversify, term_presence
 from ase.application.reports.subscription_updates import content_signature
 from ase.application.reports.templates import EvidenceStrategy
 from ase.domain.country_subjects import matches_country_subject
 from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
 from ase.domain.evidence import EvidenceItem, injection_flags
+from ase.domain.evidence_clusters import duplicate_clusters
 from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
 from ase.domain.grading import SourceProfile
 from ase.domain.project import project_to_dict
-from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.trackers import Hazard, hazard_of
 
 CREDIBILITY_WEIGHT = {
@@ -43,6 +44,7 @@ class Selection:
     items: tuple[EvidenceItem, ...]
     flagged: int
     considered: int
+    merged: int = 0
 
 
 def score(
@@ -71,10 +73,7 @@ def score(
 
 def term_matches(event: Event, terms: Sequence[str]) -> int:
     """Match original and translated titles without replacing the source material."""
-    if not terms:
-        return 0
-    text = f"{event.title} {event.title_en or ''} {event.summary or ''}".lower()
-    return sum(1 for term in terms if term in text)
+    return term_presence(event, terms)
 
 
 def _pool(
@@ -131,50 +130,6 @@ def _pool(
             if matches_country_subject(event, selected_countries):
                 seen.setdefault(event.id, event)
     return list(seen.values())[:MAX_POOL]
-
-
-def _organisation(event: Event, profiles: Mapping[str, SourceProfile]) -> tuple[str, str]:
-    profile = profiles.get(event.source_id)
-    if profile is not None and profile.independence_key:
-        return ("organisation", profile.independence_key)
-    return ("connector", event.source_id)
-
-
-def _diversify(
-    ranked: Sequence[Event], profiles: Mapping[str, SourceProfile], terms: Sequence[str]
-) -> list[Event]:
-    """Prefer varied reporting, then backfill without discarding possible counterevidence.
-
-    Matching evidence stays ahead of unmatched context. Within either tier, the first
-    pass takes one item per declared organisation and defers equal titles or hashes.
-    This is a bounded retrieval heuristic, not proof of independent sourcing. Deferred
-    items remain available when the pool is thin, including similar opposing reports.
-    """
-    result: list[Event] = []
-    for matching in (True, False):
-        organisations: set[tuple[str, str]] = set()
-        titles: set[str] = set()
-        hashes: set[str] = set()
-        deferred: list[Event] = []
-        for event in ranked:
-            if bool(term_matches(event, terms)) != matching:
-                continue
-            organisation = _organisation(event, profiles)
-            title = " ".join((event.title_en or event.title).casefold().split())
-            copied = (bool(title) and title in titles) or (
-                bool(event.content_hash) and event.content_hash in hashes
-            )
-            if organisation in organisations or copied:
-                deferred.append(event)
-                continue
-            organisations.add(organisation)
-            if title:
-                titles.add(title)
-            if event.content_hash:
-                hashes.add(event.content_hash)
-            result.append(event)
-        result.extend(deferred)
-    return result
 
 
 def select_evidence(
@@ -265,7 +220,7 @@ def select_evidence(
     buckets: list[list[Event]] = [[] for _ in range(len(lowered_groups) + 1)]
     for event in ordered:
         buckets[group_index[event.id]].append(event)
-    ranked = [event for bucket in buckets for event in _diversify(bucket, profiles, lowered)]
+    ranked = [event for bucket in buckets for event in diversify(bucket, profiles, lowered)]
     if seen_content_signatures:
         # Preserve relevance ahead of novelty, and quality/diversity within each group.
         # Repeated items may still supply essential context after new relevant evidence.
@@ -275,29 +230,18 @@ def select_evidence(
                 content_signature(event) in seen_content_signatures,
             )
         )
-    per_organisation: dict[tuple[str, str], int] = {}
-    chosen: list[EvidenceItem] = []
-    for event in ranked:
-        if len(chosen) >= strategy.max_items:
-            break
-        organisation = _organisation(event, profiles)
-        if per_organisation.get(organisation, 0) >= strategy.per_source_cap:
-            continue
-        profile = profiles.get(event.source_id)
-        per_organisation[organisation] = per_organisation.get(organisation, 0) + 1
-        chosen.append(
-            EvidenceItem.from_event(
-                f"E{len(chosen) + 1}",
-                event,
-                now,
-                source_name=profile.name if profile else event.source_id,
-                independence_key=profile.independence_key if profile else "",
-                instrument=profile.instrument if profile else False,
-                source_rating=profile.rating if profile else unassessed_source_rating(),
-                flags=sorted(
-                    (profile.flags if profile else frozenset())
-                    | event.tags & {"state_controlled", "interested_party"}
-                ),
-            )
-        )
-    return Selection(items=tuple(chosen), flagged=len(pool) - len(safe), considered=len(pool))
+    clusters, cluster_reasons = duplicate_clusters(safe)
+    chosen = choose_items(
+        ranked,
+        profiles,
+        strategy,
+        now=now,
+        clusters=clusters,
+        cluster_reasons=cluster_reasons,
+    )
+    return Selection(
+        items=chosen.items,
+        flagged=len(pool) - len(safe),
+        considered=len(pool),
+        merged=chosen.merged,
+    )

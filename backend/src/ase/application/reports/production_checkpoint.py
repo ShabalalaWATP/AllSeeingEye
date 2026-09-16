@@ -63,6 +63,8 @@ def collection_to_dict(snapshot: ProductionSnapshot) -> dict[str, Any]:
                 "items": evidence_to_list(snapshot.selection.items),
                 "flagged": snapshot.selection.flagged,
                 "considered": snapshot.selection.considered,
+                # Absent on checkpoints written before duplicate folding existed.
+                **({"merged": snapshot.selection.merged} if snapshot.selection.merged else {}),
             },
             "direction": direction_to_dict(snapshot.direction) if snapshot.direction else None,
             "receipt": research_to_dict(snapshot.receipt) if snapshot.receipt else None,
@@ -89,15 +91,21 @@ def _collection_from_dict(data: Any) -> ProductionSnapshot:
     if type(value["schema_version"]) is not int or value["schema_version"] != 1:
         raise ValueError("Unsupported frozen collection schema")
     selected = value["selection"]
-    if type(selected) is not dict or set(selected) != {"items", "flagged", "considered"}:
+    if type(selected) is not dict or not {"items", "flagged", "considered"} <= set(selected) <= {
+        "items",
+        "flagged",
+        "considered",
+        "merged",
+    }:
         raise ValueError("Invalid frozen evidence selection")
     items = evidence_from_json(selected["items"])
     considered = count(selected["considered"], 100_000)
     flagged = count(selected["flagged"], considered)
+    merged = count(selected.get("merged", 0), considered)
     if considered < len(items):
         raise ValueError("Invalid frozen evidence selection counts")
     return ProductionSnapshot(
-        Selection(items, flagged, considered),
+        Selection(items, flagged, considered, merged),
         direction_from_json(value["direction"]),
         receipt_from_json(value["receipt"]),
         query_from_dict(value["query"]),
