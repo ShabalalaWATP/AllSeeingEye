@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -12,8 +13,16 @@ import { CatalogueSummary } from './CatalogueSummary';
 import { PlatformConnections } from './PlatformConnections';
 import { SourceAssetRow } from './SourceAssetRow';
 import { SourceCatalogueRow } from './SourceCatalogueRow';
+import { FamilyDestinations } from './FamilyDestinations';
 import { FAMILY_LABELS, catalogueEntries, type CatalogueEntry } from './catalogueEntries';
-import { EMPTY_FILTERS, filterEntries, languageName, nationName } from './catalogueFilters';
+import {
+  EMPTY_FILTERS,
+  filterEntries,
+  filterParams,
+  languageName,
+  nationName,
+  readFilters,
+} from './catalogueFilters';
 import type { CatalogueFilters } from './catalogueFilters';
 
 const ASSET_SECTIONS = [
@@ -55,9 +64,14 @@ function Section({
 export default function SourcesPage() {
   const { data, error, loading, reload } = useScopedResource(fetchSourceCatalogue);
   const platform = useScopedResource(fetchPlatformConnections);
-  const [filters, setFilters] = useState<CatalogueFilters>(EMPTY_FILTERS);
-  const change = (key: keyof CatalogueFilters, value: string) =>
-    setFilters((old) => ({ ...old, [key]: value }));
+  const [params, setParams] = useSearchParams();
+  const filters = readFilters(params);
+  const setFilters = (next: CatalogueFilters) => {
+    setParams(filterParams(next), { replace: true });
+  };
+  const change = (key: keyof CatalogueFilters, value: string) => {
+    setFilters({ ...filters, [key]: value });
+  };
   const sources = useMemo(() => data?.items ?? [], [data]);
   const entries = useMemo(() => catalogueEntries(sources, data?.assets ?? []), [sources, data]);
   const matches = useMemo(() => filterEntries(entries, filters), [entries, filters]);
@@ -120,6 +134,7 @@ export default function SourcesPage() {
             onFamily={(family) => focus({ family })}
           />
         )}
+        <FamilyDestinations family={filters.family} />
         {data && <AttentionList entries={entries} />}
         <PlatformConnections
           data={platform.data}

@@ -43,6 +43,41 @@ export const EMPTY_FILTERS: CatalogueFilters = {
   connection: '',
 };
 
+/** Query parameter names, so a filtered catalogue can be linked to and bookmarked. */
+const PARAMS: Record<keyof CatalogueFilters, string> = {
+  query: 'q',
+  family: 'family',
+  topic: 'topic',
+  nation: 'nation',
+  language: 'language',
+  access: 'access',
+  connection: 'state',
+};
+
+const FILTER_KEYS = Object.keys(PARAMS) as (keyof CatalogueFilters)[];
+
+/** Values are hints for the filter controls only; anything unknown simply matches nothing. */
+export function readFilters(params: URLSearchParams): CatalogueFilters {
+  const filters = { ...EMPTY_FILTERS };
+  for (const key of FILTER_KEYS) filters[key] = (params.get(PARAMS[key]) ?? '').slice(0, 120);
+  return filters;
+}
+
+export function filterParams(filters: CatalogueFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const key of FILTER_KEYS) {
+    const value = filters[key].slice(0, 120);
+    if (value) params.set(PARAMS[key], value);
+  }
+  return params;
+}
+
+export function catalogueHref(filters: Partial<CatalogueFilters>): string {
+  const params = filterParams({ ...EMPTY_FILTERS, ...filters });
+  const query = params.toString();
+  return query ? `/sources?${query}` : '/sources';
+}
+
 function sourceText(source: CatalogueSource) {
   return [
     source.organisation,
