@@ -17,11 +17,14 @@ function Citation({ citation }: { citation: UkraineDigestCitation }) {
   const dated = citation.dated_on ? `, ${formatDay(citation.dated_on)}` : '';
   const label = `${citation.label}${dated}`;
   return (
-    <li className="flex max-w-full items-baseline gap-1.5 rounded border border-line bg-surface px-2 py-1">
-      <span className="font-mono text-[10px] text-muted" aria-hidden="true">
+    <li className="flex min-w-0 max-w-full items-baseline gap-1.5 rounded border border-line bg-surface px-2 py-1 sm:max-w-[22rem]">
+      <span className="shrink-0 font-mono text-[10px] text-muted" aria-hidden="true">
         {citation.id}
       </span>
-      <span className="truncate text-[11px] text-muted" title={`${citation.source_id}: ${label}`}>
+      <span
+        className="min-w-0 truncate text-[11px] text-muted"
+        title={`${citation.source_id}: ${label}`}
+      >
         {citation.url ? <SourceLink url={citation.url}>{label}</SourceLink> : label}
       </span>
     </li>
