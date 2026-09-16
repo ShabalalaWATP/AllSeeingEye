@@ -131,7 +131,7 @@ Headline changes discovered during research: UCDP now requires an access token; 
 
 | Source | What | Auth | Limits | Cadence | Geo | Licence note | Reliability | Phase | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| Bluesky public AppView | `searchPosts`, author feeds, custom feeds | None | 3,000 requests per 5 min per IP | Real time | No | Bluesky terms; users own content | E (named OSINT accounts may be raised) | Deferred | Repeated 403 responses from this host on 5 September 2026. No connector is enabled |
+| Bluesky public AppView | `app.bsky.feed.getAuthorFeed` for 80 reviewed public accounts | None | One request per account; ten accounts every fifteen minutes, so forty requests an hour and a full sweep every two hours; shared one-second host pacer | Post publication | No coordinates supplied by this connector | Bluesky public API; `robots.txt` allows crawling it and asks for backoff on HTTP 429 | E, credibility 6 until graded; official and state-aligned accounts are tagged | Built | Accounts, topics and reasons are packaged in `backend/src/ase/resources/bluesky_accounts.json`. `app.bsky.feed.searchPosts` still answers 403 unauthenticated (rechecked 16 September 2026), so author feeds are the whole design. Reposts and other people's replies are skipped; bounded excerpts, handles, times and post links only, no media and no link following |
 | Bluesky Jetstream | Full-network JSON firehose filtered by collection | None | Up to 100 collections and 10,000 DIDs per subscription | Real time | No | As above | E | Could | Only worth it with server-side keyword filtering |
 | Mastodon | Hashtag timelines per configured instance | None unless the instance disables public preview | 40 items per hashtag request; local polling every ten minutes | Feed publication | No coordinates supplied by this connector | Per-instance rules | E, credibility 6 until graded | 5, built | Instances and tags are packaged in `backend/src/ase/resources/social_watch.json`; HTML is reduced to text |
 | Reddit RSS | Subreddit Atom listings | None | Upstream may return 429; polls every 15 or 30 minutes by source | Feed publication | No | Reddit terms; descriptive User-Agent | E, credibility 6 until graded | 5, built | `worldnews`, `geopolitics` and `UkrainianConflict`; no OAuth or article scraping |
@@ -258,7 +258,7 @@ Every row was fetched from the development host with the project's User-Agent on
 | UN press | `press.un.org/en/rss.xml` | 200 | Already seeded |
 | CFR Global Conflict Tracker | RSS | 404 | Reference only, link out |
 | Google News RSS | keyword search with `when:1d`, Ukrainian edition | 200 | Keyword collection for PIRs and foreign-language headlines |
-| Bluesky public AppView | `searchPosts` with and without the User-Agent | 403 | Blocked from this host; re-checked at the start of Phase 5 on 5 September, still 403, so Bluesky stays out until a later probe answers |
+| Bluesky public AppView | `searchPosts`; `getAuthorFeed`, `getProfiles` and `searchActors` | 403 for `searchPosts`; 200 for the others | Rechecked on 16 September 2026 through the application's own feed client: `searchPosts` is still refused without a session, while public author feeds, profiles and actor search answer 200. All 80 curated handles resolved and returned readable original posts that day |
 | Mastodon | `mastodon.social` hashtag timeline | 200 | Social watchlists |
 | Reddit | `r/worldnews/new/.rss` | 200 with the project's User-Agent | Social watchlists without OAuth |
 | YouTube | channel RSS | 200 | Channel watchlists |
@@ -390,3 +390,39 @@ and registry scope follows [Verisign's RDAP help](https://www.verisign.com/news-
 These primary contracts describe available services, not successful live probes
 from this installation. Credential requests use exact HTTPS origins, no redirects
 and no conditional cache, preserving the shared DNS-pinned public-address guard.
+
+## R. Bluesky curated-account collection, 16 September 2026
+
+The `bluesky_curated` connector reads `app.bsky.feed.getAuthorFeed` on the Bluesky
+public AppView for a reviewed list of 80 public accounts, packaged as
+`backend/src/ase/resources/bluesky_accounts.json`. Each entry records the handle, who
+runs it, its topic, its viewpoint and a one-line reason it is worth reading. There is no
+login, token or cookie. `app.bsky.feed.searchPosts` was rechecked on 16 September 2026
+and still answers 403 without a session, so the design rests on author feeds only. Every
+handle was resolved through the application's own feed client on the same day and
+returned readable original posts; the results are recorded in that review, and anything
+dead, private or silent was dropped rather than carried.
+
+Twenty topics are covered: Ukraine and Russia, China and Taiwan, the wider Indo-Pacific,
+the Middle East, Korea, South Asia, Africa, Latin America, finance and markets, cyber and
+threat intelligence, drones and uncrewed systems, defence analysis, security policy,
+governments and leaders, maritime and aviation tracking, space, energy, humanitarian
+response, disinformation research and general world news.
+
+Polling reads ten accounts every fifteen minutes and rotates through the registry, so the
+app makes forty requests an hour against `public.api.bsky.app` and completes a full sweep
+every two hours. Those requests share the per-host pacer with a one-second minimum gap,
+and the scheduler's existing HTTP 429 backoff applies. Posts are collected as a bounded
+excerpt plus the author's handle, display name, time and public post link. Reposts and
+replies outside the author's own thread are skipped, media is counted but never
+downloaded, and no embedded link is followed. Every post sits at reliability E and
+credibility 6; official and state-aligned accounts carry the same `official_issuer` and
+`state_aligned` tags the news feeds use, so the interface marks their viewpoint.
+
+Research runs see one aggregated route, `research_social_bluesky`, not one provider per
+account: the catalogue bound in `domain/research_capacity.py` stays intact. An admitted
+collection task selects at most three curated accounts from the supplied phrases, reads
+those author feeds, matches phrases locally inside the requested interval and returns a
+single coverage receipt naming those limits. That bounded three-request fan-out is the
+one place this route differs from the one-request providers, and it is stated in the
+receipt, the capability constraints and the source catalogue.
