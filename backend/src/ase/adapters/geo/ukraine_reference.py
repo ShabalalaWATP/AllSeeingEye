@@ -118,6 +118,7 @@ def parse_catalogue(raw: dict[str, Any]) -> ReferenceCatalogue:
                 figure_id=_optional(item.get("figure_id"), 60),
                 strength=_optional(item.get("strength"), 400),
                 wikidata_id=_qid(item.get("wikidata_id")),
+                image_id=_image_id(item.get("image_id")),
                 as_of=_date(item.get("as_of")),
                 links=_links(item.get("links") or []),
             )

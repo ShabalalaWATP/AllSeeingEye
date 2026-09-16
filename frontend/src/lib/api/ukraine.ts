@@ -235,6 +235,7 @@ export const ukraineReferenceSchema: z.ZodType<UkraineReference> = z.object({
         figure_id: z.string().max(60).nullable(),
         strength: z.string().max(400).nullable(),
         wikidata_id: qidSchema,
+        image_id: imageIdSchema,
         as_of: z.string(),
         links: z.array(linkSchema).max(8),
       }),

@@ -76,6 +76,7 @@ class ForceNodeOut(BaseModel):
     figure_id: str | None
     strength: str | None
     wikidata_id: str | None
+    image_id: str | None
     as_of: date
     links: list[LinkOut]
 
@@ -91,6 +92,7 @@ class ForceNodeOut(BaseModel):
             figure_id=node.figure_id,
             strength=node.strength,
             wikidata_id=node.wikidata_id,
+            image_id=node.image_id,
             as_of=node.as_of,
             links=[LinkOut(label=link.label, url=link.url) for link in node.links],
         )

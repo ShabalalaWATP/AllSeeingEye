@@ -7714,6 +7714,8 @@ export interface components {
             strength: string | null;
             /** Wikidata Id */
             wikidata_id: string | null;
+            /** Image Id */
+            image_id: string | null;
             /**
              * As Of
              * Format: date
