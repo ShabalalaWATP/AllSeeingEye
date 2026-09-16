@@ -4863,3 +4863,37 @@ Avatars are decoded defensively and re-encoded without metadata, directory field
 individually visible, temporary allowance overrides exist, and the team Overview is backed by a
 bounded dashboard endpoint. Migrations `0052` and `0053` add board read cursors and avatars.
 Feature switches, PostgreSQL migration runs and authenticated browser journeys remain open.
+
+On 16 September 2026 five features landed together on the Economy and Ukraine pages, each
+built in its own worktree and merged one at a time. The Economy page gained plain-English
+explainers: one bounded model call per data refresh writes a world summary and a short
+piece for each nation from the figures already on the page, every number is checked back
+against those figures before anything is stored, and the call is charged to the system
+budget so a reader cannot run up spend by reloading. Its news panel was the weaker half:
+nine general business feeds had led a two-day window with banned app advertising, aircraft
+window engineering and first-week-at-work advice. Twenty-six verified official and
+publisher feeds replaced them, and `domain/economy_relevance.py` now judges each headline
+with readable rules and no model call, so an excluded story can be argued with. The panel
+reports how many headlines it judged and why each survivor was kept.
+
+The Ukraine page gained a fortnightly digest of battlefield and political change, drawn
+only from sources already collected and citing them per claim, and a three.js journey
+through the war with the missing events added (Maidan, the little green men, Crimea,
+Bayraktar, HIMARS, Storm Shadow, the 2023 offensive, the stalemate and the aid stall). The
+force lists became organisation charts for both sides, with commanders, strengths and
+their dates, and the equipment reference gained the counter-battery and surveillance
+radars, electronic warfare, engineering and optics entries it had been missing. WarSpotting
+was enabled after its published API terms were read: the adapter had been asking two dated
+endpoints that both answer with the same latest list, so every loss arrived twice, and a
+test had been asserting that duplication as correct.
+
+Merging exposed what focused test runs miss. Every feed also becomes a research provider,
+and each provider needs a reviewed allocation profile, so seventeen new economic feeds
+stopped research composition from building at all; the catalogue bound of 128 providers
+was reached at the same time and was raised to 160, since it bounds the catalogue rather
+than a single run. Several tests pinned those numbers as literals and now derive them from
+the constants. A force chart also called `scrollIntoView` unguarded, which tore the page
+down through the error boundary wherever that API is absent. Final state: backend 8,467
+tests at 94 percent coverage, frontend 2,685 tests at 90.11 percent branch coverage, with
+three economy and schedule tests that time out only under parallel load and pass alone.
+
