@@ -140,3 +140,16 @@ def test_settings_expose_the_configured_policy_and_reject_nonsense() -> None:
     ).reasoning_effort_policy.active
     with pytest.raises(ValueError, match="reasoning effort"):
         Settings(env="test", ai_mechanical_reasoning_effort="turbo")
+
+
+def test_the_container_routes_every_provider_call_through_the_cap(container) -> None:
+    gateway = container.llm
+    assert isinstance(gateway, MechanicalEffortGateway)
+    assert gateway.policy.effort is ReasoningEffort.MEDIUM
+    # The same object serves reports, feed translation and administrator tests.
+    assert gateway.apply(request("report", ReasoningEffort.MAX)).reasoning_effort is (
+        ReasoningEffort.MAX
+    )
+    assert gateway.apply(request("connection_test", ReasoningEffort.MAX)).reasoning_effort is (
+        ReasoningEffort.MEDIUM
+    )
