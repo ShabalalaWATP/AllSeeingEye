@@ -74,13 +74,33 @@
   ],
   "events": [
     {
+      "id": "maidan",
+      "phase_id": "background",
+      "on": "2014-02-22",
+      "title": "The Maidan revolution",
+      "text": "Three months of protest on Kyiv's Independence Square, begun when Viktor Yanukovych refused to sign an association agreement with the European Union, ended with shootings in the city centre and the president's flight to Russia. Parliament voted him out of office on 22 February 2014. Moscow called the change an armed coup and used it to justify what followed.",
+      "theme": "diplomacy",
+      "search": "Revolution of Dignity",
+      "links": []
+    },
+    {
       "id": "crimea-2014",
       "phase_id": "background",
       "on": "2014-02-27",
       "title": "Russia seizes Crimea",
-      "text": "Unmarked Russian troops took control of the Crimean parliament and the peninsula within days of the Maidan revolution; a staged referendum and annexation followed in March. The seizure was the opening of the Russo-Ukrainian war.",
+      "text": "Unmarked Russian troops, the little green men, took control of the Crimean parliament and then the peninsula within days of the Maidan revolution. A staged referendum and annexation followed in March. The seizure was the opening of the Russo-Ukrainian war.",
       "theme": "ground",
       "search": "Annexation of Crimea by the Russian Federation",
+      "links": []
+    },
+    {
+      "id": "crimea-annexation",
+      "phase_id": "background",
+      "on": "2014-03-18",
+      "title": "Crimea annexed after a staged referendum",
+      "text": "A referendum held on 16 March under Russian military occupation reported an overwhelming vote to join Russia. Two days later Vladimir Putin signed a treaty of accession in Moscow. Ukraine, the United Nations General Assembly and most member states refused to recognise the annexation, and sanctions on Russia began.",
+      "theme": "diplomacy",
+      "search": "2014 Crimean status referendum",
       "links": []
     },
     {
@@ -121,6 +141,16 @@
       "text": "Putin announced a 'special military operation' and missiles struck cities across Ukraine as columns crossed from Belarus, Russia and Crimea. Airborne troops seized Hostomel airfield near Kyiv and were thrown back within a day.",
       "theme": "ground",
       "search": "Russian invasion of Ukraine",
+      "links": []
+    },
+    {
+      "id": "bayraktar",
+      "phase_id": "invasion",
+      "on": "2022-03-01",
+      "title": "Bayraktar TB2 drones strike the columns",
+      "text": "Ukraine's Turkish-built TB2 drones struck vehicle columns, supply lorries and air defence vehicles in the opening weeks, and the general staff published the footage. The slow, medium-altitude drone worked while Russian air defence was thin and disorganised; its usefulness fell away later in 2022 as that defence thickened.",
+      "theme": "air",
+      "search": "Bayraktar TB2",
       "links": []
     },
     {
@@ -234,6 +264,16 @@
       "links": []
     },
     {
+      "id": "storm-shadow",
+      "phase_id": "bakhmut",
+      "on": "2023-05-11",
+      "title": "Storm Shadow cruise missiles arrive",
+      "text": "The United Kingdom confirmed it had supplied Storm Shadow air-launched cruise missiles, the first Western weapon able to reach several hundred kilometres behind the front. France followed with the near-identical SCALP. Strikes on headquarters, depots and bridges in occupied territory and in Crimea began within days.",
+      "theme": "air",
+      "search": "Storm Shadow",
+      "links": []
+    },
+    {
       "id": "bakhmut-falls",
       "phase_id": "bakhmut",
       "on": "2023-05-20",
@@ -295,15 +335,24 @@
       "links": []
     },
     {
-      "id": "avdiivka-falls",
+      "id": "zaluzhnyi-stalemate",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-11-01",
+      "title": "The commander-in-chief calls it a stalemate",
+      "text": "Valerii Zaluzhnyi told The Economist that the war had reached a positional stalemate and that no deep breakthrough was likely without new technology to answer drones, mines and electronic warfare. Zelenskyy's office publicly disagreed with the assessment, and the disagreement ran on until Zaluzhnyi was replaced in February 2024.",
+      "theme": "mobilisation",
+      "search": "Valerii Zaluzhnyi",
+      "links": []
+    },
+    {
+      "id": "us-aid-stalls",
       "phase_id": "avdiivka-2024",
-      "on": "2024-02-17",
-      "title": "Avdiivka falls",
-      "text": "After four months of assault under glide bombs and with Ukrainian ammunition rationed while US aid was blocked in Congress, Ukraine withdrew from the fortress town it had held since 2014.",
-      "theme": "ground",
-      "search": "battle of Avdiivka",
-      "links": [],
-      "wikidata_id": "Q111383245"
+      "on": "2023-12-06",
+      "title": "US support stalls in Congress",
+      "text": "The White House told Congress that money for Ukraine had run out, and a supplemental package was then held for six months in a dispute over American border policy. Shell rationing at the front through the winter and spring followed, and Avdiivka fell during it. Support from Washington became a matter of argument rather than a given.",
+      "theme": "diplomacy",
+      "search": "Ukraine Security Supplemental Appropriations Act",
+      "links": []
     },
     {
       "id": "syrskyi",
@@ -314,6 +363,17 @@
       "theme": "mobilisation",
       "search": "Oleksandr Syrskyi",
       "links": []
+    },
+    {
+      "id": "avdiivka-falls",
+      "phase_id": "avdiivka-2024",
+      "on": "2024-02-17",
+      "title": "Avdiivka falls",
+      "text": "After four months of assault under glide bombs and with Ukrainian ammunition rationed while US aid was blocked in Congress, Ukraine withdrew from the fortress town it had held since 2014.",
+      "theme": "ground",
+      "search": "battle of Avdiivka",
+      "links": [],
+      "wikidata_id": "Q111383245"
     },
     {
       "id": "us-aid-2024",
