@@ -14,20 +14,20 @@ beforeAll(async () => {
 });
 
 describe('Ukraine reference sections', () => {
-  it('renders the timeline with phases and a theme filter', async () => {
+  it('renders the timeline journey with its phases, stage and reading list', async () => {
     const { user } = renderApp('/conflicts/ukraine', 'user');
     const phases = await screen.findByRole('list', { name: 'Phases' }, { timeout: 5000 });
     expect(within(phases).getAllByRole('button')).toHaveLength(2);
-    const events = screen.getByRole('list', { name: 'Timeline events' });
-    const cards = () => events.querySelectorAll(':scope > li').length;
-    expect(cards()).toBe(2);
-    expect(within(events).getByText('The full-scale invasion begins')).toBeInTheDocument();
+    const list = screen.getByRole('list', { name: 'Phases of the war' });
+    expect(within(list).getByText('The full-scale invasion begins')).toBeInTheDocument();
+    expect(within(list).getByText(/the drive on Kyiv failed/)).toBeInTheDocument();
+    const stage = screen.getByTestId('journey-stage');
+    expect(within(stage).getByText(/^Event 1 of 2\. 24 February 2022/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next event' }));
+    expect(within(stage).getByText(/^Event 2 of 2\. 15 January 2026/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Diplomacy and aid' }));
-    expect(cards()).toBe(1);
-    expect(within(events).getByText('Talks without a ceasefire')).toBeInTheDocument();
-    await user.click(within(phases).getByRole('button', { name: /Full-scale invasion/ }));
-    expect(screen.getByText('No events match this phase and theme.')).toBeInTheDocument();
-    expect(screen.getByText(/the drive on Kyiv failed/)).toBeInTheDocument();
+    expect(within(list).queryByText('The full-scale invasion begins')).toBeNull();
+    expect(within(list).getByText('Talks without a ceasefire')).toBeInTheDocument();
   });
 
   it('expands the force trees and links commanders to the figures tracker', async () => {

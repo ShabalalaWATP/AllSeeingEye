@@ -37,6 +37,8 @@ export default mergeConfig(
           'src/test/**',
           'src/**/*.test.{ts,tsx}',
           'src/features/globe/engine/MapLibreEngine.ts',
+          // The three.js timeline scene: WebGL that jsdom cannot run, mocked in the tests.
+          'src/features/ukraine/timeline/journeyScene.ts',
           'src/app/dev/**', // DEV-only fixture preview pages, never part of a build.
         ],
         thresholds: {
