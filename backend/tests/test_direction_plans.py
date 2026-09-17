@@ -191,7 +191,11 @@ async def test_a_report_scoped_by_a_plan_skips_the_direction_call(
         "/api/reports", json={"template": "ask", "plan": plan_id}, headers=bearer(token)
     )
     assert created.status_code == 201, created.text
-    assert [r.schema_name for r in gateway.requests] == ["report", "claim_proposals"]
+    assert [r.schema_name for r in gateway.requests] == [
+        "report",
+        "entailment",
+        "claim_proposals",
+    ]
     assert created.json()["report"]["title"] == "Ask the Eye: Kharkiv axis"
     assert created.json()["report"]["scope"]["plan"] == plan_id
     assert created.json()["report"]["scope"]["question"].startswith("Will Russia mount")

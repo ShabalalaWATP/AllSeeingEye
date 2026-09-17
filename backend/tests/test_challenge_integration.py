@@ -226,7 +226,8 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
         return job.profile
 
     async def authorised():
-        assert not usage.rows and len(gateway.requests) == 6
+        # Direction, plan, two drafts, challenge plan, reviews, then the entailment pass.
+        assert not usage.rows and len(gateway.requests) == 7
 
     version = await producer.produce(job, profile_for, authorised)
     assert [request.schema_name for request in gateway.requests] == [
@@ -236,6 +237,7 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
         "challenge_plan",
         "report",
         "challenge_reviews",
+        "entailment",
     ]
     assert version.challenge.redrafted
     assert len(version.challenge.reviews) == len(version.body.key_judgements) == 2
@@ -244,4 +246,4 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
     assert "New contrary observation" in gateway.requests[4].messages[1].content
     assert "New contrary observation" in gateway.requests[5].messages[1].content
     assert live.get(event.id) is None
-    assert len(usage.rows) == 6
+    assert len(usage.rows) == 7

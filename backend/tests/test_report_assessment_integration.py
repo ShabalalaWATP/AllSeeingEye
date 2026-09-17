@@ -210,7 +210,7 @@ async def test_production_assesses_final_body_before_late_authorisation_and_usag
     observed = []
 
     def assess(body, evidence, findings):
-        assert gateway.calls == ["direction", "report", "advocacy"]
+        assert gateway.calls == ["direction", "report", "advocacy", "entailment"]
         assert usage.rows == []
         observed.append(body)
         return build_report_assessment(body, evidence, findings)

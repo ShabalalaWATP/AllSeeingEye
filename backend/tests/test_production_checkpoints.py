@@ -72,7 +72,8 @@ async def test_initial_packet_saved_before_draft_and_resume_does_not_recollect(c
             assert version.evidence == packets[0]
     assert len(packets[0]) > 0 and packets[0] == packets[1]
     assert checkpoints.writes == 1
-    assert gateway.calls == ["direction"]
+    # The resumed run recollects nothing; each run still runs the entailment pass.
+    assert gateway.calls == ["direction", "entailment", "entailment"]
     assert (await checkpoints.load_collection()).totals.prompt_tokens == 5
 
 

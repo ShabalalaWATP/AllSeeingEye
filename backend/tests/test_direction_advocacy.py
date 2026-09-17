@@ -96,7 +96,12 @@ async def test_ask_runs_direction_then_the_advocate(
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     await seed_legacy_profile(container, FULL_PROFILE)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
-    gateway = ScriptedGateway(json.dumps(DIRECTION), json.dumps(good_body()), json.dumps(ADVOCACY))
+    gateway = ScriptedGateway(
+        json.dumps(DIRECTION),
+        json.dumps(good_body()),
+        json.dumps(ADVOCACY),
+        json.dumps({"assessments": []}),
+    )
     container.llm = gateway
     response = await client.post(
         "/api/reports",
@@ -112,6 +117,7 @@ async def test_ask_runs_direction_then_the_advocate(
         "direction",
         "report",
         "advocacy",
+        "entailment",
         "claim_proposals",
     ]
     assert (
@@ -128,17 +134,19 @@ async def test_ask_runs_direction_then_the_advocate(
         "Talks resume in Vienna",
     ]
     # Direction adds requirements the fixture body does not assess and the fixture evidence is
-    # a two-word summary, so the requirement coverage and citation gates both ask for review.
+    # a two-word summary from one feed, so the coverage, requirement, sourcing and citation
+    # gates all ask for review.
     assert version["status"] == "needs_review"
     rules = {f["rule"] for f in version["findings"] if f["severity"] == "error"}
-    assert rules == {"requirement_coverage"}
+    assert rules == {"requirement_coverage", "requirement_gate", "source_sufficiency"}
     assert version["citation_checks"]["judgements"][0]["status"] == "context_insufficient"
     assert version["body"]["key_judgements"][0]["confidence"] == "low"
     advocacy = version["devils_advocacy"]
     assert advocacy["target"] == "KJ1" and advocacy["evidence"] == ["E2"]
     assert (advocacy["confidence_before"], advocacy["confidence_after"]) == ("moderate", "low")
     assert any("E7" in f["message"] for f in version["findings"])
-    assert version["prompt_tokens"] == 200 and version["latency_ms"] == 400.0
+    # Four metered calls: direction, the report, advocacy and the entailment check.
+    assert version["prompt_tokens"] == 250 and version["latency_ms"] == 500.0
     markdown = version["markdown"]
     # The published report folds advocacy into alternative explanations; direction and its
     # requirements remain in the structured version asserted above.
@@ -178,6 +186,7 @@ async def test_ask_runs_direction_then_the_advocate(
         "report:ask",
         "report:ask:advocacy",
         "report:ask:direction",
+        "report:ask:entailment",
     ]
 
 

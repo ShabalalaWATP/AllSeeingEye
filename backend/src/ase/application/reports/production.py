@@ -36,7 +36,12 @@ from ase.application.reports.production_checkpoint import (
 )
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_completion import complete_production
-from ase.application.reports.production_model_roles import advocate_for_job, direct_for_job
+from ase.application.reports.production_model_roles import (
+    advocate_for_job,
+    direct_for_job,
+    entail_for_job,
+    explain_for_job,
+)
 from ase.application.reports.production_rerank import rerank_for_job
 from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_selection import select_for_job
@@ -350,6 +355,10 @@ class Producer:
             body, advocacy = await advocate_for_job(
                 job, profile_for, body, selection.items, totals, gateway, self._cipher
             )
+        # A failed draft has no judgements, so these passes return without a model call.
+        review = (job, profile_for, body, selection.items, totals, gateway, self._cipher)
+        await entail_for_job(*review)
+        await explain_for_job(*review)
         version = await build_version(
             job,
             draft,
