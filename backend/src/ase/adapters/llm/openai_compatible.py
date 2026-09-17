@@ -29,8 +29,17 @@ from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_REPORT_TIMEOUT_SECONDS = 300.0
-REPORT_SCHEMAS = frozenset(
-    {"report", "report_topic", "report_synthesis", "report_judgements", "report_context"}
+#: Stages that reason before they answer. Cutting one off at the ordinary budget bills
+#: the thinking and returns nothing, so they are given the longer one.
+LONG_THINKING_SCHEMAS = frozenset(
+    {
+        "report",
+        "report_topic",
+        "report_synthesis",
+        "report_judgements",
+        "report_context",
+        "conflict_screening",
+    }
 )
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 MAX_CONCURRENT_REQUESTS = 2
@@ -41,7 +50,7 @@ def completion_timeout_seconds(base_url: str, request: LlmRequest, override: flo
     """One total budget for admission, HTTP and parsing; explicit overrides win."""
     if override is not None:
         return override
-    if uses_responses(base_url, request) and request.schema_name in REPORT_SCHEMAS:
+    if uses_responses(base_url, request) and request.schema_name in LONG_THINKING_SCHEMAS:
         return MAX_REPORT_TIMEOUT_SECONDS
     return DEFAULT_TIMEOUT_SECONDS
 

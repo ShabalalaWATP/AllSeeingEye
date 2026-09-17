@@ -17,7 +17,11 @@ from ase.application.conflict_screening.records import (
     ScreeningInput,
     parse_verdicts,
 )
-from ase.application.ports.llm import LlmGatewayError
+from ase.application.ports.llm import (
+    LlmGatewayError,
+    LlmGatewayTimeout,
+    LlmTokenBudgetExhausted,
+)
 from ase.domain.llm import LlmProfile, LlmProvider, LlmResult, LlmRole, ReasoningEffort
 from feeds_helpers import NOW
 from helpers import FakeClock
@@ -135,7 +139,10 @@ def test_explicit_screening_cap_preserves_tested_provider_options(
         reasoning_effort=effort,
     )
     request = screening_request(profile, [FIGHTING])
-    assert request.max_output_tokens == min(budget, 4000)
+    # Reasoning tokens come out of this allowance, so a thinking profile keeps the
+    # administrator's tested budget instead of a stage ceiling it cannot finish inside.
+    assert request.max_output_tokens == profile.token_budget(model.STAGE_OUTPUT_TOKENS)
+    assert request.max_output_tokens == min(budget, 32_000)
     assert request.provider is provider and request.reasoning_effort is effort
     assert request.temperature == profile.temperature
     assert request.schema_name == "conflict_screening"
@@ -260,6 +267,30 @@ async def test_unavailable_cipher_is_safe_and_not_billed(screening, cipher):
     save.assert_not_awaited()
 
 
+async def test_an_exhausted_completion_budget_is_named_and_its_cost_recorded(screening):
+    """This is what a thinking model did to a small ceiling: it billed and returned nothing.
+
+    The ledger has to say so, because "call failed" hid it for six days.
+    """
+    profile, gateway, save, screener = screening
+    gateway.complete.side_effect = LlmTokenBudgetExhausted(
+        model=profile.model, prompt_tokens=900, completion_tokens=4_000
+    )
+    with pytest.raises(LlmGatewayError, match="exhausted its completion budget"):
+        await screener.screen(profile, [ACCIDENT])
+    usage = save.await_args.args[0]
+    assert usage.prompt_tokens == 900 and usage.completion_tokens == 4_000
+    assert usage.ok is False
+
+
+async def test_a_gateway_timeout_is_recorded_as_a_timeout_not_a_generic_failure(screening):
+    profile, gateway, save, screener = screening
+    gateway.complete.side_effect = LlmGatewayTimeout("The model endpoint timed out.")
+    with pytest.raises(LlmGatewayError, match="timed out"):
+        await screener.screen(profile, [ACCIDENT])
+    assert save.await_args.args[0].error == "The conflict screening model timed out."
+
+
 @pytest.mark.parametrize("failure", [LlmGatewayError(SECRET), RuntimeError(SECRET)])
 async def test_provider_failure_never_exposes_exception_content(screening, caplog, failure):
     profile, gateway, save, screener = screening
@@ -275,7 +306,7 @@ async def test_stage_timeout_is_shorter_than_gateway_timeout_and_records_failure
     screening, monkeypatch
 ):
     profile, gateway, save, screener = screening
-    assert model.CALL_SECONDS == 45
+    assert model.CALL_SECONDS == 240
     monkeypatch.setattr(model, "CALL_SECONDS", 0.01)
 
     async def pending(*_args):

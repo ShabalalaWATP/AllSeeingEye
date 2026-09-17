@@ -46,6 +46,10 @@ REPORT_REQUEST = replace(REQUEST, schema_name="report", json_schema=REPORT_BODY_
         (BASE, "max", "report", 120, 121, 120),
         (BASE, "max", "report", 1, 2, 1),
         (BASE, "max", "report", 600, 400, 600),
+        # Conflict screening thinks before it answers, so it gets the same longer budget.
+        (BASE, "max", "conflict_screening", None, 150, 300),
+        (BASE, "max", "conflict_screening", None, 301, 300),
+        (BASE, "xhigh", "conflict_screening", None, 121, 120),
     ],
 )
 async def test_selected_deadline_covers_http_queue_and_response_processing(
