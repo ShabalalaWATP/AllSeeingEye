@@ -4897,3 +4897,41 @@ down through the error boundary wherever that API is absent. Final state: backen
 tests at 94 percent coverage, frontend 2,685 tests at 90.11 percent branch coverage, with
 three economy and schedule tests that time out only under parallel load and pass alone.
 
+
+On 17 September 2026 five more branches were merged, all of them about what a report costs
+and what it is worth reading. The cost work came first, after a question about the OpenAI
+bill: mechanical calls (direction, selection, reranking, claims, translation) dropped to
+medium reasoning effort while the report passes kept theirs, subscriptions default to quick
+and weekly rather than daily, and an administrator can now set a request, token and model
+allowance per individual user and per team, with dated overrides. Real usage from the
+`llm_usage` table put report generation at about three quarters of spend, which is why the
+savings were taken from the mechanical calls and not from the analysis.
+
+The report itself was the other half. A dedicated analysis pass now runs after the draft
+and before the reviews: it reads the finished text and the frozen evidence and writes the
+"what this means" sections the drafts were missing, and it may propose one diagram, which
+is validated and rendered rather than trusted. Entailment and contradiction reviews then
+read the committed text, so a judgement that its own citations do not support is flagged
+before the quality gate. The document design was rebuilt around readable headings, colour
+that carries meaning rather than decoration, and exports that match.
+
+Reports about a place can now see the map, but only when the place is the question. A
+scope resolves from the drawn outline, the packaged country outlines or a curated conflict
+box, and the receipt states which, together with what that basis cannot establish. The
+containment split says how many selected items are precisely located inside the scope and
+how many are attached to it only by a country code, so a country centroid is never
+presented as a location. A reviewed trigger table decides whether the packaged registers
+(data centres, energy, nuclear, semiconductors, submarine cables, ground stations,
+cameras) and the live instruments (aircraft, vessels, satellite thermal detections,
+navigation accuracy cells) are read at all. Nothing is read for an ordinary question, and
+the tests that assert that silence are the first ones in each file: a ransomware advisory,
+an election, a sanctions designation on a shipping company and an aircraft crash must all
+leave the map untouched.
+
+Merging five rate-limit-interrupted branches surfaced one real defect that focused runs had
+not. Post-draft stages share the section checkpoint store, and saving the analysis
+checkpoint repointed the job's packet pointer at the analysis stage, which made the
+sections already drafted disappear from the job view and the stage report as drafting
+again. Only a drafted section moves that pointer now. The development database was backed
+up, the migration to `0060` was rehearsed on the copy and checked for integrity, foreign
+keys and row counts before the real file was touched.
