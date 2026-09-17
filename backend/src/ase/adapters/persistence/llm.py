@@ -5,10 +5,11 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import LlmProfileRow, LlmUsageRow
-from ase.domain.errors import NotFound
+from ase.domain.errors import NotFound, ProfileNameTaken
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage, ReasoningEffort
 
 
@@ -73,14 +74,24 @@ class SqlLlmProfileRepository:
         row = LlmProfileRow(id=profile.id)
         _apply_profile(row, profile)
         self._session.add(row)
-        await self._session.flush()
+        await self._flush()
 
     async def save(self, profile: LlmProfile) -> None:
         row = await self._session.get(LlmProfileRow, profile.id)
         if row is None:
             raise NotFound()
         _apply_profile(row, profile)
-        await self._session.flush()
+        await self._flush()
+
+    async def _flush(self) -> None:
+        """A name already in use is an answer, not an unhandled database error."""
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            # Never surface constraint text, which discloses the schema.
+            if "name" in str(exc.orig).lower():
+                raise ProfileNameTaken() from None
+            raise
 
     async def delete(self, profile_id: UUID) -> None:
         await self._session.execute(delete(LlmProfileRow).where(LlmProfileRow.id == profile_id))
