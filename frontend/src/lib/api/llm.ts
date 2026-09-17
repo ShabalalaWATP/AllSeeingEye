@@ -59,7 +59,7 @@ export type LlmProfileInput = components['schemas']['LlmProfileIn'];
 export type LlmConnection = components['schemas']['LlmConnectionOut'];
 export type LlmConnectionInput = components['schemas']['LlmConnectionIn'];
 
-const connectionSchema = z.object({
+export const connectionSchema = z.object({
   team_id: z.uuid().nullable(),
   user_id: z.uuid().nullable().default(null),
   profile_id: z.uuid(),

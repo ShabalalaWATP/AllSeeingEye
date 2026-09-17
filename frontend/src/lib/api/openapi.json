@@ -12476,6 +12476,52 @@
         ]
       }
     },
+    "/api/admin/llm/workspace": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Workspace",
+        "operationId": "update_workspace_api_admin_llm_workspace_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LlmWorkspaceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmWorkspaceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/admin/llm/profiles": {
       "get": {
         "tags": [
@@ -29809,6 +29855,204 @@
           "items"
         ],
         "title": "LlmUsagePageOut"
+      },
+      "LlmWorkspaceAllowanceIn": {
+        "properties": {
+          "preset": {
+            "type": "string",
+            "enum": [
+              "light",
+              "standard",
+              "intensive",
+              "power",
+              "blocked",
+              "inherit"
+            ],
+            "title": "Preset"
+          },
+          "expected_policy_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Policy Id"
+          },
+          "expected_policy_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Policy Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preset"
+        ],
+        "title": "LlmWorkspaceAllowanceIn"
+      },
+      "LlmWorkspaceChangeIn": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "team",
+              "user"
+            ],
+            "title": "Scope"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LlmWorkspaceModelIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allowance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LlmWorkspaceAllowanceIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope"
+        ],
+        "title": "LlmWorkspaceChangeIn"
+      },
+      "LlmWorkspaceIn": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/LlmWorkspaceChangeIn"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Changes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "changes"
+        ],
+        "title": "LlmWorkspaceIn"
+      },
+      "LlmWorkspaceModelIn": {
+        "properties": {
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "expected_binding_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Binding Revision"
+          },
+          "expected_profile_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Profile Revision"
+          },
+          "tested_config_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested Config Hash"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile_id"
+        ],
+        "title": "LlmWorkspaceModelIn"
+      },
+      "LlmWorkspaceOut": {
+        "properties": {
+          "connections": {
+            "items": {
+              "$ref": "#/components/schemas/LlmConnectionOut"
+            },
+            "type": "array",
+            "title": "Connections"
+          },
+          "policies": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsagePolicyOut"
+            },
+            "type": "array",
+            "title": "Policies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connections",
+          "policies"
+        ],
+        "title": "LlmWorkspaceOut"
       },
       "LocationRole": {
         "type": "string",

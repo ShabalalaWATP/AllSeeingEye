@@ -23,17 +23,26 @@ import { policyLabel } from './aiUsagePresentation';
 export function AiUsagePolicies({
   users,
   teams,
+  onBusyChange,
 }: {
   users: readonly User[];
   teams: readonly Team[];
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const [policies, setPolicies] = useState<AiPolicy[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [defaultsBusy, setDefaultsBusy] = useState(false);
+  const [overridesBusy, setOverridesBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<AiPolicy | null>(null);
   const [overridesFor, setOverridesFor] = useState<AiPolicy | null>(null);
   const [prefill, setPrefill] = useState<AiPolicyPrefill | null>(null);
+  const pending = busy || defaultsBusy || overridesBusy;
+
+  useEffect(() => {
+    onBusyChange?.(pending);
+  }, [pending, onBusyChange]);
 
   async function load() {
     setLoading(true);
@@ -54,7 +63,7 @@ export function AiUsagePolicies({
   }, []);
 
   async function save(input: AiPolicyInput): Promise<boolean> {
-    if (busy) return false;
+    if (pending) return false;
     setBusy(true);
     setError(null);
     try {
@@ -76,7 +85,7 @@ export function AiUsagePolicies({
   }
 
   async function disable(policy: AiPolicy) {
-    if (busy) return;
+    if (pending) return;
     setBusy(true);
     setError(null);
     try {
@@ -110,12 +119,14 @@ export function AiUsagePolicies({
       {error ? (
         <Alert tone="error">
           {error}{' '}
-          <Button variant="ghost" onClick={() => void load()}>
+          <Button variant="ghost" disabled={pending} onClick={() => void load()}>
             Retry
           </Button>
         </Alert>
       ) : null}
       <AiPolicyDefaults
+        disabled={busy || overridesBusy}
+        onBusyChange={setDefaultsBusy}
         onApplied={(created) =>
           setPolicies((current) => [
             ...current.filter((item) => !created.some((made) => made.id === item.id)),
@@ -129,7 +140,7 @@ export function AiUsagePolicies({
         teams={teams}
         editing={editing}
         prefill={prefill ?? undefined}
-        busy={busy}
+        busy={pending}
         onSave={save}
         onCancel={() => {
           setEditing(null);
@@ -173,7 +184,7 @@ export function AiUsagePolicies({
                       <div className="flex flex-wrap gap-1">
                         <Button
                           variant="ghost"
-                          disabled={busy}
+                          disabled={pending}
                           aria-label={`Edit ${label}`}
                           onClick={() => setEditing(policy)}
                         >
@@ -181,7 +192,7 @@ export function AiUsagePolicies({
                         </Button>
                         <Button
                           variant="ghost"
-                          disabled={busy}
+                          disabled={pending}
                           aria-label={`Overrides for ${label}`}
                           onClick={() =>
                             setOverridesFor((current) =>
@@ -193,7 +204,7 @@ export function AiUsagePolicies({
                         </Button>
                         <Button
                           variant="danger"
-                          disabled={busy}
+                          disabled={pending}
                           aria-label={`Disable ${label}`}
                           onClick={() => void disable(policy)}
                         >
@@ -213,12 +224,15 @@ export function AiUsagePolicies({
           key={`policy-overrides:${overridesFor.id}`}
           policy={overridesFor}
           label={policyLabel(overridesFor, users, teams)}
+          disabled={busy || defaultsBusy}
+          onBusyChange={setOverridesBusy}
         />
       ) : null}
       <AiUsagePreview
         users={users}
         teams={teams}
         onEditLimit={(scope, targetId) => {
+          if (pending) return;
           const existing = active.find(
             (item) => item.scope === scope && item.target_id === targetId,
           );
