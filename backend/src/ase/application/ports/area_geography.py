@@ -20,6 +20,25 @@ class EvidencePlacement:
     geo_confidence: str
 
 
+@dataclass(frozen=True, slots=True)
+class ScopeSample:
+    """One instrument record's position, offered to the scope for an exact inside test."""
+
+    key: str
+    lon: float
+    lat: float
+
+
+@dataclass(frozen=True, slots=True)
+class ScopeRequest:
+    """The scope arguments a caller already holds, so a second call cannot disagree."""
+
+    area: ResearchArea | None
+    country_isos: tuple[str, ...]
+    box: tuple[float, float, float, float] | None = None
+    box_label: str | None = None
+
+
 class AreaGeography(Protocol):
     def assemble(
         self,
@@ -32,4 +51,16 @@ class AreaGeography(Protocol):
         cameras: bool = False,
     ) -> AreaGeographyResult | None:
         """Resolve the scope and classify placements, or None when nothing resolves."""
+        ...
+
+    def locate(
+        self,
+        *,
+        area: ResearchArea | None,
+        country_isos: tuple[str, ...],
+        box: tuple[float, float, float, float] | None = None,
+        box_label: str | None = None,
+        samples: Sequence[ScopeSample] = (),
+    ) -> frozenset[str]:
+        """Keys of the samples inside the resolved scope; empty when nothing resolves."""
         ...

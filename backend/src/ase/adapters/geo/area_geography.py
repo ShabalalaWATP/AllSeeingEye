@@ -27,7 +27,7 @@ from ase.adapters.geo.scope_geography import (
     from_conflict_box,
     from_countries,
 )
-from ase.application.ports.area_geography import EvidencePlacement
+from ase.application.ports.area_geography import EvidencePlacement, ScopeSample
 from ase.domain.area_assets import AssetClass
 from ase.domain.area_context import (
     MAX_BREAKDOWN_ROWS,
@@ -240,6 +240,24 @@ class PackagedAreaGeography:
         coverage = _camera_entry(scope) if cameras else None
         registers = (coverage,) if coverage is not None else ()
         return AreaGeographyResult(receipt, containment, breakdown, registers)
+
+    def locate(
+        self,
+        *,
+        area: ResearchArea | None,
+        country_isos: tuple[str, ...],
+        box: tuple[float, float, float, float] | None = None,
+        box_label: str | None = None,
+        samples: Sequence[ScopeSample] = (),
+    ) -> frozenset[str]:
+        """The same resolved scope as assemble, asked only whether a point is inside it."""
+        try:
+            scope = _scope_for(area, country_isos, box, box_label)
+        except ValueError:
+            return frozenset()
+        if scope is None:
+            return frozenset()
+        return frozenset(row.key for row in samples if scope.contains_point(row.lon, row.lat))
 
     def register_entries(
         self, *, area: ResearchArea | None, country_isos: tuple[str, ...], classes: Sequence[str]

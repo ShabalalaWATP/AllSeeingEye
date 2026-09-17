@@ -42,6 +42,8 @@ class InstrumentClass(StrEnum):
 
     THERMAL_DETECTIONS = "thermal_detections"
     GNSS_INTERFERENCE = "gnss_interference"
+    AIRCRAFT_ACTIVITY = "aircraft_activity"
+    VESSEL_ACTIVITY = "vessel_activity"
 
 
 # Reviewed 2026-09-17. Asset nouns first, then the physical effects for which that
@@ -216,6 +218,42 @@ _INSTRUMENT_PHRASES: dict[InstrumentClass, tuple[str, ...]] = {
         "navigation interference",
         "satellite navigation",
         "ais spoofing",
+    ),
+    InstrumentClass.AIRCRAFT_ACTIVITY: (
+        "flight activity",
+        "air activity",
+        "air traffic",
+        "military aircraft",
+        "military flight",
+        "military flights",
+        "transport aircraft",
+        "aerial reconnaissance",
+        "reconnaissance flight",
+        "reconnaissance flights",
+        "surveillance flight",
+        "surveillance flights",
+        "airspace closure",
+        "airspace closures",
+        "tanker aircraft",
+        "air bridge",
+    ),
+    InstrumentClass.VESSEL_ACTIVITY: (
+        "ship activity",
+        "shipping activity",
+        "vessel activity",
+        "vessel movement",
+        "vessel movements",
+        "ship movement",
+        "ship movements",
+        "shadow fleet",
+        "dark fleet",
+        "naval activity",
+        "naval movement",
+        "naval movements",
+        "port call",
+        "port calls",
+        "anchorage",
+        "maritime traffic",
     ),
 }
 

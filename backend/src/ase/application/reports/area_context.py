@@ -12,13 +12,16 @@ from collections.abc import Sequence
 from dataclasses import replace
 from datetime import timedelta
 
-from ase.application.ports.area_geography import AreaGeography, EvidencePlacement
+from ase.application.ports.area_geography import AreaGeography, EvidencePlacement, ScopeRequest
 from ase.application.ports.baselines import BaselineRepository
 from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.interference import InterferenceCells
+from ase.application.reports.area_instruments import eligible_instruments, sweep_instruments
 from ase.application.reports.production_types import Job
 from ase.application.reports.selection import Selection
 from ase.domain.area_assets import AssetClass, asset_triggers, trigger_text
 from ase.domain.area_context import NO_BASELINE, AreaContext, BaselineComparison
+from ase.domain.area_instruments import NO_INSTRUMENTS
 from ase.domain.aviation import military_by_country
 from ase.domain.events import Category
 from ase.domain.evidence import EvidenceItem
@@ -49,23 +52,31 @@ def _placements(items: Sequence[EvidenceItem]) -> tuple[EvidencePlacement, ...]:
     )
 
 
-def _cameras_wanted(job: Job, query: ResearchQuery | None) -> bool:
-    """The reviewed trigger table governs camera coverage exactly as it governs registers."""
-    if job.request.effective_area is not None:
-        return True
-    text = trigger_text(
+def _scope_text(job: Job, query: ResearchQuery | None) -> str:
+    return trigger_text(
         job.request.question,
         job.title,
         " ".join(query.terms) if query is not None else " ".join(job.terms),
     )
+
+
+def _cameras_wanted(job: Job, query: ResearchQuery | None) -> bool:
+    """The reviewed trigger table governs camera coverage exactly as it governs registers."""
+    if job.request.effective_area is not None:
+        return True
+    text = _scope_text(job, query)
     return AssetClass.CAMERAS.value in {row.name for row in asset_triggers(text)}
 
 
 class AreaContextService:
     def __init__(
-        self, geography: AreaGeography, baselines: BaselineRepository | None = None
+        self,
+        geography: AreaGeography,
+        baselines: BaselineRepository | None = None,
+        interference: InterferenceCells | None = None,
     ) -> None:
         self._geography, self._baselines = geography, baselines
+        self._interference = interference
 
     def _countries(self, job: Job, query: ResearchQuery | None) -> tuple[str, ...]:
         chosen = job.request.country_isos or (query.country_isos if query else ()) or job.countries
@@ -95,6 +106,21 @@ class AreaContextService:
         if result is None:
             return None
         baselines = await self._baseline_rows(job, countries, store)
+        wanted = eligible_instruments(
+            _scope_text(job, query), drawn=job.request.effective_area is not None
+        )
+        readings = (
+            sweep_instruments(
+                self._geography,
+                wanted,
+                ScopeRequest(job.request.effective_area, countries, box, job.request.conflict_id),
+                store,
+                job.now,
+                self._interference,
+            )
+            if wanted
+            else ()
+        )
         return AreaContext(
             result.scope,
             result.containment,
@@ -102,6 +128,8 @@ class AreaContextService:
             baselines,
             PARTIAL_BASELINE if baselines else NO_BASELINE,
             result.registers,
+            readings,
+            NO_INSTRUMENTS,
         )
 
     async def _baseline_rows(

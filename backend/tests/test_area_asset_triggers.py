@@ -67,8 +67,16 @@ def test_named_asset_classes_are_eligible(question, expected):
     (
         ("Are wildfires burning near the coast?", InstrumentClass.THERMAL_DETECTIONS),
         ("Assess reports of GPS jamming over the Baltic.", InstrumentClass.GNSS_INTERFERENCE),
+        (
+            "Assess military aircraft flight activity over the Black Sea.",
+            InstrumentClass.AIRCRAFT_ACTIVITY,
+        ),
+        (
+            "Assess shadow fleet vessel movements through the strait.",
+            InstrumentClass.VESSEL_ACTIVITY,
+        ),
     ),
-    ids=("thermal", "gnss"),
+    ids=("thermal", "gnss", "aircraft", "vessels"),
 )
 def test_instrument_vocabulary_is_narrower_but_still_matches(question, expected):
     assert {row.name for row in instrument_triggers(question)} == {expected.value}
@@ -78,6 +86,13 @@ def test_instrument_vocabulary_is_narrower_but_still_matches(question, expected)
 def test_bare_fire_and_bare_spoofing_are_deliberately_excluded():
     assert instrument_triggers("Troops opened fire during the firefight and the ceasefire") == ()
     assert instrument_triggers("DNS spoofing and certificate spoofing were reported") == ()
+
+
+def test_bare_aircraft_and_bare_ship_words_are_deliberately_excluded():
+    """An aircraft crash or a ship's sanctioning is not a request to sweep the trackers."""
+    assert instrument_triggers("A passenger aircraft crashed shortly after take-off") == ()
+    assert instrument_triggers("The ship and its owner were named in the designation") == ()
+    assert instrument_triggers("Flight MH17 and the airline's fleet were discussed") == ()
 
 
 def test_matched_phrases_are_deduplicated_and_bounded():

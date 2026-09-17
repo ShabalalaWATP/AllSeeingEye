@@ -64,5 +64,5 @@ class ReportGenerationWiring:
             projector=container.internal_report_projector,
             ai_usage=container.ai_usage_accounting if gateway is None else None,
             embeddings=container.embedding_gateway,
-            area_context=AreaContextService(PackagedAreaGeography(), r.baselines),
+            area_context=AreaContextService(PackagedAreaGeography(), r.baselines, container.jam),
         )

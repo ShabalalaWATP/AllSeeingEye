@@ -12,6 +12,13 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from ase.domain.area_instruments import (
+    NO_INSTRUMENTS,
+    InstrumentReading,
+    bound_readings,
+    readings_from_list,
+    readings_to_list,
+)
 from ase.domain.area_inventory import MAX_LISTED_ITEMS, RegisterEntry, RegisterItem
 
 CONTEXT_POLICY_VERSION = "ase-area-context-v1"
@@ -178,11 +185,14 @@ class AreaContext:
     baselines: tuple[BaselineComparison, ...] = ()
     baseline_note: str = NO_BASELINE
     coverage: tuple[RegisterEntry, ...] = ()
+    instruments: tuple[InstrumentReading, ...] = ()
+    instrument_note: str = NO_INSTRUMENTS
     policy_version: str = CONTEXT_POLICY_VERSION
 
     def __post_init__(self) -> None:
         if len(self.baselines) > MAX_BASELINES or len(self.breakdown) > 4:
             raise ValueError("Area context exceeds its reviewed bounds")
+        bound_readings(self.instruments)
         if self.policy_version != CONTEXT_POLICY_VERSION:
             raise ValueError("Unsupported area context policy")
 
@@ -192,6 +202,9 @@ class AreaContext:
         parts.extend(
             f"Cached coverage: {row.dataset_name}. {row.describe()}" for row in self.coverage
         )
+        parts.extend(f"Instrument: {row.describe()}" for row in self.instruments)
+        if not self.instruments:
+            parts.append(self.instrument_note)
         parts.append(
             "Is this normal? " + " ".join(row.describe() for row in self.baselines)
             if self.baselines
@@ -271,6 +284,8 @@ def context_to_dict(value: AreaContext | None) -> dict[str, Any] | None:
             }
             for row in value.coverage
         ],
+        "instruments": readings_to_list(value.instruments),
+        "instrument_note": value.instrument_note,
     }
 
 
@@ -327,4 +342,6 @@ def context_from_dict(data: Mapping[str, Any] | None) -> AreaContext | None:
             )
             for row in _rows(data.get("coverage", ()), 2)
         ),
+        readings_from_list(list(data.get("instruments", ()))),
+        str(data.get("instrument_note", NO_INSTRUMENTS)),
     )
