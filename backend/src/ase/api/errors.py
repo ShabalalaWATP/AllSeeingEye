@@ -30,7 +30,6 @@ STATUS_BY_CODE: dict[str, int] = {
     "already_decided": 409,
     "email_taken": 409,
     "username_taken": 409,
-    "profile_name_taken": 409,
     "self_modification": 409,
     "user_inactive": 409,
     "payload_too_large": 413,

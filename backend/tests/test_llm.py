@@ -180,12 +180,6 @@ async def test_admin_manages_profiles_without_ever_seeing_the_key(
     )
     assert bad.status_code == 422
 
-    # A repeated name is an answer the page can show, not an unhandled database error.
-    repeated = await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(token))
-    assert repeated.status_code == 409, repeated.text
-    assert repeated.json()["error"]["code"] == "profile_name_taken"
-    assert "constraint" not in repeated.text.lower()
-
     kept = await client.put(
         f"/api/admin/llm/profiles/{profile_id}",
         json={**PROFILE, "api_key": "", "enabled": False, "name": "Local Llama 2"},

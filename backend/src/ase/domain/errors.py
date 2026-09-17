@@ -97,11 +97,6 @@ class UsernameTaken(AppError):
     default_message = "That directory username is already in use."
 
 
-class ProfileNameTaken(AppError):
-    code = "profile_name_taken"
-    default_message = "A model connection with this name already exists."
-
-
 class SelfModification(AppError):
     code = "self_modification"
     default_message = "You cannot change your own role or active status."
