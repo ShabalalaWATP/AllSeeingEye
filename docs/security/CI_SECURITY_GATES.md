@@ -42,3 +42,12 @@ Container builds apply available operating-system security updates.
 Dependabot covers Actions, Python, JavaScript, Go and Docker. Generic Bandit,
 ESLint and Semgrep template workflows duplicate checks already present here;
 the obsolete OSV template is replaced by dependency review and package audits.
+
+## Validation on 17 September 2026
+
+Local builds passed for both images. Trivy reported zero high/critical findings
+for the web image and zero fixable high/critical findings for the API image.
+An unfiltered API scan still reported upstream Debian findings without fixes,
+including critical CVE-2026-6653 in libxml2. These are outstanding risks under the
+existing `ignore-unfixed` policy, not remediated findings. Repeat the full image
+scan when upstream updates become available. Scan results depend on database time.

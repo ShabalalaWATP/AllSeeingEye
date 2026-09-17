@@ -115,6 +115,10 @@ jobs:
           pattern: sqlite-coverage-*
           path: backend
           merge-multiple: true
+      - run: uv sync --frozen
+        working-directory: backend
+      - name: Verify complete SQLite coverage
+        run: for shard in {0..7}; do test -f "backend/.coverage.shard-$shard" || exit 1; done
       - run: uv run coverage combine
         working-directory: backend
       - run: uv run coverage report --fail-under=90
@@ -137,6 +141,10 @@ jobs:
           pattern: postgres-coverage-*
           path: backend
           merge-multiple: true
+      - run: uv sync --frozen
+        working-directory: backend
+      - name: Verify complete PostgreSQL coverage
+        run: for shard in {0..7}; do test -f "backend/.coverage.shard-$shard" || exit 1; done
       - run: uv run coverage combine
         working-directory: backend
       - run: uv run coverage report --fail-under=90
