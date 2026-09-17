@@ -157,10 +157,39 @@ async def test_invalid_final_assumptions_pause_synthesis_and_reuse_completed_top
     with pytest.raises(SectionIncomplete) as caught:
         await run(gateway, checkpoints)
     assert caught.value.reason == "invalid_section" and caught.value.draft.has_errors
+    # The step is repaired once inside the run before the job is paused.
+    assert [name for name, *_ in gateway.calls].count(JUDGEMENTS) == 2
+    assert "previous step" in gateway.calls[-1][1].messages[-1].content
     gateway.overrides.clear()
     assert (await run(gateway, checkpoints)).body
     assert [name for name, *_ in gateway.calls].count("S1") == 1
-    assert [name for name, *_ in gateway.calls].count(JUDGEMENTS) == 2
+    assert [name for name, *_ in gateway.calls].count(JUDGEMENTS) == 3
+
+
+async def test_one_rejected_step_is_repaired_in_the_same_run_without_pausing():
+    """The model's second answer is accepted, so the operator never sees a paused job."""
+    checkpoints = Checkpoints()
+    invalid = synthesis_part_body(JUDGEMENTS, ["E1"])
+    invalid["key_judgements"][0]["assumptions"] = ["A999"]
+    gateway = Gateway(checkpoints, {JUDGEMENTS: json.dumps(invalid)})
+
+    async def once(*args, **kwargs):
+        result = await Gateway.complete(gateway, *args, **kwargs)
+        # Only the first judgement answer is wrong; the repair attempt gets a good one.
+        if gateway.calls[-1][0] == JUDGEMENTS:
+            gateway.overrides.pop(JUDGEMENTS, None)
+        return result
+
+    gateway.complete = once  # type: ignore[method-assign]
+    draft = await run(gateway, checkpoints)
+    assert draft.body is not None
+    judgements = [row for row in gateway.calls if row[0] == JUDGEMENTS]
+    assert len(judgements) == 2
+    repair = judgements[1][1].messages[-1].content
+    assert "previous step" in repair
+    # The validator's own wording, so the model is told what to correct.
+    assert "The check that failed: The judgement step does not meet the report rules." in repair
+    assert "previous step" not in judgements[0][1].messages[-1].content
 
 
 async def test_changed_frozen_metadata_invalidates_reuse_even_with_same_ids_and_hash():

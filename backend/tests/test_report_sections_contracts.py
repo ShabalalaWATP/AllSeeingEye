@@ -93,7 +93,8 @@ async def test_invalid_response_retains_accounting_but_never_partial_model_text(
     gateway = Gateway(checkpoints, {"S1": '{"private-output-marker": "secret"}'})
     with pytest.raises(SectionIncomplete) as caught:
         await run(gateway, checkpoints)
-    assert caught.value.draft.prompt_tokens == 10 and caught.value.draft.completion_tokens == 5
+    # Both the first answer and its repair are metered before the job pauses.
+    assert caught.value.draft.prompt_tokens == 20 and caught.value.draft.completion_tokens == 10
     assert "private-output-marker" not in repr(checkpoints.rows) + str(caught.value)
     assert next(iter(checkpoints.rows.values())).status == "incomplete"
 

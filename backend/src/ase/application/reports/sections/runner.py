@@ -43,6 +43,9 @@ from ase.domain.reports import KeyJudgement, ReportHeader
 from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import validate_body
 
+#: One drafting call for a step, and one repair when the first answer does not fit.
+MAX_SECTION_ATTEMPTS = 2
+
 
 class _Runner:
     def __init__(
@@ -66,6 +69,7 @@ class _Runner:
         )
         self.digest = digest
         self.research_mode = context.header.scope.get("research_mode")
+        self.rejection = ""
         self.completed: list[tuple[Topic, dict[str, Any]]] = []
         self.leaves = 0
 
@@ -198,6 +202,30 @@ class _Runner:
         part: str | None = None,
         judgements: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        """Repair one rejected step inside this run, as a whole-body draft already does.
+
+        Pausing on the first answer that failed validation left an operator to resume a
+        report by hand for a fault the model usually corrects when it is told about it.
+        """
+        self.rejection = ""
+        for attempt in range(MAX_SECTION_ATTEMPTS):
+            body = await self._attempt(
+                topic, expected, repair=repair or attempt > 0, part=part, judgements=judgements
+            )
+            if body is not None:
+                return body
+        await self.pause(expected, "invalid_section")
+
+    async def _attempt(
+        self,
+        topic: Topic | None,
+        expected: dict[str, Any],
+        *,
+        repair: bool,
+        part: str | None,
+        judgements: dict[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        """One metered call: the validated step, or None when the answer does not fit."""
         try:
             messages = self.context.messages(
                 topic,
@@ -216,12 +244,14 @@ class _Runner:
         except (ValueError, TypeError):
             await self.pause(expected, "input_limit")
         if repair:
+            # The reason is the validator's own fixed wording, never text the model wrote.
+            stated = f" The check that failed: {self.rejection}." if self.rejection else ""
             messages += (
                 LlmMessage(
                     "user",
                     "The previous step was incomplete or failed validation. Recheck the exact "
                     "schema, evidence IDs, assumptions and required doctrine rules. "
-                    "Return only the corrected fields for this step.",
+                    f"Return only the corrected fields for this step.{stated}",
                 ),
             )
         schema = deepcopy(TOPIC_SCHEMA)
@@ -298,8 +328,9 @@ class _Runner:
                 labels=frozenset(expected["evidence_labels"]),
                 eeis=self.eeis,
             )
-        except (ValueError, TypeError, RecursionError):
-            await self.pause(expected, "invalid_section")
+        except (ValueError, TypeError, RecursionError) as exc:
+            self.rejection = str(exc)[:200]
+            return None
 
 
 async def draft_sections(
