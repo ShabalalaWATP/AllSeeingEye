@@ -4948,3 +4948,18 @@ Verifying the reader found two more: the API never carried a diagram's drawing a
 reader's schema did not accept the block kind, so a report containing one could not be
 read in the app at all, and a .docx was not byte-reproducible because a zip records when
 each part was written.
+
+### 17 September 2026: repair GitHub CI and scanner integration
+
+Consolidated scanner templates into CI with Semgrep SARIF, dependency review and
+Dependabot updates. Fixed Linux process-flag typing and compact-number locale
+portability. Split the complete backend suite into eight independent shards per
+database, retaining combined 90 percent coverage and explicit shard failure gates.
+Container OS updates resolved the original fixable findings; incompatible cel-go
+0.29 was held back while compatible Go dependency updates were retained.
+CodeQL triage distinguished random-token hashing and test assertions from real
+security boundaries. The casualty importer now excludes hidden script/style text
+through HTMLParser, with casing and malformed self-closing-tag regression tests.
+Targeted tests and local container checks passed; final GitHub integration checks
+are tracked in PR #6. Remaining unfixed upstream image risks and protection setup
+are recorded in docs/security/CI_SECURITY_GATES.md.

@@ -2,11 +2,16 @@
 
 import os
 import subprocess  # nosec B404
+import sys
 import threading
 import time
 from pathlib import Path
 
 from ase.adapters.research_imports.models import ImportRejected
+
+CREATE_FLAGS = 0
+if sys.platform == "win32":
+    CREATE_FLAGS = subprocess.CREATE_NO_WINDOW
 
 
 def trusted_tool(value: str | None, name: str) -> str | None:
@@ -41,7 +46,7 @@ def run_tool(argv: list[str], deadline: float, *, max_output: int = 256_000) -> 
             stderr=subprocess.DEVNULL,
             shell=False,
             env=environment,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+            creationflags=CREATE_FLAGS,
         )
     except OSError:
         raise ImportRejected("The configured media runtime could not be started.") from None

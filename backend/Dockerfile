@@ -10,7 +10,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.26@sha256:3d868e555f8f1dbc324afa005066cd11
 WORKDIR /app
 
 # Local media analysis uses system decoders inside a bounded worker process.
+# Apply Debian security updates to packages inherited from the pinned base too.
 RUN apt-get update \
+    && apt-get upgrade --yes --no-install-recommends \
     && apt-get install --yes --no-install-recommends ffmpeg tesseract-ocr tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 

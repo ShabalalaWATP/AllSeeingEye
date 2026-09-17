@@ -130,11 +130,12 @@ it('reveals known supporting and contradictory sources without exposing invalid 
     .click(screen.getAllByRole('link', { name: 'Daily briefing reference 1' })[0]!);
   expect(screen.getByText(/BBC News World:/)).toBeVisible();
   expect(screen.getByText(/TASS English:/)).toBeVisible();
-  expect(
-    screen
-      .getAllByRole('link')
-      .every((link) => !link.getAttribute('href')?.startsWith('javascript:')),
-  ).toBe(true);
+  for (const link of screen.getAllByRole('link')) {
+    const href = link.getAttribute('href');
+    expect(href).not.toBeNull();
+    const protocol = new URL(href!, 'https://app.example.org').protocol;
+    expect(['http:', 'https:']).toContain(protocol);
+  }
   await userEvent.setup().click(screen.getByText('Sources cited in this summary (2)'));
   expect(screen.getByText(/TASS English:/)).not.toBeVisible();
 });

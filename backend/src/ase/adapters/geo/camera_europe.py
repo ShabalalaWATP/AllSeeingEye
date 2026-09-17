@@ -146,6 +146,10 @@ def curated(provider: str) -> tuple[Camera, ...]:
             )
         ]
     else:
+        if provider not in COUNTRIES:
+            raise ValueError("Unknown curated camera provider")
+        # Only fixed bundled catalogue modules in COUNTRIES can be imported.
+        # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
         rows = json.loads(import_module(f"ase.adapters.geo.camera_europe_{provider}").DATA)
     cameras = [make_camera(provider, row, approximate=True) for row in rows[:5000]]
     return tuple({cam.id: cam for cam in cameras if cam is not None}.values())

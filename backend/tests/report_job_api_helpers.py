@@ -101,7 +101,11 @@ async def work(container):
     await worker.tick()
     tasks = [task for _, task in worker._running.values()]
     assert tasks
-    await asyncio.wait_for(asyncio.gather(*tasks), 15)
+    # Detailed/advanced jobs execute many real, separately committed checkpoints.
+    # Coverage-instrumented CI exceeds 15 seconds while still making progress
+    # through those SQL transactions. Bound the worker below pytest's 120-second
+    # test deadline; provider/model results remain deterministic test fixtures.
+    await asyncio.wait_for(asyncio.gather(*tasks), 60)
     await worker.tick()
 
 

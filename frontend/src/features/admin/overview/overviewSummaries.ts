@@ -158,7 +158,8 @@ export function describeAction(action: string): string {
 }
 
 export function compactNumber(value: number): string {
-  return new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 }).format(
+  // Compact dashboard notation uses K/M/B/T across browser and ICU versions.
+  return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(
     value,
   );
 }

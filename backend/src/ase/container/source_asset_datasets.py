@@ -247,6 +247,8 @@ def reference_assets(container: Container) -> list[SourceAsset]:
             None,
             "Worldwide; selected areas only.",
             "Updated with the application.",
+            # This repository returns an in-memory tuple, not a SQLAlchemy query.
+            # nosemgrep: python.sqlalchemy.performance.performance-improvements.len-all-count
             records=len(container.conflicts.all()),
         ),
     ]

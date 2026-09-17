@@ -34,6 +34,12 @@ def test_all_assigned_sources_accounted_for():
     assert len({s.id for s in sources}) == 18
 
 
+@pytest.mark.parametrize("provider", ["open", "maps", "../italy", "unknown"])
+def test_curated_rejects_modules_outside_fixed_country_catalogue(provider):
+    with pytest.raises(ValueError, match="Unknown curated camera provider"):
+        curated(provider)
+
+
 @pytest.mark.parametrize(
     "url",
     [

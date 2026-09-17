@@ -220,6 +220,10 @@ class SqlReportLedgerRepository:
                         created_at=anchor.created_at,
                     )
                 )
+                # No ORM relationship connects these rows, so flush the parent
+                # explicitly before its child on databases enforcing foreign keys.
+                # Both inserts remain inside the same savepoint and transaction.
+                await self.session.flush()
                 self.session.add(_row(anchor, first, 1))
                 await self.session.flush()
         except IntegrityError:

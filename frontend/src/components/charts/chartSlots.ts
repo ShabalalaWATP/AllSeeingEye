@@ -34,7 +34,8 @@ export const SLOT_BG: Record<ChartSlot, string> = {
   muted: 'bg-muted/60',
 };
 
-export const compactNumber = new Intl.NumberFormat('en-GB', {
+// Use consistent K/M/B/T chart suffixes; en-GB CLDR versions vary (k/bn/tn).
+export const compactNumber = new Intl.NumberFormat('en-US', {
   notation: 'compact',
   maximumFractionDigits: 1,
 });
