@@ -1,0 +1,57 @@
+/*
+ * Signal tones for the supporting workspace, which sits on the workspace theme rather
+ * than on the document's paper. Each tone is tinted from a theme token so it follows
+ * the account appearance in both light and dark, and every chip shows its label and
+ * value as text so colour never carries the meaning alone.
+ */
+
+.evidence-signal,
+.evidence-grade {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--signal-colour) 45%, transparent);
+  border-radius: 0.3rem;
+  background: color-mix(in oklab, var(--signal-colour) 14%, transparent);
+  color: var(--signal-colour);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.evidence-grade {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.evidence-signal-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.evidence-signal,
+.evidence-grade {
+  --signal-colour: var(--color-muted);
+}
+
+.evidence-signal[data-tone='strong'],
+.evidence-grade[data-tone='strong'] {
+  --signal-colour: var(--color-good);
+}
+
+.evidence-signal[data-tone='mid'],
+.evidence-signal[data-tone='info'],
+.evidence-grade[data-tone='mid'],
+.evidence-grade[data-tone='info'] {
+  --signal-colour: var(--color-cyan);
+}
+
+.evidence-signal[data-tone='caution'],
+.evidence-grade[data-tone='caution'] {
+  --signal-colour: var(--color-amber);
+}

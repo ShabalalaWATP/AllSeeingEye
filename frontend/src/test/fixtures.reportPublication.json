@@ -1,0 +1,998 @@
+{
+  "schema_version": 1,
+  "title": "Intelligence summary: Ukraine",
+  "reference": "Report fce98534-1769-409e-9e06-fffd7fec4119 | version 1",
+  "language": "en",
+  "blocks": [
+    {
+      "kind": "title",
+      "text": "Intelligence summary: Ukraine",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "metadata",
+      "text": "Report fce98534-1769-409e-9e06-fffd7fec4119 | version 1",
+      "inlines": [
+        {
+          "text": "Report fce98534-1769-409e-9e06-fffd7fec4119 | version 1",
+          "direction": "ltr",
+          "citation_numbers": []
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "metadata",
+      "text": "Template: intsum. Period 2026-09-03 00:00 to 2026-09-05 00:00 UTC. Data cut-off 2026-09-05 00:00 UTC.",
+      "inlines": [
+        {
+          "text": "Template: intsum. Period 2026-09-03 00:00 to 2026-09-05 00:00 UTC. Data cut-off 2026-09-05 00:00 UTC.",
+          "direction": "ltr",
+          "citation_numbers": []
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Executive summary",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "We assess it is highly likely that fighting around El Fasher will intensify over the next two weeks. [1, 2]",
+      "inlines": [
+        {
+          "text": "We assess it is highly likely that fighting around El Fasher will intensify over the next two weeks.",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[1, 2]",
+          "direction": "ltr",
+          "citation_numbers": [
+            1,
+            2
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Likelihood (PHIA): highly likely (about 80 to about 90 percent).",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Analytical confidence: moderate.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Confidence rationale (not independently verified): Information base: 3 items from 2 organisations. Rigour: alternatives considered. Volatility: high.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "We judge it is unlikely that a ceasefire holds beyond the month. [3]",
+      "inlines": [
+        {
+          "text": "We judge it is unlikely that a ceasefire holds beyond the month.",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[3]",
+          "direction": "ltr",
+          "citation_numbers": [
+            3
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Likelihood (PHIA): unlikely (about 25 to about 35 percent).",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Analytical confidence: low.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Confidence rationale (not independently verified): Single reporting line; no instrument data.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Findings and analysis",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Ground activity",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "RSF forces entered El Fasher on 3 September. Recorded source grade(s): B2. [1]\nArtillery fire was reported overnight. Recorded source grade(s): C3. [2]",
+      "inlines": [],
+      "items": [
+        {
+          "text": "RSF forces entered El Fasher on 3 September. Recorded source grade(s): B2. [1]",
+          "inlines": [
+            {
+              "text": "RSF forces entered El Fasher on 3 September. Recorded source grade(s): B2.",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": " ",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": "[1]",
+              "direction": "ltr",
+              "citation_numbers": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "text": "Artillery fire was reported overnight. Recorded source grade(s): C3. [2]",
+          "inlines": [
+            {
+              "text": "Artillery fire was reported overnight. Recorded source grade(s): C3.",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": " ",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": "[2]",
+              "direction": "ltr",
+              "citation_numbers": [
+                2
+              ]
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Trajectory",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "The siege is entering a new phase. [1]",
+      "inlines": [
+        {
+          "text": "The siege is entering a new phase.",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[1]",
+          "direction": "ltr",
+          "citation_numbers": [
+            1
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "table",
+      "text": "Source chronology\nChronology of dated material cited in this report. Dates are source-reported.\nDate\tSource\tReported item\n2026-09-05\tfake_feed\tDrone strike near Sumy [1]\n2026-09-05\tfake_feed\tShelling in Kharkiv [2]\n2026-09-05\tfake_feed\tTalks resume in Vienna [3]",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": {
+        "title": "Source chronology",
+        "columns": [
+          "Date",
+          "Source",
+          "Reported item"
+        ],
+        "rows": [
+          [
+            {
+              "text": "2026-09-05",
+              "inlines": []
+            },
+            {
+              "text": "fake_feed",
+              "inlines": []
+            },
+            {
+              "text": "Drone strike near Sumy [1]",
+              "inlines": [
+                {
+                  "text": "Drone strike near Sumy",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[1]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    1
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "text": "2026-09-05",
+              "inlines": []
+            },
+            {
+              "text": "fake_feed",
+              "inlines": []
+            },
+            {
+              "text": "Shelling in Kharkiv [2]",
+              "inlines": [
+                {
+                  "text": "Shelling in Kharkiv",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[2]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "text": "2026-09-05",
+              "inlines": []
+            },
+            {
+              "text": "fake_feed",
+              "inlines": []
+            },
+            {
+              "text": "Talks resume in Vienna [3]",
+              "inlines": [
+                {
+                  "text": "Talks resume in Vienna",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[3]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    3
+                  ]
+                }
+              ]
+            }
+          ]
+        ],
+        "caption": "Chronology of dated material cited in this report. Dates are source-reported."
+      },
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Alternative explanations",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "A negotiated pause. Why it is currently assessed as less likely: No mediator is active. [3]",
+      "inlines": [],
+      "items": [
+        {
+          "text": "A negotiated pause. Why it is currently assessed as less likely: No mediator is active. [3]",
+          "inlines": [
+            {
+              "text": "A negotiated pause. Why it is currently assessed as less likely: No mediator is active.",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": " ",
+              "direction": "auto",
+              "citation_numbers": []
+            },
+            {
+              "text": "[3]",
+              "direction": "ltr",
+              "citation_numbers": [
+                3
+              ]
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "An alternative view is that A pause remains possible. Evidence is limited. [1]",
+      "inlines": [
+        {
+          "text": "An alternative view is that A pause remains possible. Evidence is limited.",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[1]",
+          "direction": "ltr",
+          "citation_numbers": [
+            1
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Outlook and indicators",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Watch condition: Elevated.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Indicators to watch",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "Reinforcement columns on the Mellit road",
+      "inlines": [],
+      "items": [
+        {
+          "text": "Reinforcement columns on the Mellit road",
+          "inlines": [
+            {
+              "text": "Reinforcement columns on the Mellit road",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Recent warning changes",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "More hotspots north of the city",
+      "inlines": [],
+      "items": [
+        {
+          "text": "More hotspots north of the city",
+          "inlines": [
+            {
+              "text": "More hotspots north of the city",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Recommended next steps",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "Task FIRMS review of the northern approaches.",
+      "inlines": [],
+      "items": [
+        {
+          "text": "Task FIRMS review of the northern approaches.",
+          "inlines": [
+            {
+              "text": "Task FIRMS review of the northern approaches.",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Limitations and confidence",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "warning",
+      "text": "NEEDS REVIEW: this version did not pass all required automated checks.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "The report draws on 3 retained source item(s) from 0 declared organisation group(s). Organisational independence and factual accuracy have not been independently verified.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Assumptions",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "Supply lines from the west stay open. This is a lynchpin assumption.",
+      "inlines": [],
+      "items": [
+        {
+          "text": "Supply lines from the west stay open. This is a lynchpin assumption.",
+          "inlines": [
+            {
+              "text": "Supply lines from the west stay open. This is a lynchpin assumption.",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Evidence gaps",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "list",
+      "text": "No reporting on the eastern road.\nCasualty figures.",
+      "inlines": [],
+      "items": [
+        {
+          "text": "No reporting on the eastern road.",
+          "inlines": [
+            {
+              "text": "No reporting on the eastern road.",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        },
+        {
+          "text": "Casualty figures.",
+          "inlines": [
+            {
+              "text": "Casualty figures.",
+              "direction": "auto",
+              "citation_numbers": []
+            }
+          ]
+        }
+      ],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Three items from two independent organisations; syndicated copies counted once.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Assessment method",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Likelihood uses the UK PHIA probability yardstick. Its approximate bands describe an assessed likelihood, not a measured probability calculated from source grades. Analytical confidence (low, moderate or high) describes the strength and stability of the basis for a judgement and is separate from likelihood.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "Source reliability (A to F) and information credibility (1 to 6) follow the separate intelligence grading dimensions described in UK MOD JDP 2-00, fourth edition, Table 3.1. This application is informed by public UK and NATO doctrine; it is not NATO-accredited and does not establish full doctrinal compliance.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "A detailed evidence assessment was not recorded for this version. The saved judgements and item grades are shown as recorded; no confidence limit or corroboration assessment has been inferred retrospectively.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "Source assessment",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "The recorded letter describes source reliability; the number describes this item's information credibility. These are separate assessments. F and 6 mean there are insufficient grounds to judge, not that the information is false.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "table",
+      "text": "Recorded source grades\nGrades are preserved from this report version; no source has been regraded on read.\nSource item\tSource reliability\tInformation credibility\nfake_feed: Drone strike near Sumy [1]\tRetained A feed grade; publisher reliability unassessed.\t1: Confirmed by other sources\nfake_feed: Shelling in Kharkiv [2]\tRetained A feed grade; publisher reliability unassessed.\t2: Probably true\nfake_feed: Talks resume in Vienna [3]\tRetained A feed grade; publisher reliability unassessed.\t2: Probably true",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": {
+        "title": "Recorded source grades",
+        "columns": [
+          "Source item",
+          "Source reliability",
+          "Information credibility"
+        ],
+        "rows": [
+          [
+            {
+              "text": "fake_feed: Drone strike near Sumy [1]",
+              "inlines": [
+                {
+                  "text": "fake_feed: Drone strike near Sumy",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[1]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    1
+                  ]
+                }
+              ]
+            },
+            {
+              "text": "Retained A feed grade; publisher reliability unassessed.",
+              "inlines": []
+            },
+            {
+              "text": "1: Confirmed by other sources",
+              "inlines": []
+            }
+          ],
+          [
+            {
+              "text": "fake_feed: Shelling in Kharkiv [2]",
+              "inlines": [
+                {
+                  "text": "fake_feed: Shelling in Kharkiv",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[2]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    2
+                  ]
+                }
+              ]
+            },
+            {
+              "text": "Retained A feed grade; publisher reliability unassessed.",
+              "inlines": []
+            },
+            {
+              "text": "2: Probably true",
+              "inlines": []
+            }
+          ],
+          [
+            {
+              "text": "fake_feed: Talks resume in Vienna [3]",
+              "inlines": [
+                {
+                  "text": "fake_feed: Talks resume in Vienna",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": " ",
+                  "direction": "auto",
+                  "citation_numbers": []
+                },
+                {
+                  "text": "[3]",
+                  "direction": "ltr",
+                  "citation_numbers": [
+                    3
+                  ]
+                }
+              ]
+            },
+            {
+              "text": "Retained A feed grade; publisher reliability unassessed.",
+              "inlines": []
+            },
+            {
+              "text": "2: Probably true",
+              "inlines": []
+            }
+          ]
+        ],
+        "caption": "Grades are preserved from this report version; no source has been regraded on read."
+      },
+      "figure": null
+    },
+    {
+      "kind": "subheading",
+      "text": "Recorded grading basis",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test [1]",
+      "inlines": [
+        {
+          "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[1]",
+          "direction": "ltr",
+          "citation_numbers": [
+            1
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test [2]",
+      "inlines": [
+        {
+          "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[2]",
+          "direction": "ltr",
+          "citation_numbers": [
+            2
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "text",
+      "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test [3]",
+      "inlines": [
+        {
+          "text": "fake_feed. Source assessment (unassessed): No source-specific reliability assessment basis is recorded. This is not an assessment of the individual publisher or author. Item grading basis: test",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": " ",
+          "direction": "auto",
+          "citation_numbers": []
+        },
+        {
+          "text": "[3]",
+          "direction": "ltr",
+          "citation_numbers": [
+            3
+          ]
+        }
+      ],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "heading",
+      "text": "References",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "reference",
+      "text": "[1] fake_feed. Drone strike near Sumy. 2026-09-05. Source: https://example.org/report. Archived copy: https://web.archive.org/web/20260901/https://example.org/report. Accessed 2026-09-05T00:00:00+00:00.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "reference",
+      "text": "[2] fake_feed. Shelling in Kharkiv. 2026-09-05. Source: https://example.com/a. Accessed 2026-09-05T00:00:00+00:00.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    },
+    {
+      "kind": "reference",
+      "text": "[3] fake_feed. Talks resume in Vienna. 2026-09-03. Source: https://example.com/b. Accessed 2026-09-05T00:00:00+00:00.",
+      "inlines": [],
+      "items": [],
+      "ordered": false,
+      "table": null,
+      "figure": null
+    }
+  ],
+  "references": [
+    {
+      "number": 1,
+      "evidence_label": "E1",
+      "title": "Drone strike near Sumy",
+      "publisher": "fake_feed",
+      "published_at": "2026-09-05",
+      "accessed_at": "2026-09-05T00:00:00+00:00",
+      "url": "https://example.org/report",
+      "archive_url": "https://web.archive.org/web/20260901/https://example.org/report",
+      "original_title": null,
+      "language": "en"
+    },
+    {
+      "number": 2,
+      "evidence_label": "E2",
+      "title": "Shelling in Kharkiv",
+      "publisher": "fake_feed",
+      "published_at": "2026-09-05",
+      "accessed_at": "2026-09-05T00:00:00+00:00",
+      "url": "https://example.com/a",
+      "archive_url": null,
+      "original_title": null,
+      "language": "en"
+    },
+    {
+      "number": 3,
+      "evidence_label": "E3",
+      "title": "Talks resume in Vienna",
+      "publisher": "fake_feed",
+      "published_at": "2026-09-03",
+      "accessed_at": "2026-09-05T00:00:00+00:00",
+      "url": "https://example.com/b",
+      "archive_url": null,
+      "original_title": null,
+      "language": "en"
+    }
+  ]
+}

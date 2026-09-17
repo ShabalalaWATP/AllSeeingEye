@@ -1,9 +1,19 @@
+/**
+ * Renders the frozen semantic report document as structured React text.
+ *
+ * Presentation only: every heading, judgement, warning and reference comes from the
+ * publication the backend froze for this version. Nothing here adds a claim, and no
+ * value is parsed out of prose to decorate the page.
+ */
 import type { ReactNode } from 'react';
 
-import { SourceLink } from '@/components/ui/SourceLink';
-import type { ReportPublication } from '@/lib/api/reports';
+import type { ReportPublication, ReportStatus } from '@/lib/api/reports';
 
-type Inline = ReportPublication['blocks'][number]['inlines'][number];
+import { FigureBlock, Inlines, References, TableBlock, type Inline } from './publicationBlocks';
+import { ReportGradingLegend } from './ReportGradingLegend';
+import { ReportReviewStatus } from './ReportReviewStatus';
+
+type Block = ReportPublication['blocks'][number];
 
 function sectionId(index: number, text: string): string {
   const slug = text
@@ -14,237 +24,226 @@ function sectionId(index: number, text: string): string {
   return `report-section-${String(index + 1)}-${slug || 'section'}`;
 }
 
-function Inlines({ runs, fallback }: { runs: readonly Inline[]; fallback: string }) {
-  if (!runs.length) return fallback;
-  return runs.map((run, index) => {
-    const key = `${index}:${run.text}`;
-    if (!run.citation_numbers.length)
-      return (
-        <span key={key} dir={run.direction}>
-          {run.text}
-        </span>
-      );
-    return <CitationNumbers key={key} numbers={run.citation_numbers} />;
-  });
-}
-
-function CitationNumbers({ numbers }: { numbers: readonly number[] }) {
-  if (!numbers.length) return null;
-  return (
-    <span className="report-reader-citation" aria-label={`References ${numbers.join(', ')}`}>
-      [
-      {numbers.map((number, index) => (
-        <span key={number}>
-          {index > 0 ? ', ' : ''}
-          <a href={`#report-reference-${String(number)}`} aria-label={`View reference ${number}`}>
-            {number}
-          </a>
-        </span>
-      ))}
-      ]
-    </span>
-  );
-}
-
-function TableBlock({ block }: { block: ReportPublication['blocks'][number] }) {
-  if (!block.table) return null;
-  const table = block.table;
-  return (
-    <figure className="mt-8" aria-label={table.title}>
-      <h3 className="report-reader-subheading">{table.title}</h3>
-      <div className="report-reader-table-wrap">
-        <table className="report-reader-table">
-          <thead>
-            <tr>
-              {table.columns.map((column) => (
-                <th key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {table.rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex}>
-                    <Inlines runs={cell.inlines} fallback={cell.text} />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {table.caption && (
-        <figcaption className="mt-2 text-xs text-[#6d675e]">{table.caption}</figcaption>
-      )}
-    </figure>
-  );
-}
-
-function FigureBlock({ block }: { block: ReportPublication['blocks'][number] }) {
-  if (!block.figure) return null;
-  const figure = block.figure;
-  return (
-    <figure className="mt-8" aria-label={figure.title}>
-      <h3 className="report-reader-subheading">{figure.title}</h3>
-      <img
-        className="mt-3 h-auto max-h-[42rem] w-full object-contain"
-        src={`data:${figure.media_type};base64,${figure.content_base64}`}
-        alt={figure.alt_text}
-        width={figure.width_px}
-        height={figure.height_px}
-      />
-      <figcaption className="mt-2 text-xs leading-5 text-[#6d675e]">
-        {figure.caption}
-        <CitationNumbers numbers={figure.citation_numbers} />
-      </figcaption>
-    </figure>
-  );
-}
-
-function References({ publication }: { publication: ReportPublication }) {
-  if (!publication.references.length) return null;
-  return (
-    <section id="report-references" aria-label="References" className="report-reader-section">
-      <h2>References</h2>
-      <ol className="mt-4">
-        {publication.references.map((reference) => (
-          <li
-            key={reference.number}
-            id={`report-reference-${String(reference.number)}`}
-            className="report-reader-reference"
-          >
-            <span className="font-mono text-xs text-[#9b3b18]">[{reference.number}]</span>
-            <div>
-              <p>
-                <strong>{reference.publisher}.</strong> {reference.title}.{' '}
-                {reference.published_at ?? 'Publication date not reported'}.
-              </p>
-              {reference.original_title && reference.original_title !== reference.title && (
-                <p dir="auto" className="mt-1 text-xs text-[#6d675e]">
-                  Original title{reference.language ? ` (${reference.language})` : ''}:{' '}
-                  {reference.original_title}
-                </p>
-              )}
-              <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6d675e]">
-                <SourceLink url={reference.url}>Original source</SourceLink>
-                <SourceLink url={reference.archive_url}>Archived copy</SourceLink>
-                <span>Accessed {reference.accessed_at.slice(0, 10)}</span>
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
 export function publicationContents(publication: ReportPublication) {
   return publication.blocks.flatMap((block, index) =>
-    block.kind === 'heading' && block.text !== 'References'
+    (block.kind === 'heading' || block.kind === 'annex') && block.text !== 'References'
       ? [{ id: sectionId(index, block.text), label: block.text }]
       : [],
   );
 }
 
-export function ReportPublicationView({ publication }: { publication: ReportPublication }) {
-  const rendered: ReactNode[] = [];
-  let section: { key: string; id: string; title: string; children: ReactNode[] } | null = null;
-  const flushSection = () => {
-    if (!section) return;
-    const current = section;
-    rendered.push(
+/** Consecutive warning blocks are one concern, so they read as one callout. */
+function WarningCallout({ blocks }: { blocks: readonly Block[] }) {
+  const first = blocks[0];
+  if (!first) return null;
+  return (
+    <aside className="report-reader-callout" aria-label="Review notice">
+      <p className="report-reader-callout-title">Review notice</p>
+      {blocks.length === 1 ? (
+        <p className="mt-1">
+          <Inlines runs={first.inlines} fallback={first.text} />
+        </p>
+      ) : (
+        <ul>
+          {blocks.map((block, index) => (
+            <li key={index}>
+              <Inlines runs={block.inlines} fallback={block.text} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </aside>
+  );
+}
+
+function Masthead({
+  title,
+  colophon,
+  status,
+}: {
+  title: string;
+  colophon: readonly { text: string; inlines: readonly Inline[] }[];
+  status: ReportStatus | undefined;
+}) {
+  return (
+    <header className="report-reader-masthead">
+      <p className="report-reader-eyebrow">Intelligence product</p>
+      <h1 className="report-reader-title">{title}</h1>
+      {colophon.length > 0 && (
+        <div className="report-reader-colophon">
+          {colophon.map((block, index) => (
+            <p key={index}>
+              <Inlines runs={block.inlines} fallback={block.text} />
+            </p>
+          ))}
+        </div>
+      )}
+      {status && (
+        <div className="mt-4">
+          <ReportReviewStatus status={status} variant="paper" />
+        </div>
+      )}
+      <ReportGradingLegend />
+    </header>
+  );
+}
+
+interface Section {
+  key: string;
+  id: string;
+  title: string;
+  index: number;
+  children: ReactNode[];
+}
+
+interface Rendered {
+  nodes: ReactNode[];
+  section: Section | null;
+}
+
+function blockNode(block: Block, key: string): ReactNode {
+  if (block.kind === 'subheading')
+    return (
+      <h3 key={key} className="report-reader-subheading">
+        {block.text}
+      </h3>
+    );
+  if (block.kind === 'metadata')
+    return (
+      <p key={key} className="report-reader-note font-mono">
+        <Inlines runs={block.inlines} fallback={block.text} />
+      </p>
+    );
+  if (block.kind === 'list') {
+    const List = block.ordered ? 'ol' : 'ul';
+    return (
+      <List
+        key={key}
+        className={`${block.ordered ? 'list-decimal' : 'list-disc'} mt-3 space-y-2 pl-5 marker:text-[color:var(--paper-accent-soft)]`}
+      >
+        {block.items.map((item, itemIndex) => (
+          <li key={itemIndex}>
+            <Inlines runs={item.inlines} fallback={item.text} />
+          </li>
+        ))}
+      </List>
+    );
+  }
+  if (block.kind === 'table') return <TableBlock key={key} block={block} />;
+  if (block.kind === 'figure') return <FigureBlock key={key} block={block} />;
+  return (
+    <p key={key} className="report-reader-paragraph">
+      <Inlines runs={block.inlines} fallback={block.text} />
+    </p>
+  );
+}
+
+export function ReportPublicationView({
+  publication,
+  status,
+}: {
+  publication: ReportPublication;
+  status?: ReportStatus | undefined;
+}) {
+  const blocks = publication.blocks;
+  const state: Rendered = { nodes: [], section: null };
+  let sectionCount = 0;
+  const flush = () => {
+    const current = state.section;
+    if (!current) return;
+    state.nodes.push(
       <section
         key={current.key}
         id={current.id}
         aria-label={current.title}
-        className="report-reader-section"
+        // The opening section of an intelligence product carries its judgements, so
+        // it leads the page. Later sections read as the supporting material.
+        className={`report-reader-section${current.index === 1 ? ' report-reader-lead' : ''}`}
       >
-        <h2>{current.title}</h2>
+        <h2>
+          <span className="report-reader-section-number" aria-hidden="true">
+            {String(current.index).padStart(2, '0')}
+          </span>
+          <span>{current.title}</span>
+        </h2>
         {current.children}
       </section>,
     );
-    section = null;
+    state.section = null;
   };
   const add = (node: ReactNode) => {
-    if (section) section.children.push(node);
-    else rendered.push(node);
+    if (state.section) state.section.children.push(node);
+    else state.nodes.push(node);
   };
-  publication.blocks.forEach((block, index) => {
+
+  // Only the leading title and metadata blocks form the masthead; anything later in
+  // the document keeps its own place so no frozen block is silently dropped.
+  const leading: Block[] = [];
+  for (const block of blocks) {
+    if (block.kind === 'title' || block.kind === 'metadata') leading.push(block);
+    else break;
+  }
+  const title = leading.find((block) => block.kind === 'title')?.text ?? publication.title;
+  state.nodes.push(
+    <Masthead
+      key="masthead"
+      title={title}
+      colophon={leading.filter((block) => block.kind === 'metadata')}
+      status={status}
+    />,
+  );
+
+  let index = leading.length;
+  while (index < blocks.length) {
+    const block = blocks[index];
+    if (!block) break;
     const key = `${index}:${block.kind}`;
-    if (block.kind === 'reference') return;
+    if (block.kind === 'reference') {
+      index += 1;
+      continue;
+    }
+    if (block.kind === 'title') {
+      add(
+        <h2 key={key} className="report-reader-subheading text-lg">
+          {block.text}
+        </h2>,
+      );
+      index += 1;
+      continue;
+    }
     if (block.kind === 'heading' || block.kind === 'annex') {
-      flushSection();
-      if (block.text !== 'References')
-        section = {
+      flush();
+      if (block.text !== 'References') {
+        sectionCount += 1;
+        state.section = {
           key,
           id: sectionId(index, block.text),
           title: block.text,
+          index: sectionCount,
           children: [],
         };
-    } else if (block.kind === 'title') {
-      add(
-        <h1
-          key={key}
-          className="text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.045em] text-[#171512]"
-        >
-          {block.text}
-        </h1>,
-      );
-    } else if (block.kind === 'metadata') {
-      add(
-        <p key={key} className="mt-2 font-mono text-[11px] leading-5 text-[#777066]">
-          <Inlines runs={block.inlines} fallback={block.text} />
-        </p>,
-      );
-    } else if (block.kind === 'subheading') {
-      add(
-        <h3 key={key} className="report-reader-subheading mt-5">
-          {block.text}
-        </h3>,
-      );
-    } else if (block.kind === 'list') {
-      const List = block.ordered ? 'ol' : 'ul';
-      add(
-        <List
-          key={key}
-          className={`${block.ordered ? 'list-decimal' : 'list-disc'} mt-3 space-y-2 pl-5 marker:text-[#b9633e]`}
-        >
-          {block.items.map((item, itemIndex) => (
-            <li key={itemIndex}>
-              <Inlines runs={item.inlines} fallback={item.text} />
-            </li>
-          ))}
-        </List>,
-      );
-    } else if (block.kind === 'table') {
-      add(<TableBlock key={key} block={block} />);
-    } else if (block.kind === 'figure') {
-      add(<FigureBlock key={key} block={block} />);
-    } else if (block.kind === 'warning') {
-      add(
-        <p
-          key={key}
-          className="mt-4 border-l-2 border-[#c16a43] bg-[#f1e8dc] px-4 py-3 text-sm leading-6 text-[#5a3a2d]"
-        >
-          <Inlines runs={block.inlines} fallback={block.text} />
-        </p>,
-      );
-    } else {
-      add(
-        <p key={key} className="report-reader-paragraph">
-          <Inlines runs={block.inlines} fallback={block.text} />
-        </p>,
-      );
+      }
+      index += 1;
+      continue;
     }
-  });
-  flushSection();
+    if (block.kind === 'warning') {
+      const group: Block[] = [];
+      while (blocks[index]?.kind === 'warning') {
+        const warning = blocks[index];
+        if (warning) group.push(warning);
+        index += 1;
+      }
+      add(<WarningCallout key={key} blocks={group} />);
+      continue;
+    }
+    add(blockNode(block, key));
+    index += 1;
+  }
+  flush();
   return (
-    <div dir="auto" lang={publication.language} className="text-[0.94rem]">
-      {rendered}
-      <References publication={publication} />
+    <div dir="auto" lang={publication.language}>
+      {state.nodes}
+      <References publication={publication} index={sectionCount + 1} />
     </div>
   );
 }

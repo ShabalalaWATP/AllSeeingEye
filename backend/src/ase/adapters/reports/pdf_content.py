@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import io
 import re
+from collections.abc import Sequence
 from html import escape
 from typing import Any, cast
 from urllib.parse import urlsplit
 
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
+    CondPageBreak,
     Flowable,
     Image,
     KeepTogether,
@@ -24,8 +25,10 @@ from reportlab.platypus import (
 )
 
 from ase.adapters.reports.figure_validation import VerifiedFigure
+from ase.adapters.reports.pdf_styles import ACCENT, PAGE_WIDTH, Rule
 from ase.domain.report_documents import (
     BlockKind,
+    DocumentBlock,
     DocumentFigure,
     DocumentInline,
     DocumentReference,
@@ -34,7 +37,7 @@ from ase.domain.report_documents import (
 )
 
 _CITATION_NUMBER = re.compile(r"\d+")
-_PAGE_WIDTH = A4[0] - 96
+_PAGE_WIDTH = PAGE_WIDTH
 
 
 def safe_text(text: str, characters: frozenset[int]) -> tuple[str, bool]:
@@ -84,7 +87,7 @@ def _citation_markup(inline: DocumentInline, characters: frozenset[int]) -> tupl
     return "".join(parts), missing or replaced
 
 
-def _inline_markup(
+def inline_markup(
     text: str, inlines: tuple[DocumentInline, ...], characters: frozenset[int]
 ) -> tuple[str, bool]:
     if not inlines:
@@ -138,21 +141,51 @@ def _reference_markup(
     return "".join(parts), missing or replaced
 
 
+def _column_widths(table: DocumentTable) -> list[float]:
+    """Give each column room in proportion to its content, within readable bounds.
+
+    Equal thirds leave date columns half empty while prose columns wrap to shreds, so
+    the share is taken from the longest cell in each column and then clamped.
+    """
+    longest = [
+        max(
+            [len(column), *(len(row[index].text) for row in table.rows)],
+            default=1,
+        )
+        for index, column in enumerate(table.columns)
+    ]
+    # A long cell wraps, so its width should grow far more slowly than its length.
+    weights = [max(6.0, min(float(value), 90.0)) ** 0.62 for value in longest]
+    total = sum(weights) or 1.0
+    minimum = min(_PAGE_WIDTH / len(table.columns) * 0.42, 54.0)
+    widths = [max(minimum, _PAGE_WIDTH * weight / total) for weight in weights]
+    excess = sum(widths) / _PAGE_WIDTH
+    return [width / excess for width in widths]
+
+
 def _table_flowables(
     table: DocumentTable,
     styles: dict[BlockKind, ParagraphStyle],
     characters: frozenset[int],
 ) -> tuple[list[Flowable], bool]:
     title, missing = safe_text(table.title, characters)
-    column_width = _PAGE_WIDTH / len(table.columns)
+    widths = _column_widths(table)
+    # A long table must not be pushed whole onto the next page by its heading's
+    # keep-with-next, which leaves a near-empty page. The title keeps its own space
+    # instead, and the repeated header row carries the column names onto every page.
+    title_style = ParagraphStyle(
+        "ASETableTitle", parent=styles[BlockKind.SUBHEADING], keepWithNext=False
+    )
     cell_style = ParagraphStyle(
-        "ASETableCell", parent=styles[BlockKind.TEXT], fontSize=8, leading=10, spaceAfter=0
+        "ASETableCell", parent=styles[BlockKind.TEXT], fontSize=8.2, leading=11.4, spaceAfter=0
     )
     header_style = ParagraphStyle(
         "ASETableHeader",
         parent=cell_style,
         fontName=styles[BlockKind.SUBHEADING].fontName,
-        textColor=colors.HexColor("#FFFFFF"),
+        fontSize=7,
+        leading=9.5,
+        textColor=colors.HexColor("#3E3932"),
     )
     header: list[Paragraph] = []
     for column in table.columns:
@@ -163,32 +196,39 @@ def _table_flowables(
     for row in table.rows:
         rendered: list[Paragraph] = []
         for cell in row:
-            value, replaced = _inline_markup(cell.text, cell.inlines, characters)
+            value, replaced = inline_markup(cell.text, cell.inlines, characters)
             rendered.append(Paragraph(value or " ", cell_style))
             missing = missing or replaced
         data.append(rendered)
     native = LongTable(
         data,
-        colWidths=[column_width] * len(table.columns),
+        colWidths=widths,
         repeatRows=1,
         hAlign="LEFT",
         splitByRow=1,
     )
+    # Horizontal rules only: vertical grid lines fight with wrapped prose cells.
     native.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#183746")),
-                ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#BAC2C9")),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1ECE1")),
+                ("LINEABOVE", (0, 0), (-1, 0), 0.8, colors.HexColor("#B9B1A2")),
+                ("LINEBELOW", (0, 0), (-1, 0), 0.8, colors.HexColor("#B9B1A2")),
+                ("LINEBELOW", (0, 1), (-1, -1), 0.35, colors.HexColor("#E0D9CC")),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F3F6F7")]),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#FAF8F3")]),
             ]
         )
     )
-    result: list[Flowable] = [Paragraph(title, styles[BlockKind.SUBHEADING]), native]
+    result: list[Flowable] = [
+        CondPageBreak(78),
+        Paragraph(title, title_style),
+        native,
+    ]
     if table.caption:
         caption, replaced = safe_text(table.caption, characters)
         result.append(Paragraph(caption, styles[BlockKind.METADATA]))
@@ -213,7 +253,7 @@ def _figure_flowables(
     caption_text = f"{figure.title}. {figure.caption}"
     if figure.citation_numbers:
         citation = f" [{', '.join(str(number) for number in figure.citation_numbers)}]"
-        caption, missing = _inline_markup(
+        caption, missing = inline_markup(
             caption_text + citation,
             (
                 DocumentInline(caption_text),
@@ -231,11 +271,15 @@ def build_flowables(
     styles: dict[BlockKind, ParagraphStyle],
     characters: frozenset[int],
     figures: dict[int, VerifiedFigure],
+    *,
+    blocks: Sequence[DocumentBlock] | None = None,
 ) -> tuple[list[Flowable], bool]:
+    """Render the document's blocks, or the given subset when a masthead took the rest."""
     flowables: list[Flowable] = []
     missing = False
     reference_index = 0
-    for block in document.blocks:
+    section = 0
+    for block in document.blocks if blocks is None else blocks:
         if block.kind is BlockKind.TABLE and block.table:
             added, replaced = _table_flowables(block.table, styles, characters)
             flowables.extend(added)
@@ -251,13 +295,25 @@ def build_flowables(
         if block.kind is BlockKind.LIST:
             items = []
             for item in block.items:
-                value, replaced = _inline_markup(item.text, item.inlines, characters)
-                items.append(ListItem(Paragraph(value or " ", styles[BlockKind.TEXT])))
+                value, replaced = inline_markup(item.text, item.inlines, characters)
+                items.append(
+                    ListItem(
+                        Paragraph(value or " ", styles[BlockKind.TEXT]),
+                        leftIndent=16,
+                        spaceBefore=1,
+                    )
+                )
                 missing = missing or replaced
             flowables.append(
                 ListFlowable(
                     cast("list[Any]", items),
                     bulletType="1" if block.ordered else "bullet",
+                    bulletFontSize=8,
+                    bulletOffsetY=-1,
+                    leftIndent=16,
+                    bulletDedent=10,
+                    spaceBefore=2,
+                    spaceAfter=5,
                 )
             )
             continue
@@ -267,7 +323,17 @@ def build_flowables(
             )
             reference_index += 1
         else:
-            text, replaced = _inline_markup(block.text, block.inlines, characters)
+            text, replaced = inline_markup(block.text, block.inlines, characters)
         missing = missing or replaced
+        if block.kind in {BlockKind.HEADING, BlockKind.ANNEX}:
+            # Section headings anchor the page in the export exactly as they do on
+            # screen: an accent number, the heading, then a rule across the measure.
+            section += 1
+            number = f'<font color="#{ACCENT.hexval()[2:]}">{section:02d}</font>&nbsp;&nbsp;'
+            flowables.append(Paragraph(number + (text or " "), styles[block.kind]))
+            rule = Rule(_PAGE_WIDTH, 1.1, accent=0, space_below=6)
+            rule.keepWithNext = 1
+            flowables.append(rule)
+            continue
         flowables.append(Paragraph(text or " ", styles[block.kind]))
     return flowables, missing

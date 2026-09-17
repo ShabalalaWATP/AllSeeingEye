@@ -1,21 +1,43 @@
 import type { ReactNode } from 'react';
 
 import type { DevilsAdvocacy, Direction, ReportBody } from '@/lib/api/reports';
-import { probabilityTerm } from '@/lib/doctrine';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
+import { ConfidenceChip, LikelihoodChip } from './DoctrineChips';
 import { Labels } from './EvidenceLinks';
 import type { CitationChecks } from '@/lib/api/reportResearch';
 export { EvidenceAnnex } from './EvidenceAnnex';
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  children,
+  index,
+  lead = false,
+}: {
+  title: string;
+  children: ReactNode;
+  index?: number;
+  lead?: boolean;
+}) {
   return (
-    <section aria-label={title} className="report-reader-section">
-      <h2>{title}</h2>
+    <section
+      aria-label={title}
+      className={`report-reader-section${lead ? ' report-reader-lead' : ''}`}
+    >
+      <h2>
+        {index !== undefined && (
+          <span className="report-reader-section-number" aria-hidden="true">
+            {String(index).padStart(2, '0')}
+          </span>
+        )}
+        <span>{title}</span>
+      </h2>
       {children}
     </section>
   );
 }
+
+const BULLETS = 'mt-3 list-disc space-y-2 pl-5 marker:text-[color:var(--paper-accent-soft)]';
 
 /** What an Ask the Eye question became: the requirement it serves, broken into SIRs and EEIs. */
 export function DirectionView({ direction }: { direction: Direction | null }) {
@@ -27,16 +49,16 @@ export function DirectionView({ direction }: { direction: Direction | null }) {
   ];
   return (
     <Section title="Direction">
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
         {rows.map(([id, text]) => (
           <div key={id} className="contents">
-            <dt className="font-mono text-xs text-muted">{id}</dt>
+            <dt className="font-mono text-xs text-[color:var(--paper-ink-soft)]">{id}</dt>
             <dd>{text}</dd>
           </div>
         ))}
       </dl>
       {direction.search_terms.length > 0 && (
-        <p className="text-xs text-muted">Search terms: {direction.search_terms.join(', ')}</p>
+        <p className="report-reader-note">Search terms: {direction.search_terms.join(', ')}</p>
       )}
     </Section>
   );
@@ -48,13 +70,13 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
   const lowered = advocacy.confidence_before !== null && advocacy.confidence_after !== null;
   return (
     <Section title="Devil's advocacy">
-      <div className="rounded-card border border-amber-300/40 bg-surface p-3 text-sm">
-        <p>
-          <span className="mr-2 font-mono text-xs text-muted">on {advocacy.target}</span>
+      <div className="report-reader-callout">
+        <p className="report-reader-callout-title">Challenge to {advocacy.target}</p>
+        <p className="mt-1">
           {advocacy.argument}
           <Labels labels={advocacy.evidence} />
         </p>
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-2 text-[0.82rem] opacity-85">
           {lowered
             ? `Confidence on ${advocacy.target} lowered from ${advocacy.confidence_before ?? ''} to ${advocacy.confidence_after ?? ''}.`
             : 'Confidence unchanged.'}{' '}
@@ -62,6 +84,39 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
         </p>
       </div>
     </Section>
+  );
+}
+
+function KeyJudgement({
+  judgement,
+  index,
+}: {
+  judgement: ReportBody['key_judgements'][number];
+  index: number;
+}) {
+  return (
+    <li className="report-reader-judgement">
+      <span className="report-reader-judgement-index">{String(index + 1).padStart(2, '0')}</span>
+      <div className="min-w-0">
+        <p className="report-reader-judgement-statement">
+          {judgement.statement}
+          <Labels labels={judgement.supporting_evidence} />
+        </p>
+        <div className="report-reader-facts">
+          <LikelihoodChip probability={judgement.probability} />
+          <ConfidenceChip confidence={judgement.confidence} />
+        </div>
+        <p className="report-reader-note">{judgement.confidence_statement}</p>
+        {judgement.contradicting_evidence.length > 0 && (
+          <p className="report-reader-note">
+            Contrary evidence: <Labels labels={judgement.contradicting_evidence} />
+          </p>
+        )}
+        {judgement.indicators.length > 0 && (
+          <p className="report-reader-note">Watch for: {judgement.indicators.join('; ')}</p>
+        )}
+      </div>
+    </li>
   );
 }
 
@@ -74,50 +129,22 @@ export function ReportBodyView({
   citationChecks?: CitationChecks | null | undefined;
 }) {
   return (
-    <div className="text-[0.94rem]">
+    <div>
       {body.key_judgements.length > 0 && (
-        <Section title="Executive summary">
-          <ol className="mt-4 space-y-5">
+        <Section title="Executive summary" index={1} lead>
+          <ol className="mt-3">
             {body.key_judgements.map((judgement, index) => (
-              <li key={judgement.id} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-3">
-                <span className="pt-0.5 font-mono text-xs text-[#9b3b18]">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div>
-                  <p className="font-semibold leading-7">
-                    {judgement.statement}
-                    <Labels labels={judgement.supporting_evidence} />
-                  </p>
-                  <p className="mt-1.5 text-xs leading-5 text-[#6d675e]">
-                    <span className="font-semibold text-[#9b3b18]">
-                      {probabilityTerm(judgement.probability)}
-                    </span>
-                    {' · '}
-                    <span>{judgement.confidence} confidence</span> ·{' '}
-                    {judgement.confidence_statement}
-                  </p>
-                  {judgement.contradicting_evidence.length > 0 && (
-                    <p className="mt-1 text-xs leading-5 text-[#6d675e]">
-                      Contrary evidence: <Labels labels={judgement.contradicting_evidence} />
-                    </p>
-                  )}
-                  {judgement.indicators.length > 0 && (
-                    <p className="mt-1 text-xs leading-5 text-[#6d675e]">
-                      Watch for: {judgement.indicators.join('; ')}
-                    </p>
-                  )}
-                </div>
-              </li>
+              <KeyJudgement key={judgement.id} judgement={judgement} index={index} />
             ))}
           </ol>
         </Section>
       )}
       {body.reporting.length > 0 && (
-        <Section title="Findings">
+        <Section title="Findings" index={2}>
           {body.reporting.map((theme) => (
-            <div key={theme.theme} className="mt-5">
+            <div key={theme.theme}>
               <h3 className="report-reader-subheading">{theme.theme}</h3>
-              <ul className="mt-2 list-disc space-y-1.5 pl-5 marker:text-[#b9633e]">
+              <ul className={BULLETS}>
                 {theme.items.map((item, index) => (
                   <li key={index}>
                     {item.text}
@@ -130,9 +157,9 @@ export function ReportBodyView({
         </Section>
       )}
       {body.assessment.length > 0 && (
-        <Section title="Analysis">
+        <Section title="Analysis" index={3}>
           {body.assessment.map((section) => (
-            <div key={section.heading} className="mt-5">
+            <div key={section.heading}>
               <h3 className="report-reader-subheading">{section.heading}</h3>
               <p className="report-reader-paragraph">
                 {section.text}
@@ -143,13 +170,15 @@ export function ReportBodyView({
         </Section>
       )}
       {body.assumptions.length > 0 && (
-        <Section title="Assumptions">
-          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
+        <Section title="Assumptions" index={4}>
+          <ul className={BULLETS}>
             {body.assumptions.map((assumption) => (
               <li key={assumption.id}>
                 {assumption.text}
                 {assumption.lynchpin && (
-                  <span className="ml-1 text-xs font-medium text-[#9b3b18]">(critical)</span>
+                  <span className="ml-1 text-xs font-semibold text-[color:var(--paper-accent)]">
+                    (critical)
+                  </span>
                 )}
               </li>
             ))}
@@ -157,13 +186,13 @@ export function ReportBodyView({
         </Section>
       )}
       {body.alternative_hypotheses.length > 0 && (
-        <Section title="Alternative explanations">
-          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
+        <Section title="Alternative explanations" index={5}>
+          <ul className={BULLETS}>
             {body.alternative_hypotheses.map((alternative, index) => (
               <li key={index}>
                 {alternative.text}
                 <Labels labels={alternative.evidence} />
-                <span className="text-[#6d675e]">
+                <span className="text-[color:var(--paper-ink-soft)]">
                   {' '}
                   Why it is less likely: {alternative.why_less_likely}
                 </span>
@@ -172,13 +201,13 @@ export function ReportBodyView({
           </ul>
         </Section>
       )}
-      <Section title="Indicators and warning">
+      <Section title="Indicators and warning" index={6}>
         <p className="report-reader-paragraph">
           Current watch condition:{' '}
           <strong className="capitalize">{body.indicators_and_warning.watch_condition}</strong>
         </p>
         {body.indicators_and_warning.changes.length > 0 && (
-          <ul className="mt-2 list-disc space-y-1 pl-5 marker:text-[#b9633e]">
+          <ul className={BULLETS}>
             {body.indicators_and_warning.changes.map((change, index) => (
               <li key={index}>{change}</li>
             ))}
@@ -186,8 +215,8 @@ export function ReportBodyView({
         )}
       </Section>
       {(body.gaps.length > 0 || body.collection_recommendations.length > 0) && (
-        <Section title="Limitations and further research">
-          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
+        <Section title="Limitations and further research" index={7}>
+          <ul className={BULLETS}>
             {body.gaps.map((gap, index) => (
               <li key={`gap-${index}`}>{gap.text}</li>
             ))}
@@ -198,7 +227,7 @@ export function ReportBodyView({
         </Section>
       )}
       {body.sourcing_statement && (
-        <Section title="Source note">
+        <Section title="Source note" index={8}>
           <p className="report-reader-paragraph">{body.sourcing_statement}</p>
         </Section>
       )}

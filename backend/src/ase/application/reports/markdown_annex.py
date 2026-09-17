@@ -49,15 +49,19 @@ def annex_lines(
     if not evidence:
         lines += ["No frozen evidence.", ""]
     for item in evidence:
+        # Each label is its own paragraph: consecutive lines would otherwise collapse
+        # into one run of prose wherever the Markdown is rendered.
         lines += [
             f"### {plain_markdown(item.label)}",
             "",
-            f"Original title: {plain_markdown(item.title)}",
+            f"**Original title:** {plain_markdown(item.title)}",
+            "",
         ]
         if item.title_en:
-            lines.append(f"Translation (unverified): {plain_markdown(item.title_en)}")
+            lines += [f"**Translation (unverified):** {plain_markdown(item.title_en)}", ""]
         if item.summary:
-            lines.append(f"Source snippet: {plain_markdown(item.summary)}")
+            lines += [f"**Source snippet:** {plain_markdown(item.summary)}", ""]
+        lines += ["**Recorded metadata**", ""]
         lines.extend(f"- {plain_markdown(line)}" for line in evidence_metadata(item))
         if item.flags:
             lines.append(f"- Flags: {plain_markdown('; '.join(item.flags))}")

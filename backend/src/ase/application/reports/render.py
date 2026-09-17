@@ -47,6 +47,7 @@ def _advocacy_lines(advocacy: DevilsAdvocacy | None) -> list[str]:
     lines.append(
         f"Contrarian view on {advocacy.target}: {advocacy.argument}{_cites(advocacy.evidence)}"
     )
+    lines.append("")
     if advocacy.confidence_before is not None and advocacy.confidence_after is not None:
         lines.append(
             f"Confidence on {advocacy.target} lowered from {advocacy.confidence_before.value} "
@@ -82,18 +83,21 @@ def _judgement_lines(body: ReportBody) -> list[str]:
     for judgement in body.key_judgements:
         cites = _cites(judgement.supporting_evidence)
         lines.append(f"- **{judgement.id}.** {judgement.statement}{cites}")
-        lines.append(
+        # A blank line before each continuation keeps it a paragraph of its own; a
+        # bare indented line would be folded into the statement wherever this renders.
+        lines += [
+            "",
             f"  Probability: {term_for(judgement.probability)}. "
-            f"Confidence: {judgement.confidence.value}. {judgement.confidence_statement}"
-        )
+            f"Confidence: {judgement.confidence.value}. {judgement.confidence_statement}",
+        ]
         if judgement.contradicting_evidence:
             contradicting = ", ".join(judgement.contradicting_evidence)
-            lines.append(f"  Contradicting evidence: {contradicting}.")
+            lines += ["", f"  Contradicting evidence: {contradicting}."]
         if judgement.indicators:
-            lines.append(f"  Indicators: {'; '.join(judgement.indicators)}.")
+            lines += ["", f"  Indicators: {'; '.join(judgement.indicators)}."]
         if judgement.change_from_previous is not None:
-            lines.append(f"  Change from previous: {judgement.change_from_previous.value}.")
-    lines.append("")
+            lines += ["", f"  Change from previous: {judgement.change_from_previous.value}."]
+        lines.append("")
     return lines
 
 
@@ -102,7 +106,7 @@ def _analysis_lines(body: ReportBody) -> list[str]:
     if body.reporting:
         lines += ["## Reporting", ""]
         for theme in body.reporting:
-            lines.append(f"### {theme.theme}")
+            lines += [f"### {theme.theme}", ""]
             for item in theme.items:
                 grade = f" ({item.grade})" if item.grade else ""
                 lines.append(f"- {item.text}{_cites(item.evidence)}{grade}")
@@ -110,7 +114,12 @@ def _analysis_lines(body: ReportBody) -> list[str]:
     if body.assessment:
         lines += ["## Assessment", ""]
         for section in body.assessment:
-            lines += [f"### {section.heading}", f"{section.text}{_cites(section.evidence)}", ""]
+            lines += [
+                f"### {section.heading}",
+                "",
+                f"{section.text}{_cites(section.evidence)}",
+                "",
+            ]
     if body.assumptions:
         lines += ["## Assumptions", ""]
         for assumption in body.assumptions:
@@ -131,7 +140,9 @@ def _analysis_lines(body: ReportBody) -> list[str]:
 def _closing_lines(body: ReportBody) -> list[str]:
     lines = ["## Indicators and warning", ""]
     lines.append(f"Watch condition: {body.indicators_and_warning.watch_condition.value}.")
-    lines.extend(f"- {change}" for change in body.indicators_and_warning.changes)
+    if body.indicators_and_warning.changes:
+        lines.append("")
+        lines.extend(f"- {change}" for change in body.indicators_and_warning.changes)
     lines.append("")
     if body.gaps or body.collection_recommendations:
         lines += ["## Gaps and collection", ""]
@@ -191,4 +202,20 @@ def render_markdown(
         ],
         *annex_lines(evidence, quality, findings),
     ]
-    return "\n".join(lines)
+    return _tidy(lines)
+
+
+def _tidy(lines: list[str]) -> str:
+    """Portable, diff-friendly Markdown: no runs of blank lines, no trailing spaces.
+
+    Renderers treat one blank line and three alike, but a diff does not, so the same
+    report content produces the same file every time.
+    """
+    output: list[str] = []
+    for line in lines:
+        stripped = line.rstrip()
+        if stripped or (output and output[-1]):
+            output.append(stripped)
+    while output and not output[-1]:
+        output.pop()
+    return "\n".join(output) + "\n"

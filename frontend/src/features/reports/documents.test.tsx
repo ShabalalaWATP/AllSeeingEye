@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -131,10 +131,12 @@ describe('report documents', () => {
         <ReportExports id="report" version={3} title="Title" preferred="pdf" language={language} />,
       );
       await userEvent.setup().click(screen.getByRole('button', { name: 'Export' }));
-      expect(screen.getByRole('status')).toHaveTextContent(
-        'replace unsupported characters with code labels',
-      );
-      expect(screen.getByRole('status')).toHaveTextContent('Choose DOCX or Markdown');
+      // The limitation sits against the format it affects and describes that item.
+      const pdf = screen.getByRole('menuitem', { name: 'Download PDF' });
+      const caveat = document.getElementById(pdf.getAttribute('aria-describedby') ?? '');
+      expect(caveat).toHaveTextContent('replaces unsupported characters with code labels');
+      expect(caveat).toHaveTextContent('Use DOCX or Markdown');
+      expect(within(pdf).getByText('Limited')).toBeVisible();
       expect(screen.getByRole('menuitem', { name: 'Download DOCX' })).toBeEnabled();
       expect(screen.getByRole('menuitem', { name: 'Download Markdown' })).toBeEnabled();
     },

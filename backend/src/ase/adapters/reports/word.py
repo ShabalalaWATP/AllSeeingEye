@@ -9,17 +9,23 @@ from urllib.parse import urlsplit
 
 from docx import Document
 from docx.document import Document as WordDocument
-from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor
-from docx.styles.style import ParagraphStyle
+from docx.shared import Inches, Pt
 from docx.text.paragraph import Paragraph
 
+from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.document_validation import validate_document_content
 from ase.adapters.reports.figure_validation import VerifiedFigure, verify_document_figures
+from ase.adapters.reports.word_styles import (
+    add_masthead,
+    add_page_furniture,
+    add_review_band,
+    add_section_number,
+    configure_styles,
+)
 from ase.domain.report_documents import (
     BlockKind,
     DocumentFigure,
@@ -136,7 +142,7 @@ def _add_table(word: WordDocument, table: DocumentTable) -> None:
     title = word.add_paragraph(table.title, style="Heading 2")
     title.paragraph_format.keep_with_next = True
     native = word.add_table(rows=1, cols=len(table.columns))
-    native.style = "Light Shading Accent 1"
+    native.style = "Light List Accent 1"
     native.autofit = True
     header = native.rows[0]
     header_properties = header._tr.get_or_add_trPr()
@@ -145,16 +151,23 @@ def _add_table(word: WordDocument, table: DocumentTable) -> None:
     header_properties.append(repeat)
     for cell, value in zip(header.cells, table.columns, strict=True):
         cell.text = value
-        for run in cell.paragraphs[0].runs:
-            run.bold = True
+        for paragraph in cell.paragraphs:
+            paragraph.paragraph_format.space_after = Pt(3)
+            for run in paragraph.runs:
+                run.bold = True
+                run.font.size = Pt(8.5)
     for row in table.rows:
         cells = native.add_row().cells
         for output, cell_value in zip(cells, row, strict=True):
             output.text = ""
-            _add_inlines(output.paragraphs[0], cell_value.text, cell_value.inlines)
+            body = output.paragraphs[0]
+            body.paragraph_format.space_after = Pt(3)
+            _add_inlines(body, cell_value.text, cell_value.inlines)
+            for run in body.runs:
+                run.font.size = Pt(9)
     if table.caption:
-        caption = word.add_paragraph(table.caption, style="Caption")
-        caption.paragraph_format.keep_with_next = False
+        caption = word.add_paragraph(table.caption, style="ASE Metadata")
+        caption.paragraph_format.space_after = Pt(10)
 
 
 def _add_figure(word: WordDocument, figure: DocumentFigure, verified: VerifiedFigure) -> None:
@@ -180,48 +193,22 @@ def _add_figure(word: WordDocument, figure: DocumentFigure, verified: VerifiedFi
         )
 
 
-def _configure_styles(word: WordDocument) -> dict[BlockKind, str]:
-    normal = word.styles["Normal"]
-    if isinstance(normal, ParagraphStyle):
-        normal.font.name, normal.font.size = "Aptos", Pt(10)
-        normal.paragraph_format.space_after = Pt(7)
-        normal.paragraph_format.line_spacing = 1.15
-    for name, size in (("Title", 22), ("Heading 1", 14), ("Heading 2", 11)):
-        style = word.styles[name]
-        if isinstance(style, ParagraphStyle):
-            style.font.name, style.font.size = "Aptos Display", Pt(size)
-            style.font.color.rgb = RGBColor.from_string("101820")
-            style.paragraph_format.keep_with_next = True
-    metadata = word.styles.add_style("ASE Metadata", WD_STYLE_TYPE.PARAGRAPH)
-    metadata.base_style = normal
-    metadata.font.size, metadata.font.color.rgb = Pt(8.5), RGBColor.from_string("59636E")
-    warning = word.styles.add_style("ASE Review Warning", WD_STYLE_TYPE.PARAGRAPH)
-    warning.base_style = normal
-    warning.font.bold = True
-    warning.font.color.rgb = RGBColor.from_string("853200")
-    return {
-        BlockKind.TITLE: "Title",
-        BlockKind.HEADING: "Heading 1",
-        BlockKind.ANNEX: "Heading 1",
-        BlockKind.SUBHEADING: "Heading 2",
-        BlockKind.TEXT: "Normal",
-        BlockKind.METADATA: "ASE Metadata",
-        BlockKind.WARNING: "ASE Review Warning",
-        BlockKind.REFERENCE: "Normal",
-    }
-
-
 def render_docx(document: ReportDocument) -> bytes:
     validate_document_content(document)
     figures = verify_document_figures(document)
     word = Document()
     section = word.sections[0]
     section.page_width, section.page_height = Inches(8.27), Inches(11.69)
-    section.top_margin = section.bottom_margin = Inches(0.65)
-    section.left_margin = section.right_margin = Inches(0.7)
-    styles = _configure_styles(word)
+    section.top_margin, section.bottom_margin = Inches(0.85), Inches(0.75)
+    section.left_margin = section.right_margin = Inches(0.78)
+    styles = configure_styles(word)
+    head, remaining = leading_identity(document)
+    add_masthead(
+        word, head, lambda paragraph, block: _add_inlines(paragraph, block.text, block.inlines)
+    )
     reference_index = 0
-    for block in document.blocks:
+    section_number = 0
+    for block in remaining:
         if block.kind is BlockKind.TABLE and block.table:
             _add_table(word, block.table)
             continue
@@ -236,19 +223,19 @@ def render_docx(document: ReportDocument) -> bytes:
             continue
         paragraph = word.add_paragraph(style=styles[block.kind])
         paragraph.paragraph_format.widow_control = True
+        if block.kind in {BlockKind.HEADING, BlockKind.ANNEX}:
+            section_number += 1
+            add_section_number(paragraph, section_number)
         if block.kind is BlockKind.REFERENCE and reference_index < len(document.references):
             _add_reference(paragraph, document.references[reference_index], block.text)
             reference_index += 1
         else:
             _add_inlines(paragraph, block.text, block.inlines)
+        if block.kind is BlockKind.WARNING:
+            add_review_band(paragraph)
         if block.kind is BlockKind.ANNEX:
             paragraph.paragraph_format.page_break_before = True
-    footer = section.footer.paragraphs[0]
-    footer.style = word.styles["ASE Metadata"]
-    footer.add_run(f"{document.reference} | page ")
-    field = OxmlElement("w:fldSimple")
-    field.set(qn("w:instr"), "PAGE")
-    footer._p.append(field)
+    add_page_furniture(word, document)
     word.core_properties.title = document.title
     word.core_properties.author = "The All Seeing Eye"
     word.core_properties.subject = document.reference

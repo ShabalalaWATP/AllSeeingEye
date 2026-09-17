@@ -108,7 +108,8 @@ describe('ReportPage', () => {
     const judgements = screen.getByRole('region', { name: 'Executive summary' });
     expect(within(judgements).getByText(/highly likely that fighting/)).toBeInTheDocument();
     expect(within(judgements).getByText('highly likely')).toBeInTheDocument();
-    expect(within(judgements).getByText('moderate confidence')).toBeInTheDocument();
+    expect(within(judgements).getByText('moderate')).toBeInTheDocument();
+    expect(within(judgements).getByText('Confidence')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Findings' })).toHaveTextContent(
       'Shelling was reported overnight.',
     );
@@ -139,8 +140,11 @@ describe('ReportPage', () => {
       within(annex).queryByRole('link', { name: 'Ministry statement' }),
     ).not.toBeInTheDocument();
     await user.click(within(annex).getByText('Ministry statement'));
-    expect(within(annex).getByText('Source flags: state controlled')).toBeVisible();
-    expect(screen.getByText('1 validator note(s)')).toBeInTheDocument();
+    const flag = within(annex).getByText('state controlled');
+    expect(flag).toBeVisible();
+    // Colour never carries the meaning on its own: the flag keeps its own label.
+    expect(flag.closest('.evidence-signal')).toHaveTextContent('Flagstate controlled');
+    expect(screen.getByText('1 validator note')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => {
