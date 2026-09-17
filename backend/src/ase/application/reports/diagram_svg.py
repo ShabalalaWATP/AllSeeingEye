@@ -169,12 +169,15 @@ def _number(value: float) -> str:
 
 def _graph(diagram: ReportDiagram) -> tuple[str, int]:
     layers = _layers(diagram)
-    box_width = min(240.0, (WIDTH - PADDING * 2 - 40 * (len(layers) - 1)) / len(layers))
+    usable = WIDTH - PADDING * 2
+    box_width = min(240.0, (usable - 40 * (len(layers) - 1)) / len(layers))
+    # Spread the layers across the full width so a short chain does not sit in one corner.
+    stride = (usable - box_width) / max(1, len(layers) - 1) if len(layers) > 1 else 0.0
     tallest = max(len(layer) for layer in layers)
     height = int(PADDING * 2 + max(1, tallest) * 74)
     centres: dict[str, tuple[float, float]] = {}
     for column, layer in enumerate(layers):
-        x = PADDING + column * (box_width + 40)
+        x = PADDING + column * stride
         for row, node_id in enumerate(layer):
             y = float(PADDING + 32 + row * 74 + (tallest - len(layer)) * 37)
             centres[node_id] = (x + box_width / 2, y)
