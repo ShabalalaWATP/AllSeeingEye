@@ -204,15 +204,19 @@ describe('AI connections', () => {
   it('saves a write-only credential draft without activating or testing it', async () => {
     const state = installConnections([]);
     const { user } = renderApp('/admin/llm', 'admin');
-    await screen.findByText('No saved drafts.');
-    await user.click(screen.getByRole('button', { name: 'Configure connection' }));
+    await screen.findByText('No additional connections.');
+    await user.click(screen.getByRole('button', { name: 'Add model connection' }));
     await user.type(screen.getByLabelText('API key'), 'synthetic-test-key');
     await user.click(screen.getByRole('button', { name: 'Continue to model' }));
+    await user.selectOptions(
+      await screen.findByLabelText('Models returned by this account'),
+      'gpt-5.6-luna',
+    );
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
-    expect(await screen.findByText(/OpenAI Luna saved/)).toBeVisible();
+    expect(await screen.findByText(/gpt-5.6-luna saved/)).toBeVisible();
     expect(state.saves[0]).toMatchObject({
       model: 'gpt-5.6-luna',
-      reasoning_effort: 'max',
+      reasoning_effort: null,
       enabled: false,
       api_key: 'synthetic-test-key',
     });
@@ -303,7 +307,7 @@ describe('AI connections', () => {
     const profile = draft({ is_bound: true });
     installConnections([profile], [binding(profile)]);
     const { user } = renderApp('/admin/llm', 'admin');
-    await screen.findByText('No saved drafts.');
+    await screen.findByText('No additional connections.');
     await user.click(screen.getByRole('button', { name: 'Replace OpenAI Luna' }));
     expect(screen.getByLabelText('Connection name')).toHaveValue('OpenAI Luna replacement');
     expect(screen.getByLabelText('API key')).toBeRequired();
@@ -319,7 +323,7 @@ describe('AI connections', () => {
     await user.click(within(row).getByRole('button', { name: 'Delete OpenAI Luna' }));
     expect(state.profiles).toHaveLength(1);
     await user.click(within(row).getByRole('button', { name: 'Confirm delete OpenAI Luna' }));
-    await waitFor(() => expect(screen.getByText('No saved drafts.')).toBeVisible());
+    await waitFor(() => expect(screen.getByText('No additional connections.')).toBeVisible());
     expect(state.profiles).toHaveLength(0);
   });
 
@@ -332,6 +336,6 @@ describe('AI connections', () => {
     );
     renderApp('/admin/llm', 'admin');
     expect(await screen.findByText('Keys cannot be stored')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Configure connection' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add model connection' })).toBeDisabled();
   });
 });

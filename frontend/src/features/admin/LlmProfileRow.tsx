@@ -84,7 +84,7 @@ export function LlmProfileRow({
         <summary className="cursor-pointer text-sm font-medium">
           {profile.name}{' '}
           <span className={`ml-2 text-xs font-normal ${tested ? 'text-good' : 'text-amber'}`}>
-            {tested ? 'Test passed' : 'Needs a test'}
+            {tested ? 'Ready to assign' : 'Needs a test'}
           </span>
         </summary>
         <div className="mt-4 space-y-4">
@@ -103,7 +103,7 @@ export function LlmProfileRow({
                 ? `Embeddings ${profile.enabled ? 'enabled' : 'disabled'}`
                 : profile.is_bound
                   ? 'Active text connection'
-                  : 'Text connection draft'}
+                  : 'Not assigned yet'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

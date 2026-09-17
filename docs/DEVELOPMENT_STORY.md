@@ -4963,3 +4963,27 @@ through HTMLParser, with casing and malformed self-closing-tag regression tests.
 Targeted tests and local container checks passed; final GitHub integration checks
 are tracked in PR #6. Remaining unfixed upstream image risks and protection setup
 are recorded in docs/security/CI_SECURITY_GATES.md.
+
+### 17 September 2026: make AI connections recoverable and clearer
+
+The new-connection form reused an existing connection name, causing a database
+uniqueness error before the provider test could run. Create and rename operations
+now return a clear conflict message instead of an unexpected server error. API
+regressions reproduce both failures and check that correcting the name succeeds
+without changing the active connection.
+
+The administrator workflow now presents provider, model test and audience as
+three steps. Names follow the selected model unless customised, credentials stay
+available for retry after a failed save, and save failures are distinguished from
+provider-test failures. A model change resets reasoning to the provider default.
+Existing overrides are collapsed when idle and kept outside the setup view.
+Work is isolated in `codex/ai-connection-journey` to preserve concurrent edits.
+
+Validation passed: 70 distinct backend and 49 frontend tests, production frontend
+build, type checks, focused lint/formatting and Bandit. Independent review identified
+a focus loss during model discovery and a missing exception-boundary test; both
+were addressed. Live OpenAI discovery returned 136 models, and `gpt-5.6-sol` passed
+the Max reasoning probe. Luna remains the global default. No assignments changed.
+Authenticated visual acceptance is pending administrator sign-in after the local
+development servers were restarted with the branch version. Full suite coverage
+was not remeasured for this focused repair.

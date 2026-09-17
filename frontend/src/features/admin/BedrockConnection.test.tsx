@@ -64,7 +64,7 @@ describe('native Amazon Bedrock connection', () => {
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'bedrock',
-        name: 'Amazon Bedrock',
+        name: 'openai.gpt-oss-120b-1:0',
         base_url: 'https://bedrock-runtime.us-east-1.amazonaws.com',
         model: 'openai.gpt-oss-120b-1:0',
         api_key: 'synthetic-bedrock-key',
@@ -79,8 +79,8 @@ describe('native Amazon Bedrock connection', () => {
     await user.type(screen.getByLabelText('Bedrock API key'), 'synthetic-other-key');
     await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
     expect(screen.getByLabelText('API key')).toHaveValue('');
-    expect(screen.getByLabelText('Model ID')).toHaveValue('gpt-5.6-luna');
-    expect(screen.getByLabelText('Reasoning effort')).toHaveValue('max');
+    expect(screen.getByLabelText('Model ID')).toHaveValue('');
+    expect(screen.getByLabelText('Reasoning effort')).toHaveValue('');
   });
 
   it('recognises saved Bedrock drafts, preserves their key only at the same endpoint and never offers stale model discovery', async () => {

@@ -3,33 +3,49 @@ import type { SyntheticEvent } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { SelectField, TextField } from '@/components/ui/Field';
 import type { LlmProfile, LlmProfileInput } from '@/lib/api/llm';
 
 import { LlmModelSelection } from './LlmModelSelection';
 import { useLlmModelDiscovery } from './useLlmModelDiscovery';
 import { LlmAdvancedSettings } from './LlmAdvancedSettings';
-import { BedrockRegion, bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
-import { LUNA_MAX_OUTPUT_TOKENS, LUNA_MODEL, OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
+import { bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
+import { OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
+import { LlmProviderFields } from './LlmProviderFields';
+import { LlmSetupProgress } from './LlmSetupProgress';
+
+function availableName(preferred: string, names: readonly string[]) {
+  let candidate = preferred.slice(0, 74);
+  let suffix = 2;
+  while (names.includes(candidate)) candidate = `${preferred.slice(0, 74)} ${suffix++}`;
+  return candidate;
+}
 
 export interface LlmProfileFormProps {
   initial?: LlmProfile | undefined;
   replacement?: boolean;
   models?: readonly string[];
+  names?: readonly string[];
   busy: boolean;
+  busyLabel?: string;
   error: string | null;
-  onSubmit: (input: LlmProfileInput) => void;
+  onSubmit:
+    | ((input: LlmProfileInput) => void)
+    | ((input: LlmProfileInput) => Promise<boolean | 'provider-error'>);
   onCancel: () => void;
-  onTest?: (input: LlmProfileInput) => void;
+  onTest?:
+    | ((input: LlmProfileInput) => void)
+    | ((input: LlmProfileInput) => Promise<boolean | 'provider-error'>);
   onChange?: () => void;
 }
 
-/** Keys exist only in this mounted form and are sent to the server once on save. */
+/** Keys stay in component memory until a save succeeds, so failed saves remain retryable. */
 export function LlmProfileForm({
   initial,
   replacement = false,
   models = [],
+  names = [],
   busy,
+  busyLabel = 'Saving draft…',
   error,
   onSubmit,
   onCancel,
@@ -40,12 +56,10 @@ export function LlmProfileForm({
   const guided = !!onTest;
   const [originalCatalogue] = useState({ id: initial?.id, revision: initial?.revision });
   const form = useRef<HTMLFormElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    form.current
-      ?.querySelector<HTMLInputElement | HTMLSelectElement>(
-        step === 2 ? 'input[name="model"]' : 'select',
-      )
-      ?.focus();
+    if (step === 2) heading.current?.focus();
+    else form.current?.querySelector('select')?.focus();
   }, [step]);
   const [provider, setProvider] = useState(
     initial?.provider === 'bedrock'
@@ -55,23 +69,25 @@ export function LlmProfileForm({
         : 'custom',
   );
   const [name, setName] = useState(
-    initial === undefined ? 'OpenAI Luna' : `${initial.name}${replacement ? ' replacement' : ''}`,
+    initial === undefined
+      ? availableName('OpenAI connection', names)
+      : replacement
+        ? availableName(`${initial.name} replacement`, names)
+        : initial.name,
   );
+  const customName = useRef(initial !== undefined);
   const [region, setRegion] = useState(
     initial?.provider === 'bedrock' ? regionFromEndpoint(initial.base_url) : '',
   );
   const [baseUrl, setBaseUrl] = useState(initial?.base_url ?? OPENAI_BASE_URL);
-  const [model, setModel] = useState(initial?.model ?? LUNA_MODEL);
+  const [model, setModel] = useState(initial?.model ?? '');
   const [apiKey, setApiKey] = useState('');
   const [embeddings, setEmbeddings] = useState(initial?.roles.includes('embeddings') ?? false);
   const [embeddingEnabled, setEmbeddingEnabled] = useState(initial?.enabled ?? false);
-  const [maxTokens, setMaxTokens] = useState(
-    String(initial?.max_output_tokens ?? LUNA_MAX_OUTPUT_TOKENS),
-  );
-  const preserveTokenBudget = useRef(initial !== undefined);
+  const [maxTokens, setMaxTokens] = useState(String(initial?.max_output_tokens ?? 16_000));
   const [temperature, setTemperature] = useState(String(initial?.temperature ?? 0.2));
   const [effort, setEffort] = useState<NonNullable<LlmProfile['reasoning_effort']> | ''>(
-    initial?.reasoning_effort ?? (initial === undefined ? 'max' : ''),
+    initial?.reasoning_effort ?? '',
   );
   const sameCredentials =
     initial !== undefined &&
@@ -86,8 +102,13 @@ export function LlmProfileForm({
     sameCredentials ? initial.id : undefined,
     provider !== 'bedrock' && (provider === 'custom' || !!apiKey.trim() || sameCredentials),
   );
-  const submit = (event: SyntheticEvent<HTMLFormElement>) => {
+  const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (guided && step === 1) {
+      setStep(2);
+      void discovery.load();
+      return;
+    }
     const input: LlmProfileInput = {
       provider: provider === 'bedrock' ? 'bedrock' : 'openai_compatible',
       name: name.trim(),
@@ -100,10 +121,12 @@ export function LlmProfileForm({
       enabled: provider !== 'bedrock' && embeddings && embeddingEnabled,
     };
     if (apiKey.trim()) input.api_key = apiKey.trim();
-    setApiKey('');
-    if ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'test' && onTest)
-      onTest(input);
-    else onSubmit(input);
+    const saved = await ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') ===
+      'test' && onTest
+      ? onTest(input)
+      : onSubmit(input));
+    if (saved === true) setApiKey('');
+    if (saved === 'provider-error') setStep(1);
   };
 
   const selectProvider = (value: string) => {
@@ -111,20 +134,22 @@ export function LlmProfileForm({
     setApiKey('');
     setEmbeddings(false);
     setEmbeddingEnabled(false);
-    if (!preserveTokenBudget.current)
-      setMaxTokens(String(value === 'openai' ? LUNA_MAX_OUTPUT_TOKENS : 16_000));
     if (value === 'bedrock') setTemperature(String(Math.min(Number(temperature) || 0, 1)));
-    setName(
-      value === 'openai'
-        ? 'OpenAI Luna'
-        : value === 'bedrock'
-          ? 'Amazon Bedrock'
-          : 'Custom connection',
-    );
+    if (!customName.current)
+      setName(
+        availableName(
+          value === 'openai'
+            ? 'OpenAI connection'
+            : value === 'bedrock'
+              ? 'Amazon Bedrock'
+              : 'Custom connection',
+          names,
+        ),
+      );
+    setModel('');
+    setEffort('');
     if (value === 'openai') {
       setBaseUrl(OPENAI_BASE_URL);
-      setModel(LUNA_MODEL);
-      setEffort('max');
     } else {
       setRegion('');
       setBaseUrl('');
@@ -136,28 +161,33 @@ export function LlmProfileForm({
   return (
     <form
       ref={form}
-      onSubmit={submit}
+      onSubmit={(event) => void submit(event)}
       onChange={onChange}
       aria-label={
         initial === undefined || replacement ? 'New AI connection' : `Edit ${initial.name}`
       }
-      className="space-y-5 border-t border-line pt-5"
+      className="space-y-6"
     >
+      {guided && <LlmSetupProgress step={step} />}
       <div>
-        <h2 className="text-base font-semibold">
-          {initial === undefined || replacement
-            ? 'Configure a connection'
+        <h2 ref={heading} tabIndex={-1} className="text-lg font-semibold">
+          {guided
+            ? step === 1
+              ? 'Connect your provider'
+              : 'Choose and test your model'
             : 'Edit draft connection'}
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Connect your provider, test the chosen model, then confirm who will use it.
+          {step === 1
+            ? 'Add your credentials, then choose a model available to your account.'
+            : 'Choose a model and check it works before changing the active connection.'}
         </p>
       </div>
       <fieldset disabled={busy} className="space-y-5">
         {guided && step === 2 && (
           <div className="space-y-2">
-            <p className="text-sm">
-              <strong>{name}</strong> - {baseUrl}
+            <p className="break-all text-xs text-muted">
+              <strong className="text-text">{name}</strong> · {baseUrl}
             </p>
             <Button
               variant="ghost"
@@ -171,77 +201,33 @@ export function LlmProfileForm({
           </div>
         )}
         <div hidden={guided && step !== 1}>
-          <h3 className="text-sm font-semibold">1. Connect your provider</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <SelectField
-              label="Provider"
-              value={provider}
-              onChange={(event) => selectProvider(event.target.value)}
-              options={[
-                { value: 'openai', label: 'OpenAI' },
-                { value: 'bedrock', label: 'Amazon Bedrock' },
-                { value: 'custom', label: 'Custom OpenAI-compatible' },
-              ]}
-            />
-            <TextField
-              label="Connection name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-              maxLength={80}
-            />
-            {provider === 'bedrock' && (
-              <BedrockRegion
-                value={region}
-                onChange={(value) => {
-                  setRegion(value);
-                  setBaseUrl(bedrockEndpoint(value));
-                  setApiKey('');
-                }}
-              />
-            )}
-            <TextField
-              label="Base URL"
-              value={baseUrl}
-              onChange={(event) => {
-                setBaseUrl(event.target.value);
-                setApiKey('');
-              }}
-              onBlur={() => {
-                if (!guided && provider === 'custom') void discovery.load();
-              }}
-              readOnly={provider !== 'custom'}
-              required
-              maxLength={512}
-              hint={
-                provider === 'openai'
-                  ? 'Official OpenAI API endpoint.'
-                  : provider === 'bedrock'
-                    ? 'AWS Bedrock Converse endpoint for the selected region.'
-                    : 'The endpoint receiving prompts and evidence. For example, http://localhost:11434/v1.'
-              }
-            />
-            <TextField
-              label={provider === 'bedrock' ? 'Bedrock API key' : 'API key'}
-              type="password"
-              autoComplete="new-password"
-              spellCheck={false}
-              onBlur={() => {
-                if (!guided) void discovery.load();
-              }}
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-              maxLength={16384}
-              required={provider !== 'custom' && !sameCredentials}
-              hint={
-                !sameCredentials
-                  ? provider === 'bedrock'
-                    ? 'Use a Bedrock API key, not an IAM access key. Stored encrypted on the server. Short-term keys expire and are not renewed automatically.'
-                    : 'Stored encrypted on the server. Only its ending is shown later.'
-                  : `Leave blank to keep the stored key (…${initial.api_key_hint || 'none'}).`
-              }
-            />
-          </div>
+          <LlmProviderFields
+            provider={provider}
+            setProvider={selectProvider}
+            name={name}
+            setName={(value) => {
+              customName.current = true;
+              setName(value);
+            }}
+            region={region}
+            setRegion={(value) => {
+              setRegion(value);
+              setBaseUrl(bedrockEndpoint(value));
+              setApiKey('');
+            }}
+            baseUrl={baseUrl}
+            setBaseUrl={(value) => {
+              setBaseUrl(value);
+              setApiKey('');
+            }}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+            sameCredentials={sameCredentials}
+            {...(initial ? { keyHint: initial.api_key_hint } : {})}
+            discover={() => {
+              if (!guided) void discovery.load();
+            }}
+          />
         </div>
         {guided && step === 1 && (
           <Button
@@ -270,7 +256,9 @@ export function LlmProfileForm({
               model={model}
               setModel={(value) => {
                 setModel(value);
-                if (value === LUNA_MODEL && effort === 'minimal') setEffort('max');
+                if (value !== model) setEffort('');
+                if (!customName.current)
+                  setName(availableName(value || 'OpenAI connection', names));
               }}
               effort={effort}
               setEffort={setEffort}
@@ -278,13 +266,11 @@ export function LlmProfileForm({
               discovery={discovery}
               onDiscover={() => void discovery.load()}
               canDiscover={provider === 'custom' || !!apiKey.trim() || sameCredentials}
-              canTest={!!onTest && !embeddings}
             />
             <LlmAdvancedSettings
               bedrock={provider === 'bedrock'}
               maxTokens={maxTokens}
               setMaxTokens={(value) => {
-                preserveTokenBudget.current = true;
                 setMaxTokens(value);
               }}
               temperature={temperature}
@@ -301,9 +287,19 @@ export function LlmProfileForm({
         )}
       </fieldset>
       {error !== null && <Alert tone="error">{error}</Alert>}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
+        {guided && step === 2 && !embeddings && (
+          <Button type="submit" name="action" value="test" busy={busy} disabled={!model.trim()}>
+            {busy ? busyLabel : 'Test connection'}
+          </Button>
+        )}
         {(!guided || step === 2) && (
-          <Button type="submit" busy={busy}>
+          <Button
+            type="submit"
+            variant={guided && !embeddings ? 'ghost' : 'primary'}
+            busy={busy}
+            disabled={!model.trim()}
+          >
             Save draft
           </Button>
         )}
@@ -311,6 +307,12 @@ export function LlmProfileForm({
           Cancel
         </Button>
       </div>
+      {guided && step === 2 && (
+        <p className="text-xs text-muted">
+          Testing saves a private draft and sends a short request. Provider charges may apply.
+          Nothing changes for users until you confirm.
+        </p>
+      )}
     </form>
   );
 }

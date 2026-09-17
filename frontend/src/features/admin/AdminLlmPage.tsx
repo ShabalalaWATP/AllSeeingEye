@@ -167,7 +167,7 @@ function ConnectionWorkspace() {
       eyebrow="Research services"
       title="AI connections"
       width="narrow"
-      description="Choose the models used for research and reports. Test a draft before applying it to the whole site, a team or a personal workspace."
+      description="Keep multiple models connected. Choose a site default, then assign different connections to teams or individual users."
       meta={
         data === null ? undefined : globalBinding !== undefined ? (
           <StatusPill tone="good">Global connection active</StatusPill>
@@ -180,7 +180,7 @@ function ConnectionWorkspace() {
       actions={
         editor.mode === 'closed' ? (
           <Button onClick={() => openEditor({ mode: 'create' })} disabled={!encryption || loading}>
-            Configure connection
+            Add model connection
           </Button>
         ) : undefined
       }
@@ -200,8 +200,8 @@ function ConnectionWorkspace() {
           and restart the server.
         </Alert>
       )}
-      {notice !== null && (
-        <p role="status" className="text-sm">
+      {notice !== null && editor.mode === 'closed' && (
+        <p role="status" className="rounded-lg border border-ember/30 bg-ember/5 px-4 py-3 text-sm">
           {notice}
         </p>
       )}
@@ -211,12 +211,12 @@ function ConnectionWorkspace() {
           before trying the switch again.
         </Alert>
       )}
-      {data !== null && (
+      {data !== null && editor.mode === 'closed' && (
         <LlmConnectionSummary
           global={global}
           teams={teamSelections}
           legacy={legacy}
-          disabled={!encryption || apply.busy || reset.busy || editor.mode !== 'closed'}
+          disabled={!encryption || apply.busy || reset.busy}
           onReset={(team) => void reset.run(team)}
           onReplace={(profile, teamId) =>
             openEditor({
@@ -233,12 +233,12 @@ function ConnectionWorkspace() {
           }}
         />
       )}
-      {data !== null && (
+      {data !== null && editor.mode === 'closed' && (
         <LlmPersonalConnections
           bindings={bindings}
           profiles={profiles}
           users={data.users}
-          disabled={!encryption || apply.busy || resetPersonal.busy || editor.mode !== 'closed'}
+          disabled={!encryption || apply.busy || resetPersonal.busy}
           onReset={(id) => void resetPersonal.run(id)}
           onReplace={(profile, userId) =>
             openEditor({ mode: 'replace', profile, models: [], initialScope: `user:${userId}` })
@@ -285,13 +285,15 @@ function ConnectionWorkspace() {
             ? { initialScope: editor.initialScope }
             : {})}
           models={editor.mode === 'create' ? [] : editor.models}
+          names={profiles.map((profile) => profile.name)}
           teams={data.teams}
           users={data.users}
           hasGlobal={globalBinding !== undefined}
           applying={apply.busy}
           onSaved={(profile) => {
             upsert(profile);
-            setNotice(`${profile.name} saved. The active connection has not changed.`);
+            if (!profile.is_tested)
+              setNotice(`${profile.name} saved. The active connection has not changed.`);
           }}
           onApply={(profile, teamId, userId) => void apply.run(profile, teamId, userId)}
           onCancel={() => setEditor({ mode: 'closed' })}

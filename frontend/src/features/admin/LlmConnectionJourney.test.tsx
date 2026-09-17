@@ -1,14 +1,43 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
+import { http, HttpResponse } from 'msw';
 import { renderApp } from '@/test/render';
+import { server } from '@/test/server';
 import { useAuthStore } from '@/stores/auth';
 import { plainUser, tokenFor } from '@/test/fixtures';
 import { binding, draft, installConnections, proof, team } from './llmTestFixtures';
+
+it('keeps keyboard focus on the step heading when delayed model discovery replaces the input', async () => {
+  installConnections([]);
+  let finish!: () => void;
+  server.use(
+    http.post('/api/admin/llm/models/discover', async () => {
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      return HttpResponse.json({ models: ['gpt-5.6-luna'] });
+    }),
+  );
+  const { user } = renderApp('/admin/llm', 'admin');
+  await user.click(await screen.findByRole('button', { name: 'Add model connection' }));
+  await user.type(screen.getByLabelText('API key'), 'synthetic-key');
+  await user.click(screen.getByRole('button', { name: 'Continue to model' }));
+  const heading = screen.getByRole('heading', { name: 'Choose and test your model' });
+  expect(heading).toHaveFocus();
+  expect(screen.getByLabelText('Model ID')).toBeVisible();
+  await waitFor(() => expect(finish).toBeTypeOf('function'));
+  await act(async () => {
+    finish();
+    await Promise.resolve();
+  });
+  await screen.findByLabelText('Models returned by this account');
+  expect(heading).toHaveFocus();
+});
 it('progresses from credentials to catalogue and test, then review and exact confirmation', async () => {
   const state = installConnections([]);
   const { user } = renderApp('/admin/llm', 'admin');
-  await screen.findByText('No saved drafts.');
-  await user.click(screen.getByRole('button', { name: 'Configure connection' }));
+  await screen.findByText('No additional connections.');
+  await user.click(screen.getByRole('button', { name: 'Add model connection' }));
   expect(screen.queryByLabelText('Model ID')).not.toBeInTheDocument();
   await user.type(screen.getByLabelText('API key'), 'synthetic-key');
   expect(state.models).toBe(0);
@@ -16,10 +45,12 @@ it('progresses from credentials to catalogue and test, then review and exact con
   await screen.findByText(/2 models returned by this account/);
   expect(screen.getByLabelText('API key')).not.toBeVisible();
   expect(screen.queryByRole('button', { name: 'Confirm switch' })).not.toBeInTheDocument();
-  expect(
-    within(screen.getByLabelText('Reasoning effort')).queryByRole('option', { name: 'Minimal' }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Reasoning effort')).toHaveValue('');
   await user.type(screen.getByLabelText('Search account models'), 'luna');
+  await user.selectOptions(
+    screen.getByLabelText('Models returned by this account'),
+    'gpt-5.6-luna',
+  );
   await user.click(screen.getByRole('button', { name: 'Test connection' }));
   await screen.findByText(/Connection test passed in/);
   expect(screen.getByLabelText('API key')).toHaveValue('');
@@ -40,10 +71,14 @@ it('progresses from credentials to catalogue and test, then review and exact con
 it('invalidates test review on returning to model settings and preserves provider fields', async () => {
   installConnections([]);
   const { user } = renderApp('/admin/llm', 'admin');
-  await screen.findByText('No saved drafts.');
-  await user.click(screen.getByRole('button', { name: 'Configure connection' }));
+  await screen.findByText('No additional connections.');
+  await user.click(screen.getByRole('button', { name: 'Add model connection' }));
   await user.type(screen.getByLabelText('API key'), 'synthetic-key');
   await user.click(screen.getByRole('button', { name: 'Continue to model' }));
+  await user.selectOptions(
+    await screen.findByLabelText('Models returned by this account'),
+    'gpt-5.6-luna',
+  );
   await user.click(screen.getByRole('button', { name: 'Test connection' }));
   await screen.findByText(/Connection test passed in/);
   await user.click(screen.getByRole('button', { name: 'Back to model settings' }));
@@ -94,6 +129,48 @@ it('preserves a team replacement audience instead of defaulting to global', asyn
   await user.click(screen.getByRole('button', { name: 'Test connection' }));
   await screen.findByText(/Connection test passed in/);
   expect(screen.getByLabelText('Apply OpenAI Luna replacement to')).toHaveValue(team.id);
+});
+
+it('keeps Luna as the default while assigning a second model to a team and personal workspace', async () => {
+  const luna = draft({
+    is_bound: true,
+    is_tested: true,
+    tested_revision: 1,
+    tested_config_hash: proof,
+  });
+  const state = installConnections([luna], [binding(luna)]);
+  const { user } = renderApp('/admin/llm', 'admin');
+  await user.click(await screen.findByRole('button', { name: 'Add model connection' }));
+  await user.type(screen.getByLabelText('API key'), 'synthetic-second-key');
+  await user.click(screen.getByRole('button', { name: 'Continue to model' }));
+  await user.selectOptions(
+    await screen.findByLabelText('Models returned by this account'),
+    'manual-alternative',
+  );
+  await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'high');
+  await user.click(screen.getByRole('button', { name: 'Test connection' }));
+  await screen.findByText(/Connection test passed in/);
+  await user.selectOptions(screen.getByLabelText('Apply manual-alternative to'), team.id);
+  await user.click(screen.getByRole('button', { name: 'Review and apply' }));
+  await user.click(screen.getByRole('button', { name: 'Confirm switch' }));
+  await screen.findByText(`${team.name} switched to manual-alternative.`);
+  expect(state.bindings.find((item) => item.team_id === null)?.profile_id).toBe(luna.id);
+  expect(state.profiles.find((item) => item.id === luna.id)?.model).toBe('gpt-5.6-luna');
+  const teamConnections = screen.getByRole('region', { name: 'Team AI overrides' });
+  await user.click(
+    within(teamConnections).getByRole('button', { name: 'Reuse manual-alternative' }),
+  );
+  await user.selectOptions(
+    screen.getByLabelText('Apply manual-alternative to'),
+    `user:${plainUser.id}`,
+  );
+  await user.click(screen.getByRole('button', { name: 'Review and apply' }));
+  await user.click(screen.getByRole('button', { name: 'Confirm switch' }));
+  await screen.findByText('Personal workspace connection switched to manual-alternative.');
+  expect(state.profiles).toHaveLength(2);
+  expect(state.bindings).toHaveLength(3);
+  expect(state.saves[0]).toMatchObject({ model: 'manual-alternative', reasoning_effort: 'high' });
+  expect(state.applies.map((item) => item.team_id)).toEqual([team.id, null]);
 });
 
 it('passes an authority-bound signal from the real confirmation UI and blocks a late 401 retry', async () => {

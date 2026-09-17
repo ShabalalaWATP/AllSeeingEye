@@ -37,14 +37,16 @@ export function LlmDraftsSection({
   return (
     <section aria-label="Saved connection drafts" className={`${ADMIN_CARD} space-y-3`}>
       <div>
-        <h2 className="text-base font-semibold">Saved drafts and embeddings</h2>
+        <h2 className="text-base font-semibold">Saved connections</h2>
         <p className="mt-1 text-sm text-muted">
-          Text drafts do not change the active connection. Test and apply a draft when it is ready.
+          Keep additional models ready here. Test a connection, then assign it to the site, a team
+          or a personal workspace.
         </p>
       </div>
       {drafts.length === 0 ? (
-        <EmptyState icon="ai" title="No saved drafts.">
-          Configure a connection to save a draft you can test before applying.
+        <EmptyState icon="ai" title="No additional connections.">
+          Add another model connection without replacing your default. Each connection keeps its own
+          model, settings and credentials.
         </EmptyState>
       ) : (
         <ul>

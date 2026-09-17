@@ -89,7 +89,7 @@ export function LlmConnectionSummary({
     <div className="space-y-6">
       <section aria-label="Global AI connection" className={ADMIN_CARD}>
         <h2 className="text-base font-semibold">
-          {legacy ? 'Current role-based connections' : 'Global connection'}
+          {legacy ? 'Current role-based connections' : 'Default connection'}
         </h2>
         <p className="mt-1 text-sm text-muted">
           {legacy
@@ -114,57 +114,71 @@ export function LlmConnectionSummary({
           </div>
         )}
       </section>
-      <section aria-label="Team AI overrides" className={ADMIN_CARD}>
-        <h2 className="text-base font-semibold">Team overrides</h2>
-        <p className="mt-1 text-sm text-muted">
-          These connections keep their own model when the global connection changes.
-        </p>
-        {teams.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">
-            No team overrides. Teams use the global connection.
+      <section aria-label="Team AI overrides" className="border-b border-line pb-5">
+        <details open={teams.length > 0}>
+          <summary className="cursor-pointer text-sm font-medium">
+            Team overrides <span className="ml-2 text-muted">{teams.length}</span>
+          </summary>
+          <p className="mt-1 text-sm text-muted">
+            These connections keep their own model when the global connection changes.
           </p>
-        ) : (
-          <ul className="mt-4 divide-y divide-line">
-            {teams.map(({ team, connections }) => (
-              <li key={team.id} className="py-4 first:pt-0">
-                <h3 className="text-sm font-semibold">
-                  {team.name}
-                  {!team.is_active && <span className="ml-2 font-normal text-muted">Archived</span>}
-                </h3>
-                {connections.map((selection) => (
-                  <Connection
-                    key={selection.profile.id}
-                    selection={selection}
-                    onReplace={(profile) => onReplace(profile, team.id)}
-                    onReuse={onReuse}
-                    disabled={disabled}
-                  />
-                ))}
-                {resetTeam === team.id ? (
-                  <div className="space-y-2">
-                    <p className="text-sm">Use the global connection for {team.name}?</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="secondary" disabled={disabled} onClick={() => onReset(team)}>
-                        Confirm use global
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        disabled={disabled}
-                        onClick={() => setResetTeam(null)}
-                      >
-                        Keep override
-                      </Button>
+          {teams.length === 0 ? (
+            <p className="mt-4 text-sm text-muted">
+              No team overrides. Teams use the global connection.
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-line">
+              {teams.map(({ team, connections }) => (
+                <li key={team.id} className="py-4 first:pt-0">
+                  <h3 className="text-sm font-semibold">
+                    {team.name}
+                    {!team.is_active && (
+                      <span className="ml-2 font-normal text-muted">Archived</span>
+                    )}
+                  </h3>
+                  {connections.map((selection) => (
+                    <Connection
+                      key={selection.profile.id}
+                      selection={selection}
+                      onReplace={(profile) => onReplace(profile, team.id)}
+                      onReuse={onReuse}
+                      disabled={disabled}
+                    />
+                  ))}
+                  {resetTeam === team.id ? (
+                    <div className="space-y-2">
+                      <p className="text-sm">Use the global connection for {team.name}?</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="secondary"
+                          disabled={disabled}
+                          onClick={() => onReset(team)}
+                        >
+                          Confirm use global
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          disabled={disabled}
+                          onClick={() => setResetTeam(null)}
+                        >
+                          Keep override
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <Button variant="ghost" disabled={disabled} onClick={() => setResetTeam(team.id)}>
-                    Use global connection
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      disabled={disabled}
+                      onClick={() => setResetTeam(team.id)}
+                    >
+                      Use global connection
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </details>
       </section>
     </div>
   );

@@ -15,11 +15,13 @@ import { ApiError, describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { LlmProfileForm } from './LlmProfileForm';
 import { LlmApplyConnection } from './LlmApplyConnection';
+import { LlmSetupProgress } from './LlmSetupProgress';
 export function LlmConnectionJourney({
   initial,
   initialScope,
   replacement,
   models,
+  names,
   teams,
   users,
   hasGlobal,
@@ -32,6 +34,7 @@ export function LlmConnectionJourney({
   initialScope?: string;
   replacement: boolean;
   models: readonly string[];
+  names?: readonly string[];
   teams: Team[];
   users: User[];
   hasGlobal: boolean;
@@ -44,14 +47,20 @@ export function LlmConnectionJourney({
   const [draft, setDraft] = useState<LlmProfile | null>(replacement ? null : (initial ?? null));
   const [tested, setTested] = useState<LlmProfile | null>(null);
   const [busy, setBusy] = useState(false);
+  const [busyLabel, setBusyLabel] = useState('Saving draft…');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const save = async (input: LlmProfileInput, test: boolean) => {
+  const save = async (
+    input: LlmProfileInput,
+    test: boolean,
+  ): Promise<boolean | 'provider-error'> => {
     const signal = request();
     setBusy(true);
     setError(null);
     setTested(null);
     setNotice(null);
+    setBusyLabel('Saving draft…');
+    let persisted = false;
     try {
       const saved = draft
         ? await updateLlmProfile(draft.id, input, signal)
@@ -59,7 +68,9 @@ export function LlmConnectionJourney({
       signal.throwIfAborted();
       setDraft(saved);
       onSaved(saved);
+      persisted = true;
       if (test) {
+        setBusyLabel('Testing with provider…');
         const result = await testLlmProfile(saved.id, signal);
         signal.throwIfAborted();
         if (!result.ok || result.revision !== saved.revision || !result.tested_config_hash)
@@ -86,10 +97,16 @@ export function LlmConnectionJourney({
         onCancel();
       }
     } catch (failure) {
-      if (!signal.aborted) setError(describeError(failure));
+      if (!signal.aborted)
+        setError(
+          `${persisted ? 'Draft saved, but the connection test failed.' : 'Could not save this draft.'} ${describeError(failure)} ${persisted ? 'Check the model and reasoning setting, then test again.' : 'Your entries are still here. Check the connection name and provider details, then retry.'} The active connection has not changed.`,
+        );
+      if (!persisted && failure instanceof ApiError && failure.fieldError('name'))
+        return 'provider-error';
     } finally {
       if (!signal.aborted) setBusy(false);
     }
+    return persisted;
   };
   return (
     <section aria-label="Guided AI connection setup" className={`${ADMIN_CARD} space-y-5`}>
@@ -98,10 +115,12 @@ export function LlmConnectionJourney({
           {...((draft ?? initial) ? { initial: draft ?? initial } : {})}
           replacement={replacement && !draft}
           models={models}
+          {...(names ? { names } : {})}
           busy={busy || applying}
+          busyLabel={busyLabel}
           error={error}
-          onSubmit={(input) => void save(input, false)}
-          onTest={(input) => void save(input, true)}
+          onSubmit={(input) => save(input, false)}
+          onTest={(input) => save(input, true)}
           onChange={() => {
             setTested(null);
             setNotice(null);
@@ -115,14 +134,15 @@ export function LlmConnectionJourney({
         </p>
       )}
       {tested && (
-        <div className="space-y-3">
+        <div className="space-y-5">
+          <LlmSetupProgress step={3} />
           <Button variant="ghost" disabled={applying} onClick={() => setTested(null)}>
             Back to model settings
           </Button>
-          <h3 className="text-sm font-semibold">3. Review scope and confirm</h3>
-          <Alert tone="warning" title="Review before switching">
-            This switches the AI provider receiving research prompts and selected evidence for the
-            chosen audience. Confirm only after reviewing the endpoint, model and scope.
+          <h2 className="text-lg font-semibold">Choose who uses this connection</h2>
+          <Alert tone="warning" title="You are about to change the active AI connection">
+            The selected provider will receive research prompts and evidence for this audience.
+            Review the details before confirming.
           </Alert>
           <LlmApplyConnection
             profile={tested}

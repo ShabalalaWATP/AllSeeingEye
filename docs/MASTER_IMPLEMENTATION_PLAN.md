@@ -917,3 +917,22 @@ the source and conversation boundaries.
 
 The detailed status and evidence log is in
 [TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).
+
+## 17 September 2026: AI connection setup repair
+
+- [x] Reproduce the duplicate-name failure on both creating and renaming a
+  connection. Return a recoverable field error while preserving the saved
+  profiles, test receipts and active bindings.
+- [x] Separate setup into provider, model test and audience confirmation, with
+  account model discovery and an exact model ID fallback.
+- [x] Retain entered credentials after a failed save, distinguish saving from
+  provider testing, and avoid reusing a model's reasoning setting by accident.
+- [x] Pass 70 distinct backend and 49 frontend regression tests, production build,
+  type checks, focused lint, formatting and Bandit. Independent review found no
+  blocking issues; its focus and exception-coverage findings were addressed.
+- [x] Verify account model discovery and a real `gpt-5.6-sol` Max compatibility
+  request against the configured OpenAI account, without changing assignments.
+- [ ] Complete authenticated visual acceptance after the administrator signs in
+  again. The updated local frontend and backend are running on ports 5174/8001.
+
+No schema migration or change to the current global connection is required.
