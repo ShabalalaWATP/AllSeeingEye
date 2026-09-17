@@ -4963,3 +4963,22 @@ through HTMLParser, with casing and malformed self-closing-tag regression tests.
 Targeted tests and local container checks passed; final GitHub integration checks
 are tracked in PR #6. Remaining unfixed upstream image risks and protection setup
 are recorded in docs/security/CI_SECURITY_GATES.md.
+
+The operator's own usage ledger then settled a question the tests could not. Conflict
+screening had been failing almost every call since 11 September: 63 to 222 attempts a day,
+between none and four of them succeeding, each running 38 to 45 seconds against a 45
+second ceiling. The cause was reasoning effort. Screening is mechanical work, but it
+inherited the profile's configured effort, which on this operator's connection is the
+maximum. Capping mechanical purposes at medium, which landed with the cost controls,
+turned that into 152 successes and one failure in a day at an average of 13 seconds. The
+same ledger prices a heavy day of real use at about 63 pence: 28 for screening, 31 for
+report generation and 4 for everything else.
+
+The ledger also showed eight report jobs paused because a single drafted section failed
+validation while every other section had completed. The repair prompt existed but only a
+resumed job used it, so a model slip that the model corrects when told about it waited for
+a person to press resume. A rejected step is now repaired once inside the run, and the
+retry is told which check failed, using the validator's own fixed wording rather than
+anything the model wrote. A repeated model connection name also answers as a conflict
+instead of failing as an unhandled database error, which is how the operator first found
+it.
