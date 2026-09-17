@@ -24,6 +24,8 @@ async def test_edition_pause_resume_retry_are_scoped_and_idempotent(
             "name": "Controlled edition",
             "template_id": "intsum",
             "country_iso": "UA",
+            # Daily explicitly: this test drives the runner, not the creation default.
+            "cadence": "daily",
             "hour_utc": (now.hour + 1) % 24,
         },
         headers=headers,

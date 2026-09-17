@@ -27,7 +27,13 @@ async def test_pause_and_resume_keep_due_slot_and_are_idempotent(client, contain
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment"]})
     created = await client.post(
         "/api/schedules",
-        json={"name": "Cadence", "template_id": "intsum", "country_iso": "UA"},
+        # Daily explicitly: this test is about pause and resume, not the creation default.
+        json={
+            "name": "Cadence",
+            "template_id": "intsum",
+            "country_iso": "UA",
+            "cadence": "daily",
+        },
         headers=headers,
     )
     assert created.status_code == 201, created.text
