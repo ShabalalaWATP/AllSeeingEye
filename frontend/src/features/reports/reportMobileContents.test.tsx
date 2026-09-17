@@ -15,6 +15,7 @@ const block = (kind: 'title' | 'heading', text: string) => ({
   ordered: false,
   table: null,
   figure: null,
+  diagram: null,
 });
 
 it('offers collapsible report contents on narrow screens and closes after section selection', async () => {

@@ -20,6 +20,7 @@ const publication: ReportPublication = {
       ordered: false,
       table: null,
       figure: null,
+      diagram: null,
     },
     {
       kind: 'heading',
@@ -29,6 +30,7 @@ const publication: ReportPublication = {
       ordered: false,
       table: null,
       figure: null,
+      diagram: null,
     },
     {
       kind: 'text',
@@ -38,6 +40,7 @@ const publication: ReportPublication = {
       ordered: false,
       table: null,
       figure: null,
+      diagram: null,
     },
     {
       kind: 'table',
@@ -60,6 +63,7 @@ const publication: ReportPublication = {
         caption: 'Source-reported dates.',
       },
       figure: null,
+      diagram: null,
     },
     {
       kind: 'diagram',
@@ -86,6 +90,7 @@ const publication: ReportPublication = {
       ordered: false,
       table: null,
       figure: null,
+      diagram: null,
     },
     {
       kind: 'reference',
@@ -95,6 +100,7 @@ const publication: ReportPublication = {
       ordered: false,
       table: null,
       figure: null,
+      diagram: null,
     },
   ],
   references: [

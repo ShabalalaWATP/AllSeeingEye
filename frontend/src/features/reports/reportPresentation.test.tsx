@@ -28,6 +28,7 @@ const block = (
   ordered: false,
   table: null,
   figure: null,
+  diagram: null,
 });
 
 describe('report document presentation', () => {
