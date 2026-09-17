@@ -132,6 +132,27 @@ def _merge(
     )
 
 
+def _untried_first(
+    providers: Sequence[ResearchProvider], allocation: AllocatedPlan | None, first: ResearchBatch
+) -> tuple[Sequence[ResearchProvider], AllocatedPlan | None]:
+    """Preserve admission and relative priority while putting untried work first."""
+    attempted = frozenset(
+        (row.task_id or row.source_id) for row in first.attempts if row.status not in _UNATTEMPTED
+    )
+    if allocation is not None:
+        return providers, replace(
+            allocation,
+            admitted_tasks=tuple(
+                sorted(
+                    allocation.admitted_tasks,
+                    key=lambda task: (task.task_id or task.source_id) in attempted,
+                )
+            ),
+        )
+    attempted_sources = {row.source_id for row in first.attempts if row.status not in _UNATTEMPTED}
+    return sorted(providers, key=lambda provider: provider.id in attempted_sources), None
+
+
 async def collect_with_replan(  # noqa: PLR0912 - one shared-budget state machine
     providers: Sequence[ResearchProvider],
     query: ResearchQuery,
@@ -270,6 +291,13 @@ async def collect_with_replan(  # noqa: PLR0912 - one shared-budget state machin
     ):
         return _merge(first, query, invoked, trace=trace)
     second_allocation = await allocate(revised or query) if allocate is not None else None
+    if revised is not None:
+        # Term changes permit another search, but must not spend the entire remaining
+        # allowance retrying the first sources while admitted fallbacks remain untried.
+        # Stable ordering retains allocation priority within each group and never
+        # promotes a task that current source admission excluded.
+        ordered, second_allocation = _untried_first(providers, second_allocation, first)
+        collector = ResearchCollector(ordered)
     second = await collector.collect(
         revised or query,
         run_budget=state,

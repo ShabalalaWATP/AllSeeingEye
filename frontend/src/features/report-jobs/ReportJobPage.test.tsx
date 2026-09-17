@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { http, HttpResponse } from 'msw';
@@ -40,6 +40,82 @@ it('shows usable partial sections, selected model and a bounded usage breakdown'
   expect(screen.getByText('Evidence labels: E1 · E2')).toBeVisible();
   fireEvent.click(screen.getByText('Model, usage and run details'));
   expect(screen.getByText('1,200 of 18,000')).toBeVisible();
+});
+
+it('shows the incomplete section reason while collapsed and preserves accepted prose', async () => {
+  const interruption = 'Generation was interrupted. Review the saved work before resuming.';
+  const failure = 'A generated section did not pass validation.';
+  const reporting = [
+    'Public sources reported fighting near the border during the observation period.',
+    'The retained accounts describe local disruption but do not establish its wider extent.',
+  ];
+  const assessment =
+    'The available evidence supports a limited local assessment. Independent confirmation is needed before drawing wider conclusions.';
+  const accepted = reportJob().sections[0]!;
+  server.use(
+    http.get('/api/report-jobs/:id', () =>
+      HttpResponse.json(
+        reportJob({
+          status: 'paused',
+          can_resume: true,
+          error: interruption,
+          total_sections: 2,
+          sections: [
+            { ...accepted, title: 'Conflict (UA)', reporting, assessment },
+            {
+              id: 'section-2',
+              title: 'Disaster (UA)',
+              kind: 'topic',
+              status: 'incomplete',
+              reporting: [],
+              assessment: null,
+              citations: [],
+              error: failure,
+            },
+          ],
+        }),
+      ),
+    ),
+  );
+  const user = userEvent.setup();
+  mount();
+  expect(await screen.findByText(interruption)).toBeVisible();
+  const incomplete = screen.getByText('Disaster (UA)').closest('details')!;
+  expect(incomplete).not.toHaveAttribute('open');
+  const summary = incomplete.querySelector('summary')!;
+  expect(summary).toHaveTextContent(`Incomplete · ${failure}`);
+  expect(within(summary).getByText(failure, { exact: false })).toBeVisible();
+  await user.click(screen.getByText('Conflict (UA)'));
+  for (const paragraph of [...reporting, assessment]) {
+    expect(screen.getByText(paragraph)).toBeVisible();
+  }
+  expect(screen.getByText('Evidence labels: E1 · E2')).toBeVisible();
+  expect(incomplete).not.toHaveAttribute('open');
+});
+
+it('shows an accepted gap-only section as evidence gaps rather than unfinished assessment', async () => {
+  const gap = 'The retained evidence does not establish local disaster conditions.';
+  const section = {
+    ...reportJob().sections[0]!,
+    title: 'Disaster (UA)',
+    reporting: [],
+    assessment: null,
+    citations: [],
+    gaps: [gap],
+  };
+  server.use(
+    http.get('/api/report-jobs/:id', () =>
+      HttpResponse.json(reportJob({ status: 'paused', sections: [section] })),
+    ),
+  );
+  mount();
+  const title = await screen.findByText('Disaster (UA)');
+  expect(title.closest('summary')).toHaveTextContent('Section accepted');
+  await userEvent.setup().click(title);
+  expect(screen.getByRole('heading', { name: 'Evidence gaps' })).toBeVisible();
+  expect(screen.getByText(gap)).toBeVisible();
+  expect(screen.queryByRole('heading', { name: 'Assessment' })).not.toBeInTheDocument();
+  expect(screen.queryByText('This section is still being prepared.')).not.toBeInTheDocument();
 });
 
 it('pauses and resumes the same job while retaining accepted sections and warning about uncertain usage', async () => {

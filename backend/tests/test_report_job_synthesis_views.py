@@ -72,9 +72,9 @@ def test_completed_children_show_plain_context_and_do_not_duplicate_compatibilit
     assert second["reporting"] == [] and second["citations"] == []
     assert second["assessment"] == (
         "Sourcing: Coverage is limited to the selected public sources.\n\n"
-        "Evidence gap: Independent verification is unavailable.\n\n"
         "Collection recommendation: Seek a second independent account."
     )
+    assert second["gaps"] == ["Independent verification is unavailable."]
     assert value["sections"] == original_sections
 
 
@@ -150,8 +150,9 @@ def test_split_context_accepts_ten_valid_gaps_from_current_writer_schema():
     value = split_payload()
     body = value["sections"][f"{PACKET}:synthesis_context"]["payload"]["body"]
     body["gaps"] = [{"text": str(index) + "x" * 399, "eei": None} for index in range(10)]
-    result = job_view(job(payload=value))["sections"][1]["assessment"]
-    assert result.count("Evidence gap:") == 10
+    result = job_view(job(payload=value))["sections"][1]["gaps"]
+    assert result == [row["text"] for row in body["gaps"]]
+    assert len(result) == 10
     body["gaps"][0]["text"] += "x"
     with pytest.raises(InvalidRequest):
         job_view(job(payload=value))
@@ -162,7 +163,7 @@ def test_legacy_omnibus_keeps_supported_longer_gap_text():
     body = {**judgements(), **context(), "gaps": [{"text": "x" * 1200, "eei": None}]}
     value["sections"] = {f"{PACKET}:synthesis": synthesis("synthesis", body, parent=None)}
     refresh_summary(value)
-    assert "x" * 1200 in job_view(job(payload=value))["sections"][0]["assessment"]
+    assert job_view(job(payload=value))["sections"][0]["gaps"] == ["x" * 1200]
 
 
 def test_canonical_storage_order_still_displays_judgements_before_context():

@@ -299,6 +299,9 @@ class _Runner:
                 eeis=self.eeis,
             )
         except (ValueError, TypeError, RecursionError):
+            # Only confirmed invalid output gets one repair. Provider failures do not.
+            if topic is not None and not repair:
+                return await self.call(topic, expected, repair=True)
             await self.pause(expected, "invalid_section")
 
 

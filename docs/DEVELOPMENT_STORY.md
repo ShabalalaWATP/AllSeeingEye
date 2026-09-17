@@ -5028,3 +5028,39 @@ when the worker supplied an already-metered text gateway. Embedding accounting
 is now wired separately, preserving actor/team attribution and one charge per
 text call. Regression tests cover refusal before a provider call when blocked,
 exact text-plus-embedding totals and attribution to the subscription owner.
+
+### 17 September 2026: recover rejected report sections and tighten collection
+
+Inspection of a paused local report found six confirmed completed model calls,
+one accepted section and one rejected section, with substantial allowance left.
+Its expired worker lease had replaced the known section failure with a generic
+interruption reason. The original reason for the missed terminal update was not
+established. Terminal pause/failure now retains the reason only while the same
+worker token and revision own the running row. Normal work and publication still
+require an unexpired lease. Expired recovery recognises only unambiguous settled
+section failures; unknown paid outcomes remain conservative and do not auto-run.
+
+A new topic response that fails validation gets one metered correction attempt.
+An explicit resume retries only the unfinished topic, preserving accepted sections,
+the frozen evidence and all lifetime limits. Provider failures and uncertain calls
+do not enter that automatic repair. The progress view now accepts all six valid
+reporting items, exposes incomplete-section errors while collapsed and labels
+accepted evidence gaps separately rather than making gap-only sections look empty.
+
+The same investigation found unrelated country observations in the frozen packet
+and two passes spending the allowance on the same first three connectors. New
+general questions with a clear subject and short named locality now require both
+in the source text. This deliberately narrow lexical rule is not geocoding or a
+semantic relevance model; country-wide, language-only, generic news, private-input
+and area workflows retain their existing rules. Independent review caught and
+regression-tested generic-news, country-abbreviation and output-language false
+positives. Revised collection now tries unattempted admitted sources first without
+expanding its operation or time budgets or adding excluded sources.
+
+Focused backend suites cover worker/storage recovery, subscription reconciliation,
+section correction/projection, evidence scope, collection allocation and durable
+source budgets. Frontend report progress/API tests passed (27), as did the production
+build, full backend mypy, focused Ruff/formatting, frontend type/lint checks,
+configured Bandit, import contracts, file-length and whitespace checks. Coverage
+was not remeasured for this repair. The operations guide and active plan record
+the remaining expensive heartbeat and undated infrastructure-context limitations.

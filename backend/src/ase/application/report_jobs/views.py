@@ -9,6 +9,7 @@ from ase.application.report_jobs.budget import (
     token_count,
 )
 from ase.application.report_jobs.controls import NON_RESUMABLE_ERRORS
+from ase.application.reports.sections.contracts import TOPIC_SCHEMA
 from ase.application.reports.templates import template_for
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_jobs import ReportJob
@@ -153,28 +154,31 @@ def refresh_summary(payload: dict[str, Any]) -> None:
     }
 
 
-def _context_preview(body: dict[str, Any], *, split: bool) -> str | None:
+def _context_preview(body: dict[str, Any]) -> str | None:
     """Project accepted synthesis context as bounded text, never serialise nested data."""
     parts = []
     if "sourcing_statement" in body:
         parts.append("Sourcing: " + _text(body["sourcing_statement"], MAX_SECTION_CHARS))
-    for field, prefix in (
-        ("gaps", "Evidence gap"),
-        ("collection_recommendations", "Collection recommendation"),
-    ):
-        values = body.get(field, [])
-        if type(values) is not list or len(values) > (MAX_LIST if field == "gaps" else 8):
-            raise InvalidRequest("The saved report context is unavailable.")
-        for value in values:
-            if field == "gaps":
-                if type(value) is not dict:
-                    raise InvalidRequest("The saved report context is unavailable.")
-                text_value = value.get("text")
-            else:
-                text_value = value
-            limit = 400 if split and field == "gaps" else MAX_ITEM_CHARS
-            parts.append(prefix + ": " + _text(text_value, limit))
+    values = body.get("collection_recommendations", [])
+    if type(values) is not list or len(values) > 8:
+        raise InvalidRequest("The saved report context is unavailable.")
+    for value in values:
+        parts.append("Collection recommendation: " + _text(value, MAX_ITEM_CHARS))
     return "\n\n".join(parts) or None
+
+
+def _gap_preview(body: dict[str, Any], *, topic: bool, split: bool) -> list[str]:
+    """Release only bounded accepted gap text, separately from the assessment."""
+    values = body.get("gaps", [])
+    maximum = TOPIC_SCHEMA["properties"]["gaps"]["maxItems"] if topic else MAX_LIST
+    if type(values) is not list or len(values) > maximum:
+        raise InvalidRequest("The saved report gaps are unavailable.")
+    result = []
+    for value in values:
+        if type(value) is not dict:
+            raise InvalidRequest("The saved report gaps are unavailable.")
+        result.append(_text(value.get("text"), 400 if split else MAX_ITEM_CHARS))
+    return result
 
 
 def _section(value: dict[str, Any]) -> dict[str, Any]:
@@ -186,6 +190,7 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
         raise InvalidRequest("The saved report section metadata is unavailable.")
     body = data.get("body") if value["status"] == "completed" else None
     reporting: list[str] = []
+    gaps: list[str] = []
     assessment = None
     citations: set[str] = set()
     if body is not None:
@@ -195,9 +200,12 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
             body.get("reporting", []) if data["kind"] == "topic" else body.get("key_judgements", [])
         )
         paragraphs = body.get("assessment", [])
+        max_rows = (
+            TOPIC_SCHEMA["properties"]["reporting"]["maxItems"] if data["kind"] == "topic" else 5
+        )
         if (
             type(rows) is not list
-            or len(rows) > 5
+            or len(rows) > max_rows
             or type(paragraphs) is not list
             or len(paragraphs) > 1
         ):
@@ -223,8 +231,11 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
         text_key = "text" if data["kind"] == "topic" else "statement"
         reporting = [_text(row.get(text_key), 12_000) for row in rows]
         assessment = _text(paragraphs[0].get("text"), 12_000) if paragraphs else None
+        gaps = _gap_preview(
+            body, topic=data["kind"] == "topic", split=identity == "synthesis_context"
+        )
         if data["kind"] == "synthesis":
-            assessment = _context_preview(body, split=identity == "synthesis_context")
+            assessment = _context_preview(body)
     return {
         "id": identity,
         "title": _text(data.get("title"), 300),
@@ -232,6 +243,7 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
         "status": value["status"],
         "reporting": reporting,
         "assessment": assessment,
+        "gaps": gaps,
         "citations": sorted(citations),
         "error": error_message(value.get("reason")),
     }
