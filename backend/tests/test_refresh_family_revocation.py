@@ -127,11 +127,19 @@ async def test_postgres_refresh_interleaves_with_family_revocation(
         *,
         family_id: UUID | None = None,
         parent_id: UUID | None = None,
+        mfa_verified: bool = False,
     ) -> AuthSession:
         if parent_id == child_token.id:
             consumed.set()
             await asyncio.wait_for(permit_insert.wait(), 10)
-        return await start(self, user, context, family_id=family_id, parent_id=parent_id)
+        return await start(
+            self,
+            user,
+            context,
+            family_id=family_id,
+            parent_id=parent_id,
+            mfa_verified=mfa_verified,
+        )
 
     monkeypatch.setattr(SessionFactory, "start", pause_after_consume)
 
@@ -145,26 +153,25 @@ async def test_postgres_refresh_interleaves_with_family_revocation(
             with pytest.raises(InvalidRefreshToken):
                 await container.refresh(session).execute(initial.refresh_secret, CONTEXT)
 
-    child_task = asyncio.create_task(refresh_child())
-    await asyncio.wait_for(consumed.wait(), 10)
-    replay_task = asyncio.create_task(replay_root())
-    try:
-        async with asyncio.timeout(10), container.session_factory() as observer:
-            while not await observer.scalar(
-                text(
-                    "SELECT 1 FROM pg_stat_activity "
-                    "WHERE application_name = 'ase_family_revocation_test' "
-                    "AND wait_event_type = 'Lock'",
-                )
-            ):
-                await observer.commit()
-                await asyncio.sleep(0.01)
-        permit_insert.set()
-        grandchild = await child_task
-        await replay_task
-    finally:
-        permit_insert.set()
-        await asyncio.gather(child_task, replay_task, return_exceptions=True)
+    # A child failure must surface immediately, not masquerade as a barrier timeout.
+    async with asyncio.TaskGroup() as tasks:
+        child_task = tasks.create_task(refresh_child())
+        try:
+            await asyncio.wait_for(consumed.wait(), 10)
+            tasks.create_task(replay_root())
+            async with asyncio.timeout(10), container.session_factory() as observer:
+                while not await observer.scalar(
+                    text(
+                        "SELECT 1 FROM pg_stat_activity "
+                        "WHERE application_name = 'ase_family_revocation_test' "
+                        "AND wait_event_type = 'Lock'",
+                    )
+                ):
+                    await observer.commit()
+                    await asyncio.sleep(0.01)
+        finally:
+            permit_insert.set()
+    grandchild = child_task.result()
     async with container.session_factory() as session:
         row = await container.repositories(session).refresh_tokens.get_by_hash(
             container.generator.hash(grandchild.refresh_secret),

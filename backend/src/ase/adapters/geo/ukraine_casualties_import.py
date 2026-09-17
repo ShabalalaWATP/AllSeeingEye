@@ -7,10 +7,10 @@ is absent the month keeps its link and no figures. Operator-run, never at runtim
 
 from __future__ import annotations
 
-import html
 import json
 import re
 from datetime import UTC, date, datetime
+from html.parser import HTMLParser
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -54,9 +54,39 @@ _PUBLISHED = re.compile(r'datetime="(\d{4}-\d{2}-\d{2})')
 _TITLE = re.compile(r"<title>(.*?)\s*\|", re.S)
 
 
+class _VisibleText(HTMLParser):
+    """Extract visible text; decoded entities mean the output must be treated as text."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self.hidden: str | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in {"script", "style"} and self.hidden is None:
+            self.hidden = tag
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == self.hidden:
+            self.hidden = None
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        # HTML ignores the self-closing slash on raw-text elements. Keep hiding
+        # their contents until an explicit end tag, including malformed input.
+        self.handle_starttag(tag, attrs)
+        if tag in {"script", "style"}:
+            self.set_cdata_mode(tag)
+
+    def handle_data(self, data: str) -> None:
+        if self.hidden is None:
+            self.parts.append(data)
+
+
 def _plain(markup: str) -> str:
-    body = re.sub(r"<script.*?</script>|<style.*?</style>", "", markup, flags=re.S)
-    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", body)).split())
+    parser = _VisibleText()
+    parser.feed(markup)
+    parser.close()
+    return " ".join(" ".join(parser.parts).split())
 
 
 def parse_listing(markup: str) -> list[tuple[str, date]]:

@@ -51,3 +51,21 @@ An unfiltered API scan still reported upstream Debian findings without fixes,
 including critical CVE-2026-6653 in libxml2. These are outstanding risks under the
 existing `ignore-unfixed` policy, not remediated findings. Repeat the full image
 scan when upstream updates become available. Scan results depend on database time.
+
+CodeQL alerts 5002 and 5003 were reviewed and dismissed as false positives: the
+cookie transports an opaque bearer token with HttpOnly/SameSite controls; SHA-256
+digests random tokens, while human passwords use Argon2id. Alerts 5004 through
+5007 are test-only assertions, including exact host/handle membership and
+User-Agent provenance. Their individual dismissal records retain the rationale.
+The casualty importer now uses HTMLParser to exclude hidden script/style text
+instead of regex stripping (5008). The economic summary test now positively
+asserts HTTP(S) link protocols (5001). Neither test assertions nor the importer
+text output are production HTML sanitisation boundaries.
+
+The full database run also exposed missing parent/child flush ordering when
+creating report ledgers. The parent is now flushed inside the existing savepoint
+before its entries, preserving atomic rollback and foreign-key enforcement.
+The refresh-family concurrency test now forwards the MFA argument and propagates
+child-task failures. Report-worker fixture completion is bounded at 60 seconds
+instead of 15, after observing active checkpoint SQL work under coverage; the
+120-second test ceiling and result assertions remain unchanged.
