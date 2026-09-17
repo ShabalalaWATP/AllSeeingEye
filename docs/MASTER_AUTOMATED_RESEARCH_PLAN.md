@@ -694,5 +694,10 @@ See [Public figures](PUBLIC_FIGURES.md).
   retaining live authorisation, source/model changes and lease ownership checks.
   The current heartbeat still repeats full checkpoint validation every ten seconds.
 
+Live recovery saved the original report as needs review. Its frozen evidence did
+not establish the requested Kyiv attack details; coverage, figure and style
+findings remain visible rather than being waived. The optional analysis deadline
+now matches the other native Max report stages, with uncertain usage retained.
+
 Frozen paused jobs retain their original evidence; improved collection and scope
 selection apply to new jobs. See [research operations](RESEARCH_WORKSPACE_OPERATIONS.md).

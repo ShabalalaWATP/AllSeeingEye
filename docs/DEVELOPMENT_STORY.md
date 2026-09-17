@@ -5097,5 +5097,16 @@ and file-length checks passed. Coverage was not remeasured for this repair.
 Live recovery then completed both new context steps with the configured Luna Max
 model, using 5,745 and 4,099 output/reasoning tokens. The original five accepted
 sections and failed-call accounting were retained. The job advanced to its separate
-analysis pass. This observation confirms the failed step is recovered, not yet
-that final evidence quality or publication checks have passed.
+analysis pass. The finished product was saved as needs review: the original frozen
+packet did not substantiate the requested Kyiv-specific attack details, and final
+checks identified requirement-coverage, figure and citation-style issues. The
+synthesis recovery is confirmed; this is not a verified attack assessment.
+
+The subsequent optional analysis request hit the default 120-second timeout.
+Its report_analysis schema had been omitted from the bounded 300-second native
+Max report allowance. The omission is corrected for future requests while
+explicit timeouts and cancellation remain authoritative. The uncertain paid
+request was not repeated and retains its reservation. Citation entailment and
+claim extraction completed. The saved report exposes the remaining findings.
+The timeout regression failed before the fix; all 45 deadline tests then passed,
+including explicit overrides, non-Max/local defaults and cancellation.

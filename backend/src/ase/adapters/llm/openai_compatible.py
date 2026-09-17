@@ -38,6 +38,7 @@ REPORT_SCHEMAS = frozenset(
         "report_context",
         "report_alternatives",
         "report_collection",
+        "report_analysis",
     }
 )
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
