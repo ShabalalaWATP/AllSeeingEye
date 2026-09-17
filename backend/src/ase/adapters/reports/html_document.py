@@ -5,6 +5,7 @@ import re
 from html import escape
 from urllib.parse import urlsplit
 
+from ase.adapters.reports.diagram_validation import verify_document_diagrams
 from ase.adapters.reports.document_validation import validate_document_content
 from ase.adapters.reports.figure_validation import verify_document_figures
 from ase.domain.errors import InvalidRequest
@@ -44,6 +45,7 @@ th { background: #183746; color: white; }
 th,td { border: 1px solid #bac2c9; padding: 1.5mm; text-align: start; vertical-align: top; }
 figure { margin: 6mm 0; break-inside: avoid; text-align: center; }
 figure img { display: block; max-width: 100%; max-height: 170mm; margin: auto; }
+figure svg { display: block; max-width: 100%; height: auto; margin: auto; }
 """
 
 
@@ -113,6 +115,7 @@ def _reference_html(reference: DocumentReference, text: str) -> str:
 def render_html(document: ReportDocument) -> bytes:
     """Render bounded immutable content; original text never becomes HTML syntax."""
     validate_document_content(document)
+    verify_document_diagrams(document)
     figures = verify_document_figures(document)
     language = document.language if valid_language_code(document.language) else "und"
     direction = "rtl" if language.lower().split("-")[0] in {"ar", "fa"} else "ltr"
@@ -165,6 +168,23 @@ def render_html(document: ReportDocument) -> bytes:
                 f'alt="{escape(figure.alt_text, quote=True)}">'
                 f"<figcaption>{escape(figure.title)}. {escape(figure.caption)}"
                 f"{citation_html}</figcaption></figure>"
+            )
+            continue
+        if block.kind is BlockKind.DIAGRAM and block.diagram:
+            diagram = block.diagram
+            citation = (
+                f" [{', '.join(str(number) for number in diagram.citation_numbers)}]"
+                if diagram.citation_numbers
+                else ""
+            )
+            citation_html = (
+                _inline_html(DocumentInline(citation, "ltr", diagram.citation_numbers))
+                if citation
+                else ""
+            )
+            parts.append(
+                f"<figure>{diagram.svg}<figcaption>{escape(diagram.title)}. "
+                f"{escape(diagram.caption)}{citation_html}</figcaption></figure>"
             )
             continue
         tag = _TAGS[block.kind]

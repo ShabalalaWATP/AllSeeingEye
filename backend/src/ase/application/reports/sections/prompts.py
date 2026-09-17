@@ -5,7 +5,13 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 from ase.application.reports.depth import depth_for
-from ase.application.reports.prompts import doctrine_preamble, evidence_block, output_guidance
+from ase.application.reports.prompts import (
+    ANALYSIS_STANDARD,
+    doctrine_preamble,
+    evidence_block,
+    output_guidance,
+    template_guidance,
+)
 from ase.application.reports.sections.planning import Topic, canonical_json
 from ase.application.reports.sections.quality import RequirementCoverage
 from ase.application.reports.sections.synthesis_contracts import JUDGEMENTS, PARTS
@@ -102,6 +108,10 @@ class PromptContext:
             system = (
                 doctrine_preamble()
                 + "\n"
+                + template_guidance(self.template)
+                + "\n"
+                + ANALYSIS_STANDARD
+                + "\n"
                 + PROVENANCE
                 + presentation
                 + "\n"
@@ -128,15 +138,21 @@ class PromptContext:
                 else ""
             )
             system = (
-                PROVENANCE
+                template_guidance(self.template)
+                + "\n"
+                + ANALYSIS_STANDARD
+                + "\n"
+                + PROVENANCE
                 + presentation
                 + "\n"
                 + (
                     "This call writes only one topic's reporting, assessment and gaps. Other "
                     "steps provide the final judgements, assumptions and synthesis. Do not write "
-                    "a complete report. Use up to four reporting items and one assessment "
-                    "paragraph explaining limitations and implications within the requested "
-                    "topic allowance. When no research depth is requested, keep these brief. "
+                    "a complete report. Use up to six reporting items and one assessment "
+                    "paragraph within the requested topic allowance. The assessment paragraph "
+                    "is analysis, not a restatement: say what this topic's reporting means, "
+                    "what is driving it, what follows from it, the competing explanation and "
+                    "what would show your reading is wrong. "
                     "Reporting "
                     "states what sources report without likelihood yardstick terms. Cite exact "
                     "supplied E IDs on each reporting item and assessment. Copy cited grades "

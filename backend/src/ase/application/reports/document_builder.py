@@ -5,12 +5,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
+from ase.application.reports.diagram_svg import render_diagram_svg
+from ase.application.reports.diagram_text import project_diagram
 from ase.application.reports.reference_projection import build_references
 from ase.domain.errors import InvalidRequest
 from ase.domain.evidence import EvidenceItem
+from ase.domain.report_diagrams import ReportDiagram
 from ase.domain.report_documents import (
     BlockKind,
     DocumentBlock,
+    DocumentDiagram,
     DocumentFigure,
     DocumentInline,
     DocumentListItem,
@@ -77,6 +81,36 @@ class DocumentBuilder:
 
     def heading(self, text: str) -> None:
         self.add(text, BlockKind.HEADING)
+
+    def diagram(self, diagram: ReportDiagram) -> None:
+        """Draw the validated data, then always place its equivalent table beside it."""
+        projection = project_diagram(diagram)
+        numbers = self._citations(diagram.evidence_labels())
+        self.blocks.append(
+            DocumentBlock(
+                BlockKind.DIAGRAM,
+                self._bounded(diagram.alt_text),
+                diagram=DocumentDiagram(
+                    title=diagram.title,
+                    caption=projection.caption,
+                    alt_text=diagram.alt_text,
+                    svg=render_diagram_svg(diagram),
+                    citation_numbers=numbers,
+                ),
+            )
+        )
+        rows = tuple(
+            (
+                *(DocumentTableCell(_clean(value)) for value in cells),
+                self._source_cell(evidence),
+            )
+            for cells, evidence in projection.rows
+        )
+        self.table(DocumentTable(projection.title, projection.columns, rows, projection.caption))
+
+    def _source_cell(self, evidence: Sequence[str]) -> DocumentTableCell:
+        runs = self.cited_runs(", ".join(evidence), evidence)
+        return DocumentTableCell("".join(run.text for run in runs), runs)
 
     def figure(self, figure: DocumentFigure) -> None:
         self.blocks.append(

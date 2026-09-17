@@ -22,7 +22,11 @@ from ase.api.schemas_research_plan import QueryVariantIn
 from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
 from ase.application.reports.document import build_document
 from ase.application.reports.request import ReportRequest
-from ase.application.reports.templates import TEMPLATES, Template
+from ase.application.reports.templates import (
+    AREA_DEFAULT_TEMPLATE,
+    TEMPLATES,
+    Template,
+)
 from ase.domain.advocacy import advocacy_to_dict
 from ase.domain.claim_generation import ClaimGenerationReceipt
 from ase.domain.claim_ledger import build_claim_ledger
@@ -122,9 +126,19 @@ class ReportCreateIn(BaseModel):
         self.to_request()
         return self
 
+    def _template_id(self) -> str:
+        """A new drawn-area or map-object request gets the area product, not free text.
+
+        Regeneration rebuilds a saved report from its stored scope and template, so an
+        existing area report keeps the product it was written as.
+        """
+        chosen = self.template.strip().lower()
+        area = self.research_area is not None or self.map_view_id is not None
+        return AREA_DEFAULT_TEMPLATE if area and chosen == "ask" else chosen
+
     def to_request(self) -> ReportRequest:
         return ReportRequest(
-            template_id=self.template.strip().lower(),
+            template_id=self._template_id(),
             country_iso=self.country.upper() if self.country else None,
             country_isos=tuple(self.countries),
             research_web_search=self.research_web_search,

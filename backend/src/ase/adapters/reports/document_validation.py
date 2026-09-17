@@ -18,6 +18,8 @@ def validate_document_content(document: ReportDocument) -> None:
             values.extend(cell.text for row in block.table.rows for cell in row)
         if block.figure:
             values.extend((block.figure.title, block.figure.caption, block.figure.alt_text))
+        if block.diagram:
+            values.extend((block.diagram.title, block.diagram.caption, block.diagram.alt_text))
     for reference in document.references:
         values.extend(
             (

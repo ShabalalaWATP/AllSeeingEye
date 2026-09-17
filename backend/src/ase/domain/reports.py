@@ -14,6 +14,8 @@ from enum import StrEnum
 from typing import Any
 
 from ase.domain.doctrine import Confidence, Probability
+from ase.domain.report_diagram_records import restore_diagrams
+from ase.domain.report_diagrams import ReportDiagram
 
 MAX_JUDGEMENT_CHARS = 400
 MAX_ITEM_CHARS = 1_200
@@ -115,6 +117,7 @@ class ReportBody:
     gaps: tuple[Gap, ...] = ()
     collection_recommendations: tuple[str, ...] = ()
     sourcing_statement: str = ""
+    diagrams: tuple[ReportDiagram, ...] = ()
 
     def cited_labels(self) -> frozenset[str]:
         labels: set[str] = set()
@@ -127,6 +130,8 @@ class ReportBody:
             labels.update(section.evidence)
         for alternative in self.alternative_hypotheses:
             labels.update(alternative.evidence)
+        for diagram in self.diagrams:
+            labels.update(diagram.evidence_labels())
         return frozenset(labels)
 
     def texts(self) -> list[str]:
@@ -303,4 +308,5 @@ def parse_body(data: Any) -> ReportBody:
         sourcing_statement=_str(
             data.get("sourcing_statement", ""), "sourcing_statement", MAX_SECTION_CHARS
         ),
+        diagrams=restore_diagrams(data.get("diagrams")),
     )

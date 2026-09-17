@@ -9,6 +9,7 @@ from typing import Any
 
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.report_records import ReportVersion
+from ase.domain.reports import ReportBody
 from ase.domain.research import CollectionAttempt
 from ase.domain.research_plan import QueryVariant, ResearchPlan, ResearchTask
 from ase.domain.research_records import ResearchReceipt
@@ -31,6 +32,7 @@ _ADDED_DEFAULTS: tuple[tuple[type, tuple[tuple[str, Any], ...]], ...] = (
     (CollectionAttempt, (("query_variant", None),)),
     (ResearchReceipt, (("web_research", None), ("original_followup", ()))),
     (ResearchPlan, (("country_isos", ()), ("research_web_search", False))),
+    (ReportBody, (("diagrams", ()),)),
     (
         ReportVersion,
         (

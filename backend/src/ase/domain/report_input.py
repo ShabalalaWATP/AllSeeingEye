@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
@@ -9,13 +10,17 @@ from ase.domain.report_schema import REPORT_BODY_SCHEMA
 from ase.domain.reports import ReportBody, ReportParseError, parse_body
 
 
-def _check(value: Any, schema: dict[str, Any], path: str) -> None:
+def _check(  # noqa: PLR0912 - one branch per JSON type the schema may declare
+    value: Any, schema: dict[str, Any], path: str
+) -> None:
     kinds = schema["type"]
     kinds = [kinds] if isinstance(kinds, str) else kinds
+    numeric = isinstance(value, int | float) and not isinstance(value, bool)
     matches = {
         "null": value is None,
         "string": isinstance(value, str),
         "boolean": isinstance(value, bool),
+        "number": numeric,
         "array": isinstance(value, list),
         "object": isinstance(value, dict),
     }
@@ -38,6 +43,11 @@ def _check(value: Any, schema: dict[str, Any], path: str) -> None:
             raise ReportParseError(f"{path} has an invalid number of items")
         for index, item in enumerate(value):
             _check(item, schema["items"], f"{path}[{index}]")
+    elif numeric:
+        if not math.isfinite(value) or not (
+            schema.get("minimum", -math.inf) <= value <= schema.get("maximum", math.inf)
+        ):
+            raise ReportParseError(f"{path} is outside its permitted range")
     elif isinstance(value, str):
         if not schema.get("minLength", 0) <= len(value.strip()) <= schema.get("maxLength", 1200):
             raise ReportParseError(f"{path} has an invalid text length")

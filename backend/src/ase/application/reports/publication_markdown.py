@@ -77,6 +77,29 @@ def _figure_lines(block: DocumentBlock, image_path: str | None = None) -> list[s
     return lines
 
 
+def _diagram_lines(block: DocumentBlock) -> list[str]:
+    """Markdown cannot carry the drawing, so it carries the same content as text.
+
+    The equivalent table always follows this block, so nothing is lost here.
+    """
+    diagram = block.diagram
+    if diagram is None:
+        return []
+    citation = ""
+    if diagram.citation_numbers:
+        citation = " " + ", ".join(
+            f"[{number}](#reference-{number})" for number in diagram.citation_numbers
+        )
+    return [
+        f"### {plain_markdown(diagram.title)}",
+        "",
+        plain_markdown(diagram.alt_text),
+        "",
+        f"*{plain_markdown(diagram.caption)}*{citation}",
+        "",
+    ]
+
+
 def _block_lines(block: DocumentBlock, image_path: str | None = None) -> list[str]:
     kind = block.kind
     text = block.text
@@ -96,6 +119,8 @@ def _block_lines(block: DocumentBlock, image_path: str | None = None) -> list[st
         lines = _table_lines(block)
     elif kind is BlockKind.FIGURE:
         lines = _figure_lines(block, image_path)
+    elif kind is BlockKind.DIAGRAM:
+        lines = _diagram_lines(block)
     else:
         lines = [_inline(block.inlines, text), ""]
     return lines

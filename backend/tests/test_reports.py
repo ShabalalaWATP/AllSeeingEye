@@ -106,6 +106,7 @@ async def test_generate_read_export_and_delete(
         "intrep",
         "country_brief",
         "ask",
+        "area_brief",
         "disaster_sitrep",
         "conflict_assessment",
         "aviation_activity",

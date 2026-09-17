@@ -292,6 +292,14 @@ def build_flowables(
             flowables.extend(added)
             missing = missing or replaced
             continue
+        if block.kind is BlockKind.DIAGRAM and block.diagram:
+            # This renderer draws no vectors. The text alternative carries the content
+            # and the equivalent table follows immediately, so nothing is lost.
+            caption = f"{block.diagram.title}. {block.diagram.alt_text}"
+            text, replaced = safe_text(caption, characters)
+            flowables.append(Paragraph(text or " ", styles[BlockKind.METADATA]))
+            missing = missing or replaced
+            continue
         if block.kind is BlockKind.LIST:
             items = []
             for item in block.items:

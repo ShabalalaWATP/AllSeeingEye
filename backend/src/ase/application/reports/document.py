@@ -216,6 +216,9 @@ def build_document(
         if figure is not None:
             doc.figure(figure)
     _findings(doc, version.body)
+    for diagram in version.body.diagrams:
+        doc.add("Diagram", BlockKind.SUBHEADING)
+        doc.diagram(diagram)
     cited = version.body.cited_labels()
     doc.chronology([item for item in version.evidence if item.label in cited])
     _alternatives(doc, version)

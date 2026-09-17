@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 from uuid import UUID
 
+from ase.application.reports.templates import AREA_TEMPLATES
 from ase.domain.events import Category
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import ReportLanguage
@@ -191,7 +192,7 @@ class ReportRequest:
         ):
             raise ValueError("Choose a drawn area or an exact saved map, not both")
         if (
-            self.template_id != "ask"
+            self.template_id not in AREA_TEMPLATES
             or self.research_mode is None
             or self.research_focus is not ResearchFocus.GENERAL
             or self.research_input_id is not None

@@ -64,9 +64,43 @@ def doctrine_preamble() -> str:
     )
 
 
+ANALYSIS_STANDARD = (
+    "Analysis standard. A summary of the reporting is a failed report. The customer "
+    "already has the feeds; what they are paying for is your reasoning. Every assessment "
+    "section must do the following, in continuous prose:\n"
+    "A. Say what the reporting establishes and, separately, what it only suggests.\n"
+    "B. Say what it means and why it matters to the reader now, not in general.\n"
+    "C. Say what is driving it: the actors, incentives, constraints or conditions that "
+    "best explain the pattern on this evidence.\n"
+    "D. Give at least one plausible alternative explanation of the same reporting, and "
+    "the observation that would distinguish it from your preferred explanation.\n"
+    "E. Say what would have to be true for your judgement to be wrong, and what would "
+    "show that first.\n"
+    "F. Say what follows next: the second-order effects if the pattern continues, and on "
+    "whom they fall.\n"
+    "G. Compare with the previous period, the previous assessment or the stated baseline "
+    "when the supplied material carries one. When it does not, say so and compare "
+    "nothing. Never assert a trend from a single observation.\n"
+    "H. Name the specific, observable, dated indicator that would move the judgement, not "
+    "a general call to watch the situation.\n"
+    "These demands never licence going beyond the frozen evidence. Do not invent figures, "
+    "dates, places, actors, motives or baselines; do not convert or aggregate reported "
+    "numbers into new ones; and do not turn an absence of reporting into a finding. An "
+    "honest short analysis that says what cannot be assessed is worth more than a long "
+    "one that fills the space. Keep analysis in the assessment sections, marked as "
+    "assessment, and keep the reporting sections free of judgement and yardstick terms."
+)
+
+
 def template_guidance(template: Template) -> str:
     lines = [f"Product: {template.title}. {template.purpose}", "Sections and guidance:"]
     lines.extend(f"- {section}" for section in template.sections)
+    if template.analysis_focus:
+        lines.append(
+            "Answer these product-specific analytical questions where the evidence bears "
+            "on them, and say plainly when it does not:"
+        )
+        lines.extend(f"- {question}" for question in template.analysis_focus)
     return "\n".join(lines)
 
 
@@ -162,6 +196,7 @@ def compose_messages(
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
+    system += "\n\n" + ANALYSIS_STANDARD
     system += "\n\n" + output_guidance(report_language, report_style)
     depth = depth_for(research_mode)
     if depth is not None:
