@@ -20,17 +20,12 @@ describe('research workspace navigation', () => {
       'aria-current',
     );
   });
-  it('gives reusable plans their own rail entry and exposes the next research tools', async () => {
+  it('keeps plans reachable by link while the rail names only what is used', async () => {
     renderApp('/direction', 'user');
     await screen.findByRole('heading', { name: 'Plans & areas' });
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getByRole('link', { name: 'Plans & areas' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    expect(within(primary).getByRole('link', { name: 'Research' })).not.toHaveAttribute(
-      'aria-current',
-    );
+    // Retired from the rail: an area is drawn on the map, and Research takes a scope.
+    expect(within(primary).queryByRole('link', { name: 'Plans & areas' })).toBeNull();
     const tools = screen.getByRole('navigation', { name: 'Research tools' });
     expect(within(tools).getByRole('link', { name: 'Saved research' })).toHaveAttribute(
       'href',

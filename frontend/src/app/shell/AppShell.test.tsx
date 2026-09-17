@@ -40,7 +40,6 @@ describe('AppShell', () => {
       'Map',
       'Research',
       'Subscriptions',
-      'Plans & areas',
       'Geolocation',
       'Live monitor',
       'Ukraine war',

@@ -16,11 +16,6 @@ const sections = [
 
 const resources = [
   {
-    to: '/warning',
-    title: 'Alerts & rules',
-    detail: 'Review your alerts and manage the activity rules that create them.',
-  },
-  {
     to: '/account?section=security',
     title: 'Account security',
     detail: 'Manage multi-factor authentication, passwords and active sessions.',

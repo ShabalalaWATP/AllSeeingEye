@@ -67,16 +67,18 @@ describe('warning', () => {
     });
   });
 
-  it('offers alerts from personal settings, and no longer crowds the rail', async () => {
-    const { user } = renderApp('/settings', 'user');
-    const alerts = await within(screen.getByRole('main')).findByRole('link', {
-      name: /^Alerts & rules/,
-    });
-    expect(alerts).toHaveAttribute('href', '/warning');
+  it('is retired from navigation but still answers for anyone holding the link', async () => {
+    renderApp('/settings', 'user');
+    await screen.findByRole('heading', { name: 'Settings' });
+    const page = within(screen.getByRole('main'));
+    expect(page.queryByRole('link', { name: /^Alerts & rules/ })).toBeNull();
     const primary = within(screen.getByRole('navigation', { name: 'Primary' }));
     expect(primary.queryByRole('link', { name: 'Alerts & rules' })).toBeNull();
     expect(screen.queryByRole('link', { name: /unacknowledged/ })).not.toBeInTheDocument();
-    await user.click(alerts);
+  });
+
+  it('still lists the alerts it holds when the page is opened directly', async () => {
+    renderApp('/warning', 'user');
     const list = await screen.findByRole('list', { name: 'Alerts' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
   });

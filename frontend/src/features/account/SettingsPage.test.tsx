@@ -21,10 +21,8 @@ describe('personal settings', () => {
       // catalogue is not here: it is an administrator's page.
       const page = within(screen.getByRole('main'));
       expect(page.queryByRole('link', { name: /Sources and connections/ })).toBeNull();
-      expect(page.getByRole('link', { name: /Alerts & rules/ })).toHaveAttribute(
-        'href',
-        '/warning',
-      );
+      // Alerts and rules are retired from the app's navigation entirely.
+      expect(page.queryByRole('link', { name: /Alerts & rules/ })).toBeNull();
       expect(page.getByRole('link', { name: 'Profile & teams' })).toHaveAttribute(
         'href',
         '/account',

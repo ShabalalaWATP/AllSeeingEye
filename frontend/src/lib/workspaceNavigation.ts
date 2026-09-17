@@ -60,12 +60,6 @@ export const workspaceSections: readonly WorkspaceSection[] = [
         icon: 'subscriptions',
       },
       {
-        to: '/direction',
-        label: 'Plans & areas',
-        description: 'Reusable geographic areas and structured research questions.',
-        icon: 'plans',
-      },
-      {
         to: '/geolocation',
         label: 'Geolocation',
         description:

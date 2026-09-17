@@ -3,7 +3,6 @@ import { NavLink } from 'react-router';
 const destinations = [
   ['/research', 'New research'],
   ['/research/saved', 'Saved research'],
-  ['/direction', 'Plans & areas'],
   ['/trackers', 'Daily briefing'],
 ] as const;
 
