@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-export type ContentsEntry = { id: string; label: string };
+export interface ContentsEntry { id: string; label: string }
 
 /** A collapsible jump list for narrow screens, closed again after a jump. */
 export function MobileReportContents({ contents }: { contents: readonly ContentsEntry[] }) {

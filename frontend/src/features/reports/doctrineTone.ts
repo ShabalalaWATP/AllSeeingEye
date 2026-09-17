@@ -46,8 +46,10 @@ export function gradeTone(grade: string | null | undefined): Tone {
   const letter = reliabilityTone(value.slice(0, 1));
   const number = credibilityTone(value.slice(1));
   if (letter === 'neutral' || number === 'neutral') return 'neutral';
-  const rank: Tone[] = ['strong', 'mid', 'caution'];
-  return rank[Math.max(rank.indexOf(letter), rank.indexOf(number))] ?? 'neutral';
+  // The weaker half of the grade sets the tone; the text always shows both halves.
+  if (letter === 'caution' || number === 'caution') return 'caution';
+  if (letter === 'mid' || number === 'mid') return 'mid';
+  return 'strong';
 }
 
 const PROBABILITY_ORDER = Object.keys(PROBABILITY_TERMS);

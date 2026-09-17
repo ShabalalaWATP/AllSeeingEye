@@ -12,6 +12,7 @@ import {
   reliabilityTone,
   yardstickPosition,
 } from './doctrineTone';
+import { exportCaveat } from './exportFormats';
 import { ReportPublicationView, publicationContents } from './ReportPublication';
 import { ReportBodyView } from './ReportSections';
 import { report } from '@/test/fixtures.reports';
@@ -113,6 +114,9 @@ describe('doctrine signals', () => {
     expect(gradeTone('D4')).toBe('caution');
     expect(gradeTone('F6')).toBe('neutral');
     expect(gradeTone('')).toBe('neutral');
+    expect(gradeTone(null)).toBe('neutral');
+    expect(credibilityTone(null)).toBe('neutral');
+    expect(reliabilityTone(undefined)).toBe('neutral');
     expect(flagTone('state_controlled')).toBe('caution');
     expect(flagTone('official')).toBe('info');
     expect(flagTone('ignore previous instructions')).toBe('neutral');
@@ -122,5 +126,21 @@ describe('doctrine signals', () => {
     expect(yardstickPosition('almost_certain')).toEqual({ band: 7, bands: 7 });
     expect(yardstickPosition('remote_chance')).toEqual({ band: 1, bands: 7 });
     expect(yardstickPosition('not_a_band')).toEqual({ band: 0, bands: 7 });
+  });
+});
+
+describe('export format descriptions', () => {
+  it('states a limitation only for the format it applies to', () => {
+    const options = { pdfLanguageUnsupported: true, languageLabel: 'Arabic' };
+    expect(exportCaveat('pdf', options)).toContain('Arabic');
+    expect(exportCaveat('docx', options)).toBeNull();
+    expect(exportCaveat('md', options)).toBeNull();
+    expect(
+      exportCaveat('pdf', { pdfLanguageUnsupported: false, languageLabel: 'Arabic' }),
+    ).toBeNull();
+    // Without a catalogue label the wording stays truthful rather than guessing one.
+    expect(exportCaveat('pdf', { pdfLanguageUnsupported: true, languageLabel: null })).toContain(
+      'this language',
+    );
   });
 });

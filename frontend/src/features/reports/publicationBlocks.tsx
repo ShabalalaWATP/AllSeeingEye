@@ -55,6 +55,7 @@ export function TableBlock({ block }: { block: Block }) {
       {/* A focusable region keeps the horizontal scroll reachable from the keyboard. */}
       <div
         className="report-reader-table-wrap"
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- Keyboard users need focus to scroll a wide table.
         tabIndex={0}
         role="region"
         aria-label={`${table.title} (scrollable table)`}

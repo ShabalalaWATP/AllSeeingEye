@@ -32,7 +32,7 @@ const readView = (): View => {
 };
 
 export default function ReportPreviewPage() {
-  const view = useSyncExternalStore(subscribe, readView, () => 'needs_review' as View);
+  const view = useSyncExternalStore(subscribe, readView, () => 'needs_review');
   const status: ReportStatus = STATUSES.includes(view as ReportStatus)
     ? (view as ReportStatus)
     : 'needs_review';
