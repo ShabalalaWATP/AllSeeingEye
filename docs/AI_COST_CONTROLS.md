@@ -149,3 +149,27 @@ Every figure is an estimate from recorded tokens at the configured prices and is
 labelled as such. It is **not a bill**: providers round, cache input, apply
 minimum charges and discounts, and change prices mid-period. The provider's own
 account remains the authority on what was charged.
+
+## What the cap was hiding (17 September 2026)
+
+Capping mechanical effort at medium made conflict screening work, and that
+concealed the real defect rather than fixing it. Screening asked for at most
+4,000 completion tokens whatever the administrator's profile allowed. Reasoning
+tokens come out of that same allowance, so a profile set to Max spent the budget
+thinking, the provider returned an incomplete response, and screening recorded
+the generic "call failed". Over six days that was 740 failures in 906 calls,
+every one of them billed. A 45 second stage ceiling cut off most of the rest.
+
+The stages that reason now ask for the administrator's tested budget and keep
+their own small ceiling only for a profile that does not reason: conflict
+screening, the economy explainer and the Ukraine digest all had the same shape.
+Screening also has 240 seconds against the 300 the gateway allows a thinking
+stage, and an exhausted budget or a gateway timeout is recorded as itself, with
+the tokens the attempt cost.
+
+So the effort cap is now a cost choice rather than a correctness crutch.
+Measured on this operator's ledger, the same screening work costs 3,304
+completion tokens per call at Max against 1,224 at medium, about 2.7 times, or
+roughly 38 pence a day more at 150 calls a day.
+`ASE_AI_MECHANICAL_REASONING_EFFORT=inherit` removes the cap; any effort name
+restores it.
