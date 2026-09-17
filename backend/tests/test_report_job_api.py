@@ -28,8 +28,9 @@ async def test_enqueue_then_worker_publishes_one_report_with_completed_sections(
     assert response.status_code == 200, response.text
     completed = response.json()
     assert completed["status"] == "needs_review" and completed["completed_sections"] == 6
-    assert completed["usage"]["calls"] == len(gateway.calls) == 7
-    assert completed["usage"]["output_tokens"] == 35
+    # Seven drafting calls plus the entailment review of the key judgements.
+    assert completed["usage"]["calls"] == len(gateway.calls) == 8
+    assert completed["usage"]["output_tokens"] == 40
     sections = {section["id"]: section for section in completed["sections"]}
     assert len(sections) == 6 and "synthesis" not in sections
     assert sections["synthesis_judgements"]["reporting"]
@@ -41,11 +42,11 @@ async def test_enqueue_then_worker_publishes_one_report_with_completed_sections(
         version = await repo.get_version(record.id, 1)
     assert record.created_by == user.id and version.id == current.version_id
     assert version.body.cited_labels() <= {item.label for item in version.evidence}
-    assert version.prompt_tokens == 70 and version.completion_tokens == 35
+    assert version.prompt_tokens == 80 and version.completion_tokens == 40
     assert "Original reporting from" in version.markdown
     async with container.session_factory() as session:
         usage = await container.repositories(session).llm_usage.list_recent(20)
-    assert len(usage) == 7 and sum(row.completion_tokens for row in usage) == 35
+    assert len(usage) == 8 and sum(row.completion_tokens for row in usage) == 40
     discarded = await client.delete(f"/api/report-jobs/{queued['id']}", headers=headers)
     assert discarded.status_code == 204 and await stored(container, queued["id"]) is None
     async with container.session_factory() as session:
@@ -67,7 +68,7 @@ async def test_repeated_request_uuid_admits_one_job_and_only_one_worker_run(
     await work(container)
     again = await submit(client, headers, request_id=request_id)
     assert again.json()["id"] == first.json()["id"] and again.json()["status"] == "needs_review"
-    assert len(gateway.calls) == 7
+    assert len(gateway.calls) == 8
 
 
 async def test_pause_after_generation_prevents_report_commit_even_if_cancel_callback_is_lost(
@@ -97,7 +98,8 @@ async def test_pause_after_generation_prevents_report_commit_even_if_cancel_call
     release.set()
     await asyncio.wait_for(asyncio.gather(*(task for _, task in worker._running.values())), 15)
     current = await stored(container, job_id)
-    assert current.status == "paused" and len(gateway.calls) == 7
+    # The pause lands after generation, so the post-draft review has already run.
+    assert current.status == "paused" and len(gateway.calls) == 8
     async with container.session_factory() as session:
         assert await container.repositories(session).reports.get(current.report_id) is None
 
@@ -111,7 +113,7 @@ async def test_admitted_job_continues_after_original_browser_logout(client, user
     assert logout.status_code == 204
     await work(container)
     current = await stored(container, job_id)
-    assert current.status == "needs_review" and len(gateway.calls) == 7
+    assert current.status == "needs_review" and len(gateway.calls) == 8
     response = await client.get(f"/api/report-jobs/{job_id}", headers=headers)
     assert response.status_code == 401
 
@@ -151,6 +153,7 @@ async def test_explicit_resume_reuses_completed_topic_and_frozen_collection(
         "S4",
         "synthesis_judgements",
         "synthesis_context",
+        "entailment",
         "claims",
     ]
-    assert len(final.payload["calls"]) == 8
+    assert len(final.payload["calls"]) == 9

@@ -23,6 +23,12 @@ def job_settings(settings, tmp_path):
     )
 
 
+POST_DRAFT_REVIEWS = {
+    "entailment": {"assessments": []},
+    "contradiction_analysis": {"disagreements": []},
+}
+
+
 class JobGateway:
     def __init__(self, fail=None):
         self.calls = []
@@ -32,6 +38,11 @@ class JobGateway:
         if request.schema_name == "claim_proposals":
             self.calls.append(("claims", request))
             return LlmResult('{"claims": []}', model, 1, 10, 5)
+        # The post-draft review passes read the committed draft and only add review
+        # reasons, so a job test answers them plainly and keeps asserting the stages.
+        if request.schema_name in POST_DRAFT_REVIEWS:
+            self.calls.append((request.schema_name, request))
+            return LlmResult(json.dumps(POST_DRAFT_REVIEWS[request.schema_name]), model, 1, 10, 5)
         assert request.schema_name in {"report_topic", "report_judgements", "report_context"}, (
             request.schema_name
         )
