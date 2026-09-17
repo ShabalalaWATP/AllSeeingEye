@@ -20,7 +20,10 @@ async def _due_schedule(container: Container, owner: User):
     async with container.session_factory() as session:
         schedule = await container.create_schedule(session).execute(
             owner,
-            ScheduleInput(name="Daily report", template_id="intsum", country_iso="UA"),
+            # Stated, so the cadence edit below is a real change of rhythm.
+            ScheduleInput(
+                name="Daily report", template_id="intsum", country_iso="UA", cadence="daily"
+            ),
             CONTEXT,
         )
     container.clock.advance(schedule.next_run_at - container.clock.now() + timedelta(minutes=1))

@@ -89,6 +89,35 @@ export function TableBlock({ block }: { block: Block }) {
 }
 
 /**
+ * A drawing this application generated from validated data. It is rendered as an image
+ * so no markup from the payload is ever inserted into the page, and the equivalent
+ * table the document places beside it stays the way to read the same content.
+ */
+export function DiagramBlock({ block }: { block: Block }) {
+  if (!block.diagram) return null;
+  const diagram = block.diagram;
+  return (
+    <figure className="report-reader-figure report-reader-wide" aria-label={diagram.title}>
+      <p className="report-reader-figure-label">Diagram</p>
+      <p className="mt-0.5 font-semibold leading-6">{diagram.title}</p>
+      <img
+        src={`data:${diagram.media_type};base64,${diagram.content_base64}`}
+        alt={diagram.alt_text}
+        className="mt-2 w-full"
+      />
+      <figcaption className="report-reader-caption">
+        {diagram.caption}
+        <CitationNumbers numbers={diagram.citation_numbers} />
+      </figcaption>
+      <details>
+        <summary>Text alternative</summary>
+        <p className="mt-1">{diagram.alt_text}</p>
+      </details>
+    </figure>
+  );
+}
+
+/**
  * A figure or diagram: a titled card, its caption, and the text alternative on the
  * page rather than only in the accessibility tree, since a described diagram is often
  * the only way a reader can check what it claims.

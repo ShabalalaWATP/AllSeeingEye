@@ -179,7 +179,7 @@ def test_committed_replay_casebook_runs_through_cli(
     cases_dir = Path(__file__).parents[1] / "evaluations" / "research_cases"
     assert main(["validate", "--cases-dir", str(cases_dir)]) == 0
     configured = tmp_path / "profile.json"
-    configured.write_text(profile(ResearchMode.DETAILED).model_dump_json())
+    configured.write_text(profile(ResearchMode.DETAILED).model_dump_json(), encoding="utf-8")
     out = tmp_path / "results"
     assert (
         main(
@@ -197,7 +197,8 @@ def test_committed_replay_casebook_runs_through_cli(
         )
         == 0
     )
-    results = json.loads((out / "results.json").read_text())
+    # The CLI writes UTF-8; Windows would otherwise read it as cp1252.
+    results = json.loads((out / "results.json").read_text(encoding="utf-8"))
     assert len(results["cases"]) == 2
     assert gateway.closed
     correction = next(case for case in results["cases"] if case["case_id"] == "research_correction")

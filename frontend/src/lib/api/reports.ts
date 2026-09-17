@@ -203,6 +203,19 @@ const documentFigureSchema = z.object({
   citation_numbers: z.array(z.number().int().positive()).max(32),
 });
 
+const documentDiagramSchema = z.object({
+  title: z.string(),
+  caption: z.string(),
+  alt_text: z.string(),
+  content_base64: z
+    .string()
+    .min(1)
+    .max(200_000)
+    .regex(/^[A-Za-z0-9+/]*={0,2}$/),
+  media_type: z.literal('image/svg+xml'),
+  citation_numbers: z.array(z.number().int().positive()).max(32),
+});
+
 const documentBlockSchema = z.object({
   kind: z.enum([
     'title',
@@ -215,6 +228,7 @@ const documentBlockSchema = z.object({
     'list',
     'table',
     'figure',
+    'diagram',
     'reference',
   ]),
   text: z.string(),
@@ -223,6 +237,8 @@ const documentBlockSchema = z.object({
   ordered: z.boolean(),
   table: documentTableSchema.nullable(),
   figure: documentFigureSchema.nullable(),
+  // Absent on versions published before diagrams existed.
+  diagram: documentDiagramSchema.nullish().default(null),
 });
 
 export const reportPublicationSchema = z.object({

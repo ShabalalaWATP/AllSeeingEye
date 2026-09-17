@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 from dataclasses import replace
 
@@ -12,6 +13,7 @@ from ase.adapters.reports.html_document import render_html
 from ase.adapters.reports.markdown_package import render_markdown_export
 from ase.adapters.reports.pdf import render_pdf
 from ase.adapters.reports.word import render_docx
+from ase.api.schemas_reports import ReportOut
 from ase.application.reports.document import build_document
 from ase.application.reports.render import render_markdown
 from ase.domain.canonical_provenance import canonical_snapshot
@@ -51,6 +53,20 @@ def test_the_document_places_the_drawing_and_its_equivalent_table_together() -> 
     table = document.blocks[index + 1].table
     assert table is not None and table.columns[-1] == "Source"
     assert len(table.rows) == len(version.body.diagrams[0].entries)
+
+
+def test_the_report_response_carries_the_drawing_as_an_image_for_the_reader() -> None:
+    """The web reader must receive the drawing, and receive it as encoded image bytes."""
+    record, version = _records()
+    payload = ReportOut.build(record, version).model_dump(mode="json")
+    block = next(
+        row for row in payload["version"]["publication"]["blocks"] if row["kind"] == "diagram"
+    )
+    diagram = block["diagram"]
+    assert diagram is not None and diagram["media_type"] == "image/svg+xml"
+    assert base64.b64decode(diagram["content_base64"]).decode("utf-8").startswith("<svg ")
+    assert diagram["alt_text"] == block["text"] and diagram["title"]
+    assert diagram["citation_numbers"]
 
 
 def test_the_reader_html_inlines_the_vector_and_keeps_the_table() -> None:

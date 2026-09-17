@@ -17542,6 +17542,7 @@
           "list",
           "table",
           "figure",
+          "diagram",
           "reference"
         ],
         "title": "BlockKind"
@@ -23036,6 +23037,16 @@
                 "type": "null"
               }
             ]
+          },
+          "diagram": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentDiagramOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -23046,9 +23057,52 @@
           "items",
           "ordered",
           "table",
-          "figure"
+          "figure",
+          "diagram"
         ],
         "title": "DocumentBlockOut"
+      },
+      "DocumentDiagramOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption"
+          },
+          "alt_text": {
+            "type": "string",
+            "title": "Alt Text"
+          },
+          "content_base64": {
+            "type": "string",
+            "title": "Content Base64"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "citation_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Citation Numbers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "caption",
+          "alt_text",
+          "content_base64",
+          "media_type",
+          "citation_numbers"
+        ],
+        "title": "DocumentDiagramOut",
+        "description": "The drawing this application generated, carried as an image the page can show.\n\nThe markup is base64 encoded exactly as a figure's bytes are, so a reader renders it\nas an image and never as markup inside the page."
       },
       "DocumentFigureOut": {
         "properties": {

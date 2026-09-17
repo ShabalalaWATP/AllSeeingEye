@@ -5329,7 +5329,7 @@ export interface components {
          * BlockKind
          * @enum {string}
          */
-        BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "reference";
+        BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "diagram" | "reference";
         /** BriefJobCreateIn */
         BriefJobCreateIn: {
             /**
@@ -7202,6 +7202,28 @@ export interface components {
             ordered: boolean;
             table: components["schemas"]["DocumentTableOut"] | null;
             figure: components["schemas"]["DocumentFigureOut"] | null;
+            diagram: components["schemas"]["DocumentDiagramOut"] | null;
+        };
+        /**
+         * DocumentDiagramOut
+         * @description The drawing this application generated, carried as an image the page can show.
+         *
+         *     The markup is base64 encoded exactly as a figure's bytes are, so a reader renders it
+         *     as an image and never as markup inside the page.
+         */
+        DocumentDiagramOut: {
+            /** Title */
+            title: string;
+            /** Caption */
+            caption: string;
+            /** Alt Text */
+            alt_text: string;
+            /** Content Base64 */
+            content_base64: string;
+            /** Media Type */
+            media_type: string;
+            /** Citation Numbers */
+            citation_numbers: number[];
         };
         /** DocumentFigureOut */
         DocumentFigureOut: {

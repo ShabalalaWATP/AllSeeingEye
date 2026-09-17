@@ -36,7 +36,13 @@ async def test_final_production_capture_is_saved_before_usage_without_grade_prom
 
     class Projector:
         async def build(self, record, version):
-            assert gateway.calls == ["direction", "report", "advocacy", "entailment"]
+            assert gateway.calls == [
+                "direction",
+                "report",
+                "advocacy",
+                "report_analysis",
+                "entailment",
+            ]
             assert usage.rows == []
             seen.append(version.source_assessment)
             return build_document(record, version)

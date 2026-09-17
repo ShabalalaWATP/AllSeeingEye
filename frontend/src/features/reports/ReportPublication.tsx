@@ -9,7 +9,14 @@ import type { ReactNode } from 'react';
 
 import type { ReportPublication, ReportStatus } from '@/lib/api/reports';
 
-import { FigureBlock, Inlines, References, TableBlock, type Inline } from './publicationBlocks';
+import {
+  DiagramBlock,
+  FigureBlock,
+  Inlines,
+  References,
+  TableBlock,
+  type Inline,
+} from './publicationBlocks';
 import { ReportGradingLegend } from './ReportGradingLegend';
 import { ReportReviewStatus } from './ReportReviewStatus';
 
@@ -131,6 +138,7 @@ function blockNode(block: Block, key: string): ReactNode {
   }
   if (block.kind === 'table') return <TableBlock key={key} block={block} />;
   if (block.kind === 'figure') return <FigureBlock key={key} block={block} />;
+  if (block.kind === 'diagram') return <DiagramBlock key={key} block={block} />;
   return (
     <p key={key} className="report-reader-paragraph">
       <Inlines runs={block.inlines} fallback={block.text} />

@@ -8,6 +8,7 @@ from ase.domain.report_documents import (
     BlockKind,
     ChangeKind,
     DocumentBlock,
+    DocumentDiagram,
     DocumentFigure,
     DocumentListItem,
     DocumentTable,
@@ -88,6 +89,32 @@ class DocumentFigureOut(BaseModel):
         )
 
 
+class DocumentDiagramOut(BaseModel):
+    """The drawing this application generated, carried as an image the page can show.
+
+    The markup is base64 encoded exactly as a figure's bytes are, so a reader renders it
+    as an image and never as markup inside the page.
+    """
+
+    title: str
+    caption: str
+    alt_text: str
+    content_base64: str
+    media_type: str
+    citation_numbers: list[int]
+
+    @classmethod
+    def from_diagram(cls, diagram: DocumentDiagram) -> "DocumentDiagramOut":
+        return cls(
+            title=diagram.title,
+            caption=diagram.caption,
+            alt_text=diagram.alt_text,
+            content_base64=base64.b64encode(diagram.svg.encode("utf-8")).decode("ascii"),
+            media_type="image/svg+xml",
+            citation_numbers=list(diagram.citation_numbers),
+        )
+
+
 class DocumentBlockOut(BaseModel):
     kind: BlockKind
     text: str
@@ -96,6 +123,7 @@ class DocumentBlockOut(BaseModel):
     ordered: bool
     table: DocumentTableOut | None
     figure: DocumentFigureOut | None
+    diagram: DocumentDiagramOut | None
 
     @classmethod
     def from_block(cls, block: DocumentBlock) -> "DocumentBlockOut":
@@ -107,6 +135,7 @@ class DocumentBlockOut(BaseModel):
             ordered=block.ordered,
             table=DocumentTableOut.from_table(block.table) if block.table else None,
             figure=DocumentFigureOut.from_figure(block.figure) if block.figure else None,
+            diagram=DocumentDiagramOut.from_diagram(block.diagram) if block.diagram else None,
         )
 
 

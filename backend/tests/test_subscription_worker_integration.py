@@ -20,8 +20,20 @@ __all__ = ["job_settings"]
 
 
 class ComparisonGateway(JobGateway):
+    """A draft an intsum accepts: three judgements and a stated gap, so the edition
+    completes and the subscription can adopt it as the comparison baseline."""
+
     async def complete(self, base_url, key, model, request):
         result = await super().complete(base_url, key, model, request)
+        if request.schema_name == "report_context":
+            body = json.loads(result.content)
+            body["gaps"] = [
+                {
+                    "text": "No independent confirmation of the instrument readings was found.",
+                    "eei": None,
+                }
+            ]
+            return replace(result, content=json.dumps(body))
         if request.schema_name != "report_judgements":
             return result
         body = json.loads(result.content)
@@ -39,7 +51,10 @@ def _evidence(container, prefix):
         tuple(
             make_event(
                 f"{prefix}-{index}",
-                source_id="usgs_earthquakes",
+                # The intsum template expects three organisations. A report that misses
+                # that is held for review, and a report held for review is never accepted
+                # as the comparison baseline these editions depend on.
+                source_id=("usgs_earthquakes", "emsc_earthquakes", "gdacs")[index % 3],
                 title=f"Instrument observation {index}",
                 summary=(
                     "Instrument observations were recorded in Ukraine during the "
@@ -74,7 +89,9 @@ async def test_two_editions_use_frozen_comparison_context_and_one_job_each(conta
     async with container.session_factory() as session:
         schedule = await container.create_schedule(session).execute(
             user,
-            ScheduleInput(name="Daily observation", template_id="intsum", country_iso="UA"),
+            # An intelligence report, whose structure this synthetic draft can meet: the
+            # subject here is the edition ledger, not how rich the writing is.
+            ScheduleInput(name="Daily observation", template_id="intrep", country_iso="UA"),
             CONTEXT,
         )
     container.clock.advance(schedule.next_run_at - container.clock.now() + timedelta(minutes=1))
@@ -152,7 +169,9 @@ async def test_overlapping_ticks_and_rolled_back_admission_keep_one_slot(contain
     async with container.session_factory() as session:
         schedule = await container.create_schedule(session).execute(
             user,
-            ScheduleInput(name="Daily observation", template_id="intsum", country_iso="UA"),
+            # An intelligence report, whose structure this synthetic draft can meet: the
+            # subject here is the edition ledger, not how rich the writing is.
+            ScheduleInput(name="Daily observation", template_id="intrep", country_iso="UA"),
             CONTEXT,
         )
     container.clock.advance(schedule.next_run_at - container.clock.now() + timedelta(minutes=1))

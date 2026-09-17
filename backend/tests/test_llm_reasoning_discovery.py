@@ -232,6 +232,8 @@ async def test_legacy_advocacy_also_receives_selected_effort_and_budget() -> Non
         "direction",
         "report",
         "advocacy",
+        "report_analysis",
+        "entailment",
     }
     assert all(record["reasoning_effort"] == "max" for record in gateway.records)
     assert all(record["max_output_tokens"] == 16000 for record in gateway.records)

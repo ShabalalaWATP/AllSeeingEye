@@ -62,6 +62,23 @@ const publication: ReportPublication = {
       figure: null,
     },
     {
+      kind: 'diagram',
+      text: 'Movement recorded on 11 September, then activity on 12 September.',
+      inlines: [],
+      items: [],
+      ordered: false,
+      table: null,
+      figure: null,
+      diagram: {
+        title: 'Sequence of reported activity',
+        caption: 'Drawn by the application from the cited reporting.',
+        alt_text: 'Movement recorded on 11 September, then activity on 12 September.',
+        content_base64: btoa("<svg xmlns='http://www.w3.org/2000/svg'></svg>"),
+        media_type: 'image/svg+xml',
+        citation_numbers: [1],
+      },
+    },
+    {
       kind: 'heading',
       text: 'References',
       inlines: [],
@@ -100,7 +117,8 @@ describe('professional report publication', () => {
   it('renders the canonical blocks, linked numeric citations and one reference list', () => {
     render(<ReportPublicationView publication={publication} />);
     expect(screen.getByRole('heading', { name: 'Regional assessment' })).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: 'View reference 1' })).toHaveLength(2);
+    // The paragraph, the table cell and the diagram caption each cite reference one.
+    expect(screen.getAllByRole('link', { name: 'View reference 1' })).toHaveLength(3);
     const table = screen.getByRole('table');
     expect(within(table).getByText('2026-09-11')).toBeInTheDocument();
     const references = screen.getByRole('region', { name: 'References' });
@@ -110,6 +128,19 @@ describe('professional report publication', () => {
       'https://example.org/report',
     );
     expect(screen.getAllByRole('heading', { name: 'References' })).toHaveLength(1);
+  });
+
+  it('draws a diagram as an image and keeps its words on the page', () => {
+    render(<ReportPublicationView publication={reportPublicationSchema.parse(publication)} />);
+    const figure = screen.getByRole('figure', { name: 'Sequence of reported activity' });
+    const image = within(figure).getByRole('img', {
+      name: 'Movement recorded on 11 September, then activity on 12 September.',
+    });
+    // An image source, never markup inserted into the page.
+    expect(image).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml;base64,'));
+    expect(figure).toHaveTextContent('Drawn by the application from the cited reporting.');
+    expect(within(figure).getByText('Text alternative')).toBeVisible();
+    expect(within(figure).getByRole('link', { name: 'View reference 1' })).toBeVisible();
   });
 
   it('links every source in a multi-reference citation independently', () => {

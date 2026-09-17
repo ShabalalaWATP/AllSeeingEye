@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import re
+import zipfile
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -193,6 +194,9 @@ def _add_figure(word: WordDocument, figure: DocumentFigure, verified: VerifiedFi
         )
 
 
+ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
+
+
 def render_docx(document: ReportDocument) -> bytes:
     validate_document_content(document)
     figures = verify_document_figures(document)
@@ -247,4 +251,23 @@ def render_docx(document: ReportDocument) -> bytes:
     word.core_properties.comments = ""
     stream = io.BytesIO()
     word.save(stream)
-    return stream.getvalue()
+    return _invariant(stream.getvalue())
+
+
+def _invariant(package: bytes) -> bytes:
+    """Repack with one fixed entry timestamp, as the PDF writer pins its creation date.
+
+    A .docx is a zip, and a zip records when each part was written, so two renders of
+    one frozen version differed in those bytes alone. Export hashes and version
+    comparisons need identical input to produce identical bytes.
+    """
+    source = zipfile.ZipFile(io.BytesIO(package))
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as target:
+        for item in source.infolist():
+            fixed = zipfile.ZipInfo(item.filename, ZIP_EPOCH)
+            fixed.compress_type = item.compress_type
+            fixed.external_attr = item.external_attr
+            fixed.create_system = item.create_system
+            target.writestr(fixed, source.read(item.filename))
+    return out.getvalue()

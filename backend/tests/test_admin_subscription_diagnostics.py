@@ -91,6 +91,8 @@ async def test_admin_diagnostics_show_due_lag_and_admission_without_user_data(
             "template_id": "intsum",
             "country_iso": "UA",
             "hour_utc": (now.hour + 1) % 24,
+            # Due two hours from now, which only a daily rhythm reaches.
+            "cadence": "daily",
         },
         headers=bearer(user_token),
     )
