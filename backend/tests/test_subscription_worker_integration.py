@@ -25,7 +25,7 @@ class ComparisonGateway(JobGateway):
 
     async def complete(self, base_url, key, model, request):
         result = await super().complete(base_url, key, model, request)
-        if request.schema_name == "report_context":
+        if request.schema_name in {"report_context", "report_collection"}:
             body = json.loads(result.content)
             body["gaps"] = [
                 {

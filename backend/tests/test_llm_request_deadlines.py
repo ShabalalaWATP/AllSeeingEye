@@ -31,11 +31,22 @@ REPORT_REQUEST = replace(REQUEST, schema_name="report", json_schema=REPORT_BODY_
         (BASE, "max", "report_judgements", None, 301, 300),
         (BASE, "max", "report_context", None, 150, 300),
         (BASE, "max", "report_context", None, 301, 300),
+        (BASE, "max", "report_alternatives", None, 150, 300),
+        (BASE, "max", "report_collection", None, 150, 300),
+        (BASE, "max", "report_alternatives", None, 301, 300),
+        (BASE, "max", "report_collection", None, 301, 300),
+        (BASE, "max", "report_analysis", None, 150, 300),
+        (BASE, "max", "report_analysis", None, 301, 300),
+        (BASE, "max", "report_analysis", 1, 2, 1),
+        (BASE, "max", "report_alternatives", 1, 2, 1),
+        (BASE, "max", "report_collection", 1, 2, 1),
         (BASE, "max", "report_judgements", 1, 2, 1),
         (BASE, "max", "report_context", 1, 2, 1),
         (BASE, "max", "report_topic", 1, 2, 1),
         (BASE, "max", "report_synthesis", 1, 2, 1),
         (BASE, "xhigh", "report_topic", None, 121, 120),
+        (BASE, "xhigh", "report_analysis", None, 121, 120),
+        ("http://localhost:11434/v1", "max", "report_analysis", None, 121, 120),
         ("http://localhost:11434/v1", "max", "report_synthesis", None, 121, 120),
         (BASE, "max", "report_other", None, 121, 120),
         (BASE, "max", "connection_test", None, 121, 120),
@@ -100,7 +111,9 @@ async def test_selected_deadline_covers_http_queue_and_response_processing(
     assert deadlines == [deadline] and len(calls) == 1
 
 
-@pytest.mark.parametrize("schema", ["report", "report_topic", "report_synthesis"])
+@pytest.mark.parametrize(
+    "schema", ["report", "report_topic", "report_synthesis", "report_analysis"]
+)
 async def test_long_native_report_still_obeys_outer_deadline_and_closes_stream(schema):
     stream = RecordingStream([b" "] * 200, delay=0.005)
     async with httpx.AsyncClient(
@@ -115,7 +128,9 @@ async def test_long_native_report_still_obeys_outer_deadline_and_closes_stream(s
     assert stream.closed and stream.yielded < 200
 
 
-@pytest.mark.parametrize("schema", ["report", "report_topic", "report_synthesis"])
+@pytest.mark.parametrize(
+    "schema", ["report", "report_topic", "report_synthesis", "report_analysis"]
+)
 async def test_explicit_native_report_timeout_stops_slow_drip_without_retry(schema):
     stream = RecordingStream([b" "] * 200, delay=0.005)
     calls = []

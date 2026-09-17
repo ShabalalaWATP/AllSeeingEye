@@ -14,6 +14,7 @@ from ase.application.reports.selection import (
     plan_selection,
 )
 from ase.application.reports.subscription_updates import previous_signatures
+from ase.application.reports.targeted_evidence import targeted_evidence_scope
 from ase.domain.direction import Direction
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
@@ -118,6 +119,15 @@ def plan_for_job(
         # original grades and the lack of independent corroboration remain unchanged.
         strategy = replace(strategy, max_items=100, per_source_cap=100)
     groups = _term_groups(job, direction, runtime_query, receipt, extra_terms)
+    targeted = (
+        targeted_evidence_scope(job.request.question)
+        if job.request.research_mode is not None
+        and job.request.research_focus is ResearchFocus.GENERAL
+        and not area
+        and job.bbox is None
+        and not job.countries
+        else None
+    )
     return plan_selection(
         store,
         strategy,
@@ -125,6 +135,7 @@ def plan_for_job(
         country_iso=None if private else job.request.country_iso,
         categories=() if private else job.request.categories,
         term_groups=groups,
+        eligibility=targeted.accepts if targeted is not None else None,
         # Area eligibility was admitted by spatial providers. A point-only filter
         # here would silently discard valid footprints without event coordinates.
         bbox=None if private or area else job.bbox,

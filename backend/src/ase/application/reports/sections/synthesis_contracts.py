@@ -1,10 +1,11 @@
-"""Two small final-assessment contracts, preserving the historic combined body contract."""
+"""Bounded final-assessment contracts, preserving historic combined body identities."""
 
 from copy import deepcopy
 from typing import Any
 
 from ase.application.reports.sections.contracts import SYNTHESIS_SCHEMA, validate_content
 from ase.application.reports.sections.tier_limits import limits_for
+from ase.domain.llm import MAX_OUTPUT_TOKENS
 from ase.domain.report_input import _check
 from ase.domain.reports import parse_body
 from ase.domain.validation import Finding, Severity, _check_judgement
@@ -12,16 +13,35 @@ from ase.domain.validation import Finding, Severity, _check_judgement
 JUDGEMENTS = "synthesis_judgements"
 CONTEXT = "synthesis_context"
 PARTS = (JUDGEMENTS, CONTEXT)
-TITLES = {JUDGEMENTS: "Key judgements", CONTEXT: "Alternatives, warning and collection"}
-SCHEMA_NAMES = {JUDGEMENTS: "report_judgements", CONTEXT: "report_context"}
+ALTERNATIVES = "synthesis_alternatives"
+COLLECTION = "synthesis_collection"
+CONTEXT_PARTS = (ALTERNATIVES, COLLECTION)
+ALL_PARTS = (*PARTS, *CONTEXT_PARTS)
+TITLES = {
+    JUDGEMENTS: "Key judgements",
+    CONTEXT: "Alternatives, warning and collection",
+    ALTERNATIVES: "Alternatives and warning",
+    COLLECTION: "Gaps and collection",
+}
+SCHEMA_NAMES = {
+    JUDGEMENTS: "report_judgements",
+    CONTEXT: "report_context",
+    ALTERNATIVES: "report_alternatives",
+    COLLECTION: "report_collection",
+}
 
 
-def _subset(names: tuple[str, ...]) -> dict[str, Any]:
+def output_limit_for(part: str | None) -> int:
+    """Smaller context children retain the operator's lower limit when one is set."""
+    return 16_000 if part in CONTEXT_PARTS else MAX_OUTPUT_TOKENS
+
+
+def _subset(names: tuple[str, ...], source: dict[str, Any] = SYNTHESIS_SCHEMA) -> dict[str, Any]:
     return {
         "type": "object",
         "additionalProperties": False,
         "required": list(names),
-        "properties": {name: deepcopy(SYNTHESIS_SCHEMA["properties"][name]) for name in names},
+        "properties": {name: deepcopy(source["properties"][name]) for name in names},
     }
 
 
@@ -59,20 +79,31 @@ _context["indicators_and_warning"]["properties"]["changes"]["items"]["maxLength"
 _context["gaps"]["items"]["properties"]["text"]["maxLength"] = 400
 _context["collection_recommendations"]["items"]["maxLength"] = 280
 _context["sourcing_statement"]["maxLength"] = 600
+ALTERNATIVES_SCHEMA = _subset(("alternative_hypotheses", "indicators_and_warning"), CONTEXT_SCHEMA)
+COLLECTION_SCHEMA = _subset(
+    ("gaps", "collection_recommendations", "sourcing_statement"), CONTEXT_SCHEMA
+)
+_SCHEMAS = {
+    JUDGEMENTS: JUDGEMENTS_SCHEMA,
+    CONTEXT: CONTEXT_SCHEMA,
+    ALTERNATIVES: ALTERNATIVES_SCHEMA,
+    COLLECTION: COLLECTION_SCHEMA,
+}
 
 
 def schema_for(
     part: str, *, remaining_gaps: int = 20, research_mode: object = None
 ) -> dict[str, Any]:
-    if part not in PARTS:
+    if part not in ALL_PARTS:
         raise ValueError("Unknown synthesis step")
-    schema = deepcopy(JUDGEMENTS_SCHEMA if part == JUDGEMENTS else CONTEXT_SCHEMA)
+    schema = deepcopy(_SCHEMAS[part])
     limits = limits_for(research_mode)
     if part == JUDGEMENTS:
         schema["properties"]["key_judgements"]["maxItems"] = limits.judgements
         schema["properties"]["assumptions"]["maxItems"] = limits.assumptions
-    if part == CONTEXT:
+    if part in (CONTEXT, ALTERNATIVES):
         schema["properties"]["alternative_hypotheses"]["maxItems"] = limits.alternatives
+    if part in (CONTEXT, COLLECTION):
         schema["properties"]["gaps"]["maxItems"] = min(10, max(0, remaining_gaps))
     return schema
 

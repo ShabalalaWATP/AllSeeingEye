@@ -37012,6 +37012,13 @@
             ],
             "title": "Assessment"
           },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
           "citations": {
             "items": {
               "type": "string"

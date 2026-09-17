@@ -12082,6 +12082,8 @@ export interface components {
             reporting?: string[];
             /** Assessment */
             assessment?: string | null;
+            /** Gaps */
+            gaps?: string[];
             /** Citations */
             citations?: string[];
             /** Error */

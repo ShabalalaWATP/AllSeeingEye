@@ -9,6 +9,7 @@ from ase.application.reports.sections.quality import (
     project_requirement_coverage,
     requirement_support_from_topics,
 )
+from ase.application.reports.sections.synthesis_contracts import CONTEXT_PARTS, JUDGEMENTS
 from ase.domain.research import ResearchMode
 from ase.domain.research_brief_values import IntelligenceRequirement
 from section_model_helpers import HEADER, Checkpoints, Gateway, run
@@ -66,7 +67,7 @@ def test_exact_bound_citations_gaps_and_contrary_evidence_define_four_states():
     ) == {"req-1"}
 
 
-async def test_all_twelve_authored_requirements_reach_both_synthesis_calls():
+async def test_all_twelve_authored_requirements_reach_every_synthesis_call():
     checkpoints = Checkpoints()
     gateway = Gateway(checkpoints)
     authored = requirements()
@@ -78,7 +79,11 @@ async def test_all_twelve_authored_requirements_reach_both_synthesis_calls():
         header=header,
         canonical_requirements=authored,
     )
-    for _, request, *_ in gateway.calls[-2:]:
+    final_calls = [
+        request for name, request, *_ in gateway.calls if name in (JUDGEMENTS, *CONTEXT_PARTS)
+    ]
+    assert len(final_calls) == 3
+    for request in final_calls:
         payload = json.loads(request.messages[1].content)
         manifest = payload["requirement_coverage_manifest"]
         assert len(manifest) == 12

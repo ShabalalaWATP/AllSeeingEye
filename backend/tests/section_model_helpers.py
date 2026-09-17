@@ -101,9 +101,9 @@ class Gateway:
         return LlmResult(content, "returned-model", 1, 10, 5)
 
 
-def exhausted():
+def exhausted(*, completion_tokens=32000):
     return LlmTokenBudgetExhausted(
-        model="returned-model", prompt_tokens=20, completion_tokens=32000
+        model="returned-model", prompt_tokens=20, completion_tokens=completion_tokens
     )
 
 

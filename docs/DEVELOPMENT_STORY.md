@@ -5028,3 +5028,85 @@ when the worker supplied an already-metered text gateway. Embedding accounting
 is now wired separately, preserving actor/team attribution and one charge per
 text call. Regression tests cover refusal before a provider call when blocked,
 exact text-plus-embedding totals and attribution to the subscription owner.
+
+### 17 September 2026: recover rejected report sections and tighten collection
+
+Inspection of a paused local report found six confirmed completed model calls,
+one accepted section and one rejected section, with substantial allowance left.
+Its expired worker lease had replaced the known section failure with a generic
+interruption reason. The original reason for the missed terminal update was not
+established. Terminal pause/failure now retains the reason only while the same
+worker token and revision own the running row. Normal work and publication still
+require an unexpired lease. Expired recovery recognises only unambiguous settled
+section failures; unknown paid outcomes remain conservative and do not auto-run.
+
+A new topic response that fails validation gets one metered correction attempt.
+An explicit resume retries only the unfinished topic, preserving accepted sections,
+the frozen evidence and all lifetime limits. Provider failures and uncertain calls
+do not enter that automatic repair. The progress view now accepts all six valid
+reporting items, exposes incomplete-section errors while collapsed and labels
+accepted evidence gaps separately rather than making gap-only sections look empty.
+
+The same investigation found unrelated country observations in the frozen packet
+and two passes spending the allowance on the same first three connectors. New
+general questions with a clear subject and short named locality now require both
+in the source text. This deliberately narrow lexical rule is not geocoding or a
+semantic relevance model; country-wide, language-only, generic news, private-input
+and area workflows retain their existing rules. Independent review caught and
+regression-tested generic-news, country-abbreviation and output-language false
+positives. Revised collection now tries unattempted admitted sources first without
+expanding its operation or time budgets or adding excluded sources.
+
+Focused backend suites cover worker/storage recovery, subscription reconciliation,
+section correction/projection, evidence scope, collection allocation and durable
+source budgets. Frontend report progress/API tests passed (27), as did the production
+build, full backend mypy, focused Ruff/formatting, frontend type/lint checks,
+configured Bandit, import contracts, file-length and whitespace checks. Coverage
+was not remeasured for this repair. The operations guide and active plan record
+the remaining expensive heartbeat and undated infrastructure-context limitations.
+
+### 17 September 2026: bound final synthesis and recover confirmed context exhaustion
+
+The local report resumed with the first repair and retained four accepted topic
+sections plus its accepted judgements. A subsequent, separate failure was then
+observed: the combined final-context request consumed its 32,000-token output and
+reasoning allowance. The lifetime job budget still had room. This establishes two
+distinct failures, a rejected topic and then an exhausted final-context request.
+
+New final synthesis uses three tasks: judgements, alternatives and warning, and
+gaps and collection. The latter two have separate schemas, checkpoint identities
+and 16,000-token ceilings, capped further by the frozen model profile. Their
+prompts omit the whole report's length target and ask only for their own fields.
+Evidence provenance, the structural coverage warning, model choice and reasoning
+effort are preserved. Accepted old synthesis remains reusable. A confirmed
+exhausted legacy context may resume into these children only when all provider
+outcomes are known and both new reservations fit its unchanged lifetime limits.
+Unknown calls, opted-in stage plans and exhausted children are not admitted by
+this exception. No paid-call history, reservations or frozen evidence is reset.
+
+Progress presents the two child sections rather than their compatibility parent.
+Review also repaired old display limits that rejected valid Advanced reports
+with four alternatives or eight judgements. Focused backend validation passed
+228 combined section, synthesis, provenance, collection-manifest, depth, reasoning
+and resume tests; a separate 96-test resume/projection/control suite and 17 job,
+subscription and embedding integration cases passed. These batches overlap and
+are not a cumulative unique count. The full adapter deadline suite passed 38
+tests. Full backend mypy, Ruff, formatting, configured Bandit, import contracts
+and file-length checks passed. Coverage was not remeasured for this repair.
+
+Live recovery then completed both new context steps with the configured Luna Max
+model, using 5,745 and 4,099 output/reasoning tokens. The original five accepted
+sections and failed-call accounting were retained. The job advanced to its separate
+analysis pass. The finished product was saved as needs review: the original frozen
+packet did not substantiate the requested Kyiv-specific attack details, and final
+checks identified requirement-coverage, figure and citation-style issues. The
+synthesis recovery is confirmed; this is not a verified attack assessment.
+
+The subsequent optional analysis request hit the default 120-second timeout.
+Its report_analysis schema had been omitted from the bounded 300-second native
+Max report allowance. The omission is corrected for future requests while
+explicit timeouts and cancellation remain authoritative. The uncertain paid
+request was not repeated and retains its reservation. Citation entailment and
+claim extraction completed. The saved report exposes the remaining findings.
+The timeout regression failed before the fix; all 45 deadline tests then passed,
+including explicit overrides, non-Max/local defaults and cancellation.

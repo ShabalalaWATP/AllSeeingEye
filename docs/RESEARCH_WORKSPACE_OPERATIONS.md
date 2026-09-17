@@ -54,6 +54,51 @@ apply. More depth consumes more time and provider capacity. Existing saved `quic
 and `detailed` values mean Basic and Deep respectively; `advanced` is additive.
 These choices also apply to area research, personal defaults and schedules.
 
+### Saved progress and recovery
+
+A paused report is not necessarily out of tokens. Expand its sections to read the
+accepted draft; incomplete sections show their safe failure reason even while
+collapsed. A valid section can contain only an **Evidence gaps** explanation when
+the frozen sources cannot support the requested assessment.
+
+New topic output that fails validation gets one correction attempt within the
+existing report allowance. A second invalid response pauses the job. Resuming an
+incomplete topic makes one correction attempt, retains accepted sections and uses
+the same frozen evidence. Provider failures, interrupted calls and uncertain paid
+outcomes do not enter this automatic correction path. Final publication still
+requires the normal checks.
+
+Final synthesis now uses three small requests: key judgements, alternatives and
+warning, then gaps and collection. The last two each have a 16,000 output/reasoning
+token ceiling, or the configured model's lower ceiling. They use the chosen model
+and thinking level. Each completed part is saved independently; a failed part does
+not replay accepted judgements or sections.
+
+A legacy final-context step that exhausted its confirmed output allowance can
+offer **Resume research** to split that step once. This requires settled calls,
+valid saved identities and enough lifetime allowance for both new parts. The old
+paid request and token counts stay retained. Exhausting a smaller child step does
+not create further retries or subdivisions. A report-wide allowance limit is still
+a hard stop.
+
+Lease recovery preserves a known section failure only when all recorded calls are
+settled and the current packet contains one unambiguous failure. Other interrupted
+jobs retain the conservative interruption warning and require explicit resumption.
+Saved work is not recollected or silently rewritten after a software update.
+
+For new general research, a narrow subject followed by a short named locality
+(for example, "drone and missile attacks in Kyiv") requires source text supporting
+both the subject and that place. This is a conservative text check, not geocoding
+or a full semantic relevance classifier. Country-wide, private-document and
+explicit-area research retain their own selection rules. An empty eligible set
+produces an evidence-gap outcome rather than filling the report with unrelated
+country observations.
+
+If the first source pass is empty and the search is revised, the remaining
+allowance now tries unattempted admitted sources before repeating earlier ones.
+Basic research retains its six-operation collection allowance. Providers excluded
+by the allocation limit are not silently added; inspect the receipt for coverage.
+
 ## Photo geolocation
 
 Open Geolocation in the left navigation. Old `/research/photo` links redirect to

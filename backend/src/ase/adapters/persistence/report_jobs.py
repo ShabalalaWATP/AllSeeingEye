@@ -12,6 +12,7 @@ from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.report_job_codec import from_row, payload_columns, with_payload
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
+from ase.application.report_jobs.recovery import expired_failure
 from ase.domain.access import Visibility
 from ase.domain.report_jobs import (
     CheckpointStatus,
@@ -192,11 +193,20 @@ class SqlReportJobRepository:
         elif lease_until is not None:
             job_lease(now, lease_until)
             values["lease_until"] = lease_until
+        # A stopped worker may retain its known outcome after time has elapsed,
+        # but only while the same token and revision still own the running row.
+        # Continued work and publication still require an unexpired lease.
+        predicates: tuple[ColumnElement[bool], ...] = (
+            Row.status == "running",
+            Row.lease_token == lease_token,
+        )
+        if status == "running":
+            predicates += (Row.lease_until > now,)
         return await self._update(
             job_id,
             expected_revision,
             now,
-            (Row.status == "running", Row.lease_token == lease_token, Row.lease_until > now),
+            predicates,
             values,
         )
 
@@ -270,6 +280,9 @@ class SqlReportJobRepository:
         )
         count = 0
         for job_id, revision in rows:
+            current = await self.get(job_id)
+            if current is None or current.revision != revision:
+                continue
             value = await self._update(
                 job_id,
                 revision,
@@ -279,7 +292,7 @@ class SqlReportJobRepository:
                     "status": "paused",
                     "lease_token": None,
                     "lease_until": None,
-                    "error": "interrupted_uncertain",
+                    "error": expired_failure(current.payload),
                 },
             )
             count += value is not None

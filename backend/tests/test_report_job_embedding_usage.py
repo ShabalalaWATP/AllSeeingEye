@@ -46,7 +46,7 @@ async def configure_embeddings(container):
 
 
 @pytest.mark.parametrize("team_scope", [False, True])
-@pytest.mark.parametrize("request_limit", [0, 10])
+@pytest.mark.parametrize("request_limit", [0, 11])
 async def test_queued_embeddings_use_daily_allowance_and_exact_actor_scope(
     client, user, container, team_scope, request_limit
 ):
@@ -83,9 +83,14 @@ async def test_queued_embeddings_use_daily_allowance_and_exact_actor_scope(
         "synthetic-embedding-key",
         embedding_profile.model,
     )
-    assert len(text_gateway.calls) == 9
-    # Nine already-metered text calls plus exactly one embedding reservation.
-    assert len(rows) == 10
+    assert len(text_gateway.calls) == 10
+    assert [name for name, _ in text_gateway.calls if name.startswith("synthesis_")] == [
+        "synthesis_judgements",
+        "synthesis_alternatives",
+        "synthesis_collection",
+    ]
+    # Ten already-metered text calls plus exactly one embedding reservation.
+    assert len(rows) == 11
     assert all(row.user_id == user.id and row.team_id == team_id for row in rows)
     assert all(row.policy_id == current_policy.id for row in rows)
     [embedding_row] = [row for row in rows if row.purpose == "report:evidence_rerank"]
@@ -98,8 +103,8 @@ async def test_queued_embeddings_use_daily_allowance_and_exact_actor_scope(
         totals = await container.repositories(session).ai_usage.account_totals(
             user.id, container.clock.now()
         )
-        assert totals.used_requests == 10
-        assert totals.used_tokens == 34 + 9 * 15
+        assert totals.used_requests == 11
+        assert totals.used_tokens == 34 + 10 * 15
 
 
 async def test_subscription_reranking_is_charged_to_owner_once(client, user, container):
@@ -108,7 +113,7 @@ async def test_subscription_reranking_is_charged_to_owner_once(client, user, con
     await add_policy(
         container,
         policy(
-            limit=10,
+            limit=11,
             tokens=None,
             scope=AiPolicyScope.USER,
             target_id=user.id,
@@ -138,9 +143,9 @@ async def test_subscription_reranking_is_charged_to_owner_once(client, user, con
         [edition] = await SqlSubscriptionEditionRepository(session).history(schedule.id)
     final = await stored(container, edition.job_id)
     assert final.status == "needs_review", (final.status, final.error)
-    assert len(embeddings.calls) == 1 and len(text_gateway.calls) == 9
+    assert len(embeddings.calls) == 1 and len(text_gateway.calls) == 10
     rows = await reservations(container)
-    assert len(rows) == 10
+    assert len(rows) == 11
     assert all(row.user_id == user.id and row.team_id is None and not row.system for row in rows)
     [embedding_row] = [row for row in rows if row.purpose == "report:evidence_rerank"]
     assert embedding_row.profile_id == embedding_profile.id

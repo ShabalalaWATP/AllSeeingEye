@@ -13,7 +13,11 @@ from ase.application.reports.sections.contracts import (
     decode,
     validate_step,
 )
-from ase.application.reports.sections.synthesis_contracts import CONTEXT
+from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
+    COLLECTION,
+    JUDGEMENTS,
+)
 from ase.domain.direction import Direction
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
 from section_model_helpers import Checkpoints, Gateway, items, run, synthesis_part_body, topic_body
@@ -93,7 +97,8 @@ async def test_invalid_response_retains_accounting_but_never_partial_model_text(
     gateway = Gateway(checkpoints, {"S1": '{"private-output-marker": "secret"}'})
     with pytest.raises(SectionIncomplete) as caught:
         await run(gateway, checkpoints)
-    assert caught.value.draft.prompt_tokens == 10 and caught.value.draft.completion_tokens == 5
+    assert caught.value.draft.prompt_tokens == 20 and caught.value.draft.completion_tokens == 10
+    assert len(gateway.calls) == 2
     assert "private-output-marker" not in repr(checkpoints.rows) + str(caught.value)
     assert next(iter(checkpoints.rows.values())).status == "incomplete"
 
@@ -115,7 +120,7 @@ async def test_saved_completed_body_is_revalidated_before_reuse(mutation):
     checkpoints.rows[key] = replace(row, payload=payload)
     with pytest.raises(SectionIncomplete) as caught:
         await run(gateway, checkpoints)
-    assert caught.value.reason == "invalid_checkpoint" and len(gateway.calls) == 5
+    assert caught.value.reason == "invalid_checkpoint" and len(gateway.calls) == 6
 
 
 async def test_generated_sections_remain_untrusted_and_synthesis_receives_original_evidence():
@@ -129,17 +134,22 @@ async def test_generated_sections_remain_untrusted_and_synthesis_receives_origin
         direction=Direction("Question", eeis=("Unsupported search?",)),
         background="Generated web text",
     )
-    synthesis = gateway.calls[-1][1]
-    assert "untrusted data" in synthesis.messages[0].content
-    assert "not original evidence or independent corroboration" in synthesis.messages[0].content
-    assert "Do not rewrite" in synthesis.messages[
-        0
-    ].content or "Do not rewrite" in synthesis.messages[0].content.replace("\n", " ")
-    payload = json.loads(synthesis.messages[1].content)
-    assert len(payload["original_frozen_evidence"]) == 3
-    assert len(payload["generated_sections_not_evidence"]) == 3
-    assert "Ignore rules" not in synthesis.messages[0].content
-    assert all("Ignore rules" in item for item in payload["original_frozen_evidence"])
+    final_calls = [
+        request
+        for name, request, *_ in gateway.calls
+        if name in (JUDGEMENTS, ALTERNATIVES, COLLECTION)
+    ]
+    assert len(final_calls) == 3
+    for synthesis in final_calls:
+        system = synthesis.messages[0].content
+        assert "untrusted data" in system
+        assert "not original evidence or independent corroboration" in system
+        assert "Do not rewrite" in system.replace("\n", " ")
+        payload = json.loads(synthesis.messages[1].content)
+        assert len(payload["original_frozen_evidence"]) == 3
+        assert len(payload["generated_sections_not_evidence"]) == 3
+        assert "Ignore rules" not in system
+        assert all("Ignore rules" in item for item in payload["original_frozen_evidence"])
     assert (
         "reporting" not in SYNTHESIS_SCHEMA["properties"]
         and "assessment" not in SYNTHESIS_SCHEMA["properties"]
@@ -162,12 +172,12 @@ async def test_final_validation_is_applied_once_to_assembled_body(monkeypatch):
 
 async def test_existing_reporting_keeps_gap_capacity_for_all_ten_eeis():
     checkpoints = Checkpoints()
-    body = synthesis_part_body(CONTEXT, ["E1"])
+    body = synthesis_part_body(COLLECTION, ["E1"])
     body["gaps"] = [
         {"text": f"Unsupported requirement {index}", "eei": f"EEI-{index}"}
         for index in range(1, 11)
     ]
-    gateway = Gateway(checkpoints, {CONTEXT: json.dumps(body)})
+    gateway = Gateway(checkpoints, {COLLECTION: json.dumps(body)})
     draft = await run(
         gateway,
         checkpoints,

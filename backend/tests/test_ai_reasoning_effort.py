@@ -20,6 +20,8 @@ ANALYTICAL = (
     "report_topic",
     "report_judgements",
     "report_context",
+    "report_alternatives",
+    "report_collection",
     "direction",
     "advocacy",
     "challenge_plan",

@@ -8,6 +8,7 @@ import pytest
 
 from ase.application.reports.sections import SectionIncomplete
 from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
     CONTEXT,
     JUDGEMENTS,
     schema_for,
@@ -25,11 +26,12 @@ from section_model_helpers import HEADER, Checkpoints, Gateway, items, run, synt
         (ResearchMode.ADVANCED, 8, 4),
     ],
 )
+@pytest.mark.parametrize("context_part", [CONTEXT, ALTERNATIVES])
 def test_each_tier_has_strict_model_schema_and_validates_its_own_ceiling(
-    mode, judgements, alternatives
+    mode, judgements, alternatives, context_part
 ):
     judgement_schema = schema_for(JUDGEMENTS, research_mode=mode.value)
-    context_schema = schema_for(CONTEXT, research_mode=mode.value)
+    context_schema = schema_for(context_part, research_mode=mode.value)
     assert judgement_schema["properties"]["key_judgements"]["maxItems"] == judgements
     assert context_schema["properties"]["alternative_hypotheses"]["maxItems"] == alternatives
 
@@ -59,7 +61,7 @@ def test_each_tier_has_strict_model_schema_and_validates_its_own_ceiling(
             research_mode=mode.value,
         )
 
-    context = synthesis_part_body(CONTEXT, ["E1"])
+    context = synthesis_part_body(context_part, ["E1"])
     context["alternative_hypotheses"] = [
         {
             "text": f"Alternative {number}.",
@@ -72,7 +74,7 @@ def test_each_tier_has_strict_model_schema_and_validates_its_own_ceiling(
         len(
             validate_part(
                 context,
-                part=CONTEXT,
+                part=context_part,
                 labels=frozenset({"E1"}),
                 eeis=frozenset(),
                 research_mode=mode.value,
@@ -89,7 +91,7 @@ def test_each_tier_has_strict_model_schema_and_validates_its_own_ceiling(
                     context["alternative_hypotheses"][0],
                 ],
             },
-            part=CONTEXT,
+            part=context_part,
             labels=frozenset({"E1"}),
             eeis=frozenset(),
             research_mode=mode.value,
@@ -103,7 +105,7 @@ async def test_advanced_runner_accepts_three_distinct_judgements_and_preserves_r
     judgement["key_judgements"] = [
         {**deepcopy(base), "id": f"KJ{number}"} for number in range(1, 4)
     ]
-    context = synthesis_part_body(CONTEXT, ["E1"])
+    context = synthesis_part_body(ALTERNATIVES, ["E1"])
     context["alternative_hypotheses"] = [
         {
             "text": "An alternative explanation.",
@@ -112,13 +114,15 @@ async def test_advanced_runner_accepts_three_distinct_judgements_and_preserves_r
         }
     ]
     gateway = Gateway(
-        checkpoints, {JUDGEMENTS: json.dumps(judgement), CONTEXT: json.dumps(context)}
+        checkpoints, {JUDGEMENTS: json.dumps(judgement), ALTERNATIVES: json.dumps(context)}
     )
     header = replace(HEADER, scope={"research_mode": ResearchMode.ADVANCED.value})
     draft = await run(gateway, checkpoints, items(3), header=header)
     assert draft.body and len(draft.body.key_judgements) == 3
-    assert gateway.calls[-2][1].json_schema["properties"]["key_judgements"]["maxItems"] == 8
-    assert "ceiling is not a target" in gateway.calls[-2][1].messages[0].content
+    request = next(request for name, request, *_ in gateway.calls if name == JUDGEMENTS)
+    assert request.json_schema["properties"]["key_judgements"]["maxItems"] == 8
+    assert "ceiling is not a target" in request.messages[0].content
+    assert len(draft.body.alternative_hypotheses) == 1
     count = len(gateway.calls)
     resumed = await run(gateway, checkpoints, items(3), header=header)
     assert resumed.body == draft.body and len(gateway.calls) == count

@@ -38,9 +38,13 @@ class JobGateway:
         if request.schema_name in POST_DRAFT_STAGES:
             self.calls.append((request.schema_name, request))
             return LlmResult(json.dumps(POST_DRAFT_STAGES[request.schema_name]), model, 1, 10, 5)
-        assert request.schema_name in {"report_topic", "report_judgements", "report_context"}, (
-            request.schema_name
-        )  # An unexpected stage is a test bug, not a provider failure.
+        assert request.schema_name in {
+            "report_topic",
+            "report_judgements",
+            "report_context",
+            "report_alternatives",
+            "report_collection",
+        }, request.schema_name  # An unexpected stage is a test bug, not a provider failure.
         payload = json.loads(request.messages[1].content)
         topic = payload["topic"]
         name = topic["id"] if topic else payload["synthesis_step"]

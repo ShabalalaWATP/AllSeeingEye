@@ -22,6 +22,7 @@ from ase.adapters.persistence.subscription_retry_attempts import (
 )
 from ase.application.report_jobs.budget import JobInterrupted
 from ase.application.report_jobs.controls import has_budget
+from ase.application.report_jobs.recovery import SECTION_FAILURES
 from ase.application.report_jobs.views import refresh_summary
 from ase.container.subscription_retry_runtime import automatic_retry_payload, classify_failure
 from ase.container.subscription_retry_transitions import stop_waiting
@@ -175,22 +176,31 @@ class SubscriptionRetryOrchestrator:
             .where(
                 SubscriptionEditionRow.workflow == EditionWorkflow.RUNNING.value,
                 ReportJobRow.status == "paused",
-                ReportJobRow.error == "interrupted_uncertain",
+                ReportJobRow.error.in_({"interrupted_uncertain", *SECTION_FAILURES}),
             )
             .limit(20)
         )
         for edition_id in rows:
             edition = await editions.get(edition_id)
-            if edition is None or edition.job_id is None:
+            if (
+                edition is None
+                or edition.job_id is None
+                or edition.workflow is not EditionWorkflow.RUNNING
+            ):
                 continue
             job = await SqlReportJobRepository(session).get(edition.job_id)
-            if job is None:
+            if (
+                job is None
+                or job.status != "paused"
+                or job.error not in {"interrupted_uncertain", *SECTION_FAILURES}
+            ):
                 continue
+            reason = job.error if job.error in SECTION_FAILURES else "uncertain_paid_outcome"
             changed = await editions.advance(
                 replace(
                     edition,
                     workflow=EditionWorkflow.PAUSED,
-                    safe_reason="uncertain_paid_outcome",
+                    safe_reason=reason,
                     updated_at=now,
                     revision=edition.revision + 1,
                 ),
@@ -204,7 +214,7 @@ class SubscriptionRetryOrchestrator:
                 and attempt.ended_at is None
                 and attempt.lease_token is not None
                 and not await finish_attempt(
-                    session, edition.id, job, attempt.lease_token, now, "uncertain_paid_outcome"
+                    session, edition.id, job, attempt.lease_token, now, reason
                 )
             ):
                 await session.rollback()
