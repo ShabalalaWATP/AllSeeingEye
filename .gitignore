@@ -29,6 +29,7 @@ data/
 *.sqlite
 
 # OS and IDE
+.claude/
 .DS_Store
 Thumbs.db
 .idea/
