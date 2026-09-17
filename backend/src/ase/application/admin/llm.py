@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
 from ase.application.access import AccessPolicy
+from ase.application.admin.llm_capacity import require_text_capacity
 from ase.application.admin.llm_testing import SessionCheck
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
@@ -118,6 +119,7 @@ class CreateLlmProfileUseCase:
         before_save: SessionCheck | None = None,
     ) -> LlmProfile:
         require_admin((await self._access.context(actor, for_update=True)).actor)
+        await require_text_capacity(self._profiles, data.roles)
         if not self._cipher.available:
             raise EncryptionUnavailable()
         if data.provider is LlmProvider.BEDROCK and not data.api_key:
@@ -186,6 +188,8 @@ class UpdateLlmProfileUseCase:
         profile = await self._profiles.get(profile_id)
         if profile is None:
             raise NotFound()
+        if not profile.roles & TEXT_ROLES:
+            await require_text_capacity(self._profiles, data.roles)
         if await self._bindings.is_bound(profile_id):
             raise InvalidRequest(
                 "An active connection cannot be edited. Create a replacement profile."

@@ -912,8 +912,10 @@ the source and conversation boundaries.
   for active AI allowance targets through migration 0041.
 - [x] Apply the allowance ledger to Ask Eye, synchronous and queued report
   generation, native web search, automatic claim proposals and photo geolocation.
-- [ ] Complete subscription/system model paths, effective-policy previews,
-  reconciliation and the remaining browser acceptance matrix.
+- [x] Add subscription/system model accounting, effective-policy previews and
+  bounded reconciliation, as recorded in the detailed successor plan.
+- [ ] Complete administrator review of unknown calls and the remaining teams
+  browser acceptance matrix.
 
 The detailed status and evidence log is in
 [TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).
@@ -932,7 +934,34 @@ The detailed status and evidence log is in
   blocking issues; its focus and exception-coverage findings were addressed.
 - [x] Verify account model discovery and a real `gpt-5.6-sol` Max compatibility
   request against the configured OpenAI account, without changing assignments.
-- [ ] Complete authenticated visual acceptance after the administrator signs in
-  again. The updated local frontend and backend are running on ports 5174/8001.
+- [x] Complete authenticated desktop and narrow-screen visual acceptance of the
+  revised popup, model cards and assignment matrix on the local admin page.
 
 No schema migration or change to the current global connection is required.
+
+## 17 September 2026: multi-model administration workspace
+
+- [x] Replace the inline setup form with a six-step modal: name, credentials,
+  automatic account model discovery, reasoning, connection test and audience.
+- [x] Show up to five text-model connections as horizontal cards, including
+  recoverable drafts. Keep embedding-only connections separate.
+- [x] Add searchable team/user assignments and daily allowance presets beneath
+  the cards, driven by the same authoritative server response.
+- [x] Apply model and allowance changes atomically with current administrator,
+  target, tested-configuration and optimistic-revision checks.
+- [x] Provide Light (50 calls/100,000 tokens), Standard (250/500,000), Intensive
+  (1,000/2,000,000) and Power (2,500/5,000,000) daily UTC presets, plus inheritance
+  and blocking. Preserve weekly/monthly policies and require temporary overrides
+  to be resolved before changing the underlying daily preset.
+- [x] Bound audience batches to 100 targets and enforce the five-profile cap
+  server-side, including concurrent creation and embedding-role conversion.
+- [x] Pass 152 focused backend tests and the full frontend suite (2,780 passed,
+  one existing test skipped), all four frontend coverage gates, production build,
+  type/lint checks, Bandit and the staged secret scan. Prepare the revised draft PR.
+- [x] Close the queued-report embedding-accounting gap, with zero-allowance,
+  exact-counting and personal/team/subscription-owner regression coverage.
+
+Existing global and individual assignments are preserved. A legacy installation
+with five enabled partial-role profiles and no explicit global binding needs a
+separate migration path before a complete default model can be added. This is not
+the current local configuration. No cap bypass or destructive migration is used.

@@ -4984,6 +4984,47 @@ build, type checks, focused lint/formatting and Bandit. Independent review ident
 a focus loss during model discovery and a missing exception-boundary test; both
 were addressed. Live OpenAI discovery returned 136 models, and `gpt-5.6-sol` passed
 the Max reasoning probe. Luna remains the global default. No assignments changed.
-Authenticated visual acceptance is pending administrator sign-in after the local
-development servers were restarted with the branch version. Full suite coverage
-was not remeasured for this focused repair.
+Authenticated visual acceptance and full frontend coverage were completed during
+the subsequent multi-model redesign below.
+
+### 17 September 2026: replace AI setup with a multi-model workspace
+
+Replaced the inline journey with a focused six-step popup. Administrators name
+the connection, provide credentials, discover their account models, choose a
+reasoning level, test compatibility and choose the audience. Discovery retries
+transient failures at most three times and offers an exact-ID fallback. Failed
+saves retain entered credentials; saved drafts retain their encrypted key and
+can resume after a test or assignment failure.
+
+The page now shows up to five research models as horizontal cards above a
+searchable team/user matrix. Both views use the same server snapshot. Model and
+daily allowance changes commit together, with tested-configuration proofs,
+revision checks and a final administrator-session check. Selecting a new model
+for an audience replaces its old assignment. User model overrides apply to
+personal research; team research follows the team or global connection.
+
+Four daily UTC presets range from 50 calls/100,000 tokens to 2,500 calls/5,000,000
+tokens. Inheritance and blocking remain explicit. Existing weekly/monthly limits
+are retained; active or future temporary overrides must be resolved before a
+daily preset can change. The five-profile cap also covers drafts and concurrent
+creation. Embedding-only profiles stay outside that cap and the main setup flow.
+
+Authenticated browser inspection verified the model cards, modal steps, audience
+selection and matrix at desktop width, and the scrolling popup at 390px width.
+Automatic discovery in the new popup loaded 136 models from the configured
+OpenAI account, including Luna and Sol, using the saved server-side credential.
+The existing Luna default and all real assignments were preserved. Backend
+validation passed 152 distinct focused tests, including 44 new tests, plus mypy,
+Ruff, import contracts and Bandit. The full frontend run passed 2,780 tests across
+523 files (one existing test skipped), with statements 95.05%, branches 90.15%,
+functions 93.13% and lines 96.43%. TypeScript, ESLint, production build, changed-file
+formatting, file-length and whitespace checks passed. The staged secret scan
+found no leaks. Retired inline-form components were removed, and a regression
+test protects manual model entry from losing focus when discovery completes.
+
+The final quota review found and repaired a pre-existing gap in queued reports
+and subscriptions: evidence-reranking embeddings bypassed the allowance ledger
+when the worker supplied an already-metered text gateway. Embedding accounting
+is now wired separately, preserving actor/team attribution and one charge per
+text call. Regression tests cover refusal before a provider call when blocked,
+exact text-plus-embedding totals and attribution to the subscription owner.

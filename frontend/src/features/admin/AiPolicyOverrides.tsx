@@ -26,7 +26,17 @@ function limitInput(state: AiLimitState, value: string): { state: AiLimitState; 
   return { state, value: parseLimit(value) ?? Number.NaN };
 }
 
-export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: string }) {
+export function AiPolicyOverrides({
+  policy,
+  label,
+  onBusyChange,
+  disabled = false,
+}: {
+  policy: AiPolicy;
+  label: string;
+  onBusyChange?: (busy: boolean) => void;
+  disabled?: boolean;
+}) {
   const [items, setItems] = useState<AiOverride[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -52,6 +62,7 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
   }, [policy.id]);
 
   async function create() {
+    if (busy || disabled) return;
     const requests = limitInput(requestState, requestValue);
     const tokens = limitInput(tokenState, tokenValue);
     if (Number.isNaN(requests.value) || Number.isNaN(tokens.value)) {
@@ -65,6 +76,7 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
       return;
     }
     setBusy(true);
+    onBusyChange?.(true);
     setError(null);
     try {
       const saved = await createAiOverride(policy.id, {
@@ -78,11 +90,14 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
       setError(describeError(asApiError(caught)));
     } finally {
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
 
   async function revoke(item: AiOverride) {
+    if (busy || disabled) return;
     setBusy(true);
+    onBusyChange?.(true);
     setError(null);
     try {
       const revoked = await revokeAiOverride(item.id);
@@ -91,6 +106,7 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
       setError(describeError(asApiError(caught)));
     } finally {
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
 
@@ -109,7 +125,7 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
         <SelectField
           label="Request override"
           value={requestState}
-          disabled={busy}
+          disabled={busy || disabled}
           options={[...LIMIT_STATE_OPTIONS]}
           onChange={(event) => setRequestState(event.target.value as AiLimitState)}
         />
@@ -118,14 +134,14 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
             label="Request limit"
             inputMode="numeric"
             value={requestValue}
-            disabled={busy}
+            disabled={busy || disabled}
             onChange={(event) => setRequestValue(event.target.value)}
           />
         ) : null}
         <SelectField
           label="Token override"
           value={tokenState}
-          disabled={busy}
+          disabled={busy || disabled}
           options={[...LIMIT_STATE_OPTIONS]}
           onChange={(event) => setTokenState(event.target.value as AiLimitState)}
         />
@@ -134,7 +150,7 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
             label="Token limit"
             inputMode="numeric"
             value={tokenValue}
-            disabled={busy}
+            disabled={busy || disabled}
             onChange={(event) => setTokenValue(event.target.value)}
           />
         ) : null}
@@ -142,18 +158,18 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
           label="Starts"
           type="datetime-local"
           value={from}
-          disabled={busy}
+          disabled={busy || disabled}
           onChange={(event) => setFrom(event.target.value)}
         />
         <TextField
           label="Expires"
           type="datetime-local"
           value={until}
-          disabled={busy}
+          disabled={busy || disabled}
           onChange={(event) => setUntil(event.target.value)}
         />
       </div>
-      <Button variant="secondary" busy={busy} onClick={() => void create()}>
+      <Button variant="secondary" busy={busy} disabled={disabled} onClick={() => void create()}>
         Add override
       </Button>
       {items === null && error === null ? <LoadingNote label="Loading overrides" /> : null}
@@ -172,7 +188,11 @@ export function AiPolicyOverrides({ policy, label }: { policy: AiPolicy; label: 
                 </span>
               </span>
               {item.revoked_at === null ? (
-                <Button variant="ghost" disabled={busy} onClick={() => void revoke(item)}>
+                <Button
+                  variant="ghost"
+                  disabled={busy || disabled}
+                  onClick={() => void revoke(item)}
+                >
                   Revoke
                 </Button>
               ) : null}

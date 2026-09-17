@@ -27,7 +27,8 @@ export function LlmModelSelection({
   canDiscover: boolean;
 }) {
   const [search, setSearch] = useState('');
-  const [manual, setManual] = useState(false);
+  // Keep the visible input stable when a catalogue arrives during manual entry.
+  const [manual, setManual] = useState(models.length === 0);
   const filtered = models.filter((value) => value.toLowerCase().includes(search.toLowerCase()));
   const showManual =
     bedrock || manual || models.length === 0 || (!!model && !models.includes(model));
@@ -92,6 +93,7 @@ export function LlmModelSelection({
             name="model"
             label={bedrock ? 'Model or inference profile ID' : 'Model ID'}
             value={model}
+            onFocus={() => setManual(true)}
             onChange={(event) => setModel(event.target.value)}
             required
             maxLength={bedrock ? 2048 : 120}

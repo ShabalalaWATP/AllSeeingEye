@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +13,55 @@ import { LlmProfileForm } from './LlmProfileForm';
 import { draft } from './llmTestFixtures';
 
 describe('connection draft form', () => {
+  it('keeps the focused manual model input when delayed discovery returns account models', async () => {
+    let release!: () => void;
+    let started = false;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post('/api/admin/llm/models/discover', async () => {
+        started = true;
+        await pending;
+        return HttpResponse.json({ models: ['embedding-alpha'] });
+      }),
+    );
+    const user = userEvent.setup();
+    const submit = vi.fn();
+    render(
+      <LlmProfileForm
+        embeddingsOnly
+        busy={false}
+        error={null}
+        onSubmit={submit}
+        onCancel={vi.fn()}
+      />,
+    );
+    await user.type(screen.getByLabelText('API key'), 'synthetic-key');
+    const input = screen.getByLabelText('Model ID');
+    await user.click(input);
+    await waitFor(() => expect(started).toBe(true));
+    expect(input).toHaveFocus();
+    await act(() => {
+      release();
+      return pending;
+    });
+    await screen.findByText(/1 models returned by this account/);
+    expect(screen.getByLabelText('Model ID')).toBe(input);
+    expect(input).toHaveFocus();
+    await user.type(input, 'embedding-alpha-custom');
+    expect(input).toHaveValue('embedding-alpha-custom');
+    await user.click(screen.getByRole('button', { name: 'Choose from account models' }));
+    expect(screen.queryByLabelText('Model ID')).not.toBeInTheDocument();
+    await user.selectOptions(
+      screen.getByLabelText('Models returned by this account'),
+      'embedding-alpha',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save draft' }));
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'embedding-alpha', roles: ['embeddings'] }),
+    );
+  });
   it('chooses an unused model-based name and resets reasoning when changing models', async () => {
     const user = userEvent.setup();
     const submit = vi.fn();
@@ -152,30 +201,26 @@ describe('connection draft form', () => {
     expect(budget).toHaveValue(9000);
   });
 
-  it.each([false, true])(
-    'preserves a saved 16k budget when replacement is %s',
-    async (replacement) => {
-      const user = userEvent.setup();
-      render(
-        <LlmProfileForm
-          initial={draft()}
-          replacement={replacement}
-          busy={false}
-          error={null}
-          onSubmit={vi.fn()}
-          onCancel={vi.fn()}
-        />,
-      );
-      await user.click(screen.getByText('Advanced settings'));
-      const budget = screen.getByLabelText('Response budget (includes reasoning)');
-      expect(budget).toHaveValue(16000);
-      await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'low');
-      await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'max');
-      await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
-      await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
-      expect(budget).toHaveValue(16000);
-    },
-  );
+  it('preserves a saved 16k budget while editing', async () => {
+    const user = userEvent.setup();
+    render(
+      <LlmProfileForm
+        initial={draft()}
+        busy={false}
+        error={null}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByText('Advanced settings'));
+    const budget = screen.getByLabelText('Response budget (includes reasoning)');
+    expect(budget).toHaveValue(16000);
+    await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'low');
+    await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'max');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+    expect(budget).toHaveValue(16000);
+  });
 
   it('allows a custom endpoint and manual model ID without requiring a key', async () => {
     const submit = vi.fn();

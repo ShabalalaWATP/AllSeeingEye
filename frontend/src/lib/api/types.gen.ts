@@ -3533,6 +3533,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Workspace */
+        put: operations["update_workspace_api_admin_llm_workspace_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/llm/profiles": {
         parameters: {
             query?: never;
@@ -9552,6 +9569,53 @@ export interface components {
         LlmUsagePageOut: {
             /** Items */
             items: components["schemas"]["LlmUsageOut"][];
+        };
+        /** LlmWorkspaceAllowanceIn */
+        LlmWorkspaceAllowanceIn: {
+            /**
+             * Preset
+             * @enum {string}
+             */
+            preset: "light" | "standard" | "intensive" | "power" | "blocked" | "inherit";
+            /** Expected Policy Id */
+            expected_policy_id?: string | null;
+            /** Expected Policy Revision */
+            expected_policy_revision?: number | null;
+        };
+        /** LlmWorkspaceChangeIn */
+        LlmWorkspaceChangeIn: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "global" | "team" | "user";
+            /** Target Id */
+            target_id?: string | null;
+            model?: components["schemas"]["LlmWorkspaceModelIn"] | null;
+            allowance?: components["schemas"]["LlmWorkspaceAllowanceIn"] | null;
+        };
+        /** LlmWorkspaceIn */
+        LlmWorkspaceIn: {
+            /** Changes */
+            changes: components["schemas"]["LlmWorkspaceChangeIn"][];
+        };
+        /** LlmWorkspaceModelIn */
+        LlmWorkspaceModelIn: {
+            /** Profile Id */
+            profile_id: string | null;
+            /** Expected Binding Revision */
+            expected_binding_revision?: number | null;
+            /** Expected Profile Revision */
+            expected_profile_revision?: number | null;
+            /** Tested Config Hash */
+            tested_config_hash?: string | null;
+        };
+        /** LlmWorkspaceOut */
+        LlmWorkspaceOut: {
+            /** Connections */
+            connections: components["schemas"]["LlmConnectionOut"][];
+            /** Policies */
+            policies: components["schemas"]["AiUsagePolicyOut"][];
         };
         /**
          * LocationRole
@@ -23144,6 +23208,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubscriptionDiagnosticsOut"];
+                };
+            };
+        };
+    };
+    update_workspace_api_admin_llm_workspace_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LlmWorkspaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmWorkspaceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

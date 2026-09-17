@@ -11,7 +11,6 @@ import { LlmAdvancedSettings } from './LlmAdvancedSettings';
 import { bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
 import { OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
 import { LlmProviderFields } from './LlmProviderFields';
-import { LlmSetupProgress } from './LlmSetupProgress';
 
 function availableName(preferred: string, names: readonly string[]) {
   let candidate = preferred.slice(0, 74);
@@ -21,46 +20,32 @@ function availableName(preferred: string, names: readonly string[]) {
 }
 
 export interface LlmProfileFormProps {
+  embeddingsOnly?: boolean;
   initial?: LlmProfile | undefined;
-  replacement?: boolean;
   models?: readonly string[];
   names?: readonly string[];
   busy: boolean;
-  busyLabel?: string;
   error: string | null;
-  onSubmit:
-    | ((input: LlmProfileInput) => void)
-    | ((input: LlmProfileInput) => Promise<boolean | 'provider-error'>);
+  onSubmit: ((input: LlmProfileInput) => void) | ((input: LlmProfileInput) => Promise<boolean>);
   onCancel: () => void;
-  onTest?:
-    | ((input: LlmProfileInput) => void)
-    | ((input: LlmProfileInput) => Promise<boolean | 'provider-error'>);
-  onChange?: () => void;
 }
 
 /** Keys stay in component memory until a save succeeds, so failed saves remain retryable. */
 export function LlmProfileForm({
+  embeddingsOnly = false,
   initial,
-  replacement = false,
   models = [],
   names = [],
   busy,
-  busyLabel = 'Saving draft…',
   error,
   onSubmit,
   onCancel,
-  onTest,
-  onChange,
 }: LlmProfileFormProps) {
-  const [step, setStep] = useState(1);
-  const guided = !!onTest;
   const [originalCatalogue] = useState({ id: initial?.id, revision: initial?.revision });
   const form = useRef<HTMLFormElement>(null);
-  const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (step === 2) heading.current?.focus();
-    else form.current?.querySelector('select')?.focus();
-  }, [step]);
+    form.current?.querySelector('select')?.focus();
+  }, []);
   const [provider, setProvider] = useState(
     initial?.provider === 'bedrock'
       ? 'bedrock'
@@ -68,13 +53,7 @@ export function LlmProfileForm({
         ? 'openai'
         : 'custom',
   );
-  const [name, setName] = useState(
-    initial === undefined
-      ? availableName('OpenAI connection', names)
-      : replacement
-        ? availableName(`${initial.name} replacement`, names)
-        : initial.name,
-  );
+  const [name, setName] = useState(initial?.name ?? availableName('OpenAI connection', names));
   const customName = useRef(initial !== undefined);
   const [region, setRegion] = useState(
     initial?.provider === 'bedrock' ? regionFromEndpoint(initial.base_url) : '',
@@ -82,7 +61,9 @@ export function LlmProfileForm({
   const [baseUrl, setBaseUrl] = useState(initial?.base_url ?? OPENAI_BASE_URL);
   const [model, setModel] = useState(initial?.model ?? '');
   const [apiKey, setApiKey] = useState('');
-  const [embeddings, setEmbeddings] = useState(initial?.roles.includes('embeddings') ?? false);
+  const [embeddings, setEmbeddings] = useState(
+    initial?.roles.includes('embeddings') ?? embeddingsOnly,
+  );
   const [embeddingEnabled, setEmbeddingEnabled] = useState(initial?.enabled ?? false);
   const [maxTokens, setMaxTokens] = useState(String(initial?.max_output_tokens ?? 16_000));
   const [temperature, setTemperature] = useState(String(initial?.temperature ?? 0.2));
@@ -90,9 +71,7 @@ export function LlmProfileForm({
     initial?.reasoning_effort ?? '',
   );
   const sameCredentials =
-    initial !== undefined &&
-    !replacement &&
-    initial.provider === (provider === 'bedrock' ? 'bedrock' : 'openai_compatible') &&
+    initial?.provider === (provider === 'bedrock' ? 'bedrock' : 'openai_compatible') &&
     apiKey === '' &&
     baseUrl.trim().replace(/\/$/, '') === initial.base_url.replace(/\/$/, '');
 
@@ -104,11 +83,6 @@ export function LlmProfileForm({
   );
   const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (guided && step === 1) {
-      setStep(2);
-      void discovery.load();
-      return;
-    }
     const input: LlmProfileInput = {
       provider: provider === 'bedrock' ? 'bedrock' : 'openai_compatible',
       name: name.trim(),
@@ -121,12 +95,8 @@ export function LlmProfileForm({
       enabled: provider !== 'bedrock' && embeddings && embeddingEnabled,
     };
     if (apiKey.trim()) input.api_key = apiKey.trim();
-    const saved = await ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') ===
-      'test' && onTest
-      ? onTest(input)
-      : onSubmit(input));
+    const saved = await onSubmit(input);
     if (saved === true) setApiKey('');
-    if (saved === 'provider-error') setStep(1);
   };
 
   const selectProvider = (value: string) => {
@@ -162,45 +132,17 @@ export function LlmProfileForm({
     <form
       ref={form}
       onSubmit={(event) => void submit(event)}
-      onChange={onChange}
-      aria-label={
-        initial === undefined || replacement ? 'New AI connection' : `Edit ${initial.name}`
-      }
+      aria-label={initial === undefined ? 'New AI connection' : `Edit ${initial.name}`}
       className="space-y-6"
     >
-      {guided && <LlmSetupProgress step={step} />}
       <div>
-        <h2 ref={heading} tabIndex={-1} className="text-lg font-semibold">
-          {guided
-            ? step === 1
-              ? 'Connect your provider'
-              : 'Choose and test your model'
-            : 'Edit draft connection'}
-        </h2>
+        <h2 className="text-lg font-semibold">Edit draft connection</h2>
         <p className="mt-1 text-sm text-muted">
-          {step === 1
-            ? 'Add your credentials, then choose a model available to your account.'
-            : 'Choose a model and check it works before changing the active connection.'}
+          Add your credentials, then choose a model available to your account.
         </p>
       </div>
       <fieldset disabled={busy} className="space-y-5">
-        {guided && step === 2 && (
-          <div className="space-y-2">
-            <p className="break-all text-xs text-muted">
-              <strong className="text-text">{name}</strong> · {baseUrl}
-            </p>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setStep(1);
-                onChange?.();
-              }}
-            >
-              Back to provider
-            </Button>
-          </div>
-        )}
-        <div hidden={guided && step !== 1}>
+        <div>
           <LlmProviderFields
             provider={provider}
             setProvider={selectProvider}
@@ -224,95 +166,59 @@ export function LlmProfileForm({
             setApiKey={setApiKey}
             sameCredentials={sameCredentials}
             {...(initial ? { keyHint: initial.api_key_hint } : {})}
-            discover={() => {
-              if (!guided) void discovery.load();
-            }}
+            discover={() => void discovery.load()}
           />
         </div>
-        {guided && step === 1 && (
-          <Button
-            onClick={() => {
-              if (!form.current?.reportValidity()) return;
-              setStep(2);
-              void discovery.load();
-            }}
-          >
-            Continue to model
-          </Button>
-        )}
-        {(!guided || step === 2) && (
-          <>
-            <LlmModelSelection
-              bedrock={provider === 'bedrock'}
-              models={
-                discovery.loaded
-                  ? discovery.models
-                  : sameCredentials &&
-                      initial.id === originalCatalogue.id &&
-                      initial.revision === originalCatalogue.revision
-                    ? models
-                    : []
-              }
-              model={model}
-              setModel={(value) => {
-                setModel(value);
-                if (value !== model) setEffort('');
-                if (!customName.current)
-                  setName(availableName(value || 'OpenAI connection', names));
-              }}
-              effort={effort}
-              setEffort={setEffort}
-              embeddings={embeddings}
-              discovery={discovery}
-              onDiscover={() => void discovery.load()}
-              canDiscover={provider === 'custom' || !!apiKey.trim() || sameCredentials}
-            />
-            <LlmAdvancedSettings
-              bedrock={provider === 'bedrock'}
-              maxTokens={maxTokens}
-              setMaxTokens={(value) => {
-                setMaxTokens(value);
-              }}
-              temperature={temperature}
-              setTemperature={setTemperature}
-              embeddings={embeddings}
-              setEmbeddings={(value) => {
-                setEmbeddings(value);
-                if (value) setEffort('');
-              }}
-              embeddingEnabled={embeddingEnabled}
-              setEmbeddingEnabled={setEmbeddingEnabled}
-            />
-          </>
-        )}
+        <LlmModelSelection
+          bedrock={provider === 'bedrock'}
+          models={
+            discovery.loaded
+              ? discovery.models
+              : sameCredentials &&
+                  initial.id === originalCatalogue.id &&
+                  initial.revision === originalCatalogue.revision
+                ? models
+                : []
+          }
+          model={model}
+          setModel={(value) => {
+            setModel(value);
+            if (value !== model) setEffort('');
+            if (!customName.current) setName(availableName(value || 'OpenAI connection', names));
+          }}
+          effort={effort}
+          setEffort={setEffort}
+          embeddings={embeddings}
+          discovery={discovery}
+          onDiscover={() => void discovery.load()}
+          canDiscover={provider === 'custom' || !!apiKey.trim() || sameCredentials}
+        />
+        <LlmAdvancedSettings
+          bedrock={provider === 'bedrock'}
+          maxTokens={maxTokens}
+          setMaxTokens={(value) => {
+            setMaxTokens(value);
+          }}
+          temperature={temperature}
+          setTemperature={setTemperature}
+          embeddings={embeddings}
+          setEmbeddings={(value) => {
+            setEmbeddings(value);
+            if (value) setEffort('');
+          }}
+          embeddingEnabled={embeddingEnabled}
+          setEmbeddingEnabled={setEmbeddingEnabled}
+        />
       </fieldset>
       {error !== null && <Alert tone="error">{error}</Alert>}
       <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
-        {guided && step === 2 && !embeddings && (
-          <Button type="submit" name="action" value="test" busy={busy} disabled={!model.trim()}>
-            {busy ? busyLabel : 'Test connection'}
-          </Button>
-        )}
-        {(!guided || step === 2) && (
-          <Button
-            type="submit"
-            variant={guided && !embeddings ? 'ghost' : 'primary'}
-            busy={busy}
-            disabled={!model.trim()}
-          >
-            Save draft
-          </Button>
-        )}
+        <Button type="submit" busy={busy} disabled={!model.trim()}>
+          Save draft
+        </Button>
         <Button variant="ghost" disabled={busy} onClick={onCancel}>
           Cancel
         </Button>
       </div>
-      {guided && step === 2 && (
-        <p className="text-xs text-muted">
-          Testing saves a private draft and sends a short request. Provider charges may apply.
-          Nothing changes for users until you confirm.
-        </p>
-      )}
     </form>
   );
 }

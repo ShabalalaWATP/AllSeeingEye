@@ -21,9 +21,30 @@ from ase.api.schemas_llm import (
     LlmUsageOut,
     LlmUsagePageOut,
 )
+from ase.api.schemas_llm_workspace import LlmWorkspaceIn, LlmWorkspaceOut
 from ase.api.session_guard import validate_request_session
 
 router = APIRouter(prefix="/admin/llm", tags=["admin"])
+
+
+@router.put("/workspace")
+async def update_workspace(
+    body: LlmWorkspaceIn,
+    admin: AdminUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> LlmWorkspaceOut:
+    result = await container.llm_workspace(session).execute(
+        admin,
+        [change.to_input() for change in body.changes],
+        context,
+        before_save=partial(
+            validate_request_session, container, claims, session=session, admin_only=True
+        ),
+    )
+    return LlmWorkspaceOut.from_result(result)
 
 
 @router.get("/profiles")
