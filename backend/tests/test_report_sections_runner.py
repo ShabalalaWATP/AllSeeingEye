@@ -15,7 +15,11 @@ from ase.application.reports.sections.planning import (
     packet_digest,
     plan_topics,
 )
-from ase.application.reports.sections.synthesis_contracts import CONTEXT, JUDGEMENTS
+from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
+    COLLECTION,
+    JUDGEMENTS,
+)
 from ase.application.reports.templates import TEMPLATES
 from ase.domain.direction import Direction
 from ase.domain.evidence import quality_of_information
@@ -37,8 +41,8 @@ async def test_assembly_keeps_topic_text_citations_and_can_resume_without_any_ca
     checkpoints = Checkpoints()
     gateway = Gateway(checkpoints)
     first = await run(gateway, checkpoints)
-    assert first.body and not first.has_errors and first.attempts == 5
-    assert first.prompt_tokens == 50 and first.completion_tokens == 25
+    assert first.body and not first.has_errors and first.attempts == 6
+    assert first.prompt_tokens == 60 and first.completion_tokens == 30
     assert [theme.items[0].text for theme in first.body.reporting] == [
         f"Original reporting from E{x}." for x in range(1, 4)
     ]
@@ -46,7 +50,7 @@ async def test_assembly_keeps_topic_text_citations_and_can_resume_without_any_ca
     assert all(row.status == "completed" for row in checkpoints.rows.values())
     assert all("test-key-marker" not in repr(row) for row in checkpoints.rows.values())
     resumed = await run(gateway, checkpoints)
-    assert resumed.body == first.body and len(gateway.calls) == 5 and resumed.attempts == 0
+    assert resumed.body == first.body and len(gateway.calls) == 6 and resumed.attempts == 0
     assert resumed.prompt_tokens is None and resumed.completion_tokens is None
 
 
@@ -104,7 +108,7 @@ async def test_topic_exhaustion_splits_once_and_accounts_failed_paid_attempt():
     names = [name for name, *_ in gateway.calls]
     assert names[:3] == ["S1", "S1.1", "S1.2"] and names.count("S1") == 1
     assert draft.body and not draft.has_errors
-    assert draft.attempts == 8 and draft.prompt_tokens == 90 and draft.completion_tokens == 32035
+    assert draft.attempts == 9 and draft.prompt_tokens == 100 and draft.completion_tokens == 32040
     split = next(row for (_, key), row in checkpoints.rows.items() if key == "S1")
     assert split.status == "split" and split.payload["children"] == ["S1.1", "S1.2"]
     before = len(gateway.calls)
@@ -127,13 +131,20 @@ async def test_unsplittable_topic_keeps_finished_sections_and_is_not_replayed_on
 
 async def test_exhausted_synthesis_never_repeats_all_topic_work_or_same_synthesis():
     checkpoints = Checkpoints()
-    gateway = Gateway(checkpoints, {CONTEXT: exhausted()})
+    gateway = Gateway(checkpoints, {COLLECTION: exhausted(completion_tokens=16000)})
     for _ in range(2):
         with pytest.raises(SectionIncomplete) as caught:
             await run(gateway, checkpoints)
-        assert caught.value.section_id == CONTEXT
-    assert [name for name, *_ in gateway.calls] == ["S1", "S2", "S3", JUDGEMENTS, CONTEXT]
-    assert sum(row.status == "completed" for row in checkpoints.rows.values()) == 4
+        assert caught.value.section_id == COLLECTION
+    assert [name for name, *_ in gateway.calls] == [
+        "S1",
+        "S2",
+        "S3",
+        JUDGEMENTS,
+        ALTERNATIVES,
+        COLLECTION,
+    ]
+    assert sum(row.status == "completed" for row in checkpoints.rows.values()) == 5
 
 
 async def test_one_failed_step_can_be_repaired_on_explicit_resume_without_rewriting_others():
@@ -145,7 +156,15 @@ async def test_one_failed_step_can_be_repaired_on_explicit_resume_without_rewrit
     gateway.overrides.clear()
     draft = await run(gateway, checkpoints)
     assert draft.body and not draft.has_errors
-    assert [name for name, *_ in gateway.calls] == ["S1", "S2", "S2", "S3", JUDGEMENTS, CONTEXT]
+    assert [name for name, *_ in gateway.calls] == [
+        "S1",
+        "S2",
+        "S2",
+        "S3",
+        JUDGEMENTS,
+        ALTERNATIVES,
+        COLLECTION,
+    ]
     assert "previous step" in gateway.calls[2][1].messages[-1].content
 
 
@@ -169,7 +188,7 @@ async def test_changed_frozen_metadata_invalidates_reuse_even_with_same_ids_and_
     await run(gateway, checkpoints)
     updated = tuple(replace(row, source_name="Revised attribution") for row in items())
     await run(gateway, checkpoints, updated)
-    assert len(gateway.calls) == 10 and len({digest for digest, _ in checkpoints.rows}) == 2
+    assert len(gateway.calls) == 12 and len({digest for digest, _ in checkpoints.rows}) == 2
 
 
 async def test_cancelled_running_step_is_not_replayed_or_saved_as_completed():
@@ -204,8 +223,8 @@ async def test_every_call_preserves_selected_provider_and_effort_budget(provider
         PROFILE, provider=provider, reasoning_effort=ReasoningEffort.MAX, max_output_tokens=32000
     )
     await run(gateway, checkpoints, items(1), profile=profile)
-    assert len(gateway.calls) == 3
-    for _, request, base, key, model in gateway.calls:
+    assert len(gateway.calls) == 4
+    for name, request, base, key, model in gateway.calls:
         assert (base, key, model) == (profile.base_url, "test-key-marker", profile.model)
         assert request.provider is provider and request.reasoning_effort is ReasoningEffort.MAX
-        assert request.max_output_tokens == 32000
+        assert request.max_output_tokens == (16000 if name in (ALTERNATIVES, COLLECTION) else 32000)

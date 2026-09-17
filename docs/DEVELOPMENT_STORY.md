@@ -5064,3 +5064,38 @@ build, full backend mypy, focused Ruff/formatting, frontend type/lint checks,
 configured Bandit, import contracts, file-length and whitespace checks. Coverage
 was not remeasured for this repair. The operations guide and active plan record
 the remaining expensive heartbeat and undated infrastructure-context limitations.
+
+### 17 September 2026: bound final synthesis and recover confirmed context exhaustion
+
+The local report resumed with the first repair and retained four accepted topic
+sections plus its accepted judgements. A subsequent, separate failure was then
+observed: the combined final-context request consumed its 32,000-token output and
+reasoning allowance. The lifetime job budget still had room. This establishes two
+distinct failures, a rejected topic and then an exhausted final-context request.
+
+New final synthesis uses three tasks: judgements, alternatives and warning, and
+gaps and collection. The latter two have separate schemas, checkpoint identities
+and 16,000-token ceilings, capped further by the frozen model profile. Their
+prompts omit the whole report's length target and ask only for their own fields.
+Evidence provenance, the structural coverage warning, model choice and reasoning
+effort are preserved. Accepted old synthesis remains reusable. A confirmed
+exhausted legacy context may resume into these children only when all provider
+outcomes are known and both new reservations fit its unchanged lifetime limits.
+Unknown calls, opted-in stage plans and exhausted children are not admitted by
+this exception. No paid-call history, reservations or frozen evidence is reset.
+
+Progress presents the two child sections rather than their compatibility parent.
+Review also repaired old display limits that rejected valid Advanced reports
+with four alternatives or eight judgements. Focused backend validation passed
+228 combined section, synthesis, provenance, collection-manifest, depth, reasoning
+and resume tests; a separate 96-test resume/projection/control suite and 17 job,
+subscription and embedding integration cases passed. These batches overlap and
+are not a cumulative unique count. The full adapter deadline suite passed 38
+tests. Full backend mypy, Ruff, formatting, configured Bandit, import contracts
+and file-length checks passed. Coverage was not remeasured for this repair.
+
+Live recovery then completed both new context steps with the configured Luna Max
+model, using 5,745 and 4,099 output/reasoning tokens. The original five accepted
+sections and failed-call accounting were retained. The job advanced to its separate
+analysis pass. This observation confirms the failed step is recovered, not yet
+that final evidence quality or publication checks have passed.

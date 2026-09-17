@@ -16,6 +16,7 @@ from ase.application.report_jobs.budget import (
     output_used,
     token_count,
 )
+from ase.application.report_jobs.context_resume import can_split_context
 from ase.application.reports.request import ReportRequest
 from ase.domain.daily_briefing import retains_daily_admission
 from ase.domain.errors import Conflict, InvalidRequest, RateLimited
@@ -120,13 +121,25 @@ def has_budget(payload: dict[str, Any]) -> bool:
     )
 
 
+def resume_error_allowed(
+    error: str | None, payload: dict[str, Any], *, summary_only: bool = False
+) -> bool:
+    """Share error eligibility between controls and progress, never trust a cache to write."""
+    if error == "section_token_budget_exhausted":
+        if summary_only:
+            summary = payload.get("summary")
+            return type(summary) is dict and summary.get("can_split_context") is True
+        return can_split_context(payload)
+    return error not in NON_RESUMABLE_ERRORS
+
+
 def resumed_payload(job: ReportJob) -> dict[str, Any]:
     """Only an explicit resume permits retrying an interrupted section.
 
     The previous call stays uncertain and consumes its full reservation. Completed
     sections and exhausted request hashes remain unchanged, preventing free replays.
     """
-    if job.error in NON_RESUMABLE_ERRORS or not has_budget(job.payload):
+    if not resume_error_allowed(job.error, job.payload) or not has_budget(job.payload):
         raise InvalidRequest("This report cannot resume with its saved settings or allowance.")
     payload = deepcopy(job.payload)
     for call in payload.get("calls", []):

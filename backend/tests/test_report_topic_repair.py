@@ -6,7 +6,11 @@ import pytest
 
 from ase.application.report_jobs.budget import JobBudgetExhausted
 from ase.application.reports.sections import SectionIncomplete
-from ase.application.reports.sections.synthesis_contracts import CONTEXT, JUDGEMENTS
+from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
+    COLLECTION,
+    JUDGEMENTS,
+)
 from section_model_helpers import Checkpoints, Gateway, run, topic_body
 
 
@@ -38,14 +42,22 @@ async def test_invalid_topic_repairs_once_and_keeps_accepted_sections_and_usage(
     draft = await run(gateway, checkpoints)
 
     assert draft.body and not draft.has_errors
-    assert [name for name, *_ in gateway.calls] == ["S1", "S2", "S2", "S3", JUDGEMENTS, CONTEXT]
-    assert draft.attempts == 6 and draft.prompt_tokens == 60 and draft.completion_tokens == 30
+    assert [name for name, *_ in gateway.calls] == [
+        "S1",
+        "S2",
+        "S2",
+        "S3",
+        JUDGEMENTS,
+        ALTERNATIVES,
+        COLLECTION,
+    ]
+    assert draft.attempts == 7 and draft.prompt_tokens == 70 and draft.completion_tokens == 35
     assert "previous step" in gateway.calls[2][1].messages[-1].content
     assert "private-invalid-output-marker" not in repr(checkpoints.rows) + repr(draft)
     writes = [row for _, name, row in checkpoints.writes if name == "S1"]
     assert [row.status for row in writes] == ["running", "completed"]
     assert (await run(gateway, checkpoints)).body == draft.body
-    assert len(gateway.calls) == 6
+    assert len(gateway.calls) == 7
 
 
 async def test_second_invalid_topic_stops_without_a_retry_loop_or_discarding_saved_work():

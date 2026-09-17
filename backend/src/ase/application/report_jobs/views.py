@@ -8,12 +8,25 @@ from ase.application.report_jobs.budget import (
     output_used,
     token_count,
 )
-from ase.application.report_jobs.controls import NON_RESUMABLE_ERRORS
+from ase.application.report_jobs.context_resume import can_split_context
+from ase.application.report_jobs.controls import resume_error_allowed
+from ase.application.report_jobs.section_text import alternatives_preview
+from ase.application.report_jobs.section_text import context_preview as _context_preview
+from ase.application.report_jobs.section_text import text as _text
 from ase.application.reports.sections.contracts import TOPIC_SCHEMA
+from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
+    COLLECTION,
+    CONTEXT,
+    CONTEXT_PARTS,
+    JUDGEMENTS,
+    JUDGEMENTS_SCHEMA,
+    TITLES,
+)
 from ase.application.reports.templates import template_for
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_jobs import ReportJob
-from ase.domain.reports import MAX_ITEM_CHARS, MAX_LIST, MAX_SECTION_CHARS
+from ase.domain.reports import MAX_ITEM_CHARS, MAX_LIST
 
 _ERRORS = {
     "interrupted": "The previous call was interrupted. Its reserved allowance is retained.",
@@ -54,16 +67,6 @@ def error_message(value: Any) -> str | None:
         if isinstance(value, str)
         else "The saved progress is unavailable."
     )
-
-
-def _text(value: Any, limit: int = 2048) -> str:
-    if (
-        type(value) is not str
-        or len(value) > limit
-        or any(ord(char) < 32 and char not in "\n\t" for char in value)
-    ):
-        raise InvalidRequest("The saved report progress is unavailable.")
-    return value
 
 
 def _count(value: Any, limit: int = 2**31 - 1) -> int:
@@ -108,7 +111,14 @@ def current_sections(payload: dict[str, Any]) -> list[dict[str, Any]]:
         for row in result
     ):
         result = [row for row in result if row.get("section_id") != "synthesis"]
-    synthesis_order = {"synthesis_judgements": 1, "synthesis_context": 2}
+    if any(
+        row.get("section_id") in CONTEXT_PARTS
+        and type(row.get("payload")) is dict
+        and row["payload"].get("parent") == CONTEXT
+        for row in result
+    ):
+        result = [row for row in result if row.get("section_id") != CONTEXT]
+    synthesis_order = {JUDGEMENTS: 1, CONTEXT: 2, ALTERNATIVES: 2, COLLECTION: 3}
     return sorted(result, key=lambda row: synthesis_order.get(str(row.get("section_id")), 0))
 
 
@@ -132,6 +142,7 @@ def refresh_summary(payload: dict[str, Any]) -> None:
     if type(calls) is not list or len(calls) > MAX_CALLS:
         raise InvalidRequest("The saved report usage is unavailable.")
     payload["summary"] = {
+        "can_split_context": can_split_context(payload),
         "model": model,
         "reasoning_effort": effort,
         "completed_sections": sum(row["status"] == "completed" for row in leaves),
@@ -152,19 +163,6 @@ def refresh_summary(payload: dict[str, Any]) -> None:
             ),
         },
     }
-
-
-def _context_preview(body: dict[str, Any]) -> str | None:
-    """Project accepted synthesis context as bounded text, never serialise nested data."""
-    parts = []
-    if "sourcing_statement" in body:
-        parts.append("Sourcing: " + _text(body["sourcing_statement"], MAX_SECTION_CHARS))
-    values = body.get("collection_recommendations", [])
-    if type(values) is not list or len(values) > 8:
-        raise InvalidRequest("The saved report context is unavailable.")
-    for value in values:
-        parts.append("Collection recommendation: " + _text(value, MAX_ITEM_CHARS))
-    return "\n\n".join(parts) or None
 
 
 def _gap_preview(body: dict[str, Any], *, topic: bool, split: bool) -> list[str]:
@@ -201,7 +199,9 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
         )
         paragraphs = body.get("assessment", [])
         max_rows = (
-            TOPIC_SCHEMA["properties"]["reporting"]["maxItems"] if data["kind"] == "topic" else 5
+            TOPIC_SCHEMA["properties"]["reporting"]["maxItems"]
+            if data["kind"] == "topic"
+            else JUDGEMENTS_SCHEMA["properties"]["key_judgements"]["maxItems"]
         )
         if (
             type(rows) is not list
@@ -232,13 +232,16 @@ def _section(value: dict[str, Any]) -> dict[str, Any]:
         reporting = [_text(row.get(text_key), 12_000) for row in rows]
         assessment = _text(paragraphs[0].get("text"), 12_000) if paragraphs else None
         gaps = _gap_preview(
-            body, topic=data["kind"] == "topic", split=identity == "synthesis_context"
+            body, topic=data["kind"] == "topic", split=identity in (CONTEXT, COLLECTION)
         )
         if data["kind"] == "synthesis":
             assessment = _context_preview(body)
+            if identity == ALTERNATIVES:
+                assessment, references = alternatives_preview(body, allowed)
+                citations.update(references)
     return {
         "id": identity,
-        "title": _text(data.get("title"), 300),
+        "title": _text(data.get("title", TITLES.get(identity)), 300),
         "kind": data["kind"],
         "status": value["status"],
         "reporting": reporting,
@@ -276,6 +279,7 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
     effort = summary.get("reasoning_effort")
     frozen = job.payload.get("input")
     period = frozen if detail and isinstance(frozen, dict) else {}
+    allowed = resume_error_allowed(job.error, job.payload, summary_only="calls" not in job.payload)
     return {
         "id": job.id,
         "brief_id": job.brief_id,
@@ -294,10 +298,15 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
         "report_id": job.report_id if job.status in {"completed", "needs_review"} else None,
         "model": _text(summary.get("model")),
         "reasoning_effort": None if effort is None else _text(effort, 40),
-        "error": error_message(job.error),
+        "error": (
+            "The final assessment exceeded one step's allowance. "
+            "Resume to finish it in smaller steps; saved sections are retained."
+            if job.error == "section_token_budget_exhausted" and allowed
+            else error_message(job.error)
+        ),
         "can_resume": can_control
         and job.status in {"paused", "failed"}
-        and job.error not in NON_RESUMABLE_ERRORS
+        and allowed
         and usage["calls"] < MAX_CALLS
         and usage["output_tokens"] < MAX_OUTPUT_TOKENS,
         "completed_sections": _count(summary.get("completed_sections"), 64),

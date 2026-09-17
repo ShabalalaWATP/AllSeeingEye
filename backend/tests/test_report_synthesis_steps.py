@@ -17,6 +17,8 @@ from ase.application.reports.sections.planning import (
     plan_topics,
 )
 from ase.application.reports.sections.synthesis_contracts import (
+    ALTERNATIVES,
+    COLLECTION,
     CONTEXT,
     CONTEXT_SCHEMA,
     JUDGEMENTS,
@@ -79,7 +81,7 @@ async def test_old_four_completed_topics_keep_digest_and_only_new_final_parts_ru
     gateway = Gateway(checkpoints)
     draft = await run(gateway, checkpoints, evidence)
     assert draft.body and not draft.has_errors
-    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, CONTEXT]
+    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, ALTERNATIVES, COLLECTION]
     assert {key[0] for key in checkpoints.rows} == {digest}
     assert all(checkpoints.rows[key] == row for key, row in topics.items())
     for part in (JUDGEMENTS, CONTEXT):
@@ -121,7 +123,7 @@ async def test_prior_packet_digest_and_topics_resume_without_replanning_or_rewri
     draft = await run(gateway, checkpoints, evidence)
 
     assert draft.body and not draft.has_errors
-    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, CONTEXT]
+    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, ALTERNATIVES, COLLECTION]
     assert {key[0] for key in checkpoints.rows} == {digest}
 
 
@@ -148,21 +150,28 @@ async def test_old_running_omnibus_needs_explicit_resume_reset_before_new_subste
         parent, status="incomplete", reason="interrupted"
     )
     assert (await run(gateway, checkpoints, evidence)).body
-    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, CONTEXT]
+    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, ALTERNATIVES, COLLECTION]
 
 
 async def test_context_failure_resume_reuses_saved_judgements_and_does_not_repeat_topics():
     checkpoints = Checkpoints()
-    gateway = Gateway(checkpoints, {CONTEXT: LlmGatewayError("private-error-marker")})
+    gateway = Gateway(checkpoints, {COLLECTION: LlmGatewayError("private-error-marker")})
     with pytest.raises(SectionIncomplete) as caught:
         await run(gateway, checkpoints)
-    assert caught.value.section_id == CONTEXT and caught.value.reason == "provider_error"
+    assert caught.value.section_id == COLLECTION and caught.value.reason == "provider_error"
     saved = next(deepcopy(row) for (_, key), row in checkpoints.rows.items() if key == JUDGEMENTS)
+    alternatives = next(
+        deepcopy(row) for (_, key), row in checkpoints.rows.items() if key == ALTERNATIVES
+    )
     gateway.overrides.clear()
     assert (await run(gateway, checkpoints)).body
     names = [name for name, *_ in gateway.calls]
-    assert names == ["S1", "S2", "S3", JUDGEMENTS, CONTEXT, CONTEXT]
+    assert names == ["S1", "S2", "S3", JUDGEMENTS, ALTERNATIVES, COLLECTION, COLLECTION]
     assert next(row for (_, key), row in checkpoints.rows.items() if key == JUDGEMENTS) == saved
+    assert (
+        next(row for (_, key), row in checkpoints.rows.items() if key == ALTERNATIVES)
+        == alternatives
+    )
     packet = json.loads(gateway.calls[-1][1].messages[1].content)
     assert packet["validated_judgements_not_evidence"] == saved.payload["body"]
     assert len(packet["original_frozen_evidence"]) == 3
@@ -171,7 +180,7 @@ async def test_context_failure_resume_reuses_saved_judgements_and_does_not_repea
 
 async def test_changed_saved_judgement_cannot_be_reused_or_overwritten():
     checkpoints = Checkpoints()
-    gateway = Gateway(checkpoints, {CONTEXT: LlmGatewayError("unavailable")})
+    gateway = Gateway(checkpoints, {COLLECTION: LlmGatewayError("unavailable")})
     with pytest.raises(SectionIncomplete):
         await run(gateway, checkpoints)
     key = next(key for key in checkpoints.rows if key[1] == JUDGEMENTS)
@@ -195,10 +204,11 @@ def test_judgement_subset_requires_prior_version_change_before_reuse():
         )
 
 
-@pytest.mark.parametrize("part", [JUDGEMENTS, CONTEXT])
+@pytest.mark.parametrize("part", [JUDGEMENTS, ALTERNATIVES, COLLECTION])
 async def test_exhausted_child_is_never_replayed_with_identical_allowance(part):
     checkpoints = Checkpoints()
-    gateway = Gateway(checkpoints, {part: exhausted()})
+    tokens = 32000 if part == JUDGEMENTS else 16000
+    gateway = Gateway(checkpoints, {part: exhausted(completion_tokens=tokens)})
     for _ in range(2):
         with pytest.raises(SectionIncomplete) as caught:
             await run(gateway, checkpoints)

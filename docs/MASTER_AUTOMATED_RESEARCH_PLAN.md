@@ -682,6 +682,10 @@ See [Public figures](PUBLIC_FIGURES.md).
   research so unrelated country observations cannot fill a targeted report.
 - [x] Prefer untried admitted sources during a revised second collection pass,
   keeping the existing operation, time and source-authorisation limits.
+- [x] Split final context into independently saved alternatives/warning and
+  gaps/collection steps, with lower per-call ceilings and unchanged model settings.
+- [x] Permit explicit recovery of a confirmed exhausted legacy context only when
+  both new child reservations fit, preserving all prior paid-call records.
 - [ ] Add an explicit non-temporal context route for packaged infrastructure
   summaries. They currently consume a collection operation but their missing
   publication date excludes them from dated evidence. Do not invent a date or

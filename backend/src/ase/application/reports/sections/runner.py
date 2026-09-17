@@ -32,13 +32,14 @@ from ase.application.reports.sections.quality import (
 from ase.application.reports.sections.synthesis import collect_synthesis
 from ase.application.reports.sections.synthesis_contracts import (
     SCHEMA_NAMES,
+    output_limit_for,
     schema_for,
     validate_part,
 )
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
-from ase.domain.llm import MAX_OUTPUT_TOKENS, LlmMessage, LlmProfile, LlmRequest
+from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest
 from ase.domain.reports import KeyJudgement, ReportHeader
 from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import validate_body
@@ -238,7 +239,7 @@ class _Runner:
             )
         request = LlmRequest(
             messages=messages,
-            max_output_tokens=min(self.profile.max_output_tokens, MAX_OUTPUT_TOKENS),
+            max_output_tokens=min(self.profile.max_output_tokens, output_limit_for(part)),
             temperature=self.profile.temperature,
             reasoning_effort=self.profile.reasoning_effort,
             provider=self.profile.provider,
@@ -324,7 +325,7 @@ async def draft_sections(
     """Resume unchanged validated steps; never replay an exhausted identical request.
 
     The gateway/job owner enforces lifetime call, token, lease and elapsed allowances.
-    Native MAX deadlines recognise report_topic/report_judgements/report_context.
+    Native MAX deadlines recognise the bounded report section schemas.
     """
     if not evidence:
         return no_evidence_draft(profile.model)

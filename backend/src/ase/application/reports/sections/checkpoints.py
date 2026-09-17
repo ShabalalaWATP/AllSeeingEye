@@ -6,7 +6,9 @@ from ase.application.ports.section_checkpoints import SectionCheckpoint, Section
 from ase.application.reports.sections.contracts import validate_step
 from ase.application.reports.sections.planning import Topic
 from ase.application.reports.sections.synthesis_contracts import (
-    PARTS,
+    ALL_PARTS,
+    CONTEXT,
+    CONTEXT_PARTS,
     TITLES,
     validate_aggregate_limits,
     validate_part,
@@ -30,7 +32,12 @@ def metadata(topic: Topic | None, labels: tuple[str, ...]) -> dict[str, Any]:
 
 
 def synthesis_metadata(part: str, labels: tuple[str, ...]) -> dict[str, Any]:
-    return {**metadata(None, labels), "id": part, "title": TITLES[part], "parent": "synthesis"}
+    return {
+        **metadata(None, labels),
+        "id": part,
+        "title": TITLES[part],
+        "parent": CONTEXT if part in CONTEXT_PARTS else "synthesis",
+    }
 
 
 def read_body(
@@ -48,7 +55,7 @@ def read_body(
         or any(payload.get(key) != value for key, value in expected.items())
     ):
         raise ValueError("Checkpoint metadata does not match its frozen section")
-    if expected["id"] in PARTS:
+    if expected["id"] in ALL_PARTS:
         return validate_part(
             payload["body"],
             part=expected["id"],

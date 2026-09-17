@@ -30,7 +30,15 @@ from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_REPORT_TIMEOUT_SECONDS = 300.0
 REPORT_SCHEMAS = frozenset(
-    {"report", "report_topic", "report_synthesis", "report_judgements", "report_context"}
+    {
+        "report",
+        "report_topic",
+        "report_synthesis",
+        "report_judgements",
+        "report_context",
+        "report_alternatives",
+        "report_collection",
+    }
 )
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 MAX_CONCURRENT_REQUESTS = 2

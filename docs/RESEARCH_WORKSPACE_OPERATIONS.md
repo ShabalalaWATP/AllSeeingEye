@@ -68,6 +68,19 @@ the same frozen evidence. Provider failures, interrupted calls and uncertain pai
 outcomes do not enter this automatic correction path. Final publication still
 requires the normal checks.
 
+Final synthesis now uses three small requests: key judgements, alternatives and
+warning, then gaps and collection. The last two each have a 16,000 output/reasoning
+token ceiling, or the configured model's lower ceiling. They use the chosen model
+and thinking level. Each completed part is saved independently; a failed part does
+not replay accepted judgements or sections.
+
+A legacy final-context step that exhausted its confirmed output allowance can
+offer **Resume research** to split that step once. This requires settled calls,
+valid saved identities and enough lifetime allowance for both new parts. The old
+paid request and token counts stay retained. Exhausting a smaller child step does
+not create further retries or subdivisions. A report-wide allowance limit is still
+a hard stop.
+
 Lease recovery preserves a known section failure only when all recorded calls are
 settled and the current packet contains one unambiguous failure. Other interrupted
 jobs retain the conservative interruption warning and require explicit resumption.
