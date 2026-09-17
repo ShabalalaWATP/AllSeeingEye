@@ -132,3 +132,46 @@ including the direct-area scope guard.
 The whole backend suite was stopped at about 5% after twelve minutes because
 repeated app/database setup made it an hours-long run. No failures had been
 observed; full-suite backend coverage is not claimed.
+
+## What a report may read from the map (17 September 2026)
+
+A report about a place can now see what the application already holds for that
+place. It is offered three separate things, and each is a statement about the
+scope rather than about the world.
+
+**The scope receipt.** Where the geography came from, and what that basis cannot
+establish: a drawn outline is an operator's collection choice, a Natural Earth
+country outline is coarse near coasts and excludes territorial waters, and a
+curated conflict box is deliberately generous and is not a front line.
+
+**The containment split.** How many selected items are precisely located inside
+the scope, how many are precisely located outside it, how many carry only a city
+or region centre, how many are attached by a country code, and how many have no
+location at all. A country centroid is never presented as inside the scope, so
+"selected for this report" is never mistaken for "happened here".
+
+**Packaged registers and live instruments, only when the question asks.** The
+registers are the datasets shipped with the application: data centres, energy
+sites, nuclear facilities, semiconductor sites, submarine cables, ground
+stations and the curated cameras. The instruments are what the bounded live
+store already collects: aircraft, vessels, satellite thermal detections and the
+navigation-accuracy cells. A reviewed phrase table in
+`domain/area_assets.py` decides eligibility, and a drawn area counts as the
+request in itself.
+
+Restraint is the point of the design. A question about an election, a ransomware
+advisory, a sanctions designation on a shipping company or an aircraft crash
+reads nothing from the map, and the first tests in
+`tests/test_area_asset_triggers.py`, `tests/test_area_instrument_sweep.py` and
+`tests/test_asset_register_research.py` assert exactly that silence. If a change
+makes one of those match, the vocabulary is wrong and must be tightened; the
+expectation must not be loosened.
+
+Every reading states its limits beside it: a register record is a snapshot of
+what a public dataset held, not evidence of a site's current state; an
+instrument count covers only the short rolling window the store still holds;
+and a detection is not an incident. Where the application records a baseline,
+which today is only hourly military-aircraft counts by country, the report says
+how the current count compares; where it records none, it says so rather than
+inventing one. No reading is persisted beyond the report version's own frozen
+receipt, and none of it costs a model call.
