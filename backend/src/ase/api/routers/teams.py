@@ -65,7 +65,7 @@ async def team_ai_usage(
     # totals, administrators see any team. Non-members receive 404.
     response.headers["Cache-Control"] = "no-store"
     usage = await container.ai_usage_views(session).team(user, team_id)
-    return TeamAiUsageOut.from_usage(usage)
+    return TeamAiUsageOut.from_usage(usage, container.settings.ai_token_prices)
 
 
 @router.patch("/{team_id}")

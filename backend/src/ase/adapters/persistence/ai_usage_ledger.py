@@ -34,6 +34,7 @@ from ase.domain.ai_usage import (
     AiCallOutcome,
     AiReservationStatus,
     AiUsageReservation,
+    charged_split,
     charged_tokens,
     period_bounds,
     token_count,
@@ -205,7 +206,7 @@ class SqlAiLedger:
                 attribution,
                 reserved_at,
                 outcome,
-                charged_tokens(outcome, prompt, completion, requested_tokens),
+                charged_split(outcome, prompt, completion, requested_tokens),
             )
         await self._session.flush()
 
@@ -246,7 +247,7 @@ class SqlAiLedger:
         attribution: AiAttribution,
         at: datetime,
         outcome: AiCallOutcome,
-        tokens: int,
+        split: tuple[int, int],
     ) -> None:
         if outcome is AiCallOutcome.NOT_DISPATCHED:
             return
@@ -260,6 +261,7 @@ class SqlAiLedger:
         )
         total = AiUsageTotalRow
         unknown = outcome is AiCallOutcome.UNKNOWN
+        input_tokens, output_tokens = (0, 0) if unknown else split
         await self._session.execute(
             update(total)
             .where(
@@ -269,7 +271,9 @@ class SqlAiLedger:
             )
             .values(
                 used_requests=total.used_requests + (0 if unknown else 1),
-                used_tokens=total.used_tokens + (0 if unknown else tokens),
+                used_tokens=total.used_tokens + input_tokens + output_tokens,
+                used_input_tokens=total.used_input_tokens + input_tokens,
+                used_output_tokens=total.used_output_tokens + output_tokens,
                 unknown_requests=total.unknown_requests + (1 if unknown else 0),
             )
         )

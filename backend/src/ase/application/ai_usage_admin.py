@@ -50,8 +50,10 @@ class AiUsagePolicyAdmin:
 
     async def create(self, actor: User, data: AiPolicyInput) -> AiUsagePolicy:
         require_admin(actor)
-        if data.enabled and await self._repository.find_policy(data.scope, data.target_id):
-            raise Conflict("An AI policy already exists for this target.")
+        if data.enabled and await self._repository.find_policy(
+            data.scope, data.target_id, data.period
+        ):
+            raise Conflict("An AI policy already exists for this target and period.")
         now = self._clock.now()
         policy = AiUsagePolicy(
             uuid4(),
@@ -73,9 +75,9 @@ class AiUsagePolicyAdmin:
         current = await self._repository.get_policy(policy_id)
         if current is None:
             raise NotFound()
-        existing = await self._repository.find_policy(data.scope, data.target_id)
+        existing = await self._repository.find_policy(data.scope, data.target_id, data.period)
         if data.enabled and existing is not None and existing.id != current.id:
-            raise Conflict("An AI policy already exists for this target.")
+            raise Conflict("An AI policy already exists for this target and period.")
         await self._repository.lock_policy(policy_id)
         updated = AiUsagePolicy(
             current.id,

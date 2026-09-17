@@ -14,7 +14,7 @@ from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_changes import ResearchChange
 from ase.domain.research_scope import MAX_RESEARCH_HOURS
-from ase.domain.schedules import CoverageState, Schedule
+from ase.domain.schedules import DEFAULT_CADENCE, CoverageState, Schedule
 from ase.domain.subscription_recurrence import WindowPolicy
 
 
@@ -47,7 +47,7 @@ class ScheduleIn(BaseModel):
     local_hour: int | None = Field(default=None, ge=0, le=23)
     local_minute: int = Field(default=0, ge=0, le=59)
     collection_policy: WindowPolicy = WindowPolicy.ROLLING_SNAPSHOT
-    cadence: str = Field(default="daily", max_length=16)
+    cadence: str = Field(default=DEFAULT_CADENCE, max_length=16)
     weekday: int = Field(default=0, ge=0, le=6)
     monthday: int = Field(default=1, ge=1, le=31)
     anchor_month: int = Field(default=1, ge=1, le=12)
@@ -125,7 +125,7 @@ class ScheduleFromBriefIn(BaseModel):
     timezone: str = Field(default="UTC", min_length=1, max_length=100)
     local_hour: int = Field(default=6, ge=0, le=23)
     local_minute: int = Field(default=0, ge=0, le=59)
-    cadence: str = Field(default="daily", max_length=16)
+    cadence: str = Field(default=DEFAULT_CADENCE, max_length=16)
     weekday: int = Field(default=0, ge=0, le=6)
     monthday: int = Field(default=1, ge=1, le=31)
     anchor_month: int = Field(default=1, ge=1, le=12)

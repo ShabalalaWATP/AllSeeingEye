@@ -3797,6 +3797,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/ai-usage/defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Default Policies
+         * @description The documented starting set, beside the usage it is compared against.
+         */
+        get: operations["preview_default_policies_api_admin_ai_usage_defaults_get"];
+        put?: never;
+        /**
+         * Apply Default Policies
+         * @description Create every missing policy in the set. Existing policies are never overwritten.
+         */
+        post: operations["apply_default_policies_api_admin_ai_usage_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/sources/firms_viirs_noaa20/connection": {
         parameters: {
             query?: never;
@@ -4156,6 +4180,26 @@ export interface components {
          */
         AiAllowancePeriod: "day" | "week" | "month";
         /**
+         * AiEffectiveModelOut
+         * @description The text model a person or team would use on their next call.
+         */
+        AiEffectiveModelOut: {
+            /** Policy */
+            policy: ("legacy" | "global" | "team" | "personal") | null;
+            /** Profile Id */
+            profile_id: string | null;
+            /** Profile Name */
+            profile_name: string;
+            /** Model */
+            model: string;
+            provider: components["schemas"]["LlmProvider"] | null;
+            reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
+            /** @description Effort mechanical work uses after the configured cap. */
+            mechanical_effort: components["schemas"]["ReasoningEffort"] | null;
+            /** Unavailable */
+            unavailable: string | null;
+        };
+        /**
          * AiLimitOverrideIn
          * @description ``limit`` needs a value (zero blocks); other states must not carry one.
          */
@@ -4185,6 +4229,26 @@ export interface components {
             /** Display Name */
             display_name: string;
             observed: components["schemas"]["AiUsageTotalsOut"];
+        };
+        /**
+         * AiPolicyDefaultsOut
+         * @description What one click would create, beside the usage it is being compared against.
+         */
+        AiPolicyDefaultsOut: {
+            /** Items */
+            items: components["schemas"]["SuggestedPolicyOut"][];
+            observed: components["schemas"]["AiUsageTotalsOut"];
+            /**
+             * Observed Daily Tokens
+             * @description Recorded tokens this month divided by the days elapsed.
+             */
+            observed_daily_tokens: number;
+            /**
+             * Enforcing
+             * @description False while no enabled policy exists: nothing is capped.
+             */
+            enforcing: boolean;
+            prices: components["schemas"]["AiTokenPricesOut"];
         };
         /** AiPolicyOverrideIn */
         AiPolicyOverrideIn: {
@@ -4248,6 +4312,23 @@ export interface components {
          * @enum {string}
          */
         AiPolicyScope: "global" | "system" | "user" | "team";
+        /**
+         * AiTokenPricesOut
+         * @description Operator-configured prices used to estimate spend. Never a billing figure.
+         */
+        AiTokenPricesOut: {
+            /** Input Per Million */
+            input_per_million: number;
+            /** Output Per Million */
+            output_per_million: number;
+            /** Currency */
+            currency: string;
+            /**
+             * Configured
+             * @description False when both prices are zero, so no estimate is shown.
+             */
+            configured: boolean;
+        };
         /** AiUsagePolicyIn */
         AiUsagePolicyIn: {
             scope: components["schemas"]["AiPolicyScope"];
@@ -4305,6 +4386,9 @@ export interface components {
              * @description Provider calls held as unknown pending review.
              */
             unknown_calls: number;
+            prices: components["schemas"]["AiTokenPricesOut"];
+            /** @description The model this destination would use. Never a credential. */
+            model: components["schemas"]["AiEffectiveModelOut"] | null;
         };
         /** AiUsageReservationOut */
         AiUsageReservationOut: {
@@ -4416,6 +4500,7 @@ export interface components {
             /** Items */
             items: components["schemas"]["AiUsageSummaryOut"][];
             observed: components["schemas"]["AiUsageTotalsOut"];
+            prices: components["schemas"]["AiTokenPricesOut"];
         };
         /**
          * AiUsageTotalsOut
@@ -4438,6 +4523,15 @@ export interface components {
             used_tokens: number;
             /** Unknown Requests */
             unknown_requests: number;
+            /** Used Input Tokens */
+            used_input_tokens: number;
+            /** Used Output Tokens */
+            used_output_tokens: number;
+            /**
+             * Estimated Cost
+             * @description Estimated spend from recorded tokens at the configured prices.
+             */
+            estimated_cost: string | null;
         };
         /** AlertOut */
         AlertOut: {
@@ -4846,6 +4940,11 @@ export interface components {
         AoisOut: {
             /** Items */
             items: components["schemas"]["AoiOut"][];
+        };
+        /** AppliedDefaultsOut */
+        AppliedDefaultsOut: {
+            /** Created */
+            created: components["schemas"]["AiUsagePolicyOut"][];
         };
         /** ApproveIn */
         ApproveIn: {
@@ -13367,7 +13466,7 @@ export interface components {
             local_minute: number;
             /**
              * Cadence
-             * @default daily
+             * @default weekly
              */
             cadence: string;
             /**
@@ -13436,7 +13535,7 @@ export interface components {
             collection_policy: components["schemas"]["WindowPolicy"];
             /**
              * Cadence
-             * @default daily
+             * @default weekly
              */
             cadence: string;
             /**
@@ -14601,6 +14700,24 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** SuggestedPolicyOut */
+        SuggestedPolicyOut: {
+            scope: components["schemas"]["AiPolicyScope"];
+            /** Target Id */
+            target_id: string | null;
+            /** Target Name */
+            target_name: string;
+            period: components["schemas"]["AiAllowancePeriod"];
+            /** Token Limit */
+            token_limit: number;
+            /** Reason */
+            reason: string;
+            /**
+             * Already Configured
+             * @description An enabled policy already covers this scope, target and period.
+             */
+            already_configured: boolean;
+        };
         /** TallyOut */
         TallyOut: {
             /** Key */
@@ -14628,6 +14745,7 @@ export interface components {
             team: components["schemas"]["AiUsageTotalsOut"] | null;
             /** Members */
             members: components["schemas"]["AiMemberUsageOut"][] | null;
+            prices: components["schemas"]["AiTokenPricesOut"];
         };
         /** TeamBoardPageOut */
         TeamBoardPageOut: {
@@ -23640,6 +23758,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_default_policies_api_admin_ai_usage_defaults_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiPolicyDefaultsOut"];
+                };
+            };
+        };
+    };
+    apply_default_policies_api_admin_ai_usage_defaults_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppliedDefaultsOut"];
                 };
             };
         };

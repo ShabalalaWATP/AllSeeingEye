@@ -8,6 +8,7 @@ import type { Country } from '@/lib/api/geoSchemas';
 import { SubscriptionCoverage } from './SubscriptionCoverage';
 import { focusScheduleIssue, scheduleIssueTarget } from './scheduleFormFocus';
 import { ScheduleScope } from './ScheduleScope';
+import { SubscriptionCostNote } from './SubscriptionCostNote';
 import { ScheduleTiming } from './ScheduleTiming';
 import { useScheduleForm, type ScheduleFormStateProps } from './useScheduleForm';
 
@@ -268,6 +269,11 @@ export function ScheduleForm(
             onWeekday={setWeekday}
             onMonthday={setMonthday}
             onLookback={setLookback}
+          />
+          <SubscriptionCostNote
+            cadence={cadence}
+            depth={researchMode}
+            researching={activeResearch}
           />
 
           <label className="flex items-start gap-3 text-sm">

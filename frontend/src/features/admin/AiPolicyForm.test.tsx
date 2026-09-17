@@ -111,4 +111,33 @@ describe('AiPolicyForm', () => {
     expect(screen.getByLabelText('Account')).toHaveValue(missingId);
     expect(screen.getByRole('option', { name: 'Unavailable account' })).toBeInTheDocument();
   });
+
+  it('starts on the target the administrator previewed', async () => {
+    const onSave = vi.fn(() => Promise.resolve(true));
+    const user = userEvent.setup();
+    render(
+      <AiPolicyForm
+        users={[adminUser, plainUser]}
+        teams={teams}
+        editing={null}
+        prefill={{ scope: 'team', targetId: teamId }}
+        busy={false}
+        onSave={onSave}
+        onCancel={vi.fn()}
+        onInvalid={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Scope')).toHaveValue('team');
+    expect(screen.getByLabelText('Team')).toHaveValue(teamId);
+    await user.type(screen.getByLabelText('Tokens'), '300000');
+    await user.click(screen.getByRole('button', { name: 'Add policy' }));
+    expect(onSave).toHaveBeenCalledWith({
+      scope: 'team',
+      target_id: teamId,
+      period: 'month',
+      request_limit: null,
+      token_limit: 300000,
+      enabled: true,
+    });
+  });
 });

@@ -196,3 +196,7 @@ two replay cases do not measure general factual accuracy or live retrieval.
 
 See [evaluation instructions](../backend/evaluations/README.md) and
 [connection design](AI_CONNECTIONS_PLAN.md).
+
+Reasoning effort for mechanical work, per-person and per-team allowances, the
+suggested default policies and estimated spend are covered separately in
+[AI cost controls](AI_COST_CONTROLS.md).

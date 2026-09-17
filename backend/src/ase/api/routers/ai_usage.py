@@ -14,4 +14,4 @@ async def my_ai_usage(
 ) -> AiUsageSummaryPageOut:
     response.headers["Cache-Control"] = "no-store"
     usage = await container.ai_usage_views(session).mine(user)
-    return AiUsageSummaryPageOut.from_account(usage)
+    return AiUsageSummaryPageOut.from_account(usage, container.settings.ai_token_prices)

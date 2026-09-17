@@ -11,6 +11,12 @@ from pydantic import EmailStr, Field, PrivateAttr, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ase.application.dto import RateLimits
+from ase.domain.ai_pricing import AiTokenPrices
+from ase.domain.reasoning import (
+    ReasoningEffortPolicy,
+    parse_mechanical_effort,
+    parse_mechanical_purposes,
+)
 
 MIN_SECRET_LENGTH = 32
 
@@ -107,6 +113,15 @@ class Settings(BaseSettings):
     # Encrypts API keys entered in the admin UI (any string of 32+ characters). Unset means
     # LLM profiles cannot be stored.
     encryption_key: SecretStr | None = None
+    # Reasoning effort for mechanical model work. Reports, direction, devil's advocacy and
+    # Ask Eye always keep the operator's own choice. "inherit" disables the cap entirely.
+    ai_mechanical_reasoning_effort: str = Field(default="medium", max_length=16)
+    # Blank keeps the built-in mechanical purpose list in ase.domain.reasoning.
+    ai_mechanical_purposes: str = Field(default="", max_length=512)
+    # Estimated prices only, used to show money beside recorded tokens. Never a bill.
+    ai_price_input_per_million: float = Field(default=0.20, ge=0.0, le=10_000.0)
+    ai_price_output_per_million: float = Field(default=1.20, ge=0.0, le=10_000.0)
+    ai_price_currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
 
     _generated_secret: bool = PrivateAttr(default=False)
 
@@ -138,7 +153,24 @@ class Settings(BaseSettings):
         url = self.alert_webhook_url
         if url is not None and not url.startswith("https://"):
             raise ValueError("ASE_ALERT_WEBHOOK_URL must be an https URL")
+        # Fail at startup, not at the first model call, if either value is unusable.
+        _ = self.reasoning_effort_policy, self.ai_token_prices
         return self
+
+    @property
+    def reasoning_effort_policy(self) -> ReasoningEffortPolicy:
+        return ReasoningEffortPolicy(
+            parse_mechanical_effort(self.ai_mechanical_reasoning_effort),
+            parse_mechanical_purposes(self.ai_mechanical_purposes),
+        )
+
+    @property
+    def ai_token_prices(self) -> AiTokenPrices:
+        return AiTokenPrices.of(
+            self.ai_price_input_per_million,
+            self.ai_price_output_per_million,
+            self.ai_price_currency,
+        )
 
     @property
     def feeds_user_agent(self) -> str:

@@ -17,6 +17,10 @@ export type AiUsageTotals = Schemas['AiUsageTotalsOut'];
 export type AiUsagePage = Schemas['AiUsageSummaryPageOut'];
 export type AiUsagePreview = Schemas['AiUsagePreviewOut'];
 export type TeamAiUsage = Schemas['TeamAiUsageOut'];
+export type AiTokenPrices = Schemas['AiTokenPricesOut'];
+export type AiEffectiveModel = Schemas['AiEffectiveModelOut'];
+export type AiPolicyDefaults = Schemas['AiPolicyDefaultsOut'];
+export type AiSuggestedPolicy = Schemas['SuggestedPolicyOut'];
 
 const count = z.number().int().nonnegative();
 const limit = count.nullable();
@@ -81,16 +85,64 @@ const totalsSchema = z.object({
   used_requests: count,
   used_tokens: count,
   unknown_requests: count,
+  used_input_tokens: count,
+  used_output_tokens: count,
+  estimated_cost: z.string().nullable(),
 }) satisfies z.ZodType<AiUsageTotals>;
+const pricesSchema = z.object({
+  input_per_million: z.number().nonnegative(),
+  output_per_million: z.number().nonnegative(),
+  currency: z.string(),
+  configured: z.boolean(),
+}) satisfies z.ZodType<AiTokenPrices>;
+const effortSchema = z.enum([
+  'none',
+  'minimal',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+  'max',
+]) satisfies z.ZodType<NonNullable<AiEffectiveModel['reasoning_effort']>>;
+const modelSchema = z.object({
+  policy: z.enum(['legacy', 'global', 'team', 'personal']).nullable(),
+  profile_id: z.uuid().nullable(),
+  profile_name: z.string(),
+  model: z.string(),
+  provider: z.enum(['openai_compatible', 'bedrock']).nullable(),
+  reasoning_effort: effortSchema.nullable(),
+  mechanical_effort: effortSchema.nullable(),
+  unavailable: z.string().nullable(),
+}) satisfies z.ZodType<AiEffectiveModel>;
 const pageSchema = z.object({
   items: z.array(summarySchema),
   observed: totalsSchema,
+  prices: pricesSchema,
 }) satisfies z.ZodType<AiUsagePage>;
 const previewSchema = z.object({
   items: z.array(summarySchema),
   observed: totalsSchema,
   unknown_calls: count,
+  prices: pricesSchema,
+  model: modelSchema.nullable(),
 }) satisfies z.ZodType<AiUsagePreview>;
+const suggestionSchema = z.object({
+  scope: scopeSchema,
+  target_id: z.uuid().nullable(),
+  target_name: z.string(),
+  period: periodSchema,
+  token_limit: count,
+  reason: z.string(),
+  already_configured: z.boolean(),
+}) satisfies z.ZodType<AiSuggestedPolicy>;
+const defaultsSchema = z.object({
+  items: z.array(suggestionSchema),
+  observed: totalsSchema,
+  observed_daily_tokens: count,
+  enforcing: z.boolean(),
+  prices: pricesSchema,
+}) satisfies z.ZodType<AiPolicyDefaults>;
+const appliedSchema = z.object({ created: z.array(policySchema) });
 const teamSchema = z.object({
   team_id: z.uuid(),
   view: z.enum(['member', 'manager', 'admin']),
@@ -100,6 +152,7 @@ const teamSchema = z.object({
   members: z
     .array(z.object({ user_id: z.uuid(), display_name: z.string(), observed: totalsSchema }))
     .nullable(),
+  prices: pricesSchema,
 }) satisfies z.ZodType<TeamAiUsage>;
 
 const policyPath = (id: string) => `/api/admin/ai-usage/policies/${encodeURIComponent(id)}`;
@@ -160,4 +213,17 @@ export function previewAiUsage(target: PreviewTarget): Promise<AiUsagePreview> {
     if (target.teamId) params.set('team_id', target.teamId);
   }
   return apiCall(`/api/admin/ai-usage/preview?${params.toString()}`, { schema: previewSchema });
+}
+
+/** The suggested starting set. Reading it never changes a policy. */
+export function getAiPolicyDefaults(): Promise<AiPolicyDefaults> {
+  return apiCall('/api/admin/ai-usage/defaults', { schema: defaultsSchema });
+}
+
+/** Deliberately create every missing policy in the suggested set. */
+export function applyAiPolicyDefaults(): Promise<AiPolicy[]> {
+  return apiCall('/api/admin/ai-usage/defaults', {
+    method: 'POST',
+    schema: appliedSchema,
+  }).then((body) => body.created);
 }

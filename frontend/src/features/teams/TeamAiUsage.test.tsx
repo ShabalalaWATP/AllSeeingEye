@@ -43,7 +43,13 @@ describe('TeamAiUsage', () => {
               {
                 user_id: '55555555-5555-4555-8555-555555555555',
                 display_name: 'Ada Analyst',
-                observed: aiTotals({ used_requests: 4, used_tokens: 860 }),
+                observed: aiTotals({
+                  used_requests: 4,
+                  used_tokens: 860,
+                  used_input_tokens: 60,
+                  used_output_tokens: 800,
+                  estimated_cost: '0.0010',
+                }),
               },
             ],
           }),
@@ -55,6 +61,7 @@ describe('TeamAiUsage', () => {
     const table = screen.getByRole('table', { name: 'AI usage by team member this month' });
     const row = within(table).getByText('Ada Analyst').closest('tr');
     expect(row).toHaveTextContent('860');
+    expect(row).toHaveTextContent('USD 0.0010');
     expect(screen.getByRole('heading', { name: /Team · month allowance/ })).toBeInTheDocument();
   });
 

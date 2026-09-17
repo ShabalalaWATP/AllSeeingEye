@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { aiPolicy, aiSummary, aiTotals } from '@/test/fixtures.aiUsage';
+import { aiPolicy, aiPreview, aiSummary, aiTotals } from '@/test/fixtures.aiUsage';
 import { adminUser, llmProfiles, source, sourceHealth } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
@@ -95,11 +95,13 @@ describe('AdminOverviewPage', () => {
         }),
       ),
       http.get('/api/admin/ai-usage/preview', () =>
-        HttpResponse.json({
-          items: [aiSummary({ policy: aiPolicy(), used_requests: 9 })],
-          observed: aiTotals({ used_requests: 3 }),
-          unknown_calls: 1,
-        }),
+        HttpResponse.json(
+          aiPreview({
+            items: [aiSummary({ policy: aiPolicy(), used_requests: 9 })],
+            observed: aiTotals({ used_requests: 3 }),
+            unknown_calls: 1,
+          }),
+        ),
       ),
       http.get('/api/admin/audit-log', () => HttpResponse.json({ items: [], next_before: null })),
       http.get('/api/auth/mfa', () =>

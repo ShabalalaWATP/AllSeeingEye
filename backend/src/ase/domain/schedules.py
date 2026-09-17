@@ -19,6 +19,12 @@ from ase.domain.subscription_recurrence import LocalOccurrence, LocalRecurrence,
 
 CADENCES = ("daily", "weekdays", "weekly", "monthly", "quarterly", "semiannual", "annual")
 MONTH_INTERVALS = {"monthly": 1, "quarterly": 3, "semiannual": 6, "annual": 12}
+# New subscriptions start weekly at Quick depth: the cheapest useful recurring shape.
+# A daily Advanced subscription costs roughly twenty times a weekly Quick one, because
+# it runs seven times as often and each Advanced run does far more model work.  Existing
+# subscriptions keep whatever they were created with; these defaults apply to new ones.
+DEFAULT_CADENCE = "weekly"
+DEFAULT_RESEARCH_MODE = ResearchMode.QUICK
 
 
 class CoverageState(StrEnum):

@@ -15,15 +15,26 @@ describe('AiUsageSummary', () => {
       http.get('/api/ai-usage/me', () =>
         HttpResponse.json(
           aiPage({
-            observed: aiTotals({ used_requests: 3, used_tokens: 1200, unknown_requests: 1 }),
+            observed: aiTotals({
+              used_requests: 3,
+              used_tokens: 1200,
+              unknown_requests: 1,
+              used_input_tokens: 400,
+              used_output_tokens: 800,
+              estimated_cost: '0.0011',
+            }),
           }),
         ),
       ),
     );
     render(<AiUsageSummary />);
     expect(
-      await screen.findByText(/3 requests, 1,200 tokens this month, 1 with unconfirmed usage/),
+      await screen.findByText(
+        /3 requests, 1,200 tokens this month \(400 in, 800 out\), 1 with unconfirmed usage/,
+      ),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Estimated spend: USD 0.0011/)).toBeInTheDocument();
+    expect(screen.getByText(/not a bill/)).toBeInTheDocument();
     expect(screen.getByText(/usage is recorded without a limit/)).toBeInTheDocument();
   });
 

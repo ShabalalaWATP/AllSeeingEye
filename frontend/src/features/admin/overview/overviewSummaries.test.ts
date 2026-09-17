@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { LlmConnection, LlmProfile } from '@/lib/api/llm';
-import { aiPolicy, aiSummary, aiTotals } from '@/test/fixtures.aiUsage';
+import { aiPolicy, aiPreview, aiSummary, aiTotals } from '@/test/fixtures.aiUsage';
 import { adminUser, llmProfiles, plainUser, source, sourceHealth } from '@/test/fixtures';
 
 import {
@@ -144,11 +144,13 @@ describe('overview summaries', () => {
     const site = aiSummary({ policy: aiPolicy({ scope: 'global' }) });
     const system = aiSummary({ policy: aiPolicy({ id: 'x', scope: 'system' }) });
     expect(
-      summariseUsage({
-        items: [system, site],
-        observed: aiTotals({ used_requests: 4, used_tokens: 900 }),
-        unknown_calls: 2,
-      }),
+      summariseUsage(
+        aiPreview({
+          items: [system, site],
+          observed: aiTotals({ used_requests: 4, used_tokens: 900 }),
+          unknown_calls: 2,
+        }),
+      ),
     ).toEqual({
       site,
       system,
@@ -157,7 +159,7 @@ describe('overview summaries', () => {
       unknownCalls: 2,
       periodEnd: '2026-10-01T00:00:00Z',
     });
-    expect(summariseUsage({ items: [], observed: aiTotals(), unknown_calls: 0 }).site).toBeNull();
+    expect(summariseUsage(aiPreview()).site).toBeNull();
   });
 
   it('formats action names and compact numbers for reading', () => {

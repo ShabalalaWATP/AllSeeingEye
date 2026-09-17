@@ -11,10 +11,10 @@ import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
 
-from ase.adapters.persistence.ai_usage_models import AiUsagePolicyRow
+from ase.adapters.persistence.ai_usage_models import AiUsagePolicyRow, AiUsageTotalRow
 from ase.adapters.persistence.base import Base
 
 
@@ -79,6 +79,7 @@ def test_ai_usage_migration_and_retained_data_guard():
 
 
 PRUNING_MIGRATION = "0054_ai_usage_reservation_pruning_index.py"
+COST_MIGRATION = "0060_ai_cost_controls.py"
 
 
 def _load(name: str, filename: str):
@@ -131,6 +132,7 @@ def test_ai_usage_migrations_match_the_models():
     tables = _migration()
     uniqueness = _load("ai_usage_parity", "0051_ai_usage_policy_uniqueness.py")
     pruning = _load("ai_usage_pruning_parity", PRUNING_MIGRATION)
+    cost = _load("ai_cost_parity", COST_MIGRATION)
     names = {
         "ai_usage_policies",
         "ai_usage_policy_overrides",
@@ -141,12 +143,13 @@ def test_ai_usage_migrations_match_the_models():
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:
-            tables.op = uniqueness.op = pruning.op = Operations(
+            tables.op = uniqueness.op = pruning.op = cost.op = Operations(
                 MigrationContext.configure(connection)
             )
             tables.upgrade()
             uniqueness.upgrade()
             pruning.upgrade()
+            cost.upgrade()
             context = MigrationContext.configure(
                 connection,
                 opts={
@@ -188,5 +191,62 @@ def test_pruning_index_migration_round_trip():
             assert indexes()[index] == ["status", "period_end"]
             pruning.downgrade()
             assert index not in indexes()
+    finally:
+        engine.dispose()
+
+
+def test_cost_control_migration_splits_totals_and_frees_a_period_per_target():
+    tables = _migration()
+    uniqueness = _load("ai_usage_period_uniqueness", "0051_ai_usage_policy_uniqueness.py")
+    cost = _load("ai_cost_controls", COST_MIGRATION)
+    assert cost.revision == "0060" and cost.down_revision == "0057"
+    engine = create_engine("sqlite://")
+    try:
+        with engine.begin() as connection:
+            operations = Operations(MigrationContext.configure(connection))
+            tables.op = uniqueness.op = cost.op = operations
+            tables.upgrade()
+            uniqueness.upgrade()
+            now = datetime.now(UTC)
+            target = uuid4()
+
+            def insert(period: str) -> None:
+                connection.execute(
+                    AiUsagePolicyRow.__table__.insert().values(
+                        id=uuid4(),
+                        scope="user",
+                        target_id=target,
+                        period=period,
+                        request_limit=None,
+                        token_limit=1,
+                        enabled=True,
+                        revision=1,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+
+            insert("day")
+            # Before the migration one target could carry only a single enabled policy.
+            with pytest.raises(IntegrityError), connection.begin_nested():
+                insert("month")
+            # Written through raw SQL: the mapped table already carries the new columns.
+            connection.execute(
+                text(
+                    "INSERT INTO ai_usage_totals (period_start, team_key, user_key, "
+                    "period_end, used_requests, used_tokens, unknown_requests) "
+                    "VALUES (:at, :team, :user, :at, 1, 900, 0)"
+                ),
+                {"at": now.isoformat(), "team": uuid4().hex, "user": target.hex},
+            )
+            cost.upgrade()
+            insert("month")
+            columns = {
+                column["name"] for column in inspect(connection).get_columns("ai_usage_totals")
+            }
+            assert {"used_input_tokens", "used_output_tokens"} <= columns
+            row = connection.execute(AiUsageTotalRow.__table__.select()).one()
+            # History has no split, so it is carried as output and never understates cost.
+            assert (row.used_input_tokens, row.used_output_tokens) == (0, 900)
     finally:
         engine.dispose()

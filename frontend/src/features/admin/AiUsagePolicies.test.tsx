@@ -7,6 +7,7 @@ import type { AiOverrideInput, AiPolicyInput } from '@/lib/api/aiUsage';
 import {
   aiOverride,
   aiPolicy,
+  aiPreview,
   aiSummary,
   aiTotals,
   policyId,
@@ -111,11 +112,13 @@ describe('AiUsagePolicies', () => {
     server.use(
       http.get('/api/admin/ai-usage/preview', ({ request }) => {
         query = new URL(request.url).search;
-        return HttpResponse.json({
-          items: [aiSummary({ policy: aiPolicy({ scope: 'system' }) })],
-          observed: aiTotals({ used_requests: 7, used_tokens: 700 }),
-          unknown_calls: 2,
-        });
+        return HttpResponse.json(
+          aiPreview({
+            items: [aiSummary({ policy: aiPolicy({ scope: 'system' }) })],
+            observed: aiTotals({ used_requests: 7, used_tokens: 700 }),
+            unknown_calls: 2,
+          }),
+        );
       }),
     );
     const user = setup();
