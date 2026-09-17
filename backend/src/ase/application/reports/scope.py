@@ -9,6 +9,7 @@ from ase.application.reports.templates import Template
 from ase.domain.collection import CollectionPlan
 from ase.domain.map_research_origin import origin_to_dict
 from ase.domain.query_variant_records import variant_to_dict
+from ase.domain.research import ResearchFocus
 from ase.domain.research_area import area_to_dict
 from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 
@@ -49,8 +50,22 @@ def conflict_background(conflict: Conflict | None) -> str | None:
     return f"{conflict.name} ({conflict.status}). {conflict.summary} Belligerents: {sides}."
 
 
+def report_origin(request: ReportRequest) -> str:
+    """Where this report was asked for, so a reader finds it where they created it.
+
+    A scheduled run is a subscription update, a photograph is a geolocation
+    assessment, and everything else is research the operator asked for directly.
+    """
+    if request.automation:
+        return "subscription"
+    if request.research_focus is ResearchFocus.MEDIA:
+        return "geolocation"
+    return "research"
+
+
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
+        "origin": report_origin(request),
         **(
             {"research_time_basis": request.research_time_basis.value}
             if request.research_time_basis is not None

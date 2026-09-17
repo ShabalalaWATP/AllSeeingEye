@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 
+import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useShellStore } from '@/stores/shell';
 
 import { commandTargets, matchTargets } from './commandTargets';
@@ -16,7 +17,8 @@ export function CommandPalette() {
   const optionId = useId();
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
-  const targets = useMemo(() => commandTargets(), []);
+  const isAdmin = useAuthStore(selectIsAdmin);
+  const targets = useMemo(() => commandTargets({ admin: isAdmin }), [isAdmin]);
   const matches = useMemo(() => matchTargets(targets, query), [targets, query]);
   const active = matches[Math.min(index, matches.length - 1)];
 

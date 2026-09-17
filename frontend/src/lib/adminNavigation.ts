@@ -61,6 +61,13 @@ export const adminSections: readonly AdminSection[] = [
         description: 'Inspect collector health, review polling failures and reset failed sources.',
         icon: 'sources',
       },
+      {
+        to: '/admin/catalogue',
+        label: 'Catalogue',
+        description:
+          'Every feed, research capability, camera index, map layer and dataset this deployment uses.',
+        icon: 'sources',
+      },
     ],
   },
   {

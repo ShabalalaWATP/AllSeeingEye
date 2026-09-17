@@ -32,7 +32,9 @@ const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const SettingsPage = lazy(() => import('@/features/account/SettingsPage'));
 const EconomyPage = lazy(() => import('@/features/economy/EconomyPage'));
 const CyberIntelligencePage = lazy(() => import('@/features/cyber/CyberPage'));
-const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
+const SavedResearchPage = lazy(() => import('@/features/reports/SavedResearchPage'));
+const SavedUpdatesPage = lazy(() => import('@/features/reports/SavedUpdatesPage'));
+const SavedAssessmentsPage = lazy(() => import('@/features/reports/SavedAssessmentsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
 const ReportJobsPage = lazy(() => import('@/features/report-jobs/ReportJobsPage'));
 const ReportJobPage = lazy(() => import('@/features/report-jobs/ReportJobPage'));
@@ -95,6 +97,7 @@ export const routes: RouteObject[] = [
       { path: '/set-password', element: <SetPasswordPage /> },
     ],
   },
+  { path: '/sources', element: <RedirectWithQuery to="/admin/catalogue" /> },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
   { path: '/reset-password', element: <RedirectWithQuery to="/set-password" /> },
   {
@@ -111,8 +114,11 @@ export const routes: RouteObject[] = [
           { path: 'research/photo', element: <RedirectWithQuery to="/geolocation" /> },
           { path: 'subscriptions', element: <RecurringResearchPage /> },
           { path: 'research/recurring', element: <RedirectWithQuery to="/subscriptions" /> },
-          { path: 'sources', element: <SourcesPage /> },
-          { path: 'reports', element: <ReportsPage /> },
+          { path: 'research/saved', element: <SavedResearchPage /> },
+          { path: 'subscriptions/saved', element: <SavedUpdatesPage /> },
+          { path: 'geolocation/saved', element: <SavedAssessmentsPage /> },
+          // Each section keeps its own saved reports; this link still opens one.
+          { path: 'reports', element: <RedirectWithQuery to="/research/saved" /> },
           { path: 'reports/:id', element: <ReportPage /> },
           { path: 'annotation-monitors', element: <AnnotationMonitorsPage /> },
           { path: 'annotation-monitors/:monitorId', element: <AnnotationMonitorPage /> },
@@ -157,6 +163,7 @@ export const routes: RouteObject[] = [
                   { path: 'teams', element: <TeamsPage /> },
                   { path: 'audit', element: <AdminAuditPage /> },
                   { path: 'sources', element: <AdminSourcesPage /> },
+                  { path: 'catalogue', element: <SourcesPage /> },
                   { path: 'llm', element: <AdminLlmPage /> },
                   { path: 'security', element: <TotpSettingsPage /> },
                 ],

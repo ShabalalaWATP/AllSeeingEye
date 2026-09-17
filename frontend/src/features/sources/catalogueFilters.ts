@@ -75,7 +75,7 @@ export function filterParams(filters: CatalogueFilters): URLSearchParams {
 export function catalogueHref(filters: Partial<CatalogueFilters>): string {
   const params = filterParams({ ...EMPTY_FILTERS, ...filters });
   const query = params.toString();
-  return query ? `/sources?${query}` : '/sources';
+  return query ? `/admin/catalogue?${query}` : '/admin/catalogue';
 }
 
 function sourceText(source: CatalogueSource) {

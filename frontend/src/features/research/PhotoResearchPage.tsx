@@ -1,3 +1,4 @@
+import { geolocationTabs, SectionTabs } from '@/components/research/SectionTabs';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { PhotoGeolocationPanel } from './PhotoGeolocationPanel';
@@ -22,6 +23,7 @@ export default function PhotoResearchPage() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-8 pb-24">
+        <SectionTabs tabs={geolocationTabs} label="Geolocation" />
         <header className="relative overflow-hidden rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7">
           <div
             aria-hidden="true"

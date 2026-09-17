@@ -48,19 +48,15 @@ export const workspaceSections: readonly WorkspaceSection[] = [
       {
         to: '/research',
         label: 'Research',
-        description: 'Ask a question, choose the scope and collect a cited answer.',
+        description:
+          'Ask a question, choose the scope and collect a cited answer. Your saved research lives here.',
         icon: 'research',
-      },
-      {
-        to: '/reports',
-        label: 'Saved reports',
-        description: 'Previous answers, frozen evidence, comparisons and exports.',
-        icon: 'reports',
       },
       {
         to: '/subscriptions',
         label: 'Subscriptions',
-        description: 'Follow a topic, conflict, disaster or area on a schedule.',
+        description:
+          'Follow a topic, conflict, disaster or area on a schedule, and read the saved updates.',
         icon: 'subscriptions',
       },
       {
@@ -72,38 +68,22 @@ export const workspaceSections: readonly WorkspaceSection[] = [
       {
         to: '/geolocation',
         label: 'Geolocation',
-        description: 'Compare photographs and assess possible locations.',
-        icon: 'geolocation',
-      },
-    ],
-  },
-  {
-    title: 'Monitoring',
-    items: [
-      {
-        to: '/trackers',
-        label: 'Live monitor',
         description:
-          'Daily briefing, conflicts, disasters and the aviation, maritime, space, cyber, social and public figure trackers.',
-        icon: 'monitor',
-      },
-      {
-        to: '/warning',
-        label: 'Alerts & rules',
-        description: 'Alerts raised by your activity rules, and the rules behind them.',
-        icon: 'alerts',
-      },
-      {
-        to: '/annotation-monitors',
-        label: 'Annotation monitors',
-        description: 'Watch selected report annotations and review exact transitions.',
-        icon: 'annotations',
+          'Compare photographs, assess possible locations and keep the saved assessments.',
+        icon: 'geolocation',
       },
     ],
   },
   {
     title: 'Standing desks',
     items: [
+      {
+        to: '/trackers',
+        label: 'Live monitor',
+        description:
+          'Daily briefing, conflicts, disasters and the aviation, maritime, space, cyber, social and public figure boards.',
+        icon: 'monitor',
+      },
       {
         to: '/conflicts/ukraine',
         label: 'Ukraine war',
@@ -127,13 +107,6 @@ export const workspaceSections: readonly WorkspaceSection[] = [
   {
     title: 'Directory',
     items: [
-      {
-        to: '/sources',
-        label: 'Sources & data',
-        description:
-          'Every feed, research capability, camera index, map layer and dataset this deployment uses.',
-        icon: 'sources',
-      },
       {
         to: '/teams',
         label: 'Teams',

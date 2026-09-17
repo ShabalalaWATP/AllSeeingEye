@@ -39,20 +39,16 @@ describe('AppShell', () => {
     ).toEqual([
       'Map',
       'Research',
-      'Saved reports',
       'Subscriptions',
       'Plans & areas',
       'Geolocation',
       'Live monitor',
-      'Alerts & rules',
-      'Annotation monitors',
       'Ukraine war',
       'Cyber intelligence',
       'Economy',
-      'Sources & data',
       'Teams',
     ]);
-    for (const group of ['Monitoring', 'Standing desks', 'Directory']) {
+    for (const group of ['Standing desks', 'Directory']) {
       expect(within(nav).getByText(group)).toBeInTheDocument();
     }
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
@@ -104,9 +100,9 @@ describe('AppShell', () => {
   });
 
   it('returns to the map workspace without changing the chosen projection', async () => {
-    const { user, router } = renderApp('/reports', 'admin');
+    const { user, router } = renderApp('/research/saved', 'admin');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(screen.getByText('Saved reports', { selector: 'p' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Saved research' })).toBeVisible();
     await user.click(within(nav).getByRole('link', { name: 'Map' }));
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/');

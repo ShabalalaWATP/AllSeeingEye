@@ -67,17 +67,14 @@ describe('warning', () => {
     });
   });
 
-  it('offers alerts from the monitoring group of the rail as well as personal settings', async () => {
+  it('offers alerts from personal settings, and no longer crowds the rail', async () => {
     const { user } = renderApp('/settings', 'user');
     const alerts = await within(screen.getByRole('main')).findByRole('link', {
       name: /^Alerts & rules/,
     });
     expect(alerts).toHaveAttribute('href', '/warning');
     const primary = within(screen.getByRole('navigation', { name: 'Primary' }));
-    expect(primary.getByRole('link', { name: 'Alerts & rules' })).toHaveAttribute(
-      'href',
-      '/warning',
-    );
+    expect(primary.queryByRole('link', { name: 'Alerts & rules' })).toBeNull();
     expect(screen.queryByRole('link', { name: /unacknowledged/ })).not.toBeInTheDocument();
     await user.click(alerts);
     const list = await screen.findByRole('list', { name: 'Alerts' });

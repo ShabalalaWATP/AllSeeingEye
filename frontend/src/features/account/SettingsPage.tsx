@@ -16,11 +16,6 @@ const sections = [
 
 const resources = [
   {
-    to: '/sources',
-    title: 'Sources and connections',
-    detail: 'See every feed and service, what is collecting and which API keys are missing.',
-  },
-  {
     to: '/warning',
     title: 'Alerts & rules',
     detail: 'Review your alerts and manage the activity rules that create them.',

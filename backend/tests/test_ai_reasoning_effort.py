@@ -127,7 +127,8 @@ async def test_gateway_preserves_every_other_request_field() -> None:
 
 
 def test_settings_expose_the_configured_policy_and_reject_nonsense() -> None:
-    default = Settings(env="test").reasoning_effort_policy
+    # The shipped default, not whatever this machine's own .env chooses.
+    default = Settings(env="test", _env_file=None).reasoning_effort_policy
     assert default.effort is ReasoningEffort.MEDIUM
     assert default.purposes == MECHANICAL_PURPOSES
     chosen = Settings(

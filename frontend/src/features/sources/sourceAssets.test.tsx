@@ -21,7 +21,7 @@ function serve(body: JsonBodyType) {
 
 it('summarises every family and state and lists only actionable items', async () => {
   serve({ items: [sourceContext, blockedSource], assets: catalogueAssets });
-  renderApp('/sources', 'user');
+  renderApp('/admin/catalogue', 'admin');
   await screen.findByRole('heading', { name: 'BBC World' });
   expect(screen.getByText(/sources, services and\s+datasets on this server/)).toHaveTextContent(
     '8 sources',
@@ -55,7 +55,7 @@ it('summarises every family and state and lists only actionable items', async ()
 
 it('filters by family, state and access, and hides data assets for source-only filters', async () => {
   serve({ items: [sourceContext, blockedSource], assets: catalogueAssets });
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   await screen.findByRole('heading', { name: 'BBC World' });
   const families = within(screen.getByRole('list', { name: 'Totals by family' }));
   await user.click(families.getByRole('button', { name: /Camera indexes/ }));
@@ -90,7 +90,7 @@ it('filters by family, state and access, and hides data assets for source-only f
 
 it('shows licence, provenance and a safe publisher link as text', async () => {
   serve({ items: [], assets: [dataCentreAsset] });
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   const region = within(await screen.findByRole('region', { name: 'Map layers and services' }));
   expect(region.getByText('Packaged snapshot')).toBeVisible();
   expect(region.getByText('Available')).toBeVisible();
@@ -107,7 +107,7 @@ it('shows licence, provenance and a safe publisher link as text', async () => {
 
 it('rejects an asset whose homepage is not https', async () => {
   serve({ items: [], assets: [{ ...dataCentreAsset, homepage: 'javascript:alert(1)' }] });
-  renderApp('/sources', 'user');
+  renderApp('/admin/catalogue', 'admin');
   expect(await screen.findByRole('button', { name: 'Retry sources' })).toBeVisible();
   expect(screen.queryByRole('link', { name: 'Publisher website' })).not.toBeInTheDocument();
 });
@@ -119,7 +119,7 @@ it('keeps a long attention list short and points to the catalogue', async () => 
     name: `Keyed camera ${String(index).padStart(2, '0')}`,
   }));
   serve({ items: [], assets });
-  renderApp('/sources', 'user');
+  renderApp('/admin/catalogue', 'admin');
   const attention = within(await screen.findByRole('region', { name: 'Needs attention' }));
   expect(attention.getAllByRole('listitem')).toHaveLength(15);
   expect(attention.getByText('2 more in the catalogue below.')).toBeVisible();

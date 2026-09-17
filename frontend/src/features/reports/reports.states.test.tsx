@@ -14,7 +14,7 @@ describe('reports page states', () => {
       http.get('/api/reports/templates', () => failure('Templates boom')),
       http.get('/api/reports', () => failure('Reports boom')),
     );
-    renderApp('/reports?template=intsum', 'user');
+    renderApp('/research/saved?template=intsum', 'user');
     expect(await screen.findByText('Templates boom')).toBeInTheDocument();
     expect(await screen.findByText('Reports boom')).toBeInTheDocument();
     expect(screen.queryByRole('form', { name: 'Generate a report' })).not.toBeInTheDocument();
@@ -22,18 +22,16 @@ describe('reports page states', () => {
 
   it('disables generation when there are no products', async () => {
     server.use(http.get('/api/reports/templates', () => HttpResponse.json({ items: [] })));
-    renderApp('/reports?template=intsum', 'user');
+    renderApp('/research/saved?template=intsum', 'user');
     const form = await screen.findByRole('form', { name: 'Generate a report' });
     expect(within(form).getByRole('button', { name: 'Generate' })).toBeDisabled();
   });
 
   it('says so when there are no reports yet', async () => {
     server.use(http.get('/api/reports', () => HttpResponse.json({ items: [] })));
-    renderApp('/reports', 'user');
+    renderApp('/research/saved', 'user');
     expect(
-      await screen.findByText(
-        'No saved reports yet. Start a research question to create your first report.',
-      ),
+      await screen.findByText('No saved research yet. Ask a question to create your first report.'),
     ).toBeInTheDocument();
   });
 });
