@@ -5,6 +5,7 @@ from collections import deque
 
 from ase.application.research.service import ResearchCollectionService
 from ase.domain.llm import LlmResult
+from post_draft_stage_helpers import POST_DRAFT_STAGES
 from production_integration_helpers import StageGateway
 from test_operator_research_tasks import Provider
 
@@ -13,12 +14,9 @@ def synthetic_plan(query):
     return ResearchCollectionService(lambda _: [Provider("fixture")]).plan(query)
 
 
-# The post-draft review passes run on every report. A test that is not about them
-# need not script them, so an empty finding set stands in.
-REVIEW_DEFAULTS = {
-    "entailment": {"assessments": []},
-    "contradiction_analysis": {"disagreements": []},
-}
+# The post-draft stages run on every report. A test that is not about them need not
+# script them, so the shared plain answers stand in.
+REVIEW_DEFAULTS = POST_DRAFT_STAGES
 
 
 class SchemaGateway:

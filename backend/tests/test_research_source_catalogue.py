@@ -35,6 +35,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-usgs-area",
         "research-eonet-area",
         "research-openaq-area",
+        "research-asset-register",
         "research-web-search",
         "research-sec-submissions",
         "research-sec-company-directory",

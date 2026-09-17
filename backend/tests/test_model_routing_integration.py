@@ -73,7 +73,24 @@ class Gateway:
         self.calls.append((model, api_key, request.reasoning_effort, request.schema_name))
         if len(self.calls) == 1 and self.on_first:
             await self.on_first()
-        content = {"direction": DIRECTION, "report": good_body(), "advocacy": ADVOCACY}
+        content = {
+            "direction": DIRECTION,
+            "report": good_body(),
+            "advocacy": ADVOCACY,
+            # The post-draft stages route like every other call, so they answer plainly.
+            "report_analysis": {
+                "sections": [
+                    {
+                        "heading": "What this means",
+                        "text": "The reporting establishes movement and suggests intent.",
+                        "evidence": ["E1"],
+                    }
+                ],
+                "diagram": None,
+            },
+            "entailment": {"assessments": []},
+            "contradiction_analysis": {"disagreements": []},
+        }
         if request.schema_name == "claim_proposals":
             item = json.loads(request.messages[1].content)["evidence"][0]
             content["claim_proposals"] = {
@@ -119,6 +136,8 @@ async def test_create_routes_all_text_calls_by_destination_not_actor_memberships
         "direction",
         "report",
         "advocacy",
+        "report_analysis",
+        "entailment",
         "claim_proposals",
     }
     assert {(call[0], call[1], call[2]) for call in gateway.calls} == {

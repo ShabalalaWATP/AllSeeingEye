@@ -18,13 +18,13 @@ from uuid import UUID
 
 from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceEmbeddingGateway
-from ase.application.model_routing import ModelRouting
 from ase.application.ports.embeddings import EmbeddingGateway
 from ase.application.ports.llm import SecretCipher
+from ase.application.reports.production_types import ProfileLookup
 from ase.application.reports.selection import MAX_RERANK_CANDIDATES, SelectionPlan
 from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.events import Event
-from ase.domain.llm import LlmProfile, LlmUsage
+from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.report_search import checked_vector, cosine
 from ase.domain.research_brief_values import IntelligenceRequirement
 
@@ -82,13 +82,11 @@ class EvidenceReranker:
     def __init__(
         self,
         *,
-        routing: ModelRouting,
         cipher: SecretCipher,
         gateway: EmbeddingGateway,
         ai_usage: AiUsageAccounting | None = None,
         limit: int = MAX_RERANK_CANDIDATES,
     ) -> None:
-        self._routing = routing
         self._cipher = cipher
         self._gateway = gateway
         self._ai_usage = ai_usage
@@ -98,6 +96,7 @@ class EvidenceReranker:
         self,
         plan: SelectionPlan,
         *,
+        profile_for: ProfileLookup,
         question: str,
         requirements: Sequence[IntelligenceRequirement],
         actor_id: UUID,
@@ -111,7 +110,8 @@ class EvidenceReranker:
             return RerankOutcome(reason=NO_CANDIDATES)
         if not self._cipher.available:
             return RerankOutcome(reason=NO_CIPHER)
-        profile = await self._routing.embeddings()
+        # The prepared routing already chose this profile, so no read reopens here.
+        profile = await profile_for(LlmRole.EMBEDDINGS)
         if profile is None:
             return RerankOutcome(reason=NO_PROFILE)
         return await self._embed(profile, query, candidates, actor_id, team_id, at)

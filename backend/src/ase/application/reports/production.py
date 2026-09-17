@@ -185,6 +185,7 @@ class Producer:
             query,
             receipt,
             totals,
+            profile_for,
             resumed=snapshot is not None,
         )
 

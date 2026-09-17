@@ -17,8 +17,20 @@ def test_more_relevant_project_precedes_id_order_without_changing_evidence():
     store = InMemoryEventStore()
     store.upsert(
         [
-            base.with_changes(id="a", title="Airport project", content_hash="a"),
-            base.with_changes(id="z", title="Airport financing project", content_hash="z"),
+            # Two distinct records, each with its own link, so duplicate folding leaves
+            # both in the pool and the ordering is what this test measures.
+            base.with_changes(
+                id="a",
+                title="Airport runway resurfacing",
+                content_hash="a",
+                url="https://example.org/a",
+            ),
+            base.with_changes(
+                id="z",
+                title="Airport financing agreed",
+                content_hash="z",
+                url="https://example.org/z",
+            ),
         ]
     )
     result = select_evidence(

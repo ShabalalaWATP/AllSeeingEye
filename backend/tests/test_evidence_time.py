@@ -32,7 +32,10 @@ RESEARCH = EvidenceTimeBasis.RESEARCH
 
 
 def scene(key, acquired, published=NOW):
-    return make_event(key, published_at=published, observed_at=NOW, point=None).with_changes(
+    """Each scene carries its own headline: identical headlines fold into one item."""
+    return make_event(
+        key, title=f"Scene {key}", published_at=published, observed_at=NOW, point=None
+    ).with_changes(
         observation=ObservationMetadata(acquired, "fixture", key, "No imagery inspected")
     )
 

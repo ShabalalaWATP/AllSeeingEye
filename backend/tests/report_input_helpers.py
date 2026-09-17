@@ -71,11 +71,14 @@ async def actor_headers(client: AsyncClient, actor: User, *, admin: bool = False
 def stored_input(container: Container, owner: User) -> StoredResearchInput:
     reservation = container.research_inputs.reserve(owner, "private-brief.txt")
     now = container.clock.now()
+    # Distinct passages, not three copies of one headline: near-identical titles fold
+    # into a single piece of reporting, which is not what these tests are about.
+    passages = ("logistics note", "funding schedule", "site access record")
     events = tuple(
         make_event(
             f"private-extract-{index}",
             source_id="research-input-fixture",
-            title=f"Private document passage {index}",
+            title=f"Private document {passages[index]}",
             summary="Private extracted source material.",
             published_at=now,
             observed_at=now,

@@ -54,6 +54,11 @@ class ExpansionOutcome:
     body: ReportBody
     challenge: ReportChallenge
 
+    @property
+    def parts(self) -> tuple[Draft, Selection, ReportBody, ReportChallenge]:
+        """The four values a caller resumes the pipeline with, in pipeline order."""
+        return self.draft, self.selection, self.body, self.challenge
+
 
 def _revised_query(query: ResearchQuery, terms: tuple[str, ...]) -> ResearchQuery:
     """Only terms change; area, time, languages, permission and source policy stay fixed."""

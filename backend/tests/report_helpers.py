@@ -11,6 +11,7 @@ from ase.application.ports.llm import LlmGatewayError
 from ase.domain.events import Category, Credibility, Point
 from ase.domain.llm import LlmRequest, LlmResult
 from feeds_helpers import NOW, make_event
+from post_draft_stage_helpers import POST_DRAFT_STAGES
 
 GOOD_BODY = {
     "key_judgements": [
@@ -99,7 +100,11 @@ PROFILE = {
 
 
 class ScriptedGateway:
-    """Answers each call with the next scripted content; a string starting with '!' raises."""
+    """Answers each call with the next scripted content; a string starting with '!' raises.
+
+    The post-draft stages answer from the shared plain fixtures instead of consuming a
+    scripted answer, so a test that scripts drafting keeps the script it wrote.
+    """
 
     def __init__(self, *answers: str) -> None:
         self.answers = list(answers)
@@ -109,7 +114,10 @@ class ScriptedGateway:
         self, base_url: str, api_key: str, model: str, request: LlmRequest
     ) -> LlmResult:
         self.requests.append(request)
-        answer = self.answers.pop(0) if self.answers else json.dumps(good_body())
+        if request.schema_name in POST_DRAFT_STAGES:
+            answer = json.dumps(POST_DRAFT_STAGES[request.schema_name])
+        else:
+            answer = self.answers.pop(0) if self.answers else json.dumps(good_body())
         if answer.startswith("!"):
             raise LlmGatewayError(answer[1:])
         return LlmResult(

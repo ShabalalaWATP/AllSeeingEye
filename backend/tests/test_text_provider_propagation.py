@@ -55,10 +55,12 @@ async def test_bedrock_provider_survives_every_report_stage_and_redraft(containe
             "challenge_plan",
             "report",
             "challenge_reviews",
+            "report_analysis",
+            "entailment",
         ]
     else:
         responses.update({"report": [{}, good_body()], "advocacy": [ADVOCACY]})
-        expected = ["direction", "report", "report", "advocacy"]
+        expected = ["direction", "report", "report", "advocacy", "report_analysis", "entailment"]
     gateway = SchemaGateway(responses)
     collection = AsyncMock()
     collection.plan = synthetic_plan

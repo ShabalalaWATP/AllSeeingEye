@@ -121,9 +121,7 @@ class GenerateReportUseCase:
             area_context=area_context,
             # Without an embeddings gateway the pipeline keeps its deterministic order.
             reranker=(
-                EvidenceReranker(
-                    routing=routing, cipher=cipher, gateway=embeddings, ai_usage=ai_usage
-                )
+                EvidenceReranker(cipher=cipher, gateway=embeddings, ai_usage=ai_usage)
                 if embeddings is not None
                 else None
             ),

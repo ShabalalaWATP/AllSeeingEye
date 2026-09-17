@@ -37,7 +37,10 @@ async def _revision(container: Container, owner: User):
     async with container.session_factory() as session:
         schedule = await container.create_schedule(session).execute(
             owner,
-            ScheduleInput(name="Daily research", template_id="intsum", country_iso="UA"),
+            # The window follows the cadence, so this daily case states it.
+            ScheduleInput(
+                name="Daily research", template_id="intsum", country_iso="UA", cadence="daily"
+            ),
             CONTEXT,
         )
     revision = revision_from_schedule(schedule, 1)

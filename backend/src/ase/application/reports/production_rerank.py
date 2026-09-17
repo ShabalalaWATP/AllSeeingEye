@@ -5,7 +5,7 @@ from __future__ import annotations
 from ase.application.ports.feeds import EventStore
 from ase.application.reports.evidence_rerank import EvidenceReranker, RerankOutcome
 from ase.application.reports.production_selection import plan_for_job
-from ase.application.reports.production_types import Job, Totals
+from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.domain.direction import Direction
 from ase.domain.direction_requirements import effective_requirements
 from ase.domain.research import ResearchQuery
@@ -28,6 +28,7 @@ async def rerank_for_job(
     query: ResearchQuery | None,
     receipt: ResearchReceipt | None,
     totals: Totals,
+    profile_for: ProfileLookup,
     *,
     resumed: bool,
 ) -> RerankOutcome:
@@ -40,6 +41,7 @@ async def rerank_for_job(
     plan = plan_for_job(store, job, direction, runtime_query=query, receipt=receipt)
     outcome = await reranker.rank(
         plan,
+        profile_for=profile_for,
         question=job.request.question or job.title,
         requirements=requirements_for_rerank(job, direction),
         actor_id=job.actor.id,

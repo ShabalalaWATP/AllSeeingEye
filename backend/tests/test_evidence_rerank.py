@@ -46,12 +46,13 @@ class UnavailableCipher(FakeCipher):
     available = False
 
 
-class FakeRouting:
-    def __init__(self, profile: LlmProfile | None) -> None:
-        self._profile = profile
+def prepared_profile(profile: LlmProfile | None):
+    """The prepared routing answers for the embeddings role and reads nothing."""
 
-    async def embeddings(self) -> LlmProfile | None:
-        return self._profile
+    async def profile_for(role: LlmRole) -> LlmProfile | None:
+        return profile if role is LlmRole.EMBEDDINGS else None
+
+    return profile_for
 
 
 class FakeEmbeddings:
@@ -108,17 +109,14 @@ def make_plan(events):
     )
 
 
-def reranker(gateway, *, profile=True, cipher=None):
-    return EvidenceReranker(
-        routing=FakeRouting(embeddings_profile() if profile else None),
-        cipher=cipher or FakeCipher(),
-        gateway=gateway,
-    )
+def reranker(gateway, *, cipher=None):
+    return EvidenceReranker(cipher=cipher or FakeCipher(), gateway=gateway)
 
 
-async def rank(gateway, plan, **kwargs):
+async def rank(gateway, plan, *, profile=True, **kwargs):
     return await reranker(gateway, **kwargs).rank(
         plan,
+        profile_for=prepared_profile(embeddings_profile() if profile else None),
         question="What has disrupted electricity supply?",
         requirements=(IntelligenceRequirement("EEI-1", "Which substations were attacked?"),),
         actor_id=ACTOR,

@@ -17,6 +17,7 @@ from ase.domain.reports import MAX_JUDGEMENT_CHARS
 from ase.domain.research import ResearchBatch, ResearchMode
 from feeds_helpers import make_event
 from planning_integration_helpers import synthetic_plan
+from post_draft_stage_helpers import POST_DRAFT_STAGES
 from production_integration_helpers import RecordingUsage, production_job
 from report_helpers import filled_store, good_body
 from test_report_challenge import plans, reviews
@@ -56,6 +57,7 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         "report": [invalid, good_body(), good_body()],
         "challenge_plan": [plans()],
         "challenge_reviews": [reviews()],
+        "report_analysis": [POST_DRAFT_STAGES["report_analysis"]],
         "entailment": [{"assessments": []}],
     }
     requests = []
@@ -124,6 +126,7 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         "challenge_plan",
         "report",
         "challenge_reviews",
+        "report_analysis",
         "entailment",
     ]
     assert all(not answers for answers in responses.values())
@@ -131,5 +134,5 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
     assert len(version.challenge.reviews) == len(version.body.key_judgements) == 2
     assert all(len(row.statement) <= MAX_JUDGEMENT_CHARS for row in version.body.key_judgements)
     assert "schema" in json.dumps(requests[3]["messages"]).lower()
-    assert version.prompt_tokens == 80 and version.completion_tokens == 40
+    assert version.prompt_tokens == 90 and version.completion_tokens == 45
     assert version.model == profile.model

@@ -76,6 +76,8 @@ async def test_direction_advocacy_and_global_call_budget_use_existing_stages() -
         "direction",
         "report",
         "advocacy",
+        "report_analysis",
+        "entailment",
     }
     assert result["report"]["analysis"]["direction"]
     assert result["report"]["analysis"]["devils_advocacy"]

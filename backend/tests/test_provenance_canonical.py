@@ -1,4 +1,9 @@
-"""Pin canonical hashes measured on pre-provenance main 0c91741, including comparison bytes."""
+"""Pin canonical hashes measured on pre-provenance main 0c91741, including comparison bytes.
+
+The export digests were re-pinned on 17 September 2026 when this fixture stopped
+re-rendering the Markdown: the comparison bytes, which never held rendered text, did not
+move, which is how the re-pin was shown to be the renderer and not the record shape.
+"""
 
 import json
 from dataclasses import replace
@@ -20,11 +25,17 @@ from ase.domain.sec_filing_time import filing_source_date
 from ase.domain.source_dates import resolve_source_date
 from ase.domain.web_research import WebResearchRecord
 
+# A stored version keeps the Markdown it was written with, so these pinned digests hold
+# the rendered text still rather than re-rendering it. Without this, an intended change to
+# the document design would read as a provenance break, which is exactly what it is not.
+PINNED_MARKDOWN = "# Intelligence summary: Ukraine\n\nPinned export body.\n"
+
 
 def records(monkeypatch):
     ids = iter([UUID(int=10), UUID(int=11)])
     monkeypatch.setattr(fixtures, "uuid4", lambda: next(ids))
-    return fixtures.document_records(UUID(int=1))
+    record, version = fixtures.document_records(UUID(int=1))
+    return record, replace(version, markdown=PINNED_MARKDOWN)
 
 
 def comparison(version):
@@ -47,7 +58,7 @@ def test_historical_export_and_comparison_hashes_are_unchanged(monkeypatch):
     record, version = records(monkeypatch)
     assert (
         export_content_digest(record, version)
-        == "ab43e8fbe48ab4b3ffd929d78ef89931889b35d1d1831b68caba04e93ba40641"
+        == "5b2e8575f606fbeb087fb8b3919b6044368fde20248054c16ffd6bbe207abcaf"
     )
     value = comparison(version)
     assert (
@@ -88,7 +99,7 @@ def test_historical_nested_query_trace_digest_survives_new_variant_fields(monkey
     restored = replace(version, research=research_from_dict(payload))
     assert (
         export_content_digest(record, restored)
-        == "c4607ec62bd4ccb7b18798863400362f52bd7f7000ffe8740066e10f6be49757"
+        == "202cc95b723acd6e5b01a1b7bff2939c1975d38c42446b9a811823f5f332b79b"
     )
 
 
@@ -131,7 +142,7 @@ def test_historical_single_country_digest_survives_redundant_plural_scope(monkey
     assert receipt.plan.country_iso == "UA" and receipt.plan.country_isos == ("UA",)
     restored = replace(version, research=receipt)
     # Pinned legacy shape, before the redundant plural field was introduced.
-    original_digest = "3ae9cf30f118faf672afaa1e4537a80b6f607a69a40490ae55751738fb453a5d"
+    original_digest = "35d19b3b48be51c5d7918d7ad80ac7e79ca03778c3ef1ae8919a825ab5b9657c"
     assert export_content_digest(record, restored) == original_digest
     variants = (
         replace(receipt.plan, country_iso="RU", country_isos=("RU",)),

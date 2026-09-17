@@ -5,13 +5,14 @@ team's provider. Historical first-enabled selection is confined to installations
 any assignment. Embeddings are a separate explicit role, never a text assignment.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field, fields
 from typing import Any
 from uuid import UUID
 
 from ase.application.ports.llm import LlmBindingRepository, LlmProfileRepository
 from ase.domain.errors import NoModelAvailable
-from ase.domain.llm import TEXT_ROLES, LlmProfile, LlmRole
+from ase.domain.llm import TEXT_ROLES, LlmConnectionBinding, LlmProfile, LlmRole
 from ase.domain.model_routing import EffectiveModel, ModelRoutingRecord, RoutedModel
 from ase.domain.reasoning import ReasoningEffortPolicy
 
@@ -137,11 +138,19 @@ class ModelRouting:
                 for selected_role, profile in sorted(selected.items())
             ),
         )
+        # The embeddings role is resolved here, with the same read, so a run never
+        # reopens a read snapshot while it is waiting on a provider. It stays out of
+        # `selected`, so no text binding can redirect shared indexing and the routing
+        # provenance still records the text roles only.
+        carried = dict(selected)
+        embeddings = await self._embeddings_from(bindings)
+        if embeddings is not None:
+            carried[LlmRole.EMBEDDINGS] = embeddings
         return RoleProfiles(
             provenance,
             tuple(
                 (key, tuple((item.name, getattr(value, item.name)) for item in fields(value)))
-                for key, value in selected.items()
+                for key, value in carried.items()
             ),
         )
 
@@ -173,7 +182,12 @@ class ModelRouting:
 
     async def embeddings(self) -> LlmProfile | None:
         """Separate global embeddings role; no text binding can redirect shared indexing."""
-        bindings = await self._bindings.list_all() if self._bindings is not None else []
+        return await self._embeddings_from(
+            await self._bindings.list_all() if self._bindings is not None else []
+        )
+
+    async def _embeddings_from(self, bindings: Sequence[LlmConnectionBinding]) -> LlmProfile | None:
+        """The same choice from a binding list already read, so one read serves both."""
         private_only = {
             item.profile_id
             for item in bindings

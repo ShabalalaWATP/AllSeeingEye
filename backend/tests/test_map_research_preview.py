@@ -48,6 +48,8 @@ async def test_preview_retains_exact_area_without_collecting(client, container, 
     assert {task["source_id"] for task in result["tasks"] if task["supported"]} == {
         "research-copernicus-footprints",
         "research-retained-area-feeds",
+        # The packaged registers answer for a drawn area without collecting anything.
+        "research-asset-register",
         "research-usgs-area",
         "research-eonet-area",
         "research-openaq-area",

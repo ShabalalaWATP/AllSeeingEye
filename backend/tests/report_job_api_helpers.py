@@ -11,6 +11,7 @@ from ase.domain.llm import LlmResult
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
+from post_draft_stage_helpers import POST_DRAFT_STAGES
 from section_model_helpers import synthesis_body, topic_body
 
 
@@ -21,22 +22,6 @@ def job_settings(settings, tmp_path):
     return settings.model_copy(
         update={"database_url": f"sqlite+aiosqlite:///{(tmp_path / 'jobs.sqlite').as_posix()}"}
     )
-
-
-POST_DRAFT_STAGES = {
-    "report_analysis": {
-        "sections": [
-            {
-                "heading": "What this means",
-                "text": "The reporting establishes movement and suggests intent.",
-                "evidence": ["E1"],
-            }
-        ],
-        "diagram": None,
-    },
-    "entailment": {"assessments": []},
-    "contradiction_analysis": {"disagreements": []},
-}
 
 
 class JobGateway:
@@ -55,7 +40,7 @@ class JobGateway:
             return LlmResult(json.dumps(POST_DRAFT_STAGES[request.schema_name]), model, 1, 10, 5)
         assert request.schema_name in {"report_topic", "report_judgements", "report_context"}, (
             request.schema_name
-        )
+        )  # An unexpected stage is a test bug, not a provider failure.
         payload = json.loads(request.messages[1].content)
         topic = payload["topic"]
         name = topic["id"] if topic else payload["synthesis_step"]

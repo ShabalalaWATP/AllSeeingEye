@@ -88,11 +88,24 @@ def _close(left: Event, right: Event) -> bool:
     return abs(left.published_at - right.published_at) <= DUPLICATE_WINDOW
 
 
+RECORD_TAG = "research_record"
+
+
+def _record_link(event: Event) -> str:
+    """A public record's link is its dataset endpoint, not its own page.
+
+    One filing index, register query or statistical file publishes many distinct
+    records at one address, so a shared link there is not a republished copy. Those
+    records still fold on an identical content hash or a near-identical headline.
+    """
+    return "" if RECORD_TAG in event.tags else canonical_link(event.url)
+
+
 def _exact_pairs(events: Sequence[Event]) -> list[tuple[str, str, str]]:
     """Declared identity links, which do not need publication proximity."""
     identities: tuple[tuple[Callable[[Event], str], str], ...] = (
         (lambda event: event.content_hash, "identical_content_hash"),
-        (lambda event: canonical_link(event.url), "same_link"),
+        (_record_link, "same_link"),
     )
     pairs: list[tuple[str, str, str]] = []
     for identity, reason in identities:

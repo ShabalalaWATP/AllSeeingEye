@@ -27,6 +27,8 @@ async def test_pause_resume_and_discard_keep_edition_and_job_in_sync(
             "template_id": "intsum",
             "country_iso": "UA",
             "hour_utc": (now.hour + 1) % 24,
+            # Due two hours from now, which only a daily rhythm reaches.
+            "cadence": "daily",
         },
         headers=bearer(token),
     )

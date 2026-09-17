@@ -28,6 +28,8 @@ async def test_edition_history_is_paginated_and_scope_checked(
             "template_id": "intsum",
             "country_iso": "UA",
             "hour_utc": (now.hour + 1) % 24,
+            # Due two hours from now, which only a daily rhythm reaches.
+            "cadence": "daily",
         },
         headers=bearer(token),
     )

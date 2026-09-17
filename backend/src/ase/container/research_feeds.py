@@ -45,9 +45,10 @@ def public_research_feeds(
     ]
     # A short request budget should not be consumed by one entire feed family
     # before another is considered. Unsupported languages consume no requests.
+    # The curated platform sets are two routes, so they interleave like any other family.
     return [
         provider
-        for group in zip_longest(official, outlets, regional, economic, cyber)
+        for group in zip_longest(official, outlets, regional, economic, cyber, social)
         for provider in group
         if provider is not None
     ]

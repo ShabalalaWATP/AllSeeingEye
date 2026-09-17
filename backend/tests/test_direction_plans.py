@@ -193,6 +193,7 @@ async def test_a_report_scoped_by_a_plan_skips_the_direction_call(
     assert created.status_code == 201, created.text
     assert [r.schema_name for r in gateway.requests] == [
         "report",
+        "report_analysis",
         "entailment",
         "claim_proposals",
     ]

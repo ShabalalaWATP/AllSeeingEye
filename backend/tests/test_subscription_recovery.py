@@ -28,6 +28,9 @@ def _input(**changes: object) -> ScheduleInput:
         "country_iso": "UA",
         "timezone": "UTC",
         "local_hour": 6,
+        # These recovery cases are about a daily rhythm, so they state it rather than
+        # inheriting the weekly default.
+        "cadence": "daily",
     }
     data.update(changes)
     return ScheduleInput(**data)  # type: ignore[arg-type]

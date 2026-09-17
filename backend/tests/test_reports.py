@@ -153,7 +153,8 @@ async def test_generate_read_export_and_delete(
     }
     version = payload["version"]
     assert version["attempts"] == 1 and version["model"] == "llama3.1:8b"
-    assert version["prompt_tokens"] == 100 and version["completion_tokens"] == 40
+    # The draft and the analysis pass, each metered; the scripted gateway answers both.
+    assert version["prompt_tokens"] == 200 and version["completion_tokens"] == 80
     assert version["claim_generation"]["status"] == "invalid"
     assert [item["label"] for item in version["evidence"]] == ["E1", "E2"]
     assert version["quality"]["items"] == 2 and version["quality"]["confidence_ceiling"] in (
@@ -163,7 +164,11 @@ async def test_generate_read_export_and_delete(
     )
     assert version["body"]["key_judgements"][0]["probability"] == "highly_likely"
     assert not any(f["rule"] == "citation" for f in version["findings"])
-    assert not any(f["severity"] == "error" for f in version["findings"])
+    # Every fixture item comes from one feed, so the source mix check is the only error
+    # and it is the reason this report needs review.
+    assert [f["rule"] for f in version["findings"] if f["severity"] == "error"] == [
+        "source_sufficiency"
+    ]
     assert "## Executive summary" in version["markdown"]
     assert "## References" in version["markdown"]
     assert "## Evidence annex" not in version["markdown"]

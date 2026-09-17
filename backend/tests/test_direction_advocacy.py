@@ -117,6 +117,7 @@ async def test_ask_runs_direction_then_the_advocate(
         "direction",
         "report",
         "advocacy",
+        "report_analysis",
         "entailment",
         "claim_proposals",
     ]
@@ -145,8 +146,8 @@ async def test_ask_runs_direction_then_the_advocate(
     assert advocacy["target"] == "KJ1" and advocacy["evidence"] == ["E2"]
     assert (advocacy["confidence_before"], advocacy["confidence_after"]) == ("moderate", "low")
     assert any("E7" in f["message"] for f in version["findings"])
-    # Four metered calls: direction, the report, advocacy and the entailment check.
-    assert version["prompt_tokens"] == 250 and version["latency_ms"] == 500.0
+    # Five metered calls: direction, the report, advocacy, the analysis pass and entailment.
+    assert version["prompt_tokens"] == 300 and version["latency_ms"] == 600.0
     markdown = version["markdown"]
     # The published report folds advocacy into alternative explanations; direction and its
     # requirements remain in the structured version asserted above.
@@ -185,6 +186,7 @@ async def test_ask_runs_direction_then_the_advocate(
         "claim_proposals",
         "report:ask",
         "report:ask:advocacy",
+        "report:ask:analysis",
         "report:ask:direction",
         "report:ask:entailment",
     ]
