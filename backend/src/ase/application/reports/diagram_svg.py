@@ -7,7 +7,7 @@ becomes markup, and the drawing cannot say anything the validated data does not.
 
 from __future__ import annotations
 
-from xml.sax.saxutils import escape
+from html import escape
 
 from ase.domain.report_diagrams import DiagramKind, ReportDiagram
 
@@ -37,7 +37,7 @@ def render_diagram_svg(diagram: ReportDiagram) -> str:
 
 
 def _attribute(value: str) -> str:
-    return escape(value, {"'": "&apos;", '"': "&quot;"})
+    return escape(value, quote=True)
 
 
 def _text(

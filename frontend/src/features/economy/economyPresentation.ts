@@ -43,7 +43,8 @@ export type RegionCode = (typeof REGIONS)[number]['id'];
 export function formatEconomicValue(value: number | null, unit: string): string {
   if (value === null) return 'Not available';
   if (/^(current )?us dollars$|^usd$|^us\$$/i.test(unit)) {
-    return new Intl.NumberFormat('en-GB', {
+    // Compact financial labels use $ and K/M/B/T consistently across ICU versions.
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       notation: 'compact',
@@ -51,8 +52,9 @@ export function formatEconomicValue(value: number | null, unit: string): string 
       maximumFractionDigits: 2,
     }).format(value);
   }
-  const number = new Intl.NumberFormat('en-GB', {
-    notation: /people|persons|population/i.test(unit) ? 'compact' : 'standard',
+  const compact = /people|persons|population/i.test(unit);
+  const number = new Intl.NumberFormat(compact ? 'en-US' : 'en-GB', {
+    notation: compact ? 'compact' : 'standard',
     maximumFractionDigits: /per [A-Z]{3}$/i.test(unit) ? 4 : 2,
   }).format(value);
   return /%|percent/i.test(unit) ? `${number}%` : number;

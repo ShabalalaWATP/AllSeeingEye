@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import os
 import shutil
 import subprocess  # nosec B404
 import sys
@@ -19,6 +18,9 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import ReportDocument
 
 MAX_SECONDS = 60.0
+CREATE_FLAGS = 0
+if sys.platform == "win32":
+    CREATE_FLAGS = subprocess.CREATE_NO_WINDOW
 
 
 async def _settle[T](task: asyncio.Task[T]) -> tuple[T, bool]:
@@ -43,7 +45,7 @@ async def _spawn(directory: Path) -> asyncio.subprocess.Process:
         stdin=asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL,
-        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        creationflags=CREATE_FLAGS,
     )
 
 

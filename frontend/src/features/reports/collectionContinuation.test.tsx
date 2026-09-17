@@ -58,6 +58,8 @@ it('shows the applied continuation separately from a denied model stop with exac
   expect(review.getByText(/Applied constraint: An explicit operator search/)).toBeVisible();
   expect(review.getByText(/not a guarantee of completeness or truth/)).toBeVisible();
   await user.click(review.getByText('Recorded review excerpts'));
+  // This assertion checks escaped text; the next assertion rejects executable script nodes.
+  // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
   expect(review.getByText('<script>untrusted evidence</script>')).toBeVisible();
   expect(container.querySelector('script')).toBeNull();
   expect(review.getByText(/1 of 1 first-pass records/)).toBeVisible();

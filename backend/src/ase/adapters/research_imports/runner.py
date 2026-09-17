@@ -28,6 +28,9 @@ MAX_OUTPUT_BYTES = 1024 * 1024
 MAX_MEDIA_OUTPUT_BYTES = 4 * 1024 * 1024
 MAX_SECONDS = 30.0
 MAX_CONCURRENT = 2
+CREATE_FLAGS = 0
+if sys.platform == "win32":
+    CREATE_FLAGS = subprocess.CREATE_NO_WINDOW
 
 
 async def _spawn(directory: Path) -> asyncio.subprocess.Process:
@@ -51,7 +54,7 @@ async def _spawn(directory: Path) -> asyncio.subprocess.Process:
         stdin=asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.DEVNULL,
         stderr=asyncio.subprocess.DEVNULL,
-        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        creationflags=CREATE_FLAGS,
         start_new_session=os.name == "posix",
     )
 

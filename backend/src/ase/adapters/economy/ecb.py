@@ -6,6 +6,9 @@ XML parsing uses defusedxml; stdlib Element and ParseError are type/exception na
 import math
 from dataclasses import replace
 from datetime import date, datetime, timedelta
+
+# Types/exceptions only; all input parsing below uses defusedxml with DTDs forbidden.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml import ElementTree

@@ -21,7 +21,7 @@ it.each([
       }),
     );
     const { user } = renderApp('/research?question=What%20has%20changed%3F', 'user');
-    await user.click(await screen.findByRole('radio', { name: new RegExp(`^${label}`) }));
+    await user.click(await screen.findByRole('radio', { name: (name) => name.startsWith(label) }));
     expect(screen.getByText(/Lengths are indicative/)).toBeVisible();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Start research' })).toBeEnabled(),

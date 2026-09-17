@@ -24,6 +24,8 @@ COPY frontend/ ./
 RUN pnpm build
 
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+# Refresh inherited Alpine packages while retaining the reviewed upstream base.
+RUN apk upgrade --no-cache
 COPY --from=caddy-build /out/caddy /usr/bin/caddy
 # COPY replaces the upstream inode, including the capability needed on low ports.
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy

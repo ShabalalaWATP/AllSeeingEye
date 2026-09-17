@@ -18,6 +18,10 @@ To refresh the lockfiles, run `go mod tidy` with the pinned Go toolchain after
 editing the intended versions. Review transitive changes, then build from the
 repository root:
 
+Keep `github.com/google/cel-go` at `v0.28.1` while using Caddy `v2.11.4`:
+`v0.29.0` changes the interpreter call interface and fails to compile Caddy's
+CEL matcher. Upgrade it with a compatible Caddy release and a successful build.
+
 ```sh
 docker build --pull --no-cache -f frontend/Dockerfile -t ase-web:check .
 docker run --rm ase-web:check caddy version

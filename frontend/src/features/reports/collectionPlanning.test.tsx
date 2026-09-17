@@ -99,6 +99,8 @@ it('records model planning separately from execution and preserves operator vers
   expect(screen.getByText(/Model-proposed task terms, not verified evidence/)).toBeVisible();
   expect(screen.getByText(/Operator candidate.*Operator-supplied/)).toBeVisible();
   expect(container.querySelector('script')).toBeNull();
+  // This is an escaped-text assertion, paired above with rejection of script nodes.
+  // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
   expect(recorded.getByText('<script>Alternative company</script>')).toBeVisible();
 });
 it('shows rejected proposals without turning them into accepted tasks', () => {

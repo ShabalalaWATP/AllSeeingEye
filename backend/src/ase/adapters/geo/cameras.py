@@ -9,6 +9,9 @@ import math
 import re
 from typing import Any
 from urllib.parse import urlsplit
+
+# Exception only; untrusted XML is parsed by defusedxml.fromstring below.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import ParseError  # nosec B405
 
 from defusedxml.common import DefusedXmlException
