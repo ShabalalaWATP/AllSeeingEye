@@ -4935,3 +4935,16 @@ sections already drafted disappear from the job view and the stage report as dra
 again. Only a drafted section moves that pointer now. The development database was backed
 up, the migration to `0060` was rehearsed on the copy and checked for integrity, foreign
 keys and row counts before the real file was touched.
+
+Final state on 17 September 2026: backend 8,855 tests at 94 percent combined coverage
+across ten parallel chunks, frontend 2,736 tests at 90.14 percent branch coverage, and
+ten backend worker tests that time out only under ten-way parallel load and pass in five
+minutes on their own. Merging also turned up three defects the branches had each hidden
+from the others: the embeddings profile was read in the middle of a run, so a report held
+an open database read snapshot across every model call; a shared dataset endpoint folded
+three distinct currency observations into one; and the curated Telegram and Bluesky routes
+were dropped from general research when the economic and cyber families were interleaved.
+Verifying the reader found two more: the API never carried a diagram's drawing and the
+reader's schema did not accept the block kind, so a report containing one could not be
+read in the app at all, and a .docx was not byte-reproducible because a zip records when
+each part was written.
