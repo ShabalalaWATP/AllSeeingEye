@@ -30,7 +30,10 @@ _ADDED_DEFAULTS: tuple[tuple[type, tuple[tuple[str, Any], ...]], ...] = (
     ),
     (ResearchTask, (("query_variant", None),)),
     (CollectionAttempt, (("query_variant", None),)),
-    (ResearchReceipt, (("web_research", None), ("original_followup", ()))),
+    (
+        ResearchReceipt,
+        (("web_research", None), ("original_followup", ()), ("area_context", None)),
+    ),
     (ResearchPlan, (("country_isos", ()), ("research_web_search", False))),
     (ReportBody, (("diagrams", ()),)),
     (

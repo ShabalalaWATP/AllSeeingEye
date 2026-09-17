@@ -6,6 +6,7 @@ from ase.adapters.feeds.bluesky import SPEC as BLUESKY_SPEC
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.research.asset_register import AssetRegisterProvider
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
@@ -164,6 +165,24 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             "Area collection preserves original feed identities and grades; no new source trust.",
             RetainedAreaFeedProvider.spatial_scope,
             RetainedAreaFeedProvider.temporal_scope,
+            role="aggregator",
+        )
+    )
+    specs.append(
+        _spec(
+            AssetRegisterProvider.id,
+            AssetRegisterProvider.name,
+            Category.ECONOMIC,
+            "Packaged public map registers. A dataset's record of a site is not evidence of "
+            "that site's current state, ownership or operation.",
+            AssetRegisterProvider.spatial_scope,
+            AssetRegisterProvider.temporal_scope,
+            "Read only when the question, the operator terms or the intelligence requirements "
+            "name an asset class, or when an area was drawn. No network request is made and "
+            "no place name is geocoded.",
+            "OpenStreetMap contributors (ODbL), Wikidata, World Resources Institute; each "
+            "register keeps its own attribution and snapshot date.",
+            organisation="",
             role="aggregator",
         )
     )

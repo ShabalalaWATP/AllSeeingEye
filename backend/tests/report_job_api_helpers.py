@@ -24,6 +24,16 @@ def job_settings(settings, tmp_path):
 
 
 POST_DRAFT_REVIEWS = {
+    "report_analysis": {
+        "sections": [
+            {
+                "heading": "What this means",
+                "text": "The reporting establishes movement and suggests intent.",
+                "evidence": ["E1"],
+            }
+        ],
+        "diagram": None,
+    },
     "entailment": {"assessments": []},
     "contradiction_analysis": {"disagreements": []},
 }

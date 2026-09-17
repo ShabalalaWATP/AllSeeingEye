@@ -23,11 +23,24 @@ from report_helpers import filled_store, good_body
 from test_automatic_claim_storage import pending_for
 
 
+class Sections:
+    """The analysis pass shares the section store, so the stub answers it in memory."""
+
+    def __init__(self):
+        self.saved = {}
+
+    async def load(self, packet_digest, section_id):
+        return self.saved.get((packet_digest, section_id))
+
+    async def save(self, packet_digest, section_id, checkpoint):
+        self.saved[(packet_digest, section_id)] = checkpoint
+
+
 class Checkpoints:
     def __init__(self):
         self.value = None
         self.writes = 0
-        self.section_checkpoints = object()
+        self.section_checkpoints = Sections()
 
     async def load_collection(self):
         return collection_from_dict(self.value) if self.value is not None else None
@@ -72,8 +85,9 @@ async def test_initial_packet_saved_before_draft_and_resume_does_not_recollect(c
             assert version.evidence == packets[0]
     assert len(packets[0]) > 0 and packets[0] == packets[1]
     assert checkpoints.writes == 1
-    # The resumed run recollects nothing; each run still runs the entailment pass.
-    assert gateway.calls == ["direction", "entailment", "entailment"]
+    # The resumed run recollects nothing and reuses the checkpointed analysis of an
+    # identical draft; the entailment review reads the finished text each time.
+    assert gateway.calls == ["direction", "report_analysis", "entailment", "entailment"]
     assert (await checkpoints.load_collection()).totals.prompt_tokens == 5
 
 

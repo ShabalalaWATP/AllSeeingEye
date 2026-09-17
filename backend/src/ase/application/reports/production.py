@@ -21,6 +21,7 @@ from ase.application.ports.research import (
     ResearchCollection,
     SourceOperationCheckpoints,
 )
+from ase.application.reports.area_context import AreaContextService, attach_area_context
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.challenge import run_challenge
 from ase.application.reports.challenge_expansion import expand_and_review
@@ -82,6 +83,7 @@ class Producer:
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
         reranker: EvidenceReranker | None = None,
+        area_context: AreaContextService | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -97,6 +99,7 @@ class Producer:
         self._projector = projector
         self._ai_usage = ai_usage
         self._reranker = reranker
+        self._area_context = area_context
 
     async def produce(
         self,
@@ -208,6 +211,9 @@ class Producer:
                 )
                 receipt = replace(receipt, original_followup=originals)
             original_context = await self._original_followthrough.context(receipt.original_followup)
+        receipt = await attach_area_context(
+            self._area_context, job, query, selection, receipt, self._store
+        )
         if checkpoints is not None and snapshot is None:
             snapshot = ProductionSnapshot(
                 selection,
@@ -276,6 +282,7 @@ class Producer:
             )
             return draft
 
+        first_selection = selection
         draft = await make_draft(selection)
         body = draft.body or ReportBody()
         advocacy: DevilsAdvocacy | None = None
@@ -304,12 +311,7 @@ class Producer:
                 redraft=make_draft,
                 progress=progress,
             )
-            draft, selection, body, challenge = (
-                outcome.draft,
-                outcome.selection,
-                outcome.body,
-                outcome.challenge,
-            )
+            draft, selection, body, challenge = outcome.parts
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
         elif query is not None and query.mode.requires_challenge and checkpoints is not None:
             body, challenge = await review_frozen(
@@ -344,27 +346,20 @@ class Producer:
                 for finding in original_findings:
                     if finding in totals.findings:
                         totals.findings.remove(finding)
-            draft, selection, body, challenge = (
-                outcome.draft,
-                outcome.selection,
-                outcome.body,
-                outcome.challenge,
-            )
+            draft, selection, body, challenge = outcome.parts
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
         elif job.request.devils_advocacy and body.key_judgements and draft.body is not None:
             await reached(progress, ResearchStage.CHALLENGING)
             body, advocacy = await advocate_for_job(
                 job, profile_for, body, selection.items, totals, gateway, self._cipher
             )
+        # A challenge can change what the reader will see, so the containment split,
+        # which is a statement about exactly that evidence, is computed again.
+        receipt = await attach_area_context(
+            self._area_context, job, query, selection, receipt, self._store, first_selection
+        )
         body = await analyse_body(
-            job,
-            gateway,
-            self._cipher,
-            body,
-            selection,
-            direction,
-            totals,
-            checkpoints,
+            job, gateway, self._cipher, body, selection, direction, totals, checkpoints
         )
         # The reviews read the finished text, so they run after the analysis pass.
         # A failed draft has no judgements, so these passes return without a model call.

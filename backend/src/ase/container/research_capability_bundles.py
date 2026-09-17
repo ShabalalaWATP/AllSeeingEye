@@ -136,6 +136,7 @@ def capability_bundles(capabilities: tuple[SourceCapability, ...]) -> tuple[Sour
     economic = families("economy_news", "macro")
     corporate = families("corporate", "sanctions", "procurement", "development")
     area = ("research-retained-area-feeds",)
+    registers = families("infrastructure")
     entries = (
         ("NEWS", "News discovery", news, ("original_passages", "additional_news_feeds")),
         ("OFFICIAL", "Official publications", official, ("official_routes", "original_passages")),
@@ -182,7 +183,7 @@ def capability_bundles(capabilities: tuple[SourceCapability, ...]) -> tuple[Sour
         (
             "AREA",
             "Area observations",
-            area + families("hazard", "environment", "space", "development"),
+            area + registers + families("hazard", "environment", "space", "development"),
             ("area_history",),
         ),
     )

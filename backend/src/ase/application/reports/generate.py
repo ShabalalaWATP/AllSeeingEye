@@ -35,6 +35,7 @@ from ase.application.ports.reports import ReportRepository
 from ase.application.ports.research import ResearchCollection
 from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
+from ase.application.reports.area_context import AreaContextService
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.evidence_rerank import EvidenceReranker
@@ -97,6 +98,7 @@ class GenerateReportUseCase:
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
         embeddings: EmbeddingGateway | None = None,
+        area_context: AreaContextService | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         routing = ModelRouting(llm_profiles, llm_bindings)
@@ -116,6 +118,7 @@ class GenerateReportUseCase:
             else None,
             projector=projector,
             ai_usage=ai_usage,
+            area_context=area_context,
             # Without an embeddings gateway the pipeline keeps its deterministic order.
             reranker=(
                 EvidenceReranker(

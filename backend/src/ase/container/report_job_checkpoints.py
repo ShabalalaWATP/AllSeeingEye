@@ -336,11 +336,12 @@ class _Sections:
             if previous and previous.get("status") == "completed" and previous != value:
                 raise JobInterrupted()
             sections[key] = value
-            payload["current_packet"] = packet_digest
-            payload["stage"] = (
-                "summarising"
-                if (checkpoint.payload or {}).get("kind") == "synthesis"
-                else "drafting"
-            )
+            kind = (checkpoint.payload or {}).get("kind")
+            # Post-draft stages share this store under their own digest. Only a drafted
+            # section moves the packet pointer, or progress would follow the later stage
+            # and the reader would lose the sections already written.
+            if kind in {"topic", "synthesis"}:
+                payload["current_packet"] = packet_digest
+                payload["stage"] = "summarising" if kind == "synthesis" else "drafting"
 
         await self.parent.mutate(save)
