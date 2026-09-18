@@ -1,8 +1,6 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-
-import { renderApp } from '@/test/render';
 
 import { bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
 import { LlmProfileForm } from './LlmProfileForm';
@@ -64,7 +62,7 @@ describe('native Amazon Bedrock connection', () => {
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'bedrock',
-        name: 'Amazon Bedrock',
+        name: 'openai.gpt-oss-120b-1:0',
         base_url: 'https://bedrock-runtime.us-east-1.amazonaws.com',
         model: 'openai.gpt-oss-120b-1:0',
         api_key: 'synthetic-bedrock-key',
@@ -79,8 +77,8 @@ describe('native Amazon Bedrock connection', () => {
     await user.type(screen.getByLabelText('Bedrock API key'), 'synthetic-other-key');
     await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
     expect(screen.getByLabelText('API key')).toHaveValue('');
-    expect(screen.getByLabelText('Model ID')).toHaveValue('gpt-5.6-luna');
-    expect(screen.getByLabelText('Reasoning effort')).toHaveValue('max');
+    expect(screen.getByLabelText('Model ID')).toHaveValue('');
+    expect(screen.getByLabelText('Reasoning effort')).toHaveValue('');
   });
 
   it('recognises saved Bedrock drafts, preserves their key only at the same endpoint and never offers stale model discovery', async () => {
@@ -144,28 +142,6 @@ describe('native Amazon Bedrock connection', () => {
     expect(screen.getByLabelText('Temperature')).toHaveValue(1);
     await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
     expect(screen.getByLabelText('Use this connection for embeddings only')).not.toBeChecked();
-  });
-
-  it('supports explicit test and apply without making a catalogue request', async () => {
-    const state = installConnections([bedrock()]);
-    const { user } = renderApp('/admin/llm', 'admin');
-    await user.click(await screen.findByText('Bedrock research'));
-    const row = screen.getByText('Bedrock research').closest('li')!;
-    expect(within(row).queryByRole('button', { name: /Load models/ })).not.toBeInTheDocument();
-    expect(
-      within(row).getByText(/Use a model or inference profile ID from the AWS console/),
-    ).toBeVisible();
-    await user.click(within(row).getByRole('button', { name: 'Test Bedrock research' }));
-    await within(row).findByText(/Connection test passed/);
-    await user.click(within(row).getByRole('button', { name: 'Review and apply' }));
-    expect(screen.getByRole('group', { name: 'Confirm connection switch' })).toHaveTextContent(
-      'https://bedrock-runtime.eu-west-2.amazonaws.com',
-    );
-    await user.click(screen.getByRole('button', { name: 'Confirm switch' }));
-    await screen.findByText('Global connection switched to openai.gpt-oss-120b-1:0.');
-    expect(state.tests).toBe(1);
-    expect(state.models).toBe(0);
-    expect(state.applies[0]?.profile_id).toBe(bedrock().id);
   });
 
   it('accepts only canonical regional endpoint construction', () => {

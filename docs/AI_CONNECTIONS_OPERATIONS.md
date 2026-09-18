@@ -3,6 +3,49 @@
 Administrator connection controls are implemented. A real account connection
 still requires entering its key and testing it through the app.
 
+## Model workspace
+
+Open **Administration > AI connections**, then **Add model**. The popup walks
+through name, API key, account model, reasoning, test and audience. OpenAI's
+endpoint is supplied automatically. Provider details in the first step also
+allow Bedrock or a custom compatible endpoint. Account discovery runs when the
+model step opens, retries transient failures up to three times, and supports
+search, refresh and an exact-ID fallback.
+
+**Test connection** saves an inactive draft before making the compatibility
+request. Only **Save and close** applies assignments. A failed save retains the
+entered key for correction; a saved draft retains its encrypted key and can be
+finished later. Closing after a test leaves that draft in its model slot.
+
+Up to five text-model connections, including drafts, appear under **Live models**.
+Embedding-only connections are managed separately in advanced settings. Cards
+and the matrix share the same saved assignments. Moving a user or team to another
+model removes that explicit assignment from the previous card. Audience selection
+supports up to 100 targets per save.
+
+The matrix provides these daily UTC presets:
+
+| Preset | Model calls | Tokens |
+| --- | ---: | ---: |
+| Light | 50 | 100,000 |
+| Standard | 250 | 500,000 |
+| Intensive | 1,000 | 2,000,000 |
+| Power | 2,500 | 5,000,000 |
+
+A report can make several model calls, so a call limit is not a report count
+or a monetary spending limit. Scheduled report text, native web-search and
+evidence-reranking embedding calls use the same allowance ledger. Shared
+background work consumes the site allowance and any separate system allowance.
+**Blocked** sets both daily limits to zero. **Inherit** removes that target's
+daily policy, leaving other applicable limits in force. Site and team caps are
+shared; a user cap covers their personal and team requests. Existing weekly and
+monthly caps still apply. Resolve active or future temporary overrides in
+advanced settings before changing the underlying daily preset.
+
+Model and allowance edits in one row save atomically. If another administrator
+changed the same records, use **Refresh workspace**, review the current values
+and retry. Advanced settings cannot close while a write is pending.
+
 ## OpenAI GPT-5.6 Luna
 
 Sign in as an administrator and open **Administration > AI connections**.
@@ -13,11 +56,11 @@ Create an OpenAI connection using:
 | API base URL | `https://api.openai.com/v1` |
 | Model | `gpt-5.6-luna` |
 | Reasoning | Max |
-| Completion budget | 32,000 tokens, including reasoning |
+| Completion budget | New popup connections use 16,000 tokens; existing saved budgets are preserved |
 | API key | Enter directly into the password field in the app |
 
-The local live acceptance found that Max report drafting could consume all
-16,000 tokens on reasoning without producing an answer. The 32,000-token setting
+Earlier local live acceptance found that Max report drafting could consume all
+16,000 tokens on reasoning without producing an answer. The tested 32,000-token setting
 uses the app's existing upper limit; it increases the per-request token allowance
 and possible cost, not the reasoning level. It does not guarantee completion.
 OpenAI recommends initially reserving at least 25,000 tokens for reasoning plus
@@ -31,8 +74,7 @@ server encryption configuration. It is never returned by the API; an existing
 connection shows only a short hint. Do not put the key in a model URL, source
 file, evaluation profile JSON or chat message.
 
-Save the replacement configuration, load the provider's model list if needed,
-and test the connection. The test sends a small synthetic structured-output
+Select the account model in the popup and test the connection. The test sends a small synthetic structured-output
 request with the selected model and reasoning setting, not saved research.
 It can consume API tokens. A successful test establishes connectivity and a
 small output contract, not the quality of a full research assessment.
@@ -76,17 +118,17 @@ were performed. Related supported questions can share a cited assessment section
 Unsupported questions are recorded as named intelligence gaps, with missing
 evidence and future collection recommendations kept separate from completed work.
 
-Apply the tested connection to the global default or a selected team. Global
-applies to personal work and teams that inherit it, including administrators'
-work. An explicit team override stays in place when the global default changes.
+Apply the tested connection globally, to selected teams or to selected users.
+Global applies to personal work and teams that inherit it, including
+administrators' work. Explicit team and personal overrides stay in place when
+the global default changes. A personal model override does not affect team work.
 In-flight research keeps the configuration with which it started.
 
-Set the global default first. To return a team to it, choose the team's inheritance
-action and confirm. Resetting a team does not change other teams' overrides.
-Choose **Use for another scope** on an active connection to apply the same saved
-configuration to another team or the global default. This does not require
-re-entering its key or remove its existing assignments. A current successful test
-and explicit scope confirmation are still required.
+Set the global default first. To return a team or user to it, select **Use default**
+in that matrix row and save. Other overrides stay unchanged. Use **Manage access**
+on an assigned card to reach the matrix. A tested unassigned card offers
+**Assign model**, which resumes directly at audience selection without requiring
+the key or another paid test.
 
 ## Amazon Bedrock
 
@@ -120,7 +162,7 @@ the identifier, model access and model-specific token budget during the test.
 The configured completion budget applies to every native text stage, including
 provider reasoning. Larger budgets can increase inference cost.
 
-Save, **Test connection**, then review and confirm the global or team assignment.
+Choose **Test connection**, then review the audience and **Save and close**.
 The test is a small billable structured-output request. It establishes that the
 saved connection can answer that request, not that every research task will
 succeed. Changing region or provider clears any typed key; a replacement needs
@@ -164,6 +206,11 @@ continues until the first tested global replacement is applied. Until then,
 enabled legacy text profiles are protected from editing and deletion. New text
 profiles are saved as inactive drafts. An embeddings-only profile can still be
 enabled separately when saved.
+
+The five-model workspace adds no schema migration. If an old installation has
+five enabled partial-role profiles and no explicit global binding, it requires
+a separate migration plan before adding a complete default model. Testing alone
+does not add missing roles, and the matrix excludes incomplete configurations.
 
 Downgrading `0017` is refused while connection assignments or explicit reasoning
 settings exist, rather than silently discarding the selected routing policy.

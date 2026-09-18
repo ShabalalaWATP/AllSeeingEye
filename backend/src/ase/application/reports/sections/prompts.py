@@ -14,7 +14,12 @@ from ase.application.reports.prompts import (
 )
 from ase.application.reports.sections.planning import Topic, canonical_json
 from ase.application.reports.sections.quality import RequirementCoverage
-from ase.application.reports.sections.synthesis_contracts import JUDGEMENTS, PARTS
+from ase.application.reports.sections.synthesis_contracts import (
+    ALL_PARTS,
+    ALTERNATIVES,
+    CONTEXT_PARTS,
+    JUDGEMENTS,
+)
 from ase.application.reports.sections.tier_limits import limits_for
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
@@ -73,12 +78,41 @@ class PromptContext:
         depth = depth_for(self.header.scope.get("research_mode"))
         requirement_label = "requirements" if self.requirements else "EEIs"
         requirement_singular = "requirement" if self.requirements else "EEI"
-        if depth is not None:
+        if depth is not None and synthesis_step not in CONTEXT_PARTS:
             presentation += "\n" + depth.guidance(
                 share=None if synthesis else len(selected) / max(1, len(self.evidence))
             )
-        if synthesis:
-            if synthesis_step not in PARTS:
+        if synthesis and synthesis_step in CONTEXT_PARTS:
+            limits = limits_for(self.header.scope.get("research_mode"))
+            task = (
+                "Return ONLY alternative_hypotheses and indicators_and_warning. "
+                f"Use at most {limits.alternatives} alternatives and three warning changes. "
+                "Empty lists are appropriate when the evidence cannot support alternatives. "
+                "Each alternative and explanation must stay below 400 characters. "
+                "Do not create judgements, assumptions, gaps or collection recommendations. "
+                "Identify only evidence-supported alternatives to the accepted judgements; "
+                "do not re-evaluate the whole report or invent events to fill the schema."
+                if synthesis_step == ALTERNATIVES
+                else "Return ONLY gaps, collection_recommendations and sourcing_statement. "
+                "Accepted topic gaps are retained by the application. Add only distinct "
+                "missing requirements, using exact supplied requirement IDs; use an empty "
+                "gaps list when existing gaps already cover them. Keep each gap below 400 "
+                "characters and use at most four short, concrete collection actions. "
+                "The sourcing statement is one cautious sentence. Do not create judgements, "
+                "assumptions, alternatives, warning or further analysis."
+            )
+            system = (
+                PROVENANCE
+                + presentation
+                + "\nThis is a small completion step. The accepted report text and judgements "
+                "remain unchanged and are supplied as generated context, not evidence. "
+                "Do not rewrite accepted sections or judgements. "
+                "The requirement coverage manifest is a structural draft aid, not verification. "
+                "Only the fields named below belong in this response; the complete report's "
+                "word target does not apply. Return concise structured fields directly. " + task
+            )
+        elif synthesis:
+            if synthesis_step not in ALL_PARTS:
                 raise ValueError("Choose a bounded final assessment step")
             limits = limits_for(self.header.scope.get("research_mode"))
             task = (

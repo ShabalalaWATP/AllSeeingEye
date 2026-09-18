@@ -39,6 +39,9 @@ LONG_THINKING_SCHEMAS = frozenset(
         "report_judgements",
         "report_context",
         "conflict_screening",
+        "report_alternatives",
+        "report_collection",
+        "report_analysis",
     }
 )
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024

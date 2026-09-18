@@ -33,6 +33,7 @@ export function ReportJobSections({ job }: { job: ReportJob }) {
                   : section.status === 'running' && !jobRunning(job)
                     ? 'Unfinished'
                     : labels[section.status]}
+                {section.status === 'incomplete' && section.error && <> · {section.error}</>}
               </small>
             </span>
             <span
@@ -58,13 +59,22 @@ export function ReportJobSections({ job }: { job: ReportJob }) {
                 <p>{section.assessment}</p>
               </div>
             )}
+            {(section.gaps?.length ?? 0) > 0 && (
+              <div>
+                <h3>Evidence gaps</h3>
+                {section.gaps?.map((text, item) => (
+                  <p key={item}>{text}</p>
+                ))}
+              </div>
+            )}
             {(section.citations?.length ?? 0) > 0 && (
               <p className="job-citations">Evidence labels: {section.citations?.join(' · ')}</p>
             )}
             {section.error && <p className="job-section-note">{section.error}</p>}
-            {!section.reporting?.length && !section.assessment && !section.error && (
-              <p>This section is still being prepared.</p>
-            )}
+            {!section.reporting?.length &&
+              !section.assessment &&
+              !section.gaps?.length &&
+              !section.error && <p>This section is still being prepared.</p>}
           </div>
         </details>
       ))}

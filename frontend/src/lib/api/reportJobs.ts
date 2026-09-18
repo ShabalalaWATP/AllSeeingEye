@@ -32,6 +32,7 @@ export const reportJobSchema: z.ZodType<ReportJob> = z.object({
       status: z.enum(['running', 'completed', 'split', 'incomplete']),
       reporting: z.array(z.string()).default([]),
       assessment: z.string().nullable(),
+      gaps: z.array(z.string()).default([]),
       citations: z.array(z.string()).default([]),
       error: z.string().nullable(),
     }),

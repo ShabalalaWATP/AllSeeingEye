@@ -37,6 +37,7 @@ class ReportJobSectionOut(BaseModel):
     status: Literal["running", "completed", "split", "incomplete"]
     reporting: list[str] = Field(default_factory=list)
     assessment: str | None = None
+    gaps: list[str] = Field(default_factory=list)
     citations: list[str] = Field(default_factory=list)
     error: str | None = None
 

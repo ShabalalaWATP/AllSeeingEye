@@ -5065,3 +5065,150 @@ report scope, and restoring a job compares its stored scope with the scope built
 from the request; a job frozen before the key existed no longer matched, so no earlier job
 could resume. The comparison now leaves derived keys out of both sides, with a test that
 freezes a job, removes the key and restores it.
+
+### 17 September 2026: make AI connections recoverable and clearer
+
+The new-connection form reused an existing connection name, causing a database
+uniqueness error before the provider test could run. Create and rename operations
+now return a clear conflict message instead of an unexpected server error. API
+regressions reproduce both failures and check that correcting the name succeeds
+without changing the active connection.
+
+The administrator workflow now presents provider, model test and audience as
+three steps. Names follow the selected model unless customised, credentials stay
+available for retry after a failed save, and save failures are distinguished from
+provider-test failures. A model change resets reasoning to the provider default.
+Existing overrides are collapsed when idle and kept outside the setup view.
+Work is isolated in `codex/ai-connection-journey` to preserve concurrent edits.
+
+Validation passed: 70 distinct backend and 49 frontend tests, production frontend
+build, type checks, focused lint/formatting and Bandit. Independent review identified
+a focus loss during model discovery and a missing exception-boundary test; both
+were addressed. Live OpenAI discovery returned 136 models, and `gpt-5.6-sol` passed
+the Max reasoning probe. Luna remains the global default. No assignments changed.
+Authenticated visual acceptance and full frontend coverage were completed during
+the subsequent multi-model redesign below.
+
+### 17 September 2026: replace AI setup with a multi-model workspace
+
+Replaced the inline journey with a focused six-step popup. Administrators name
+the connection, provide credentials, discover their account models, choose a
+reasoning level, test compatibility and choose the audience. Discovery retries
+transient failures at most three times and offers an exact-ID fallback. Failed
+saves retain entered credentials; saved drafts retain their encrypted key and
+can resume after a test or assignment failure.
+
+The page now shows up to five research models as horizontal cards above a
+searchable team/user matrix. Both views use the same server snapshot. Model and
+daily allowance changes commit together, with tested-configuration proofs,
+revision checks and a final administrator-session check. Selecting a new model
+for an audience replaces its old assignment. User model overrides apply to
+personal research; team research follows the team or global connection.
+
+Four daily UTC presets range from 50 calls/100,000 tokens to 2,500 calls/5,000,000
+tokens. Inheritance and blocking remain explicit. Existing weekly/monthly limits
+are retained; active or future temporary overrides must be resolved before a
+daily preset can change. The five-profile cap also covers drafts and concurrent
+creation. Embedding-only profiles stay outside that cap and the main setup flow.
+
+Authenticated browser inspection verified the model cards, modal steps, audience
+selection and matrix at desktop width, and the scrolling popup at 390px width.
+Automatic discovery in the new popup loaded 136 models from the configured
+OpenAI account, including Luna and Sol, using the saved server-side credential.
+The existing Luna default and all real assignments were preserved. Backend
+validation passed 152 distinct focused tests, including 44 new tests, plus mypy,
+Ruff, import contracts and Bandit. The full frontend run passed 2,780 tests across
+523 files (one existing test skipped), with statements 95.05%, branches 90.15%,
+functions 93.13% and lines 96.43%. TypeScript, ESLint, production build, changed-file
+formatting, file-length and whitespace checks passed. The staged secret scan
+found no leaks. Retired inline-form components were removed, and a regression
+test protects manual model entry from losing focus when discovery completes.
+
+The final quota review found and repaired a pre-existing gap in queued reports
+and subscriptions: evidence-reranking embeddings bypassed the allowance ledger
+when the worker supplied an already-metered text gateway. Embedding accounting
+is now wired separately, preserving actor/team attribution and one charge per
+text call. Regression tests cover refusal before a provider call when blocked,
+exact text-plus-embedding totals and attribution to the subscription owner.
+
+### 17 September 2026: recover rejected report sections and tighten collection
+
+Inspection of a paused local report found six confirmed completed model calls,
+one accepted section and one rejected section, with substantial allowance left.
+Its expired worker lease had replaced the known section failure with a generic
+interruption reason. The original reason for the missed terminal update was not
+established. Terminal pause/failure now retains the reason only while the same
+worker token and revision own the running row. Normal work and publication still
+require an unexpired lease. Expired recovery recognises only unambiguous settled
+section failures; unknown paid outcomes remain conservative and do not auto-run.
+
+A new topic response that fails validation gets one metered correction attempt.
+An explicit resume retries only the unfinished topic, preserving accepted sections,
+the frozen evidence and all lifetime limits. Provider failures and uncertain calls
+do not enter that automatic repair. The progress view now accepts all six valid
+reporting items, exposes incomplete-section errors while collapsed and labels
+accepted evidence gaps separately rather than making gap-only sections look empty.
+
+The same investigation found unrelated country observations in the frozen packet
+and two passes spending the allowance on the same first three connectors. New
+general questions with a clear subject and short named locality now require both
+in the source text. This deliberately narrow lexical rule is not geocoding or a
+semantic relevance model; country-wide, language-only, generic news, private-input
+and area workflows retain their existing rules. Independent review caught and
+regression-tested generic-news, country-abbreviation and output-language false
+positives. Revised collection now tries unattempted admitted sources first without
+expanding its operation or time budgets or adding excluded sources.
+
+Focused backend suites cover worker/storage recovery, subscription reconciliation,
+section correction/projection, evidence scope, collection allocation and durable
+source budgets. Frontend report progress/API tests passed (27), as did the production
+build, full backend mypy, focused Ruff/formatting, frontend type/lint checks,
+configured Bandit, import contracts, file-length and whitespace checks. Coverage
+was not remeasured for this repair. The operations guide and active plan record
+the remaining expensive heartbeat and undated infrastructure-context limitations.
+
+### 17 September 2026: bound final synthesis and recover confirmed context exhaustion
+
+The local report resumed with the first repair and retained four accepted topic
+sections plus its accepted judgements. A subsequent, separate failure was then
+observed: the combined final-context request consumed its 32,000-token output and
+reasoning allowance. The lifetime job budget still had room. This establishes two
+distinct failures, a rejected topic and then an exhausted final-context request.
+
+New final synthesis uses three tasks: judgements, alternatives and warning, and
+gaps and collection. The latter two have separate schemas, checkpoint identities
+and 16,000-token ceilings, capped further by the frozen model profile. Their
+prompts omit the whole report's length target and ask only for their own fields.
+Evidence provenance, the structural coverage warning, model choice and reasoning
+effort are preserved. Accepted old synthesis remains reusable. A confirmed
+exhausted legacy context may resume into these children only when all provider
+outcomes are known and both new reservations fit its unchanged lifetime limits.
+Unknown calls, opted-in stage plans and exhausted children are not admitted by
+this exception. No paid-call history, reservations or frozen evidence is reset.
+
+Progress presents the two child sections rather than their compatibility parent.
+Review also repaired old display limits that rejected valid Advanced reports
+with four alternatives or eight judgements. Focused backend validation passed
+228 combined section, synthesis, provenance, collection-manifest, depth, reasoning
+and resume tests; a separate 96-test resume/projection/control suite and 17 job,
+subscription and embedding integration cases passed. These batches overlap and
+are not a cumulative unique count. The full adapter deadline suite passed 38
+tests. Full backend mypy, Ruff, formatting, configured Bandit, import contracts
+and file-length checks passed. Coverage was not remeasured for this repair.
+
+Live recovery then completed both new context steps with the configured Luna Max
+model, using 5,745 and 4,099 output/reasoning tokens. The original five accepted
+sections and failed-call accounting were retained. The job advanced to its separate
+analysis pass. The finished product was saved as needs review: the original frozen
+packet did not substantiate the requested Kyiv-specific attack details, and final
+checks identified requirement-coverage, figure and citation-style issues. The
+synthesis recovery is confirmed; this is not a verified attack assessment.
+
+The subsequent optional analysis request hit the default 120-second timeout.
+Its report_analysis schema had been omitted from the bounded 300-second native
+Max report allowance. The omission is corrected for future requests while
+explicit timeouts and cancellation remain authoritative. The uncertain paid
+request was not repeated and retains its reservation. Citation entailment and
+claim extraction completed. The saved report exposes the remaining findings.
+The timeout regression failed before the fix; all 45 deadline tests then passed,
+including explicit overrides, non-Max/local defaults and cancellation.

@@ -9,10 +9,23 @@ import {
   controlReportJob,
   discardReportJob,
   fetchReportJob,
+  reportJobSchema,
   type ReportJobCreate,
 } from './reportJobs';
 
 afterEach(resetSessionBinding);
+
+it('accepts older section responses without gaps and preserves new gap text', () => {
+  const job = reportJob();
+  expect(reportJobSchema.parse(job).sections[0]?.gaps).toEqual([]);
+  const gap = 'The retained evidence does not establish local conditions.';
+  const section = { ...job.sections[0]!, gaps: [gap] };
+  expect(reportJobSchema.parse({ ...job, sections: [section] }).sections[0]?.gaps).toEqual([gap]);
+  expect(
+    reportJobSchema.safeParse({ ...job, sections: [{ ...section, gaps: [{ text: gap }] }] })
+      .success,
+  ).toBe(false);
+});
 
 it('never replays a discard automatically after session refresh', async () => {
   const discard = vi.fn(() => apiError(401, 'unauthenticated', 'Session expired.'));

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 
-import type { LlmConnection, LlmConnectionInput, LlmProfile, LlmProfileInput } from '@/lib/api/llm';
+import type { LlmConnection, LlmProfile, LlmProfileInput } from '@/lib/api/llm';
 import { adminUser, llmProfiles } from '@/test/fixtures';
 import { team } from '@/test/fixtures.teams';
 import { server } from '@/test/server';
@@ -44,7 +44,6 @@ export function installConnections(initial = [draft()], initialBindings: LlmConn
     tests: 0,
     models: 0,
     saves: [] as LlmProfileInput[],
-    applies: [] as LlmConnectionInput[],
   };
   server.use(
     http.post('/api/admin/llm/models/discover', () => {
@@ -85,10 +84,6 @@ export function installConnections(initial = [draft()], initialBindings: LlmConn
       state.profiles = state.profiles.map((profile) => (profile.id === saved.id ? saved : profile));
       return HttpResponse.json(saved);
     }),
-    http.get('/api/admin/llm/profiles/:id/models', () => {
-      state.models++;
-      return HttpResponse.json({ models: ['gpt-5.6-luna', 'manual-alternative'] });
-    }),
     http.post('/api/admin/llm/profiles/:id/test', ({ params }) => {
       state.tests++;
       const current = requiredProfile(state.profiles.find((profile) => profile.id === params.id));
@@ -108,37 +103,8 @@ export function installConnections(initial = [draft()], initialBindings: LlmConn
         tested_at: current.tested_at,
       });
     }),
-    http.put('/api/admin/llm/connections', async ({ request }) => {
-      const body = (await request.json()) as LlmConnectionInput;
-      state.applies.push(body);
-      const current = requiredProfile(
-        state.profiles.find((profile) => profile.id === body.profile_id),
-      );
-      Object.assign(current, { enabled: true, is_bound: true });
-      const applied = {
-        ...binding(current, body.team_id ?? null),
-        ...(body.user_id ? { user_id: body.user_id } : {}),
-      };
-      state.bindings = [
-        ...state.bindings.filter(
-          (item) =>
-            item.team_id !== applied.team_id ||
-            (item.user_id ?? null) !== (applied.user_id ?? null),
-        ),
-        applied,
-      ];
-      return HttpResponse.json(applied);
-    }),
     http.delete('/api/admin/llm/profiles/:id', ({ params }) => {
       state.profiles = state.profiles.filter((profile) => profile.id !== params.id);
-      return new HttpResponse(null, { status: 204 });
-    }),
-    http.delete('/api/admin/llm/connections/user/:id', ({ params }) => {
-      state.bindings = state.bindings.filter((item) => item.user_id !== params.id);
-      return new HttpResponse(null, { status: 204 });
-    }),
-    http.delete('/api/admin/llm/connections/team/:id', ({ params }) => {
-      state.bindings = state.bindings.filter((item) => item.team_id !== params.id);
       return new HttpResponse(null, { status: 204 });
     }),
   );
