@@ -33,9 +33,14 @@ the three news lenses with charts and the sources footer.
   theme filter; each card carries plain English, a source link and, where Commons holds a
   licensed image of the subject, a captioned image.
 - **Force organisation.** Two expandable trees, Russia first and Ukraine below it, of reported
-  command structure: command, ministry, general staff, groupings and services, corps and branches.
-  Nodes show the reported commander (linking to the public figures tracker where a roster
-  record exists), a strength estimate naming whose, links and an as-of date.
+  command structure from the supreme command down to every formation of regiment size and
+  above that the public Wikipedia order of battle lists (about 340 Russian and 320 Ukrainian
+  entries). The hand-written upper tiers keep their own wording; the imported formations state
+  which public tree they came from and when. Battalions, companies, individual ships and
+  irregular volunteer groups are left out. A "Find a unit" box lists matches by name or
+  commander and opens the chain down to the chosen one. Nodes show the reported commander
+  (linking to the public figures tracker where a roster record exists), a strength estimate
+  naming whose, links and an as-of date.
 - **Equipment by speciality.** Ten specialities (drones; communications and electronic
   warfare; air defence; land-attack missiles and glide bombs; artillery; small arms; tanks;
   infantry fighting vehicles and carriers; aviation; naval), each with sub-headings and a

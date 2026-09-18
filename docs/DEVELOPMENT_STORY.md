@@ -5021,3 +5021,16 @@ really arrive. Two limits remain by design: raw events live only in memory, so a
 server shows what it has collected since, and news items are retained for 72 hours, so the
 14-day chart fills from the right. The two force organisation charts now sit one below the
 other, Russia first, instead of side by side.
+
+The force organisation charts then grew from a reported command shape of 65 entries to the
+full public order of battle. The two tree-list sections of the Wikipedia order of battle
+were parsed into nodes, every formation of regiment size and above was kept (battalions,
+companies, ships and irregular groups were not), the same formation listed under two
+groupings was folded into one, and each parsed node was mapped onto the hand-written tier
+it belongs to, with the hand-written entry keeping its own wording and parent. Two entries
+the hand-written tree lacked were added: the interior ministry, and the State Border Guard
+Service as its own service under it, with the National Guard moved beneath the ministry.
+Every imported entry names the public tree and date it came from, and none fetches an
+image, so the catalogue grew to about 660 entries without growing the image cache. The
+domain and contract caps rose from 160 to 800 force nodes, and each side's chart gained a
+"Find a unit" box because a tree that size needs a way in.

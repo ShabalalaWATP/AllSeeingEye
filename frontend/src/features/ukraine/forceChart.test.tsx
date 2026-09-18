@@ -60,3 +60,21 @@ it('offers the same structure stacked on narrow screens', () => {
   const chart = within(region).getByRole('list', { name: 'Russia chain of command' });
   expect(within(chart).getByText('Grouping North')).toBeInTheDocument();
 });
+
+it('finds a unit by name and opens the chain down to it', async () => {
+  const user = userEvent.setup();
+  const region = panel();
+  const search = within(region).getByRole('searchbox', { name: 'Find a unit' });
+  await user.type(search, 'zzz');
+  expect(within(region).getByRole('status')).toHaveTextContent('No unit on this side matches.');
+  await user.clear(search);
+  await user.type(search, 'south');
+  const matches = within(region).getByRole('list', { name: 'Russia units matching the search' });
+  await user.click(within(matches).getByRole('button', { name: 'Grouping South' }));
+  const chart = within(region).getByRole('list', { name: 'Russia chain of command' });
+  expect(within(chart).getByRole('button', { name: /^Grouping South/ })).toHaveAttribute(
+    'aria-current',
+    'true',
+  );
+  expect(within(chart).getByText('Grouping South')).toBeVisible();
+});
