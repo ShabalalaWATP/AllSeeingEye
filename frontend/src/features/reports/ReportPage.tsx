@@ -179,7 +179,7 @@ export default function ReportPage() {
                 ) : (
                   <>
                     <header className="report-reader-masthead">
-                      <p className="report-reader-eyebrow">Intelligence product</p>
+                      <p className="report-reader-eyebrow">Research report</p>
                       <h1 className="report-reader-title">{report.title}</h1>
                       <div className="mt-4">
                         <ReportReviewStatus status={version.status} variant="paper" />

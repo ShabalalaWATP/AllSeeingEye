@@ -171,7 +171,7 @@ async def test_generate_read_export_and_delete(
     assert [f["rule"] for f in version["findings"] if f["severity"] == "error"] == [
         "source_sufficiency"
     ]
-    assert "## Executive summary" in version["markdown"]
+    assert "## What we judge" in version["markdown"]
     assert "## References" in version["markdown"]
     assert "## Evidence annex" not in version["markdown"]
     assert version["publication"]["schema_version"] == 1

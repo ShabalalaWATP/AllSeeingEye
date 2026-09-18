@@ -171,7 +171,7 @@ def test_frozen_version_document_and_markdown_export_exact_requirement_text() ->
     record, version = document_records()
     document = build_document(record, replace(version, canonical_requirements=authored))
     markdown = render_document_markdown(document)
-    assert "Research requirements" in markdown
+    assert "The research questions" in markdown
     frozen_text = "\n".join(block.text for block in document.blocks)
     for row in authored:
         assert row.question in frozen_text

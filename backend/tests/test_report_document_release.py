@@ -150,5 +150,5 @@ async def test_markdown_release_refuses_committed_concurrent_membership_removal(
 
     assert removal_committed.is_set()
     assert response.status_code == 404
-    assert "Executive summary" not in response.text
+    assert "What we judge" not in response.text
     assert "text/markdown" not in response.headers.get("content-type", "")

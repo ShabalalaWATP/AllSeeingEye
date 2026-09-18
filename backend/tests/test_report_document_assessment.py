@@ -92,15 +92,18 @@ def test_exact_saved_values_and_reference_numbers_without_current_regrading(monk
     monkeypatch.setattr(source_ratings, "source_rating_for", forbidden)
     document = build_document(record, version)
     text = "\n".join(block.text for block in document.blocks)
-    assert "Likelihood (PHIA): likely (about 55 to about 75 percent)." in text
-    assert "Analytical confidence: moderate." in text
+    # The judgement line is plain words; the yardstick and its bands live in the key.
+    assert "Likely, with moderate confidence." in text
+    assert "PHIA" not in text.split("Key to the terms")[0]
+    assert "Likely: about 55 to about 75 percent." in text.split("Key to the terms")[1]
     assert "Recorded evidence confidence limit: high." in text
     assert "Recorded final analytical confidence: moderate." in text
     assert "A saved judgement explanation, unchanged." in text
     assert "A saved method limitation, unchanged." in text
-    assert "Recorded source grade(s): B2, F6." in text
-    assert "Source assessment" in text and "UK MOD JDP 2-00" in text
-    assert "F and 6" in text and "not that the information is false" in text
+    # Grades no longer interrupt the narrative; the table at the end still records them.
+    assert "Recorded source grade(s)" not in text
+    assert "Source grades" in text and "UK MOD JDP 2-00" in text
+    assert "F and 6" in text and "not that the reporting was false" in text
     assert "Engine confidence ceiling:" not in text and "Cited support: 2 item(s)" not in text
     assert "Independent evidence remains incomplete." in text
     assert version.body.key_judgements[0].confidence_statement.startswith("Engine confidence")
@@ -207,11 +210,11 @@ def test_word_pdf_and_markdown_share_source_assessments_and_separate_confidence(
     ):
         text = " ".join(output.split())
         for expected in (
-            "Assessment method",
-            "Source assessment",
-            "UK PHIA probability yardstick",
-            "Analytical confidence: moderate",
-            "B2, F6",
+            "How the assessment was made",
+            "Source grades",
+            "Professional Head of Intelligence Assessment (PHIA) probability yardstick",
+            "Likely, with moderate confidence",
+            "Recorded source grades",
             "2: Probably true",
             "6: Cannot be judged",
             "Saved editorial source basis.",

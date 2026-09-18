@@ -5212,3 +5212,15 @@ request was not repeated and retains its reservation. Citation entailment and
 claim extraction completed. The saved report exposes the remaining findings.
 The timeout regression failed before the fix; all 45 deadline tests then passed,
 including explicit overrides, non-Max/local defaults and cancellation.
+
+The reports themselves were then rewritten for a reader rather than an analyst. The frozen
+document had opened with an executive summary of judgements, each followed by "Likelihood
+(PHIA)" and "Analytical confidence" lines, then findings with "Recorded source grade(s)"
+appended to every item, then method and doctrine sections in the middle. It now reads what
+happened, what it means, what we judge (one plain line each: "Highly likely, with moderate
+confidence"), other explanations, what to watch and what we are unsure about; the method,
+the source grades, the chronology and the confidence rationales sit under "Notes on method
+and sources" at the end, and a "Key to the terms" is the one place the PHIA yardstick and
+Admiralty grading are named. The drafting prompts gained a plain-English rule: tell the
+story in the order it happened, no trade terms or doctrine names in prose, no commentary on
+sources, acronyms expanded. Citation concerns stay beside the judgement they touch.

@@ -60,18 +60,22 @@ Suggested structure, adapted to the question and available evidence:
 
 1. **Title and scope:** question, area or subjects, reporting period and evidence
    cut-off. Avoid a full cover page for a short brief.
-2. **Executive summary:** direct answer and the most important findings. The
-   summary's factual claims also carry citations.
-3. **Findings and analysis:** coherent thematic sections combining the retained
-   research into a narrative. Distinguish reported facts, attributed claims and
-   analytical judgements through clear wording.
-4. **Supporting tables or figures:** positioned beside the discussion they help
-   explain, only where the evidence warrants them.
-5. **Implications and outlook:** include recommendations or indicators only when
-   relevant to the user's question.
-6. **Limitations and confidence:** concise explanation of evidence strength,
-   contradictory reporting, missing answers and important coverage gaps.
-7. **References:** one numbered list for all sources cited in the report.
+2. **What happened:** the reporting, theme by theme, told in plain words in the
+   order it happened, each item with its citations and nothing else.
+3. **What it means:** the analysis as a narrative a reader can picture, with
+   citations.
+4. **What we judge:** each judgement in one sentence, followed by one plain line
+   such as "Highly likely, with moderate confidence."
+5. **Other explanations, What to watch, What we are unsure about:** the
+   alternatives, the watch level with the signs that would change the picture,
+   then assumptions and what could not be found out.
+6. **Notes on method and sources:** review status, the evidence count, the
+   sourcing statement, each judgement's confidence rationale, the source grades
+   and the chronology. Technical material lives here, after the narrative.
+7. **Key to the terms:** the likelihood words with their bands, the confidence
+   levels and the source grade letters and numbers; the only place the document
+   names the PHIA yardstick or Admiralty grading.
+8. **References:** one numbered list for all sources cited in the report.
 
 Omit empty sections and unnecessary repetition. Let length follow the task;
 do not pad a short answer to fit a fixed page count. Use plain-language headings
