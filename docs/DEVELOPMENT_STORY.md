@@ -5239,3 +5239,20 @@ with a plain reason and a 12-hour recheck. Three sources stay outside the app's 
 advisory feed refuses this client at the TLS level, cyber.gov.au holds every connection, and
 ReliefWeb still awaits an approved application name. ADS-B rate limits seen during the probe
 were the probe competing with the live server, and the live poll answers normally.
+
+Two of Bellingcat's methods were then built into the research pipeline rather than bolted
+on as scripts. ShadowFinder's idea, that a shadow's length fixes the sun's height and the
+sun's height differs by place, became a pure domain module from the NOAA solar equations
+and a check on photo geolocation: the vision model now reports any shadow it can measure
+against a vertical object, the uploader can state when the photo was taken, and each
+candidate with coordinates gets a verdict in plain words (consistent, inconsistent, or
+the sun would be below the horizon), never a confirmation. osm-search's idea, that a
+question naming a church near a railway can be asked of the map, became a research
+provider with a fixed vocabulary of about forty feature kinds: one bounded Overpass
+request for a drawn area under 5,000 square kilometres, exact polygon filtering, at most
+100 features, each a cited, located item that says it is the map's current state and
+not an observation. Both sit where the app already keeps such things: the check in the
+photo service and its API, the provider in the research catalogue with a reviewed
+capability profile and an allocation record, so the planner can choose it like any
+other source. The tools that act on people's phone numbers or scrape platforms against
+their terms were left out on purpose.

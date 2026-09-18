@@ -62,7 +62,12 @@ export function usePhotoGeolocation(
     [key],
   );
 
-  const analyse = async (question: string, hints: string, consent: boolean) => {
+  const analyse = async (
+    question: string,
+    hints: string,
+    consent: boolean,
+    capturedAt: string | null = null,
+  ) => {
     const first = receipts[0];
     if (controller.current || !first || !consent) return;
     if (receipts.some((item) => Date.parse(item.expires_at) <= Date.now())) {
@@ -103,6 +108,7 @@ export function usePhotoGeolocation(
           hints: hints.trim(),
           team_id: teamId || null,
           consent_to_send_image: true,
+          ...(capturedAt ? { captured_at: capturedAt } : {}),
           ...(receipts.length > 1
             ? { additional_input_ids: receipts.slice(1).map((item) => item.id) }
             : {}),

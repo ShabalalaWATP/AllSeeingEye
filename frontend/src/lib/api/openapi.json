@@ -32766,6 +32766,18 @@
             "type": "array",
             "maxItems": 5,
             "title": "Additional Input Ids"
+          },
+          "captured_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Captured At"
           }
         },
         "additionalProperties": false,
@@ -32833,6 +32845,14 @@
             "maxItems": 6,
             "title": "Photos"
           },
+          "shadows": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoShadow"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Shadows"
+          },
           "cross_photo_analysis": {
             "anyOf": [
               {
@@ -32857,6 +32877,14 @@
             "const": "unverified",
             "title": "Candidate Status",
             "default": "unverified"
+          },
+          "sun_checks": {
+            "items": {
+              "$ref": "#/components/schemas/SunShadowCheck"
+            },
+            "type": "array",
+            "maxItems": 18,
+            "title": "Sun Checks"
           }
         },
         "additionalProperties": false,
@@ -32997,6 +33025,35 @@
           "image_sha256"
         ],
         "title": "PhotoProvenance"
+      },
+      "PhotoShadow": {
+        "properties": {
+          "photo_id": {
+            "type": "string",
+            "pattern": "^photo-[1-6]$",
+            "title": "Photo Id"
+          },
+          "shadow_length_to_height": {
+            "type": "number",
+            "maximum": 50.0,
+            "minimum": 0.02,
+            "title": "Shadow Length To Height"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "photo_id",
+          "shadow_length_to_height",
+          "basis"
+        ],
+        "title": "PhotoShadow",
+        "description": "A shadow the model measured by eye: its length as a multiple of the object's height."
       },
       "PirIn": {
         "properties": {
@@ -44752,6 +44809,93 @@
           "already_configured"
         ],
         "title": "SuggestedPolicyOut"
+      },
+      "SunShadowCheck": {
+        "properties": {
+          "candidate_label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Candidate Label"
+          },
+          "photo_id": {
+            "type": "string",
+            "pattern": "^photo-[1-6]$",
+            "title": "Photo Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "consistent",
+              "inconsistent",
+              "sun_below_horizon",
+              "no_coordinates"
+            ],
+            "title": "Status"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "sun_elevation_deg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sun Elevation Deg"
+          },
+          "sun_azimuth_deg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sun Azimuth Deg"
+          },
+          "expected_shadow_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Shadow Ratio"
+          },
+          "observed_shadow_ratio": {
+            "type": "number",
+            "title": "Observed Shadow Ratio"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_label",
+          "photo_id",
+          "status",
+          "captured_at",
+          "sun_elevation_deg",
+          "sun_azimuth_deg",
+          "expected_shadow_ratio",
+          "observed_shadow_ratio",
+          "note"
+        ],
+        "title": "SunShadowCheck",
+        "description": "Whether a candidate agrees with a reported shadow at the stated capture instant."
       },
       "TallyOut": {
         "properties": {

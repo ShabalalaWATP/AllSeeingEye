@@ -36,7 +36,11 @@ clues and limitations. For multiple photos, cross_photo_analysis must compare sh
 contradictions and alternative explanations. Do not assume the photographs show the same
 location, were captured together, or independently corroborate one another. If they appear
 unrelated, explain that and do not invent one shared location. Name photo_ids when describing
-candidate supporting clues or contradictions so observations remain attributable."""
+candidate supporting clues or contradictions so observations remain attributable.
+Shadows: when a photograph shows a vertical object (a person, a pole, a wall) and its
+shadow on level ground, add a shadows entry for that photo_id estimating the shadow's
+length as a multiple of the object's height (1.0 means equal), and say what you measured.
+Leave shadows empty when no such pair is clearly visible; never guess a ratio."""
 
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
 SessionCheck = Callable[[], Awaitable[None]]

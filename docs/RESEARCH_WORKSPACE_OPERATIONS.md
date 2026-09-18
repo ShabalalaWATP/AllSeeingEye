@@ -105,6 +105,18 @@ allowance now tries unattempted admitted sources before repeating earlier ones.
 Basic research retains its six-operation collection allowance. Providers excluded
 by the allocation limit are not silently added; inspect the receipt for coverage.
 
+## Map feature search in area research
+
+When research carries a drawn area and the question or its terms name a kind of map
+feature (a church, a railway station, a bridge, a stadium, an airport, a power plant, a
+dam and about forty others), one bounded OpenStreetMap request lists those features
+inside the exact polygon, each as a located, cited item linking to its map page. This
+is the reasoning behind Bellingcat's osm-search, held to a fixed vocabulary so a query
+can never ask the map for arbitrary tags. Areas over 5,000 square kilometres are not
+searched, at most 100 features come back, and a feature is the map's current state,
+undated: a candidate for a scene, not an observation of one. Data is ODbL 1.0,
+credited to OpenStreetMap contributors.
+
 ## Photo geolocation
 
 Open Geolocation in the left navigation. Old `/research/photo` links redirect to
@@ -119,6 +131,15 @@ The vision call receives a sanitised preview of at most 512 pixels per dimension
 not the original filename, private EXIF or extracted OCR. Fine text and distant
 details can be lost. It does not perform public reverse-image search. OpenAI and
 Bedrock image payloads are supported, subject to the chosen model accepting images.
+
+If you know when the photo was taken, enter it (UTC) in the form. The model then also
+reports any shadow it can measure against a vertical object, and the app tests each
+candidate with coordinates against the sun: at that instant the sun stands at a known
+height over every point on Earth, and a candidate either casts a shadow of the reported
+length or it cannot. This is the reasoning behind Bellingcat's ShadowFinder, computed
+locally from the NOAA solar equations. A check can rule a candidate out or say it is
+consistent; it never confirms a place, and a wrong capture time makes every check wrong,
+so each one repeats the instant it used.
 
 Results contain up to three unverified candidate places or an unknown result,
 visible clues, contradictions, uncertainty and verification steps. Multi-photo

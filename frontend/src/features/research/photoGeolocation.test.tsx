@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api/errors';
@@ -100,6 +100,39 @@ describe('photo geolocation workspace', () => {
     expect(screen.getByText(/uncertainty radius 1 km/)).toBeVisible();
     fireEvent.click(screen.getByText('Analysis record'));
     expect(screen.getByText('returned-vision-model')).toBeVisible();
+  });
+
+  it('sends the capture time and shows the sun check beside its candidate', async () => {
+    analyse.mockResolvedValue(
+      photoAssessment({
+        sun_checks: [
+          {
+            candidate_label: 'Westminster, London',
+            photo_id: 'photo-1',
+            status: 'consistent',
+            captured_at: '2026-06-21T12:02:00Z',
+            sun_elevation_deg: 61.9,
+            sun_azimuth_deg: 180.1,
+            expected_shadow_ratio: 0.53,
+            observed_shadow_ratio: 0.55,
+            note: 'The sun would stand about 62 degrees above the horizon here. Consistent, which does not confirm the place.',
+          },
+        ],
+      }),
+    );
+    render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
+    choose();
+    await screen.findByRole('img');
+    fireEvent.change(screen.getByLabelText('When the photo was taken (UTC), if known'), {
+      target: { value: '2026-06-21T12:02' },
+    });
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
+    await screen.findByText('Unverified location candidates');
+    expect(analyse.mock.calls[0]?.[1].captured_at).toBe('2026-06-21T12:02:00Z');
+    const checks = screen.getByRole('list', { name: 'Sun and shadow checks' });
+    expect(within(checks).getByText('Consistent with the sun')).toBeVisible();
+    expect(within(checks).getByText(/does not confirm the place/)).toBeVisible();
   });
 
   it('creates a media report from the derived findings, without image bytes or a claimed country', async () => {

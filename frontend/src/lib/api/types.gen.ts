@@ -10683,6 +10683,8 @@ export interface components {
             consent_to_send_image: true;
             /** Additional Input Ids */
             additional_input_ids?: string[];
+            /** Captured At */
+            captured_at?: string | null;
         };
         /** PhotoGeolocationOut */
         PhotoGeolocationOut: {
@@ -10703,6 +10705,8 @@ export interface components {
             limitations: string[];
             /** Photos */
             photos?: components["schemas"]["PhotoObservation"][];
+            /** Shadows */
+            shadows?: components["schemas"]["PhotoShadow"][];
             /** Cross Photo Analysis */
             cross_photo_analysis?: string | null;
             input: components["schemas"]["ResearchInputOut"];
@@ -10713,6 +10717,8 @@ export interface components {
              * @constant
              */
             candidate_status: "unverified";
+            /** Sun Checks */
+            sun_checks?: components["schemas"]["SunShadowCheck"][];
         };
         /** PhotoImageProvenance */
         PhotoImageProvenance: {
@@ -10762,6 +10768,18 @@ export interface components {
             image_sha256: string;
             /** Photos */
             photos?: components["schemas"]["PhotoImageProvenance"][];
+        };
+        /**
+         * PhotoShadow
+         * @description A shadow the model measured by eye: its length as a multiple of the object's height.
+         */
+        PhotoShadow: {
+            /** Photo Id */
+            photo_id: string;
+            /** Shadow Length To Height */
+            shadow_length_to_height: number;
+            /** Basis */
+            basis: string;
         };
         /** PirIn */
         PirIn: {
@@ -14820,6 +14838,36 @@ export interface components {
              * @description An enabled policy already covers this scope, target and period.
              */
             already_configured: boolean;
+        };
+        /**
+         * SunShadowCheck
+         * @description Whether a candidate agrees with a reported shadow at the stated capture instant.
+         */
+        SunShadowCheck: {
+            /** Candidate Label */
+            candidate_label: string;
+            /** Photo Id */
+            photo_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "consistent" | "inconsistent" | "sun_below_horizon" | "no_coordinates";
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Sun Elevation Deg */
+            sun_elevation_deg: number | null;
+            /** Sun Azimuth Deg */
+            sun_azimuth_deg: number | null;
+            /** Expected Shadow Ratio */
+            expected_shadow_ratio: number | null;
+            /** Observed Shadow Ratio */
+            observed_shadow_ratio: number;
+            /** Note */
+            note: string;
         };
         /** TallyOut */
         TallyOut: {
