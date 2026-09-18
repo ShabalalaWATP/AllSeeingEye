@@ -15,14 +15,15 @@ the server over SSH.
 
 | Need | Notes |
 | --- | --- |
-| A server | 4 vCPU, 8 GB memory, 80 GB disk. Hetzner CX32 or CPX31, DigitalOcean or Scaleway equivalent, about £6 to £12 a month. 4 GB will run it, but the live store alone is budgeted 512 MB and that budget is an estimate rather than a hard cap. |
+| A server | 4 vCPU, 8 GB memory, 80 GB disk. Hetzner CX33 is about £8.50 a month; other providers charge two to four times that for the same memory. 4 GB will run it, but the live store alone is budgeted 512 MB and that budget is an estimate rather than a hard cap. |
 | A domain | Any name you control, with access to its DNS records. Caddy obtains the certificates itself. |
 | An SSH key | `ssh-keygen -t ed25519` if you do not have one. Password logins are disabled below. |
 | Your provider keys | The OpenAI key and any feed keys you use locally. They are entered once into `.env` or the admin interface, never into the repository. |
 
 Budget context: the server costs less than the model usage. A heavy day measured on this
-deployment was about 63 pence of model spend, roughly £19 a month, against about £7 for
-the machine.
+deployment was about 63 pence of model spend, roughly £19 a month, against about £8.50 for
+the machine. Prices here were read from the Hetzner console in September 2026 and include
+VAT; check the current figures before buying.
 
 ## 1. Create the server
 
@@ -35,8 +36,11 @@ providers differ only in this step.
 2. Create a **project** (any name), then **Add Server**:
    - **Location**: Falkenstein, Nuremberg or Helsinki for the UK.
    - **Image**: Debian 13.
-   - **Type**: shared vCPU, x86, **CX32** (4 vCPU, 8 GB, 80 GB). CPX31 is the AMD
-     equivalent with more disk. Avoid the CAX (ARM) line: the Dockerfiles pin images by
+   - **Type**: Shared Resources, **Cost-Optimized**, architecture **x86**, then **CX33**
+     (4 vCPU, 8 GB, 80 GB, about €10 a month). The Regular Performance (CPX) tab sells the
+     same memory for roughly four times as much. Cost-Optimized is marked limited
+     availability, so if CX33 is greyed out in your location either choose another location
+     or fall back to CPX32. Never choose the Arm64 line: the Dockerfiles pin images by
      digest and several of those pins are amd64 only.
    - **Networking**: keep IPv4 and IPv6. A public IPv4 carries a small monthly charge and
      you need one for a domain most people can reach.
