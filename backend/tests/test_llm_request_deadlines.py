@@ -35,21 +35,27 @@ REPORT_REQUEST = replace(REQUEST, schema_name="report", json_schema=REPORT_BODY_
         (BASE, "max", "report_context", 1, 2, 1),
         (BASE, "max", "report_topic", 1, 2, 1),
         (BASE, "max", "report_synthesis", 1, 2, 1),
-        (BASE, "xhigh", "report_topic", None, 121, 120),
-        ("http://localhost:11434/v1", "max", "report_synthesis", None, 121, 120),
+        # Any reasoning effort earns the longer budget on a thinking stage, on any endpoint.
+        (BASE, "xhigh", "report_topic", None, 150, 300),
+        (BASE, "high", "report_judgements", None, 150, 300),
+        (BASE, "high", "report_judgements", None, 301, 300),
+        ("http://localhost:11434/v1", "max", "report_synthesis", None, 150, 300),
+        (BASE, None, "report_judgements", None, 121, 120),
         (BASE, "max", "report_other", None, 121, 120),
         (BASE, "max", "connection_test", None, 121, 120),
         (BASE, "max", "photo_geolocation", None, 121, 120),
-        (BASE, "xhigh", "report", None, 121, 120),
-        ("http://localhost:11434/v1", "max", "report", None, 121, 120),
-        ("https://api.openai.com:443/v1", "max", "report", None, 121, 120),
+        (BASE, "xhigh", "report", None, 150, 300),
+        ("http://localhost:11434/v1", "max", "report", None, 150, 300),
+        ("https://api.openai.com:443/v1", "max", "report", None, 150, 300),
+        (BASE, None, "report", None, 121, 120),
         (BASE, "max", "report", 120, 121, 120),
         (BASE, "max", "report", 1, 2, 1),
         (BASE, "max", "report", 600, 400, 600),
         # Conflict screening thinks before it answers, so it gets the same longer budget.
         (BASE, "max", "conflict_screening", None, 150, 300),
         (BASE, "max", "conflict_screening", None, 301, 300),
-        (BASE, "xhigh", "conflict_screening", None, 121, 120),
+        (BASE, "xhigh", "conflict_screening", None, 150, 300),
+        (BASE, None, "conflict_screening", None, 121, 120),
     ],
 )
 async def test_selected_deadline_covers_http_queue_and_response_processing(
@@ -84,7 +90,7 @@ async def test_selected_deadline_covers_http_queue_and_response_processing(
             assert body["reasoning"] == {"effort": effort}
             assert body["store"] is False
             return httpx.Response(200, json=response_data())
-        assert body["reasoning_effort"] == effort
+        assert body.get("reasoning_effort") == effort
         return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
 
     monkeypatch.setattr(openai_compatible.asyncio, "timeout", record_timeout)

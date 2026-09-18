@@ -5049,3 +5049,12 @@ view already told, and it pushed the force organisation a long way down the page
 now sits closed under the stage as "Read the full timeline as a list" with its event count,
 and opens by default only when the moving view is off, because the list is then the timeline
 itself and still the accessible one.
+
+The cyber briefing was found paused with a provider error. The ledger showed why: its
+synthesis judgement call on the operator's Sol profile, which reasons at high effort, ran
+to exactly the ordinary 120 second budget and was cut off, billed for the thinking and left
+with nothing to validate. The longer 300 second budget for the stages that think had only
+been granted to calls on OpenAI's native Responses API at maximum effort. Any request that
+carries a reasoning effort now takes the longer budget on those stages, whichever endpoint
+or API carries it; a request without an effort keeps the ordinary one. The paused briefing
+resumes from its completed sections when the operator presses Resume on the job page.
