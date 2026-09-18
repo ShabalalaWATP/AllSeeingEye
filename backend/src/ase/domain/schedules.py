@@ -8,6 +8,8 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from uuid import UUID
 
+from ase.domain.events import Category
+from ase.domain.regions import Region
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import ReportStatus
 from ase.domain.research import CollectionStatus, ResearchFocus, ResearchMode
@@ -117,6 +119,8 @@ class Schedule:
     anchor_month: int = 1
     conflict_id: str | None = None
     hazard: str | None = None
+    categories: tuple[Category, ...] = ()
+    regions: tuple[Region, ...] = ()
     research_area: ResearchArea | None = None
     disclose_area_to_provider: bool = False
     avoid_repetition: bool = True

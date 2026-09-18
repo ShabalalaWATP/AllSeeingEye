@@ -11441,6 +11441,11 @@ export interface components {
             /** Caveat */
             caveat: string;
         };
+        /**
+         * Region
+         * @enum {string}
+         */
+        Region: "africa" | "asia" | "europe" | "middle_east" | "north_america" | "south_america" | "oceania" | "antarctica";
         /** RegistryIdentifierIn */
         RegistryIdentifierIn: {
             /** Id */
@@ -11790,6 +11795,8 @@ export interface components {
             countries?: string[];
             /** Categories */
             categories?: components["schemas"]["Category"][];
+            /** Regions */
+            regions?: components["schemas"]["Region"][];
             /** Question */
             question?: string | null;
             /** Window Hours */
@@ -13579,6 +13586,10 @@ export interface components {
             conflict_id?: string | null;
             /** Hazard */
             hazard?: string | null;
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+            /** Regions */
+            regions?: components["schemas"]["Region"][];
             research_area?: components["schemas"]["ResearchAreaIn"] | null;
             /**
              * Disclose Area To Provider
@@ -13680,6 +13691,10 @@ export interface components {
             anchor_month: number;
             /** Conflict Id */
             conflict_id: string | null;
+            /** Categories */
+            categories: components["schemas"]["Category"][];
+            /** Regions */
+            regions: components["schemas"]["Region"][];
             /** Hazard */
             hazard: string | null;
             research_area: components["schemas"]["ResearchAreaOut"] | null;

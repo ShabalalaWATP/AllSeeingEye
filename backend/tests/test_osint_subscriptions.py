@@ -4,22 +4,26 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from httpx import AsyncClient
 
 from ase.adapters.persistence.models import ScheduleRow
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.application.reports.request import ReportRequest
+from ase.application.reports.scope import report_scope
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.subscription_baseline import load_subscription_baseline
 from ase.application.reports.subscription_updates import content_signature, update_guidance
-from ase.application.reports.templates import EvidenceStrategy
+from ase.application.reports.templates import TEMPLATES, EvidenceStrategy
 from ase.application.schedules.manage import ScheduleInput, build_schedule
 from ase.application.schedules.report_request import scheduled_report_request
 from ase.container import Container
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound
+from ase.domain.events import Category
 from ase.domain.evidence import EvidenceItem
+from ase.domain.regions import Region
 from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchMode
 from ase.domain.schedules import next_run_after
@@ -101,10 +105,44 @@ async def test_subscription_area_roundtrip_and_calendar_options(client: AsyncCli
     assert listed == value
 
 
+async def test_subscription_regions_and_themes_roundtrip_into_the_report_scope(
+    client: AsyncClient, container: Container, user: User
+):
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    response = await client.post(
+        "/api/schedules",
+        headers=bearer(token),
+        json={
+            "name": "Regional cyber and economy",
+            "template_id": "ask",
+            "question": "What changed across the region?",
+            "research_mode": "quick",
+            "regions": ["middle_east", "europe", "europe"],
+            "categories": ["cyber", "economic"],
+        },
+    )
+    assert response.status_code == 201, response.text
+    value = response.json()
+    assert value["regions"] == ["middle_east", "europe"]
+    assert value["categories"] == ["cyber", "economic"]
+    schedule = await refresh(container, user, UUID(value["id"]))
+    assert [region.value for region in schedule.regions] == ["middle_east", "europe"]
+    request = scheduled_report_request(schedule)
+    assert request.regions == (Region.MIDDLE_EAST, Region.EUROPE)
+    assert request.categories == (Category.CYBER, Category.ECONOMIC)
+    scope = report_scope(request, TEMPLATES["ask"])
+    assert scope["origin"] == "subscription" and scope["regions"] == ["middle_east", "europe"]
+    # The frozen scope restores the same request, so a rerun keeps its regions.
+    assert ReportRequest.from_scope("ask", scope).regions == request.regions
+
+
 @pytest.mark.parametrize(
     "changes",
     [
         {"hazard": "invented"},
+        {"regions": ["mars"]},
+        {"regions": ["europe"] * 9},
+        {"categories": ["cyber", "economic", "political", "social", "conflict"]},
         {"anchor_month": 0},
         {"avoid_repetition": "yes"},
         {"research_area": AREA, "country_iso": "GB"},

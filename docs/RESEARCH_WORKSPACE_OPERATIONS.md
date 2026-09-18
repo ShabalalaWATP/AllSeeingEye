@@ -44,9 +44,9 @@ can move forward. Start new research to change the scope.
 
 | Type | Indicative narrative length | Research approach |
 | --- | --- | --- |
-| Basic | 500–900 words | Focused collection and the strongest relevant findings. |
-| Deep | 1,200–2,000 words | Broader collection, fuller reasoning and challenge review. |
-| Advanced | 2,500–4,000 words | Extended collection, competing explanations and synthesis. |
+| Basic | 750–1,350 words | Focused collection and the strongest relevant findings. |
+| Deep | 1,800–3,000 words | Broader collection, fuller reasoning and challenge review. |
+| Advanced | 3,750–6,000 words | Extended collection, competing explanations and synthesis. |
 
 These are evidence-dependent targets, excluding references, not guaranteed lengths.
 Sparse evidence produces a shorter report. Provider limits and schema bounds still

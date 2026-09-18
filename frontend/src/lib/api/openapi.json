@@ -34993,6 +34993,20 @@
         ],
         "title": "ReferenceLookupOut"
       },
+      "Region": {
+        "type": "string",
+        "enum": [
+          "africa",
+          "asia",
+          "europe",
+          "middle_east",
+          "north_america",
+          "south_america",
+          "oceania",
+          "antarctica"
+        ],
+        "title": "Region"
+      },
       "RegistryIdentifierIn": {
         "properties": {
           "id": {
@@ -35915,6 +35929,14 @@
             "type": "array",
             "maxItems": 11,
             "title": "Categories"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Regions"
           },
           "question": {
             "anyOf": [
@@ -40956,6 +40978,22 @@
             ],
             "title": "Hazard"
           },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Categories"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Regions"
+          },
           "research_area": {
             "anyOf": [
               {
@@ -41241,6 +41279,20 @@
             ],
             "title": "Conflict Id"
           },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
           "hazard": {
             "anyOf": [
               {
@@ -41486,6 +41538,8 @@
           "monthday",
           "anchor_month",
           "conflict_id",
+          "categories",
+          "regions",
           "hazard",
           "research_area",
           "disclose_area_to_provider",

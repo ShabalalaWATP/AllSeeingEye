@@ -28,9 +28,9 @@ from test_research_collection import QUERY, Provider
 @pytest.mark.parametrize(
     ("mode", "label", "words", "requests", "retained"),
     [
-        (ResearchMode.QUICK, "Basic", (500, 900), 6, 200),
-        (ResearchMode.DETAILED, "Deep", (1200, 2000), 24, 800),
-        (ResearchMode.ADVANCED, "Advanced", (2500, 4000), 32, 1000),
+        (ResearchMode.QUICK, "Basic", (750, 1350), 6, 200),
+        (ResearchMode.DETAILED, "Deep", (1800, 3000), 24, 800),
+        (ResearchMode.ADVANCED, "Advanced", (3750, 6000), 32, 1000),
     ],
 )
 async def test_each_tier_reaches_section_prompts_and_accepts_a_short_supported_report(
@@ -97,7 +97,7 @@ async def test_non_staged_reports_receive_tier_guidance_and_bounded_output(mode)
     gateway = ScriptedGateway(json.dumps(sound_body()))
     selected = evidence()
     profile = replace(
-        PROFILE, model="fixture-model", reasoning_effort=None, max_output_tokens=20000
+        PROFILE, model="fixture-model", reasoning_effort=None, max_output_tokens=30000
     )
     result = await draft_body(
         gateway,

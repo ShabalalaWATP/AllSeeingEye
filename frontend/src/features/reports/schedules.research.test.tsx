@@ -42,7 +42,7 @@ it('saves an explicit question and bounded research options for each scheduled r
   await user.click(form.getByText('Choose countries'));
   await user.click(form.getByRole('checkbox', { name: /^Ukraine/ }));
   await user.selectOptions(form.getByLabelText('Research focus'), 'company');
-  expect(form.getByRole('group', { name: 'Countries' })).toBeDisabled();
+  expect(form.getByRole('group', { name: 'Nations' })).toBeDisabled();
   await user.click(form.getByRole('button', { name: 'Create subscription' }));
   expect(form.getByText(/Research subject: Enter a research subject/)).toBeVisible();
   expect(form.getByLabelText('Research subject')).toBeRequired();

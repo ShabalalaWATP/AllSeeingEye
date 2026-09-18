@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
-import { aoi, schedule } from '@/test/fixtures';
+import { schedule } from '@/test/fixtures';
 import { rectangleArea } from '@/lib/map/areaGeometry';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -14,49 +14,38 @@ async function newForm() {
   return { user, form };
 }
 
-it('recovers optional topic choices after a catalogue failure and explains missing saved areas', async () => {
+it('recovers the conflict and disaster choices after a tracker failure', async () => {
   server.use(
-    http.get('/api/direction/aois', () =>
+    http.get('/api/trackers/conflicts', () =>
       HttpResponse.json(
-        { error: { code: 'server_error', message: 'Area catalogue unavailable' } },
+        { error: { code: 'server_error', message: 'Conflict board unavailable' } },
         { status: 500 },
       ),
     ),
   );
   const { user, form } = await newForm();
-  await user.click(form.getByRole('button', { name: 'Choose a conflict, disaster or saved area' }));
-  expect(await form.findByText('Area catalogue unavailable')).toBeVisible();
+  expect(await form.findByText('Conflict board unavailable')).toBeVisible();
+  // A failed board never blocks the subscription itself.
   expect(form.getByRole('button', { name: 'Create subscription' })).toBeEnabled();
-  server.use(http.get('/api/direction/aois', () => HttpResponse.json({ items: [] })));
+  server.use(http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [] })));
   await user.click(form.getByRole('button', { name: 'Retry choices' }));
-  expect(await form.findByText(/Create an area in Plans & areas/)).toBeVisible();
-  await user.click(form.getByRole('button', { name: 'Hide topic and area filters' }));
-  expect(form.queryByLabelText('Saved area')).not.toBeInTheDocument();
+  expect(await form.findByLabelText('Natural disaster')).toBeVisible();
 });
 
-it('copies a country area into the actual saved country filters and can change it to a disaster topic', async () => {
+it('pins a subscription to one kind of disaster and clears a conflict when it does', async () => {
   let captured: unknown;
   server.use(
-    http.get('/api/direction/aois', () =>
-      HttpResponse.json({
-        items: [{ ...aoi, kind: 'countries', bbox: null, countries: ['UA', 'GB'] }],
-      }),
-    ),
     http.post('/api/schedules', async ({ request }) => {
       captured = await request.json();
       return HttpResponse.json(schedule, { status: 201 });
     }),
   );
   const { user, form } = await newForm();
-  await user.click(form.getByRole('button', { name: 'Choose a conflict, disaster or saved area' }));
-  await user.selectOptions(await form.findByLabelText('Saved area'), aoi.id);
-  expect(form.queryByRole('checkbox', { name: /^Allow source providers/ })).not.toBeInTheDocument();
-  await user.selectOptions(form.getByLabelText('Saved area'), '');
-  await user.selectOptions(form.getByLabelText('Natural disaster'), 'earthquake');
+  await user.selectOptions(await form.findByLabelText('Natural disaster'), 'earthquake');
+  expect(form.getByLabelText('Conflict')).toHaveValue('');
   await user.click(form.getByRole('button', { name: 'Create subscription' }));
   await waitFor(() =>
     expect(captured).toMatchObject({
-      country_isos: ['UA', 'GB'],
       hazard: 'earthquake',
       conflict_id: null,
       research_area: null,
@@ -93,7 +82,6 @@ it('preserves an exact area in a paused draft without demanding activation conse
   expect(table.getByText(/Search period matches update frequency/)).toBeVisible();
   await user.click(table.getByRole('button', { name: 'Edit' }));
   const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
-  await user.click(form.getByRole('button', { name: 'Choose a conflict, disaster or saved area' }));
   expect(await form.findByRole('checkbox', { name: /^Allow source providers/ })).not.toBeChecked();
   expect(form.getByRole('button', { name: 'Save changes' })).toBeEnabled();
   await user.click(form.getByRole('button', { name: 'Save changes' }));
@@ -149,9 +137,6 @@ it.each([
     expect(table.getByText(/6 hours of lookback/)).toBeVisible();
     await user.click(table.getByRole('button', { name: 'Edit' }));
     const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
-    await user.click(
-      form.getByRole('button', { name: 'Choose a conflict, disaster or saved area' }),
-    );
     const select = await form.findByLabelText(label);
     expect(select).toHaveValue(value);
     expect(within(select).getByRole('option', { name: option })).toBeInTheDocument();

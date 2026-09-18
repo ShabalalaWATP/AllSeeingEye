@@ -178,6 +178,8 @@ describe('schedule states', () => {
         avoid_repetition: true,
         conflict_id: null,
         hazard: null,
+        regions: [],
+        categories: [],
         research_area: null,
         disclose_area_to_provider: false,
       });

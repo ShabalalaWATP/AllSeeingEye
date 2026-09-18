@@ -17,6 +17,7 @@ from ase.application.reports.subscription_updates import previous_signatures
 from ase.domain.direction import Direction
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
+from ase.domain.regions import region_countries
 from ase.domain.research import CollectionStatus, ResearchFocus, ResearchQuery
 from ase.domain.research_records import ResearchReceipt
 
@@ -130,7 +131,11 @@ def plan_for_job(
         bbox=None if private or area else job.bbox,
         countries=()
         if private
-        else tuple(dict.fromkeys((*job.request.country_isos, *job.countries))),
+        else tuple(
+            dict.fromkeys(
+                (*job.request.country_isos, *job.countries, *region_countries(job.request.regions))
+            )
+        ),
         hazard=None if private else job.hazard,
         time_basis=job.request.effective_time_basis,
         since=job.period_from if job.request.research_since is not None else None,

@@ -34,6 +34,7 @@ from ase.domain.direction import direction_to_dict
 from ase.domain.events import Category
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import LANGUAGE_CODE_PATTERN, ReportLanguage
+from ase.domain.regions import MAX_REGIONS, Region
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
@@ -55,6 +56,7 @@ class ReportCreateIn(BaseModel):
         default_factory=list, max_length=8
     )
     categories: list[Category] = Field(default_factory=list, max_length=11)
+    regions: list[Region] = Field(default_factory=list, max_length=MAX_REGIONS)
     question: str | None = Field(default=None, max_length=1000)
     window_hours: int | None = Field(default=None, ge=1, le=MAX_RESEARCH_HOURS)
     profile_id: UUID | None = None
@@ -143,6 +145,7 @@ class ReportCreateIn(BaseModel):
             country_isos=tuple(self.countries),
             research_web_search=self.research_web_search,
             categories=tuple(self.categories),
+            regions=tuple(self.regions),
             question=self.question.strip() if self.question else None,
             window_hours=self.window_hours,
             profile_id=self.profile_id,

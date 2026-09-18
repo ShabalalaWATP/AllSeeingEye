@@ -6,6 +6,8 @@ export const schedule: Schedule = {
   anchor_month: 1,
   conflict_id: null,
   hazard: null,
+  categories: [],
+  regions: [],
   research_area: null,
   disclose_area_to_provider: false,
   avoid_repetition: true,

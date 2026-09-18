@@ -2,9 +2,22 @@
 import { z } from 'zod';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
+
+import { categorySchema } from './eventSchemas';
 import type { components } from './types.gen';
 
 import { apiCall, apiSend } from './client';
+
+const regionSchema = z.enum([
+  'africa',
+  'asia',
+  'europe',
+  'middle_east',
+  'north_america',
+  'south_america',
+  'oceania',
+  'antarctica',
+]);
 
 export const scheduleSchema = z.object({
   brief_id: z.uuid().nullable().optional(),
@@ -17,6 +30,9 @@ export const scheduleSchema = z.object({
   anchor_month: z.number().int().min(1).max(12).default(1),
   conflict_id: z.string().nullable().default(null),
   hazard: z.string().nullable().default(null),
+  // Absent on subscriptions saved before themes and regions existed.
+  categories: z.array(categorySchema).max(4).default([]),
+  regions: z.array(regionSchema).max(8).default([]),
   research_area: z
     .object({ geometry: z.record(z.string(), z.unknown()), sha256: z.string() })
     .nullable()

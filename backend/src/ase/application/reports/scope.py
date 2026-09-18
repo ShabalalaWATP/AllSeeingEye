@@ -66,6 +66,7 @@ def report_origin(request: ReportRequest) -> str:
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
         "origin": report_origin(request),
+        **({"regions": [region.value for region in request.regions]} if request.regions else {}),
         **(
             {"research_time_basis": request.research_time_basis.value}
             if request.research_time_basis is not None

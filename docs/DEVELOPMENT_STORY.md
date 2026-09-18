@@ -4982,3 +4982,19 @@ retry is told which check failed, using the validator's own fixed wording rather
 anything the model wrote. A repeated model connection name also answers as a conflict
 instead of failing as an unhandled database error, which is how the operator first found
 it.
+
+The subscription form was then rebuilt after the operator found it hard to read. The
+two-column layout, with the scope choices in a side panel, is gone. The form is now one
+column of numbered steps in the order a person decides: name, question, depth, where to
+look, which themes, conflict or disaster, whether to also search the web, and when to run.
+"Where to look" adds regions (up to eight continents or the Middle East) beside the
+existing nations, and "Which themes" offers up to four of the existing event categories
+(cyber, economy, politics, public view and the rest), so a question can be scoped without
+listing countries. Both travel as ordinary schedule fields in the stored research options,
+no migration was needed, and they reach the report request and the frozen scope, so a
+rerun keeps them. The "existing evidence only" switch was removed: every run reads the
+live evidence, and a single tick adds a fresh web search. The depth targets grew by half
+(Basic 750 to 1,350 words, Deep 1,800 to 3,000, Advanced 3,750 to 6,000) with output
+budgets raised to match. Saved-area selection had already left with Plans & areas; a
+boundary drawn on the map still arrives with a subscription, is shown with its consent
+box, and can be cleared from the form.

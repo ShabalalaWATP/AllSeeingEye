@@ -7,8 +7,7 @@ function controlFor(root: HTMLFormElement, field: string): HTMLElement | null {
     return (
       Array.from(root.querySelectorAll('label'))
         .find((label) => label.textContent.includes('Allow source providers to receive this area'))
-        ?.querySelector<HTMLElement>('input') ??
-      root.querySelector<HTMLElement>('button[aria-expanded]')
+        ?.querySelector<HTMLElement>('input') ?? null
     );
   return Array.from(root.querySelectorAll('label')).find(
     (label) => label.textContent.trim() === field,
@@ -21,12 +20,6 @@ export function focusScheduleIssue(root: HTMLFormElement | null, issue: Schedule
     const details = root.querySelector<HTMLDetailsElement>('#subscription-advanced');
     if (details) details.open = true;
   }
-  if (issue.field === 'Area disclosure') {
-    const toggle = root.querySelector<HTMLButtonElement>(
-      '#subscription-coverage button[aria-expanded]',
-    );
-    if (toggle?.getAttribute('aria-expanded') === 'false') toggle.click();
-  }
   const target = controlFor(root, issue.field);
   const scroll: unknown = target && Reflect.get(target, 'scrollIntoView');
   if (typeof scroll === 'function') scroll.call(target, { block: 'center' });
@@ -38,6 +31,8 @@ export function scheduleIssueTarget(issue: ScheduleIssue) {
   if (issue.field === 'Subscription name') return 'subscription-name';
   if (issue.field === 'Question') return 'subscription-question';
   if (issue.field === 'Nation' || issue.field === 'Countries') return 'subscription-countries';
+  if (issue.field === 'Regions') return 'subscription-regions';
+  if (issue.field === 'Themes') return 'subscription-themes';
   if (issue.field === 'Area disclosure') return 'subscription-coverage';
   return 'subscription-timing';
 }

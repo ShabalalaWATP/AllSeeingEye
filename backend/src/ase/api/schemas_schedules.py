@@ -9,7 +9,9 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
-from ase.application.schedules.definition import ScheduleInput
+from ase.application.schedules.definition import MAX_THEMES, ScheduleInput
+from ase.domain.events import Category
+from ase.domain.regions import MAX_REGIONS, Region
 from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_changes import ResearchChange
@@ -53,6 +55,8 @@ class ScheduleIn(BaseModel):
     anchor_month: int = Field(default=1, ge=1, le=12)
     conflict_id: str | None = Field(default=None, min_length=1, max_length=120)
     hazard: str | None = Field(default=None, min_length=1, max_length=40)
+    categories: list[Category] = Field(default_factory=list, max_length=MAX_THEMES)
+    regions: list[Region] = Field(default_factory=list, max_length=MAX_REGIONS)
     research_area: ResearchAreaIn | None = None
     disclose_area_to_provider: StrictBool = False
     avoid_repetition: StrictBool = True
@@ -96,6 +100,8 @@ class ScheduleIn(BaseModel):
             monthday=self.monthday,
             anchor_month=self.anchor_month,
             conflict_id=self.conflict_id,
+            categories=tuple(self.categories),
+            regions=tuple(self.regions),
             hazard=self.hazard,
             research_area=self.research_area.to_domain() if self.research_area else None,
             disclose_area_to_provider=self.disclose_area_to_provider,
@@ -155,6 +161,8 @@ class ScheduleOut(BaseModel):
     monthday: int
     anchor_month: int
     conflict_id: str | None
+    categories: list[Category]
+    regions: list[Region]
     hazard: str | None
     research_area: ResearchAreaOut | None
     disclose_area_to_provider: bool
@@ -214,6 +222,8 @@ class ScheduleOut(BaseModel):
             monthday=schedule.monthday,
             anchor_month=schedule.anchor_month,
             conflict_id=schedule.conflict_id,
+            categories=list(schedule.categories),
+            regions=list(schedule.regions),
             hazard=schedule.hazard,
             research_area=ResearchAreaOut.model_validate(schedule.research_area)
             if schedule.research_area
