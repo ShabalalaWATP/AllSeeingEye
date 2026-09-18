@@ -5058,3 +5058,10 @@ been granted to calls on OpenAI's native Responses API at maximum effort. Any re
 carries a reasoning effort now takes the longer budget on those stages, whichever endpoint
 or API carries it; a request without an effort keeps the ordinary one. The paused briefing
 resumes from its completed sections when the operator presses Resume on the job page.
+
+Pressing Resume on that briefing then failed with a server error, which was a regression
+from the same day's work. The saved-reports tabs had added an "origin" key to the frozen
+report scope, and restoring a job compares its stored scope with the scope built afresh
+from the request; a job frozen before the key existed no longer matched, so no earlier job
+could resume. The comparison now leaves derived keys out of both sides, with a test that
+freezes a job, removes the key and restores it.

@@ -124,6 +124,16 @@ def test_ordinary_report_and_geographic_context_roundtrip() -> None:
     assert restored.country_name == job.country_name and restored.terms == job.terms
 
 
+def test_job_frozen_before_the_origin_key_existed_still_restores() -> None:
+    """Resume must not refuse a job whose scope predates a derived key."""
+    job = fixture_job(ReportRequest("intsum", country_iso="GB", window_hours=48))
+    frozen = freeze_job(job, fixture_routing(job), {}, private_store)
+    assert frozen["scope"].pop("origin") == "research"
+    restored = restore_job(frozen, job.actor, job.profile)
+    assert restored.request.country_iso == "GB"
+    assert report_scope(restored.request, restored.template)["origin"] == "research"
+
+
 def test_twelve_canonical_requirements_survive_frozen_job_restore() -> None:
     requirements = tuple(
         IntelligenceRequirement(f"REQ-{index:02d}", f"What happened in sector {index}?")
