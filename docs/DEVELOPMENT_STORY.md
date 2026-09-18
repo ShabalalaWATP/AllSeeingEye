@@ -5043,3 +5043,9 @@ side-coloured top edge, the role in colour, a clamped description with Read more
 reported numbers in their own box. The accessible contract (the Speciality group, a region per
 sub-heading, the compare table) did not change, so the existing tests still pass alongside a
 new one for the fold.
+
+The timeline's written list then folded away. It had repeated, card by card, what the moving
+view already told, and it pushed the force organisation a long way down the page. The list
+now sits closed under the stage as "Read the full timeline as a list" with its event count,
+and opens by default only when the moving view is off, because the list is then the timeline
+itself and still the accessible one.

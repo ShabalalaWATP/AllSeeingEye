@@ -69,8 +69,11 @@ describe('the timeline journey without WebGL', () => {
   it('reads the whole timeline as phases and events, and says why the view is static', () => {
     render(<TimelineSection reference={reference} />);
     const phases = screen.getByRole('list', { name: 'Phases of the war' });
+    // Without the moving view the list is the timeline, so it starts open.
     expect(within(phases).getAllByRole('heading', { level: 3 })).toHaveLength(2);
-    expect(within(phases).getByText('Russia attacked from the north, east and south.')).toBeVisible();
+    expect(
+      within(phases).getByText('Russia attacked from the north, east and south.'),
+    ).toBeVisible();
     const invasion = screen.getByRole('list', { name: 'Events: Full-scale invasion' });
     expect(invasion.querySelectorAll(':scope > li')).toHaveLength(2);
     expect(within(invasion).getByText('24 February 2022')).toBeVisible();
@@ -195,6 +198,15 @@ describe('the timeline journey with WebGL', () => {
     expect(scene.setRunning).toHaveBeenLastCalledWith(true);
     view.unmount();
     expect(scene.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('folds the written list away while the moving view tells the story', async () => {
+    const user = userEvent.setup();
+    render(<TimelineSection reference={reference} />);
+    const list = screen.getByRole('list', { name: 'Phases of the war' });
+    expect(within(list).getByText('The full-scale invasion begins')).not.toBeVisible();
+    await user.click(screen.getByText('Read the full timeline as a list'));
+    expect(within(list).getByText('The full-scale invasion begins')).toBeVisible();
   });
 
   it('keeps the reading list when the scene module cannot be loaded', async () => {

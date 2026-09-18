@@ -102,6 +102,9 @@ export function TimelineSection({
   const reducedMotion = useReducedMotion();
   const [webgl] = useState(hasWebGl2);
   const enhanced = webgl && !reducedMotion;
+  // The written list is folded away when the moving view can tell the story; without it,
+  // the list is the timeline, so it opens.
+  const [listOpen, setListOpen] = useState(!enhanced);
   const journey = useMemo(() => buildJourney(reference, theme), [reference, theme]);
   const [background] = useState(groundColour);
 
@@ -121,8 +124,8 @@ export function TimelineSection({
       </h2>
       <p className="max-w-3xl text-sm text-muted">
         Travel the war from the Maidan revolution to the present. Scroll over the stage, drag it
-        sideways, use the arrow keys or the slider, or pick a phase to jump. Every event is written
-        out in full in the list below, which does not need the 3D view.
+        sideways, use the arrow keys or the slider, or pick a phase to jump. Every event is also
+        written out in full in a list you can open below, which does not need the 3D view.
       </p>
       <PhaseSelector
         phases={journey.phases}
@@ -159,17 +162,39 @@ export function TimelineSection({
           . The timeline reads in full below.
         </p>
       )}
-      <TimelineReadingList
-        journey={journey}
-        reference={reference}
-        fetcher={fetcher}
-        index={safeIndex}
-        onIndex={setIndex}
-      />
-      <p className="text-xs text-muted">
-        Hand-written notes with a source on each card; later events reach the page through the
-        updates above, not this list.
-      </p>
+      <details
+        open={listOpen}
+        onToggle={(event) => setListOpen(event.currentTarget.open)}
+        className="group/list rounded-card border border-line bg-surface/60"
+      >
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-medium text-text select-none [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="text-muted transition-transform group-open/list:rotate-90 motion-reduce:transition-none"
+            >
+              ▸
+            </span>
+            Read the full timeline as a list
+          </span>
+          <span className="font-mono text-[10px] text-muted">
+            {count} {count === 1 ? 'event' : 'events'}
+          </span>
+        </summary>
+        <div className="flex flex-col gap-3 border-t border-line p-4">
+          <TimelineReadingList
+            journey={journey}
+            reference={reference}
+            fetcher={fetcher}
+            index={safeIndex}
+            onIndex={setIndex}
+          />
+          <p className="text-xs text-muted">
+            Hand-written notes with a source on each card; later events reach the page through the
+            updates above, not this list.
+          </p>
+        </div>
+      </details>
     </section>
   );
 }

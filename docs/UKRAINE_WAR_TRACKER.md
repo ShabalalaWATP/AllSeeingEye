@@ -31,7 +31,7 @@ the three news lenses with charts and the sources footer.
   A table lists every claimed category.
 - **Timeline.** A phase ribbon from 2014 to the current year over dated event cards with a
   theme filter; each card carries plain English, a source link and, where Commons holds a
-  licensed image of the subject, a captioned image.
+  licensed image of the subject, a captioned image. The written list of phases and events sits folded under the stage as "Read the full timeline as a list"; it opens by default only when the moving view is off (no WebGL2 or reduced motion), since the list is then the timeline.
 - **Force organisation.** Two expandable trees, Russia first and Ukraine below it, of reported
   command structure from the supreme command down to every formation of regiment size and
   above that the public Wikipedia order of battle lists (about 340 Russian and 320 Ukrainian
