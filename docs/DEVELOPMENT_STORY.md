@@ -5224,3 +5224,18 @@ and sources" at the end, and a "Key to the terms" is the one place the PHIA yard
 Admiralty grading are named. The drafting prompts gained a plain-English rule: tell the
 story in the order it happened, no trade terms or doctrine names in prose, no commentary on
 sources, acronyms expanded. Citation concerns stay beside the judgement they touch.
+
+Every connector was then fetched once from the app's own container: 278 sources, 262 of
+them answering with items. Five faults were the app's to fix. TASS writes HTML entities such
+as an em dash into its RSS, which a strict XML parser rejects for one character, so feeds now
+rewrite HTML named entities as numeric references before parsing and keep an unknown name as
+literal text. GDELT's lastupdate.txt named a 15-minute export it never published, so the
+connector now steps back through the four previous slots and remembers which one answered.
+Meduza's YouTube handle had been taken by another channel, and the seed now names
+@meduzalive. Nation Kenya's feed answers only on its www host. CBC's servers hold the
+application's requests open without answering while answering a browser at once; as with
+CISA and the ACSC, the app will not imitate a browser, so CBC joins the recorded refusals
+with a plain reason and a 12-hour recheck. Three sources stay outside the app's reach: CISA's
+advisory feed refuses this client at the TLS level, cyber.gov.au holds every connection, and
+ReliefWeb still awaits an approved application name. ADS-B rate limits seen during the probe
+were the probe competing with the live server, and the live poll answers normally.

@@ -104,6 +104,22 @@ async def test_malformed_feed_not_modified_bom_and_cap() -> None:
     assert len(events) == MAX_ITEMS
 
 
+async def test_html_named_entities_do_not_break_the_feed() -> None:
+    """TASS writes &mdash; into its RSS; XML only knows five names, so it is rewritten."""
+    payload = (
+        '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>T</title>'
+        "<item><title>Jet crashes in Michigan &mdash; TV &amp; radio</title>"
+        "<link>https://feeds.test/a</link><guid>a</guid>"
+        "<description>Space&nbsp;kept, &unknown; left alone, &lt;tag&gt; escaped</description>"
+        "</item></channel></rss>"
+    )
+    events = await connector(payload).fetch()
+    assert len(events) == 1
+    assert events[0].title == "Jet crashes in Michigan \u2014 TV & radio"
+    assert "Space\u00a0kept" in (events[0].summary or "")
+    assert "&unknown;" in (events[0].summary or "")
+
+
 async def test_firewall_html_page_is_named_rather_than_called_malformed_xml() -> None:
     page = (
         "<html>\n\t<head>\n\t\t<title>Request Rejected</title>\n\t</head>\n"

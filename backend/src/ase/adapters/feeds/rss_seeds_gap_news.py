@@ -77,7 +77,7 @@ GAP_NEWS_SEEDS: tuple[RssSeed, ...] = (
         "nation_kenya",
         "Nation Kenya",
         "Nation Media Group",
-        "https://nation.africa/kenya/rss.xml",
+        "https://www.nation.africa/kenya/rss.xml",
         "https://nation.africa/kenya",
         "Kenyan and East African news; linked articles may be paywalled.",
     ),

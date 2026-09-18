@@ -44,6 +44,8 @@ def connector_for(source_id: str, error: Exception):
         ("cyber_cisa_advisories", FeedHttpStatusError(403, "https://www.cisa.gov/x.xml")),
         ("cyber_acsc_advisories", FeedTimeoutError("Feed request exceeded its time limit.")),
         ("cyber_acsc_advisories", FeedFetchError("ReadError: Feed request failed.")),
+        ("news_cbc_canada", FeedFetchError("ReadError: Feed request failed.")),
+        ("news_cbc_canada", FeedTimeoutError("Feed request exceeded its time limit.")),
     ],
 )
 async def test_known_refusal_is_deferred_with_an_operator_reason(source_id, error) -> None:
