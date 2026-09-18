@@ -32,8 +32,8 @@ the three news lenses with charts and the sources footer.
 - **Timeline.** A phase ribbon from 2014 to the current year over dated event cards with a
   theme filter; each card carries plain English, a source link and, where Commons holds a
   licensed image of the subject, a captioned image.
-- **Force organisation.** Two expandable trees (Russia, Ukraine) of reported command
-  structure: command, ministry, general staff, groupings and services, corps and branches.
+- **Force organisation.** Two expandable trees, Russia first and Ukraine below it, of reported
+  command structure: command, ministry, general staff, groupings and services, corps and branches.
   Nodes show the reported commander (linking to the public figures tracker where a roster
   record exists), a strength estimate naming whose, links and an as-of date.
 - **Equipment by speciality.** Ten specialities (drones; communications and electronic

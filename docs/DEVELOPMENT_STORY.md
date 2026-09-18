@@ -5009,3 +5009,15 @@ components so both forms are one design, and the validation and request-building
 left the component for a plain module. The report request already accepted regions,
 categories, a conflict and a hazard, so no backend change was needed. The Daily briefing
 tab left the research window; the page still answers at its own address.
+
+The Ukraine lens charts were then found empty on a live server. The board asked the store
+for items filed under Ukraine, inside the conflict box, or under the other belligerents, but
+an outlet article from the Kyiv Independent, Ukrinform, Pravda or the Russian press arrives
+with no point and no country, so none of them ever reached the board; only the geo-tagged
+assessments did, and the tests had seeded the outlet items with a country the connector
+never sets. The board now also asks for the named outlets by source, with the existing rule
+that a Russian or international item must name the war, and the test seeds them as they
+really arrive. Two limits remain by design: raw events live only in memory, so a restarted
+server shows what it has collected since, and news items are retained for 72 hours, so the
+14-day chart fills from the right. The two force organisation charts now sit one below the
+other, Russia first, instead of side by side.

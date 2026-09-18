@@ -259,8 +259,9 @@ def seed_events(container: Container) -> None:
             summary="Recruits and reservists affected.",
             published_at=now - timedelta(hours=5),
             observed_at=now,
-            point=inside,
-            country_iso="UA",
+            # Outlet articles arrive with no point and no country, as the RSS connector makes them.
+            point=None,
+            country_iso=None,
         ),
         make_event(
             "ru",
@@ -271,7 +272,30 @@ def seed_events(container: Container) -> None:
             published_at=now - timedelta(hours=1),
             observed_at=now,
             point=None,
-            country_iso="RU",
+            country_iso=None,
+        ),
+        make_event(
+            "ru-war",
+            source_id="meduza_en",
+            category=Category.NEWS,
+            subtype="article",
+            title="Drones hit Belgorod overnight",
+            summary="Regional officials report damage from Ukrainian drones.",
+            published_at=now - timedelta(hours=2),
+            observed_at=now,
+            point=None,
+            country_iso=None,
+        ),
+        make_event(
+            "located",
+            source_id="reuters_world",
+            category=Category.NEWS,
+            subtype="article",
+            title="Fighting near Pokrovsk continues",
+            published_at=now - timedelta(hours=4),
+            observed_at=now,
+            point=inside,
+            country_iso="UA",
         ),
         make_event(
             "gs",
@@ -297,10 +321,13 @@ def test_board_groups_updates_and_keeps_claims_apart(container: Container) -> No
     seed_events(container)
     service: UkraineBoardService = container.ukraine()
     board = service.board()
-    groups = {entry.event.source_id: entry.group for entry in board.updates}
+    groups = {entry.event.title: entry.group for entry in board.updates}
+    # Outlets are read by source; a Russian item must name the war, a located item joins.
     assert groups == {
-        "isw_assessments": UpdateGroup.ASSESSMENTS,
-        "kyiv_independent": UpdateGroup.UKRAINIAN,
+        "Russian Offensive Campaign Assessment, September 12, 2026": UpdateGroup.ASSESSMENTS,
+        "Mobilisation rules tightened": UpdateGroup.UKRAINIAN,
+        "Drones hit Belgorod overnight": UpdateGroup.RUSSIAN,
+        "Fighting near Pokrovsk continues": UpdateGroup.INTERNATIONAL,
     }
     lenses = {entry.event.source_id: entry.lenses for entry in board.updates}
     assert lenses["kyiv_independent"] == {Lens.WORKFORCE}
@@ -321,7 +348,12 @@ async def test_endpoints_require_a_session_and_serve_the_snapshot(
     assert board.status_code == 200 and board.headers["cache-control"] == "private, no-store"
     body = board.json()
     assert body["day_number"] == 1663 and body["categories"]["tanks"] == "Tanks"
-    assert {u["group"] for u in body["updates"]} == {"assessments", "ukrainian"}
+    assert {u["group"] for u in body["updates"]} == {
+        "assessments",
+        "ukrainian",
+        "russian",
+        "international",
+    }
     assert body["control"]["counts"]["ru"] > 1_000 and body["freshness"]["control_assessed"]
     control = await client.get("/api/conflicts/ukraine/control", headers=bearer(token))
     assert control.status_code == 200
