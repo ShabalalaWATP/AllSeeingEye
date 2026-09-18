@@ -37,6 +37,7 @@ class PhotoObservation(BaseModel):
 class PhotoShadow(BaseModel):
     """A shadow the model measured by eye: its length as a multiple of the object's height."""
 
+    model_config = ConfigDict(extra="forbid", frozen=True)
     photo_id: str = Field(pattern=r"^photo-[1-6]$")
     shadow_length_to_height: float = Field(ge=0.02, le=50)
     basis: str = Field(min_length=10, max_length=500)
@@ -77,6 +78,7 @@ class PhotoAssessment(BaseModel):
 class SunShadowCheck(BaseModel):
     """Whether a candidate agrees with a reported shadow at the stated capture instant."""
 
+    model_config = ConfigDict(extra="forbid", frozen=True)
     candidate_label: str = Field(min_length=1, max_length=200)
     photo_id: str = Field(pattern=r"^photo-[1-6]$")
     status: Literal["consistent", "inconsistent", "sun_below_horizon", "no_coordinates"]
