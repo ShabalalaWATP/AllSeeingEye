@@ -26,8 +26,39 @@ the machine.
 
 ## 1. Create the server
 
-Choose the image (Debian 13 or Ubuntu 24.04), the size above, and add your SSH public key
-during creation so the provider installs it for `root`. Note the IPv4 address.
+Written for Hetzner Cloud, which is the cheapest sound option without a commitment. Other
+providers differ only in this step.
+
+1. Register at **console.hetzner.cloud** and add a payment method. New accounts are
+   sometimes held for identity verification, which can take from minutes to a day, so do
+   this before you plan the rest.
+2. Create a **project** (any name), then **Add Server**:
+   - **Location**: Falkenstein, Nuremberg or Helsinki for the UK.
+   - **Image**: Debian 13.
+   - **Type**: shared vCPU, x86, **CX32** (4 vCPU, 8 GB, 80 GB). CPX31 is the AMD
+     equivalent with more disk. Avoid the CAX (ARM) line: the Dockerfiles pin images by
+     digest and several of those pins are amd64 only.
+   - **Networking**: keep IPv4 and IPv6. A public IPv4 carries a small monthly charge and
+     you need one for a domain most people can reach.
+   - **SSH keys**: add your public key here, so it is installed for `root` at first boot.
+   - **Backups**: optional, 20 per cent of the server price. Worth taking. It rolls the
+     whole machine back, which covers different failures from the database backups in
+     step 10; neither replaces the other.
+3. Note the IPv4 address once it boots.
+
+Then create a **cloud firewall** (Firewalls, Create Firewall) and apply it to the server,
+with three inbound rules and nothing else:
+
+| Port | Protocol | Source |
+| --- | --- | --- |
+| 22 | TCP | Your own address, or `0.0.0.0/0` and `::/0` if it changes often |
+| 80 | TCP | `0.0.0.0/0` and `::/0` |
+| 443 | TCP | `0.0.0.0/0` and `::/0` |
+
+This firewall runs outside the machine, so unlike a host firewall it also gates ports that
+Docker publishes. Leave outbound unrestricted: the app polls hundreds of sources.
+
+If you ever lock yourself out of SSH, the console has a web terminal and a rescue mode.
 
 ## 2. Point the domain at it
 
@@ -79,9 +110,10 @@ server$ sudo mkswap /swapfile && sudo swapon /swapfile
 server$ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-Note that Docker publishes ports through its own iptables chains, so `ufw` does not gate a
-published container port. That is harmless here because only 80 and 443 are published; the
-API and the database are reachable only from inside the Compose network. Keep it that way.
+`ufw` here is defence in depth, not the main gate. Docker publishes ports through its own
+iptables chains, so a host firewall does not block a published container port; the cloud
+firewall from step 1 does. Only 80 and 443 are published in any case, and the API and the
+database are reachable only from inside the Compose network. Keep it that way.
 
 ## 4. Install Docker
 
