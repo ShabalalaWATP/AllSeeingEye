@@ -41,11 +41,11 @@ the three news lenses with charts and the sources footer.
   commander and opens the chain down to the chosen one. Nodes show the reported commander
   (linking to the public figures tracker where a roster record exists), a strength estimate
   naming whose, links and an as-of date.
-- **Equipment by speciality.** Ten specialities (drones; communications and electronic
+- **Equipment catalogue.** Ten specialities (drones; communications and electronic
   warfare; air defence; land-attack missiles and glide bombs; artillery; small arms; tanks;
   infantry fighting vehicles and carriers; aviation; naval), each with sub-headings and a
   Russia and a Ukraine column of cards: image, role, description, origin, reported numbers
-  naming whose, links and an as-of date. A compare toggle renders the speciality as a table.
+  naming whose, links and an as-of date. A compare toggle renders the speciality as a table. The catalogue is one panel: a speciality tab strip, a side switch and a search, then one collapsible section per sub-heading whose card grid scrolls inside a fixed height, so a long speciality never runs down the page. Cards carry a cover image, the role, a clamped description with Read more, and the reported numbers in their own box.
 - **Lenses.** Equipment, workforce and casualty news: for each lens a stacked column chart
   of retained items per day by reporting group over the window and the matching items. The
   casualties lens also carries the HRMMU monthly table and the curated casualty references

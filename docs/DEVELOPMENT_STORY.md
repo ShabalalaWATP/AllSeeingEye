@@ -5034,3 +5034,12 @@ Every imported entry names the public tree and date it came from, and none fetch
 image, so the catalogue grew to about 660 entries without growing the image cache. The
 domain and contract caps rose from 160 to 800 force nodes, and each side's chart gained a
 "Find a unit" box because a tree that size needs a way in.
+
+The equipment catalogue was then redrawn as one panel. Speciality buttons became a scrolling
+tab strip with counts, the side filter a segmented control, and each sub-heading a
+collapsible section with Expand all and Collapse all, whose cards sit in a grid that scrolls
+inside a fixed height rather than running the page. Cards gained a cropped cover image, a
+side-coloured top edge, the role in colour, a clamped description with Read more and the
+reported numbers in their own box. The accessible contract (the Speciality group, a region per
+sub-heading, the compare table) did not change, so the existing tests still pass alongside a
+new one for the fold.

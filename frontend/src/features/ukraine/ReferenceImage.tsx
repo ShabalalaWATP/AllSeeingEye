@@ -26,12 +26,15 @@ export function ReferenceImage({
   alt,
   fetcher,
   className = '',
+  cover = false,
 }: {
   imageId: string;
   meta: ImageMeta | undefined;
   alt: string;
   fetcher?: ((path: string) => Promise<Blob>) | undefined;
   className?: string;
+  /** Crop to a fixed banner height for a card grid instead of showing the whole frame. */
+  cover?: boolean;
 }) {
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {
@@ -49,9 +52,17 @@ export function ReferenceImage({
   }, [imageId, fetcher]);
   if (src === null || meta === undefined) return null;
   return (
-    <figure className={`overflow-hidden rounded border border-line bg-surface-2 ${className}`}>
-      <img src={src} alt={alt} width={meta.width} height={meta.height} className="w-full" />
-      <figcaption className="px-2 py-1 text-[10px] text-muted">
+    <figure
+      className={`overflow-hidden bg-surface-2 ${cover ? 'border-b border-line' : 'rounded border border-line'} ${className}`}
+    >
+      <img
+        src={src}
+        alt={alt}
+        width={meta.width}
+        height={meta.height}
+        className={cover ? 'h-36 w-full object-cover' : 'w-full'}
+      />
+      <figcaption className="truncate px-2 py-1 text-[10px] text-muted">
         <a
           href={meta.source_url}
           target="_blank"

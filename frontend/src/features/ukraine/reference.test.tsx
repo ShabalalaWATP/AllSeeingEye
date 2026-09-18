@@ -84,6 +84,11 @@ describe('Ukraine reference sections', () => {
       expect(within(recon).getByRole('img', { name: 'Orlan-10' })).toBeInTheDocument();
     });
     expect(within(recon).getByText(/CC BY-SA 4.0, via Wikimedia Commons/)).toBeInTheDocument();
+    // Each sub-heading folds away so a long speciality does not run down the page.
+    await user.click(screen.getByRole('button', { name: 'Collapse all' }));
+    expect(within(recon).getByText('Orlan-10')).not.toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Expand all' }));
+    expect(within(recon).getByText('Orlan-10')).toBeVisible();
     await user.click(within(specialities).getByRole('button', { name: 'Tanks (1)' }));
     expect(screen.getByText('T-90M Proryv')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Compare as a table' }));
