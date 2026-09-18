@@ -7,8 +7,9 @@ that stays on, not a serverless platform. The Compose stack in this repository i
 deployment: PostgreSQL with PostGIS, the API container, and Caddy serving the built
 interface and proxying `/api` on the same origin.
 
-Everything below assumes Debian 13 or Ubuntu 24.04 on the server and Git Bash (or any
-POSIX shell) on your own machine. Commands prefixed `you$` run locally; `server$` runs on
+Everything below assumes Debian 13 or a current Ubuntu LTS on the server and Git Bash (or
+any POSIX shell) on your own machine. Docker publishes packages for both, including Ubuntu
+26.04 (`resolute`). Commands prefixed `you$` run locally; `server$` runs on
 the server over SSH.
 
 ## Before you start
@@ -94,6 +95,24 @@ server$ install -d -m 700 -o ase -g ase /home/ase/.ssh
 server$ cp /root/.ssh/authorized_keys /home/ase/.ssh/ && chown ase:ase /home/ase/.ssh/authorized_keys
 server$ sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/; s/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 server$ systemctl restart ssh
+```
+
+Ubuntu images ship drop-in files under `/etc/ssh/sshd_config.d/`, which are read before
+the main file, and the first value obtained wins. Editing the main file can therefore be
+overridden without warning, so check what the daemon actually resolved:
+
+```bash
+server$ sshd -T | grep -E 'permitrootlogin|passwordauthentication'
+```
+
+Both must read `no`. If either still says `yes`, write a drop-in that sorts ahead of the
+image's own and restart again:
+
+```bash
+server$ printf 'PermitRootLogin no
+PasswordAuthentication no
+' > /etc/ssh/sshd_config.d/01-hardening.conf
+server$ systemctl restart ssh && sshd -T | grep -E 'permitrootlogin|passwordauthentication'
 ```
 
 Open a **second** terminal and confirm `ssh ase@198.51.100.10` works before closing the
