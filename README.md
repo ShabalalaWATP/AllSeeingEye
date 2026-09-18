@@ -68,6 +68,11 @@ Keep the API and PostgreSQL ports unpublished. The API intentionally uses one
 process: live data, rate limits, model admission and search coordination are
 process-local. Public exposure requires the remaining security review gates.
 
+To run the same stack on a server rather than this machine, [deployment](docs/DEPLOYMENT.md)
+is the step-by-step runbook: hardening, certificates, the first administrator, backups and
+the gates to close first. `ASE_TLS` and `ASE_HSTS_MAX_AGE` switch Caddy between the
+internal certificate used here and real ones for a public domain.
+
 The web image builds the standard Caddy release with locked, patched Go
 dependencies. Its [build and update notes](infra/caddy-build/README.md) cover
 rebuilding, module checks and scanning the resulting image.

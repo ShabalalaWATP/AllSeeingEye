@@ -5256,3 +5256,18 @@ photo service and its API, the provider in the research catalogue with a reviewe
 capability profile and an allocation record, so the planner can choose it like any
 other source. The tools that act on people's phone numbers or scrape platforms against
 their terms were left out on purpose.
+
+The app was then made deployable to a server rather than only this machine. Nothing about
+its shape suits a serverless host: one process polls hundreds of sources on their own
+intervals, the raw events live in a bounded in-memory store that never reaches the
+database, and a report job can hold a lease for forty minutes. The existing Compose stack
+was already the answer, so the work was small and specific. The Caddyfile's two hardcoded
+deployment decisions became settings: `ASE_TLS` chooses between Caddy's internal
+certificate authority and automatic certificates for a real domain, and `ASE_HSTS_MAX_AGE`
+asserts the policy only once HTTPS is known to work, since a year-long policy cannot be
+withdrawn quickly. Both were validated against the pinned Caddy release in each mode. The
+runbook in docs/DEPLOYMENT.md carries the rest: server hardening, shipping the tracked
+files with git archive because main has no remote, the uid 10001 ownership the bind mount
+needs, the administrator and MFA enrolment, a backup schedule since none is installed by
+design, and the security review's public-exposure gates that remain the operator's to
+close.

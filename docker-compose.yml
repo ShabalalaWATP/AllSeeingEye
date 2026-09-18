@@ -39,6 +39,8 @@ services:
       dockerfile: frontend/Dockerfile
     environment:
       ASE_SITE_ADDRESS: ${ASE_SITE_ADDRESS:-localhost}
+      ASE_TLS: ${ASE_TLS:-internal}
+      ASE_HSTS_MAX_AGE: ${ASE_HSTS_MAX_AGE:-0}
     ports:
       - "80:80"
       - "443:443"
