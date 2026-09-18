@@ -3,7 +3,6 @@ import { NavLink } from 'react-router';
 const destinations = [
   ['/research', 'New research'],
   ['/research/saved', 'Saved research'],
-  ['/trackers', 'Daily briefing'],
 ] as const;
 
 /** Shared navigation keeps research tools together without coupling features. */

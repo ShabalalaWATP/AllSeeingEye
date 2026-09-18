@@ -4998,3 +4998,14 @@ live evidence, and a single tick adds a fresh web search. The depth targets grew
 budgets raised to match. Saved-area selection had already left with Plans & areas; a
 boundary drawn on the map still arrives with a subscription, is shown with its consent
 box, and can be cleared from the form.
+
+Starting a research question then took the same shape. The research form is now the same
+column of numbered steps as a subscription, minus the schedule: what to ask (with the
+research focus beside the question), how deep to go, where to look with regions and
+nations, which themes, a conflict or disaster to pin to, what to read, which period, then
+scope and sources with the destination, languages and the folded specialist settings. The
+numbered step, the boxed toggle and the conflict and disaster picker moved into shared
+components so both forms are one design, and the validation and request-building rules
+left the component for a plain module. The report request already accepted regions,
+categories, a conflict and a hazard, so no backend change was needed. The Daily briefing
+tab left the research window; the page still answers at its own address.

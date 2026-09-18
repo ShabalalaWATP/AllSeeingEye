@@ -41,10 +41,7 @@ describe('research workspace navigation', () => {
       'href',
       '/subscriptions',
     );
-    expect(within(tools).getByRole('link', { name: 'Daily briefing' })).toHaveAttribute(
-      'href',
-      '/trackers',
-    );
+    expect(within(tools).queryByRole('link', { name: 'Daily briefing' })).not.toBeInTheDocument();
   });
 
   it('does not load feed boards or create a competing generation form when browsing saved reports', async () => {

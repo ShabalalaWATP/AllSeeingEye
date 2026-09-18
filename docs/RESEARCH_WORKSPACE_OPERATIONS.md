@@ -19,10 +19,16 @@ to the source catalogue and alert rules. These preferences apply per user. See
 
 ## Questions and scope
 
-Enter a question and choose Basic, Deep or Advanced, the destination and up to eight
-countries. No selected countries means worldwide. Choose a rolling period or a
-fixed UTC range, with inclusive start and exclusive end. Ordinary intervals allow
-730 days. This limits duration, not the age of a saved historical interval.
+The form reads top to bottom in numbered steps: the question and research focus,
+Basic, Deep or Advanced, where to look, which themes, a conflict or disaster to pin
+to, what to read, which period, then scope and sources. Where to look takes up to
+eight regions (continents or the Middle East) and up to eight nations; leaving both
+empty means worldwide. Themes narrow the evidence to up to four event categories,
+such as cyber, economy, politics or public view; none means all of it. Company,
+domain and private-file focuses skip the place and conflict steps. Choose a rolling
+period or a fixed UTC range, with inclusive start and exclusive end. Ordinary
+intervals allow 730 days. This limits duration, not the age of a saved historical
+interval. The destination and search languages sit under Scope and sources.
 
 Inspect the collection plan for actual source coverage. Current RSS feeds cannot
 supply two years of archives. Fresh headline research can match reviewed country
@@ -127,7 +133,7 @@ using prior evidence and before saving.
 
 ## Daily Live Monitor
 
-Opening Daily briefing within Research ensures one personal Basic briefing covering the previous
+Opening the Daily briefing page at `/trackers` (it is no longer a Research tab) ensures one personal Basic briefing covering the previous
 24 hours of available conflict, disaster, humanitarian and news evidence. It uses
 the durable research pipeline and saves a cited report. Multiple tabs and repeat
 visits reuse the same job for 24 hours, including paused or failed jobs. The page
@@ -143,7 +149,7 @@ establish real-model briefing quality.
 
 ## Reusing map areas
 
-The research tabs are New research, Saved reports, Daily briefing and Plans & areas. Running,
+The research tabs are New research and Saved research. Running,
 failed and paused work remains accessible through Research progress from Saved
 reports. Plans & areas stores reusable geographic definitions. Open on map links
 use `/?area=<id>` and fetch authorised geometry before focusing and drawing it on
