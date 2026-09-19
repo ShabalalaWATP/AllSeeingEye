@@ -12,6 +12,8 @@ from unittest.mock import call, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import deploy_vps as deploy
 
+REAL_WAIT_HEALTHY = deploy.wait_healthy
+
 OLD = "a" * 40
 NEW = "b" * 40
 OLD_IMAGES = {
@@ -110,6 +112,28 @@ class DeploymentTests(unittest.TestCase):
         self.mocks["wait_healthy"].side_effect = deploy.DeploymentError("unhealthy")
         with self.assertRaisesRegex(deploy.DeploymentError, "unhealthy"):
             deploy.deploy(NEW)
+
+    def test_already_deployed_parser_must_pass_docker_health(self):
+        self.mocks["git"].return_value = NEW
+        self.mocks["wait_healthy"].side_effect = REAL_WAIT_HEALTHY
+
+        def process(*args):
+            if args[1:3] == ("image", "inspect"):
+                return NEW
+            service = args[-1]
+            health = "unhealthy" if service == "parser" else "healthy"
+            return f"{OLD_IMAGES[service]} running {health}"
+
+        self.mocks["run"].side_effect = process
+        with (
+            patch.object(deploy, "compose", side_effect=lambda *args: args[-1]),
+            patch.object(deploy.time, "sleep"),
+            patch.object(deploy, "smoke") as smoke,
+        ):
+            with self.assertRaisesRegex(deploy.DeploymentError, "parser"):
+                deploy.deploy(NEW)
+            smoke.assert_not_called()
+        self.mocks["build"].assert_not_called()
 
     def test_matching_checkout_with_mismatched_image_revision_is_rebuilt(self):
         self.mocks["git"].return_value = NEW

@@ -31,7 +31,7 @@ An already-deployed retry verifies image revision labels as well as health.
 ## Deliberate manual gates
 
 Changes to `docker-compose.yml`/standard Compose filenames, Alembic configuration
-or migrations, or the migration runner require a reviewed manual rollout. The
+or migrations, or the migration runner/CLI require a reviewed manual rollout. The
 API migrates on startup; automatically reverting images would not undo a schema
 change. Automatic deployment never restores or downgrades the database.
 

@@ -32,6 +32,7 @@ MANUAL_PATHS = (
     "backend/alembic/",
     "backend/alembic.ini",
     "backend/src/ase/infrastructure/migrations.py",
+    "backend/src/ase/cli.py",
     "scripts/deploy_vps.py",
     "scripts/deploy_ssh.py",
 )
@@ -53,7 +54,7 @@ def run(*args: str, cwd: Path = ROOT, timeout: int = 1200) -> str:
             text=True,
             timeout=timeout,
         )
-    except (subprocess.SubprocessError, OSError) as exc:
+    except (subprocess.SubprocessError, OSError, UnicodeError) as exc:
         raise DeploymentError(
             f"Operation failed: {args[0]} {args[1] if len(args) > 1 else ''}"
         ) from exc
@@ -156,10 +157,11 @@ def wait_healthy(images: dict[str, str]) -> None:
                     "docker",
                     "inspect",
                     "--format",
-                    "{{.Image}} {{.State.Status}}",
+                    "{{.Image}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}",
                     container,
                 )
-                if actual != f"{expected} running":
+                health = "none" if service == "web" else "healthy"
+                if actual != f"{expected} running {health}":
                     raise DeploymentError(f"Unexpected running image for {service}.")
             smoke()
             return

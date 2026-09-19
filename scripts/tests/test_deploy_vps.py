@@ -55,6 +55,7 @@ class GuardTests(unittest.TestCase):
             "backend/alembic/versions/new.py",
             "backend/alembic.ini",
             "backend/src/ase/infrastructure/migrations.py",
+            "backend/src/ase/cli.py",
             "scripts/deploy_vps.py",
             "scripts/deploy_ssh.py",
         )
@@ -112,8 +113,31 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(run.call_args.args[0], ("git", "show", "literal; argument"))
         self.assertNotIn("shell", run.call_args.kwargs)
 
+    def test_invalid_utf8_process_output_becomes_safe_deployment_error(self):
+        error = UnicodeDecodeError("utf-8", b"\xffsecret", 0, 1, "invalid byte")
+        with (
+            patch.object(deploy.subprocess, "run", side_effect=error),
+            self.assertRaises(deploy.DeploymentError) as caught,
+        ):
+            deploy.run("curl", "--fail")
+        self.assertEqual(str(caught.exception), "Operation failed: curl --fail")
+
 
 class HealthTests(unittest.TestCase):
+    def test_correct_images_and_healthy_services_reach_smoke_check(self):
+        states = {
+            "api": "sha256:new-api running healthy",
+            "parser": "sha256:new-api running healthy",
+            "web": "sha256:new-web running none",
+        }
+        with (
+            patch.object(deploy, "compose", side_effect=lambda *args: args[-1]),
+            patch.object(deploy, "run", side_effect=lambda *args: states[args[-1]]),
+            patch.object(deploy, "smoke") as smoke,
+        ):
+            deploy.wait_healthy(NEW_IMAGES)
+        smoke.assert_called_once()
+
     def test_frontend_asset_and_admin_auth_are_checked(self):
         with patch.object(
             deploy,
