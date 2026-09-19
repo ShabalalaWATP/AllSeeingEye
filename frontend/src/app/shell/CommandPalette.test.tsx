@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 it('opens from the rail, jumps to a tracker and returns focus to its trigger', async () => {
-  const { user, router } = renderApp('/reports', 'user');
+  const { user, router } = renderApp('/research/saved', 'user');
   const trigger = await screen.findByRole('button', { name: /Find anything/ });
   await user.click(trigger);
   const palette = await screen.findByRole('dialog', { name: 'Find anything' });
@@ -51,7 +51,7 @@ it('opens from the rail, jumps to a tracker and returns focus to its trigger', a
 });
 
 it('opens with the keyboard and moves through results with the arrow keys', async () => {
-  const { user, router } = renderApp('/reports', 'user');
+  const { user, router } = renderApp('/research/saved', 'user');
   await screen.findByRole('button', { name: /Find anything/ });
   await user.keyboard('{Control>}k{/Control}');
   const palette = await screen.findByRole('dialog', { name: 'Find anything' });
@@ -67,7 +67,7 @@ it('opens with the keyboard and moves through results with the arrow keys', asyn
 });
 
 it('closes on dismissal without navigating', async () => {
-  const { user, router } = renderApp('/reports', 'user');
+  const { user, router } = renderApp('/research/saved', 'user');
   await user.click(await screen.findByRole('button', { name: /Find anything/ }));
   // jsdom does not raise the native Escape cancel, so dispatch what the browser would.
   fireEvent(
@@ -77,7 +77,7 @@ it('closes on dismissal without navigating', async () => {
   await waitFor(() => {
     expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
   });
-  expect(router.state.location.pathname).toBe('/reports');
+  expect(router.state.location.pathname).toBe('/research/saved');
   await user.click(screen.getByRole('button', { name: /Find anything/ }));
   await user.click(await screen.findByRole('button', { name: 'Close search' }));
   await waitFor(() => {
@@ -85,20 +85,28 @@ it('closes on dismissal without navigating', async () => {
   });
 });
 
-it('reaches pages, trackers, map layers and source families, never administration', () => {
+it('reaches pages, trackers and map layers, and never administration', () => {
   const targets = commandTargets();
   const routes = targets.map((target) => target.to);
-  expect(routes).toContain('/sources');
-  expect(routes).toContain('/warning');
+  // Alerts and rules are reached from Settings now, not from the primary rail.
+  expect(routes).not.toContain('/warning');
   expect(routes).toContain('/trackers/space');
   expect(routes).toContain('/?panel=CCTV');
-  expect(routes).toContain('/sources?family=map_layer');
+  // The catalogue is an administrator's page now, so an analyst cannot jump to it.
   expect(routes.some((route) => route.startsWith('/admin'))).toBe(false);
   expect(new Set(targets.map((target) => target.id)).size).toBe(targets.length);
 });
 
+it('offers the source catalogue by family only to an administrator', () => {
+  const routes = commandTargets({ admin: true }).map((target) => target.to);
+  expect(routes).toContain('/admin/catalogue?family=map_layer');
+  expect(commandTargets().some((target) => target.group === 'Sources')).toBe(false);
+});
+
 it('ranks a label match above a description match and needs every term', () => {
-  const targets = commandTargets();
+  // The catalogue families are an administrator's entries, and one of them carries
+  // the two-term case this ranks.
+  const targets = commandTargets({ admin: true });
   expect(matchTargets(targets, 'teams')[0]?.label).toBe('Teams');
   expect(matchTargets(targets, 'ukraine dataset').map((target) => target.label)).toEqual([
     'Ukraine tracker datasets',

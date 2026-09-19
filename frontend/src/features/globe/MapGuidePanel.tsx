@@ -7,6 +7,7 @@ import {
   type MapLayerEntry,
   type MapLayerToggle,
 } from '@/lib/mapLayerDirectory';
+import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
@@ -60,6 +61,7 @@ function GuideRow({
 
 /** Names every layer and tool the map offers, says what it is and switches it on. */
 export function MapGuide({ open, sources }: { open: OpenPanel; sources: MapGuideSources }) {
+  const isAdmin = useAuthStore(selectIsAdmin);
   const hidden = useEventsStore((state) => state.hidden);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
   const interference = useGlobeStore((state) => state.interference);
@@ -112,16 +114,18 @@ export function MapGuide({ open, sources }: { open: OpenPanel; sources: MapGuide
           </ul>
         </section>
       ))}
-      <section className="map-tool-section">
-        <h3 className="map-tool-section-title">Where the data comes from</h3>
-        <p className="text-[11px] leading-relaxed text-muted">
-          Every feed, camera index, map layer and dataset behind these layers is listed with its
-          current state in the source catalogue.
-        </p>
-        <Link to="/sources" className="map-tool-text-button self-start px-2">
-          Open sources &amp; data
-        </Link>
-      </section>
+      {isAdmin && (
+        <section className="map-tool-section">
+          <h3 className="map-tool-section-title">Where the data comes from</h3>
+          <p className="text-[11px] leading-relaxed text-muted">
+            Every feed, camera index, map layer and dataset behind these layers is listed with its
+            current state in the source catalogue.
+          </p>
+          <Link to="/admin/catalogue" className="map-tool-text-button self-start px-2">
+            Open the source catalogue
+          </Link>
+        </section>
+      )}
     </div>
   );
 }

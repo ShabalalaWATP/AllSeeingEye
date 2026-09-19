@@ -17,16 +17,12 @@ describe('personal settings', () => {
       expect(await screen.findByRole('radio', { name: /^Obsidian/ })).toBeChecked();
       expect(screen.getAllByRole('radio')).toHaveLength(8);
       expect(screen.getByRole('radio', { name: /^Midnight/ })).not.toBeChecked();
-      // The rail also links to sources and alerts, so scope these to the page itself.
+      // The rail also links to alerts, so scope these to the page itself. The source
+      // catalogue is not here: it is an administrator's page.
       const page = within(screen.getByRole('main'));
-      expect(page.getByRole('link', { name: /Sources and connections/ })).toHaveAttribute(
-        'href',
-        '/sources',
-      );
-      expect(page.getByRole('link', { name: /Alerts & rules/ })).toHaveAttribute(
-        'href',
-        '/warning',
-      );
+      expect(page.queryByRole('link', { name: /Sources and connections/ })).toBeNull();
+      // Alerts and rules are retired from the app's navigation entirely.
+      expect(page.queryByRole('link', { name: /Alerts & rules/ })).toBeNull();
       expect(page.getByRole('link', { name: 'Profile & teams' })).toHaveAttribute(
         'href',
         '/account',

@@ -22,6 +22,12 @@ AUTOMATION_REFUSALS: Mapping[str, str] = MappingProxyType(
             "browser; it rechecks every 12 hours. CISA KEV is unaffected; ICS advisories are "
             "also published as CSAF in cisagov/CSAF."
         ),
+        "news_cbc_canada": (
+            "CBC's feed servers hold this application's requests open without answering "
+            "(observed on 18 September 2026 on every CBC feed address, while a browser user "
+            "agent is answered at once). The application will not imitate a browser; it "
+            "rechecks every 12 hours."
+        ),
         "cyber_acsc_advisories": (
             "cyber.gov.au holds automated connections open without answering (observed site "
             "wide on 15 September 2026, including its RSS feeds). No other official ACSC feed "

@@ -33,7 +33,7 @@ const stateSchema = z.enum([
   'blocked',
 ]) satisfies z.ZodType<AiLimitState>;
 
-const policySchema = z.object({
+export const policySchema = z.object({
   id: z.uuid(),
   scope: scopeSchema,
   target_id: z.uuid().nullable(),

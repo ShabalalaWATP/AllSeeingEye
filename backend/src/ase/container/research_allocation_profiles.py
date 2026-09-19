@@ -355,6 +355,13 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         primary=True,
     )
     record(
+        "research-osm-features",
+        "church|mosque|station|bridge|stadium|airport|harbour|power plant|dam|hospital|"
+        "tower|lighthouse|factory|mine|prison|military|river|lake|monument|castle|embassy|"
+        "border|landmark|building",
+        "OpenStreetMap features of the named kinds inside the drawn area; current map state.",
+    )
+    record(
         "research-eonet-area",
         "hazard|wildfire|storm|volcano|flood|disaster|weather",
         "NASA aggregation of hazard records; upstream origins and coverage need review.",

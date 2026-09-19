@@ -85,7 +85,9 @@ async def test_the_prompt_states_the_house_rules_and_carries_only_supplied_facts
     assert "Reuters Business" in user.content and '"2.4"' not in user.content
     assert "2.4" in user.content and "http" not in user.content
     assert request.schema_name == "economy_explainer"
-    assert request.max_output_tokens == 6000
+    # The fixture profile reasons, so it keeps its own tested budget: reasoning tokens
+    # come out of the same allowance as the answer.
+    assert request.max_output_tokens == profile.token_budget(6000)
 
 
 async def test_a_retry_repeats_the_rejection_reasons_to_the_model(container):

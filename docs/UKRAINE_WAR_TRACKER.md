@@ -31,16 +31,21 @@ the three news lenses with charts and the sources footer.
   A table lists every claimed category.
 - **Timeline.** A phase ribbon from 2014 to the current year over dated event cards with a
   theme filter; each card carries plain English, a source link and, where Commons holds a
-  licensed image of the subject, a captioned image.
-- **Force organisation.** Two expandable trees (Russia, Ukraine) of reported command
-  structure: command, ministry, general staff, groupings and services, corps and branches.
-  Nodes show the reported commander (linking to the public figures tracker where a roster
-  record exists), a strength estimate naming whose, links and an as-of date.
-- **Equipment by speciality.** Ten specialities (drones; communications and electronic
+  licensed image of the subject, a captioned image. The written list of phases and events sits folded under the stage as "Read the full timeline as a list"; it opens by default only when the moving view is off (no WebGL2 or reduced motion), since the list is then the timeline.
+- **Force organisation.** Two expandable trees, Russia first and Ukraine below it, of reported
+  command structure from the supreme command down to every formation of regiment size and
+  above that the public Wikipedia order of battle lists (about 340 Russian and 320 Ukrainian
+  entries). The hand-written upper tiers keep their own wording; the imported formations state
+  which public tree they came from and when. Battalions, companies, individual ships and
+  irregular volunteer groups are left out. A "Find a unit" box lists matches by name or
+  commander and opens the chain down to the chosen one. Nodes show the reported commander
+  (linking to the public figures tracker where a roster record exists), a strength estimate
+  naming whose, links and an as-of date.
+- **Equipment catalogue.** Ten specialities (drones; communications and electronic
   warfare; air defence; land-attack missiles and glide bombs; artillery; small arms; tanks;
   infantry fighting vehicles and carriers; aviation; naval), each with sub-headings and a
   Russia and a Ukraine column of cards: image, role, description, origin, reported numbers
-  naming whose, links and an as-of date. A compare toggle renders the speciality as a table.
+  naming whose, links and an as-of date. A compare toggle renders the speciality as a table. The catalogue is one panel: a speciality tab strip, a side switch and a search, then one collapsible section per sub-heading whose card grid scrolls inside a fixed height, so a long speciality never runs down the page. Cards carry a cover image, the role, a clamped description with Read more, and the reported numbers in their own box.
 - **Lenses.** Equipment, workforce and casualty news: for each lens a stacked column chart
   of retained items per day by reporting group over the window and the matching items. The
   casualties lens also carries the HRMMU monthly table and the curated casualty references

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
+from ase.api.ai_usage_guard import AiUsageMutationAdmin
 from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas_ai_defaults import AiPolicyDefaultsOut, AppliedDefaultsOut
 from ase.api.schemas_ai_usage import (
@@ -92,7 +93,7 @@ async def list_policies(
 @router.post("/policies", status_code=201)
 async def create_policy(
     body: AiUsagePolicyIn,
-    admin: AdminUser,
+    admin: AiUsageMutationAdmin,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -114,7 +115,7 @@ async def create_policy(
 async def update_policy(
     policy_id: UUID,
     body: AiUsagePolicyIn,
-    admin: AdminUser,
+    admin: AiUsageMutationAdmin,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -135,7 +136,7 @@ async def update_policy(
 @router.delete("/policies/{policy_id}", status_code=204, response_class=Response)
 async def disable_policy(
     policy_id: UUID,
-    admin: AdminUser,
+    admin: AiUsageMutationAdmin,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -164,7 +165,7 @@ async def list_overrides(
 async def create_override(
     policy_id: UUID,
     body: AiPolicyOverrideIn,
-    admin: AdminUser,
+    admin: AiUsageMutationAdmin,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -185,7 +186,7 @@ async def create_override(
 @router.delete("/overrides/{override_id}")
 async def revoke_override(
     override_id: UUID,
-    admin: AdminUser,
+    admin: AiUsageMutationAdmin,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -244,7 +245,7 @@ async def preview_default_policies(
 
 @router.post("/defaults", status_code=201)
 async def apply_default_policies(
-    admin: AdminUser, session: SessionDep, container: ContainerDep, context: ContextDep
+    admin: AiUsageMutationAdmin, session: SessionDep, container: ContainerDep, context: ContextDep
 ) -> AppliedDefaultsOut:
     """Create every missing policy in the set. Existing policies are never overwritten."""
     created = await _defaults(session, container).apply(admin)

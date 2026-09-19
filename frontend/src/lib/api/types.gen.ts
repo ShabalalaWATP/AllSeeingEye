@@ -3533,6 +3533,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Workspace */
+        put: operations["update_workspace_api_admin_llm_workspace_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/llm/profiles": {
         parameters: {
             query?: never;
@@ -9553,6 +9570,53 @@ export interface components {
             /** Items */
             items: components["schemas"]["LlmUsageOut"][];
         };
+        /** LlmWorkspaceAllowanceIn */
+        LlmWorkspaceAllowanceIn: {
+            /**
+             * Preset
+             * @enum {string}
+             */
+            preset: "light" | "standard" | "intensive" | "power" | "blocked" | "inherit";
+            /** Expected Policy Id */
+            expected_policy_id?: string | null;
+            /** Expected Policy Revision */
+            expected_policy_revision?: number | null;
+        };
+        /** LlmWorkspaceChangeIn */
+        LlmWorkspaceChangeIn: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "global" | "team" | "user";
+            /** Target Id */
+            target_id?: string | null;
+            model?: components["schemas"]["LlmWorkspaceModelIn"] | null;
+            allowance?: components["schemas"]["LlmWorkspaceAllowanceIn"] | null;
+        };
+        /** LlmWorkspaceIn */
+        LlmWorkspaceIn: {
+            /** Changes */
+            changes: components["schemas"]["LlmWorkspaceChangeIn"][];
+        };
+        /** LlmWorkspaceModelIn */
+        LlmWorkspaceModelIn: {
+            /** Profile Id */
+            profile_id: string | null;
+            /** Expected Binding Revision */
+            expected_binding_revision?: number | null;
+            /** Expected Profile Revision */
+            expected_profile_revision?: number | null;
+            /** Tested Config Hash */
+            tested_config_hash?: string | null;
+        };
+        /** LlmWorkspaceOut */
+        LlmWorkspaceOut: {
+            /** Connections */
+            connections: components["schemas"]["LlmConnectionOut"][];
+            /** Policies */
+            policies: components["schemas"]["AiUsagePolicyOut"][];
+        };
         /**
          * LocationRole
          * @enum {string}
@@ -10619,6 +10683,8 @@ export interface components {
             consent_to_send_image: true;
             /** Additional Input Ids */
             additional_input_ids?: string[];
+            /** Captured At */
+            captured_at?: string | null;
         };
         /** PhotoGeolocationOut */
         PhotoGeolocationOut: {
@@ -10639,6 +10705,8 @@ export interface components {
             limitations: string[];
             /** Photos */
             photos?: components["schemas"]["PhotoObservation"][];
+            /** Shadows */
+            shadows?: components["schemas"]["PhotoShadow"][];
             /** Cross Photo Analysis */
             cross_photo_analysis?: string | null;
             input: components["schemas"]["ResearchInputOut"];
@@ -10649,6 +10717,8 @@ export interface components {
              * @constant
              */
             candidate_status: "unverified";
+            /** Sun Checks */
+            sun_checks?: components["schemas"]["SunShadowCheck"][];
         };
         /** PhotoImageProvenance */
         PhotoImageProvenance: {
@@ -10698,6 +10768,18 @@ export interface components {
             image_sha256: string;
             /** Photos */
             photos?: components["schemas"]["PhotoImageProvenance"][];
+        };
+        /**
+         * PhotoShadow
+         * @description A shadow the model measured by eye: its length as a multiple of the object's height.
+         */
+        PhotoShadow: {
+            /** Photo Id */
+            photo_id: string;
+            /** Shadow Length To Height */
+            shadow_length_to_height: number;
+            /** Basis */
+            basis: string;
         };
         /** PirIn */
         PirIn: {
@@ -11441,6 +11523,11 @@ export interface components {
             /** Caveat */
             caveat: string;
         };
+        /**
+         * Region
+         * @enum {string}
+         */
+        Region: "africa" | "asia" | "europe" | "middle_east" | "north_america" | "south_america" | "oceania" | "antarctica";
         /** RegistryIdentifierIn */
         RegistryIdentifierIn: {
             /** Id */
@@ -11790,6 +11877,8 @@ export interface components {
             countries?: string[];
             /** Categories */
             categories?: components["schemas"]["Category"][];
+            /** Regions */
+            regions?: components["schemas"]["Region"][];
             /** Question */
             question?: string | null;
             /** Window Hours */
@@ -12018,6 +12107,8 @@ export interface components {
             reporting?: string[];
             /** Assessment */
             assessment?: string | null;
+            /** Gaps */
+            gaps?: string[];
             /** Citations */
             citations?: string[];
             /** Error */
@@ -13579,6 +13670,10 @@ export interface components {
             conflict_id?: string | null;
             /** Hazard */
             hazard?: string | null;
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+            /** Regions */
+            regions?: components["schemas"]["Region"][];
             research_area?: components["schemas"]["ResearchAreaIn"] | null;
             /**
              * Disclose Area To Provider
@@ -13680,6 +13775,10 @@ export interface components {
             anchor_month: number;
             /** Conflict Id */
             conflict_id: string | null;
+            /** Categories */
+            categories: components["schemas"]["Category"][];
+            /** Regions */
+            regions: components["schemas"]["Region"][];
             /** Hazard */
             hazard: string | null;
             research_area: components["schemas"]["ResearchAreaOut"] | null;
@@ -14739,6 +14838,36 @@ export interface components {
              * @description An enabled policy already covers this scope, target and period.
              */
             already_configured: boolean;
+        };
+        /**
+         * SunShadowCheck
+         * @description Whether a candidate agrees with a reported shadow at the stated capture instant.
+         */
+        SunShadowCheck: {
+            /** Candidate Label */
+            candidate_label: string;
+            /** Photo Id */
+            photo_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "consistent" | "inconsistent" | "sun_below_horizon" | "no_coordinates";
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Sun Elevation Deg */
+            sun_elevation_deg: number | null;
+            /** Sun Azimuth Deg */
+            sun_azimuth_deg: number | null;
+            /** Expected Shadow Ratio */
+            expected_shadow_ratio: number | null;
+            /** Observed Shadow Ratio */
+            observed_shadow_ratio: number;
+            /** Note */
+            note: string;
         };
         /** TallyOut */
         TallyOut: {
@@ -23144,6 +23273,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubscriptionDiagnosticsOut"];
+                };
+            };
+        };
+    };
+    update_workspace_api_admin_llm_workspace_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LlmWorkspaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmWorkspaceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

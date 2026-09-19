@@ -137,7 +137,7 @@ it('filters subscriptions by question or topic together with update frequency', 
   expect(table.getByText('Pacific security')).toBeVisible();
 });
 
-it('clears fresh collection choices when using existing evidence only', async () => {
+it('always researches at the chosen depth and searches the web only when asked', async () => {
   let captured: Record<string, unknown> | undefined;
   server.use(
     http.post('/api/schedules', async ({ request }) => {
@@ -149,12 +149,16 @@ it('clears fresh collection choices when using existing evidence only', async ()
   const form = within(await screen.findByRole('form', { name: 'New subscription' }));
   await user.type(form.getByLabelText('Subscription name'), 'Snapshot');
   await user.type(form.getByLabelText('Question'), 'What is happening?');
-  await user.click(form.getByRole('checkbox', { name: /^Include a fresh web search/ }));
-  await user.click(form.getByRole('checkbox', { name: /^Use existing live evidence only/ }));
-  expect(form.getByRole('radio', { name: /^Basic/ })).toBeDisabled();
+  // There is no "existing evidence only" switch any more: every run reads the live
+  // evidence, and the depth radios stay live.
+  expect(form.queryByRole('checkbox', { name: /existing live evidence/ })).toBeNull();
+  expect(form.getByRole('radio', { name: /^Basic/ })).toBeEnabled();
+  const web = form.getByRole('checkbox', { name: /^Also search the web each run/ });
+  expect(web).not.toBeChecked();
   await user.click(form.getByRole('button', { name: 'Create subscription' }));
-  await waitFor(() => expect(captured).toMatchObject({ research_web_search: false }));
-  expect(captured).not.toHaveProperty('research_mode');
+  await waitFor(() =>
+    expect(captured).toMatchObject({ research_web_search: false, research_mode: 'quick' }),
+  );
 });
 it('keeps the latest successful report accessible when a later scheduled run fails', async () => {
   server.use(

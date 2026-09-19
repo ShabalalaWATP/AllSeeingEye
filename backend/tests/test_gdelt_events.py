@@ -13,10 +13,12 @@ from ase.adapters.feeds.gdelt_events import (
     COLUMNS,
     MAX_EVENTS,
     GdeltEventsConnector,
+    earlier_export_urls,
     export_url,
     read_export,
 )
 from ase.adapters.feeds.http import FeedFetchError
+from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.domain.events import Category, Credibility, GeoConfidence
 from feeds_helpers import NOW, FakeClock, FakeHttp
 
@@ -119,6 +121,50 @@ async def test_listing_and_archive_faults() -> None:
     with pytest.raises(FeedFetchError):
         read_export(two.getvalue())
     assert await GdeltEventsConnector(FakeHttp(not_modified=True), clock).fetch() == []  # type: ignore[arg-type]
+
+
+class MissingLatest(FakeHttp):
+    """GDELT named the 01:15 export but never published it; 01:00 is still there."""
+
+    def __init__(self, published: dict[str, bytes]) -> None:
+        super().__init__({"lastupdate.txt": LISTING})
+        self.published = published
+
+    async def get_bytes(self, url: str, *, conditional: bool = True) -> bytes:
+        self.requests.append(url)
+        for stamp, payload in self.published.items():
+            if stamp in url:
+                return payload
+        raise FeedHttpStatusError(404, url)
+
+
+def test_earlier_export_urls_step_back_fifteen_minutes() -> None:
+    assert earlier_export_urls(EXPORT, slots=2) == [
+        "https://data.gdeltproject.org/gdeltv2/20260905010000.export.CSV.zip",
+        "https://data.gdeltproject.org/gdeltv2/20260905004500.export.CSV.zip",
+    ]
+    assert earlier_export_urls("https://data.gdeltproject.org/gdeltv2/x.export.CSV.zip") == []
+
+
+async def test_unpublished_export_falls_back_to_the_previous_slot() -> None:
+    http = MissingLatest({"20260905010000": zipped([row()], "20260905010000.export.CSV")})
+    connector = GdeltEventsConnector(http, FakeClock(NOW))  # type: ignore[arg-type]
+    events = await connector.fetch()
+    assert len(events) == 1
+    exports = [url for url in http.requests if url.endswith(".export.CSV.zip")]
+    assert [url.rsplit("/", 1)[-1][:14] for url in exports] == [
+        "20260905011500",
+        "20260905010000",
+    ]
+    # The slot that answered is remembered, so the next poll does not refetch it.
+    assert await connector.fetch() == []
+
+
+async def test_missing_export_with_no_earlier_slot_raises_the_original_404() -> None:
+    connector = GdeltEventsConnector(MissingLatest({}), FakeClock(NOW))  # type: ignore[arg-type]
+    with pytest.raises(FeedHttpStatusError) as caught:
+        await connector.fetch()
+    assert caught.value.status_code == 404 and "20260905011500" in str(caught.value)
 
 
 async def test_oversized_export_and_cap(monkeypatch: pytest.MonkeyPatch) -> None:

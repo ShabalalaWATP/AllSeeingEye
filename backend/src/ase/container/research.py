@@ -12,6 +12,7 @@ from ase.adapters.research.asset_register import AssetRegisterProvider
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
+from ase.adapters.research.osm_features import OsmFeaturesResearchProvider
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
 from ase.adapters.research.youtube import YouTubeSearchResearchProvider
@@ -135,6 +136,7 @@ def research_service(
                     UsgsAreaResearchProvider(http, clock),
                     EonetAreaResearchProvider(http, clock),
                     openaq,
+                    OsmFeaturesResearchProvider(http, clock),
                 )
             )
         if query.area is not None and retained_store is not None:

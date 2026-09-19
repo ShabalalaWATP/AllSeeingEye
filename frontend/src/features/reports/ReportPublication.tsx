@@ -17,7 +17,6 @@ import {
   TableBlock,
   type Inline,
 } from './publicationBlocks';
-import { ReportGradingLegend } from './ReportGradingLegend';
 import { ReportReviewStatus } from './ReportReviewStatus';
 
 type Block = ReportPublication['blocks'][number];
@@ -74,7 +73,7 @@ function Masthead({
 }) {
   return (
     <header className="report-reader-masthead">
-      <p className="report-reader-eyebrow">Intelligence product</p>
+      <p className="report-reader-eyebrow">Research report</p>
       <h1 className="report-reader-title">{title}</h1>
       {colophon.length > 0 && (
         <div className="report-reader-colophon">
@@ -90,7 +89,6 @@ function Masthead({
           <ReportReviewStatus status={status} variant="paper" />
         </div>
       )}
-      <ReportGradingLegend />
     </header>
   );
 }

@@ -20,21 +20,16 @@ describe('research workspace navigation', () => {
       'aria-current',
     );
   });
-  it('gives reusable plans their own rail entry and exposes the next research tools', async () => {
+  it('keeps plans reachable by link while the rail names only what is used', async () => {
     renderApp('/direction', 'user');
     await screen.findByRole('heading', { name: 'Plans & areas' });
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getByRole('link', { name: 'Plans & areas' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    expect(within(primary).getByRole('link', { name: 'Research' })).not.toHaveAttribute(
-      'aria-current',
-    );
+    // Retired from the rail: an area is drawn on the map, and Research takes a scope.
+    expect(within(primary).queryByRole('link', { name: 'Plans & areas' })).toBeNull();
     const tools = screen.getByRole('navigation', { name: 'Research tools' });
-    expect(within(tools).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
+    expect(within(tools).getByRole('link', { name: 'Saved research' })).toHaveAttribute(
       'href',
-      '/reports',
+      '/research/saved',
     );
     expect(within(tools).queryByRole('link', { name: /Geolocat/ })).not.toBeInTheDocument();
     expect(within(primary).getByRole('link', { name: 'Geolocation' })).toHaveAttribute(
@@ -46,10 +41,7 @@ describe('research workspace navigation', () => {
       'href',
       '/subscriptions',
     );
-    expect(within(tools).getByRole('link', { name: 'Daily briefing' })).toHaveAttribute(
-      'href',
-      '/trackers',
-    );
+    expect(within(tools).queryByRole('link', { name: 'Daily briefing' })).not.toBeInTheDocument();
   });
 
   it('does not load feed boards or create a competing generation form when browsing saved reports', async () => {
@@ -58,10 +50,16 @@ describe('research workspace navigation', () => {
       http.get('/api/trackers/conflicts', boardRequest),
       http.get('/api/trackers/disasters', boardRequest),
     );
-    renderApp('/reports', 'user');
-    await screen.findByRole('table', { name: 'Reports' });
+    renderApp('/research/saved', 'user');
+    await screen.findByRole('table', { name: 'Saved research' });
+    // Research owns its saved answers now, so the rail still points at Research.
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
+    expect(within(primary).getByRole('link', { name: 'Research' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    const tabs = screen.getByRole('navigation', { name: 'Research' });
+    expect(within(tabs).getByRole('link', { name: 'Saved research' })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -71,10 +69,6 @@ describe('research workspace navigation', () => {
       'href',
       '/research/jobs',
     );
-    expect(screen.getByRole('link', { name: 'Manage subscriptions' })).toHaveAttribute(
-      'href',
-      '/subscriptions',
-    );
   });
 
   it('preserves old subscription links while displaying the shorter destination name', async () => {
@@ -83,9 +77,16 @@ describe('research workspace navigation', () => {
     expect(router.state.location.pathname).toBe('/subscriptions');
     expect(router.state.location.search).toBe('?scope=personal');
     expect(screen.queryByRole('navigation', { name: 'Research tools' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Subscriptions' })).toHaveAttribute(
+    // The rail entry and the section's own first tab both name this destination.
+    const primary = screen.getByRole('navigation', { name: 'Primary' });
+    expect(within(primary).getByRole('link', { name: 'Subscriptions' })).toHaveAttribute(
       'aria-current',
       'page',
+    );
+    const tabs = screen.getByRole('navigation', { name: 'Subscriptions' });
+    expect(within(tabs).getByRole('link', { name: 'Saved updates' })).toHaveAttribute(
+      'href',
+      '/subscriptions/saved',
     );
   });
 });

@@ -11,13 +11,13 @@ import { server } from '@/test/server';
 // Await real lazy modules before timing navigation and reader assertions.
 // A cold reader import can retain the previous page during React's transition.
 beforeAll(async () => {
-  await Promise.all([import('./ReportsPage'), import('./ReportPage')]);
+  await Promise.all([import('./SavedResearchPage'), import('./ReportPage')]);
 });
 
-describe('ReportsPage', () => {
+describe('saved research', () => {
   it('lists reports and links to the reader', async () => {
-    const { user } = renderApp('/reports', 'user');
-    const table = await screen.findByRole('table', { name: 'Reports' });
+    const { user } = renderApp('/research/saved', 'user');
+    const table = await screen.findByRole('table', { name: 'Saved research' });
     const link = within(table).getByRole('link', { name: 'Intelligence summary: Ukraine' });
     expect(within(table).getByText('Ready')).toBeInTheDocument();
     await user.click(link);
@@ -46,7 +46,7 @@ describe('ReportsPage', () => {
       }),
       http.get('/api/reports/99999999-9999-4999-8999-999999999999', () => HttpResponse.json(asked)),
     );
-    const { user } = renderApp('/reports', 'user');
+    const { user } = renderApp('/research/saved', 'user');
     await user.click(await screen.findByRole('button', { name: 'Specialist report templates' }));
     const form = await screen.findByRole('form', { name: 'Generate a report' });
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
@@ -148,7 +148,7 @@ describe('ReportPage', () => {
     await user.click(screen.getByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Saved reports' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Saved research' })).toBeInTheDocument();
     });
   });
 

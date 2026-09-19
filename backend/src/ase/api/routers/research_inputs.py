@@ -66,6 +66,7 @@ async def geolocate_photo(
             question=body.question,
             hints=body.hints,
             team_id=body.team_id,
+            captured_at=body.captured_at,
             consent_to_send_image=body.consent_to_send_image,
             check_session=check_session,
         ),
@@ -76,6 +77,7 @@ async def geolocate_photo(
         **result.assessment.model_dump(),
         provenance=result.provenance,
         input=ResearchInputOut.from_receipt(result.receipt),
+        sun_checks=list(result.sun_checks),
     )
 
 

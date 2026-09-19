@@ -40,7 +40,7 @@ publisher terms note applies. Arab News answered 403 to `curl` but 200 to repeat
 | `news_mexico_news_daily` | Mexico News Daily | Mexico News Daily | en | [RSS](https://mexiconewsdaily.com/feed/) | 10 | 2026-09-15 16:00:45 |
 | `news_insight_crime` | InSight Crime | InSight Crime | en | [RSS](https://insightcrime.org/feed/) | 11 | 2026-09-14 19:20:45 |
 | `news_infobae` | Infobae | Infobae | es | [RSS](https://www.infobae.com/arc/outboundfeeds/rss/) | 100 | 2026-09-15 16:25:57 |
-| `news_nation_kenya` | Nation Kenya | Nation Media Group | en | [RSS](https://nation.africa/kenya/rss.xml) | 25 | 2026-09-15 15:51:20 |
+| `news_nation_kenya` | Nation Kenya | Nation Media Group | en | [RSS](https://www.nation.africa/kenya/rss.xml) | 25 | 2026-09-15 15:51:20 |
 | `news_sabc_news` | SABC News | South African Broadcasting Corporation | en | [RSS](https://www.sabcnews.com/sabcnews/feed/) | 10 | 2026-09-15 16:13:35 |
 | `news_radio_dabanga` | Radio Dabanga | Radio Dabanga | en | [RSS](https://www.dabangasudan.org/en/feed) | 12 | 2026-09-14 17:57:20 |
 | `news_oc_media` | OC Media | OC Media | en | [RSS](https://oc-media.org/feed/) | 16 | 2026-09-15 15:21:53 |
@@ -100,7 +100,7 @@ These sources add retained-feed research evidence. They do not enlarge the priva
 | `news_manchester_evening` | Manchester Evening News | Reach plc | en | [RSS](https://www.manchestereveningnews.co.uk/news/?service=rss) | 25 | 2026-09-12 21:38:00 |
 | `news_birmingham_live` | BirminghamLive | Reach plc | en | [RSS](https://www.birminghammail.co.uk/news/?service=rss) | 25 | 2026-09-12 21:55:23 |
 | `news_northern_echo` | The Northern Echo | Newsquest | en | [RSS](https://www.thenorthernecho.co.uk/news/rss/) | 50 | 2026-09-12 19:00:00 |
-| `news_cbc_canada` | CBC News top stories | CBC/Radio-Canada | en | [RSS](https://www.cbc.ca/webfeed/rss/rss-topstories) | 20 | 2026-09-12 20:46:38 |
+| `news_cbc_canada` | CBC News top stories | CBC/Radio-Canada | en | [RSS](https://www.cbc.ca/webfeed/rss/rss-topstories) | 20 | 2026-09-12 20:46:38 (refused since 18 September 2026: CBC holds this client's requests open; recorded as an automation refusal, rechecked every 12 hours) |
 | `news_npr_world` | NPR World | NPR | en | [RSS](https://feeds.npr.org/1004/rss.xml) | 10 | 2026-09-12 13:03:20 |
 | `news_pbs_news` | PBS News headlines | NewsHour Productions | en | [RSS](https://www.pbs.org/newshour/feeds/rss/headlines) | 20 | 2026-09-12 21:25:55 |
 | `news_nytimes_world` | The New York Times World | The New York Times Company | en | [RSS](https://rss.nytimes.com/services/xml/rss/nyt/World.xml) | 54 | 2026-09-12 22:46:12 |

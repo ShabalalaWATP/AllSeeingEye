@@ -34,6 +34,8 @@ def scheduled_report_request(schedule: Schedule) -> ReportRequest:
         research_source_ids=schedule.research_source_ids,
         conflict_id=schedule.conflict_id,
         hazard=schedule.hazard,
+        categories=schedule.categories,
+        regions=schedule.regions,
         research_area=schedule.research_area,
         disclose_area_to_provider=schedule.disclose_area_to_provider,
         subscription_previous_report_id=schedule.baseline_report_id

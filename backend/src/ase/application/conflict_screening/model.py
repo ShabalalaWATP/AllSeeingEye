@@ -15,12 +15,22 @@ from ase.application.conflict_screening.records import (
     validate_inputs,
 )
 from ase.application.ports import Clock
-from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
+from ase.application.ports.llm import (
+    LlmGateway,
+    LlmGatewayError,
+    LlmGatewayTimeout,
+    LlmTokenBudgetExhausted,
+    SecretCipher,
+)
 from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole, LlmUsage
 
-CALL_SECONDS = 45
-MAX_OUTPUT_TOKENS = 4_000
+# A screening call carries at most ten items, so the verdicts themselves are small. The
+# budgets below exist for a model that thinks before it answers: reasoning tokens come out
+# of the same completion allowance, and they take real time. Both were once small enough
+# that a reasoning profile could not finish, which billed the thinking and returned nothing.
+CALL_SECONDS = 240
+STAGE_OUTPUT_TOKENS = 4_000
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
 SYSTEM_PROMPT = (
     "Classify the relevance of each supplied source title and summary, using only that text. "
@@ -62,8 +72,9 @@ def screening_request(profile: LlmProfile, items: Sequence[ScreeningInput]) -> L
                 ),
             ),
         ),
-        # Reasoning can expand profile.token_budget(); screening has its own hard ceiling.
-        max_output_tokens=min(profile.max_output_tokens, MAX_OUTPUT_TOKENS),
+        # The administrator's tested budget covers the reasoning; a profile that does not
+        # reason keeps this stage's own small ceiling.
+        max_output_tokens=profile.token_budget(STAGE_OUTPUT_TOKENS),
         temperature=profile.temperature,
         reasoning_effort=profile.reasoning_effort,
         provider=profile.provider,
@@ -119,6 +130,12 @@ class LlmConflictScreener:
         except AiAllowanceExceeded:
             # Refused before dispatch: no provider usage exists to record.
             raise LlmGatewayError("The system AI allowance is exhausted.") from None
+        except LlmTokenBudgetExhausted as exc:
+            # Record what the attempt cost, and say plainly what ran out.
+            usage.prompt_tokens, usage.completion_tokens = exc.prompt_tokens, exc.completion_tokens
+            usage.error = "The conflict screening model exhausted its completion budget."
+        except LlmGatewayTimeout:
+            usage.error = "The conflict screening model timed out."
         except TimeoutError:
             usage.error = "The conflict screening model timed out."
         except (ValueError, RecursionError):

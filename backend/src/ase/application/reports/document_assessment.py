@@ -41,6 +41,43 @@ def likelihood_label(probability: Probability) -> str:
     return f"{band.term} ({band.range_description})"
 
 
+def likelihood_phrase(probability: Probability) -> str:
+    """The plain yardstick words alone, capitalised to open a sentence: "Highly likely"."""
+    term = next(band.term for band in YARDSTICK if band.probability is probability)
+    return term[0].upper() + term[1:]
+
+
+def key_to_terms(doc: DocumentBuilder) -> None:
+    """The reading key, at the end, where the doctrine behind the plain words is named once."""
+    doc.heading("Key to the terms")
+    doc.add(
+        "Likelihood words. Each judgement uses one of these words; the ranges are approximate "
+        "bands, not measured probabilities:"
+    )
+    doc.list(
+        [
+            (f"{band.term[0].upper()}{band.term[1:]}: {band.range_description}.", ())
+            for band in YARDSTICK
+        ]
+    )
+    doc.add(
+        "Confidence. High, moderate or low describes how strong and stable the basis for a "
+        "judgement is, separately from how likely it is. A judgement can be likely and low "
+        "confidence at once."
+    )
+    doc.add(
+        "Source grades. A letter from A to F says how reliable the source has proved, and a "
+        "number from 1 to 6 says how credible the particular item is. F and 6 mean there were "
+        "not enough grounds to judge, not that the reporting was false."
+    )
+    doc.add(
+        "These words follow the UK Professional Head of Intelligence Assessment (PHIA) "
+        "probability yardstick and the Admiralty grading system described in UK and NATO "
+        "doctrine. The application is informed by that public doctrine; it is not accredited "
+        "and does not claim doctrinal compliance."
+    )
+
+
 def confidence_rationale(judgement: KeyJudgement, version: ReportVersion) -> str:
     """Remove a known generated preface only when its assessment is retained separately."""
     statement = judgement.confidence_statement
@@ -58,7 +95,7 @@ def confidence_rationale(judgement: KeyJudgement, version: ReportVersion) -> str
 
 
 def source_assessment(doc: DocumentBuilder, version: ReportVersion) -> None:
-    doc.heading("Source assessment")
+    doc.heading("Source grades")
     numbers = doc.citation_numbers()
     evidence = sorted(
         (item for item in version.evidence if item.label in numbers),
@@ -68,9 +105,8 @@ def source_assessment(doc: DocumentBuilder, version: ReportVersion) -> None:
         doc.add("No cited source items are available to display for this version.")
         return
     doc.add(
-        "The recorded letter describes source reliability; the number describes this item's "
-        "information credibility. These are separate assessments. F and 6 mean there are "
-        "insufficient grounds to judge, not that the information is false."
+        "Each cited source carries a letter for how reliable it has proved and a number for "
+        "how credible this item is. The key at the end explains both."
     )
     # Short tables keep native PDF rows readable; longer recorded explanations are prose.
     for offset in range(0, len(evidence), 8):
@@ -129,18 +165,11 @@ def _basis(item: EvidenceItem) -> str:
 
 
 def assessment_method(doc: DocumentBuilder, version: ReportVersion) -> None:
-    doc.heading("Assessment method")
+    doc.heading("How the assessment was made")
     doc.add(
-        "Likelihood uses the UK PHIA probability yardstick. Its approximate bands describe "
-        "an assessed likelihood, not a measured probability calculated from source grades. "
-        "Analytical confidence (low, moderate or high) describes the strength and stability "
-        "of the basis for a judgement and is separate from likelihood."
-    )
-    doc.add(
+        "Likelihood words and confidence levels are explained in the key at the end. "
         "Source reliability (A to F) and information credibility (1 to 6) follow the separate "
-        "intelligence grading dimensions described in UK MOD JDP 2-00, fourth edition, "
-        "Table 3.1. This application is informed by public UK and NATO doctrine; it is not "
-        "NATO-accredited and does not establish full doctrinal compliance."
+        "grading dimensions described in UK MOD JDP 2-00, fourth edition, Table 3.1."
     )
     assessment = version.assessment
     if assessment is None:
@@ -160,7 +189,7 @@ def assessment_method(doc: DocumentBuilder, version: ReportVersion) -> None:
     saved = {item.judgement_id: item for item in assessment.judgements}
     for index, judgement in enumerate(version.body.key_judgements, start=1):
         recorded = saved.get(judgement.id)
-        doc.add(f"Judgement {index}: evidence and confidence", BlockKind.SUBHEADING)
+        doc.add(f"Judgement {index}: the evidence behind it", BlockKind.SUBHEADING)
         if recorded is None:
             doc.add("A detailed evidence assessment was not recorded for this judgement.")
             continue

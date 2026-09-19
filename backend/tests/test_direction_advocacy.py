@@ -151,8 +151,8 @@ async def test_ask_runs_direction_then_the_advocate(
     markdown = version["markdown"]
     # The published report folds advocacy into alternative explanations; direction and its
     # requirements remain in the structured version asserted above.
-    assert "## Alternative explanations" in markdown
-    assert f"An alternative view is that {ADVOCACY['argument']}" in markdown
+    assert "## Other explanations" in markdown
+    assert f"Another reading is that {ADVOCACY['argument']}" in markdown
     assert response.json()["report"]["scope"]["devils_advocacy"] is True
 
     # Regeneration keeps the scope: direction again, and an advocate who leaves confidence alone.
@@ -176,7 +176,7 @@ async def test_ask_runs_direction_then_the_advocate(
     assert second["body"]["key_judgements"][0]["confidence"] == "moderate"
     assert second["devils_advocacy"]["confidence_before"] is None
     assert (
-        f"An alternative view is that {ADVOCACY['argument']} {ADVOCACY['rationale']}"
+        f"Another reading is that {ADVOCACY['argument']} {ADVOCACY['rationale']}"
         in (second["markdown"])
     )
 

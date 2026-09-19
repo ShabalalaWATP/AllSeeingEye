@@ -330,6 +330,17 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
         unknown_origin=True,
         content=Content.DISCOVERY,
     )
+    profiles["research-osm-features"] = _profile(
+        "map",
+        (Scope.AREA,),
+        Dates.CURRENT_SNAPSHOT,
+        "General focus, a drawn area of at most 5,000 square kilometres, and a question or "
+        "terms naming a reviewed feature kind (church, railway station, bridge, airport, "
+        "power plant and the like). One Overpass request, at most 100 OpenStreetMap features "
+        "inside the exact polygon, from the current map state. A map feature is a candidate "
+        "for a scene, not an observation of one, and carries no date.",
+        unknown_origin=True,
+    )
     for name in ("usgs", "eonet", "openaq"):
         profiles[f"research-{name}-area"] = _profile(
             "environment" if name == "openaq" else "hazard",

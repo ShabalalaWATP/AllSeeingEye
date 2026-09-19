@@ -59,7 +59,7 @@ it('saves monthly multi-country research with a two-year lookback, web search an
   expect(form.getByText(/Search period: Choose a search period within two years/)).toBeVisible();
   await user.clear(form.getByLabelText('Look back, days'));
   await user.type(form.getByLabelText('Look back, days'), '730');
-  await user.click(form.getByRole('checkbox', { name: /^Include a fresh web search/ }));
+  await user.click(form.getByRole('checkbox', { name: /^Also search the web each run/ }));
   await user.click(form.getByText('Advanced scope and sources'));
   await user.click(form.getByRole('button', { name: 'Choose research sources' }));
   await user.click(await form.findByRole('checkbox', { name: /^Public news/ }));

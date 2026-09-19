@@ -2,6 +2,7 @@
 
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
@@ -29,9 +30,10 @@ from ase.application.research.photo_model import (
     UsageRecorder,
     photo_assessment_schema,
 )
+from ase.application.research.photo_sun import sun_checks
 from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.llm import LlmMessage, LlmRequest, LlmRole
-from ase.domain.photo_geolocation import PhotoAssessment, PhotoProvenance
+from ase.domain.photo_geolocation import PhotoAssessment, PhotoProvenance, SunShadowCheck
 from ase.domain.users import User
 
 
@@ -40,6 +42,7 @@ class PhotoResult:
     assessment: PhotoAssessment
     provenance: PhotoProvenance
     receipt: ResearchInputReceipt
+    sun_checks: tuple[SunShadowCheck, ...] = ()
 
 
 class PhotoGeolocation:
@@ -83,12 +86,15 @@ class PhotoGeolocation:
         question: str = "Where might this photograph have been taken?",
         hints: str = "",
         team_id: UUID | None = None,
+        captured_at: datetime | None = None,
         check_session: SessionCheck,
     ) -> PhotoResult:
         if consent_to_send_image is not True:
             raise InvalidRequest("Consent is required before sending a sanitised image to AI.")
         if len(question) > 2000 or len(hints) > 1000:
             raise InvalidRequest("The photo question or location hints exceed the text limit.")
+        if captured_at is not None and captured_at.utcoffset() is None:
+            raise InvalidRequest("The capture time must state its UTC offset.")
         ids = photo_ids(input_id, additional_input_ids)
         try:
             current = await self._access.context(actor)
@@ -164,7 +170,9 @@ class PhotoGeolocation:
                         parent_input_ids=ids,
                     )
                     receipt = self._store.put(reservation, extraction).receipt
-                    return PhotoResult(assessment, provenance, receipt)
+                    return PhotoResult(
+                        assessment, provenance, receipt, tuple(sun_checks(assessment, captured_at))
+                    )
                 finally:
                     await self._uow.rollback()
             finally:

@@ -8,7 +8,7 @@ the slots, keeping the per-organisation cap and the retained opposing reporting.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -129,6 +129,7 @@ def plan_selection(
     include_unknown_dates: bool = False,
     include_country_subjects: bool = False,
     seen_content_signatures: frozenset[str] = frozenset(),
+    eligibility: Callable[[Event], bool] | None = None,
 ) -> SelectionPlan:
     """The deterministic prefilter: scope, period, category, terms and injection safety."""
     window = (
@@ -150,6 +151,10 @@ def plan_selection(
     )
     if hazard is not None:
         pool = [event for event in pool if hazard_of(event) is hazard]
+    if eligibility is not None:
+        # Scope exclusions are not injection findings. Apply before both reranking
+        # and counting safety flags, with no unmatched-context fallback.
+        pool = [event for event in pool if eligibility(event)]
     lowered_groups = tuple(
         tuple(term.lower().strip() for term in group if term.strip())
         for group in (term_groups or (terms,))

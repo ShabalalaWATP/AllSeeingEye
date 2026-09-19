@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
+from ase.adapters.research.osm_features import OsmFeaturesResearchProvider
 from ase.adapters.research.publisher import LIMITATIONS, PUBLISHER_SEEDS
 from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
 from ase.container.research_spec import research_spec
@@ -71,4 +72,18 @@ def additional_feed_specs() -> tuple[SourceSpec, ...]:
         role="aggregator",
         requires_key=True,
     )
-    return (*publishers, *hazards, openaq)
+    osm = research_spec(
+        OsmFeaturesResearchProvider.id,
+        OsmFeaturesResearchProvider.name,
+        Category.NEWS,
+        "Volunteer-maintained map features from OpenStreetMap. A feature's presence and name "
+        "are community entries about the map, not observations of an event or a scene.",
+        OsmFeaturesResearchProvider.spatial_scope,
+        OsmFeaturesResearchProvider.temporal_scope,
+        "One bounded Overpass request after source selection; no background polling. "
+        "Only the feature kinds the question names are searched; empty results are not "
+        "absence.",
+        organisation="OpenStreetMap contributors",
+        role="aggregator",
+    )
+    return (*publishers, *hazards, openaq, osm)

@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
-import { aoi, schedule, conflictCard } from '@/test/fixtures';
+import { conflictCard, schedule } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -42,7 +42,7 @@ it.each([
   },
 );
 
-it('uses saved area geometry and explicit provider consent while clearing other geographic filters', async () => {
+it('pins a subscription to a tracked conflict chosen directly on the form', async () => {
   let captured: unknown;
   server.use(
     http.post('/api/schedules', async ({ request }) => {
@@ -53,45 +53,15 @@ it('uses saved area geometry and explicit provider consent while clearing other 
   const { user } = renderApp('/subscriptions', 'user');
   const form = within(await screen.findByRole('form', { name: 'New subscription' }));
   await user.type(form.getByLabelText('Subscription name'), 'Regional update');
-  await user.type(form.getByLabelText('Question'), 'What has changed in this area?');
-  await user.click(form.getByRole('button', { name: 'Choose a conflict, disaster or saved area' }));
+  await user.type(form.getByLabelText('Question'), 'What has changed in this conflict?');
   await user.selectOptions(await form.findByLabelText('Conflict'), conflictCard.conflict.id);
-  await user.selectOptions(form.getByLabelText('Saved area'), aoi.id);
-  expect(form.getByLabelText('Conflict')).toHaveValue('');
-  expect(form.getByRole('group', { name: 'Countries' })).toBeDisabled();
-  const consent = form.getByRole('checkbox', { name: /^Allow source providers/ });
-  expect(consent).not.toBeChecked();
-  await user.click(form.getByRole('button', { name: 'Create subscription' }));
-  expect(form.getByText(/Area disclosure: Allow providers/)).toBeVisible();
-  expect(captured).toBeUndefined();
-  await user.click(consent);
   await user.click(form.getByRole('button', { name: 'Create subscription' }));
   await waitFor(() =>
     expect(captured).toMatchObject({
-      conflict_id: null,
-      country_isos: [],
-      disclose_area_to_provider: true,
-      research_area: {
-        geometry: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              geometry: {
-                type: 'Polygon',
-                coordinates: [
-                  [
-                    [30, 44],
-                    [41, 44],
-                    [41, 53],
-                    [30, 53],
-                    [30, 44],
-                  ],
-                ],
-              },
-            },
-          ],
-        },
-      },
+      conflict_id: conflictCard.conflict.id,
+      hazard: null,
+      research_area: null,
+      disclose_area_to_provider: false,
     }),
   );
 });

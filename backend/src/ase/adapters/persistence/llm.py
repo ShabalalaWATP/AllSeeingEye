@@ -5,10 +5,11 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import LlmProfileRow, LlmUsageRow
-from ase.domain.errors import NotFound
+from ase.domain.errors import Conflict, NotFound
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage, ReasoningEffort
 
 
@@ -73,14 +74,31 @@ class SqlLlmProfileRepository:
         row = LlmProfileRow(id=profile.id)
         _apply_profile(row, profile)
         self._session.add(row)
-        await self._session.flush()
+        await self._flush_profile()
 
     async def save(self, profile: LlmProfile) -> None:
         row = await self._session.get(LlmProfileRow, profile.id)
         if row is None:
             raise NotFound()
         _apply_profile(row, profile)
-        await self._session.flush()
+        await self._flush_profile()
+
+    async def _flush_profile(self) -> None:
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            # Translate only this unique index (SQLite and PostgreSQL), including
+            # concurrent creates. The request transaction still rolls back normally.
+            detail = str(exc.orig).lower()
+            if (
+                "unique constraint failed: llm_profiles.name" in detail
+                or 'duplicate key value violates unique constraint "ix_llm_profiles_name"' in detail
+            ):
+                raise Conflict(
+                    "A connection with this name already exists. Choose a different name.",
+                    fields={"name": "Choose a different connection name."},
+                ) from None
+            raise
 
     async def delete(self, profile_id: UUID) -> None:
         await self._session.execute(delete(LlmProfileRow).where(LlmProfileRow.id == profile_id))

@@ -78,7 +78,7 @@ beforeEach(() => {
 });
 
 describe('source catalogue', () => {
-  it('is available to ordinary users, authenticates its request and searches declared context', async () => {
+  it('authenticates its request and searches the declared context', async () => {
     let auth: string | null = null;
     server.use(
       http.get('/api/sources', ({ request }) => {
@@ -86,7 +86,7 @@ describe('source catalogue', () => {
         return HttpResponse.json({ items: [sourceContext] });
       }),
     );
-    const { user } = renderApp('/sources', 'user');
+    const { user } = renderApp('/admin/catalogue', 'admin');
     expect(await screen.findByRole('heading', { name: 'BBC World' })).toBeVisible();
     expect(auth).toMatch(/^Bearer /);
     expect(screen.queryByText('Admin', { exact: true })).not.toBeInTheDocument();
@@ -112,16 +112,22 @@ describe('source catalogue', () => {
           : HttpResponse.json({ items: [] }),
       ),
     );
-    const { user } = renderApp('/sources', 'user');
+    const { user } = renderApp('/admin/catalogue', 'admin');
     expect(await screen.findByRole('alert')).toHaveTextContent('Catalogue unavailable.');
     await user.click(screen.getByRole('button', { name: 'Retry sources' }));
     expect(await screen.findByText('No sources are registered.')).toBeVisible();
   });
 
   it('requires a session before fetching the catalogue', async () => {
-    const { router } = renderApp('/sources', 'anonymous');
+    const { router } = renderApp('/admin/catalogue', 'anonymous');
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/login');
+  });
+
+  it('is an administrator page: an analyst is refused the catalogue', async () => {
+    renderApp('/admin/catalogue', 'user');
+    expect(await screen.findByText('Admin access required')).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'BBC World' })).toBeNull();
   });
 });
 
@@ -131,7 +137,7 @@ it('shows connection state, missing keys and platform services without any value
       HttpResponse.json({ items: [sourceContext, keyed, optionalKey, failing] }),
     ),
   );
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   await screen.findByRole('heading', { name: 'BBC World' });
   const totals = within(screen.getByRole('list', { name: 'Totals by state' }));
   expect(totals.getByRole('button', { name: /Live or available\s?1/ })).toBeVisible();
@@ -146,7 +152,8 @@ it('shows connection state, missing keys and platform services without any value
   expect(attention.getAllByText('ASE_AISSTREAM_API_KEY')).not.toHaveLength(0);
   expect(attention.queryByText('OpenAlex research')).not.toBeInTheDocument();
   const platform = within(screen.getByRole('region', { name: 'Platform connections' }));
-  expect(platform.getByRole('heading', { name: 'AI assessment model' })).toBeVisible();
+  // The administration shell loads alongside, so wait for the connection check itself.
+  expect(await platform.findByRole('heading', { name: 'AI assessment model' })).toBeVisible();
   expect(platform.getByText(/Add one under Admin, Models/)).toBeVisible();
   expect(platform.getByText('Optional, not set')).toBeVisible();
   expect(platform.getAllByText('Connected')).not.toHaveLength(0);
@@ -177,7 +184,7 @@ it('explains when platform connections cannot be checked and offers a retry', as
         : HttpResponse.json({ items: platformConnections }),
     ),
   );
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   expect(await screen.findByText('Connection check unavailable.')).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Retry connections' }));
   expect(await screen.findByRole('heading', { name: 'Ordnance Survey maps' })).toBeVisible();
@@ -212,7 +219,7 @@ it('combines topic, country, language and access filters and resets them', async
       }),
     ),
   );
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   await screen.findByRole('heading', { name: 'BBC World' });
   expect(screen.getByRole('region', { name: 'News sources' })).toBeVisible();
   expect(screen.getByRole('region', { name: 'Maritime sources' })).toBeVisible();
@@ -250,7 +257,7 @@ it('keeps worldwide and unspecified sources distinct from country coverage', asy
       }),
     ),
   );
-  const { user } = renderApp('/sources', 'user');
+  const { user } = renderApp('/admin/catalogue', 'admin');
   await screen.findByRole('heading', { name: 'BBC World' });
   await user.selectOptions(screen.getByLabelText('Country or region'), 'global');
   expect(screen.queryByRole('heading', { name: 'Uncatalogued source' })).not.toBeInTheDocument();
@@ -260,7 +267,7 @@ it('keeps worldwide and unspecified sources distinct from country coverage', asy
 });
 
 it('links a filtered catalogue and points each family at where it is used', async () => {
-  const { user, router } = renderApp('/sources?family=camera_index', 'user');
+  const { user, router } = renderApp('/admin/catalogue?family=camera_index', 'admin');
   await screen.findByRole('heading', { name: 'Sources and connections' });
   const where = await screen.findByRole('navigation', { name: 'Where Camera indexes appear' });
   expect(within(where).getByRole('link', { name: 'Open cameras on the map' })).toHaveAttribute(
@@ -279,7 +286,7 @@ it('links a filtered catalogue and points each family at where it is used', asyn
 });
 
 it('carries a search term in the address so a filtered catalogue can be shared', async () => {
-  const { user, router } = renderApp('/sources', 'user');
+  const { user, router } = renderApp('/admin/catalogue', 'admin');
   await user.type(await screen.findByRole('searchbox'), 'ships');
   expect(router.state.location.search).toBe('?q=ships');
 });

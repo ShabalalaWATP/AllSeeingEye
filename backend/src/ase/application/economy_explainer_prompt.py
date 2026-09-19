@@ -22,7 +22,9 @@ from ase.domain.economy_explainer import (
 )
 from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole
 
-MAX_OUTPUT_TOKENS = 6_000
+# The stage's own ceiling for a profile that does not reason. A thinking profile keeps
+# the administrator's tested budget, because reasoning tokens come out of the same one.
+STAGE_OUTPUT_TOKENS = 6_000
 SCHEMA_NAME = "economy_explainer"
 SYSTEM_PROMPT = (
     "You explain economic figures to people who are not finance experts. Write like a "
@@ -172,7 +174,7 @@ def explainer_request(
         raise ValueError("The economy explainer only covers the known regions.")
     return LlmRequest(
         messages=explainer_messages(pack, errors),
-        max_output_tokens=min(profile.max_output_tokens, MAX_OUTPUT_TOKENS),
+        max_output_tokens=profile.token_budget(STAGE_OUTPUT_TOKENS),
         temperature=profile.temperature,
         reasoning_effort=profile.reasoning_effort,
         provider=profile.provider,

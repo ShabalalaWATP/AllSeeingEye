@@ -14,6 +14,7 @@ from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import ReportLanguage
 from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.query_variant_records import required_variant, validate_variant_anchors
+from ase.domain.regions import Region, normalise_regions
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea, area_from_dict, validate_direct_area
 from ase.domain.research_brief_values import IntelligenceRequirement
@@ -69,6 +70,8 @@ class ReportRequest:
     research_time_basis: EvidenceTimeBasis | None = None
     research_area: ResearchArea | None = None
     country_isos: tuple[str, ...] = ()
+    # World regions widen the country filter without the eight-country provider bound.
+    regions: tuple[Region, ...] = ()
     research_web_search: bool = False
     # Internal automation reference, deliberately absent from public report request schemas.
     subscription_previous_report_id: UUID | None = None
@@ -101,6 +104,7 @@ class ReportRequest:
             raise ValueError("A parent version needs an exact report and positive version number")
         countries = normalise_countries(self.country_iso, self.country_isos)
         object.__setattr__(self, "country_isos", countries)
+        object.__setattr__(self, "regions", normalise_regions(self.regions))
         object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
         validate_research_window(self.window_hours)
         if not isinstance(self.research_web_search, bool):
@@ -223,6 +227,7 @@ class ReportRequest:
             report_style=scope.get("report_style", "assessment"),
             country_iso=scope.get("country") or None,
             country_isos=normalise_countries(None, scope.get("countries", ())),
+            regions=normalise_regions(scope.get("regions", ())),
             research_web_search=scope.get("research_web_search", False),
             categories=categories,
             question=scope.get("question") or None,

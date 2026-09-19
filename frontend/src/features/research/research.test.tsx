@@ -58,6 +58,7 @@ describe('question-led research', () => {
       template: 'ask',
       question: 'What changed in Ukraine?',
       countries: ['UA'],
+      regions: [],
       window_hours: 72,
       report_language: 'en',
       report_style: 'assessment',

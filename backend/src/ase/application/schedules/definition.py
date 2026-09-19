@@ -11,11 +11,15 @@ from ase.application.reports.templates import TEMPLATES
 from ase.application.schedules.edition_planning import rebased_next_run
 from ase.application.schedules.validation import validate_subscription_scope
 from ase.domain.errors import InvalidRequest
+from ase.domain.events import Category
+from ase.domain.regions import Region, normalise_regions
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_scope import MAX_RESEARCH_HOURS, normalise_countries
 from ase.domain.schedules import CADENCES, DEFAULT_CADENCE, Schedule
 from ase.domain.subscription_recurrence import LocalRecurrence, WindowPolicy
+
+MAX_THEMES = 4
 
 MAX_WINDOW_HOURS = MAX_RESEARCH_HOURS
 
@@ -39,6 +43,9 @@ class ScheduleInput:
     research_focus: ResearchFocus = ResearchFocus.GENERAL
     research_subject: str | None = None
     country_isos: tuple[str, ...] = ()
+    # Up to four themes narrow the evidence categories; regions widen the country filter.
+    categories: tuple[Category, ...] = ()
+    regions: tuple[Region, ...] = ()
     monthday: int = 1
     research_web_search: bool = False
     research_source_ids: tuple[str, ...] | None = None
@@ -56,6 +63,16 @@ class ScheduleInput:
     brief_revision: int | None = None
 
 
+def _check_filters(data: ScheduleInput) -> None:
+    """Themes narrow the categories and regions widen the countries; both are bounded."""
+    if len(data.categories) > MAX_THEMES or len(set(data.categories)) != len(data.categories):
+        raise InvalidRequest(f"Choose up to {MAX_THEMES} distinct themes.")
+    try:
+        normalise_regions(data.regions)
+    except ValueError as exc:
+        raise InvalidRequest(str(exc)) from exc
+
+
 def _research_question(data: ScheduleInput) -> str | None:
     if data.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA):
         raise InvalidRequest(
@@ -63,6 +80,7 @@ def _research_question(data: ScheduleInput) -> str | None:
             "Use an interactive follow-up on the saved report instead."
         )
     question = data.question.strip() if data.question else None
+    _check_filters(data)
     maximum = 2000 if data.brief_id is not None else 1000
     if question is not None and not 1 <= len(question) <= maximum:
         raise InvalidRequest(f"A question needs between 1 and {maximum} characters.")
@@ -182,6 +200,8 @@ def build_schedule(  # noqa: PLR0912
                 "notify_on_change",
                 "conflict_id",
                 "hazard",
+                "categories",
+                "regions",
                 "research_area",
                 "avoid_repetition",
                 "collection_policy",
@@ -239,6 +259,8 @@ def build_schedule(  # noqa: PLR0912
         anchor_month=data.anchor_month,
         conflict_id=data.conflict_id,
         hazard=data.hazard,
+        categories=tuple(data.categories),
+        regions=normalise_regions(data.regions),
         research_area=data.research_area,
         disclose_area_to_provider=data.disclose_area_to_provider,
         avoid_repetition=data.avoid_repetition,

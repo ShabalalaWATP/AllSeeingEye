@@ -12,6 +12,7 @@ from ase.application.reports.drafting import draft_body
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.sections.synthesis_contracts import CONTEXT_PARTS
 from ase.application.reports.templates import TEMPLATES
 from ase.application.research.budget import CollectionBudget
 from ase.application.research.challenge_collection import collect_challenges
@@ -28,9 +29,9 @@ from test_research_collection import QUERY, Provider
 @pytest.mark.parametrize(
     ("mode", "label", "words", "requests", "retained"),
     [
-        (ResearchMode.QUICK, "Basic", (500, 900), 6, 200),
-        (ResearchMode.DETAILED, "Deep", (1200, 2000), 24, 800),
-        (ResearchMode.ADVANCED, "Advanced", (2500, 4000), 32, 1000),
+        (ResearchMode.QUICK, "Basic", (750, 1350), 6, 200),
+        (ResearchMode.DETAILED, "Deep", (1800, 3000), 24, 800),
+        (ResearchMode.ADVANCED, "Advanced", (3750, 6000), 32, 1000),
     ],
 )
 async def test_each_tier_reaches_section_prompts_and_accepts_a_short_supported_report(
@@ -46,9 +47,17 @@ async def test_each_tier_reaches_section_prompts_and_accepts_a_short_supported_r
     header = replace(HEADER, scope={"research_mode": mode.value})
     result = await run(gateway, checkpoints, items(3), header=header)
     assert result.body is not None and not result.has_errors
-    assert len(gateway.calls) == 5
-    for _, request, *_ in gateway.calls:
+    assert len(gateway.calls) == 6
+    for part, request, *_ in gateway.calls:
         system = request.messages[0].content
+        if part in CONTEXT_PARTS:
+            assert "Research depth:" not in system
+            assert "word target does not apply" in system
+            assert "Return concise structured fields directly" in system
+            assert json.loads(request.messages[1].content)["header"]["scope"] == {
+                "research_mode": mode.value
+            }
+            continue
         assert f"Research depth: {label}" in system
         assert "indicative targets, not quotas" in system
         assert "Never pad" in system
@@ -56,7 +65,7 @@ async def test_each_tier_reaches_section_prompts_and_accepts_a_short_supported_r
             assert "not the full-report allowance" in system
     # Restored packets retain their selected depth and completed work without new calls.
     assert (await run(gateway, checkpoints, items(3), header=header)).body == result.body
-    assert len(gateway.calls) == 5
+    assert len(gateway.calls) == 6
 
 
 @pytest.mark.parametrize("mode", list(ResearchMode))
@@ -97,7 +106,7 @@ async def test_non_staged_reports_receive_tier_guidance_and_bounded_output(mode)
     gateway = ScriptedGateway(json.dumps(sound_body()))
     selected = evidence()
     profile = replace(
-        PROFILE, model="fixture-model", reasoning_effort=None, max_output_tokens=20000
+        PROFILE, model="fixture-model", reasoning_effort=None, max_output_tokens=30000
     )
     result = await draft_body(
         gateway,

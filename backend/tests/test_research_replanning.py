@@ -91,7 +91,8 @@ async def test_replan_uses_same_inventory_and_shared_budget_with_bounded_exact_h
     assert all(len(row.attempts) == 64 for row in result.passes)
     assert result.passes[0].attempts[0].status is CollectionStatus.EMPTY
     assert result.passes[1].attempts[0].status is CollectionStatus.COMPLETED
-    assert result.attempts[0].status is CollectionStatus.COMPLETED
+    assert result.attempts[0].status is CollectionStatus.EMPTY
+    assert [len(provider.queries) for provider in providers[:6]] == [1] * 6
 
 
 async def test_nonempty_initial_pass_completes_unattempted_explicit_selection_unchanged() -> None:
@@ -267,7 +268,7 @@ async def test_cancellation_during_revised_fetch_stops_pass_and_releases_admissi
 
 
 async def test_second_pass_placeholders_do_not_erase_first_actual_attempts() -> None:
-    providers = [Recording(str(index)) for index in range(6)]
+    providers = [Recording(str(index)) for index in range(3)]
 
     async def callback(query, batch, remaining):
         # Fill the item budget immediately on retry. Earlier searches for sources

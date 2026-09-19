@@ -55,6 +55,22 @@ export const researchGeolocationSchema: z.ZodType<ResearchGeolocation> = z
       .max(3),
     verification_steps: notes,
     limitations: notes,
+    sun_checks: z
+      .array(
+        z.object({
+          candidate_label: z.string().min(1).max(200),
+          photo_id: z.string().regex(/^photo-[1-6]$/),
+          status: z.enum(['consistent', 'inconsistent', 'sun_below_horizon', 'no_coordinates']),
+          captured_at: z.iso.datetime({ offset: true }),
+          sun_elevation_deg: z.number().nullable(),
+          sun_azimuth_deg: z.number().nullable(),
+          expected_shadow_ratio: z.number().nullable(),
+          observed_shadow_ratio: z.number(),
+          note: z.string().min(1).max(600),
+        }),
+      )
+      .max(18)
+      .default([]),
     provenance: z.object({
       profile_id: z.uuid(),
       profile_revision: z.number().int().positive(),

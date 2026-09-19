@@ -34,6 +34,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         *(f"research_publisher_{seed.spec.id}" for seed in PUBLISHER_SEEDS),
         "research-usgs-area",
         "research-eonet-area",
+        "research-osm-features",
         "research-openaq-area",
         "research-asset-register",
         "research-web-search",

@@ -33,6 +33,8 @@ RUSSIAN_SOURCES = frozenset(
         "belta_ru",
     }
 )
+# The named outlets the board reads by source, since their articles carry no geography.
+OUTLET_SOURCES = ASSESSMENT_SOURCES | UKRAINIAN_SOURCES | RUSSIAN_SOURCES
 
 # Items filed under Russia or arriving from worldwide feeds must name the war.
 _WAR_TERMS = re.compile(

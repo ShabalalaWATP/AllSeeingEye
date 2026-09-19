@@ -1,11 +1,18 @@
-"""Project one frozen report version into its professional reader product."""
+"""Project one frozen report version into its reader product.
+
+The document reads top to bottom the way a person wants it: what happened, what it means,
+what we judge, other explanations, what to watch, what we are unsure about. The method,
+the source grades and the doctrine behind the words sit at the end as notes and a key,
+so the narrative is never interrupted by them.
+"""
 
 from __future__ import annotations
 
 from ase.application.reports.document_assessment import (
     assessment_method,
     confidence_rationale,
-    likelihood_label,
+    key_to_terms,
+    likelihood_phrase,
     source_assessment,
 )
 from ase.application.reports.document_builder import (
@@ -37,60 +44,21 @@ __all__ = [
 ]
 
 
-def _summary(doc: DocumentBuilder, version: ReportVersion) -> None:
-    body = version.body
-    doc.heading("Executive summary")
-    if not body.key_judgements:
-        doc.add("No assessed conclusion was produced for this report version.", BlockKind.WARNING)
+def _picture(doc: DocumentBuilder, body: ReportBody) -> None:
+    """What the sources reported, theme by theme, in plain words with its citations."""
+    if not body.reporting:
         return
-    for item in body.key_judgements:
-        change_value = (
-            item.change_from_previous.value.replace("_", " ")
-            if item.change_from_previous is not None
-            else None
-        )
-        change = (
-            f" Change from previous assessment: {change_value}." if change_value is not None else ""
-        )
-        doc.cited(item.statement, item.supporting_evidence)
-        doc.add(f"Likelihood (PHIA): {likelihood_label(item.probability)}.")
-        doc.add(f"Analytical confidence: {item.confidence.value}.")
-        rationale = confidence_rationale(item, version)
-        if rationale:
-            doc.add(f"Confidence rationale (not independently verified): {rationale}{change}")
-        elif change:
-            doc.add(change.strip())
-        if version.document_schema_version >= 2:
-            judgement_review(doc, version, item.id)
-    contrary = [
-        (
-            f"Retained reporting challenges the judgement that {item.statement}",
-            item.contradicting_evidence,
-        )
-        for item in body.key_judgements
-        if item.contradicting_evidence
-    ]
-    if contrary:
-        doc.add("Contrary reporting", BlockKind.SUBHEADING)
-        doc.list(contrary)
-
-
-def _findings(doc: DocumentBuilder, body: ReportBody) -> None:
-    if not body.reporting and not body.assessment:
-        return
-    doc.heading("Findings and analysis")
+    doc.heading("What happened")
     for theme in body.reporting:
         if theme.theme:
             doc.add(theme.theme, BlockKind.SUBHEADING)
-        doc.list(
-            [
-                (
-                    f"{item.text} Recorded source grade(s): {item.grade or 'not recorded'}.",
-                    item.evidence,
-                )
-                for item in theme.items
-            ]
-        )
+        doc.list([(item.text, item.evidence) for item in theme.items])
+
+
+def _meaning(doc: DocumentBuilder, body: ReportBody) -> None:
+    if not body.assessment:
+        return
+    doc.heading("What it means")
     for section in body.assessment:
         if section.heading:
             doc.add(section.heading, BlockKind.SUBHEADING)
@@ -98,50 +66,105 @@ def _findings(doc: DocumentBuilder, body: ReportBody) -> None:
             doc.cited(section.text, section.evidence)
 
 
+def _judgements(doc: DocumentBuilder, version: ReportVersion) -> None:
+    body = version.body
+    doc.heading("What we judge")
+    if not body.key_judgements:
+        doc.add("No assessed conclusion was produced for this report version.", BlockKind.WARNING)
+        return
+    for item in body.key_judgements:
+        doc.cited(item.statement, item.supporting_evidence)
+        change = ""
+        if item.change_from_previous is not None:
+            moved = item.change_from_previous.value.replace("_", " ")
+            change = f" Compared with the previous assessment: {moved}."
+        likelihood = likelihood_phrase(item.probability)
+        doc.add(f"{likelihood}, with {item.confidence.value} confidence.{change}")
+        if version.document_schema_version >= 2:
+            # A citation concern stays beside the judgement it touches, not only in the notes.
+            judgement_review(doc, version, item.id)
+    contrary = [
+        (
+            f"Some reporting argues against the judgement that {item.statement}",
+            item.contradicting_evidence,
+        )
+        for item in body.key_judgements
+        if item.contradicting_evidence
+    ]
+    if contrary:
+        doc.add("What argues against this", BlockKind.SUBHEADING)
+        doc.list(contrary)
+
+
 def _alternatives(doc: DocumentBuilder, version: ReportVersion) -> None:
     alternatives = version.body.alternative_hypotheses
+    advocacy = version.advocacy if version.challenge is None else None
+    if not alternatives and advocacy is None:
+        return
+    doc.heading("Other explanations")
     if alternatives:
-        doc.heading("Alternative explanations")
         doc.list(
             [
-                (
-                    f"{item.text} Why it is currently assessed as less likely: "
-                    f"{item.why_less_likely}",
-                    item.evidence,
-                )
+                (f"{item.text} Why we think it less likely: {item.why_less_likely}", item.evidence)
                 for item in alternatives
             ]
         )
-    advocacy = version.advocacy if version.challenge is None else None
     if advocacy is not None:
-        if not alternatives:
-            doc.heading("Alternative explanations")
         doc.cited(
-            f"An alternative view is that {advocacy.argument} {advocacy.rationale}".strip(),
+            f"Another reading is that {advocacy.argument} {advocacy.rationale}".strip(),
             advocacy.evidence,
         )
 
 
 def _outlook(doc: DocumentBuilder, body: ReportBody) -> None:
-    doc.heading("Outlook and indicators")
+    doc.heading("What to watch")
     condition = body.indicators_and_warning.watch_condition.value.replace("_", " ").capitalize()
-    doc.add(f"Watch condition: {condition}.")
+    doc.add(f"Watch level: {condition}.")
     indicators = tuple(
         dict.fromkeys(indicator for item in body.key_judgements for indicator in item.indicators)
     )
     if indicators:
-        doc.add("Indicators to watch", BlockKind.SUBHEADING)
+        doc.add("Signs that would change the picture", BlockKind.SUBHEADING)
         doc.list([(indicator, ()) for indicator in indicators])
     if body.indicators_and_warning.changes:
-        doc.add("Recent warning changes", BlockKind.SUBHEADING)
+        doc.add("Recent changes", BlockKind.SUBHEADING)
         doc.list([(change, ()) for change in body.indicators_and_warning.changes])
     if body.collection_recommendations:
-        doc.add("Recommended next steps", BlockKind.SUBHEADING)
+        doc.add("What would help next", BlockKind.SUBHEADING)
         doc.list([(item, ()) for item in body.collection_recommendations])
 
 
-def _limitations(doc: DocumentBuilder, version: ReportVersion) -> None:
-    doc.heading("Limitations and confidence")
+def _uncertainty(doc: DocumentBuilder, body: ReportBody) -> None:
+    if not body.assumptions and not body.gaps:
+        return
+    doc.heading("What we are unsure about")
+    if body.assumptions:
+        doc.add("Assumptions we have made", BlockKind.SUBHEADING)
+        doc.list(
+            [
+                (
+                    item.text
+                    + (" Much of the assessment rests on this one." if item.lynchpin else ""),
+                    (),
+                )
+                for item in body.assumptions
+            ]
+        )
+    if body.gaps:
+        doc.add("What we could not find out", BlockKind.SUBHEADING)
+        doc.list([(item.text, ()) for item in body.gaps])
+
+
+def _notes(
+    doc: DocumentBuilder,
+    record: ReportRecord,
+    version: ReportVersion,
+    *,
+    include_generated_figures: bool,
+    reviewed_snapshot: SourceReviewSnapshot | None,
+) -> None:
+    """The method and the sources, after the narrative, for the reader who wants them."""
+    doc.heading("Notes on method and sources")
     if version.status is not ReportStatus.READY:
         doc.add(review_notice(version.status), BlockKind.WARNING)
     else:
@@ -160,19 +183,41 @@ def _limitations(doc: DocumentBuilder, version: ReportVersion) -> None:
             f"{quality.flagged} source item(s) contain instruction-like text and require caution.",
             BlockKind.WARNING,
         )
-    if version.body.assumptions:
-        doc.add("Assumptions", BlockKind.SUBHEADING)
-        doc.list(
-            [
-                (f"{item.text}{' This is a lynchpin assumption.' if item.lynchpin else ''}", ())
-                for item in version.body.assumptions
-            ]
-        )
-    if version.body.gaps:
-        doc.add("Evidence gaps", BlockKind.SUBHEADING)
-        doc.list([(item.text, ()) for item in version.body.gaps])
     if version.body.sourcing_statement:
         doc.add(version.body.sourcing_statement)
+    if version.canonical_requirements:
+        doc.add("The research questions", BlockKind.SUBHEADING)
+        doc.list(
+            [
+                (
+                    f"{row.id} ({'required' if row.required else 'optional'}, "
+                    f"priority {row.priority}): {row.question}",
+                    (),
+                )
+                for row in version.canonical_requirements
+            ]
+        )
+    for index, item in enumerate(version.body.key_judgements, start=1):
+        rationale = confidence_rationale(item, version)
+        doc.add(f"Judgement {index}: how confident we are and why", BlockKind.SUBHEADING)
+        doc.add(
+            f"{likelihood_phrase(item.probability)}, with {item.confidence.value} confidence. "
+            + (
+                f"Confidence rationale (not independently verified): {rationale}"
+                if rationale
+                else ""
+            )
+        )
+    if include_generated_figures:
+        figure = build_evidence_relationship_figure(version.body, doc.citation_numbers())
+        if figure is not None:
+            doc.figure(figure)
+    cited = version.body.cited_labels()
+    doc.chronology([item for item in version.evidence if item.label in cited])
+    assessment_method(doc, version)
+    source_assessment(doc, version)
+    if reviewed_snapshot is not None:
+        reviewed_source_assessment(doc, record, version, reviewed_snapshot)
 
 
 def build_document(
@@ -192,42 +237,29 @@ def build_document(
     doc.inline((DocumentInline(frozen_period_line(record, version), "ltr"),), BlockKind.METADATA)
     question = record.scope.get("question")
     if isinstance(question, str) and question.strip() and question.strip() not in record.title:
-        doc.add("Research question", BlockKind.SUBHEADING)
+        doc.add("The question", BlockKind.SUBHEADING)
         doc.add(question.strip())
-    if version.canonical_requirements:
-        doc.add("Research requirements", BlockKind.SUBHEADING)
-        doc.list(
-            [
-                (
-                    f"{row.id} ({'required' if row.required else 'optional'}, "
-                    f"priority {row.priority}): {row.question}",
-                    (),
-                )
-                for row in version.canonical_requirements
-            ]
-        )
     if version.document_schema_version >= 2:
         opening_review_notice(doc, version)
     elif version.status is ReportStatus.FAILED:
         doc.add(review_notice(version.status), BlockKind.WARNING)
-    _summary(doc, version)
-    if include_generated_figures:
-        figure = build_evidence_relationship_figure(version.body, doc.citation_numbers())
-        if figure is not None:
-            doc.figure(figure)
-    _findings(doc, version.body)
+    _picture(doc, version.body)
+    _meaning(doc, version.body)
     for diagram in version.body.diagrams:
         doc.add("Diagram", BlockKind.SUBHEADING)
         doc.diagram(diagram)
-    cited = version.body.cited_labels()
-    doc.chronology([item for item in version.evidence if item.label in cited])
+    _judgements(doc, version)
     _alternatives(doc, version)
     _outlook(doc, version.body)
-    _limitations(doc, version)
-    assessment_method(doc, version)
-    source_assessment(doc, version)
-    if reviewed_snapshot is not None:
-        reviewed_source_assessment(doc, record, version, reviewed_snapshot)
+    _uncertainty(doc, version.body)
+    _notes(
+        doc,
+        record,
+        version,
+        include_generated_figures=include_generated_figures,
+        reviewed_snapshot=reviewed_snapshot,
+    )
+    key_to_terms(doc)
     references = doc.references()
     if references:
         doc.heading("References")

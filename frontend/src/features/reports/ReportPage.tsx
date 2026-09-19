@@ -29,6 +29,7 @@ import { ReportReviewStatus } from './ReportReviewStatus';
 import { ReportBodyView } from './ReportSections';
 import { ReportWorkspaceDrawer } from './ReportWorkspaceDrawer';
 import './reportReader.css';
+import { savedPathFor } from './savedReportOrigin';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -86,7 +87,8 @@ export default function ReportPage() {
   useEffect(() => (eyeReport ? registerAssistantReportContext(eyeReport) : undefined), [eyeReport]);
   const remove = useAsyncAction(async () => {
     await deleteReport(id);
-    await navigate('/reports');
+    // Back to the section that holds this kind of report.
+    await navigate(savedPathFor(data?.report));
   });
   const regenerate = useAsyncAction(async () => {
     await regenerateReport(id);
@@ -177,7 +179,7 @@ export default function ReportPage() {
                 ) : (
                   <>
                     <header className="report-reader-masthead">
-                      <p className="report-reader-eyebrow">Intelligence product</p>
+                      <p className="report-reader-eyebrow">Research report</p>
                       <h1 className="report-reader-title">{report.title}</h1>
                       <div className="mt-4">
                         <ReportReviewStatus status={version.status} variant="paper" />

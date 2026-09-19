@@ -97,11 +97,14 @@ class GenerateReportUseCase:
         original_followthrough: OriginalFollowThrough | None = None,
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
+        embedding_ai_usage: AiUsageAccounting | None = None,
         embeddings: EmbeddingGateway | None = None,
         area_context: AreaContextService | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         routing = ModelRouting(llm_profiles, llm_bindings)
+        # Queued text gateways already meter their calls; raw embeddings still need accounting.
+        rerank_usage = embedding_ai_usage if embedding_ai_usage is not None else ai_usage
         self._producer = Producer(
             store=store,
             source_profiles=source_profiles,
@@ -121,7 +124,7 @@ class GenerateReportUseCase:
             area_context=area_context,
             # Without an embeddings gateway the pipeline keeps its deterministic order.
             reranker=(
-                EvidenceReranker(cipher=cipher, gateway=embeddings, ai_usage=ai_usage)
+                EvidenceReranker(cipher=cipher, gateway=embeddings, ai_usage=rerank_usage)
                 if embeddings is not None
                 else None
             ),

@@ -1,8 +1,11 @@
 import { useState, type SyntheticEvent } from 'react';
+import type { Category } from '@/lib/api/eventSchemas';
 import type { CollectionPlan } from '@/lib/api/direction';
 import type { ReportTemplate } from '@/lib/api/reports';
 import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
 import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspaces';
+import { MAX_REGIONS, type Region } from '@/lib/regions';
+import { MAX_THEMES } from '@/lib/themes';
 import type { Cadence, LookbackUnit } from './ScheduleTiming';
 
 const CADENCE_DAYS: Record<Cadence, number> = {
@@ -32,7 +35,13 @@ export interface ScheduleIssue {
   advanced?: boolean;
 }
 
-/** A schedule reuses normal research choices and evaluates its time window at each run. */
+/**
+ * A schedule reuses normal research choices and evaluates its time window at each run.
+ *
+ * Research always runs at the chosen depth; the only source choice a subscriber makes
+ * is whether each run also searches the web. A saved schedule from before that rule had
+ * no depth at all and is read back as Basic.
+ */
 export function useScheduleForm({
   templates,
   plans,
@@ -69,12 +78,13 @@ export function useScheduleForm({
           ? [draftCountry.toUpperCase()]
           : [],
   );
+  const [regions, setRegions] = useState<Region[]>(initial?.regions ?? []);
+  const [themes, setThemes] = useState<Category[]>(initial?.categories ?? []);
   const [question, setQuestion] = useState(initial?.question ?? draftQuestion.slice(0, 1000));
   const [notifyOnChange, setNotifyOnChange] = useState(initial?.notify_on_change ?? true);
   const [researchMode, setResearchMode] = useState<NonNullable<ScheduleRequest['research_mode']>>(
     initial?.research_mode ?? 'quick',
   );
-  const [liveOnly, setLiveOnly] = useState(initial ? initial.research_mode === null : false);
   const [languages, setLanguages] = useState(initial?.research_languages.join(', ') ?? 'en');
   const [focus, setFocus] = useState<NonNullable<ScheduleRequest['research_focus']>>(
     initial?.research_focus ?? 'general',
@@ -135,7 +145,7 @@ export function useScheduleForm({
   };
   const product = templates.find((item) => item.id === template);
   const needsQuestion = product?.needs_question === true;
-  const activeResearch = needsQuestion && !liveOnly;
+  const activeResearch = needsQuestion;
   const languageCodes = [
     ...new Set(
       languages
@@ -149,8 +159,9 @@ export function useScheduleForm({
     languageCodes.length <= 8 &&
     languageCodes.every((code) => /^[a-z]{2,3}(-[a-z]{2,4})?$/.test(code));
   const subjectScoped = activeResearch && focus !== 'general';
-  const countriesInScope =
-    subjectScoped || (activeResearch && researchArea) ? [] : selectedCountries;
+  const boundaryScoped = activeResearch && researchArea !== null;
+  const countriesInScope = subjectScoped || boundaryScoped ? [] : selectedCountries;
+  const regionsInScope = subjectScoped || boundaryScoped ? [] : regions;
   const invalidQuestion =
     needsQuestion &&
     ((!question.trim() && (!selectedPlan || activeResearch)) ||
@@ -196,10 +207,16 @@ export function useScheduleForm({
     ...(countriesInScope.length > 8
       ? [{ field: 'Countries', message: 'Choose no more than eight countries.' }]
       : []),
+    ...(regionsInScope.length > MAX_REGIONS
+      ? [{ field: 'Regions', message: `Choose no more than ${MAX_REGIONS} regions.` }]
+      : []),
+    ...(themes.length > MAX_THEMES
+      ? [{ field: 'Themes', message: `Choose no more than ${MAX_THEMES} themes.` }]
+      : []),
     ...(!validWindow
       ? [{ field: 'Search period', message: 'Choose a search period within two years.' }]
       : []),
-    ...(activeResearch && researchArea && initial?.enabled !== false && !discloseArea
+    ...(boundaryScoped && initial?.enabled !== false && !discloseArea
       ? [{ field: 'Area disclosure', message: 'Allow providers to receive the saved area.' }]
       : []),
   ];
@@ -209,14 +226,13 @@ export function useScheduleForm({
     if (invalid || busy) return;
     onSubmit({
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
-      ...(selectedPlan && !(activeResearch && researchArea) ? { plan_id: selectedPlan } : {}),
+      ...(selectedPlan && !boundaryScoped ? { plan_id: selectedPlan } : {}),
       ...(needsQuestion && question.trim() ? { question: question.trim() } : {}),
       ...(activeResearch
         ? {
             research_mode: researchMode,
             research_languages: languageCodes,
             research_subject: focus === 'general' ? null : subject.trim() || null,
-            research_web_search: webSearch,
             research_source_ids: sourceIds,
           }
         : {}),
@@ -227,6 +243,8 @@ export function useScheduleForm({
       template_id: template,
       country_iso: countriesInScope.length === 1 ? (countriesInScope[0] ?? null) : null,
       country_isos: countriesInScope,
+      regions: regionsInScope,
+      categories: needsQuestion ? themes : [],
       research_web_search: activeResearch && webSearch,
       window_hours: windowHours,
       hour_utc: Number(hour),
@@ -240,8 +258,7 @@ export function useScheduleForm({
       conflict_id: needsQuestion && !subjectScoped && !researchArea ? conflictId || null : null,
       hazard: needsQuestion && !subjectScoped && !researchArea ? hazard || null : null,
       research_area: activeResearch && !subjectScoped ? researchArea : null,
-      disclose_area_to_provider:
-        activeResearch && !subjectScoped && Boolean(researchArea) && discloseArea,
+      disclose_area_to_provider: boundaryScoped && !subjectScoped && discloseArea,
       weekday: Number(weekday),
       monthday: Number(monthday),
     });
@@ -273,8 +290,6 @@ export function useScheduleForm({
     setNotifyOnChange,
     researchMode,
     setResearchMode,
-    liveOnly,
-    setLiveOnly,
     languages,
     setLanguages,
     focus,
@@ -306,8 +321,13 @@ export function useScheduleForm({
     languageCodes,
     validLanguages,
     subjectScoped,
+    boundaryScoped,
     countriesInScope,
     setCountries,
+    regions: regionsInScope,
+    setRegions,
+    themes,
+    setThemes,
     invalidQuestion,
     validWindow,
     invalid,

@@ -4963,3 +4963,311 @@ through HTMLParser, with casing and malformed self-closing-tag regression tests.
 Targeted tests and local container checks passed; final GitHub integration checks
 are tracked in PR #6. Remaining unfixed upstream image risks and protection setup
 are recorded in docs/security/CI_SECURITY_GATES.md.
+
+The operator's own usage ledger then settled a question the tests could not. Conflict
+screening had been failing almost every call since 11 September: 63 to 222 attempts a day,
+between none and four of them succeeding, each running 38 to 45 seconds against a 45
+second ceiling. The cause was reasoning effort. Screening is mechanical work, but it
+inherited the profile's configured effort, which on this operator's connection is the
+maximum. Capping mechanical purposes at medium, which landed with the cost controls,
+turned that into 152 successes and one failure in a day at an average of 13 seconds. The
+same ledger prices a heavy day of real use at about 63 pence: 28 for screening, 31 for
+report generation and 4 for everything else.
+
+The ledger also showed eight report jobs paused because a single drafted section failed
+validation while every other section had completed. The repair prompt existed but only a
+resumed job used it, so a model slip that the model corrects when told about it waited for
+a person to press resume. A rejected step is now repaired once inside the run, and the
+retry is told which check failed, using the validator's own fixed wording rather than
+anything the model wrote. A repeated model connection name also answers as a conflict
+instead of failing as an unhandled database error, which is how the operator first found
+it.
+
+The subscription form was then rebuilt after the operator found it hard to read. The
+two-column layout, with the scope choices in a side panel, is gone. The form is now one
+column of numbered steps in the order a person decides: name, question, depth, where to
+look, which themes, conflict or disaster, whether to also search the web, and when to run.
+"Where to look" adds regions (up to eight continents or the Middle East) beside the
+existing nations, and "Which themes" offers up to four of the existing event categories
+(cyber, economy, politics, public view and the rest), so a question can be scoped without
+listing countries. Both travel as ordinary schedule fields in the stored research options,
+no migration was needed, and they reach the report request and the frozen scope, so a
+rerun keeps them. The "existing evidence only" switch was removed: every run reads the
+live evidence, and a single tick adds a fresh web search. The depth targets grew by half
+(Basic 750 to 1,350 words, Deep 1,800 to 3,000, Advanced 3,750 to 6,000) with output
+budgets raised to match. Saved-area selection had already left with Plans & areas; a
+boundary drawn on the map still arrives with a subscription, is shown with its consent
+box, and can be cleared from the form.
+
+Starting a research question then took the same shape. The research form is now the same
+column of numbered steps as a subscription, minus the schedule: what to ask (with the
+research focus beside the question), how deep to go, where to look with regions and
+nations, which themes, a conflict or disaster to pin to, what to read, which period, then
+scope and sources with the destination, languages and the folded specialist settings. The
+numbered step, the boxed toggle and the conflict and disaster picker moved into shared
+components so both forms are one design, and the validation and request-building rules
+left the component for a plain module. The report request already accepted regions,
+categories, a conflict and a hazard, so no backend change was needed. The Daily briefing
+tab left the research window; the page still answers at its own address.
+
+The Ukraine lens charts were then found empty on a live server. The board asked the store
+for items filed under Ukraine, inside the conflict box, or under the other belligerents, but
+an outlet article from the Kyiv Independent, Ukrinform, Pravda or the Russian press arrives
+with no point and no country, so none of them ever reached the board; only the geo-tagged
+assessments did, and the tests had seeded the outlet items with a country the connector
+never sets. The board now also asks for the named outlets by source, with the existing rule
+that a Russian or international item must name the war, and the test seeds them as they
+really arrive. Two limits remain by design: raw events live only in memory, so a restarted
+server shows what it has collected since, and news items are retained for 72 hours, so the
+14-day chart fills from the right. The two force organisation charts now sit one below the
+other, Russia first, instead of side by side.
+
+The force organisation charts then grew from a reported command shape of 65 entries to the
+full public order of battle. The two tree-list sections of the Wikipedia order of battle
+were parsed into nodes, every formation of regiment size and above was kept (battalions,
+companies, ships and irregular groups were not), the same formation listed under two
+groupings was folded into one, and each parsed node was mapped onto the hand-written tier
+it belongs to, with the hand-written entry keeping its own wording and parent. Two entries
+the hand-written tree lacked were added: the interior ministry, and the State Border Guard
+Service as its own service under it, with the National Guard moved beneath the ministry.
+Every imported entry names the public tree and date it came from, and none fetches an
+image, so the catalogue grew to about 660 entries without growing the image cache. The
+domain and contract caps rose from 160 to 800 force nodes, and each side's chart gained a
+"Find a unit" box because a tree that size needs a way in.
+
+The equipment catalogue was then redrawn as one panel. Speciality buttons became a scrolling
+tab strip with counts, the side filter a segmented control, and each sub-heading a
+collapsible section with Expand all and Collapse all, whose cards sit in a grid that scrolls
+inside a fixed height rather than running the page. Cards gained a cropped cover image, a
+side-coloured top edge, the role in colour, a clamped description with Read more and the
+reported numbers in their own box. The accessible contract (the Speciality group, a region per
+sub-heading, the compare table) did not change, so the existing tests still pass alongside a
+new one for the fold.
+
+The timeline's written list then folded away. It had repeated, card by card, what the moving
+view already told, and it pushed the force organisation a long way down the page. The list
+now sits closed under the stage as "Read the full timeline as a list" with its event count,
+and opens by default only when the moving view is off, because the list is then the timeline
+itself and still the accessible one.
+
+The cyber briefing was found paused with a provider error. The ledger showed why: its
+synthesis judgement call on the operator's Sol profile, which reasons at high effort, ran
+to exactly the ordinary 120 second budget and was cut off, billed for the thinking and left
+with nothing to validate. The longer 300 second budget for the stages that think had only
+been granted to calls on OpenAI's native Responses API at maximum effort. Any request that
+carries a reasoning effort now takes the longer budget on those stages, whichever endpoint
+or API carries it; a request without an effort keeps the ordinary one. The paused briefing
+resumes from its completed sections when the operator presses Resume on the job page.
+
+Pressing Resume on that briefing then failed with a server error, which was a regression
+from the same day's work. The saved-reports tabs had added an "origin" key to the frozen
+report scope, and restoring a job compares its stored scope with the scope built afresh
+from the request; a job frozen before the key existed no longer matched, so no earlier job
+could resume. The comparison now leaves derived keys out of both sides, with a test that
+freezes a job, removes the key and restores it.
+
+### 17 September 2026: make AI connections recoverable and clearer
+
+The new-connection form reused an existing connection name, causing a database
+uniqueness error before the provider test could run. Create and rename operations
+now return a clear conflict message instead of an unexpected server error. API
+regressions reproduce both failures and check that correcting the name succeeds
+without changing the active connection.
+
+The administrator workflow now presents provider, model test and audience as
+three steps. Names follow the selected model unless customised, credentials stay
+available for retry after a failed save, and save failures are distinguished from
+provider-test failures. A model change resets reasoning to the provider default.
+Existing overrides are collapsed when idle and kept outside the setup view.
+Work is isolated in `codex/ai-connection-journey` to preserve concurrent edits.
+
+Validation passed: 70 distinct backend and 49 frontend tests, production frontend
+build, type checks, focused lint/formatting and Bandit. Independent review identified
+a focus loss during model discovery and a missing exception-boundary test; both
+were addressed. Live OpenAI discovery returned 136 models, and `gpt-5.6-sol` passed
+the Max reasoning probe. Luna remains the global default. No assignments changed.
+Authenticated visual acceptance and full frontend coverage were completed during
+the subsequent multi-model redesign below.
+
+### 17 September 2026: replace AI setup with a multi-model workspace
+
+Replaced the inline journey with a focused six-step popup. Administrators name
+the connection, provide credentials, discover their account models, choose a
+reasoning level, test compatibility and choose the audience. Discovery retries
+transient failures at most three times and offers an exact-ID fallback. Failed
+saves retain entered credentials; saved drafts retain their encrypted key and
+can resume after a test or assignment failure.
+
+The page now shows up to five research models as horizontal cards above a
+searchable team/user matrix. Both views use the same server snapshot. Model and
+daily allowance changes commit together, with tested-configuration proofs,
+revision checks and a final administrator-session check. Selecting a new model
+for an audience replaces its old assignment. User model overrides apply to
+personal research; team research follows the team or global connection.
+
+Four daily UTC presets range from 50 calls/100,000 tokens to 2,500 calls/5,000,000
+tokens. Inheritance and blocking remain explicit. Existing weekly/monthly limits
+are retained; active or future temporary overrides must be resolved before a
+daily preset can change. The five-profile cap also covers drafts and concurrent
+creation. Embedding-only profiles stay outside that cap and the main setup flow.
+
+Authenticated browser inspection verified the model cards, modal steps, audience
+selection and matrix at desktop width, and the scrolling popup at 390px width.
+Automatic discovery in the new popup loaded 136 models from the configured
+OpenAI account, including Luna and Sol, using the saved server-side credential.
+The existing Luna default and all real assignments were preserved. Backend
+validation passed 152 distinct focused tests, including 44 new tests, plus mypy,
+Ruff, import contracts and Bandit. The full frontend run passed 2,780 tests across
+523 files (one existing test skipped), with statements 95.05%, branches 90.15%,
+functions 93.13% and lines 96.43%. TypeScript, ESLint, production build, changed-file
+formatting, file-length and whitespace checks passed. The staged secret scan
+found no leaks. Retired inline-form components were removed, and a regression
+test protects manual model entry from losing focus when discovery completes.
+
+The final quota review found and repaired a pre-existing gap in queued reports
+and subscriptions: evidence-reranking embeddings bypassed the allowance ledger
+when the worker supplied an already-metered text gateway. Embedding accounting
+is now wired separately, preserving actor/team attribution and one charge per
+text call. Regression tests cover refusal before a provider call when blocked,
+exact text-plus-embedding totals and attribution to the subscription owner.
+
+### 17 September 2026: recover rejected report sections and tighten collection
+
+Inspection of a paused local report found six confirmed completed model calls,
+one accepted section and one rejected section, with substantial allowance left.
+Its expired worker lease had replaced the known section failure with a generic
+interruption reason. The original reason for the missed terminal update was not
+established. Terminal pause/failure now retains the reason only while the same
+worker token and revision own the running row. Normal work and publication still
+require an unexpired lease. Expired recovery recognises only unambiguous settled
+section failures; unknown paid outcomes remain conservative and do not auto-run.
+
+A new topic response that fails validation gets one metered correction attempt.
+An explicit resume retries only the unfinished topic, preserving accepted sections,
+the frozen evidence and all lifetime limits. Provider failures and uncertain calls
+do not enter that automatic repair. The progress view now accepts all six valid
+reporting items, exposes incomplete-section errors while collapsed and labels
+accepted evidence gaps separately rather than making gap-only sections look empty.
+
+The same investigation found unrelated country observations in the frozen packet
+and two passes spending the allowance on the same first three connectors. New
+general questions with a clear subject and short named locality now require both
+in the source text. This deliberately narrow lexical rule is not geocoding or a
+semantic relevance model; country-wide, language-only, generic news, private-input
+and area workflows retain their existing rules. Independent review caught and
+regression-tested generic-news, country-abbreviation and output-language false
+positives. Revised collection now tries unattempted admitted sources first without
+expanding its operation or time budgets or adding excluded sources.
+
+Focused backend suites cover worker/storage recovery, subscription reconciliation,
+section correction/projection, evidence scope, collection allocation and durable
+source budgets. Frontend report progress/API tests passed (27), as did the production
+build, full backend mypy, focused Ruff/formatting, frontend type/lint checks,
+configured Bandit, import contracts, file-length and whitespace checks. Coverage
+was not remeasured for this repair. The operations guide and active plan record
+the remaining expensive heartbeat and undated infrastructure-context limitations.
+
+### 17 September 2026: bound final synthesis and recover confirmed context exhaustion
+
+The local report resumed with the first repair and retained four accepted topic
+sections plus its accepted judgements. A subsequent, separate failure was then
+observed: the combined final-context request consumed its 32,000-token output and
+reasoning allowance. The lifetime job budget still had room. This establishes two
+distinct failures, a rejected topic and then an exhausted final-context request.
+
+New final synthesis uses three tasks: judgements, alternatives and warning, and
+gaps and collection. The latter two have separate schemas, checkpoint identities
+and 16,000-token ceilings, capped further by the frozen model profile. Their
+prompts omit the whole report's length target and ask only for their own fields.
+Evidence provenance, the structural coverage warning, model choice and reasoning
+effort are preserved. Accepted old synthesis remains reusable. A confirmed
+exhausted legacy context may resume into these children only when all provider
+outcomes are known and both new reservations fit its unchanged lifetime limits.
+Unknown calls, opted-in stage plans and exhausted children are not admitted by
+this exception. No paid-call history, reservations or frozen evidence is reset.
+
+Progress presents the two child sections rather than their compatibility parent.
+Review also repaired old display limits that rejected valid Advanced reports
+with four alternatives or eight judgements. Focused backend validation passed
+228 combined section, synthesis, provenance, collection-manifest, depth, reasoning
+and resume tests; a separate 96-test resume/projection/control suite and 17 job,
+subscription and embedding integration cases passed. These batches overlap and
+are not a cumulative unique count. The full adapter deadline suite passed 38
+tests. Full backend mypy, Ruff, formatting, configured Bandit, import contracts
+and file-length checks passed. Coverage was not remeasured for this repair.
+
+Live recovery then completed both new context steps with the configured Luna Max
+model, using 5,745 and 4,099 output/reasoning tokens. The original five accepted
+sections and failed-call accounting were retained. The job advanced to its separate
+analysis pass. The finished product was saved as needs review: the original frozen
+packet did not substantiate the requested Kyiv-specific attack details, and final
+checks identified requirement-coverage, figure and citation-style issues. The
+synthesis recovery is confirmed; this is not a verified attack assessment.
+
+The subsequent optional analysis request hit the default 120-second timeout.
+Its report_analysis schema had been omitted from the bounded 300-second native
+Max report allowance. The omission is corrected for future requests while
+explicit timeouts and cancellation remain authoritative. The uncertain paid
+request was not repeated and retains its reservation. Citation entailment and
+claim extraction completed. The saved report exposes the remaining findings.
+The timeout regression failed before the fix; all 45 deadline tests then passed,
+including explicit overrides, non-Max/local defaults and cancellation.
+
+The reports themselves were then rewritten for a reader rather than an analyst. The frozen
+document had opened with an executive summary of judgements, each followed by "Likelihood
+(PHIA)" and "Analytical confidence" lines, then findings with "Recorded source grade(s)"
+appended to every item, then method and doctrine sections in the middle. It now reads what
+happened, what it means, what we judge (one plain line each: "Highly likely, with moderate
+confidence"), other explanations, what to watch and what we are unsure about; the method,
+the source grades, the chronology and the confidence rationales sit under "Notes on method
+and sources" at the end, and a "Key to the terms" is the one place the PHIA yardstick and
+Admiralty grading are named. The drafting prompts gained a plain-English rule: tell the
+story in the order it happened, no trade terms or doctrine names in prose, no commentary on
+sources, acronyms expanded. Citation concerns stay beside the judgement they touch.
+
+Every connector was then fetched once from the app's own container: 278 sources, 262 of
+them answering with items. Five faults were the app's to fix. TASS writes HTML entities such
+as an em dash into its RSS, which a strict XML parser rejects for one character, so feeds now
+rewrite HTML named entities as numeric references before parsing and keep an unknown name as
+literal text. GDELT's lastupdate.txt named a 15-minute export it never published, so the
+connector now steps back through the four previous slots and remembers which one answered.
+Meduza's YouTube handle had been taken by another channel, and the seed now names
+@meduzalive. Nation Kenya's feed answers only on its www host. CBC's servers hold the
+application's requests open without answering while answering a browser at once; as with
+CISA and the ACSC, the app will not imitate a browser, so CBC joins the recorded refusals
+with a plain reason and a 12-hour recheck. Three sources stay outside the app's reach: CISA's
+advisory feed refuses this client at the TLS level, cyber.gov.au holds every connection, and
+ReliefWeb still awaits an approved application name. ADS-B rate limits seen during the probe
+were the probe competing with the live server, and the live poll answers normally.
+
+Two of Bellingcat's methods were then built into the research pipeline rather than bolted
+on as scripts. ShadowFinder's idea, that a shadow's length fixes the sun's height and the
+sun's height differs by place, became a pure domain module from the NOAA solar equations
+and a check on photo geolocation: the vision model now reports any shadow it can measure
+against a vertical object, the uploader can state when the photo was taken, and each
+candidate with coordinates gets a verdict in plain words (consistent, inconsistent, or
+the sun would be below the horizon), never a confirmation. osm-search's idea, that a
+question naming a church near a railway can be asked of the map, became a research
+provider with a fixed vocabulary of about forty feature kinds: one bounded Overpass
+request for a drawn area under 5,000 square kilometres, exact polygon filtering, at most
+100 features, each a cited, located item that says it is the map's current state and
+not an observation. Both sit where the app already keeps such things: the check in the
+photo service and its API, the provider in the research catalogue with a reviewed
+capability profile and an allocation record, so the planner can choose it like any
+other source. The tools that act on people's phone numbers or scrape platforms against
+their terms were left out on purpose.
+
+The app was then made deployable to a server rather than only this machine. Nothing about
+its shape suits a serverless host: one process polls hundreds of sources on their own
+intervals, the raw events live in a bounded in-memory store that never reaches the
+database, and a report job can hold a lease for forty minutes. The existing Compose stack
+was already the answer, so the work was small and specific. The Caddyfile's two hardcoded
+deployment decisions became settings: `ASE_TLS` chooses between Caddy's internal
+certificate authority and automatic certificates for a real domain, and `ASE_HSTS_MAX_AGE`
+asserts the policy only once HTTPS is known to work, since a year-long policy cannot be
+withdrawn quickly. Both were validated against the pinned Caddy release in each mode. The
+runbook in docs/DEPLOYMENT.md carries the rest: server hardening, shipping the tracked
+files with git archive because main has no remote, the uid 10001 ownership the bind mount
+needs, the administrator and MFA enrolment, a backup schedule since none is installed by
+design, and the security review's public-exposure gates that remain the operator's to
+close.

@@ -16,6 +16,7 @@ import zipfile
 from datetime import UTC, datetime, timedelta
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -63,6 +64,9 @@ GEO_TYPES = {
     "5": GeoConfidence.ADMIN1,
 }
 _EXPORT_SUFFIX = ".export.CSV.zip"
+#: GDELT sometimes names a 15-minute export in lastupdate.txt that it never published.
+#: The previous slots are still there, so the connector steps back this many of them.
+_FALLBACK_SLOTS = 4
 _DATA_HOST = "https://data.gdeltproject.org/gdeltv2/"
 
 
@@ -75,6 +79,21 @@ def export_url(lastupdate: str) -> str:
             if name.replace(_EXPORT_SUFFIX, "").isdigit():
                 return _DATA_HOST + name
     raise FeedFetchError("GDELT lastupdate.txt names no export file")
+
+
+def earlier_export_urls(url: str, slots: int = _FALLBACK_SLOTS) -> list[str]:
+    """The export files for the 15-minute slots before the one named, newest first."""
+    name = url.rsplit("/", 1)[-1].removesuffix(_EXPORT_SUFFIX)
+    try:
+        stamp = datetime.strptime(name, "%Y%m%d%H%M%S").replace(tzinfo=UTC)
+    except ValueError:
+        return []
+    return [
+        _DATA_HOST
+        + (stamp - timedelta(minutes=15 * step)).strftime("%Y%m%d%H%M%S")
+        + _EXPORT_SUFFIX
+        for step in range(1, slots + 1)
+    ]
 
 
 def read_export(data: bytes) -> list[list[str]]:
@@ -135,7 +154,7 @@ class GdeltEventsConnector:
         url = export_url(listing)
         if self.skip_unchanged and url == self._last_export:
             return []
-        rows = read_export(await self._http.get_bytes(url, conditional=False))
+        rows = read_export(await self._export(url))
         now = self._clock.now()
         candidates = [row for row in rows if row[28] in self.root_codes and row[56] and row[57]]
         candidates.sort(key=lambda row: -(_number(row[31]) or 0))
@@ -151,6 +170,24 @@ class GdeltEventsConnector:
                 break
         self._last_export = url
         return events
+
+    async def _export(self, url: str) -> bytes:
+        """The named export, or the newest earlier slot when GDELT never published it."""
+        try:
+            return await self._http.get_bytes(url, conditional=False)
+        except FeedHttpStatusError as error:
+            if error.status_code != 404:
+                raise
+            missing = error
+        for earlier in earlier_export_urls(url):
+            if earlier == self._last_export:
+                break
+            try:
+                return await self._http.get_bytes(earlier, conditional=False)
+            except FeedHttpStatusError as error:
+                if error.status_code != 404:
+                    raise
+        raise missing
 
     def _to_event(self, row: list[str], now: datetime) -> Event | None:
         lat, lon = _number(row[56]), _number(row[57])

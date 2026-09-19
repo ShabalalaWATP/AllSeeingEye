@@ -275,7 +275,7 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
     assert (version.period_from, version.period_to) == (job.now - job.window, job.now)
     assert version.research is not None
     assert any(finding.rule == "research_query_plan" for finding in version.findings)
-    assert version.markdown.count("## Executive summary") == 1
+    assert version.markdown.count("## What we judge") == 1
     assert "## References" in version.markdown
     assert "Collection coverage" not in version.markdown
 

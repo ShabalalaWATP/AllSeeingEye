@@ -1,7 +1,8 @@
 /**
  * Everything the palette can jump to: workspace pages, specialist trackers, map
- * layers and tools, and the source catalogue by family. Administration is absent
- * on purpose; it keeps its own guarded navigation.
+ * layers and tools, and, for an administrator, the source catalogue by family.
+ * The rest of administration is absent on purpose; it keeps its own guarded
+ * navigation, and the catalogue is offered only to the people who can open it.
  */
 import { FAMILIES, FAMILY_LABELS } from '@/features/sources/catalogueEntries';
 import { catalogueHref } from '@/features/sources/catalogueFilters';
@@ -16,7 +17,7 @@ export interface CommandTarget {
   readonly to: string;
 }
 
-export function commandTargets(): readonly CommandTarget[] {
+export function commandTargets(options: { admin?: boolean } = {}): readonly CommandTarget[] {
   return [
     ...workspaceDestinations().map((page) => ({
       id: `page:${page.to}`,
@@ -46,13 +47,15 @@ export function commandTargets(): readonly CommandTarget[] {
       description: entry.description,
       to: entry.panel === undefined ? mapPanelHref(MAP_GUIDE_PANEL) : mapPanelHref(entry.panel),
     })),
-    ...FAMILIES.map((family) => ({
-      id: `family:${family}`,
-      label: FAMILY_LABELS[family],
-      group: 'Sources',
-      description: `Filter the source catalogue to ${FAMILY_LABELS[family].toLowerCase()}.`,
-      to: catalogueHref({ family }),
-    })),
+    ...(options.admin
+      ? FAMILIES.map((family) => ({
+          id: `family:${family}`,
+          label: FAMILY_LABELS[family],
+          group: 'Sources',
+          description: `Filter the source catalogue to ${FAMILY_LABELS[family].toLowerCase()}.`,
+          to: catalogueHref({ family }),
+        }))
+      : []),
   ];
 }
 

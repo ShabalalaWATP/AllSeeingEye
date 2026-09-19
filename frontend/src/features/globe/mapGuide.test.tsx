@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, expect, it, vi } from 'vitest';
 
 import { ORDERED_CATEGORIES } from '@/lib/categories';
+import { adminUser, plainUser } from '@/test/fixtures';
+import { useAuthStore } from '@/stores/auth';
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
@@ -72,10 +74,8 @@ it('names every map layer, says what it is and opens the tool that filters it', 
   expect(screen.getByRole('list', { name: 'Reference layers' })).toBeInTheDocument();
   expect(screen.getByRole('list', { name: 'Map setup' })).toBeInTheDocument();
   expect(screen.getByRole('list', { name: 'Planning tools' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Open sources & data' })).toHaveAttribute(
-    'href',
-    '/sources',
-  );
+  // The source catalogue is an administrator's page, so an analyst is not sent there.
+  expect(screen.queryByRole('link', { name: /source catalogue/i })).toBeNull();
   await user.click(live.getByRole('button', { name: 'Open Conflict reports' }));
   expect(screen.getByText('Conflict report filters')).toBeInTheDocument();
 });
@@ -99,4 +99,14 @@ it('switches layers on from the guide without leaving the map', async () => {
 it('opens the guide directly when a link asks for it', () => {
   render(<Harness initial="Map guide" />);
   expect(screen.getByRole('list', { name: 'Live events' })).toBeInTheDocument();
+});
+
+it('offers the source catalogue to an administrator only', () => {
+  useAuthStore.setState({ user: adminUser, status: 'authenticated' });
+  render(<Harness initial="Map guide" />);
+  expect(screen.getByRole('link', { name: 'Open the source catalogue' })).toHaveAttribute(
+    'href',
+    '/admin/catalogue',
+  );
+  useAuthStore.setState({ user: plainUser, status: 'authenticated' });
 });

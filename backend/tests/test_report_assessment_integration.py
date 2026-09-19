@@ -240,7 +240,7 @@ async def test_production_assesses_final_body_before_late_authorisation_and_usag
     )
     assert version.assessment is not None
     assert version.assessment.method_version not in version.markdown
-    assert "## Executive summary" in version.markdown
+    assert "## What we judge" in version.markdown
 
 
 async def test_failed_generation_still_has_an_honest_frozen_assessment(

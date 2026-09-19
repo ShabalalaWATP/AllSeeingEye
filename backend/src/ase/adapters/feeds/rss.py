@@ -13,6 +13,7 @@ from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
+from ase.adapters.feeds.feed_entities import numeric_entities
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.feeds.rss_access import REFUSAL_RECHECK, automation_refusal
 from ase.application.feeds.pipeline import strip_html
@@ -197,7 +198,7 @@ class RssConnector:
             if reason is None:
                 raise
             raise FeedBlocked(reason, self._clock.now() + REFUSAL_RECHECK) from None
-        body = text.lstrip("\ufeff")
+        body = numeric_entities(text.lstrip("\ufeff"))
         if _looks_like_html(body):
             raise FeedFetchError(f"{self.spec.id}: returned an HTML page, not an RSS or Atom feed")
         try:

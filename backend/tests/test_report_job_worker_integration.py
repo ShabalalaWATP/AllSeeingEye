@@ -104,7 +104,7 @@ async def test_old_lease_cancel_cannot_interrupt_replacement_worker(
     # The synthetic draft lacks enough original source context for automatic release.
     # Lease replacement still finishes the same job without replaying the uncertain call.
     assert final.status == "needs_review", final.error
-    assert len(final.payload["calls"]) == 10 and len(gateway.calls) == 9
+    assert len(final.payload["calls"]) == 11 and len(gateway.calls) == 10
     assert final.payload["calls"][0]["status"] == "uncertain"
 
 
@@ -141,7 +141,7 @@ async def test_final_commit_failure_is_atomic_and_next_tick_does_not_duplicate_r
     assert len(reports) == int(acknowledgement_lost)
     assert (version is not None) == acknowledgement_lost
     await container.report_job_worker.tick()
-    # Eight drafting calls, the analysis pass and the entailment review; the retry
+    # Seven drafting calls, analysis, entailment and claim extraction; the retry
     # replays none of them.
-    assert len(gateway.calls) == 9 and not container.report_job_worker._running
+    assert len(gateway.calls) == 10 and not container.report_job_worker._running
     assert (await stored(container, job_id)).revision == final.revision

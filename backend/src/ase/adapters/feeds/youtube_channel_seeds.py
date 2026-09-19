@@ -94,7 +94,7 @@ CHANNELS: tuple[YouTubeChannel, ...] = (
         "yt_meduza",
         "Meduza",
         "Meduza",
-        "@meduzaproject",
+        "@meduzalive",
         "russia ukraine",
         C,
         language="ru",

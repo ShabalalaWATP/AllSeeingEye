@@ -670,3 +670,34 @@ See [Reference notes](REFERENCE_NOTES.md) and [Map infrastructure](MAP_INFRASTRU
 
 See [Public figures](PUBLIC_FIGURES.md).
 
+## 17 September 2026: report interruption and relevance repair
+
+- [x] Preserve a verified section failure when its worker lease expires, without
+  replaying unresolved provider calls or permitting stale publication.
+- [x] Give confirmed invalid topic output one metered correction attempt; retain
+  accepted sections and existing lifetime allowances.
+- [x] Show incomplete-section reasons while collapsed, support all six valid
+  reporting items and display accepted evidence gaps explicitly.
+- [x] Apply a conservative original-question locality/subject check to new general
+  research so unrelated country observations cannot fill a targeted report.
+- [x] Prefer untried admitted sources during a revised second collection pass,
+  keeping the existing operation, time and source-authorisation limits.
+- [x] Split final context into independently saved alternatives/warning and
+  gaps/collection steps, with lower per-call ceilings and unchanged model settings.
+- [x] Permit explicit recovery of a confirmed exhausted legacy context only when
+  both new child reservations fit, preserving all prior paid-call records.
+- [ ] Add an explicit non-temporal context route for packaged infrastructure
+  summaries. They currently consume a collection operation but their missing
+  publication date excludes them from dated evidence. Do not invent a date or
+  silently broaden fresh-evidence eligibility.
+- [ ] Reduce heartbeat payload processing and shared-lock contention while
+  retaining live authorisation, source/model changes and lease ownership checks.
+  The current heartbeat still repeats full checkpoint validation every ten seconds.
+
+Live recovery saved the original report as needs review. Its frozen evidence did
+not establish the requested Kyiv attack details; coverage, figure and style
+findings remain visible rather than being waived. The optional analysis deadline
+now matches the other native Max report stages, with uncertain usage retained.
+
+Frozen paused jobs retain their original evidence; improved collection and scope
+selection apply to new jobs. See [research operations](RESEARCH_WORKSPACE_OPERATIONS.md).

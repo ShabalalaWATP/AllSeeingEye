@@ -14,7 +14,15 @@ import { asApiError, describeError } from '@/lib/api/errors';
 
 const PERIODS: Record<string, string> = { day: 'a day', week: 'a week', month: 'a month' };
 
-export function AiPolicyDefaults({ onApplied }: { onApplied: (created: AiPolicy[]) => void }) {
+export function AiPolicyDefaults({
+  onApplied,
+  onBusyChange,
+  disabled = false,
+}: {
+  onApplied: (created: AiPolicy[]) => void;
+  onBusyChange?: (busy: boolean) => void;
+  disabled?: boolean;
+}) {
   const [defaults, setDefaults] = useState<Defaults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,8 +43,9 @@ export function AiPolicyDefaults({ onApplied }: { onApplied: (created: AiPolicy[
   }, []);
 
   async function apply() {
-    if (busy) return;
+    if (busy || disabled) return;
     setBusy(true);
+    onBusyChange?.(true);
     setError(null);
     try {
       const created = await applyAiPolicyDefaults();
@@ -47,6 +56,7 @@ export function AiPolicyDefaults({ onApplied }: { onApplied: (created: AiPolicy[
       setError(describeError(asApiError(caught)));
     } finally {
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
 
@@ -76,6 +86,7 @@ export function AiPolicyDefaults({ onApplied }: { onApplied: (created: AiPolicy[
           <Button
             variant="ghost"
             aria-label="Retry loading suggested policies"
+            disabled={busy || disabled}
             onClick={() => void load()}
           >
             Retry
@@ -132,7 +143,7 @@ export function AiPolicyDefaults({ onApplied }: { onApplied: (created: AiPolicy[
           <Button
             variant="secondary"
             busy={busy}
-            disabled={missing.length === 0}
+            disabled={disabled || missing.length === 0}
             onClick={() => void apply()}
           >
             {missing.length === 0

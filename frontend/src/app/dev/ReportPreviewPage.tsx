@@ -110,7 +110,7 @@ export default function ReportPreviewPage() {
                   {view === 'structured' ? (
                     <>
                       <header className="report-reader-masthead">
-                        <p className="report-reader-eyebrow">Intelligence product</p>
+                        <p className="report-reader-eyebrow">Research report</p>
                         <h1 className="report-reader-title">{report.report.title}</h1>
                       </header>
                       <ReportBodyView body={report.version.body} />

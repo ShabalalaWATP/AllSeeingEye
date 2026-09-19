@@ -6,19 +6,19 @@ export const RESEARCH_DEPTHS = [
   {
     value: 'quick',
     label: 'Basic',
-    length: '500–900 words',
+    length: '750–1,350 words',
     description: 'A concise answer with the key evidence and gaps.',
   },
   {
     value: 'detailed',
     label: 'Deep',
-    length: '1,200–2,000 words',
+    length: '1,800–3,000 words',
     description: 'Broader collection, fuller analysis and a challenge to the findings.',
   },
   {
     value: 'advanced',
     label: 'Advanced',
-    length: '2,500–4,000 words',
+    length: '3,750–6,000 words',
     description: 'Extended collection and synthesis, with more room for competing explanations.',
   },
 ] as const;

@@ -28,6 +28,8 @@ class ConnectionInput:
 
 
 class LlmConnectionsUseCase:
+    """Set or reset bindings. With ``commit=False``, the caller owns commit and rollback."""
+
     def __init__(
         self,
         profiles: LlmProfileRepository,
@@ -54,6 +56,7 @@ class LlmConnectionsUseCase:
         context: RequestContext,
         *,
         before_save: SessionCheck | None = None,
+        commit: bool = True,
     ) -> LlmConnectionBinding:
         access = await self._access.context(actor, for_update=True)
         require_admin(access.actor)
@@ -104,7 +107,8 @@ class LlmConnectionsUseCase:
                 "binding_revision": binding.revision,
             },
         )
-        await self._uow.commit()
+        if commit:
+            await self._uow.commit()
         return binding
 
     async def reset_team(
@@ -115,6 +119,7 @@ class LlmConnectionsUseCase:
         context: RequestContext,
         *,
         before_save: SessionCheck | None = None,
+        commit: bool = True,
     ) -> None:
         access = await self._access.context(actor, for_update=True)
         require_admin(access.actor)
@@ -135,7 +140,8 @@ class LlmConnectionsUseCase:
             ip=context.ip,
             details={"previous_profile_id": str(current.profile_id)},
         )
-        await self._uow.commit()
+        if commit:
+            await self._uow.commit()
 
     async def reset_user(
         self,
@@ -145,6 +151,7 @@ class LlmConnectionsUseCase:
         context: RequestContext,
         *,
         before_save: SessionCheck | None = None,
+        commit: bool = True,
     ) -> None:
         require_admin((await self._access.context(actor, for_update=True)).actor)
         if await self._users.get_by_id(user_id) is None:
@@ -164,7 +171,8 @@ class LlmConnectionsUseCase:
             ip=context.ip,
             details={"previous_profile_id": str(current.profile_id), "user_id": str(user_id)},
         )
-        await self._uow.commit()
+        if commit:
+            await self._uow.commit()
 
     async def _validate_audience(self, data: ConnectionInput, access: AccessContext) -> None:
         if data.user_id is not None:

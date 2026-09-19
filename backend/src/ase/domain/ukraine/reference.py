@@ -14,7 +14,7 @@ from enum import StrEnum
 from types import MappingProxyType
 
 MAX_EQUIPMENT = 200
-MAX_FORCE_NODES = 160
+MAX_FORCE_NODES = 800
 MAX_TIMELINE_EVENTS = 160
 MAX_PHASES = 16
 MAX_IMAGES = 400

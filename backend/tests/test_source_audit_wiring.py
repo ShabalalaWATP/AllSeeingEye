@@ -39,10 +39,11 @@ async def test_all_languages_fit_provider_bound_without_silent_truncation(
         ids = [task.source_id for task in plan.tasks]
         assert len(ids) <= MAX_COLLECTION_PROVIDERS and len(ids) == len(set(ids))
         if spatial:
-            assert ids[:4] == [
+            assert ids[:5] == [
                 "research-usgs-area",
                 "research-eonet-area",
                 "research-openaq-area",
+                "research-osm-features",
                 "research-retained-area-feeds",
             ]
             assert not any(id_.startswith("research_publisher_") for id_ in ids)

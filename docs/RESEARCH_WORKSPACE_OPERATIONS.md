@@ -19,10 +19,16 @@ to the source catalogue and alert rules. These preferences apply per user. See
 
 ## Questions and scope
 
-Enter a question and choose Basic, Deep or Advanced, the destination and up to eight
-countries. No selected countries means worldwide. Choose a rolling period or a
-fixed UTC range, with inclusive start and exclusive end. Ordinary intervals allow
-730 days. This limits duration, not the age of a saved historical interval.
+The form reads top to bottom in numbered steps: the question and research focus,
+Basic, Deep or Advanced, where to look, which themes, a conflict or disaster to pin
+to, what to read, which period, then scope and sources. Where to look takes up to
+eight regions (continents or the Middle East) and up to eight nations; leaving both
+empty means worldwide. Themes narrow the evidence to up to four event categories,
+such as cyber, economy, politics or public view; none means all of it. Company,
+domain and private-file focuses skip the place and conflict steps. Choose a rolling
+period or a fixed UTC range, with inclusive start and exclusive end. Ordinary
+intervals allow 730 days. This limits duration, not the age of a saved historical
+interval. The destination and search languages sit under Scope and sources.
 
 Inspect the collection plan for actual source coverage. Current RSS feeds cannot
 supply two years of archives. Fresh headline research can match reviewed country
@@ -44,15 +50,72 @@ can move forward. Start new research to change the scope.
 
 | Type | Indicative narrative length | Research approach |
 | --- | --- | --- |
-| Basic | 500–900 words | Focused collection and the strongest relevant findings. |
-| Deep | 1,200–2,000 words | Broader collection, fuller reasoning and challenge review. |
-| Advanced | 2,500–4,000 words | Extended collection, competing explanations and synthesis. |
+| Basic | 750–1,350 words | Focused collection and the strongest relevant findings. |
+| Deep | 1,800–3,000 words | Broader collection, fuller reasoning and challenge review. |
+| Advanced | 3,750–6,000 words | Extended collection, competing explanations and synthesis. |
 
 These are evidence-dependent targets, excluding references, not guaranteed lengths.
 Sparse evidence produces a shorter report. Provider limits and schema bounds still
 apply. More depth consumes more time and provider capacity. Existing saved `quick`
 and `detailed` values mean Basic and Deep respectively; `advanced` is additive.
 These choices also apply to area research, personal defaults and schedules.
+
+### Saved progress and recovery
+
+A paused report is not necessarily out of tokens. Expand its sections to read the
+accepted draft; incomplete sections show their safe failure reason even while
+collapsed. A valid section can contain only an **Evidence gaps** explanation when
+the frozen sources cannot support the requested assessment.
+
+New topic output that fails validation gets one correction attempt within the
+existing report allowance. A second invalid response pauses the job. Resuming an
+incomplete topic makes one correction attempt, retains accepted sections and uses
+the same frozen evidence. Provider failures, interrupted calls and uncertain paid
+outcomes do not enter this automatic correction path. Final publication still
+requires the normal checks.
+
+Final synthesis now uses three small requests: key judgements, alternatives and
+warning, then gaps and collection. The last two each have a 16,000 output/reasoning
+token ceiling, or the configured model's lower ceiling. They use the chosen model
+and thinking level. Each completed part is saved independently; a failed part does
+not replay accepted judgements or sections.
+
+A legacy final-context step that exhausted its confirmed output allowance can
+offer **Resume research** to split that step once. This requires settled calls,
+valid saved identities and enough lifetime allowance for both new parts. The old
+paid request and token counts stay retained. Exhausting a smaller child step does
+not create further retries or subdivisions. A report-wide allowance limit is still
+a hard stop.
+
+Lease recovery preserves a known section failure only when all recorded calls are
+settled and the current packet contains one unambiguous failure. Other interrupted
+jobs retain the conservative interruption warning and require explicit resumption.
+Saved work is not recollected or silently rewritten after a software update.
+
+For new general research, a narrow subject followed by a short named locality
+(for example, "drone and missile attacks in Kyiv") requires source text supporting
+both the subject and that place. This is a conservative text check, not geocoding
+or a full semantic relevance classifier. Country-wide, private-document and
+explicit-area research retain their own selection rules. An empty eligible set
+produces an evidence-gap outcome rather than filling the report with unrelated
+country observations.
+
+If the first source pass is empty and the search is revised, the remaining
+allowance now tries unattempted admitted sources before repeating earlier ones.
+Basic research retains its six-operation collection allowance. Providers excluded
+by the allocation limit are not silently added; inspect the receipt for coverage.
+
+## Map feature search in area research
+
+When research carries a drawn area and the question or its terms name a kind of map
+feature (a church, a railway station, a bridge, a stadium, an airport, a power plant, a
+dam and about forty others), one bounded OpenStreetMap request lists those features
+inside the exact polygon, each as a located, cited item linking to its map page. This
+is the reasoning behind Bellingcat's osm-search, held to a fixed vocabulary so a query
+can never ask the map for arbitrary tags. Areas over 5,000 square kilometres are not
+searched, at most 100 features come back, and a feature is the map's current state,
+undated: a candidate for a scene, not an observation of one. Data is ODbL 1.0,
+credited to OpenStreetMap contributors.
 
 ## Photo geolocation
 
@@ -68,6 +131,15 @@ The vision call receives a sanitised preview of at most 512 pixels per dimension
 not the original filename, private EXIF or extracted OCR. Fine text and distant
 details can be lost. It does not perform public reverse-image search. OpenAI and
 Bedrock image payloads are supported, subject to the chosen model accepting images.
+
+If you know when the photo was taken, enter it (UTC) in the form. The model then also
+reports any shadow it can measure against a vertical object, and the app tests each
+candidate with coordinates against the sun: at that instant the sun stands at a known
+height over every point on Earth, and a candidate either casts a shadow of the reported
+length or it cannot. This is the reasoning behind Bellingcat's ShadowFinder, computed
+locally from the NOAA solar equations. A check can rule a candidate out or say it is
+consistent; it never confirms a place, and a wrong capture time makes every check wrong,
+so each one repeats the instant it used.
 
 Results contain up to three unverified candidate places or an unknown result,
 visible clues, contradictions, uncertainty and verification steps. Multi-photo
@@ -127,7 +199,7 @@ using prior evidence and before saving.
 
 ## Daily Live Monitor
 
-Opening Daily briefing within Research ensures one personal Basic briefing covering the previous
+Opening the Daily briefing page at `/trackers` (it is no longer a Research tab) ensures one personal Basic briefing covering the previous
 24 hours of available conflict, disaster, humanitarian and news evidence. It uses
 the durable research pipeline and saves a cited report. Multiple tabs and repeat
 visits reuse the same job for 24 hours, including paused or failed jobs. The page
@@ -143,7 +215,7 @@ establish real-model briefing quality.
 
 ## Reusing map areas
 
-The research tabs are New research, Saved reports, Daily briefing and Plans & areas. Running,
+The research tabs are New research and Saved research. Running,
 failed and paused work remains accessible through Research progress from Saved
 reports. Plans & areas stores reusable geographic definitions. Open on map links
 use `/?area=<id>` and fetch authorised geometry before focusing and drawing it on

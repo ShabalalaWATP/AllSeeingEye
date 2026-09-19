@@ -240,7 +240,7 @@ export const ukraineReferenceSchema: z.ZodType<UkraineReference> = z.object({
         links: z.array(linkSchema).max(8),
       }),
     )
-    .max(160),
+    .max(800),
   phases: z
     .array(
       z.object({

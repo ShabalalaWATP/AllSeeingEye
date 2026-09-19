@@ -29,8 +29,20 @@ from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_REPORT_TIMEOUT_SECONDS = 300.0
-REPORT_SCHEMAS = frozenset(
-    {"report", "report_topic", "report_synthesis", "report_judgements", "report_context"}
+#: Stages that reason before they answer. Cutting one off at the ordinary budget bills
+#: the thinking and returns nothing, so they are given the longer one.
+LONG_THINKING_SCHEMAS = frozenset(
+    {
+        "report",
+        "report_topic",
+        "report_synthesis",
+        "report_judgements",
+        "report_context",
+        "conflict_screening",
+        "report_alternatives",
+        "report_collection",
+        "report_analysis",
+    }
 )
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 MAX_CONCURRENT_REQUESTS = 2
@@ -38,10 +50,15 @@ MAX_JSON_DEPTH = 64
 
 
 def completion_timeout_seconds(base_url: str, request: LlmRequest, override: float | None) -> float:
-    """One total budget for admission, HTTP and parsing; explicit overrides win."""
+    """One total budget for admission, HTTP and parsing; explicit overrides win.
+
+    A model asked to reason takes the longer budget on the stages that think, whichever
+    API carries the call: the operator's Sol profile at high effort was cut off at the
+    ordinary budget mid-synthesis, billed for the thinking and left the briefing paused.
+    """
     if override is not None:
         return override
-    if uses_responses(base_url, request) and request.schema_name in REPORT_SCHEMAS:
+    if request.reasoning_effort is not None and request.schema_name in LONG_THINKING_SCHEMAS:
         return MAX_REPORT_TIMEOUT_SECONDS
     return DEFAULT_TIMEOUT_SECONDS
 

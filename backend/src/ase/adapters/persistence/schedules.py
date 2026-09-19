@@ -22,6 +22,8 @@ from ase.application.schedules.revision_snapshot import revision_from_schedule
 from ase.application.schedules.runner import DueCursor
 from ase.domain.access import Visibility
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.events import Category
+from ase.domain.regions import Region
 from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import area_from_dict, area_to_dict
@@ -79,6 +81,8 @@ def _from_row(row: ScheduleRow) -> Schedule:
         anchor_month=options.get("anchor_month", 1),
         conflict_id=options.get("conflict_id"),
         hazard=options.get("hazard"),
+        categories=tuple(Category(value) for value in options.get("categories", ())),
+        regions=tuple(Region(value) for value in options.get("regions", ())),
         research_area=area_from_dict(options.get("research_area")),
         disclose_area_to_provider=options.get("disclose_area_to_provider", False),
         avoid_repetition=options.get("avoid_repetition", True),
@@ -135,6 +139,8 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
         "anchor_month": schedule.anchor_month,
         "conflict_id": schedule.conflict_id,
         "hazard": schedule.hazard,
+        "categories": [category.value for category in schedule.categories],
+        "regions": [region.value for region in schedule.regions],
         "research_area": area_to_dict(schedule.research_area),
         "disclose_area_to_provider": schedule.disclose_area_to_provider,
         "avoid_repetition": schedule.avoid_repetition,

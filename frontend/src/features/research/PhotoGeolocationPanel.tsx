@@ -2,7 +2,7 @@ import { useState, type SyntheticEvent } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { TextAreaField } from '@/components/ui/Field';
+import { TextAreaField, TextField } from '@/components/ui/Field';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import { describeError } from '@/lib/api/errors';
 import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspaces';
@@ -54,6 +54,7 @@ function PhotoGeolocationForm({
   const report = useResearchRun();
   const [question, setQuestion] = useState('');
   const [hints, setHints] = useState('');
+  const [capturedAt, setCapturedAt] = useState('');
   const [consentKey, setConsentKey] = useState('');
   const [validation, setValidation] = useState<string | null>(null);
   const receiptKey = `${input.key}:${input.receipts.map((item) => item.id).join(',')}`;
@@ -70,7 +71,7 @@ function PhotoGeolocationForm({
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!ready || busy || input.busy || !consent) return;
-    void analysis.analyse(question, hints, consent);
+    void analysis.analyse(question, hints, consent, capturedAt ? `${capturedAt}:00Z` : null);
   };
   const save = () => {
     if (!result || !ready || busy || !input.receipts.length) return;
@@ -167,6 +168,16 @@ function PhotoGeolocationForm({
               placeholder="Possible country, approximate date, or where the photo came from."
               onChange={(event) => {
                 setHints(event.target.value);
+                analysis.clear();
+              }}
+            />
+            <TextField
+              label="When the photo was taken (UTC), if known"
+              type="datetime-local"
+              value={capturedAt}
+              hint="Used to test each candidate against the sun: a shadow's length fixes how high the sun stood, and that differs by place. Leave empty if unknown; a wrong time gives wrong checks."
+              onChange={(event) => {
+                setCapturedAt(event.target.value);
                 analysis.clear();
               }}
             />

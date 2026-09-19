@@ -17,6 +17,37 @@ function ClueList({ title, items }: { title: string; items: readonly string[] })
   );
 }
 
+const SUN_STATUS: Record<string, string> = {
+  consistent: 'Consistent with the sun',
+  inconsistent: 'Inconsistent with the sun',
+  sun_below_horizon: 'Sun below the horizon',
+  no_coordinates: 'No coordinates to check',
+};
+
+/** The sun and shadow arithmetic for one candidate, when a capture time was given. */
+function SunChecks({ checks }: { checks: ResearchGeolocation['sun_checks'] }) {
+  if (!checks || checks.length === 0) return null;
+  return (
+    <ul aria-label="Sun and shadow checks" className="mt-4 space-y-2">
+      {checks.map((check, index) => (
+        <li
+          key={index}
+          data-status={check.status}
+          className="border-l-2 border-line pl-3 text-xs leading-relaxed data-[status=consistent]:border-chart-3 data-[status=inconsistent]:border-chart-2 data-[status=sun_below_horizon]:border-chart-2"
+        >
+          <p className="font-medium text-text">
+            {SUN_STATUS[check.status] ?? check.status}
+            <span className="ml-2 font-mono text-[10px] text-muted">
+              {check.photo_id.replace('photo-', 'Photo ')} · {formatUtc(check.captured_at)}
+            </span>
+          </p>
+          <p className="mt-1 text-muted">{check.note}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Candidates are hypotheses, including any returned coordinates or metadata claims. */
 export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation }) {
   return (
@@ -94,6 +125,11 @@ export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation
                   </p>
                 </div>
               )}
+              <SunChecks
+                checks={(result.sun_checks ?? []).filter(
+                  (check) => check.candidate_label === candidate.label,
+                )}
+              />
             </li>
           ))}
         </ol>

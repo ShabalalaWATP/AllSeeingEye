@@ -81,7 +81,7 @@ export function ForcesSection({
         indicative. Portraits and emblems are Wikimedia Commons files; the licence and credit appear
         in the detail panel when you open an entry.
       </p>
-      <div className={view === 'both' ? 'grid gap-6 lg:grid-cols-2' : 'flex flex-col'}>
+      <div className="flex flex-col gap-8">
         {sides.map((side) => (
           <ForceSidePanel
             key={side}

@@ -16,7 +16,13 @@ from ase.domain.ukraine.confirmed import CivilianHarm, ConfirmedLosses
 from ase.domain.ukraine.control import ControlSnapshot
 from ase.domain.ukraine.lenses import Lens, lenses_for
 from ase.domain.ukraine.losses import MAX_CLAIMS, ClaimedLosses, claim_from_attributes, war_day
-from ase.domain.ukraine.updates import UpdateGroup, concerns_war, event_text, update_group
+from ase.domain.ukraine.updates import (
+    OUTLET_SOURCES,
+    UpdateGroup,
+    concerns_war,
+    event_text,
+    update_group,
+)
 
 CONFLICT_ID = "ukraine"
 CLAIM_SOURCE = "ukraine_general_staff"
@@ -129,10 +135,15 @@ class UkraineBoardService:
         )
 
     def _events(self, now: datetime) -> list[Event]:
-        """Everything in the box or filed under the belligerents that names the war."""
+        """Everything in the box, filed under the belligerents, or from their outlets."""
         conflict = self._conflicts.get(CONFLICT_ID)
         since = now - WINDOW
-        queries = [EventQuery(country_iso="UA", categories=CATEGORIES, since=since, limit=POOL)]
+        # Outlet articles carry no point and no country, so ask for them by source as well;
+        # concerns_war still makes the Russian and international ones name the war.
+        queries = [
+            EventQuery(country_iso="UA", categories=CATEGORIES, since=since, limit=POOL),
+            EventQuery(source_ids=OUTLET_SOURCES, categories=CATEGORIES, since=since, limit=POOL),
+        ]
         if conflict is not None:
             queries.append(
                 EventQuery(bbox=conflict.bbox, categories=CATEGORIES, since=since, limit=POOL)

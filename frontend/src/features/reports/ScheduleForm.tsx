@@ -1,15 +1,26 @@
+/**
+ * One column, read top to bottom in the order a person decides: what to call it, what to
+ * ask, how deep to go, where to look, which themes, which conflict or disaster, whether
+ * to search the web, and finally when. The rarely changed settings sit folded at the end.
+ */
 import { useRef, useState, type SyntheticEvent } from 'react';
+
+import { ChipPicker } from '@/components/research/ChipPicker';
 import { CountryMultiSelect } from '@/components/research/CountryMultiSelect';
+import { Step, Toggle } from '@/components/research/FormStep';
 import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { Country } from '@/lib/api/geoSchemas';
-import { SubscriptionCoverage } from './SubscriptionCoverage';
+import { MAX_REGIONS, REGIONS } from '@/lib/regions';
+import { MAX_THEMES, THEMES } from '@/lib/themes';
+
 import { focusScheduleIssue, scheduleIssueTarget } from './scheduleFormFocus';
+import { ScheduleFocus } from './ScheduleFocus';
 import { ScheduleScope } from './ScheduleScope';
-import { SubscriptionCostNote } from './SubscriptionCostNote';
 import { ScheduleTiming } from './ScheduleTiming';
+import { SubscriptionCostNote } from './SubscriptionCostNote';
 import { useScheduleForm, type ScheduleFormStateProps } from './useScheduleForm';
 
 export function ScheduleForm(
@@ -24,52 +35,18 @@ export function ScheduleForm(
   const state = useScheduleForm(props);
   const form = useRef<HTMLFormElement>(null);
   const [attempted, setAttempted] = useState(false);
-  const {
-    scope,
-    invalidPlan,
-    name,
-    setName,
-    needsQuestion,
-    question,
-    setQuestion,
-    selectedPlan,
-    activeResearch,
-    researchMode,
-    setResearchMode,
-    liveOnly,
-    setLiveOnly,
-    product,
-    countriesInScope,
-    setCountries,
-    subjectScoped,
-    hour,
-    setHour,
-    cadence,
-    setCadence,
-    weekday,
-    setWeekday,
-    monthday,
-    setMonthday,
-    lookback,
-    lookbackUnit,
-    changeLookbackUnit,
-    setLookback,
-    webSearch,
-    setWebSearch,
-    notifyOnChange,
-    setNotifyOnChange,
-    invalid,
-    submit,
-  } = state;
+  const { needsQuestion, activeResearch, subjectScoped, boundaryScoped, product } = state;
   const validateSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
-    if (invalid) {
+    if (state.invalid) {
       event.preventDefault();
       setAttempted(true);
       if (state.issues[0]) focusScheduleIssue(form.current, state.issues[0]);
       return;
     }
-    submit(event);
+    state.submit(event);
   };
+  let step = 0;
+  const next = () => ++step;
   return (
     <form
       ref={form}
@@ -80,17 +57,21 @@ export function ScheduleForm(
       noValidate
       className="min-w-0 border-t border-line pt-7"
     >
-      <header className="mb-6 flex items-start justify-between gap-4">
+      <header className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h2 tabIndex={-1} className="text-xl font-semibold">
+          <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+            {duplicate ? 'Copy' : initial ? 'Edit' : 'New'}
+          </p>
+          <h2 tabIndex={-1} className="text-2xl font-semibold tracking-tight">
             {duplicate
               ? 'Duplicate subscription'
               : initial
                 ? 'Edit subscription'
                 : 'Create a subscription'}
           </h2>
-          <p className="mt-2 text-sm text-muted">
-            Choose what you want to follow, the report depth and how often to receive an update.
+          <p className="mt-2 max-w-xl text-sm text-muted">
+            Name it, ask it, scope it, then say when. Each run arrives as a cited report that leads
+            with what changed.
           </p>
         </div>
         {onCancel && (
@@ -121,205 +102,209 @@ export function ScheduleForm(
         </Alert>
       )}
       {error !== null && <Alert tone="error">{error}</Alert>}
-      <fieldset
-        disabled={busy}
-        className="grid min-w-0 gap-8 disabled:opacity-70 xl:grid-cols-[minmax(0,1fr)_20rem]"
-      >
-        <div className="min-w-0 space-y-5">
-          {invalidPlan && (
-            <Alert tone="error">
-              The linked plan is no longer available. Choose a plan in this workspace or select No
-              plan.
-            </Alert>
-          )}
-          <div id="subscription-name">
-            <TextField
-              label="Subscription name"
-              error={attempted && !name.trim() ? 'Enter a subscription name.' : undefined}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-              maxLength={120}
-              placeholder="Weekly energy developments"
-            />
-          </div>
-          {needsQuestion && (
-            <div id="subscription-question">
-              <TextAreaField
-                label="Question"
-                error={
-                  attempted && state.issues.some((issue) => issue.field === 'Question')
-                    ? 'Enter a question.'
-                    : undefined
-                }
-                hint="Any topic: a conflict, natural disaster, industry, organisation or local situation."
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                rows={3}
-                className="min-h-28 resize-y bg-surface p-4 text-base leading-relaxed"
-                maxLength={1000}
-                required={!selectedPlan || activeResearch}
-                placeholder="What has changed, what is supported by evidence, and what should I watch next?"
-              />
-            </div>
-          )}
-          {needsQuestion && (
-            <ResearchDepth value={researchMode} onChange={setResearchMode} disabled={liveOnly} />
-          )}
-          <h3 className="border-t border-line pt-5 text-sm font-semibold">Scope and sources</h3>
-          <div id="subscription-countries">
-            {product?.needs_country ? (
-              <SelectField
-                label="Nation"
-                value={countriesInScope[0] ?? ''}
-                onChange={(event) => setCountries(event.target.value ? [event.target.value] : [])}
-                options={[
-                  { value: '', label: 'Choose one nation' },
-                  ...countries.map((item) => ({ value: item.iso2, label: item.name })),
-                ]}
-              />
-            ) : (
-              <CountryMultiSelect
-                countries={countries}
-                value={countriesInScope}
-                onChange={setCountries}
-                disabled={subjectScoped || Boolean(activeResearch && state.researchArea)}
-              />
-            )}
-          </div>
-          {needsQuestion && !subjectScoped && (
-            <div id="subscription-coverage">
-              <SubscriptionCoverage state={state} />
-            </div>
-          )}
-          {subjectScoped && (
-            <p className="text-xs text-muted">
-              This focused search uses the organisation or domain rather than country filters.
-            </p>
-          )}
+      <fieldset disabled={busy} className="mx-auto grid max-w-3xl gap-10 disabled:opacity-70">
+        {state.invalidPlan && (
+          <Alert tone="error">
+            The linked plan is no longer available. Choose a plan in this workspace or select No
+            plan.
+          </Alert>
+        )}
 
-          {needsQuestion && (
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 accent-ember"
-                checked={liveOnly}
-                disabled={Boolean(state.researchArea)}
-                onChange={(event) => setLiveOnly(event.target.checked)}
-              />
-              <span>
-                Use existing live evidence only
-                <span className="mt-1 block text-xs text-muted">
-                  {state.researchArea
-                    ? 'Clear the fixed boundary first to change collection mode.'
-                    : 'Skip new source collection and use the live evidence already available.'}
-                </span>
-              </span>
-            </label>
-          )}
-          {activeResearch && (
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 accent-ember"
-                checked={webSearch}
-                onChange={(event) => setWebSearch(event.target.checked)}
-              />
-              <span>
-                Include a fresh web search
-                <span className="mt-1 block text-xs text-muted">
-                  Uses the workspace connection at each run, where supported. Provider usage may
-                  incur charges.
-                </span>
-              </span>
-            </label>
-          )}
-          <ScheduleScope
-            state={state}
-            workspaces={workspaces}
-            templates={templates}
-            initial={Boolean(initial)}
+        <Step number={next()} title="What to call it" id="subscription-name">
+          <TextField
+            label="Subscription name"
+            error={attempted && !state.name.trim() ? 'Enter a subscription name.' : undefined}
+            value={state.name}
+            onChange={(event) => state.setName(event.target.value)}
+            required
+            maxLength={120}
+            placeholder="Weekly energy developments"
           />
-        </div>
-        <aside
-          id="subscription-timing"
-          aria-label="Subscription timing"
-          className="min-w-0 space-y-5 self-start rounded-xl bg-surface p-5 xl:sticky xl:top-4"
+        </Step>
+
+        {needsQuestion && (
+          <Step
+            number={next()}
+            title="What to follow"
+            lead="Any topic: a conflict, a market, an organisation, a technology or a place."
+            id="subscription-question"
+          >
+            <TextAreaField
+              label="Question"
+              error={
+                attempted && state.issues.some((issue) => issue.field === 'Question')
+                  ? 'Enter a question.'
+                  : undefined
+              }
+              value={state.question}
+              onChange={(event) => state.setQuestion(event.target.value)}
+              rows={3}
+              className="min-h-28 resize-y bg-surface p-4 text-base leading-relaxed"
+              maxLength={1000}
+              required={!state.selectedPlan || activeResearch}
+              placeholder="What has changed, what is supported by evidence, and what should I watch next?"
+            />
+          </Step>
+        )}
+
+        {needsQuestion && (
+          <Step number={next()} title="How deep to go" id="subscription-depth">
+            <ResearchDepth value={state.researchMode} onChange={state.setResearchMode} />
+          </Step>
+        )}
+
+        <Step
+          number={next()}
+          title="Where to look"
+          lead={
+            subjectScoped
+              ? 'This focused search follows its organisation or domain rather than a place.'
+              : boundaryScoped
+                ? 'A boundary drawn on the map sets the place for this subscription.'
+                : 'Choose regions, nations, or both. Leave both empty for the whole world.'
+          }
+          id="subscription-countries"
         >
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-ember">
-              Your update schedule
-            </p>
-            <p className="mt-2 text-sm text-muted">
-              Updates appear in the app as complete reports with citations and export options.
-            </p>
-          </div>
+          {product?.needs_country ? (
+            <SelectField
+              label="Nation"
+              value={state.countriesInScope[0] ?? ''}
+              onChange={(event) =>
+                state.setCountries(event.target.value ? [event.target.value] : [])
+              }
+              options={[
+                { value: '', label: 'Choose one nation' },
+                ...countries.map((item) => ({ value: item.iso2, label: item.name })),
+              ]}
+            />
+          ) : (
+            <>
+              <div id="subscription-regions">
+                <ChipPicker
+                  label="Regions"
+                  options={REGIONS}
+                  value={state.regions}
+                  onChange={state.setRegions}
+                  max={MAX_REGIONS}
+                  disabled={subjectScoped || boundaryScoped}
+                />
+              </div>
+              <CountryMultiSelect
+                label="Nations"
+                countries={countries}
+                value={state.countriesInScope}
+                onChange={state.setCountries}
+                disabled={subjectScoped || boundaryScoped}
+              />
+            </>
+          )}
+        </Step>
+
+        {needsQuestion && (
+          <Step
+            number={next()}
+            title="Which themes"
+            lead="Narrow the evidence to the kinds of reporting that matter. None means all of it."
+            id="subscription-themes"
+          >
+            <ChipPicker
+              label="Themes"
+              options={THEMES}
+              value={state.themes}
+              onChange={state.setThemes}
+              max={MAX_THEMES}
+            />
+          </Step>
+        )}
+
+        {needsQuestion && !subjectScoped && (
+          <Step
+            number={next()}
+            title="Conflict or disaster"
+            lead="Optional. Pin the subscription to one tracked conflict or one kind of hazard."
+            id="subscription-coverage"
+          >
+            <ScheduleFocus state={state} />
+          </Step>
+        )}
+
+        {activeResearch && (
+          <Step
+            number={next()}
+            title="What to read"
+            lead="Every run reads the live evidence the app already collects for your scope."
+            id="subscription-sources"
+          >
+            <Toggle
+              checked={state.webSearch}
+              onChange={state.setWebSearch}
+              title="Also search the web each run"
+              detail="Uses the workspace connection where supported. Provider usage may incur charges."
+            />
+          </Step>
+        )}
+
+        <Step
+          number={next()}
+          title="When to run"
+          lead="Updates appear in Saved updates as complete reports with citations and exports."
+          id="subscription-timing"
+        >
           <ScheduleTiming
-            cadence={cadence}
-            hour={hour}
-            weekday={weekday}
-            monthday={monthday}
+            cadence={state.cadence}
+            hour={state.hour}
+            weekday={state.weekday}
+            monthday={state.monthday}
             anchorMonth={state.anchorMonth}
             onAnchorMonth={state.setAnchorMonth}
-            lookback={lookback}
-            lookbackUnit={lookbackUnit}
-            onLookbackUnit={changeLookbackUnit}
-            onCadence={setCadence}
-            onHour={setHour}
-            onWeekday={setWeekday}
-            onMonthday={setMonthday}
-            onLookback={setLookback}
+            lookback={state.lookback}
+            lookbackUnit={state.lookbackUnit}
+            onLookbackUnit={state.changeLookbackUnit}
+            onCadence={state.setCadence}
+            onHour={state.setHour}
+            onWeekday={state.setWeekday}
+            onMonthday={state.setMonthday}
+            onLookback={state.setLookback}
           />
           <SubscriptionCostNote
-            cadence={cadence}
-            depth={researchMode}
+            cadence={state.cadence}
+            depth={state.researchMode}
             researching={activeResearch}
           />
-
-          <label className="flex items-start gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 accent-ember"
-              checked={state.avoidRepetition}
-              onChange={(event) => state.setAvoidRepetition(event.target.checked)}
-            />
-            <span>
-              Prioritise new and changed information
-              <span className="mt-1 block text-xs text-muted">
-                Compare with previous updates. Retain earlier evidence when needed for context or a
-                changed assessment; quiet periods may have no material update.
-              </span>
-            </span>
-          </label>
+          <Toggle
+            checked={state.avoidRepetition}
+            onChange={state.setAvoidRepetition}
+            title="Prioritise new and changed information"
+            detail="Compare with previous updates. Earlier evidence is kept when it explains a change; a quiet period may bring no material update."
+          />
           {needsQuestion && (
-            <div className="border-t border-line pt-5">
-              <label className="flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 accent-ember"
-                  checked={notifyOnChange}
-                  onChange={(event) => setNotifyOnChange(event.target.checked)}
-                />
-                <span>
-                  Notify in app when evidence changes
-                  <span className="mt-1 block text-xs text-muted">
-                    The first report establishes a baseline. Later runs compare evidence and
-                    assessments; an alert is not verification.
-                  </span>
-                </span>
-              </label>
-            </div>
+            <Toggle
+              checked={state.notifyOnChange}
+              onChange={state.setNotifyOnChange}
+              title="Notify in app when evidence changes"
+              detail="The first report sets the baseline. Later runs compare evidence and assessments; an alert is not verification."
+            />
           )}
-          <p className="border-t border-line pt-4 text-xs text-muted">
-            Saved to {workspaces.label(scope.teamId || null)}.{' '}
+        </Step>
+
+        <ScheduleScope
+          state={state}
+          workspaces={workspaces}
+          templates={templates}
+          initial={Boolean(initial)}
+        />
+
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+          <p className="text-xs text-muted">
+            Saved to {workspaces.label(state.scope.teamId || null)}.{' '}
             {initial?.enabled === false
               ? 'This subscription remains paused until you resume it.'
               : 'Pause future runs at any time.'}
           </p>
-          <Button type="submit" className="w-full min-h-11" busy={busy}>
+          <Button type="submit" className="min-h-11 min-w-48" busy={busy}>
             {duplicate ? 'Create copy' : initial ? 'Save changes' : 'Create subscription'}
           </Button>
-        </aside>
+        </div>
       </fieldset>
     </form>
   );

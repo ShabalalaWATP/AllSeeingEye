@@ -48,7 +48,7 @@ def test_challenge_and_citation_concern_are_prominent_in_every_report_format() -
     product = build_document(record, version)
     texts = [block.text for block in product.blocks]
     assert next(i for i, text in enumerate(texts) if "NEEDS REVIEW" in text) < texts.index(
-        "Executive summary"
+        "What we judge"
     )
     assert "A key judgement has a literal source mismatch to review." in texts
     claim_index = next(
@@ -56,7 +56,7 @@ def test_challenge_and_citation_concern_are_prominent_in_every_report_format() -
     )
     concern_index = next(i for i, text in enumerate(texts) if "Citation review" in text)
     alternative_index = next(i for i, text in enumerate(texts) if "A different explanation" in text)
-    assert claim_index < concern_index < alternative_index < texts.index("Findings and analysis")
+    assert claim_index < concern_index < alternative_index < texts.index("What to watch")
     renderer = ReportDocumentRenderer()
     markdown = render_document_markdown(product)
     word = Document(io.BytesIO(renderer.render(product, ExportFormat.DOCX)))
@@ -77,7 +77,7 @@ def test_legacy_frozen_document_keeps_its_original_projection() -> None:
     assert version.document_schema_version == 1
     product = build_document(record, version)
     texts = [block.text for block in product.blocks]
-    assert "Executive summary" in texts
+    assert "What we judge" in texts
     assert all("Alternative view to test" not in text for text in texts)
     assert all("Citation review" not in text for text in texts)
-    assert all("NEEDS REVIEW" not in text for text in texts[: texts.index("Executive summary")])
+    assert all("NEEDS REVIEW" not in text for text in texts[: texts.index("What we judge")])

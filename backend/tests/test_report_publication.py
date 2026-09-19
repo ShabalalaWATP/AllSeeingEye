@@ -33,9 +33,9 @@ def test_publication_is_reader_facing_and_references_follow_first_citation() -> 
 
     assert [reference.evidence_label for reference in document.references] == ["E1", "E2", "E3"]
     assert [reference.number for reference in document.references] == [1, 2, 3]
-    assert "Executive summary" in text
-    assert "Findings and analysis" in text
-    assert "Limitations and confidence" in text
+    assert "What we judge" in text
+    assert "What happened" in text
+    assert "Notes on method and sources" in text
     assert "References" in text
     assert any(block.kind is BlockKind.TABLE for block in document.blocks)
     assert "[1]" in text and "[E1" not in text
@@ -56,7 +56,7 @@ def test_publication_markdown_uses_same_sections_table_and_linked_references() -
     markdown = render_document_markdown(document)
 
     assert markdown.startswith(f"# {record.title}\n")
-    assert "## Executive summary" in markdown
+    assert "## What we judge" in markdown
     assert "| Date | Source | Reported item |" in markdown
     assert "[1](#reference-1)" in markdown
     assert "### Reference 1" in markdown
@@ -105,10 +105,10 @@ def test_publication_preserves_contrary_reporting_change_and_warning_fields() ->
 
     for raw_output in outputs:
         output = " ".join(raw_output.split())
-        assert "Contrary reporting" in output
-        assert "Change from previous assessment: strengthened" in output
+        assert "What argues against this" in output
+        assert "Compared with the previous assessment: strengthened" in output
         assert "Additional armoured columns arrive" in output
-        assert "Watch condition: Critical" in output
+        assert "Watch level: Critical" in output
     assert [reference.evidence_label for reference in document.references] == ["E1", "E2", "E3"]
 
 

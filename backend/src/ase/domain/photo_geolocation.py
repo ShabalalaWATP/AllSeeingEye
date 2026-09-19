@@ -34,6 +34,15 @@ class PhotoObservation(BaseModel):
     limitations: list[str] = Field(min_length=1, max_length=6)
 
 
+class PhotoShadow(BaseModel):
+    """A shadow the model measured by eye: its length as a multiple of the object's height."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    photo_id: str = Field(pattern=r"^photo-[1-6]$")
+    shadow_length_to_height: float = Field(ge=0.02, le=50)
+    basis: str = Field(min_length=10, max_length=500)
+
+
 class PhotoAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     status: Literal["candidates", "unknown"]
@@ -43,6 +52,7 @@ class PhotoAssessment(BaseModel):
     verification_steps: list[str] = Field(min_length=1, max_length=10)
     limitations: list[str] = Field(min_length=1, max_length=10)
     photos: list[PhotoObservation] = Field(default_factory=list, max_length=6)
+    shadows: list[PhotoShadow] = Field(default_factory=list, max_length=6)
     cross_photo_analysis: str | None = Field(default=None, min_length=1, max_length=2000)
 
     @model_validator(mode="after")
@@ -63,6 +73,21 @@ class PhotoAssessment(BaseModel):
         if any(not value.strip() or len(value) > 500 for value in values):
             raise ValueError("Geolocation clues must be bounded, non-empty text.")
         return self
+
+
+class SunShadowCheck(BaseModel):
+    """Whether a candidate agrees with a reported shadow at the stated capture instant."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    candidate_label: str = Field(min_length=1, max_length=200)
+    photo_id: str = Field(pattern=r"^photo-[1-6]$")
+    status: Literal["consistent", "inconsistent", "sun_below_horizon", "no_coordinates"]
+    captured_at: datetime
+    sun_elevation_deg: float | None
+    sun_azimuth_deg: float | None
+    expected_shadow_ratio: float | None
+    observed_shadow_ratio: float
+    note: str = Field(min_length=1, max_length=600)
 
 
 class PhotoImageProvenance(BaseModel):

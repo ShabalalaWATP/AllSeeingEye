@@ -23,6 +23,9 @@ from ase.domain.research_brief_values import IntelligenceRequirement
 
 _REQUIREMENTS = TypeAdapter(tuple[IntelligenceRequirement, ...])
 
+# Derived from the request when the scope is written, so a record frozen before a key
+# existed still restores; the comparison below leaves these out of both sides.
+_DERIVED = {"origin"}
 _METADATA = {
     "research_input",
     "research_reuse",
@@ -155,8 +158,12 @@ def request_from_dict(value: Any, scope: Any, template: Template) -> ReportReque
     # below then catches its coercions and every unrecognised nested field.
     record(request)
     canonical(
-        {key: item for key, item in scope.items() if key not in _METADATA},
-        json_copy(report_scope(request, template)),
+        {key: item for key, item in scope.items() if key not in _METADATA | _DERIVED},
+        {
+            key: item
+            for key, item in json_copy(report_scope(request, template)).items()
+            if key not in _DERIVED
+        },
     )
     if request.map_view_id is not None and (
         request.map_origin is None
