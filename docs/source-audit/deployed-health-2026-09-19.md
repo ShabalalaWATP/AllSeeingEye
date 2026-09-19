@@ -68,6 +68,11 @@ from the deployed server. No browser impersonation or access-control bypass was 
   the changed paths. DNS pinning, credential sanitisation, response bounds and
   conditional-validator staging remain in place. This was not a repository-wide
   security scan or a full application test run.
+- Pre-merge CI exposed a Telegram pacing test whose finite sequence of clock
+  readings depended on the number of internal time checks. Replaced it with a
+  simulated clock advanced by sleep, preserving the five-second spacing assertion
+  and checking a third request. The failure reproduced locally; all 74 tests in
+  the affected Telegram/HTTP/ADS-B slice then passed, as did test-file Ruff checks.
 
 ## Remaining actions
 

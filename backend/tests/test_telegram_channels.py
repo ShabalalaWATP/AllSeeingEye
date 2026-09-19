@@ -246,18 +246,19 @@ async def test_an_unchanged_page_produces_no_events() -> None:
 async def test_requests_to_telegram_are_spaced_by_the_shared_host_pacer() -> None:
     assert DEFAULT_HOST_INTERVALS[TELEGRAM_HOST] == 5.0
     slept: list[float] = []
-    clock = iter([0.0, 0.0, 0.0, 1.0, 1.0])
-    pacer = HostPacer(DEFAULT_HOST_INTERVALS, monotonic=lambda: next(clock), sleep=_recorder(slept))
-    await pacer.wait("https://t.me/s/DeepStateUA")
-    await pacer.wait("https://t.me/s/mod_russia")
-    assert slept == [pytest.approx(5.0)]
+    now = [0.0]
 
-
-def _recorder(slept: list[float]):
     async def sleep(delay: float) -> None:
         slept.append(delay)
+        now[0] += delay
 
-    return sleep
+    pacer = HostPacer(DEFAULT_HOST_INTERVALS, monotonic=lambda: now[0], sleep=sleep)
+    await pacer.wait("https://t.me/s/DeepStateUA")
+    now[0] += 1.0
+    await pacer.wait("https://t.me/s/mod_russia")
+    await pacer.wait("https://t.me/s/DeepStateUA")
+    assert slept == [pytest.approx(4.0), pytest.approx(5.0)]
+    assert now[0] == pytest.approx(10.0)
 
 
 def test_the_curated_set_stays_within_a_polite_request_rate() -> None:
