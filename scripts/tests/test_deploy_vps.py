@@ -58,6 +58,7 @@ class GuardTests(unittest.TestCase):
             "backend/src/ase/cli.py",
             "scripts/deploy_vps.py",
             "scripts/deploy_ssh.py",
+            "scripts/deploy_build.py",
         )
         for path in paths:
             with (
@@ -70,7 +71,7 @@ class GuardTests(unittest.TestCase):
                 deploy.require_compatible(OLD, NEW)
 
     def test_controller_upgrade_requires_exact_preinstalled_version(self):
-        for name in ("deploy_vps.py", "deploy_ssh.py"):
+        for name in ("deploy_vps.py", "deploy_ssh.py", "deploy_build.py"):
             installed = Path(deploy.__file__).with_name(name).read_text().strip()
             with (
                 self.subTest(name=name),
@@ -112,6 +113,14 @@ class GuardTests(unittest.TestCase):
             self.assertEqual(deploy.run("git", "show", "literal; argument"), "ok")
         self.assertEqual(run.call_args.args[0], ("git", "show", "literal; argument"))
         self.assertNotIn("shell", run.call_args.kwargs)
+        self.assertEqual(run.call_args.kwargs["umask"], -1)
+
+    def test_child_mask_is_passed_to_subprocess_without_changing_parent(self):
+        with patch.object(
+            deploy.subprocess, "run", return_value=SimpleNamespace(stdout="")
+        ) as run:
+            deploy.run("git", "worktree", "add", mask=0o022)
+        self.assertEqual(run.call_args.kwargs["umask"], 0o022)
 
     def test_invalid_utf8_process_output_becomes_safe_deployment_error(self):
         error = UnicodeDecodeError("utf-8", b"\xffsecret", 0, 1, "invalid byte")

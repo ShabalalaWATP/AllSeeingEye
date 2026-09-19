@@ -13,7 +13,10 @@ environment. A merge is not live until its deployment job succeeds.
 3. Take a non-blocking host lock; refuse a dirty checkout, diverged history,
    missing backup key or less than 6 GiB of free disk.
 4. Build API/parser and web images from a temporary worktree at the tested SHA.
-   Running services stay online during the build.
+   Its parent stays private; the Git child uses normal readable source modes so
+   Docker COPY does not make code inaccessible to non-root runtime users. Probe
+   the images as their normal users, without network or production mounts.
+   Running services stay online during the build and these checks.
 5. Create and authenticate a PostgreSQL backup using the existing backup tools.
 6. Recheck `main`, fast-forward the VPS checkout and replace API, parser and web.
    The database service, named volumes and `.env` stay in place.
@@ -35,7 +38,7 @@ or migrations, or the migration runner/CLI require a reviewed manual rollout. Th
 API migrates on startup; automatically reverting images would not undo a schema
 change. Automatic deployment never restores or downgrades the database.
 
-The two deployment controller scripts also require explicit installation by an
+The three deployment controller scripts also require explicit installation by an
 operator. Their exact contents must match the target commit before that commit
 can deploy. Updating repository scripts alone cannot replace the root-owned SSH
 controller. Normal backend, frontend, dependency and Caddy changes deploy through
@@ -62,13 +65,13 @@ forwarding, agent forwarding and PTYs are unavailable to that key. Deployment
 runs as `ase`, which already has Docker access. Merged application code and
 Dockerfiles remain trusted production code; this is not a sandbox for main.
 
-The controller directory and both files are root-owned, directory mode `755`,
+The controller directory and all three files are root-owned, directory mode `755`,
 file mode `644`. Install reviewed controller changes using the operator SSH key:
 
 ```bash
-scp -P 2222 scripts/deploy_vps.py scripts/deploy_ssh.py ase@89.167.102.143:/home/ase/
+scp -P 2222 scripts/deploy_vps.py scripts/deploy_ssh.py scripts/deploy_build.py ase@89.167.102.143:/home/ase/
 ssh -p 2222 ase@89.167.102.143 \
-  'sudo install -d -m 755 /usr/local/lib/ase-deploy && sudo install -o root -g root -m 644 /home/ase/deploy_vps.py /home/ase/deploy_ssh.py /usr/local/lib/ase-deploy/'
+  'sudo install -d -m 755 /usr/local/lib/ase-deploy && sudo install -o root -g root -m 644 /home/ase/deploy_vps.py /home/ase/deploy_ssh.py /home/ase/deploy_build.py /usr/local/lib/ase-deploy/'
 ```
 
 Keep database credentials, encryption keys and the backup authentication key on

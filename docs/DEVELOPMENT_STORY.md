@@ -5311,3 +5311,12 @@ health before reporting success. Failed cutovers restore the previous applicatio
 images. Migration and Compose changes require manual review because container
 rollback cannot reverse database changes. The operational contract and setup are
 documented in [the deployment guide](AUTOMATIC_DEPLOYMENT.md).
+
+The first GitHub-triggered release reached cutover but the new parser could not
+read its packaged code. The controller's private umask had also applied to the
+Git build checkout, and Docker preserved those restrictive file modes. Automatic
+rollback restored the previous healthy application. The correction gives only
+the Git checkout subprocess a normal source-file umask, keeps the enclosing
+release/backup directories private, and probes each new image as its non-root
+runtime user before cutover. GitHub's production deployment history and private
+per-release success records provide the subsequent rollout evidence.

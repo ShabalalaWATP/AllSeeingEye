@@ -1003,4 +1003,6 @@ the current local configuration. No cap bypass or destructive migration is used.
 - [x] Add a restricted SSH controller, verified backup, image retention, health
   checks and application rollback; gate schema and Compose changes manually.
 - [x] Document setup, retry, recovery, retained storage and deployment limitations.
-- [ ] Verify the first GitHub-triggered deployment on the existing VPS.
+- [x] Exercise the GitHub trigger and automatic restoration after a failed VPS
+  cutover; correct build-checkout permissions and add isolated runtime probes.
+  Subsequent release outcomes are recorded in GitHub's production environment.
