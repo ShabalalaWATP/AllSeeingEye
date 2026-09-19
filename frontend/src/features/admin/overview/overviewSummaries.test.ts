@@ -111,6 +111,53 @@ describe('overview summaries', () => {
     expect(summary.attention.map((item) => item.id)).toEqual(['failing', 'refused']);
   });
 
+  it('separates on-demand capabilities from scheduled health and uses disjoint counts', () => {
+    const items = [
+      source(),
+      source({ id: 'research', test_available: false, health: sourceHealth({ status: 'idle' }) }),
+      source({ id: 'research-stale-health', test_available: false }),
+      source({ id: 'off-healthy', enabled: false }),
+      source({
+        id: 'off-failing',
+        enabled: false,
+        health: sourceHealth({ status: 'degraded', consecutive_failures: 3 }),
+      }),
+      source({
+        id: 'breaker',
+        enabled: true,
+        health: sourceHealth({ status: 'disabled', consecutive_failures: 8 }),
+      }),
+      source({
+        id: 'environment',
+        environment_disabled: true,
+        enabled: false,
+        health: sourceHealth({ status: 'degraded', blocked_reason: 'Upstream refusal.' }),
+      }),
+      source({ id: 'first-poll', health: sourceHealth({ status: 'idle' }) }),
+    ];
+    const summary = summariseSources(items);
+    expect(summary).toMatchObject({
+      total: 8,
+      scheduled: 6,
+      onDemand: 2,
+      healthy: 1,
+      failing: 1,
+      idle: 1,
+      switchedOff: 2,
+      blockedByOperator: 1,
+      blockedUpstream: 0,
+    });
+    expect(summary.attention.map((item) => item.id)).toEqual(['breaker', 'environment']);
+    expect(
+      summary.healthy +
+        summary.failing +
+        summary.idle +
+        summary.switchedOff +
+        summary.blockedByOperator +
+        summary.blockedUpstream,
+    ).toBe(summary.scheduled);
+  });
+
   it('describes the global connection, overrides and drafts', () => {
     const status = summariseConnections({ items: [bound, draft], encryption_available: true }, [
       binding({}),

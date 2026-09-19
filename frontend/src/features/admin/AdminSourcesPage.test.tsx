@@ -1,8 +1,8 @@
 import { screen, within } from '@testing-library/react';
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { sources } from '@/test/fixtures';
+import { source, sourceHealth, sources } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -35,7 +35,7 @@ describe('AdminSourcesPage', () => {
     expect(within(tass).getByText('idle')).toBeInTheDocument();
     expect(within(tass).getByText('never')).toBeInTheDocument();
     expect(within(tass).getByText('state controlled')).toBeInTheDocument();
-    expect(screen.getByText('3 sources: 1 healthy, 1 degraded, 1 idle')).toBeInTheDocument();
+    expect(screen.getByText('3 sources: 1 healthy, 1 failing, 1 waiting')).toBeInTheDocument();
     expect(summarise([])).toBe('0 sources');
   });
 
@@ -45,7 +45,54 @@ describe('AdminSourcesPage', () => {
     await user.click(within(gdacs).getByRole('button', { name: 'Reset GDACS disaster alerts' }));
     expect(await within(gdacs).findByText('idle')).toBeInTheDocument();
     expect(within(gdacs).queryByTitle(/HTTP 503/)).not.toBeInTheDocument();
-    expect(screen.getByText('3 sources: 1 healthy, 2 idle')).toBeInTheDocument();
+    expect(screen.getByText('3 sources: 1 healthy, 2 waiting')).toBeInTheDocument();
+  });
+
+  it('labels query-only sources without showing a fictional poll schedule or health', async () => {
+    server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({
+          items: [
+            source({
+              name: 'Query-only research',
+              test_available: false,
+              poll_interval_seconds: 86400,
+              health: sourceHealth({ status: 'idle', last_success: null, last_latency_ms: null }),
+            }),
+          ],
+        }),
+      ),
+    );
+    renderApp('/admin/sources', 'admin');
+    const row = within(await findRow('Query-only research'));
+    expect(row.getByText('On-demand')).toBeVisible();
+    expect(row.getByText('Not scheduled')).toBeVisible();
+    expect(row.getByText('Not applicable')).toBeVisible();
+    expect(row.queryByText('idle')).not.toBeInTheDocument();
+    expect(row.queryByText('never')).not.toBeInTheDocument();
+    expect(row.queryByRole('button', { name: /Test|Reset/ })).not.toBeInTheDocument();
+    expect(screen.getByText('1 source: 1 on-demand')).toBeVisible();
+  });
+
+  it('distinguishes a tripped circuit from an administrator switching collection off', async () => {
+    server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({
+          items: [
+            source({
+              name: 'Paused feed',
+              enabled: true,
+              health: sourceHealth({ status: 'disabled', consecutive_failures: 8 }),
+            }),
+            source({ id: 'off', name: 'Off feed', enabled: false }),
+          ],
+        }),
+      ),
+    );
+    renderApp('/admin/sources', 'admin');
+    expect(within(await findRow('Paused feed')).getByText('Paused after failures')).toBeVisible();
+    expect(within(await findRow('Off feed')).getByText('Switched off')).toBeVisible();
+    expect(screen.getByText('2 sources: 1 failing, 1 switched off')).toBeVisible();
   });
 
   it('shows reset failures beside the button', async () => {

@@ -6,6 +6,7 @@ import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
 
 import { legacyConnections } from '../llmPresentation';
+import { isOnDemandSource, scheduledSourceStatus } from '../sourceStatus';
 
 export interface UserSummary {
   total: number;
@@ -33,6 +34,8 @@ export function summariseTeams(teams: readonly Team[]) {
 
 export interface SourceSummary {
   total: number;
+  scheduled: number;
+  onDemand: number;
   healthy: number;
   failing: number;
   idle: number;
@@ -42,37 +45,26 @@ export interface SourceSummary {
   attention: Source[];
 }
 
-const refusedUpstream = (item: Source) =>
-  item.health.status === 'degraded' && Boolean(item.health.blocked_reason);
-
 /** Failing feeds first (most consecutive failures), then upstream refusals, then operator blocks. */
 export function summariseSources(sources: readonly Source[]): SourceSummary {
-  const upstream = sources.filter(refusedUpstream);
-  const failing = sources
-    .filter((item) => item.health.status === 'degraded' && !refusedUpstream(item))
+  const scheduled = sources.filter((source) => !isOnDemandSource(source));
+  const upstream = scheduled.filter((item) => scheduledSourceStatus(item) === 'blockedUpstream');
+  const failing = scheduled
+    .filter((item) => scheduledSourceStatus(item) === 'failing')
     .sort((a, b) => b.health.consecutive_failures - a.health.consecutive_failures);
-  const blocked = sources.filter((item) => item.environment_disabled === true);
-  const switchedOff = sources.filter(
-    (item) =>
-      item.environment_disabled !== true &&
-      (item.enabled === false || item.health.status === 'disabled'),
-  );
+  const blocked = scheduled.filter((item) => scheduledSourceStatus(item) === 'blockedByOperator');
+  const switchedOff = scheduled.filter((item) => scheduledSourceStatus(item) === 'switchedOff');
   return {
     total: sources.length,
-    healthy: sources.filter((item) => item.health.status === 'healthy').length,
+    scheduled: scheduled.length,
+    onDemand: sources.length - scheduled.length,
+    healthy: scheduled.filter((item) => scheduledSourceStatus(item) === 'healthy').length,
     failing: failing.length,
-    idle: sources.filter(
-      (item) =>
-        item.health.status === 'idle' && item.enabled !== false && !item.environment_disabled,
-    ).length,
+    idle: scheduled.filter((item) => scheduledSourceStatus(item) === 'idle').length,
     switchedOff: switchedOff.length,
     blockedByOperator: blocked.length,
     blockedUpstream: upstream.length,
-    attention: [
-      ...failing,
-      ...upstream,
-      ...blocked.filter((item) => !failing.includes(item) && !upstream.includes(item)),
-    ],
+    attention: [...failing, ...upstream, ...blocked],
   };
 }
 

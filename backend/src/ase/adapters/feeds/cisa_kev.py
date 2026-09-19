@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.application.feeds.pipeline import clean_text
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -35,6 +36,11 @@ SPEC = SourceSpec(
 )
 
 RECENT_DAYS = 30
+# CISA-maintained distribution of the same CC0 catalogue, not a third-party proxy.
+OFFICIAL_MIRROR = (
+    "https://raw.githubusercontent.com/cisagov/kev-data/"
+    "develop/known_exploited_vulnerabilities.json"
+)
 
 
 def _first_url(notes: object) -> str | None:
@@ -56,7 +62,7 @@ class CisaKevConnector:
 
     async def fetch(self) -> list[Event]:
         try:
-            data = await self._http.get_json(self.spec.url)
+            data = await self._catalogue()
         except NotModified:
             return []
         now = self._clock.now()
@@ -74,6 +80,15 @@ class CisaKevConnector:
             ):
                 events.append(event)
         return events
+
+    async def _catalogue(self) -> Any:
+        try:
+            return await self._http.get_json(self.spec.url)
+        except FeedHttpStatusError as exc:
+            if exc.status_code != 403:
+                raise
+        # Both requests retain the shared client's DNS, size and timeout guards.
+        return await self._http.get_json(OFFICIAL_MIRROR)
 
     def _to_event(self, item: dict[str, Any], now: datetime) -> Event | None:
         cve = str(item.get("cveID") or "")

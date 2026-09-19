@@ -17,6 +17,14 @@ MAX_RETRY_AFTER = timedelta(hours=1)
 EPOCH_FLOOR = 1_000_000_000
 
 
+@dataclass(slots=True)
+class FeedValidators:
+    """Conditional response validators committed after a successful feed poll."""
+
+    etag: str | None = None
+    last_modified: str | None = None
+
+
 class FeedFetchError(Exception):
     """A feed fetch failed; caller-visible text must not include private request data."""
 
