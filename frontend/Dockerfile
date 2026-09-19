@@ -3,7 +3,7 @@
 # Build the SPA and the same standard Caddy release with patched, locked Go
 # dependencies. The final image retains the upstream runtime and shared Caddyfile.
 
-FROM golang:1.26.6-alpine3.23@sha256:5978cc992ad5ef96a7469713c8af849c1433824761ce3be2c56381403cd8d9a3 AS caddy-build
+FROM golang:1.27.0-alpine3.23@sha256:3747dcba41c8b0db3211fda4db61638b980e17ac5bb3c94460a975a9cfe19395 AS caddy-build
 ENV CGO_ENABLED=0 GOTOOLCHAIN=local
 WORKDIR /build
 COPY infra/caddy-build/go.mod infra/caddy-build/go.sum ./
