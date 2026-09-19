@@ -1,4 +1,4 @@
-"""Login: rate limits, lockout, constant-time failure paths, audit."""
+"""Login: rate limits, constant-time failure paths and audit."""
 
 from __future__ import annotations
 
@@ -27,7 +27,6 @@ class LoginUseCase:
         uow: UnitOfWork,
         dummy_hash: str,
         mfa: MfaUseCase,
-        lockout: LockoutPolicy | None = None,
     ) -> None:
         self._users = users
         self._hasher = hasher
@@ -39,7 +38,6 @@ class LoginUseCase:
         self._uow = uow
         self._dummy_hash = dummy_hash
         self._mfa = mfa
-        self._lockout = lockout or LockoutPolicy()
 
     async def execute(
         self,
@@ -60,19 +58,15 @@ class LoginUseCase:
             reason = "locked" if user.is_locked(now) else "inactive_or_no_password"
             await self._fail(user, email, context, reason)
         elif not self._hasher.verify(user.password_hash or "", password):
-            locked = self._lockout.register_failure(user, now)
-            await self._users.save(user)
-            if locked:
-                await self._auditor.record(
-                    AuditAction.ACCOUNT_LOCKED, actor=user.id, subject=email, ip=context.ip
-                )
             await self._fail(user, email, context, "wrong_password")
         # Every other branch raised, so this only narrows the type for the checker.
         assert user is not None  # noqa: S101
         pending = await self._mfa.begin(user, context)
         if pending is not None:
             return pending
-        self._lockout.register_success(user, now)
+        # Preserve login history and clear only legacy lock fields. Authentication
+        # failures no longer mutate those fields, so an attacker cannot set them.
+        LockoutPolicy().register_success(user, now)
         await self._users.save(user)
         session = await self._sessions.start(user, context)
         await self._auditor.record(

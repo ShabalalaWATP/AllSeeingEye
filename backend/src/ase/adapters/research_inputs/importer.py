@@ -1,11 +1,13 @@
 """Bridge the isolated document runner to framework-free extracted input records."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from pathlib import PurePath
+from typing import TYPE_CHECKING, Protocol
 
 from ase.adapters.research_imports import events_from_extraction
-from ase.adapters.research_imports.models import ImportRejected
-from ase.adapters.research_imports.runner import DocumentImportRunner
+from ase.adapters.research_imports.models import ExtractionResult, ImportRejected
 from ase.adapters.research_media import MEDIA_TYPES
 from ase.adapters.research_media.events import events_from_media
 from ase.application.ports.research_inputs import (
@@ -15,9 +17,18 @@ from ase.application.ports.research_inputs import (
 )
 from ase.domain.errors import InvalidRequest
 
+if TYPE_CHECKING:
+    from ase.adapters.research_media.models import MediaExtractionResult
+
+
+class ImportRunner(Protocol):
+    async def run(self, data: bytes, filename: str) -> ExtractionResult: ...
+
+    async def run_media(self, data: bytes, filename: str) -> MediaExtractionResult: ...
+
 
 class DocumentResearchImporter:
-    def __init__(self, runner: DocumentImportRunner) -> None:
+    def __init__(self, runner: ImportRunner) -> None:
         self._runner = runner
 
     async def extract(self, data: bytes, filename: str, captured_at: datetime) -> InputExtraction:

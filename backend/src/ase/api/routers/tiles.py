@@ -7,7 +7,7 @@ from fastapi import APIRouter, Response
 from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.errors import InvalidQuery, UpstreamUnavailable
 from ase.application.ports.tiles import TileUpstreamError, is_valid_os_tile
-from ase.domain.errors import NotFound
+from ase.domain.errors import NotFound, RateLimited
 
 router = APIRouter(prefix="/tiles", tags=["tiles"])
 
@@ -23,6 +23,9 @@ async def os_tile(
         raise NotFound("OS Maps tiles are not configured on this server.")
     if not is_valid_os_tile(layer, z, x, y):
         raise InvalidQuery(fields={"tile": "Unknown OS layer or tile address."})
+    retry = container.limiter.hit(f"os-maps:user:{user.id}", 120, 60)
+    if retry is not None:
+        raise RateLimited(retry)
     try:
         tile = await container.tiles.fetch(layer, z, x, y)
     except TileUpstreamError as exc:

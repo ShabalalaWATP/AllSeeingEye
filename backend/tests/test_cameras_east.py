@@ -1,12 +1,15 @@
 """Estonian DATEX index, curated eastern catalogues, registry uniqueness and the frame route."""
 
+import asyncio
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 
+import ase.application.cameras as cameras_module
 from ase.adapters.geo.camera_east import (
     CURATED,
     ENDPOINT,
@@ -19,7 +22,7 @@ from ase.adapters.geo.camera_registry import build_sources as build_registry
 from ase.application.cameras import CameraCatalogueService
 from ase.container import Container
 from ase.domain.cameras import Camera
-from ase.domain.errors import Unauthenticated
+from ase.domain.errors import RateLimited, Unauthenticated
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, FakeClock, login_token
 
@@ -113,6 +116,19 @@ class PlainSource:
         return ()
 
 
+class BlockingFrameSource(FrameSource):
+    def __init__(self) -> None:
+        super().__init__()
+        self.started = asyncio.Event()
+        self.release = asyncio.Event()
+
+    async def frame(self, frame_id: str) -> bytes | None:
+        self.calls.append(frame_id)
+        self.started.set()
+        await self.release.wait()
+        return self.data
+
+
 async def test_service_frame_only_from_declaring_sources(user: User, clock: FakeClock) -> None:
     source = FrameSource()
     service = CameraCatalogueService((source, PlainSource()), clock)
@@ -128,6 +144,38 @@ async def test_service_frame_only_from_declaring_sources(user: User, clock: Fake
         await service.frame(user, "missing", "12")
     with pytest.raises(Unauthenticated):
         await service.frame(replace(user, is_active=False), "plain", "1")
+
+
+async def test_frame_work_is_coalesced_and_bounded_per_user(user: User, clock: FakeClock) -> None:
+    source = BlockingFrameSource()
+    service = CameraCatalogueService((source,), clock)
+    first = asyncio.create_task(service.frame(user, source.id, "same"))
+    await source.started.wait()
+    second = asyncio.create_task(service.frame(user, source.id, "same"))
+    await asyncio.sleep(0)
+    with pytest.raises(RateLimited):
+        await service.frame(user, source.id, "other")
+    other_user = replace(user, id=uuid4())
+    other = asyncio.create_task(service.frame(other_user, source.id, "other"))
+    await asyncio.sleep(0)
+    source.release.set()
+    assert await asyncio.gather(first, second, other) == [source.data] * 3
+    assert source.calls.count("same") == 1 and source.calls.count("other") == 1
+
+
+async def test_hung_frame_reader_releases_work_admission(
+    user: User, clock: FakeClock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = BlockingFrameSource()
+    service = CameraCatalogueService((source,), clock)
+    monkeypatch.setattr(cameras_module, "FRAME_TIMEOUT_SECONDS", 0.01)
+
+    with pytest.raises(TimeoutError):
+        await service.frame(user, source.id, "hung")
+    source.release.set()
+
+    assert await service.frame(user, source.id, "next") == source.data
+    assert source.calls == ["hung", "next"]
 
 
 async def test_frame_route_is_authenticated_and_bounded(

@@ -5,6 +5,7 @@ from typing import Any
 
 from ase.adapters.llm.model_discovery import model_id
 from ase.application.ports.llm import LlmGatewayError, LlmTokenBudgetExhausted
+from ase.domain.ai_usage import MAX_ALLOWANCE
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 
 OPENAI_BASE = "https://api.openai.com/v1"
@@ -80,7 +81,7 @@ def _usage(data: dict[str, Any]) -> tuple[int | None, int | None]:
     tokens: list[int | None] = []
     for key in ("input_tokens", "output_tokens"):
         value = usage.get(key)
-        if value is not None and (type(value) is not int or value < 0):
+        if value is not None and (type(value) is not int or not 0 <= value <= MAX_ALLOWANCE):
             raise LlmGatewayError("The model endpoint returned invalid usage data.")
         tokens.append(value)
     return tokens[0], tokens[1]

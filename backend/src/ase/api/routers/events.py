@@ -85,7 +85,7 @@ async def list_events(
         return EventsOut(items=items, count=len(items))
 
     result = (
-        await container.store.read_cooperatively(query, project)
+        await container.store.read_cooperatively(query, project, admission_key=f"user:{user.id}")
         if isinstance(container.store, CooperativeEventReader)
         else project(container.store.query(query))
     )

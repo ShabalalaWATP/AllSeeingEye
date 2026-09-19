@@ -63,6 +63,27 @@ async def test_two_workers_cannot_claim_the_same_revision(job_storage):
     assert next(result for result in results if result).revision == 2
 
 
+async def test_two_workers_cannot_claim_distinct_jobs_for_one_owner(job_storage):
+    _, factory = job_storage
+    owner = uuid4()
+    values = [await saved(factory, job(owner_id=owner)) for _ in range(2)]
+
+    async def claim(value):
+        async with factory() as session:
+            claimed = await SqlReportJobRepository(session).claim(
+                value.id,
+                expected_revision=1,
+                lease_token=uuid4(),
+                now=NOW,
+                lease_until=NOW + timedelta(minutes=5),
+            )
+            await session.commit()
+            return claimed
+
+    results = await asyncio.gather(*(claim(value) for value in values))
+    assert sum(result is not None for result in results) == 1
+
+
 async def test_pause_resume_revokes_old_worker_and_preserves_completed_sections(job_storage):
     _, factory = job_storage
     value = await saved(factory, job())
@@ -147,6 +168,76 @@ async def test_expired_running_work_pauses_without_automatic_paid_retry(job_stor
             assert recovered.status == "paused" and recovered.error == "interrupted_uncertain"
             assert recovered.lease_token is recovered.lease_until is None
         await session.commit()
+
+
+async def test_queue_interleaves_owners_before_one_owner_can_fill_the_page(job_storage):
+    _, factory = job_storage
+    first_owner, second_owner = uuid4(), uuid4()
+    first = await saved(factory, job(owner_id=first_owner, created_at=NOW))
+    await saved(
+        factory,
+        job(
+            owner_id=first_owner,
+            created_at=NOW + timedelta(seconds=1),
+            updated_at=NOW + timedelta(seconds=1),
+        ),
+    )
+    second = await saved(
+        factory,
+        job(
+            owner_id=second_owner,
+            created_at=NOW + timedelta(seconds=2),
+            updated_at=NOW + timedelta(seconds=2),
+        ),
+    )
+    async with factory() as session:
+        queued = await SqlReportJobRepository(session).queued(limit=2)
+    assert queued == [first.id, second.id]
+
+
+async def test_running_owner_cannot_claim_second_slot_when_another_owner_arrives(job_storage):
+    _, factory = job_storage
+    owner, other_owner = uuid4(), uuid4()
+    first = await saved(factory, job(owner_id=owner, created_at=NOW))
+    sibling = await saved(
+        factory,
+        job(
+            owner_id=owner,
+            created_at=NOW + timedelta(seconds=1),
+            updated_at=NOW + timedelta(seconds=1),
+        ),
+    )
+    async with factory() as session:
+        repository = SqlReportJobRepository(session)
+        assert await repository.claim(
+            first.id,
+            expected_revision=1,
+            lease_token=uuid4(),
+            now=NOW,
+            lease_until=NOW + timedelta(minutes=5),
+        )
+        await session.commit()
+    other = await saved(
+        factory,
+        job(
+            owner_id=other_owner,
+            created_at=NOW + timedelta(seconds=2),
+            updated_at=NOW + timedelta(seconds=2),
+        ),
+    )
+    async with factory() as session:
+        repository = SqlReportJobRepository(session)
+        assert await repository.queued(limit=2) == [other.id]
+        assert (
+            await repository.claim(
+                sibling.id,
+                expected_revision=1,
+                lease_token=uuid4(),
+                now=NOW,
+                lease_until=NOW + timedelta(minutes=5),
+            )
+            is None
+        )
 
 
 @pytest.mark.parametrize("needs_review", [False, True])

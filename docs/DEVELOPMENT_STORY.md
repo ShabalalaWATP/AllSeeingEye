@@ -5271,3 +5271,18 @@ files with git archive because main has no remote, the uid 10001 ownership the b
 needs, the administrator and MFA enrolment, a backup schedule since none is installed by
 design, and the security review's public-exposure gates that remain the operator's to
 close.
+
+On 19 September a repository-wide security scan found twenty concrete weaknesses in
+authentication, report release checks, parser isolation, recovery bundles, outbound
+adapters, AI accounting, workload fairness and container configuration. The fixes remove
+persistent login lockout, bind report JSON to the final live session and membership,
+sandbox production parsers, authenticate PostgreSQL manifests, and bound archive, image
+and HTTP work at the byte and admission boundaries. Fresh installations now receive
+finite global and system AI token policies. Queued reports, interactive document work,
+event queries and cameras share capacity fairly, while the web container runs as a
+non-root user on a read-only root filesystem. Existing deployments need the documented
+one-time Caddy volume ownership migration and an independently stored backup HMAC key.
+The final bypass review moved parsing into its own networkless Compose service with hard
+memory, process and temporary-storage limits, enforced one running report per owner in
+the database, made restore authenticate the exact manifest bytes it parses, and reduced
+VIINA history retention to the two runs the snapshot actually consumes.

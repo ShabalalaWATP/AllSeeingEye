@@ -207,6 +207,15 @@ bind-mounted `data` directory, so give it ownership before the first start:
 server$ mkdir -p data && sudo chown -R 10001:10001 data
 ```
 
+The web container also runs as uid 10001. A new named Caddy volume inherits the image's
+ownership. When upgrading a deployment that already has `caddy_data` or `caddy_config`,
+build the new image and migrate those two volumes once before starting it:
+
+```bash
+server$ docker compose build web
+server$ docker compose run --rm --user root --cap-add CHOWN --entrypoint sh web -c 'chown -R 10001:10001 /data /config'
+```
+
 ## 7. Build and start
 
 ```bash
@@ -265,19 +274,27 @@ the server:
 
 ```bash
 server$ sudo apt-get install -y python3
+server$ install -m 700 -d ~/backups
+server$ install -m 700 -d ~/.config/all-seeing-eye
+server$ python3 -c "import secrets; open('/home/ase/.config/all-seeing-eye/backup-auth.key', 'wb').write(secrets.token_bytes(32))"
+server$ chmod 600 ~/.config/all-seeing-eye/backup-auth.key
 server$ crontab -e
 ```
+
+Keep this authentication key outside the repository, `.env` and backup directories. Copy
+it to separate protected recovery storage. Losing it prevents authenticated PostgreSQL
+restore, while disclosure lets an attacker forge a bundle.
 
 Add a nightly run and a weekly prune:
 
 ```cron
-17 3 * * * cd /home/ase/ase && /usr/bin/python3 scripts/backup.py postgres --output data/backups/postgres-$(date -u +\%Y\%m\%d) >> data/backups/backup.log 2>&1
-23 4 * * 0 find /home/ase/ase/data/backups -maxdepth 1 -name 'postgres-*' -mtime +30 -exec rm -rf {} +
+17 3 * * * cd /home/ase/ase && /usr/bin/python3 scripts/backup.py postgres --authentication-key-file /home/ase/.config/all-seeing-eye/backup-auth.key --output /home/ase/backups/postgres-$(date -u +\%Y\%m\%d_\%H\%M\%S) >> /home/ase/backups/backup.log 2>&1
+23 4 * * 0 find /home/ase/backups -maxdepth 1 -name 'postgres-*' -mtime +30 -exec rm -rf {} +
 ```
 
 Then do the parts cron cannot do for you:
 
-1. Run it once by hand and verify: `python3 scripts/backup.py postgres --output data/backups/manual` then `python3 scripts/restore.py data/backups/manual --verify-only`.
+1. Run it once by hand and verify: `python3 scripts/backup.py postgres --authentication-key-file ~/.config/all-seeing-eye/backup-auth.key --output ~/backups/manual` then `python3 scripts/restore.py ~/backups/manual --authentication-key-file ~/.config/all-seeing-eye/backup-auth.key --verify-only`.
 2. Copy backups off the machine regularly. A server backup stored only on that server is not a backup.
 3. Store `ASE_ENCRYPTION_KEY` separately from the bundles, as in step 6.
 4. Rehearse a restore into a fresh database before you need one. `docs/BACKUP_RESTORE.md` has the drill.
@@ -298,6 +315,10 @@ database migrations do not roll back on their own, so restore from backup if one
 - **Run exactly one API process.** Never add `--scale api=2` or uvicorn workers. The live
   event store, rate limits, the search lock and export slots are all process-local; a
   second process would silently halve the rate limits and split the event store.
+- **Keep the parser service isolated.** Compose starts one `parser` sidecar with no network,
+  a read-only root filesystem, a 768 MiB memory limit, 64-process limit and 128 MiB `/tmp`.
+  Do not attach it to a network or remove those resource limits. The API exchanges only
+  bounded messages through the `parser_socket` Unix-socket volume.
 - **Memory is the constraint to watch.** `docker stats` during a report run tells you
   whether 8 GB is comfortable. If the API container is killed, raise the server size or
   lower `ASE_LIVE_STORE_MEMORY_MB`.
@@ -327,10 +348,10 @@ and 9 above cover the transport and configuration ones. These remain yours to cl
 5. Decide log, audit and usage retention for this machine, and confirm the restore drill in
    step 10 against your own recovery procedure.
 
-Account lockout remains a recorded denial-of-service trade-off: someone who knows your
-email address can lock it. That was acceptable on a LAN. On a public address, consider
-whether you want the app reachable from anywhere or only through a VPN such as Tailscale,
-in which case set `ASE_SITE_ADDRESS` to the Tailscale hostname and `ASE_TLS=internal`.
+Invalid passwords and MFA codes do not persistently lock the named account. The existing
+IP and email rate limits are process-local, so a public deployment should still restrict
+reachability where practical. For a VPN such as Tailscale, set `ASE_SITE_ADDRESS` to the
+Tailscale hostname and `ASE_TLS=internal`.
 
 ## Troubleshooting
 

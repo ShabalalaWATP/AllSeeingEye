@@ -5,11 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import JSON, ColumnElement, cast, delete, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
+from ase.adapters.persistence.report_job_admission import fair_queued_ids, no_running_sibling
 from ase.adapters.persistence.report_job_codec import from_row, payload_columns, with_payload
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
 from ase.application.report_jobs.recovery import expired_failure
@@ -103,14 +105,7 @@ class SqlReportJobRepository:
 
     async def queued(self, limit: int = 10) -> list[UUID]:
         _page(limit)
-        return list(
-            await self.session.scalars(
-                select(Row.id)
-                .where(Row.status == "queued")
-                .order_by(Row.created_at, Row.id)
-                .limit(limit)
-            )
-        )
+        return list(await self.session.scalars(fair_queued_ids(limit)))
 
     async def count_open(self, owner_id: UUID | None = None) -> int:
         query = (
@@ -157,18 +152,24 @@ class SqlReportJobRepository:
         lease_until: datetime,
     ) -> ReportJob | None:
         job_lease(now, lease_until)
-        return await self._update(
-            job_id,
-            expected_revision,
-            now,
-            (Row.status == "queued", Row.lease_token.is_(None)),
-            {
-                "status": "running",
-                "lease_token": lease_token,
-                "lease_until": lease_until,
-                "error": None,
-            },
-        )
+        try:
+            # The partial unique index closes the concurrent-claim race. The
+            # savepoint converts that expected contention into a clean miss.
+            async with self.session.begin_nested():
+                return await self._update(
+                    job_id,
+                    expected_revision,
+                    now,
+                    (Row.status == "queued", Row.lease_token.is_(None), no_running_sibling()),
+                    {
+                        "status": "running",
+                        "lease_token": lease_token,
+                        "lease_until": lease_until,
+                        "error": None,
+                    },
+                )
+        except IntegrityError:
+            return None
 
     async def checkpoint(
         self,

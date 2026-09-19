@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import re
 import sqlite3
@@ -14,6 +15,7 @@ from typing import Any
 
 MAX_BYTES = 2 * 1024**3
 MANIFEST_LIMIT = 64 * 1024
+SIGNATURE_FILE = "manifest.hmac"
 CONFIG_LIMIT = 1024**2
 CONFIG_PATHS = (
     ".env.example",
@@ -163,6 +165,40 @@ def write_manifest(output: Path, backend: str, *, include_secrets: bool) -> None
         handle.write("\n")
 
 
+def authentication_key(path: Path) -> bytes:
+    """Load an independent binary HMAC key without accepting links or oversized files."""
+    path = safe_path(path)
+    if not path.is_file():
+        raise BackupError("Backup authentication key must be a regular file.")
+    with path.open("rb") as handle:
+        key = handle.read(4_097)
+    if not 32 <= len(key) <= 4_096:
+        raise BackupError("Backup authentication key must contain 32 to 4096 bytes.")
+    return key
+
+
+def write_manifest_signature(output: Path, key: bytes) -> None:
+    manifest = (output / "manifest.json").read_bytes()
+    signature = hmac.new(key, manifest, hashlib.sha256).hexdigest()
+    path = output / SIGNATURE_FILE
+    path.write_text(signature + "\n", encoding="ascii", newline="\n")
+    path.chmod(0o600)
+
+
+def verify_manifest_signature(bundle: Path, key: bytes, manifest_bytes: bytes) -> None:
+    bundle = safe_path(bundle)
+    signature_path = bundle / SIGNATURE_FILE
+    try:
+        signature = signature_path.read_text(encoding="ascii").strip()
+    except (OSError, UnicodeError):
+        raise BackupError("PostgreSQL backup authentication is missing or invalid.") from None
+    if not re.fullmatch(r"[0-9a-f]{64}", signature):
+        raise BackupError("PostgreSQL backup authentication is missing or invalid.")
+    expected = hmac.new(key, manifest_bytes, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(signature, expected):
+        raise BackupError("PostgreSQL backup authentication failed.")
+
+
 def verify_entries(bundle: Path, manifest: dict[str, Any]) -> set[str]:
     """Check the allowlist, sizes and digests before considering database content."""
     entries = manifest.get("files")
@@ -199,23 +235,34 @@ def verify_tree(bundle: Path, found: set[str]) -> None:
         safe_path(path)
         name = path.relative_to(bundle).as_posix()
         if path.is_file():
-            if name not in found | {"manifest.json"}:
+            if name not in found | {"manifest.json", SIGNATURE_FILE}:
                 raise BackupError("Backup contains an unlisted file.")
             actual.add(name)
         elif not path.is_dir() or name not in allowed_directories:
             raise BackupError("Unexpected backup directory or special file.")
-    if actual != found | {"manifest.json"}:
+    expected = found | {"manifest.json"}
+    if (bundle / SIGNATURE_FILE).is_file():
+        expected.add(SIGNATURE_FILE)
+    if actual != expected:
         raise BackupError("Backup contains unlisted or missing files.")
 
 
-def verify_bundle(bundle: Path) -> dict[str, Any]:
+def verify_bundle(
+    bundle: Path,
+    *,
+    authentication: bytes | None = None,
+    require_postgres_authentication: bool = False,
+) -> dict[str, Any]:
     """Validate the full directory before any restore destination is created."""
     bundle = safe_path(bundle)
     manifest_path = bundle / "manifest.json"
-    digest(manifest_path, MANIFEST_LIMIT)
     try:
-        manifest = json.loads(manifest_path.read_bytes())
-    except (ValueError, UnicodeError, RecursionError) as exc:
+        with manifest_path.open("rb") as handle:
+            manifest_bytes = handle.read(MANIFEST_LIMIT + 1)
+        if not manifest_bytes or len(manifest_bytes) > MANIFEST_LIMIT:
+            raise BackupError("Invalid backup manifest.")
+        manifest = json.loads(manifest_bytes)
+    except (ValueError, UnicodeError, RecursionError, OSError) as exc:
         raise BackupError("Invalid backup manifest.") from exc
     if (
         not isinstance(manifest, dict)
@@ -226,6 +273,11 @@ def verify_bundle(bundle: Path) -> dict[str, Any]:
     backend = manifest.get("backend")
     if not isinstance(backend, str) or backend not in DATABASE_FILES:
         raise BackupError("Unknown database format.")
+    if backend == "postgres":
+        if authentication is not None:
+            verify_manifest_signature(bundle, authentication, manifest_bytes)
+        elif require_postgres_authentication:
+            raise BackupError("PostgreSQL restore requires --authentication-key-file.")
     found = verify_entries(bundle, manifest)
     if DATABASE_FILES[backend] not in found or any(
         name in found for kind, name in DATABASE_FILES.items() if kind != backend

@@ -17,7 +17,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Any
+from typing import IO, Any, cast
 
 import httpx
 from shapely.geometry import shape
@@ -33,7 +33,11 @@ CONTROL_URL = (
 )
 TESSELLATION_URL = "https://raw.githubusercontent.com/zhukovyuri/VIINA/main/Data/gn_UA_tess.geojson"
 MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024
-MAX_CSV_BYTES = 1024 * 1024 * 1024
+MAX_CSV_BYTES = 768 * 1024 * 1024
+MAX_ARCHIVE_MEMBERS = 8
+MAX_PLACES = 50_000
+MAX_CONTROL_ROWS = 15_000_000
+MAX_RETAINED_RUNS = MAX_PLACES * 2
 ZONE_KM = 25.0
 CHANGE_WINDOW_DAYS = 30
 TOLERANCE_DEGREES = 0.004
@@ -75,12 +79,22 @@ def read_control(handle: io.TextIOBase) -> tuple[dict[int, PlaceHistory], str]:
         raise ValueError("Control file is missing expected columns")
     places: dict[int, PlaceHistory] = {}
     latest = ""
-    for row in reader:
-        place = places.setdefault(int(float(row[columns["geonameid"]])), PlaceHistory())
+    for row_count, row in enumerate(reader, start=1):
+        if row_count > MAX_CONTROL_ROWS:
+            raise ValueError("Control file contains too many rows")
+        place_id = int(float(row[columns["geonameid"]]))
+        if place_id not in places and len(places) >= MAX_PLACES:
+            raise ValueError("Control file contains too many places")
+        place = places.setdefault(place_id, PlaceHistory())
         day = row[columns["date"]]
         status = parse_status(row[columns["status"]])
-        if not place.runs or place.runs[-1][1] != status:
+        if not place.runs:
             place.runs.append((day, status))
+        elif place.runs[-1][1] != status:
+            # Snapshot generation needs only the current run and its immediate
+            # predecessor. Discard older history while streaming so alternating
+            # attacker-controlled statuses cannot retain millions of objects.
+            place.runs[:] = [place.runs[-1], (day, status)]
         if day >= latest:
             latest = day
             place.votes = tuple(  # type: ignore[assignment]
@@ -92,6 +106,8 @@ def read_control(handle: io.TextIOBase) -> tuple[dict[int, PlaceHistory], str]:
             )
     if not places or not latest:
         raise ValueError("Control file held no rows")
+    if sum(len(place.runs) for place in places.values()) > MAX_RETAINED_RUNS:
+        raise ValueError("Control file exceeded its retained history budget")
     return places, latest
 
 
@@ -214,11 +230,38 @@ def build_snapshot(
 
 def _control_from_zip(path: Path) -> tuple[dict[int, PlaceHistory], str]:
     with zipfile.ZipFile(path) as archive:
-        names = [item for item in archive.infolist() if item.filename.endswith(".csv")]
+        members = archive.infolist()
+        if len(members) > MAX_ARCHIVE_MEMBERS:
+            raise ValueError("Control archive contains too many members")
+        names = [item for item in members if item.filename.endswith(".csv")]
         if len(names) != 1 or names[0].file_size > MAX_CSV_BYTES:
             raise ValueError("Control archive must hold exactly one bounded CSV")
         with archive.open(names[0]) as raw:
-            return read_control(io.TextIOWrapper(raw, encoding="utf-8"))
+            bounded = cast(Any, _BoundedReader(raw, MAX_CSV_BYTES))
+            return read_control(io.TextIOWrapper(bounded, encoding="utf-8"))
+
+
+class _BoundedReader(io.BufferedIOBase):
+    """Count actual inflated ZIP bytes because central-directory sizes are untrusted."""
+
+    def __init__(self, source: IO[bytes], maximum: int) -> None:
+        self._source = source
+        self._maximum = maximum
+        self._received = 0
+
+    def readable(self) -> bool:
+        return True
+
+    def read(self, size: int | None = -1) -> bytes:
+        data = self._source.read(-1 if size is None else size)
+        if data:
+            self._received += len(data)
+            if self._received > self._maximum:
+                raise ValueError("Control CSV exceeded its inflated byte limit")
+        return data
+
+    def read1(self, size: int = -1) -> bytes:
+        return self.read(size)
 
 
 def import_ukraine_control(

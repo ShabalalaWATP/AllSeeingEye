@@ -196,7 +196,7 @@ async def test_administrator_cannot_disable_final_factor(
     assert (await client.get("/api/auth/totp", headers=headers)).json()["enabled"]
 
 
-async def test_bad_totp_uses_existing_account_lockout(
+async def test_bad_totp_exhausts_only_the_challenge(
     client: AsyncClient,
     admin: User,
     clock: FakeClock,
@@ -209,7 +209,9 @@ async def test_bad_totp_uses_existing_account_lockout(
     for _ in range(5):
         assert (await verify_code(client, challenge, stale_code)).status_code == 401
     clock.advance(timedelta(minutes=1))
-    assert (await password_login(client, ADMIN_EMAIL, ADMIN_PASSWORD)).status_code == 401
+    fresh = await password_login(client, ADMIN_EMAIL, ADMIN_PASSWORD)
+    assert fresh.status_code == 200
+    assert fresh.json()["challenge_token"] != challenge
 
 
 async def test_password_reset_preserves_totp(

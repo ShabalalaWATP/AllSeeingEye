@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.research.runs import ResearchRunStore
+from ase.adapters.research_imports.remote import RemoteDocumentImportRunner
 from ase.adapters.research_imports.runner import DocumentImportRunner
 from ase.adapters.research_inputs.importer import DocumentResearchImporter
 from ase.adapters.research_inputs.memory import BoundedResearchInputStore
@@ -42,7 +43,9 @@ def input_services(
     settings: Settings, clock: Clock
 ) -> tuple[ResearchInputStore, DocumentImportPort]:
     return BoundedResearchInputStore(clock), DocumentResearchImporter(
-        DocumentImportRunner(media_tools=media_tools(settings))
+        RemoteDocumentImportRunner()
+        if settings.is_prod
+        else DocumentImportRunner(media_tools=media_tools(settings))
     )
 
 

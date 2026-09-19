@@ -31,8 +31,8 @@ RUN uv cache clean \
     && /usr/local/bin/python -m pip uninstall --yes pip
 
 RUN useradd --create-home --uid 10001 ase \
-    && mkdir -p /app/data \
-    && chown -R ase:ase /app
+    && mkdir -p /app/data /run/ase-parser \
+    && chown -R ase:ase /app/data /run/ase-parser
 USER ase
 
 ENV PATH="/app/.venv/bin:$PATH"

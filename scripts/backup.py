@@ -10,11 +10,13 @@ from pathlib import Path
 from backup_bundle import (
     DATABASE_FILES,
     BackupError,
+    authentication_key,
     copy_configuration,
     new_directory,
     snapshot_sqlite,
     verify_bundle,
     write_manifest,
+    write_manifest_signature,
 )
 from backup_postgres import connect_compose, snapshot_postgres
 
@@ -26,6 +28,11 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("backend", choices=("sqlite", "postgres"))
     command.add_argument(
         "--output", type=Path, required=True, help="New directory; parent must exist"
+    )
+    command.add_argument(
+        "--authentication-key-file",
+        type=Path,
+        help="Independent 32+ byte HMAC key file; required for PostgreSQL",
     )
     command.add_argument("--database", type=Path, help="SQLite file (required for sqlite)")
     command.add_argument(
@@ -45,6 +52,8 @@ def main(argv: list[str] | None = None) -> int:
     options = command.parse_args(argv)
     if (options.backend == "sqlite") != (options.database is not None):
         command.error("--database is required for sqlite and is not used for postgres")
+    if options.backend == "postgres" and options.authentication_key_file is None:
+        command.error("--authentication-key-file is required for PostgreSQL")
     try:
         output = new_directory(options.output)
         copy_configuration(
@@ -60,6 +69,8 @@ def main(argv: list[str] | None = None) -> int:
                 connect_compose(options.compose_file), output / DATABASE_FILES["postgres"]
             )
         write_manifest(output, options.backend, include_secrets=options.include_secrets)
+        if options.backend == "postgres":
+            write_manifest_signature(output, authentication_key(options.authentication_key_file))
         verify_bundle(output)
     except (BackupError, OSError, sqlite3.Error, UnicodeError) as exc:
         # Do not include filesystem/driver errors, which may contain sensitive context.

@@ -11,10 +11,11 @@ import pytest
 
 from ai_usage_helpers import NOW, add_policy, policy, reservations
 from ase.adapters.persistence.teams import TeamMembershipRow, TeamRow
+from ase.application import ai_usage_gateway
 from ase.application.assistant.report_context import ReportContextReader
 from ase.domain.ai_usage import AiAllowanceExceeded, AiPolicyScope
 from ase.domain.assistant import AssistantQuestion, AssistantReportSelection
-from ase.domain.llm import LlmResult
+from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 from assistant_helpers import Gateway, nothing
 from assistant_helpers import profile as eye_profile
 from feeds_helpers import make_event
@@ -159,3 +160,15 @@ async def test_feed_translation_uses_the_system_budget(container, admin):
     assert row.system and row.user_id is None
     totals = await _totals(container, system=True)
     assert (totals.used_requests, totals.used_tokens) == (1, 70)
+
+
+def test_large_prompts_reserve_the_full_conservative_input_bound() -> None:
+    request = LlmRequest(
+        (
+            LlmMessage("system", "s" * 80_000),
+            LlmMessage("user", "u" * 80_000),
+        ),
+        4_000,
+        0.0,
+    )
+    assert ai_usage_gateway._request_tokens(request) == 164_000

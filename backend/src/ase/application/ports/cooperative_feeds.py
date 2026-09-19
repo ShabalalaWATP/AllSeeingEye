@@ -21,5 +21,9 @@ class CooperativeGrader(Protocol):
 @runtime_checkable
 class CooperativeEventReader(Protocol):
     async def read_cooperatively[T](
-        self, query: EventQuery, project: Callable[[list[Event]], T]
+        self,
+        query: EventQuery,
+        project: Callable[[list[Event]], T],
+        *,
+        admission_key: str = "internal:legacy",
     ) -> T: ...

@@ -11,7 +11,7 @@ import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, inspect, select, text
 from sqlalchemy.exc import IntegrityError
 
 from ase.adapters.persistence.ai_usage_models import AiUsagePolicyRow, AiUsageTotalRow
@@ -80,6 +80,7 @@ def test_ai_usage_migration_and_retained_data_guard():
 
 PRUNING_MIGRATION = "0054_ai_usage_reservation_pruning_index.py"
 COST_MIGRATION = "0060_ai_cost_controls.py"
+DEFAULTS_MIGRATION = "0061_seed_ai_allowance_defaults.py"
 
 
 def _load(name: str, filename: str):
@@ -248,5 +249,36 @@ def test_cost_control_migration_splits_totals_and_frees_a_period_per_target():
             row = connection.execute(AiUsageTotalRow.__table__.select()).one()
             # History has no split, so it is carried as output and never understates cost.
             assert (row.used_input_tokens, row.used_output_tokens) == (0, 900)
+    finally:
+        engine.dispose()
+
+
+def test_secure_defaults_seed_only_an_unconfigured_policy_table() -> None:
+    tables = _migration()
+    uniqueness = _load("ai_usage_seed_uniqueness", "0051_ai_usage_policy_uniqueness.py")
+    cost = _load("ai_usage_seed_cost", COST_MIGRATION)
+    defaults = _load("ai_usage_secure_defaults", DEFAULTS_MIGRATION)
+    assert defaults.revision == "0061" and defaults.down_revision == "0060"
+    engine = create_engine("sqlite://")
+    try:
+        with engine.begin() as connection:
+            operations = Operations(MigrationContext.configure(connection))
+            tables.op = uniqueness.op = cost.op = defaults.op = operations
+            tables.upgrade()
+            uniqueness.upgrade()
+            cost.upgrade()
+            defaults.upgrade()
+            rows = connection.execute(
+                select(
+                    AiUsagePolicyRow.scope,
+                    AiUsagePolicyRow.period,
+                    AiUsagePolicyRow.token_limit,
+                ).order_by(AiUsagePolicyRow.scope, AiUsagePolicyRow.period)
+            ).all()
+            assert rows == [
+                ("global", "day", 300_000),
+                ("global", "month", 9_000_000),
+                ("system", "day", 100_000),
+            ]
     finally:
         engine.dispose()

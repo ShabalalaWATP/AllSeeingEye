@@ -13,7 +13,7 @@ from ase.domain.report_documents import ExportFormat, ReportDocument
 DOC = ReportDocument("title", "reference", ())
 
 
-async def test_legacy_cancellation_keeps_two_slots_until_threads_finish():
+async def test_legacy_cancellation_returns_promptly_but_keeps_slots_until_threads_finish():
     started = threading.Semaphore(0)
     release = threading.Event()
 
@@ -31,7 +31,7 @@ async def test_legacy_cancellation_keeps_two_slots_until_threads_finish():
     try:
         first.cancel()
         await asyncio.sleep(0)
-        assert not first.done()
+        assert first.done()
         with pytest.raises(RateLimited):
             await renderer.render(DOC, ExportFormat.PDF)
     finally:
@@ -73,7 +73,7 @@ async def test_configured_worker_routes_only_arabic_persian_pdf_and_propagates_c
     assert stopped.is_set()
 
 
-async def test_generic_document_work_runs_off_loop_and_settles_cancellation():
+async def test_generic_document_work_returns_promptly_and_retires_its_slot():
     started = threading.Event()
     release = threading.Event()
 
@@ -86,10 +86,11 @@ async def test_generic_document_work_runs_off_loop_and_settles_cancellation():
     assert await asyncio.to_thread(started.wait, 2)
     task.cancel()
     await asyncio.sleep(0)
-    assert not task.done()
-    release.set()
+    assert task.done()
     with pytest.raises(asyncio.CancelledError):
         await task
+    release.set()
+    await asyncio.sleep(0.05)
     assert await run_bounded_thread(lambda: "next") == "next"
 
 

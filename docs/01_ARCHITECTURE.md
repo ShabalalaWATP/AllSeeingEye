@@ -256,14 +256,16 @@ evidence and bounded input provenance are durable, without the transient input I
 Frame bytes are separate from event and receipt JSON and appear only in the upload
 preview response. Raw uploads are limited to 8 MiB.
 
-Document/media extraction shares a subprocess protocol with deadlines, memory
-limits, bounded JSON output and child termination. Limits and parser exclusions
-are in [the active plan](MASTER_AUTOMATED_RESEARCH_PLAN.md). OCR is English-only
-and fallible; image metadata, frame times and hashes are not authenticity checks.
-This is a resource boundary, not an OS filesystem/network security sandbox.
-Linux's 512 MiB address-space limit applies per process; a compromised native
-parser could retain the service user's file access. Read-only container root and
-no-new-privileges do not make the writable application-data mount inaccessible.
+Document/media extraction shares a subprocess protocol with deadlines, memory,
+process, file and output limits, plus child termination. Production sends bounded
+requests over a Unix socket to a dedicated parser service. That service has no network,
+a read-only root filesystem, a 128 MiB temporary filesystem, a 768 MiB aggregate memory
+limit and a 64-process cgroup limit. A parser failure can therefore terminate the parser
+service without exhausting the API or host. Local development and tests retain the
+resource-limited subprocess without claiming container isolation.
+Limits and parser exclusions are in
+[the active plan](MASTER_AUTOMATED_RESEARCH_PLAN.md). OCR is English-only and
+fallible; image metadata, frame times and hashes are not authenticity checks.
 Private document/media focus does not send extracted terms to public providers.
 One API process is required for the process-local admission and expiring stores.
 

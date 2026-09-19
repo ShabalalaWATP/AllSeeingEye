@@ -15,7 +15,7 @@ security contract; [team management](TEAMS_API.md) and
 - CSRF: cookie `ase_csrf` (random, `SameSite=Strict; Path=/`, readable by script) is set with the refresh cookie. `POST /api/auth/refresh` and `POST /api/auth/logout` require header `X-CSRF-Token` equal to the cookie (constant-time compare). Failure: 403 `csrf_failed`.
 - Request bodies above 64 KB are refused with 413 `payload_too_large` (configurable with `ASE_MAX_REQUEST_BYTES`; Caddy enforces the same cap at the edge).
 - Rate limits: 429 `rate_limited` with a `Retry-After` header. Defaults: login 10 per minute per IP and 5 per minute per email; request-account and forgot-password 3 per hour per IP; set-password 10 per hour per IP; authenticated password changes 5 per minute per account and per IP.
-- Lockout: after 5 failed logins for one account within 15 minutes, the account is locked for 15 minutes. The response is still 401 `invalid_credentials`; the audit log records the lockout.
+- Failed login attempts are bounded by per-IP and per-email rate limits. They do not persistently lock the named account, so knowing an email address is not enough to deny its owner access.
 - No account enumeration: all login failures use a generic 401 response. Account requests and forgot-password requests use the same 202 message for known and unknown/ineligible addresses; they do not report whether an account exists.
 - Security headers on every API response: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'`, and `Cache-Control: no-store` on authentication, administrator and private operational routes. Binary document downloads preserve `private, no-store`.
 
@@ -32,7 +32,7 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 
 | Method and path | Auth | Body | Success | Errors |
 |---|---|---|---|---|
-| `POST /api/auth/login` | none | `{email, password}` | 200 `TokenResponse` and session cookies, or restricted `MfaPendingOut` without a session | 401 `invalid_credentials` (unknown email, wrong password, inactive, locked, invalid credentials); 429 |
+| `POST /api/auth/login` | none | `{email, password}` | 200 `TokenResponse` and session cookies, or restricted `MfaPendingOut` without a session | 401 `invalid_credentials` (unknown email, wrong password, inactive or invalid credentials); 429 |
 | `POST /api/auth/refresh` | cookie + CSRF header | none | 200 `TokenResponse`; rotates cookies | 401 `invalid_refresh` (missing, expired, revoked or reused); 403 `csrf_failed` |
 | `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
 | `POST /api/auth/request-account` | none | `{email, display_name, reason?}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}` | 422; 429 |
@@ -69,7 +69,7 @@ without a factor must complete enrolment through that challenge before signing i
 An email-only login automatically sends a code. With both factors, the user can
 choose email instead of the authenticator. Challenges expire after ten minutes;
 email codes expire after five minutes and replacement codes invalidate prior ones.
-Five failed attempts exhaust a challenge and count towards account lockout.
+Five failed attempts exhaust that challenge. A fresh valid-password login can create a new challenge; failed factors do not persistently lock the account.
 
 | Method and path | Auth / body | Result |
 |---|---|---|
@@ -88,7 +88,7 @@ Five failed attempts exhaust a challenge and count towards account lockout.
 | `POST /api/auth/mfa/password-change` | Bearer, `{password}` | Sends purpose-bound email proof for `/api/me/password` |
 
 Challenges are hashed at rest, purpose-bound, single-use and checked against current
-account activity, lockout and security version. Email delivery releases database
+account activity and security version. Email delivery releases database
 locks and rechecks authority before accepting the delivery result. Authenticator
 steps are consumed atomically. Existing secrets are never returned. Factor changes
 revoke sessions and increment the account security version. Password resets and
@@ -115,8 +115,6 @@ The service locks the account and rechecks its active status and security
 version before verifying the current password. The new password uses the policy
 below. Wrong password or authenticator proof returns a generic 422 without
 ending the existing session; it does not trigger the client's 401 refresh flow.
-Locked accounts cannot use this endpoint until the lock expires or a valid
-password reset completes.
 
 A successful change commits the new hash, security-version increment, factor
 code consumption, session/link revocation and audit entry together. Every old
@@ -168,7 +166,7 @@ using stale proof.
 
 ## Audit actions
 
-Authentication actions include `login_succeeded`, `login_failed`, `account_locked`,
+Authentication actions include `login_succeeded`, `login_failed`,
 `token_refreshed`, `refresh_reuse_detected`, `logout`, `account_requested`,
 `account_request_approved`, `account_request_rejected`, `password_reset_requested`,
 `password_set`, `password_changed`, `password_change_failed`, `user_updated` and

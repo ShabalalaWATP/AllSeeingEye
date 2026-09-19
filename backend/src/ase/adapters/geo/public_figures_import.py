@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import base64
 import html
-import io
 import json
 import re
 import time
@@ -18,8 +17,8 @@ from typing import Any
 from urllib.parse import quote, unquote
 
 import httpx
-from PIL import Image, ImageDraw
 
+from ase.adapters.geo.commons_images import circular_portrait_png, download_raster
 from ase.adapters.geo.public_figures_targets import COUNTRIES, ORGANISATIONS, POSITIONS
 
 SPARQL = "https://query.wikidata.org/sparql"
@@ -208,16 +207,18 @@ def portrait(client: httpx.Client, image_url: str) -> dict[str, str] | None:
     meta: dict[str, Any] = (page.get("imageinfo") or [{}])[0].get("extmetadata", {})
     licence = _plain(meta.get("LicenseShortName", {}).get("value", "")) or "Unknown"
     credit = _plain(meta.get("Artist", {}).get("value", "")) or "Wikimedia Commons"
-    image = client.get(
-        f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(filename)}",
-        params={"width": 160},
-        follow_redirects=True,
-    )
-    image.raise_for_status()
-    if len(image.content) > MAX_PORTRAIT_BYTES:
+    try:
+        raw = download_raster(
+            client,
+            f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(filename)}",
+            params={"width": 160},
+            max_bytes=MAX_PORTRAIT_BYTES,
+        )
+        png = circular_portrait_png(raw, PORTRAIT_SIZE)
+    except (httpx.HTTPError, ValueError):
         return None
     return {
-        "png_base64": base64.b64encode(circular_png(image.content)).decode("ascii"),
+        "png_base64": base64.b64encode(png).decode("ascii"),
         "licence": licence,
         "credit": credit,
         "source_url": f"https://commons.wikimedia.org/wiki/File:{quote(filename)}",
@@ -225,21 +226,7 @@ def portrait(client: httpx.Client, image_url: str) -> dict[str, str] | None:
 
 
 def circular_png(raw: bytes) -> bytes:
-    picture = Image.open(io.BytesIO(raw)).convert("RGB")
-    side = min(picture.size)
-    left, top = (picture.width - side) // 2, max(0, (picture.height - side) // 4)
-    square = picture.crop((left, top, left + side, top + side)).resize(
-        (PORTRAIT_SIZE, PORTRAIT_SIZE), Image.Resampling.LANCZOS
-    )
-    mask = Image.new("L", (PORTRAIT_SIZE, PORTRAIT_SIZE), 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, PORTRAIT_SIZE - 1, PORTRAIT_SIZE - 1), fill=255)
-    circular = Image.new("RGBA", (PORTRAIT_SIZE, PORTRAIT_SIZE), (0, 0, 0, 0))
-    circular.paste(square, (0, 0), mask)
-    buffer = io.BytesIO()
-    circular.quantize(colors=96, method=Image.Quantize.FASTOCTREE).save(
-        buffer, format="PNG", optimize=True
-    )
-    return buffer.getvalue()
+    return circular_portrait_png(raw, PORTRAIT_SIZE)
 
 
 def _country_entries(row: dict[str, Any], seat: tuple[float, float]) -> list[dict[str, Any]]:

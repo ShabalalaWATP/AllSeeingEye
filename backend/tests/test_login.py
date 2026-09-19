@@ -62,23 +62,21 @@ async def test_inactive_and_passwordless_users_cannot_log_in(
     assert (await login(client, "pending@example.com", USER_PASSWORD)).status_code == 401
 
 
-async def test_lockout_after_repeated_failures(
+async def test_repeated_failures_do_not_create_account_lockout(
     client: AsyncClient, user: User, clock: FakeClock, container: Container
 ) -> None:
-    # Spaced beyond the one-minute rate window but inside the fifteen-minute lockout window.
+    # Spaced beyond the request-rate window to exercise persistent account state.
     for _ in range(4):
         assert (await login(client, USER_EMAIL, "wrong-password-value")).status_code == 401
         clock.advance(timedelta(seconds=61))
-    # The fifth failure locks the account; the right password no longer works.
+    # The right password works after the request-rate window. Attackers cannot lock the account.
     assert (await login(client, USER_EMAIL, "wrong-password-value")).status_code == 401
     clock.advance(timedelta(seconds=61))
-    assert (await login(client, USER_EMAIL, USER_PASSWORD)).status_code == 401
-    clock.advance(timedelta(minutes=16))
     assert (await login(client, USER_EMAIL, USER_PASSWORD)).status_code == 200
     async with container.session_factory() as session:
         entries = await container.repositories(session).audit.list_before(None, 50)
     actions = [entry.action for entry in entries]
-    assert AuditAction.ACCOUNT_LOCKED in actions
+    assert AuditAction.ACCOUNT_LOCKED not in actions
     assert AuditAction.LOGIN_SUCCEEDED in actions
 
 

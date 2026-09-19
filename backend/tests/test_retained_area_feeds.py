@@ -214,8 +214,9 @@ async def test_source_disabled_during_cooperative_read_is_excluded_before_releas
     store.upsert([event(source_id="disabled"), event("allowed", source_id="allowed")])
     read = store.read_cooperatively
 
-    async def read_then_disable(query, project):
-        value = await read(query, project)
+    async def read_then_disable(query, project, *, admission_key):
+        assert admission_key == "internal:retained-area"
+        value = await read(query, project, admission_key=admission_key)
         admission.disabled.add("disabled")
         return value
 
@@ -260,7 +261,8 @@ async def test_cancellation_stops_before_scanning_other_categories(monkeypatch):
     entered = asyncio.Event()
     queries = []
 
-    async def pause(query, project):
+    async def pause(query, project, *, admission_key):
+        assert admission_key == "internal:retained-area"
         queries.append(query)
         entered.set()
         await asyncio.Event().wait()
@@ -306,8 +308,9 @@ async def test_disabling_whole_capability_during_read_blocks_final_release(monke
     store.upsert([event()])
     read = store.read_cooperatively
 
-    async def disable_after_read(query, project):
-        result = await read(query, project)
+    async def disable_after_read(query, project, *, admission_key):
+        assert admission_key == "internal:retained-area"
+        result = await read(query, project, admission_key=admission_key)
         admission.disabled.add(SOURCE_ID)
         return result
 

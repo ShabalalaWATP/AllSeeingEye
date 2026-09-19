@@ -19,7 +19,9 @@ from PIL import Image
 from ase.adapters.research_imports import extract_upload
 from ase.adapters.research_imports import runner as module
 from ase.adapters.research_imports.models import ImportRejected
+from ase.adapters.research_imports.remote import RemoteDocumentImportRunner
 from ase.adapters.research_imports.runner import DocumentImportRunner
+from ase.adapters.research_imports.service import start_server
 from ase.adapters.research_imports.worker_protocol import validate_result
 
 
@@ -272,3 +274,21 @@ async def test_spawn_failure_releases_admission_and_tempfiles(
     with pytest.raises(ImportRejected, match="could not run safely"):
         await service.run(b"text", "a.txt")
     assert service._active == 0 and not directories[0].exists()
+
+
+async def test_remote_parser_round_trip_uses_bounded_unix_socket(tmp_path: Path) -> None:
+    if os.name == "nt":
+        pytest.skip("Unix-domain asyncio streams are exercised in the Linux container")
+    socket_path = tmp_path / "parser.sock"
+    server = await start_server(socket_path, DocumentImportRunner())
+    try:
+        result = await RemoteDocumentImportRunner(socket_path).run(b"First\nSecond", "notes.txt")
+        assert [unit.reference for unit in result.units] == ["line 1", "line 2"]
+    finally:
+        server.close()
+        await server.wait_closed()
+
+
+async def test_remote_parser_unavailable_fails_closed(tmp_path: Path) -> None:
+    with pytest.raises(ImportRejected, match="could not run safely"):
+        await RemoteDocumentImportRunner(tmp_path / "missing.sock").run(b"text", "notes.txt")

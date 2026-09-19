@@ -252,6 +252,19 @@ async def test_successful_local_response_still_preserves_schema_and_usage() -> N
     assert stream.closed
 
 
+@pytest.mark.parametrize("value", [True, -1, 2_147_483_648, "3"])
+def test_compatible_usage_rejects_invalid_provider_counters(value: object) -> None:
+    result = openai_compatible.parse_completion(
+        {
+            "choices": [{"message": {"content": "answer"}}],
+            "usage": {"prompt_tokens": value, "completion_tokens": value},
+        },
+        "model",
+        1,
+    )
+    assert result.prompt_tokens is None and result.completion_tokens is None
+
+
 @pytest.mark.parametrize("parser_name", ["_bounded_json", "parse_completion"])
 async def test_all_response_processing_counts_towards_deadline(
     monkeypatch: pytest.MonkeyPatch, parser_name: str

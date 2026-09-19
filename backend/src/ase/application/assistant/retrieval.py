@@ -127,7 +127,7 @@ class AssistantRetrieval:
                     count += len(events)
                 else:
                     events, category_capped, scanned = await self._matching_events(
-                        category, question, intent, period
+                        actor, category, question, intent, period
                     )
                     capped = capped or category_capped
                     count += scanned
@@ -206,6 +206,7 @@ class AssistantRetrieval:
 
     async def _matching_events(
         self,
+        actor: User,
         category: Category,
         question: AssistantQuestion,
         intent: QuestionIntent,
@@ -227,7 +228,11 @@ class AssistantRetrieval:
                 military=intent.event_query_military(category),
             )
             batch = (
-                await self.store.read_cooperatively(query, lambda values: values)
+                await self.store.read_cooperatively(
+                    query,
+                    lambda values: values,
+                    admission_key=f"user:{actor.id}",
+                )
                 if isinstance(self.store, CooperativeEventReader)
                 else self.store.query(query)
             )

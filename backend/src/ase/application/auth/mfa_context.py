@@ -20,7 +20,6 @@ from ase.application.ports.recovery_codes import RecoveryCodeRepository
 from ase.application.ports.totp import TotpProvider, TotpRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidCredentials, InvalidRequest, RateLimited, Unauthenticated
-from ase.domain.lockout import LockoutPolicy
 from ase.domain.mfa import MfaChallenge, MfaPurpose
 from ase.domain.users import User
 
@@ -88,9 +87,6 @@ class MfaContext:
     async def fail(self, challenge: MfaChallenge, user: User, context: RequestContext) -> None:
         challenge.attempts += 1
         await self.save(challenge)
-        if LockoutPolicy().register_failure(user, self.clock.now()):
-            await self.auditor.record(AuditAction.ACCOUNT_LOCKED, actor=user.id, ip=context.ip)
-        await self.users.save(user)
         await self.auditor.record(
             AuditAction.LOGIN_FAILED,
             actor=user.id,
@@ -106,7 +102,7 @@ class MfaContext:
         if not current.can_log_in(self.clock.now()) or not self.hasher.verify(
             current.password_hash or "", password
         ):
-            raise InvalidRequest("The current password is incorrect or the account is locked.")
+            raise InvalidRequest("The current password is incorrect or the account is unavailable.")
         return current
 
     async def current_actor(self, actor: User) -> User:

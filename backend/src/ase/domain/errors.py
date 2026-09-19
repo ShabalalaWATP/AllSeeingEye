@@ -17,7 +17,7 @@ class AppError(Exception):
 
 class InvalidCredentials(AppError):
     code = "invalid_credentials"
-    default_message = "Incorrect email or password, or the account is locked or not yet active."
+    default_message = "Incorrect email or password, or the account is not yet active."
 
 
 class InvalidRefreshToken(AppError):

@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
+
 import httpx
 import pytest
 from httpx import AsyncClient
 from pydantic import SecretStr
 
-from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider, TileCache
+from ase.adapters.tiles.os_maps import (
+    MAX_TILE_BYTES,
+    NullTileProvider,
+    OsMapsTileProvider,
+    TileCache,
+)
 from ase.application.ports.tiles import Tile, TileUpstreamError, is_valid_os_tile
 from ase.container import Container
 from ase.domain.users import User
@@ -86,6 +94,78 @@ async def test_provider_sends_the_key_and_caches() -> None:
     with pytest.raises(TileUpstreamError):
         await null.fetch("Road_3857", 7, 62, 40)
     await null.aclose()
+
+
+@pytest.mark.parametrize(
+    ("headers", "content"),
+    [
+        ({"content-length": str(MAX_TILE_BYTES + 1)}, PNG),
+        ({"content-encoding": "gzip"}, PNG),
+        ({}, PNG + b"x" * MAX_TILE_BYTES),
+        ({}, b"not-a-png"),
+    ],
+    ids=("declared-oversize", "encoded", "actual-oversize", "invalid-image"),
+)
+async def test_provider_rejects_unsafe_tile_bodies(headers: dict[str, str], content: bytes) -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda _request: httpx.Response(200, headers=headers, content=content)
+        )
+    )
+    provider = OsMapsTileProvider("secret-key", client=client)
+    with pytest.raises(TileUpstreamError) as failure:
+        await provider.fetch("Road_3857", 7, 62, 40)
+    assert failure.value.status == 502
+    await provider.aclose()
+
+
+async def test_provider_global_quota_refuses_before_sending_key() -> None:
+    requests: list[httpx.Request] = []
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: (requests.append(request), httpx.Response(200, content=PNG))[1]
+        )
+    )
+
+    class Limited:
+        def hit(self, key: str, limit: int, window_seconds: int) -> int | None:
+            assert (key, limit, window_seconds) == ("os-maps:global", 540, 60)
+            return 1
+
+    limiter = Limited()
+    provider = OsMapsTileProvider("secret-key", client=client, limiter=limiter)
+    with pytest.raises(TileUpstreamError) as limited:
+        await provider.fetch("Road_3857", 7, 62, 40)
+    assert limited.value.status == 429 and requests == []
+    await provider.aclose()
+
+
+async def test_same_tile_is_coalesced_and_secret_url_logs_are_suppressed(caplog) -> None:
+    started = asyncio.Event()
+    release = asyncio.Event()
+    requests: list[httpx.Request] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        started.set()
+        await release.wait()
+        return httpx.Response(200, content=PNG)
+
+    caplog.set_level(logging.DEBUG, logger="httpx")
+    caplog.set_level(logging.DEBUG, logger="httpcore")
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = OsMapsTileProvider("secret-key", client=client)
+    first = asyncio.create_task(provider.fetch("Road_3857", 7, 62, 40))
+    await started.wait()
+    second = asyncio.create_task(provider.fetch("Road_3857", 7, 62, 40))
+    await asyncio.sleep(0)
+    release.set()
+    assert [tile.content for tile in await asyncio.gather(first, second)] == [PNG, PNG]
+    assert len(requests) == 1
+    assert "secret-key" not in caplog.text
+    logging.getLogger("httpx").info("ordinary-http-log-resumed")
+    assert "ordinary-http-log-resumed" in caplog.text
+    await provider.aclose()
 
 
 def test_validation_and_settings() -> None:
