@@ -44,11 +44,9 @@ async def _spawn(directory: Path) -> asyncio.subprocess.Process:
     # OCR/video helpers may allocate their own temporary workspaces. Keep those
     # under the parent's directory so abrupt worker termination cannot orphan raw media.
     environment.update({name: str(directory) for name in ("TEMP", "TMP", "TMPDIR")})
+    command = [sys.executable, "-I", "-m", "ase.adapters.research_worker"]
     return await asyncio.create_subprocess_exec(
-        sys.executable,
-        "-I",
-        "-m",
-        "ase.adapters.research_worker",
+        *command,
         cwd=directory,
         env=environment,
         stdin=asyncio.subprocess.DEVNULL,
@@ -90,7 +88,10 @@ class DocumentImportRunner:
     """Reuse one instance for process-local, immediate-rejection admission control."""
 
     def __init__(
-        self, timeout: float = MAX_SECONDS, *, media_tools: MediaTools | None = None
+        self,
+        timeout: float = MAX_SECONDS,
+        *,
+        media_tools: MediaTools | None = None,
     ) -> None:
         if not 0 < timeout <= MAX_SECONDS:
             raise ValueError("Document timeout must be greater than zero and at most 30 seconds.")

@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Header, Query, Request, Response
 
-from ase.adapters.reports.async_documents import run_bounded_thread
+from ase.adapters.reports.async_documents import document_request, run_bounded_thread
 from ase.adapters.reports.markdown_package import render_markdown_export
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.report_reviewed_snapshot import selected_reviewed_snapshot
@@ -21,10 +21,38 @@ from ase.api.schemas_reports import (
 )
 from ase.api.session_guard import validate_request_session
 from ase.application.reports.document import build_document
-from ase.application.reports.document_release import release_document
+from ase.application.reports.document_release import release_document, release_report_view
 from ase.container.source_reviews import source_reviews
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+async def _release_json(
+    claims: ClaimsDep,
+    container: ContainerDep,
+    session: SessionDep,
+    report_id: UUID,
+    version_number: int,
+    report_version_id: UUID,
+    source_snapshot_id: UUID | None = None,
+) -> None:
+    repositories = container.repositories(session)
+    await release_report_view(
+        claims,
+        report_id,
+        version_number,
+        report_version_id,
+        users=repositories.users,
+        refresh=repositories.refresh_tokens,
+        reports=repositories.reports,
+        access=container.access_policy(session),
+        clock=container.clock,
+        uow=repositories.uow,
+        source_reviews=(
+            source_reviews(container, session).reviews if source_snapshot_id is not None else None
+        ),
+        source_snapshot_id=source_snapshot_id,
+    )
 
 
 def _media_quality(value: str, expected: str) -> float:
@@ -89,7 +117,12 @@ async def create_report(
         before_save=lambda: validate_request_session(container, claims),
     )
     background.add_task(container.archive_report_version, version)
-    return await run_bounded_thread(lambda: ReportOut.build(record, version), wait_for_slot=True)
+    async with document_request(str(user.id)):
+        result = await run_bounded_thread(
+            lambda: ReportOut.build(record, version), wait_for_slot=True
+        )
+        await _release_json(claims, container, session, record.id, version.number, version.id)
+    return result
 
 
 @router.post("/{report_id}/versions", status_code=201)
@@ -115,7 +148,12 @@ async def regenerate_report(
         before_save=lambda: validate_request_session(container, claims),
     )
     background.add_task(container.archive_report_version, version)
-    return await run_bounded_thread(lambda: ReportOut.build(record, version), wait_for_slot=True)
+    async with document_request(str(user.id)):
+        result = await run_bounded_thread(
+            lambda: ReportOut.build(record, version), wait_for_slot=True
+        )
+        await _release_json(claims, container, session, record.id, version.number, version.id)
+    return result
 
 
 @router.get("/{report_id}")
@@ -132,10 +170,16 @@ async def get_report(
     snapshot = await selected_reviewed_snapshot(
         claims, container, session, record, found, version, source_snapshot_id
     )
-    result = await run_bounded_thread(lambda: ReportOut.build(record, found, snapshot))
-    if snapshot is not None:
-        await selected_reviewed_snapshot(
-            claims, container, session, record, found, version, source_snapshot_id
+    async with document_request(str(user.id)):
+        result = await run_bounded_thread(lambda: ReportOut.build(record, found, snapshot))
+        await _release_json(
+            claims,
+            container,
+            session,
+            record.id,
+            found.number,
+            found.id,
+            snapshot.id if snapshot is not None else None,
         )
     return result
 
@@ -167,29 +211,32 @@ async def report_markdown(
         claims, container, session, record, found, version, source_snapshot_id
     )
     package_figures = _prefers_zip(request.headers.get("accept", ""))
-    rendered = await run_bounded_thread(
-        lambda: render_markdown_export(
-            build_document(record, found, reviewed_snapshot=snapshot),
-            report_id,
-            found.id,
-            found.number,
-            package_figures=package_figures,
+    async with document_request(str(user.id)):
+        rendered = await run_bounded_thread(
+            lambda: render_markdown_export(
+                build_document(record, found, reviewed_snapshot=snapshot),
+                report_id,
+                found.id,
+                found.number,
+                package_figures=package_figures,
+            )
         )
-    )
-    repositories = container.repositories(session)
-    await release_document(
-        claims,
-        report_id,
-        rendered,
-        users=repositories.users,
-        refresh=repositories.refresh_tokens,
-        reports=repositories.reports,
-        access=container.access_policy(session),
-        clock=container.clock,
-        uow=repositories.uow,
-        source_reviews=source_reviews(container, session).reviews if snapshot is not None else None,
-        source_snapshot_id=snapshot.id if snapshot is not None else None,
-    )
+        repositories = container.repositories(session)
+        await release_document(
+            claims,
+            report_id,
+            rendered,
+            users=repositories.users,
+            refresh=repositories.refresh_tokens,
+            reports=repositories.reports,
+            access=container.access_policy(session),
+            clock=container.clock,
+            uow=repositories.uow,
+            source_reviews=(
+                source_reviews(container, session).reviews if snapshot is not None else None
+            ),
+            source_snapshot_id=snapshot.id if snapshot is not None else None,
+        )
     return Response(
         rendered.content,
         media_type=rendered.media_type,

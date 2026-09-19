@@ -118,7 +118,9 @@ class RetainedAreaFeedProvider:
                 return select_snapshot(events, spatial, query)
 
             if isinstance(self._store, CooperativeEventReader):
-                snapshot = await self._store.read_cooperatively(request, project)
+                snapshot = await self._store.read_cooperatively(
+                    request, project, admission_key="internal:retained-area"
+                )
             else:
                 # Production uses the cooperative shared store. Small port fakes
                 # still run expensive geometry projection outside the event loop.

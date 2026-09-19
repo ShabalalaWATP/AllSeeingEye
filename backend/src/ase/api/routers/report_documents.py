@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
+from ase.adapters.reports.async_documents import document_request
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.report_reviewed_snapshot import selected_reviewed_snapshot
 from ase.api.schemas_claim_export import ClaimPackageIn
@@ -116,26 +117,29 @@ async def export_report(
         snapshot = await selected_reviewed_snapshot(
             claims, container, session, record, found, version, source_snapshot_id
         )
-    exporter = container.export_report(session)
-    result = (
-        await exporter.execute(user, report_id, format, version)
-        if snapshot is None
-        else await exporter.execute(user, report_id, format, version, snapshot)
-    )
-    repositories = container.repositories(session)
-    await release_document(
-        claims,
-        report_id,
-        result,
-        users=repositories.users,
-        refresh=repositories.refresh_tokens,
-        reports=repositories.reports,
-        access=container.access_policy(session),
-        clock=container.clock,
-        uow=repositories.uow,
-        source_reviews=source_reviews(container, session).reviews if snapshot is not None else None,
-        source_snapshot_id=snapshot.id if snapshot is not None else None,
-    )
+    async with document_request(str(user.id)):
+        exporter = container.export_report(session)
+        result = (
+            await exporter.execute(user, report_id, format, version)
+            if snapshot is None
+            else await exporter.execute(user, report_id, format, version, snapshot)
+        )
+        repositories = container.repositories(session)
+        await release_document(
+            claims,
+            report_id,
+            result,
+            users=repositories.users,
+            refresh=repositories.refresh_tokens,
+            reports=repositories.reports,
+            access=container.access_policy(session),
+            clock=container.clock,
+            uow=repositories.uow,
+            source_reviews=(
+                source_reviews(container, session).reviews if snapshot is not None else None
+            ),
+            source_snapshot_id=snapshot.id if snapshot is not None else None,
+        )
     return Response(
         result.content,
         media_type=result.media_type,

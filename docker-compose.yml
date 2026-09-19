@@ -24,13 +24,39 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      parser:
+        condition: service_healthy
     volumes:
       - ./data:/app/data
+      - parser_socket:/run/ase-parser:ro
     read_only: true
     tmpfs:
       - /tmp
     security_opt:
       - no-new-privileges:true
+    restart: unless-stopped
+
+  parser:
+    build: ./backend
+    command: ["python", "-I", "-m", "ase.adapters.research_imports.service"]
+    network_mode: none
+    user: "10001:10001"
+    volumes:
+      - parser_socket:/run/ase-parser
+    read_only: true
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,mode=0700,size=134217728
+    mem_limit: 768m
+    pids_limit: 64
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(socket.AF_UNIX); s.settimeout(2); s.connect('/run/ase-parser/parser.sock'); s.close()"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
 
   web:
@@ -49,9 +75,20 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:
   pgdata:
   caddy_data:
   caddy_config:
+  parser_socket:

@@ -163,6 +163,7 @@ async def test_other_endpoints_and_non_max_keep_chat_compatibility(base, effort)
         (("usage",), []),
         (("usage", "input_tokens"), -1),
         (("usage", "output_tokens"), True),
+        (("usage", "input_tokens"), 2_147_483_648),
         (("model",), "invalid model"),
         (("output", 1, "content", 0, "text"), " "),
     ],

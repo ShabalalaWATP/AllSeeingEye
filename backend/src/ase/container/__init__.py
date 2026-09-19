@@ -319,7 +319,9 @@ class Container(
         )  # fmt: skip
         os_key = settings.os_maps_key_value
         self.tiles: TileProvider = (
-            OsMapsTileProvider(os_key) if os_key is not None else NullTileProvider()
+            OsMapsTileProvider(os_key, limiter=self.limiter)
+            if os_key is not None
+            else NullTileProvider()
         )
         self.jam = JamMap()
         self.watch_areas = tuple(WatchedArea(area.id, area.name) for area in load_watch_areas())

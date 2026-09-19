@@ -1,6 +1,7 @@
 """Shared bounded facility cache with independent source failures and request coalescing."""
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Literal
@@ -8,7 +9,7 @@ from typing import Literal
 from ase.application.ports.cameras import CameraSource
 from ase.application.ports.services import Clock
 from ase.domain.cameras import Camera, CameraCatalogue, CameraProviderStatus
-from ase.domain.errors import Unauthenticated
+from ase.domain.errors import RateLimited, Unauthenticated
 from ase.domain.events import BoundingBox, Point
 from ase.domain.users import User
 
@@ -16,6 +17,7 @@ MAX_CAMERAS_PER_PROVIDER = 5000
 CACHE_TTL = timedelta(minutes=15)
 FAILURE_RETRY = timedelta(minutes=1)
 MAX_STALE = timedelta(hours=24)
+FRAME_TIMEOUT_SECONDS = 20
 
 
 @dataclass
@@ -34,6 +36,12 @@ class CameraCatalogueService:
         self._sources = tuple(_CachedSource(source) for source in sources)
         self._clock = clock
         self._limit = asyncio.Semaphore(4)
+        self._frame_lock = asyncio.Lock()
+        self._frame_tasks: dict[tuple[str, str], asyncio.Task[bytes | None]] = {}
+        self._frame_waiters = 0
+        self._frame_waiters_by_user: dict[str, int] = {}
+        self._frame_work_by_user: dict[str, int] = {}
+        self._frame_work = 0
 
     @property
     def sources(self) -> tuple[CameraSource, ...]:
@@ -113,10 +121,53 @@ class CameraCatalogueService:
             reader = getattr(cached.source, "frame", None)
             if reader is None:
                 return None
-            async with asyncio.timeout(20):
-                data = await reader(frame_id)
-            return data if isinstance(data, bytes) and data else None
+            key = (provider, frame_id)
+            actor_key = str(actor.id)
+            async with self._frame_lock:
+                actor_waiters = self._frame_waiters_by_user.get(actor_key, 0)
+                if self._frame_waiters >= 8 or actor_waiters >= 2:
+                    raise RateLimited(1)
+                task = self._frame_tasks.get(key)
+                if task is None:
+                    if self._frame_work >= 2 or self._frame_work_by_user.get(actor_key, 0) >= 1:
+                        raise RateLimited(1)
+                    self._frame_work += 1
+                    self._frame_work_by_user[actor_key] = 1
+                    task = asyncio.create_task(
+                        self._frame_work_item(key, actor_key, reader, frame_id)
+                    )
+                    self._frame_tasks[key] = task
+                self._frame_waiters += 1
+                self._frame_waiters_by_user[actor_key] = actor_waiters + 1
+            try:
+                data = await asyncio.shield(task)
+                return data if isinstance(data, bytes) and data else None
+            finally:
+                async with self._frame_lock:
+                    self._frame_waiters -= 1
+                    waiting = self._frame_waiters_by_user[actor_key] - 1
+                    if waiting:
+                        self._frame_waiters_by_user[actor_key] = waiting
+                    else:
+                        self._frame_waiters_by_user.pop(actor_key, None)
         raise ValueError("Unknown camera provider")
+
+    async def _frame_work_item(
+        self,
+        key: tuple[str, str],
+        actor_key: str,
+        reader: Callable[[str], Awaitable[bytes | None]],
+        frame_id: str,
+    ) -> bytes | None:
+        try:
+            async with asyncio.timeout(FRAME_TIMEOUT_SECONDS):
+                result = await reader(frame_id)
+            return result if isinstance(result, bytes) and result else None
+        finally:
+            async with self._frame_lock:
+                self._frame_tasks.pop(key, None)
+                self._frame_work -= 1
+                self._frame_work_by_user.pop(actor_key, None)
 
     async def initial_catalogue(self, actor: User) -> CameraCatalogue:
         keys = [key for key in ("tfl", "hongkong", "fintraffic") if key in self.provider_ids]

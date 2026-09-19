@@ -157,6 +157,13 @@ counted as a failed request with zero tokens. The PostgreSQL lock ordering is ve
 design and by the SQLite concurrency tests; the suite has no disposable PostgreSQL run
 recorded for this change.
 
+Migration `0061` gives a previously unconfigured installation finite starting
+ceilings: 300,000 tokens per UTC day and 9,000,000 per UTC month globally, plus
+100,000 tokens per UTC day for system work. It seeds these policies only when the
+policy table is completely empty. Any existing policy row is treated as an explicit
+administrator decision and is left unchanged. Administrators can replace these
+defaults with the ordinary policy controls after deployment.
+
 ## Amendment: one policy per target per period (migration 0060)
 
 Migration `0051` made an enabled policy unique per scope and target, which allowed a

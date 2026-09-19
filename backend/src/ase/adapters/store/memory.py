@@ -43,6 +43,7 @@ class InMemoryEventStore:
         self._events: dict[str, Event] = {}
         self._read_slot = asyncio.Semaphore(1)
         self._waiting_reads = 0
+        self._waiting_reads_by_key: dict[str, int] = {}
         self._stats_cache: StoreStats | None = None
         self._sizes: dict[str, int] = {}
         self._by_category: dict[Category, set[str]] = {}
@@ -152,11 +153,17 @@ class InMemoryEventStore:
         return select_events([self._events[i] for i in self._candidates(query)], query)
 
     async def read_cooperatively[T](
-        self, query: EventQuery, project: Callable[[list[Event]], T]
+        self,
+        query: EventQuery,
+        project: Callable[[list[Event]], T],
+        *,
+        admission_key: str = "internal:legacy",
     ) -> T:
-        if self._waiting_reads >= 8:
+        actor_reads = self._waiting_reads_by_key.get(admission_key, 0)
+        if self._waiting_reads >= 8 or actor_reads >= 2:
             raise RateLimited(1)
         self._waiting_reads += 1
+        self._waiting_reads_by_key[admission_key] = actor_reads + 1
         try:
             async with self._read_slot:
                 # Capture references only after admission, never iterate live indexes in a thread.
@@ -164,6 +171,11 @@ class InMemoryEventStore:
                 return await joined_thread_call(lambda: project(select_events(snapshot, query)))
         finally:
             self._waiting_reads -= 1
+            remaining = self._waiting_reads_by_key[admission_key] - 1
+            if remaining:
+                self._waiting_reads_by_key[admission_key] = remaining
+            else:
+                self._waiting_reads_by_key.pop(admission_key, None)
 
     def prune(self, now: datetime) -> PruneResult:
         expired: list[str] = []

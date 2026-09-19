@@ -1,8 +1,8 @@
-"""A documented starting set of AI allowance policies an administrator can apply at once.
+"""The secure starting set of AI allowance policies.
 
-Nothing here is applied automatically.  With no policy configured the ledger observes
-and enforces nothing, which is the shipped state; an administrator chooses to adopt this
-set, and may edit every number before or after adopting it.
+Fresh and previously unconfigured installations receive the site and system policies
+through migration 0061. Administrators can edit them and can apply the per-account
+policy to active accounts from the allowance workspace.
 
 The numbers below were chosen against five measured days on the operator's own install:
 about 969,000 tokens and 912 provider calls, dominated by report generation, of which

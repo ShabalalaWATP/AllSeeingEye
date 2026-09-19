@@ -109,7 +109,8 @@ async def test_worker_queue_is_bounded_and_result_matches_geographic_query():
 async def test_events_rechecks_revocation_after_worker_yields(client, container, user, monkeypatch):
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
 
-    async def interrupted_read(query, project):
+    async def interrupted_read(query, project, *, admission_key="internal:test"):
+        assert admission_key == f"user:{user.id}"
         async with container.session_factory() as session:
             await container.repositories(session).refresh_tokens.revoke_family(
                 container.issuer.verify(token).family_id, container.clock.now()

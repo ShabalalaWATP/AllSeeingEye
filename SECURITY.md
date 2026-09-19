@@ -7,14 +7,14 @@ The All Seeing Eye is a private, self-hosted hobby application. It is built on t
 - Passwords hashed with argon2id; a 12 to 128 character policy backed by a 10,000-entry common-password deny list that also catches common words with digits bolted on.
 - Short-lived JWT access tokens (15 minutes) held in memory by the SPA; opaque refresh tokens in an `HttpOnly`, `SameSite=Strict` cookie scoped to the auth routes, rotated on every use, with family revocation when a rotated token is replayed.
 - CSRF double-submit protection on the cookie-bearing endpoints, checked in constant time.
-- Per-IP and per-email rate limits on every unauthenticated endpoint, and account lockout after repeated failures.
+- Per-IP and per-email rate limits on every unauthenticated endpoint. Invalid passwords and MFA codes never create a persistent account lock that another person can trigger.
 - No account enumeration: login failures, duplicate account requests and password reset requests for unknown addresses all answer exactly like the success path.
 - Account requests are inert until an administrator approves them; activation and reset links are single use, hashed at rest and time limited.
 - Authorisation enforced in the application layer with object-level checks (for example an administrator cannot demote or deactivate their own account).
 - Security headers on every API response, `Cache-Control: no-store` on auth and admin routes, interactive API docs only in development.
 - An append-only audit log of authentication and administration events.
 - Server root secrets come from the environment. Model and FIRMS credentials may be stored encrypted under `ASE_ENCRYPTION_KEY`; APIs never return existing keys. FIRMS environment credentials take precedence over database configuration. Structured logs redact credentials, and secret-bearing FIRMS transport diagnostics are suppressed at their boundary.
-- Locked dependencies audited in CI (`pip-audit`, `pnpm audit`, `bandit`, `gitleaks`); containers run as a non-root user with a read-only filesystem.
+- Locked dependencies audited in CI (`pip-audit`, `pnpm audit`, `bandit`, `gitleaks`); the API and web containers run as non-root users with read-only root filesystems.
 
 ## Reporting a vulnerability
 

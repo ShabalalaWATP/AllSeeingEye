@@ -87,7 +87,9 @@ class ConflictScreeningQueue:
             limit=POOL,
         )
         pending = (
-            await self._store.read_cooperatively(query, candidates)
+            await self._store.read_cooperatively(
+                query, candidates, admission_key="internal:conflict-screening"
+            )
             if isinstance(self._store, CooperativeEventReader)
             else candidates(self._store.query(query))
         )

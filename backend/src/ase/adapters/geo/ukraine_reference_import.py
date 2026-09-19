@@ -21,6 +21,7 @@ from urllib.parse import quote, unquote
 import httpx
 from PIL import Image
 
+from ase.adapters.geo.commons_images import decode_raster, download_raster
 from ase.adapters.wikidata_entities import DEFAULT_CONTACT, EntityFacts, WikidataEntities
 from ase.domain.ukraine.reference import MAX_IMAGE_BYTES
 
@@ -92,15 +93,16 @@ def cache_image(client: httpx.Client, filename: str, destination: Path) -> dict[
     if not licence or source_url is None:
         return None
     credit = _plain(meta.get("Artist", {}).get("value", "")) or "Wikimedia Commons"
-    picture = client.get(
-        f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(name)}",
-        params={"width": IMAGE_WIDTH},
-        follow_redirects=True,
-    )
-    picture.raise_for_status()
-    if len(picture.content) > MAX_DOWNLOAD_BYTES:
+    try:
+        raw = download_raster(
+            client,
+            f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(name)}",
+            params={"width": IMAGE_WIDTH},
+            max_bytes=MAX_DOWNLOAD_BYTES,
+        )
+        image = decode_raster(raw)
+    except (httpx.HTTPError, ValueError):
         return None
-    image = Image.open(io.BytesIO(picture.content)).convert("RGB")
     if image.width > IMAGE_WIDTH:
         image = image.resize(
             (IMAGE_WIDTH, round(image.height * IMAGE_WIDTH / image.width)), Image.Resampling.LANCZOS

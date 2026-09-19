@@ -31,7 +31,7 @@ from ase.application.ports.web_search import (
     WebSearchTimeout,
 )
 from ase.application.report_jobs.budget import CallNotDispatched, JobInterrupted
-from ase.domain.ai_usage import AiAttribution, AiCallOutcome
+from ase.domain.ai_usage import MAX_ALLOWANCE, AiAttribution, AiCallOutcome
 from ase.domain.llm import LlmRequest, LlmResult
 from ase.domain.report_search import EmbeddingResult
 
@@ -213,13 +213,14 @@ def _purpose(prefix: str, schema_name: str) -> str:
 
 def _text_tokens(value: str, output_tokens: int) -> int:
     """Conservatively reserve input plus completion without trusting provider estimates."""
-    input_tokens = min(32_000, max(1, (len(value) + 3) // 4))
-    return output_tokens + input_tokens
+    input_tokens = max(1, len(value.encode("utf-8")))
+    return min(MAX_ALLOWANCE, output_tokens + input_tokens)
 
 
 def _request_tokens(request: LlmRequest) -> int:
     input_tokens = sum(
-        min(32_000, max(1, (len(message.content) + 3) // 4)) + len(message.images) * 256
+        max(1, len(message.content.encode("utf-8")))
+        + sum(max(256, len(image.png)) for image in message.images)
         for message in request.messages
     )
-    return request.max_output_tokens + min(32_000, input_tokens)
+    return min(MAX_ALLOWANCE, request.max_output_tokens + input_tokens)

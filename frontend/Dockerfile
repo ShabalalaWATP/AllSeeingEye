@@ -25,9 +25,13 @@ RUN pnpm build
 
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache \
+    && addgroup -S -g 10001 aseweb \
+    && adduser -S -D -H -u 10001 -G aseweb aseweb
 COPY --from=caddy-build /out/caddy /usr/bin/caddy
 # COPY replaces the upstream inode, including the capability needed on low ports.
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 COPY infra/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv
+RUN chown -R 10001:10001 /data /config
+USER 10001:10001

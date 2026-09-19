@@ -257,7 +257,7 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 - [x] SQLAlchemy 2 async models and Alembic migration 0001 (users, account_requests, refresh_tokens, password_tokens, audit_log)
 - [x] Password hashing (argon2id, parameters pinned), password policy with the 10,000 most common passwords deny list (checked on the whole password and on its core without trailing digits and punctuation, because no entry in the top 1,000 reaches the 12-character minimum)
 - [x] Access tokens (JWT HS256, 15 min), refresh token rotation with family reuse detection, CSRF double-submit
-- [x] Rate limiting (in-memory sliding window, LRU bounded) and account lockout
+- [x] Rate limiting (in-memory sliding window, LRU bounded); invalid credentials do not create attacker-triggered persistent account locks
 - [x] Auth endpoints: login, refresh, logout, request-account, forgot-password, set-password, me
 - [x] Admin endpoints: account requests (list, approve, reject), users (list, patch, reset-link), audit log
 - [x] Security headers middleware, request body cap (413), the error envelope
@@ -389,7 +389,7 @@ Acceptance from the roadmap: an indicator fires on synthetic data within one pip
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.
 - Configure a GitHub remote to get a first hosted CI run. Local Semgrep, Trivy and PostgreSQL checks now have recorded results; the hosted workflow remains unverified.
-- Consider a JSON depth limit for incoming API requests alongside their body size cap, and a challenge instead of a hard lockout before any public exposure. Structured model responses already reject excessive nesting.
+- Consider a JSON depth limit for incoming API requests alongside their body size cap. Structured model responses already reject excessive nesting; attacker-triggered account lockout was removed before public exposure.
 - deck.gl and MapLibre now have separate chunks. They remain large dependencies (about 695 KB and 957 KB minified); the application globe chunk is about 30 KB. The worker/shared assets add about 19 KB/492 KB, and deck still preloads on login because of shared runtime dependencies. Removing dependency recursion caused a browser initialisation failure, so safe ordering is retained. Further reductions remain a measured follow-up; warning thresholds were not raised.
 - The live globe loads up to 2,000 events on entry and mirrors at most 5,000; revisit both caps with the retention windows when more connectors land.
 - Source names are not exposed to non-admin users, so the inspector shows the source id; a public sources summary endpoint would fix that.
@@ -965,3 +965,25 @@ Existing global and individual assignments are preserved. A legacy installation
 with five enabled partial-role profiles and no explicit global binding needs a
 separate migration path before a complete default model can be added. This is not
 the current local configuration. No cap bypass or destructive migration is used.
+
+## 19 September 2026: repository security scan remediation
+
+- [x] Remove attacker-triggered account lockout while retaining login and MFA
+  challenge rate limits.
+- [x] Recheck sessions, membership and exact report versions after JSON report
+  projection, and prevent automatic mutation replay after refresh.
+- [x] Isolate production import parsers in a networkless, read-only service with
+  aggregate memory, process and temporary-storage limits.
+- [x] Authenticate PostgreSQL backup manifests with an independently held HMAC key.
+- [x] Bound actual archive expansion, remote image decoding and outbound response
+  bodies; constrain Wayback redirects and redact OS Maps keys from HTTP logs.
+- [x] Add OS Maps admission limits, finite default AI policies and conservative
+  full-request token reservations.
+- [x] Add owner-fair report job selection and keyed admission for event queries,
+  report rendering and camera waits.
+- [x] Run Caddy as uid 10001 with a read-only root filesystem, and reduce the API
+  build context to an allowlist that excludes local secrets.
+- [x] Enforce one running report job per owner atomically and authenticate the exact
+  manifest bytes used by PostgreSQL restore.
+- [ ] Apply the documented one-time Caddy volume ownership migration on any
+  existing deployment before starting the hardened web container.

@@ -8,6 +8,9 @@ import os
 from ctypes import wintypes
 
 MEMORY_BYTES = 512 * 1024 * 1024
+FILE_BYTES = 64 * 1024 * 1024
+MAX_PROCESSES = 32
+MAX_OPEN_FILES = 64
 _job_handle: int | None = None
 
 
@@ -74,9 +77,10 @@ def _windows_limits() -> None:
     if not handle:
         raise ResourceLimitUnavailable("Parser resource limits are unavailable.")
     limits = _ExtendedLimits()
-    # PROCESS_MEMORY | JOB_MEMORY | KILL_ON_JOB_CLOSE. The aggregate cap also
+    # ACTIVE_PROCESS | PROCESS_MEMORY | JOB_MEMORY | KILL_ON_JOB_CLOSE. The aggregate cap also
     # constrains any future OCR/video subprocesses, which inherit job membership.
-    limits.BasicLimitInformation.LimitFlags = 0x100 | 0x200 | 0x2000
+    limits.BasicLimitInformation.LimitFlags = 0x8 | 0x100 | 0x200 | 0x2000
+    limits.BasicLimitInformation.ActiveProcessLimit = MAX_PROCESSES
     limits.ProcessMemoryLimit = MEMORY_BYTES
     limits.JobMemoryLimit = MEMORY_BYTES
     configured = kernel.SetInformationJobObject(
@@ -99,6 +103,9 @@ def apply_resource_limits() -> None:
             resource = importlib.import_module("resource")
             resource.setrlimit(resource.RLIMIT_AS, (MEMORY_BYTES, MEMORY_BYTES))
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+            resource.setrlimit(resource.RLIMIT_FSIZE, (FILE_BYTES, FILE_BYTES))
+            resource.setrlimit(resource.RLIMIT_NOFILE, (MAX_OPEN_FILES, MAX_OPEN_FILES))
+            resource.setrlimit(resource.RLIMIT_NPROC, (MAX_PROCESSES, MAX_PROCESSES))
         else:
             raise ResourceLimitUnavailable("Parser resource limits are unavailable.")
     except (OSError, ValueError, AttributeError) as error:

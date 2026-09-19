@@ -2,7 +2,10 @@
 
 import asyncio
 import threading
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
+from contextlib import asynccontextmanager
+from contextvars import ContextVar
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from ase.adapters.reports.documents import ReportDocumentRenderer
@@ -11,39 +14,107 @@ from ase.domain.errors import RateLimited
 from ase.domain.report_documents import ExportFormat, ReportDocument
 
 _SLOTS = threading.BoundedSemaphore(2)
+_RETIRED: set[asyncio.Task[None]] = set()
+
+
+@dataclass(slots=True)
+class _Lease:
+    actor: str
+    retained: int = 0
+    closed: bool = False
+
+
+@dataclass(slots=True)
+class _RequestState:
+    total: int = 0
+    by_actor: dict[str, int] = field(default_factory=dict)
+
+
+_REQUESTS = _RequestState()
+
+
+_LEASE: ContextVar[_Lease | None] = ContextVar("report_document_lease", default=None)
 
 
 class PdfWorker(Protocol):
     async def render(self, document: ReportDocument) -> bytes: ...
 
 
-async def settle[T](task: asyncio.Task[T]) -> T:
-    """Do not release admission while cancellation leaves a renderer running."""
-    cancelled = False
+def _release_request(lease: _Lease) -> None:
+    _REQUESTS.total -= 1
+    remaining = _REQUESTS.by_actor[lease.actor] - 1
+    if remaining:
+        _REQUESTS.by_actor[lease.actor] = remaining
+    else:
+        _REQUESTS.by_actor.pop(lease.actor, None)
+
+
+@asynccontextmanager
+async def document_request(actor: str, *, deadline_seconds: float = 120.0) -> AsyncIterator[None]:
+    """Bound one caller's public document work and retain ownership after timeout."""
+    if _REQUESTS.total >= 2 or _REQUESTS.by_actor.get(actor, 0) >= 1:
+        raise RateLimited(5)
+    _REQUESTS.total += 1
+    _REQUESTS.by_actor[actor] = _REQUESTS.by_actor.get(actor, 0) + 1
+    lease = _Lease(actor)
+    token = _LEASE.set(lease)
     try:
-        while True:
-            try:
-                return await asyncio.shield(task)
-            except asyncio.CancelledError:
-                if task.cancelled():
-                    raise
-                cancelled = True
+        async with asyncio.timeout(deadline_seconds):
+            yield
     finally:
-        if cancelled:
-            raise asyncio.CancelledError
+        _LEASE.reset(token)
+        lease.closed = True
+        if lease.retained == 0:
+            _release_request(lease)
+
+
+async def _retire[T](task: asyncio.Task[T], lease: _Lease | None) -> None:
+    release_slot = True
+    try:
+        await task
+    except RenderCleanupFailed:
+        release_slot = False
+    except Exception:
+        release_slot = True
+    finally:
+        if release_slot:
+            _SLOTS.release()
+        if lease is not None:
+            lease.retained -= 1
+            if lease.closed and lease.retained == 0:
+                _release_request(lease)
+
+
+def _retire_later[T](task: asyncio.Task[T], lease: _Lease | None) -> None:
+    if lease is not None:
+        lease.retained += 1
+    retired = asyncio.create_task(_retire(task, lease))
+    _RETIRED.add(retired)
+    retired.add_done_callback(_RETIRED.discard)
 
 
 async def run_bounded_thread[T](operation: Callable[[], T], *, wait_for_slot: bool = False) -> T:
     """Run CPU-heavy document work off-loop within shared export admission."""
     if wait_for_slot:
-        while not _SLOTS.acquire(blocking=False):
-            await asyncio.sleep(0.05)
+        async with asyncio.timeout(5):
+            while not _SLOTS.acquire(blocking=False):
+                await asyncio.sleep(0.05)
     elif not _SLOTS.acquire(blocking=False):
         raise RateLimited(5)
+    task = asyncio.create_task(asyncio.to_thread(operation))
+    release = True
     try:
-        return await settle(asyncio.create_task(asyncio.to_thread(operation)))
+        return await asyncio.shield(task)
+    except asyncio.CancelledError:
+        _retire_later(task, _LEASE.get())
+        release = False
+        raise
+    except RenderCleanupFailed:
+        release = False
+        raise
     finally:
-        _SLOTS.release()
+        if release:
+            _SLOTS.release()
 
 
 class AsyncReportDocumentRenderer:
@@ -65,9 +136,13 @@ class AsyncReportDocumentRenderer:
             ):
                 # The worker owns cancellation, deadline and descendant cleanup.
                 return await self.worker.render(document)
-            return await settle(
-                asyncio.create_task(asyncio.to_thread(self.legacy.render, document, format))
-            )
+            task = asyncio.create_task(asyncio.to_thread(self.legacy.render, document, format))
+            try:
+                return await asyncio.shield(task)
+            except asyncio.CancelledError:
+                _retire_later(task, _LEASE.get())
+                release = False
+                raise
         except RenderCleanupFailed:
             release = False
             raise

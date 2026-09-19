@@ -111,6 +111,29 @@ async def test_failures_and_bad_input_yield_no_archive() -> None:
     assert await NullArchiver().archive("https://example.com/a", PUBLISHED) is None
 
 
+async def test_availability_redirects_are_host_allowlisted_and_bodies_are_bounded() -> None:
+    calls: list[str] = []
+
+    def off_host(request: httpx.Request) -> httpx.Response:
+        calls.append(str(request.url))
+        return httpx.Response(302, headers={"Location": "https://127.0.0.1/private"})
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(off_host))
+    archiver = WaybackArchiver("ase-tests", client=client, pause_seconds=0)
+    assert await archiver._available("https://example.com/a", since=PUBLISHED) is None
+    assert len(calls) == 1
+    await archiver.aclose()
+
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda _request: httpx.Response(200, content=b"{" + b" " * (256 * 1024) + b"}")
+        )
+    )
+    archiver = WaybackArchiver("ase-tests", client=client, pause_seconds=0)
+    assert await archiver._available("https://example.com/a", since=PUBLISHED) is None
+    await archiver.aclose()
+
+
 class RecordingArchiver:
     def __init__(self) -> None:
         self.urls: list[str] = []

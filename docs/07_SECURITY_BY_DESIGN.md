@@ -39,8 +39,9 @@ exposure or multi-worker topology needs a new review.
 - JWTs require `sid` (family id) and `sv` (security version). Old access JWTs
   without them are refused after upgrade. Existing valid refresh cookies may
   rotate into the new token format; expired/revoked cookies require sign-in.
-- Login and account-recovery endpoints have bounded rate limits and account
-  lockout. Password activation/reset tokens are hashed, time-limited and single
+- Login and account-recovery endpoints have bounded rate limits. Invalid passwords
+  and factors never create a persistent account lock that another person can trigger.
+  Password activation/reset tokens are hashed, time-limited and single
   use. Forgotten-password requests issue and commit a reset token under the
   account lock before the generic response, so a concurrent password change
   revokes it in order. Response timing has a common minimum, and optional SMTP
@@ -209,15 +210,24 @@ exposure or multi-worker topology needs a new review.
   and blob workers are specifically allowed for MapLibre. API responses have
   their own restrictive headers. HSTS remains disabled for the default local
   certificate setup and must be verified for an actual public deployment.
-- The API container runs as a non-root user with a read-only root filesystem,
-  temporary `/tmp` and `no-new-privileges`. Do not generalise these settings to
-  every service: PostgreSQL and Caddy have their own image/volume requirements.
+- The API and Caddy containers run as uid 10001 with read-only root filesystems,
+  temporary `/tmp` and `no-new-privileges`; Caddy drops the Linux capability set
+  and adds back only `NET_BIND_SERVICE` for ports 80 and 443. Their writable data and
+  configuration locations are explicit volumes owned by that uid. PostgreSQL keeps
+  its image-defined runtime user and storage requirements.
+- Production document and media parsing runs in a separate networkless container,
+  reached through a read-only Unix-socket mount. Its root is read-only, `/tmp` is
+  capped at 128 MiB, and Docker limits the service to 768 MiB and 64 processes.
+  Parser crashes and cgroup enforcement therefore do not consume the API container.
 - The live store enforces category/item limits and an estimated memory budget.
   Request body limits, stream admission, model timeouts and bounded search reduce
   resource exposure. Process memory still requires representative-load testing.
 - [Backup/restore scripts](BACKUP_RESTORE.md) create consistent SQLite snapshots
   or Compose PostgreSQL dumps, verify a strict hash manifest, refuse unsafe
-  paths, and restore only into new destinations. Actual `.env` inclusion is
+  paths, and restore only into new destinations. PostgreSQL bundles carry a
+  manifest HMAC under an independently stored operator key. Restore authenticates
+  the exact manifest bytes it parses and refuses unauthenticated PostgreSQL bundles.
+  Actual `.env` inclusion is
   explicit. No nightly schedule, automatic pruning or destructive restore is
   installed. A synthetic SQLite/PostgreSQL 17 drill through migration `0011`
   verified the 19 then-existing tables and recovery of encrypted values. It is
@@ -245,16 +255,15 @@ findings, fixes and remaining evidence. The principal operational gates are:
    real `.env` was changed during development verification. Review the migration's
    legacy conflict audit entries and repair incompatible links before using
    affected collection workflows.
-3. Account lockout can be used to deny access to a known account. This remains a
-   documented LAN trade-off, not an acceptable default for unreviewed public
-   exposure. Host access also gives access to `.env`, volumes and recovery tools.
+3. Host access gives access to `.env`, volumes and recovery tools. Keep the host,
+   backup authentication key and off-host copies under separate access controls.
 4. Complete applicable ASVS level 2 requirements and an authenticated baseline
    scan of an owned local/staging deployment. Verify actual TLS, cookies, CSP,
    CORS, body limits, proxy trust and HSTS. No production scan is implied.
 5. Complete independent outbound-adapter checks and retain final dependency,
    secret, SAST and image scan evidence. A synthetic PostgreSQL recovery drill
    passed across all 19 migrated tables; repeat it with the operator's backups.
-   Hashes detect damage; they do not authenticate a replaced backup manifest.
+   Repeat it using the authenticated PostgreSQL bundle flow and the operator's key.
 6. Exercise a configured real model and representative load. Define operational
    log/audit/usage retention, storage permissions, backup scheduling and alert
    handling for the deployed host. These are not installed by the scripts.

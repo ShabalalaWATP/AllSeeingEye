@@ -99,6 +99,24 @@ def test_control_archive_must_hold_one_bounded_csv(tmp_path: Path) -> None:
         ukraine_control_import._control_from_zip(path)
 
 
+def test_control_reader_counts_actual_inflated_bytes() -> None:
+    source = io.BytesIO(b"12345")
+    reader = ukraine_control_import._BoundedReader(source, 4)
+    with pytest.raises(ValueError, match="inflated byte limit"):
+        reader.read()
+
+
+def test_control_reader_retains_only_two_runs_per_place() -> None:
+    rows = [
+        "geonameid,date,status_wiki,status_boost,status_dsm,status_isw,status",
+        *(f"1,202609{day:02d},UA,UA,UA,UA,{('UA' if day % 2 else 'RU')}" for day in range(1, 10)),
+    ]
+    places, latest = ukraine_control_import.read_control(io.StringIO("\n".join(rows)))
+    assert latest == "20260909"
+    assert len(places[1].runs) == 2
+    assert [status.value for _, status in places[1].runs] == ["ru", "ua"]
+
+
 def test_oblast_import_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     ring = [[30, 50], [31, 50], [31, 51], [30, 51], [30, 50]]
     collection = {

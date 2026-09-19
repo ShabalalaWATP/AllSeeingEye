@@ -13,6 +13,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -47,6 +48,13 @@ class ReportJobRow(Base):
         ),
         Index("ix_report_jobs_status_created", "status", "created_at", "id"),
         Index("ix_report_jobs_owner_created", "owner_id", "created_at"),
+        Index(
+            "uq_report_jobs_running_owner",
+            "owner_id",
+            unique=True,
+            sqlite_where=text("status = 'running'"),
+            postgresql_where=text("status = 'running'"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)

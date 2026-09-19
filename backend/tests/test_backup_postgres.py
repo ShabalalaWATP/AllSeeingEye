@@ -28,6 +28,8 @@ def commands(monkeypatch: pytest.MonkeyPatch) -> Mock:
 def test_compose_backup_and_new_database_restore_commands(tmp_path: Path, commands: Mock) -> None:
     root, output, recovered = tmp_path / "project", tmp_path / "backup", tmp_path / "recovered"
     create_project(root)
+    key = tmp_path / "backup.key"
+    key.write_bytes(b"k" * 32)
     compose = root / "docker-compose.yml"
     assert (
         backup.main(
@@ -39,6 +41,8 @@ def test_compose_backup_and_new_database_restore_commands(tmp_path: Path, comman
                 str(root),
                 "--compose-file",
                 str(compose),
+                "--authentication-key-file",
+                str(key),
             ]
         )
         == 0
@@ -57,6 +61,8 @@ def test_compose_backup_and_new_database_restore_commands(tmp_path: Path, comman
                 "ase_drill",
                 "--compose-file",
                 str(compose),
+                "--authentication-key-file",
+                str(key),
             ]
         )
         == 0
@@ -171,6 +177,8 @@ def test_errors_are_redacted(
 ) -> None:
     root, output = tmp_path / "project", tmp_path / "backup"
     create_project(root)
+    key = tmp_path / "backup.key"
+    key.write_bytes(b"k" * 32)
     monkeypatch.setattr(postgres.subprocess, "run", Mock(side_effect=error))
     assert (
         backup.main(
@@ -182,6 +190,8 @@ def test_errors_are_redacted(
                 str(root),
                 "--compose-file",
                 str(root / "docker-compose.yml"),
+                "--authentication-key-file",
+                str(key),
             ]
         )
         == 1
@@ -217,6 +227,8 @@ def test_selected_compose_configuration_is_preserved(tmp_path: Path, commands: M
     create_project(root)
     custom = tmp_path / "custom-compose.yml"
     custom.write_text("services: {db: {image: example}}", encoding="utf-8")
+    key = tmp_path / "backup.key"
+    key.write_bytes(b"k" * 32)
     assert (
         backup.main(
             [
@@ -227,6 +239,8 @@ def test_selected_compose_configuration_is_preserved(tmp_path: Path, commands: M
                 str(root),
                 "--compose-file",
                 str(custom),
+                "--authentication-key-file",
+                str(key),
             ]
         )
         == 0
@@ -242,3 +256,80 @@ def test_restore_requires_explicit_postgres_target(tmp_path: Path, commands: Moc
     assert restore.main([str(output), "--output", str(recovered)]) == 1
     assert not recovered.exists()
     commands.assert_not_called()
+
+
+def test_postgres_restore_rejects_rehashed_tampering_before_any_command(
+    tmp_path: Path, commands: Mock
+) -> None:
+    output = bundle.new_directory(tmp_path / "backup")
+    dump = output / "database.dump"
+    dump.write_bytes(b"PGDMP-original")
+    bundle.write_manifest(output, "postgres", include_secrets=False)
+    key = tmp_path / "backup.key"
+    key.write_bytes(b"k" * 32)
+    bundle.write_manifest_signature(output, bundle.authentication_key(key))
+    original_signature = (output / bundle.SIGNATURE_FILE).read_bytes()
+
+    dump.write_bytes(b"PGDMP-attacker-controlled")
+    (output / "manifest.json").unlink()
+    (output / bundle.SIGNATURE_FILE).unlink()
+    bundle.write_manifest(output, "postgres", include_secrets=False)
+    (output / bundle.SIGNATURE_FILE).write_bytes(original_signature)
+
+    recovered = tmp_path / "recovered"
+    assert (
+        restore.main(
+            [
+                str(output),
+                "--output",
+                str(recovered),
+                "--target-database",
+                "ase_drill",
+                "--authentication-key-file",
+                str(key),
+            ]
+        )
+        == 1
+    )
+    assert not recovered.exists()
+    commands.assert_not_called()
+
+
+def test_postgres_restore_authenticates_the_exact_manifest_bytes_once(
+    tmp_path: Path, commands: Mock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = bundle.new_directory(tmp_path / "backup")
+    (output / "database.dump").write_bytes(b"PGDMP-original")
+    bundle.write_manifest(output, "postgres", include_secrets=False)
+    key = tmp_path / "backup.key"
+    key.write_bytes(b"k" * 32)
+    bundle.write_manifest_signature(output, bundle.authentication_key(key))
+    manifest_path = output / "manifest.json"
+    original_open = Path.open
+    reads = 0
+
+    def counted_open(path: Path, *args: object, **kwargs: object):
+        nonlocal reads
+        if path == manifest_path and args and args[0] == "rb":
+            reads += 1
+            if reads > 1:
+                raise AssertionError("manifest bytes were read again after authentication")
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", counted_open)
+    recovered = tmp_path / "recovered"
+    assert (
+        restore.main(
+            [
+                str(output),
+                "--output",
+                str(recovered),
+                "--target-database",
+                "ase_drill",
+                "--authentication-key-file",
+                str(key),
+            ]
+        )
+        == 0
+    )
+    assert reads == 1

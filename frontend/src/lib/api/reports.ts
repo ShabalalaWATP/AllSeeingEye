@@ -326,6 +326,7 @@ export function generateReport(
       method: 'POST',
       body: request,
       schema: reportSchema,
+      retryAfterRefresh: false,
       ...(options.runId ? { headers: { 'X-Research-Run-ID': options.runId } } : {}),
       ...(options.signal ? { signal: options.signal } : {}),
     }),
@@ -345,6 +346,7 @@ export function regenerateReport(id: string): Promise<Report> {
     apiCall(`/api/reports/${encodeURIComponent(id)}/versions`, {
       method: 'POST',
       schema: reportSchema,
+      retryAfterRefresh: false,
     }),
   );
 }

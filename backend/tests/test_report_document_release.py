@@ -152,3 +152,34 @@ async def test_markdown_release_refuses_committed_concurrent_membership_removal(
     assert response.status_code == 404
     assert "What we judge" not in response.text
     assert "text/markdown" not in response.headers.get("content-type", "")
+
+
+async def test_json_release_refuses_membership_removed_after_projection(
+    client: AsyncClient,
+    container: Container,
+    user: User,
+    admin: User,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    team = await team_for(container, admin, user)
+    record, version = document_records(admin.id)
+    record.team_id = team.id
+    async with container.session_factory() as session:
+        await container.repositories(session).reports.add(record, version)
+        await session.commit()
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    run = reports_router.run_bounded_thread
+    projected = asyncio.Event()
+
+    async def project_then_remove(operation, **kwargs):
+        result = await run(operation, **kwargs)
+        async with team_service(container) as service:
+            await service.remove_member(admin, team.id, user.id, CONTEXT)
+        projected.set()
+        return result
+
+    monkeypatch.setattr(reports_router, "run_bounded_thread", project_then_remove)
+    response = await client.get(f"/api/reports/{record.id}", headers=bearer(token))
+    assert projected.is_set()
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_found"

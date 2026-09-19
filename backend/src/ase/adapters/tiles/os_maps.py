@@ -6,15 +6,21 @@ least-recently-used cache keeps repeated views of the same area from spending th
 
 from __future__ import annotations
 
+import asyncio
 from collections import OrderedDict
 
 import httpx
 
+from ase.adapters.feeds.secret_urls import protect_http_logs
+from ase.application.ports import RateLimiter
 from ase.application.ports.tiles import Tile, TileUpstreamError
 
 UPSTREAM = "https://api.os.uk/maps/raster/v1/zxy/{layer}/{z}/{x}/{y}.png"
 DEFAULT_CACHE_BYTES = 64 * 1024 * 1024
 DEFAULT_TIMEOUT_SECONDS = 15.0
+MAX_TILE_BYTES = 1024 * 1024
+GLOBAL_REQUESTS_PER_MINUTE = 540
+MAX_CONCURRENT_REQUESTS = 8
 
 
 class TileCache:
@@ -58,10 +64,15 @@ class OsMapsTileProvider:
         *,
         client: httpx.AsyncClient | None = None,
         cache: TileCache | None = None,
+        limiter: RateLimiter | None = None,
     ) -> None:
         self._key = key
         self._client = client or httpx.AsyncClient(timeout=httpx.Timeout(DEFAULT_TIMEOUT_SECONDS))
         self._cache = cache or TileCache()
+        self._limiter = limiter
+        self._admission = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
+        self._inflight_lock = asyncio.Lock()
+        self._inflight: dict[str, asyncio.Task[Tile]] = {}
 
     @property
     def configured(self) -> bool:
@@ -72,19 +83,79 @@ class OsMapsTileProvider:
         cached = self._cache.get(cache_key)
         if cached is not None:
             return cached
+        async with self._inflight_lock:
+            cached = self._cache.get(cache_key)
+            if cached is not None:
+                return cached
+            task = self._inflight.get(cache_key)
+            if task is None:
+                task = asyncio.create_task(self._fetch_uncached(cache_key, layer, z, x, y))
+                self._inflight[cache_key] = task
+        return await asyncio.shield(task)
+
+    async def _fetch_uncached(self, cache_key: str, layer: str, z: int, x: int, y: int) -> Tile:
         url = UPSTREAM.format(layer=layer, z=z, x=x, y=y)
         try:
-            response = await self._client.get(url, params={"key": self._key})
-        except httpx.HTTPError as exc:
-            raise TileUpstreamError(502) from exc
-        if response.status_code != 200:
-            raise TileUpstreamError(response.status_code)
-        tile = Tile(response.content, response.headers.get("content-type", "image/png"))
-        self._cache.put(cache_key, tile)
-        return tile
+            if self._limiter is not None:
+                retry = self._limiter.hit("os-maps:global", GLOBAL_REQUESTS_PER_MINUTE, 60)
+                if retry is not None:
+                    raise TileUpstreamError(429)
+            with protect_http_logs():
+                async with (
+                    asyncio.timeout(DEFAULT_TIMEOUT_SECONDS),
+                    self._admission,
+                    self._client.stream(
+                        "GET",
+                        url,
+                        params={"key": self._key},
+                        headers={"Accept-Encoding": "identity"},
+                        follow_redirects=False,
+                    ) as response,
+                ):
+                    if response.status_code != 200:
+                        raise TileUpstreamError(response.status_code)
+                    content = await _bounded_tile(response)
+                    content_type = response.headers.get("content-type", "image/png")
+            tile = Tile(content, content_type)
+            self._cache.put(cache_key, tile)
+            return tile
+        except TileUpstreamError:
+            raise
+        except (TimeoutError, httpx.HTTPError):
+            raise TileUpstreamError(502) from None
+        finally:
+            async with self._inflight_lock:
+                if self._inflight.get(cache_key) is asyncio.current_task():
+                    self._inflight.pop(cache_key, None)
 
     async def aclose(self) -> None:
         await self._client.aclose()
+
+
+async def _bounded_tile(response: httpx.Response) -> bytes:
+    encoding = response.headers.get("content-encoding", "identity").casefold()
+    if encoding not in ("", "identity"):
+        raise TileUpstreamError(502)
+    raw_length = response.headers.get("content-length")
+    if raw_length is not None:
+        try:
+            if int(raw_length) > MAX_TILE_BYTES:
+                raise TileUpstreamError(502)
+        except ValueError:
+            raise TileUpstreamError(502) from None
+    content = bytearray()
+    if response.is_stream_consumed:
+        content.extend(response.content)
+    else:
+        async for chunk in response.aiter_raw():
+            content.extend(chunk)
+            if len(content) > MAX_TILE_BYTES:
+                raise TileUpstreamError(502)
+    if len(content) > MAX_TILE_BYTES:
+        raise TileUpstreamError(502)
+    if not content.startswith(b"\x89PNG"):
+        raise TileUpstreamError(502)
+    return bytes(content)
 
 
 class NullTileProvider:

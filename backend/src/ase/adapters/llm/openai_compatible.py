@@ -25,6 +25,7 @@ from ase.adapters.llm.openai_responses import (
     uses_responses,
 )
 from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
+from ase.domain.ai_usage import token_count
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
@@ -145,8 +146,8 @@ def parse_completion(data: Any, fallback_model: str, latency_ms: float) -> LlmRe
         content=content,
         model=model_id(data.get("model") or fallback_model),
         latency_ms=latency_ms,
-        prompt_tokens=prompt if isinstance(prompt, int) else None,
-        completion_tokens=completion if isinstance(completion, int) else None,
+        prompt_tokens=token_count(prompt),
+        completion_tokens=token_count(completion),
     )
 
 

@@ -1,19 +1,17 @@
 """UTC-month model allowances use saved reservations, not currency estimates."""
 
-import asyncio
-from copy import deepcopy
 from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 
 from ase.adapters.persistence.llm import SqlLlmUsageRepository
 from ase.adapters.persistence.monthly_report_usage import (
     monthly_usage,
     require_admission_room,
-    reserve_new_call,
 )
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
@@ -159,7 +157,7 @@ async def test_one_off_and_subscription_calls_share_owner_pool(container, user) 
             )
 
 
-async def test_two_lease_fenced_jobs_cannot_reserve_one_owner_slot(container, user) -> None:
+async def test_owner_fairness_prevents_two_lease_fenced_jobs(container, user) -> None:
     now = container.clock.now()
     values = [
         job(
@@ -176,36 +174,9 @@ async def test_two_lease_fenced_jobs_cannot_reserve_one_owner_slot(container, us
     ]
     async with container.session_factory() as session:
         repository = SqlReportJobRepository(session)
-        for value in values:
-            await repository.add(value)
-        await session.commit()
-    policy = MonthlyBudgetPolicy(owner=MonthlyLimit(1, 100))
-
-    async def reserve(value):
-        async with container.source_admission.guard(), container.session_factory() as session:
-            repository = SqlReportJobRepository(session)
-            current = await repository.get(value.id)
-            assert current is not None and current.lease_token is not None
-            payload = deepcopy(current.payload)
-            payload["calls"].append(_in_flight_call())
-            await reserve_new_call(session, current, payload, now, policy)
-            saved = await repository.checkpoint(
-                value.id,
-                expected_revision=current.revision,
-                lease_token=current.lease_token,
-                payload=payload,
-                stage="drafting",
-                now=now,
-            )
-            assert saved is not None
-            await session.commit()
-
-    outcomes = await asyncio.gather(*(reserve(value) for value in values), return_exceptions=True)
-    assert sum(result is None for result in outcomes) == 1
-    assert sum(isinstance(result, MonthlyBudgetExhausted) for result in outcomes) == 1
-    async with container.session_factory() as session:
-        owner, _ = await monthly_usage(session, user.id, None, now)
-    assert owner == MonthlyUsage(1, 100)
+        await repository.add(values[0])
+        with pytest.raises(IntegrityError):
+            await repository.add(values[1])
 
 
 async def test_paid_one_off_discard_retains_settled_usage_and_uncertain_reservation(

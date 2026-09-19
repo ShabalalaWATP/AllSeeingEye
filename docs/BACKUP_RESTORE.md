@@ -77,10 +77,20 @@ requirements before starting it.
 
 ## PostgreSQL Compose backup and recovery
 
+Create a random authentication key once and keep it outside the repository, `.env`
+and backup tree. Store a separate protected recovery copy:
+
 ```powershell
-python scripts/backup.py postgres --output data/backups/postgres-20260905-180000
-python scripts/restore.py data/backups/postgres-20260905-180000 --verify-only
-python scripts/restore.py data/backups/postgres-20260905-180000 --output data/pg-recovery-20260905-180000 --target-database ase_restore_20260905
+python -c "import secrets; open(r'C:\\secure\\ase-backup-auth.key', 'wb').write(secrets.token_bytes(32))"
+```
+
+The key file must contain between 32 and 4,096 bytes. Do not regenerate it for each
+backup, because every authenticated restore needs the same key used at backup time.
+
+```powershell
+python scripts/backup.py postgres --authentication-key-file C:\secure\ase-backup-auth.key --output data/backups/postgres-20260905-180000
+python scripts/restore.py data/backups/postgres-20260905-180000 --authentication-key-file C:\secure\ase-backup-auth.key --verify-only
+python scripts/restore.py data/backups/postgres-20260905-180000 --authentication-key-file C:\secure\ase-backup-auth.key --output data/pg-recovery-20260905-180000 --target-database ase_restore_20260905
 ```
 
 The final command creates a **new** database in the Compose server. It leaves the
@@ -111,7 +121,10 @@ running database and is separate from the offline tests described below.
 ## Verification and retention
 
 `manifest.json` records the format, database type, presence of `.env`, each
-member's size and SHA-256 digest. Verification has a 2 GiB total limit, a 1 MiB
+member's size and SHA-256 digest. PostgreSQL backup also writes `manifest.hmac`,
+an HMAC-SHA256 over the exact manifest bytes. An active PostgreSQL restore requires
+the independent key and verifies the HMAC before copying files or invoking Docker.
+Verification has a 2 GiB total limit, a 1 MiB
 limit per configuration file and a 64 KiB manifest limit. Only known file names
 are accepted. Symbolic links, junctions, traversal paths, duplicate members,
 unexpected directories and unlisted files are refused. The directory format
@@ -119,11 +132,11 @@ requires no archive extraction or decompression. A failed backup can leave
 partial output; only an exit status of zero and a passing `--verify-only` check
 constitute a usable bundle.
 
-Hashes detect accidental damage and mismatched files. They are not a signature:
-someone able to replace both a file and its manifest can change a backup. Restore
-only your own trusted bundles. Offline PostgreSQL verification checks the hashes
-and custom dump header; full restore compatibility is checked with the database
-tools during an actual drill.
+Hashes detect accidental damage and mismatched files. The PostgreSQL HMAC also
+detects a replaced file plus a rewritten manifest unless the attacker has the
+independent authentication key. A PostgreSQL `--verify-only` command without a key
+performs integrity checks only and says so; it does not authenticate the bundle.
+Full restore compatibility is checked with the database tools during an actual drill.
 
 These scripts do not install a schedule, prune backups or remove old data. For a
 nightly operator-scheduled run, use a distinct UTC timestamp in the output name,
@@ -152,11 +165,11 @@ python scripts/restore.py --help
 The tests use pytest temporary directories and never read or restore `data/ase.db`.
 The normal full backend suite also includes this drill.
 
-An additional real recovery drill passed on 6 September 2026 using fresh SQLite
+An earlier real recovery drill passed on 6 September 2026 using fresh SQLite
 and a separate `postgres:17-alpine` Compose project, bound only to
 `127.0.0.1:15440` with tmpfs storage and synthetic trust-authenticated data. Both
 databases migrated to `0001`, retained a seeded account through `0001` to head
-`0011`, and then exercised the actual `backup.py`, `restore.py --verify-only` and
+`0011`, and then exercised the then-current `backup.py`, `restore.py --verify-only` and
 fresh-target restore commands. Logical hashes matched across all 19 tables
 (including Alembic state), before/after recovery and between SQLite/PostgreSQL.
 The checks read both report versions and their frozen evidence, decrypted the
@@ -167,4 +180,4 @@ container and its network were verified and removed; no application service,
 user database or user `.env` was read or changed. Local evidence is retained in
 the ignored `data/phase6-backup-qa/run-20260906-15440/results.json`. This verifies
 a disposable PostgreSQL 17 recovery, not the deployed PostgreSQL 16/PostGIS stack,
-its storage permissions or an observed CI run.
+its storage permissions, the later manifest-HMAC requirement or an observed CI run.
