@@ -22,6 +22,7 @@ from typing import Any
 from ase.adapters.feeds.adsb import adsb_spec, aircraft_event, records
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, FeedHttpStatusError, NotModified
+from ase.adapters.feeds.http_contracts import FeedRateLimitedError
 from ase.application.ports import Clock
 from ase.domain.events import Event, Reliability
 
@@ -96,18 +97,38 @@ class AdsbSquawkConnector:
         self._http = http
         self._clock = clock
         self._classifications = classifications or AircraftClassificationCache()
+        self._warning: str | None = None
+        self._start_squawk = 0
+
+    @property
+    def warning(self) -> str | None:
+        return self._warning
 
     async def fetch(self) -> list[Event]:
+        self._warning = None
         now = self._clock.now()
         events: list[Event] = []
         seen: set[str] = set()
-        for code, (meaning, severity) in SQUAWKS.items():
+        successful = 0
+        start = self._start_squawk
+        codes = tuple(SQUAWKS.items())
+        for offset, (code, (meaning, severity)) in enumerate(codes[start:] + codes[:start]):
+            self._start_squawk = (start + offset + 1) % len(codes)
             try:
                 data = await self._http.get_json(
                     f"https://api.adsb.lol/v2/sqk/{code}", conditional=False
                 )
+            except FeedRateLimitedError as exc:
+                self._warning = (
+                    f"Partial emergency coverage: {successful}/{len(SQUAWKS)} queries retrieved; "
+                    "HTTP 429 paused the remaining queries."
+                )
+                if not successful:
+                    raise FeedRateLimitedError(self.spec.url, exc.retry_after) from None
+                break
             except (FeedFetchError, NotModified):
                 continue
+            successful += 1
             for item in records(data):
                 event = aircraft_event(
                     self.spec,
@@ -172,6 +193,7 @@ class AdsbAreaConnector:
             areas = areas[: self._max_areas_per_poll]
         deadline = asyncio.get_running_loop().time() + AREA_FETCH_BUDGET_SECONDS
         successful = attempted = 0
+        limited: FeedRateLimitedError | None = None
         statuses: Counter[int] = Counter()
         for offset, area in enumerate(areas):
             if offset and self._request_interval:
@@ -189,6 +211,10 @@ class AdsbAreaConnector:
             try:
                 async with asyncio.timeout(min(AREA_REQUEST_TIMEOUT_SECONDS, remaining)):
                     data = await self._http.get_json(area.url, conditional=False)
+            except FeedRateLimitedError as exc:
+                _record_http_status(statuses, 429)
+                limited = exc
+                break
             except FeedHttpStatusError as exc:
                 # Retain only validated numeric codes, never exception URLs or bodies.
                 _record_http_status(statuses, exc.status_code)
@@ -216,11 +242,23 @@ class AdsbAreaConnector:
         )
         if attempted == len(self._areas) and areas:
             self._start_area = (start + 1) % len(areas)
-        if attempted and not successful:
-            raise FeedFetchError(
-                "ADS-B regional queries returned no successful responses. " + diagnostics
-            )
+        _raise_if_no_area_responses(attempted, successful, diagnostics, self.spec.url, limited)
         return list(events.values())
+
+
+def _raise_if_no_area_responses(
+    attempted: int,
+    successful: int,
+    diagnostics: str,
+    url: str,
+    limited: FeedRateLimitedError | None,
+) -> None:
+    if attempted and not successful:
+        if limited is not None:
+            raise FeedRateLimitedError(url, limited.retry_after) from None
+        raise FeedFetchError(
+            "ADS-B regional queries returned no successful responses. " + diagnostics
+        )
 
 
 def _area_diagnostics(

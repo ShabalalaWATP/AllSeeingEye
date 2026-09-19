@@ -1,9 +1,7 @@
-"""Outbound HTTP for connectors: size caps, timeouts, conditional requests, no private hosts.
+"""Bounded feed HTTP with shared host throttling and conditional requests.
 
-The SSRF guard resolves the hostname itself, checks every address, and then connects to
-the address it checked (with the original host name in the Host header and the TLS
-handshake), so a hostile DNS server cannot answer the check with a public address and
-the connection with a private one.
+SSRF checks resolve every address, then pin the connection to a checked public address
+while retaining the original Host header and TLS name, closing DNS rebinding gaps.
 """
 
 from __future__ import annotations
@@ -13,7 +11,6 @@ import ipaddress
 import json
 import socket
 from collections import OrderedDict
-from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -25,7 +22,9 @@ from ase.adapters.feeds.http_contracts import (
     FeedCredential,
     FeedFetchError,
     FeedHttpStatusError,
+    FeedRateLimitedError,
     FeedTimeoutError,
+    FeedValidators,
     NotModified,
     classify_fetch_error,
     safe_header_token,
@@ -54,12 +53,6 @@ _TRANSLATION_PREFIXES = (
     ipaddress.IPv6Network("64:ff9b::/96"),
     ipaddress.IPv6Network("64:ff9b:1::/48"),
 )
-
-
-@dataclass(slots=True)
-class _Validators:
-    etag: str | None = None
-    last_modified: str | None = None
 
 
 def is_public_address(host: str) -> bool:
@@ -152,7 +145,7 @@ class FeedHttpClient:
         if total_timeout_seconds <= 0:
             raise ValueError("The total feed timeout must be positive.")
         self._total_timeout_seconds = total_timeout_seconds
-        self._validators: OrderedDict[str, _Validators] = OrderedDict()
+        self._validators: OrderedDict[str, FeedValidators] = OrderedDict()
         self._client = client or httpx.AsyncClient(
             timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
         )
@@ -254,7 +247,7 @@ class FeedHttpClient:
             if conditional:
                 self._record_validators(
                     url,
-                    _Validators(
+                    FeedValidators(
                         etag=response.headers.get("etag"),
                         last_modified=response.headers.get("last-modified"),
                     ),
@@ -262,7 +255,7 @@ class FeedHttpClient:
             return body
         raise FeedFetchError("Too many redirects")
 
-    def _record_validators(self, url: str, validators: _Validators) -> None:
+    def _record_validators(self, url: str, validators: FeedValidators) -> None:
         """Inside a scheduler poll, validators only land once the whole poll is published."""
         scope = active_poll_scope()
         if scope is None:
@@ -270,14 +263,17 @@ class FeedHttpClient:
         else:
             scope.stage((id(self), url), lambda: self._store_validators(url, validators))
 
-    def _store_validators(self, url: str, validators: _Validators) -> None:
+    def _store_validators(self, url: str, validators: FeedValidators) -> None:
         self._validators[url] = validators
         self._validators.move_to_end(url)
         while len(self._validators) > MAX_VALIDATORS:
             self._validators.popitem(last=False)
 
     async def _status_error(self, response: httpx.Response, url: str) -> FeedFetchError:
-        return status_error(response.status_code, url, response.headers)
+        error = status_error(response.status_code, url, response.headers)
+        if isinstance(error, FeedRateLimitedError):
+            self._pacer.rate_limited(url, error.retry_after)
+        return error
 
     async def get_json(
         self,

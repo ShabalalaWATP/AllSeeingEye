@@ -1,6 +1,7 @@
 """Slow regional providers cannot discard successful traffic or starve later areas."""
 
 import asyncio
+from datetime import timedelta
 from unittest.mock import AsyncMock
 
 import pytest
@@ -8,6 +9,7 @@ import pytest
 from ase.adapters.feeds.adsb_global import AdsbGlobalConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, WatchArea
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpStatusError
+from ase.adapters.feeds.http_contracts import FeedRateLimitedError
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector
 from feeds_helpers import NOW, FakeClock
 
@@ -111,3 +113,33 @@ async def test_global_warning_retains_partial_http_failure_counts():
     assert "1 failed queries" in connector.warning
     assert "429 (1)" in connector.warning
     assert "secret" not in connector.warning
+
+
+async def test_throttled_batch_retains_successes_and_resumes_after_last_attempt():
+    http = AsyncMock()
+    http.get_json.side_effect = [
+        {"ac": [{"hex": "abc123", "lat": 1, "lon": 2, "seen_pos": 1}]},
+        FeedRateLimitedError(AREAS[1].url, timedelta(seconds=90)),
+        {"ac": []},
+        {"ac": []},
+        {"ac": []},
+        {"ac": []},
+    ]
+    connector = AdsbAreaConnector(http, FakeClock(NOW), AREAS)
+    assert len(await connector.fetch()) == 1
+    assert http.get_json.await_count == 2
+    assert "1/4 areas retrieved" in connector.warning
+    assert "2 unattempted" in connector.warning
+    assert "429 (1)" in connector.warning
+    await connector.fetch()
+    assert http.get_json.await_args_list[2].args == (AREAS[2].url,)
+
+
+async def test_entirely_throttled_batch_preserves_scheduler_backoff():
+    http = AsyncMock()
+    http.get_json.side_effect = FeedRateLimitedError(AREAS[0].url, timedelta(seconds=90))
+    connector = AdsbAreaConnector(http, FakeClock(NOW), AREAS)
+    with pytest.raises(FeedRateLimitedError) as caught:
+        await connector.fetch()
+    assert caught.value.retry_after == timedelta(seconds=90)
+    assert http.get_json.await_count == 1

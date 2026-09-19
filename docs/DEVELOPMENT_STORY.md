@@ -5286,3 +5286,16 @@ The final bypass review moved parsing into its own networkless Compose service w
 memory, process and temporary-storage limits, enforced one running report per owner in
 the database, made restore authenticate the exact manifest bytes it parses, and reduced
 VIINA history retention to the two runs the snapshot actually consumes.
+
+Later on 19 September, a deployed-source investigation traced the apparent backlog
+of 140 waiting sources to the administration UI counting research-only entries as
+scheduled feeds. Every scheduled feed had polled; 263 of 278 were healthy in the
+inspected snapshot. The local correction separates on-demand entries, removes their
+irrelevant polling status and keeps automatically paused failures distinct from
+operator switch-offs. The same investigation found CISA KEV HTTP 403s and shared
+aircraft-provider throttling. KEV now falls back to CISA's own catalogue mirror on
+403, while shared host cooldown and early batch termination address repeated 429s.
+Publisher restrictions, ReliefWeb approval, unavailable Telegram previews and the
+deployment's missing AI connection remain explicit limitations in the
+[health audit](source-audit/deployed-health-2026-09-19.md). These changes are local;
+production deployment and server-side recovery verification remain pending.

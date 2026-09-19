@@ -19,8 +19,8 @@ AUTOMATION_REFUSALS: Mapping[str, str] = MappingProxyType(
         "cyber_cisa_advisories": (
             "CISA's advisory RSS refuses this application's HTTP client (CDN HTTP 403 since "
             "15 September 2026) while serving browsers. The application will not imitate a "
-            "browser; it rechecks every 12 hours. CISA KEV is unaffected; ICS advisories are "
-            "also published as CSAF in cisagov/CSAF."
+            "browser; it rechecks every 12 hours. CISA KEV is collected separately; "
+            "ICS advisories are also published as CSAF in cisagov/CSAF."
         ),
         "news_cbc_canada": (
             "CBC's feed servers hold this application's requests open without answering "

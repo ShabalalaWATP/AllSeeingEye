@@ -1,15 +1,9 @@
-import { StatusPill, type StatusTone } from '@/components/admin/StatusPill';
+import { StatusPill } from '@/components/admin/StatusPill';
 import { Td } from '@/components/ui/Table';
 import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
 import { formatAgo, formatInterval } from '@/lib/format';
 import { SourceActions } from './SourceActions';
-
-const STATUS_TONES: Record<SourceHealth['status'], StatusTone> = {
-  healthy: 'good',
-  degraded: 'critical',
-  idle: 'info',
-  disabled: 'neutral',
-};
+import { isOnDemandSource, sourceStatusPresentation } from './sourceStatus';
 
 export interface SourceRowProps {
   source: Source;
@@ -21,6 +15,9 @@ export interface SourceRowProps {
 /** One feed: what it is, how it is graded, how its last poll went, and a reset button. */
 export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps) {
   const health = source.health;
+  const onDemand = isOnDemandSource(source);
+  const stopped = source.environment_disabled === true || source.enabled === false;
+  const status = sourceStatusPresentation(source);
   const lastPoll =
     health.last_success === null
       ? 'never'
@@ -52,26 +49,26 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
       <Td className="capitalize">{source.category}</Td>
       <Td className="font-mono">{source.reliability}</Td>
       <Td className="font-mono whitespace-nowrap">
-        {formatInterval(source.poll_interval_seconds)}
+        {onDemand ? 'Not scheduled' : formatInterval(source.poll_interval_seconds)}
       </Td>
       <Td>
-        <StatusPill tone={STATUS_TONES[health.status]}>{health.status}</StatusPill>
-        {health.consecutive_failures > 0 && (
+        <StatusPill tone={status.tone}>{status.label}</StatusPill>
+        {!onDemand && !stopped && health.consecutive_failures > 0 && (
           <span className="mt-1 block text-[11px] text-muted">
             {health.consecutive_failures} failed in a row
           </span>
         )}
       </Td>
       <Td className="whitespace-nowrap">
-        {lastPoll}
-        {health.last_latency_ms !== null && (
+        {onDemand ? 'Not applicable' : lastPoll}
+        {!onDemand && health.last_latency_ms !== null && (
           <span className="ml-1 font-mono text-xs text-muted">
             {Math.round(health.last_latency_ms)} ms
           </span>
         )}
       </Td>
       <Td className="max-w-xs">
-        {health.last_error !== null && (
+        {!onDemand && health.last_error !== null && (
           <span className="block truncate text-xs text-critical" title={health.last_error}>
             {health.last_error}
           </span>

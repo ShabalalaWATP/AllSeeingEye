@@ -51,7 +51,10 @@ export function SourcesCard({ className = '' }: { className?: string }) {
         return (
           <>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Figure value={`${summary.healthy}/${summary.total}`} caption="sources live" />
+              <Figure
+                value={`${summary.healthy}/${summary.scheduled}`}
+                caption="scheduled sources live"
+              />
               {summary.failing > 0 ? (
                 <StatusPill tone="critical">{summary.failing} failing</StatusPill>
               ) : (
@@ -67,7 +70,7 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                   <span
                     key={segment.key}
                     className={`${segment.bar} h-full border-r border-surface last:border-r-0`}
-                    style={{ width: `${(summary[segment.key] / summary.total) * 100}%` }}
+                    style={{ width: `${(summary[segment.key] / summary.scheduled) * 100}%` }}
                   />
                 ),
               )}
@@ -81,6 +84,13 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                 </li>
               ))}
             </ul>
+            {summary.onDemand > 0 && (
+              <p className="mt-3 text-sm text-muted">
+                {summary.onDemand} on-demand {summary.onDemand === 1 ? 'source is' : 'sources are'}{' '}
+                used when selected, without scheduled polling. Check the catalogue for requirements
+                and availability.
+              </p>
+            )}
             {summary.attention.length === 0 ? null : (
               <div className="mt-4 border-t border-line/60 pt-3">
                 <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">

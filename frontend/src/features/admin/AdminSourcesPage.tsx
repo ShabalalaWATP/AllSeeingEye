@@ -13,16 +13,25 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { FirmsConnectionPanel } from './FirmsConnectionPanel';
 import { SourceRow } from './SourceRow';
+import { summariseSources } from './overview/overviewSummaries';
 
-/** "29 sources: 27 healthy, 1 degraded, 1 idle" without the zero counts. */
+/** Scheduled delivery health is separate from query-only source capabilities. */
 export function summarise(sources: readonly Source[]): string {
-  const counts = new Map<SourceHealth['status'], number>();
-  for (const item of sources)
-    counts.set(item.health.status, (counts.get(item.health.status) ?? 0) + 1);
-  const parts = (['healthy', 'degraded', 'idle', 'disabled'] as const)
-    .filter((status) => (counts.get(status) ?? 0) > 0)
-    .map((status) => `${counts.get(status)} ${status}`);
-  return `${sources.length} sources${parts.length > 0 ? `: ${parts.join(', ')}` : ''}`;
+  const summary = summariseSources(sources);
+  const parts = (
+    [
+      [summary.healthy, 'healthy'],
+      [summary.failing, 'failing'],
+      [summary.blockedUpstream, 'blocked upstream'],
+      [summary.idle, 'waiting'],
+      [summary.switchedOff, 'switched off'],
+      [summary.blockedByOperator, 'blocked by operator'],
+      [summary.onDemand, 'on-demand'],
+    ] as const
+  )
+    .filter(([count]) => count > 0)
+    .map(([count, label]) => `${count} ${label}`);
+  return `${sources.length} ${sources.length === 1 ? 'source' : 'sources'}${parts.length > 0 ? `: ${parts.join(', ')}` : ''}`;
 }
 
 export default function AdminSourcesPage() {
@@ -65,7 +74,7 @@ export default function AdminSourcesPage() {
       <AdminSection
         title="Collection registry"
         icon="sources"
-        description="Health reflects the most recent polls. Disabling a source stops future collection; existing evidence stays available."
+        description="Health reflects scheduled feed polls. On-demand sources have no polling health; check the catalogue for requirements and availability. Disabling a source stops future collection; existing evidence stays available."
       >
         {data === null ? (
           loading ? (
