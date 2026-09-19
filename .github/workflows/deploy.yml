@@ -1,0 +1,75 @@
+name: Deploy VPS
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer merge may queue, but must never interrupt an active cutover/rollback.
+concurrency:
+  group: production-vps
+  cancel-in-progress: false
+
+jobs:
+  revision:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.id == github.event.repository.id
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      # Do not check out PR code, download CI artefacts or execute repository scripts.
+      - name: Select the tested revision only while it is still main
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$TESTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          latest=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          if [[ "$latest" != "$TESTED_SHA" ]]; then
+            echo 'A newer merge exists. Its CI run will handle deployment.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "sha=$TESTED_SHA" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: revision
+    if: needs.revision.outputs.sha != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    environment:
+      name: production
+      url: https://allseeingeyeosint.com
+    steps:
+      - name: Deploy over restricted SSH and verify the release
+        env:
+          DEPLOY_SHA: ${{ needs.revision.outputs.sha }}
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          SSH_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
+          key_dir=$(mktemp -d)
+          trap 'rm -rf -- "$key_dir"' EXIT
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$key_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$key_dir/known_hosts"
+          ssh -T -p 2222 -i "$key_dir/key" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$key_dir/known_hosts" \
+            -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            ase@89.167.102.143 "deploy $DEPLOY_SHA"
+          echo "Deployed and verified commit $DEPLOY_SHA on the VPS." >> "$GITHUB_STEP_SUMMARY"
