@@ -995,3 +995,12 @@ the current local configuration. No cap bypass or destructive migration is used.
   manifest bytes used by PostgreSQL restore.
 - [ ] Apply the documented one-time Caddy volume ownership migration on any
   existing deployment before starting the hardened web container.
+
+## 19 September 2026: automatic VPS releases
+
+- [x] Add a separate deployment workflow after successful main-push CI, with
+  exact revision checks, production environment restriction and serial cutover.
+- [x] Add a restricted SSH controller, verified backup, image retention, health
+  checks and application rollback; gate schema and Compose changes manually.
+- [x] Document setup, retry, recovery, retained storage and deployment limitations.
+- [ ] Verify the first GitHub-triggered deployment on the existing VPS.

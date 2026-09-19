@@ -5298,4 +5298,16 @@ aircraft-provider throttling. KEV now falls back to CISA's own catalogue mirror 
 Publisher restrictions, ReliefWeb approval, unavailable Telegram previews and the
 deployment's missing AI connection remain explicit limitations in the
 [health audit](source-audit/deployed-health-2026-09-19.md). These changes are local;
-production deployment and server-side recovery verification remain pending.
+production deployment and server-side recovery verification remained pending
+at the time of that audit. PR #32 was subsequently merged as `8cc965ca` and
+deployed to the VPS after all 31 PR checks passed. The PostgreSQL backup was
+authenticated and public health/readiness checks passed.
+
+Automatic deployment was then added at the operator's request. A successful
+main-push CI run selects its exact revision and connects with a dedicated,
+command-restricted SSH key. The host builds while the old release stays online,
+verifies a database backup, updates API/parser/web together and checks public
+health before reporting success. Failed cutovers restore the previous application
+images. Migration and Compose changes require manual review because container
+rollback cannot reverse database changes. The operational contract and setup are
+documented in [the deployment guide](AUTOMATIC_DEPLOYMENT.md).

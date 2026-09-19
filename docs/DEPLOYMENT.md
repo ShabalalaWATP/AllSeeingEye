@@ -1,5 +1,10 @@
 # Deploy to a virtual private server
 
+The existing GitHub-backed production installation uses
+[automatic deployment after successful main CI](AUTOMATIC_DEPLOYMENT.md).
+The steps below remain the first-install/manual deployment runbook; the older
+archive-copy instructions do not describe the current GitHub checkout.
+
 The app is a long-lived process, not a set of functions: it polls hundreds of sources on
 their own intervals, keeps raw events in a bounded in-memory store that never reaches the
 database, and runs report jobs that can take forty minutes. It therefore needs a machine
