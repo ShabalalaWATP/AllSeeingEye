@@ -18,12 +18,15 @@ import tempfile
 import time
 from pathlib import Path
 
+from deploy_build import build_images
+
 ROOT = Path("/home/ase/ase")
 STATE = Path("/home/ase/deployments")
 KEY = Path("/home/ase/.config/all-seeing-eye/backup-auth.key")
 SITE = "https://allseeingeyeosint.com"
 CURL = ("curl", "--silent", "--show-error", "--max-time", "15")
 SERVICES = ("api", "parser", "web")
+CONTROLLERS = ("deploy_vps.py", "deploy_ssh.py", "deploy_build.py")
 MANUAL_PATHS = (
     "docker-compose.yml",
     "compose.yml",
@@ -33,8 +36,7 @@ MANUAL_PATHS = (
     "backend/alembic.ini",
     "backend/src/ase/infrastructure/migrations.py",
     "backend/src/ase/cli.py",
-    "scripts/deploy_vps.py",
-    "scripts/deploy_ssh.py",
+    *(f"scripts/{name}" for name in CONTROLLERS),
 )
 
 
@@ -42,7 +44,7 @@ class DeploymentError(RuntimeError):
     """A deployment was refused or did not complete safely."""
 
 
-def run(*args: str, cwd: Path = ROOT, timeout: int = 1200) -> str:
+def run(*args: str, cwd: Path = ROOT, timeout: int = 1200, mask: int = -1) -> str:
     # Capture output: dependency/build tools and Compose can print sensitive values.
     # Errors report the operation only, never subprocess output or environment.
     try:
@@ -53,6 +55,7 @@ def run(*args: str, cwd: Path = ROOT, timeout: int = 1200) -> str:
             capture_output=True,
             text=True,
             timeout=timeout,
+            umask=mask,
         )
     except (subprocess.SubprocessError, OSError, UnicodeError) as exc:
         raise DeploymentError(
@@ -62,7 +65,8 @@ def run(*args: str, cwd: Path = ROOT, timeout: int = 1200) -> str:
 
 
 def git(*args: str) -> str:
-    return run("git", *args)
+    # Preserve ordinary source modes in the live checkout too, including rollback.
+    return run("git", *args, mask=0o022)
 
 
 def require_clean() -> None:
@@ -87,7 +91,7 @@ def require_compatible(previous: str, sha: str) -> None:
     paths = git("diff", "--name-only", previous, sha).splitlines()
     # Controller upgrades are allowed only after an operator installs that exact
     # reviewed version in the root-owned directory. Repository code cannot replace it.
-    for name in ("deploy_vps.py", "deploy_ssh.py"):
+    for name in CONTROLLERS:
         path = f"scripts/{name}"
         if path in paths:
             installed = Path(__file__).with_name(name).read_text().strip()
@@ -192,34 +196,7 @@ def build(sha: str, worktree: Path) -> dict[str, str]:
         "Building application images while the current release stays online.",
         flush=True,
     )
-    git("worktree", "add", "--detach", str(worktree), sha)
-    api = f"ase-api:release-{sha}"
-    web = f"ase-web:release-{sha}"
-    run(
-        "docker",
-        "build",
-        "--label",
-        f"org.opencontainers.image.revision={sha}",
-        "-t",
-        api,
-        "backend",
-        cwd=worktree,
-    )
-    run(
-        "docker",
-        "build",
-        "--label",
-        f"org.opencontainers.image.revision={sha}",
-        "-t",
-        web,
-        "-f",
-        "frontend/Dockerfile",
-        ".",
-        cwd=worktree,
-    )
-    api_id = run("docker", "image", "inspect", "--format", "{{.Id}}", api)
-    web_id = run("docker", "image", "inspect", "--format", "{{.Id}}", web)
-    return {"api": api_id, "parser": api_id, "web": web_id}
+    return build_images(sha, worktree, run)
 
 
 def backup(destination: Path) -> None:
