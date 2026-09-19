@@ -23,7 +23,8 @@ def test_windows_job_has_memory_and_descendant_cleanup_limits(
     monkeypatch.setattr(limits.ctypes, "WinDLL", lambda *_args, **_kwargs: kernel, raising=False)
     limits._windows_limits()
     configured = kernel.SetInformationJobObject.call_args.args[2]._obj
-    assert configured.BasicLimitInformation.LimitFlags == 0x2300
+    assert configured.BasicLimitInformation.LimitFlags == 0x2308
+    assert configured.BasicLimitInformation.ActiveProcessLimit == limits.MAX_PROCESSES
     assert configured.ProcessMemoryLimit == configured.JobMemoryLimit == 512 * 1024 * 1024
     kernel.AssignProcessToJobObject.assert_called_once()
     kernel.CloseHandle.assert_not_called()
@@ -45,12 +46,22 @@ def test_windows_job_configuration_failure_refuses_parser_start(
 
 
 def test_posix_memory_and_core_dump_limits(monkeypatch: pytest.MonkeyPatch) -> None:
-    resources = SimpleNamespace(RLIMIT_AS=9, RLIMIT_CORE=4, setrlimit=MagicMock())
+    resources = SimpleNamespace(
+        RLIMIT_AS=9,
+        RLIMIT_CORE=4,
+        RLIMIT_FSIZE=1,
+        RLIMIT_NOFILE=7,
+        RLIMIT_NPROC=6,
+        setrlimit=MagicMock(),
+    )
     monkeypatch.setattr(limits, "os", SimpleNamespace(name="posix"))
     monkeypatch.setattr(limits, "importlib", SimpleNamespace(import_module=lambda _: resources))
     limits.apply_resource_limits()
     assert resources.setrlimit.call_args_list[0].args == (9, (limits.MEMORY_BYTES,) * 2)
     assert resources.setrlimit.call_args_list[1].args == (4, (0, 0))
+    assert resources.setrlimit.call_args_list[2].args == (1, (limits.FILE_BYTES,) * 2)
+    assert resources.setrlimit.call_args_list[3].args == (7, (limits.MAX_OPEN_FILES,) * 2)
+    assert resources.setrlimit.call_args_list[4].args == (6, (limits.MAX_PROCESSES,) * 2)
     resources.setrlimit.side_effect = OSError("host internals")
     with pytest.raises(limits.ResourceLimitUnavailable):
         limits.apply_resource_limits()
