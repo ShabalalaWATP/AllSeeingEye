@@ -4,6 +4,14 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+19 September deployed source-health investigation: all 140 entries shown as waiting
+were research-only sources; the inspected registry had 263 healthy scheduled feeds
+out of 278. Local corrections separate polling health from on-demand registration,
+add CISA's official KEV mirror on HTTP 403, and coordinate shared upstream rate-limit
+backoff. Production rollout and server verification remain pending. See the
+[deployment health audit](source-audit/deployed-health-2026-09-19.md) for observed
+failures, verification evidence and outstanding operator actions.
+
 15 September team collaboration planning: the
 [Teams, profiles and AI usage plan](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md)
 specifies user-created teams, membership-based Managers, protected administrators,

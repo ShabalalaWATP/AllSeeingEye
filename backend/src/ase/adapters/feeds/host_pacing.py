@@ -15,7 +15,10 @@ from __future__ import annotations
 import asyncio
 import time
 from collections.abc import Awaitable, Callable, Mapping
+from datetime import timedelta
 from urllib.parse import urlsplit
+
+from ase.adapters.feeds.http_contracts import MAX_RETRY_AFTER, FeedRateLimitedError
 
 ADSB_LOL_HOST = "api.adsb.lol"
 # Telegram serves every curated channel preview from one host, and the pages are large
@@ -48,6 +51,25 @@ class HostPacer:
         self._monotonic, self._sleep = monotonic, sleep
         self._locks: dict[str, asyncio.Lock] = {}
         self._next_start: dict[str, float] = {}
+        self._cooldowns: dict[str, float] = {}
+
+    def rate_limited(self, url: str, retry_after: timedelta | None) -> None:
+        """Share a bounded throttle across configured hosts' connectors only."""
+        host = (urlsplit(url).hostname or "").lower()
+        if host not in self._intervals:
+            return
+        requested = retry_after if retry_after is not None else timedelta(seconds=60)
+        wait = min(max(requested, timedelta(seconds=1)), MAX_RETRY_AFTER)
+        self._cooldowns[host] = max(
+            self._cooldowns.get(host, 0.0), self._monotonic() + wait.total_seconds()
+        )
+
+    def _check_cooldown(self, host: str, url: str) -> None:
+        remaining = self._cooldowns.get(host, 0.0) - self._monotonic()
+        if remaining > 0:
+            # Return control to the scheduler instead of consuming a batch's timeout.
+            raise FeedRateLimitedError(url, timedelta(seconds=remaining))
+        self._cooldowns.pop(host, None)
 
     async def wait(self, url: str) -> None:
         """Wait until this host's next request slot; unlisted hosts are not delayed."""
@@ -57,7 +79,9 @@ class HostPacer:
             return
         lock = self._locks.setdefault(host, asyncio.Lock())
         async with lock:
+            self._check_cooldown(host, url)
             delay = self._next_start.get(host, 0.0) - self._monotonic()
             if delay > 0:
                 await self._sleep(delay)
+                self._check_cooldown(host, url)
             self._next_start[host] = self._monotonic() + interval

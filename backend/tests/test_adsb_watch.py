@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import copy
+from datetime import timedelta
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -15,6 +17,7 @@ from ase.adapters.feeds.adsb_watch import (
     load_watch_areas,
 )
 from ase.adapters.feeds.http import FeedFetchError
+from ase.adapters.feeds.http_contracts import FeedRateLimitedError
 from ase.adapters.feeds.registry import build_connectors
 from feeds_helpers import NOW, FakeHttp, load_fixture
 from helpers import FakeClock
@@ -75,6 +78,33 @@ async def test_squawk_connector_survives_one_failed_code() -> None:
     http = FlakyHttp({"sqk/7700": fixture(), "sqk/7500": {"ac": []}})
     events = await AdsbSquawkConnector(http, FakeClock(NOW)).fetch()
     assert len(events) == 2
+
+
+async def test_squawk_throttle_keeps_successful_aircraft_and_stops_batch() -> None:
+    http = AsyncMock()
+    http.get_json.side_effect = [fixture(), FeedRateLimitedError("https://private", None)]
+    connector = AdsbSquawkConnector(http, FakeClock(NOW))
+    assert len(await connector.fetch()) == 2
+    assert http.get_json.await_count == 2
+    assert "1/3 queries retrieved" in connector.warning
+    http.get_json.side_effect = None
+    http.get_json.return_value = {"ac": []}
+    await connector.fetch()
+    assert connector.warning is None
+    assert http.get_json.await_args_list[2].args[0].endswith("/sqk/7600")
+
+
+async def test_squawk_throttle_without_responses_preserves_backoff() -> None:
+    http = AsyncMock()
+    http.get_json.side_effect = FeedRateLimitedError(
+        "https://private?secret=value", timedelta(seconds=90)
+    )
+    connector = AdsbSquawkConnector(http, FakeClock(NOW))
+    with pytest.raises(FeedRateLimitedError) as caught:
+        await connector.fetch()
+    assert caught.value.retry_after == timedelta(seconds=90)
+    assert "secret" not in str(caught.value)
+    assert http.get_json.await_count == 1
 
 
 async def test_area_connector_polls_every_watched_area_once() -> None:

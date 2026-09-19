@@ -31,7 +31,7 @@ describe('AdminOverviewPage', () => {
     );
 
     const sources = await card('Sources');
-    expect(await within(sources).findByText('sources live')).toBeVisible();
+    expect(await within(sources).findByText('scheduled sources live')).toBeVisible();
     expect(within(sources).getByText('1 failing')).toBeVisible();
     expect(within(sources).getByText('GDACS disaster alerts')).toBeVisible();
     expect(within(sources).getByText('3 failed polls')).toBeVisible();
@@ -129,6 +129,52 @@ describe('AdminOverviewPage', () => {
     const security = await card('Security');
     expect(await within(security).findByText('Protected')).toBeVisible();
     expect(within(security).getByText('Email code')).toBeVisible();
+  });
+
+  it('excludes on-demand sources from live totals and waiting counts', async () => {
+    server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({
+          items: [
+            source(),
+            source({
+              id: 'query-only',
+              test_available: false,
+              health: sourceHealth({ status: 'idle' }),
+            }),
+            source({
+              id: 'paused',
+              enabled: true,
+              health: sourceHealth({ status: 'disabled', consecutive_failures: 8 }),
+            }),
+          ],
+        }),
+      ),
+    );
+    renderApp('/admin', 'admin');
+    const sources = await card('Sources');
+    expect(await within(sources).findByText('1/2')).toBeVisible();
+    expect(within(sources).getByText('Waiting: 0')).toBeVisible();
+    expect(within(sources).getByText('Failing: 1')).toBeVisible();
+    expect(within(sources).getByText('Switched off: 0')).toBeVisible();
+    expect(within(sources).getByText(/1 on-demand source is used when selected/)).toBeVisible();
+  });
+
+  it('handles an entirely on-demand registry without implying live availability', async () => {
+    server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({
+          items: [source({ test_available: false, health: sourceHealth({ status: 'idle' }) })],
+        }),
+      ),
+    );
+    renderApp('/admin', 'admin');
+    const sources = await card('Sources');
+    expect(await within(sources).findByText('0/0')).toBeVisible();
+    expect(within(sources).getByText('Waiting: 0')).toBeVisible();
+    expect(
+      within(sources).getByText(/Check the catalogue for requirements and availability/),
+    ).toBeVisible();
   });
 
   it('keeps other tiles working when one fails, and retries the failed tile', async () => {
