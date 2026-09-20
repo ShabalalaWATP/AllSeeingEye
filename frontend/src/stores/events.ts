@@ -5,6 +5,15 @@
 import { create } from 'zustand';
 import { boundedEvents, mergeSnapshots } from './events.coverage';
 import { SnapshotRefresh } from './events.refresh';
+import { selectionAfterMirrorUpdate, type SelectionOwner } from './events.selection';
+export {
+  filterByCountry,
+  filterByWindow,
+  selectCountryEvents,
+  selectVisibleEvents,
+  selectSelectedEvent,
+  countByCategory,
+} from './events.selectors';
 
 import { insideCoverage, type CoverageBounds } from './events.geography';
 import { loadCoverageSupplements } from './events.supplements';
@@ -38,6 +47,7 @@ export interface EventsState {
   mirrorCapped: boolean;
   error: string | null;
   selectedId: string | null;
+  selectionOwner: SelectionOwner;
   /** Flush queued deltas before opening a new snapshot reconciliation journal. */
   onSnapshotStart: (flush: () => void) => () => void;
   load: () => Promise<void>;
@@ -49,7 +59,7 @@ export interface EventsState {
   toggleCategory: (category: Category) => void;
   setCountry: (iso: string | null) => void;
   setWindow: (hours: number | null) => void;
-  select: (id: string | null) => void;
+  select: (id: string | null, owner?: SelectionOwner) => void;
   reset: () => void;
 }
 
@@ -69,6 +79,7 @@ export const initialEventsState = {
   mirrorCapped: false,
   error: null as string | null,
   selectedId: null as string | null,
+  selectionOwner: 'mirror' as SelectionOwner,
 };
 
 /** Newest first, with the id as a tie-break so the order is stable. */
@@ -161,7 +172,6 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         }
         const byId = Object.fromEntries(merged);
         const capped = boundedEvents(byId, MAX_CLIENT_EVENTS, get().selectedId);
-        const selectedId = get().selectedId;
         set({
           byId: capped,
           list: toList(capped),
@@ -172,7 +182,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           snapshotLimited:
             events.length >= SNAPSHOT_LIMIT || supplement.limited || stats.total > snapshotCount,
           mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
-          selectedId: selectedId !== null && !(selectedId in capped) ? null : selectedId,
+          selectedId: selectionAfterMirrorUpdate(get(), capped),
         });
       } catch (caught) {
         if (pending === request && !request.controller.signal.aborted) {
@@ -215,25 +225,25 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       }
       if (merged === current.byId) return;
       const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, current.selectedId);
-      const selectedId = get().selectedId;
       set({
         byId,
         list: toList(byId),
         mirrorCapped: get().mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
-        selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
+        selectedId: selectionAfterMirrorUpdate(get(), byId),
       });
     },
 
     applyExpire: (ids) => {
       if (ids.length === 0) return;
       for (const id of ids) record(id, null);
+      const selected = get().selectedId;
+      if (selected !== null && ids.includes(selected)) get().select(null);
       if (!ids.some((id) => id in get().byId)) return;
       const byId = without(get().byId, ids);
-      const selectedId = get().selectedId;
       set({
         byId,
         list: toList(byId),
-        selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
+        selectedId: selectionAfterMirrorUpdate(get(), byId),
       });
     },
 
@@ -295,8 +305,8 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       set({ windowHours: hours });
     },
 
-    select: (id) => {
-      set({ selectedId: id });
+    select: (id, owner = 'mirror') => {
+      set({ selectedId: id, selectionOwner: id === null ? 'mirror' : owner });
     },
 
     reset: () => {
@@ -307,40 +317,3 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
   };
 });
-
-/** Events inside the nation filter, before category switches apply. */
-export function filterByCountry(events: LiveEvent[], country: string | null): LiveEvent[] {
-  return country === null ? events : events.filter((event) => event.country_iso === country);
-}
-
-/** Events published within the window ending now; null keeps everything retained. */
-export function filterByWindow(
-  events: LiveEvent[],
-  hours: number | null,
-  now: number,
-): LiveEvent[] {
-  if (hours === null) return events;
-  const since = now - hours * 3_600_000;
-  return events.filter(
-    (event) => event.published_at !== null && Date.parse(event.published_at) >= since,
-  );
-}
-
-export const selectCountryEvents = (state: EventsState): LiveEvent[] =>
-  filterByCountry(state.list, state.country);
-
-export const selectVisibleEvents = (state: EventsState): LiveEvent[] => {
-  const scoped = selectCountryEvents(state);
-  return state.hidden.length === 0
-    ? scoped
-    : scoped.filter((event) => !state.hidden.includes(event.category));
-};
-
-export const selectSelectedEvent = (state: EventsState): LiveEvent | null =>
-  state.selectedId === null ? null : (state.byId[state.selectedId] ?? null);
-
-export function countByCategory(events: readonly LiveEvent[]): Partial<Record<Category, number>> {
-  const counts: Partial<Record<Category, number>> = {};
-  for (const event of events) counts[event.category] = (counts[event.category] ?? 0) + 1;
-  return counts;
-}

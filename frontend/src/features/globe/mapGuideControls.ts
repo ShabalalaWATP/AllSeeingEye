@@ -54,9 +54,11 @@ export function guideSwitches(
       },
     },
     regions: {
-      on: regions.showRegions,
+      on: regions.showRegions && !hidden.includes('conflict'),
       set: () => {
-        regions.setShowRegions(!regions.showRegions);
+        const next = !regions.showRegions || hidden.includes('conflict');
+        if (next && hidden.includes('conflict')) toggleCategory('conflict');
+        regions.setShowRegions(next);
       },
     },
     grid: {
