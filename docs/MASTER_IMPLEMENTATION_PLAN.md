@@ -1116,3 +1116,13 @@ release follow-ups are recorded in the implementation checklist.
   assertion, corrected and verified afterwards. A concurrent rerun hit four
   unrelated timeouts; all four and the RF regressions passed in an isolated
   86-test run. Final-commit CI remains the full-suite release check.
+
+### Open pull request integration, 20 September 2026
+
+- [x] Review feature, dependency and CI PRs together; preserve application fixes
+  already delivered through PR #28 when reconciling duplicate feature PRs.
+- [x] Pair React with React DOM, align router Node requirements and use Node 24 LTS.
+- [x] Repair and build the Caddy dependency graph with the pinned Go toolchain.
+- [x] Preserve isolated Semgrep publication while updating pinned CI actions.
+- [ ] Require successful full CI and security checks before the final main merge.
+- [ ] Verify the migration-aware release and running application after deployment.

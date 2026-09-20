@@ -13,19 +13,19 @@ Both routes need internet access to install dependencies and collect public data
 
 ### Windows 11
 
-Use PowerShell. Install [Git for Windows](https://git-scm.com/downloads/win), [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). For native development, use Node 22.12 or later and Python 3.13, which `uv` can install for you.
+Use PowerShell. Install [Git for Windows](https://git-scm.com/downloads/win), [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). For native development, use Node 22.22 or later (Node 24 LTS recommended) and Python 3.13, which `uv` can install for you.
 
 For the container route, install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/), follow its WSL 2 prerequisites and select Linux containers. Start Docker Desktop before running Compose. Host Python and Node are not needed for this route.
 
 ### macOS
 
-Use Terminal. Install Git, [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). Apple's Command Line Tools provide Git; run `xcode-select --install` if it is missing. Use Node 22.12 or later and Python 3.13 for native development.
+Use Terminal. Install Git, [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). Apple's Command Line Tools provide Git; run `xcode-select --install` if it is missing. Use Node 22.22 or later (Node 24 LTS recommended) and Python 3.13 for native development.
 
 For containers, install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) for your processor and start it. The repository pins an AMD64 database image. On Apple Silicon, use AMD64 emulation for this stack as described below. This is not a native ARM64 container build.
 
 ### Linux
 
-Install Git through your distribution's package manager, then install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). Use Node 22.12 or later and Python 3.13 for native development.
+Install Git through your distribution's package manager, then install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js](https://nodejs.org/en/download). Use Node 22.22 or later (Node 24 LTS recommended) and Python 3.13 for native development.
 
 For containers, install [Docker Engine](https://docs.docker.com/engine/install/) and the [Compose plugin](https://docs.docker.com/compose/install/). Follow Docker's instructions for allowing your account to run Docker commands. These instructions target an x86-64 Linux host; ARM hosts need compatible AMD64 emulation for the pinned database image.
 

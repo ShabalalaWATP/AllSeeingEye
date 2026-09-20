@@ -9,7 +9,7 @@ The wrapper follows the [upstream entry point](https://github.com/caddyserver/ca
 and [release build settings](https://github.com/caddyserver/caddy/blob/v2.11.4/.goreleaser.yml).
 
 `go.mod` and `go.sum` lock the patched dependency graph. The build uses a pinned
-Go 1.26.6 image, disables automatic toolchain downloads and verifies module
+Go 1.27.0 image, disables automatic toolchain downloads and verifies module
 checksums before compiling with `-mod=readonly`. Alpine security updates are
 applied at image build time, so the final image digest must be recorded and
 scanned for each release.
@@ -21,6 +21,11 @@ repository root:
 Keep `github.com/google/cel-go` at `v0.28.1` while using Caddy `v2.11.4`:
 `v0.29.0` changes the interpreter call interface and fails to compile Caddy's
 CEL matcher. Upgrade it with a compatible Caddy release and a successful build.
+
+Keep the OpenTelemetry log API, SDK and all log exporters on the same release.
+The `v0.21.0` log API is incompatible with the `v0.19.0` HTTP and stdout log
+exporters. Update the HTTP, gRPC and stdout exporters together and verify the
+complete Caddy build, not just module resolution.
 
 ```sh
 docker build --pull --no-cache -f frontend/Dockerfile -t ase-web:check .

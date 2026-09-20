@@ -5443,3 +5443,22 @@ expected a technical figure before opening the disclosure. The corrected test
 passed. An overlapping suite rerun hit four unrelated timeouts; all four and
 the RF regressions passed in a separate 86-test run with two workers. A clean
 full-suite result for the final commit remains a CI release check.
+
+### Integrating open pull requests, 20 September 2026
+
+The map workspace branch also integrates the reviewed dependency and CI pull
+requests before a single release to main. The older AI setup and report recovery
+PRs were already delivered through PR #28; their ancestry is reconciled without
+replacing the newer application code, and the duplicate PRs are closed.
+
+React and React DOM are paired at 19.3.0. React Router 8 requires Node 22.22 or
+later; CI and the web build use Node 24 LTS. Dependabot groups the React runtime
+and its types so updates can be tested together. Caddy keeps the compatible CEL
+version and aligns all OpenTelemetry logging exporters with its logging API.
+The pinned Go toolchain builds Caddy 2.11.4 with the expected standard modules.
+
+Semgrep publishes its report outside the scanner container, with separately
+pinned actions. Full CI, code scanning and image checks on the combined branch
+remain required before the final merge. Migrations 0063 and 0064 require the
+reviewed manual deployment path and a verified backup; the automatic controller
+must retain its migration safeguard.
