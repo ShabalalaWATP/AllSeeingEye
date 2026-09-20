@@ -1126,3 +1126,18 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Preserve isolated Semgrep publication while updating pinned CI actions.
 - [ ] Require successful full CI and security checks before the final main merge.
 - [ ] Verify the migration-aware release and running application after deployment.
+
+### Live-site audit repairs, 20 September 2026
+
+- [x] Correct public-figure fallback transparency and selected-marker ordering;
+  provide a keyboard-accessible choice at shared locations.
+- [x] Serialise context-panel reads with cancellation and partial-result handling.
+- [x] Reject older vessel positions across collection batches without extending retention.
+- [x] Distinguish ordinary sampling limits from failed upstream refreshes in source health.
+- [x] Refresh authoritative source-family settings after activation changes.
+- [x] Require a global default before targeted first-model assignments.
+- [x] Add failing regression cases, verify focused suites and complete independent
+  code-quality and defensive reviews.
+- [ ] Complete final combined validation and review the repair pull request.
+- [ ] Merge and verify an authorised production release, including the separate
+  model-removal and satellite-supplement fixes.

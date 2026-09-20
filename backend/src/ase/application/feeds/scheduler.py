@@ -15,6 +15,7 @@ from ase.application.feeds.poll_scope import poll_scope
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventStore, CooperativeGrader
 from ase.application.ports.feed_diagnostics import (
+    CoverageFeedConnector,
     DiagnosticFeedConnector,
     FeedBlocked,
     FeedDeferred,
@@ -243,6 +244,9 @@ class FeedScheduler:
             finished,
             connector.spec.poll_interval,
             warning=connector.warning if isinstance(connector, DiagnosticFeedConnector) else None,
+            coverage_warning=(
+                connector.coverage_warning if isinstance(connector, CoverageFeedConnector) else None
+            ),
         )
         if result.changed_ids:
             changed = set(result.changed_ids)

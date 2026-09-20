@@ -67,6 +67,9 @@ export function ModelSetupWizard(props: ModelSetupProps) {
   const duplicate = props.profiles.some(
     (profile) => profile.id !== state.draft?.id && profile.name === state.fields.name.trim(),
   );
+  const hasDefault = props.connections.some(
+    (connection) => !connection.team_id && !connection.user_id,
+  );
   const valid =
     state.step === 0
       ? !!state.fields.name.trim() && !!state.fields.baseUrl.trim() && !duplicate
@@ -77,7 +80,8 @@ export function ModelSetupWizard(props: ModelSetupProps) {
           : state.step === 5
             ? !!state.tested &&
               (state.audience.scope === 'global' ||
-                (state.audience.targetIds.length > 0 &&
+                (hasDefault &&
+                  state.audience.targetIds.length > 0 &&
                   state.audience.targetIds.length <= MODEL_SETUP_MAX_TARGETS))
             : true;
   const next = (event: SyntheticEvent<HTMLFormElement>) => {

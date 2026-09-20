@@ -4,7 +4,8 @@ import type { Layer, PickingInfo } from '@deck.gl/core';
 import { portraitUrl, type PlacementBasis, type PublicFigure } from '@/lib/api/figures';
 import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
-const FALLBACK = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="white"/><circle cx="32" cy="25" r="10" fill="black"/><path d="M14 52a18 18 0 0 1 36 0z" fill="black"/></svg>')}`;
+// IconLayer masks use alpha, so the area around the head and shoulders must be transparent.
+const FALLBACK = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="25" r="10" fill="white"/><path d="M14 52a18 18 0 0 1 36 0z" fill="white"/></svg>')}`;
 
 export const BASIS_COLOURS: Record<PlacementBasis, [number, number, number, number]> = {
   reported_place: [98, 222, 190, 255],
@@ -19,6 +20,23 @@ export function buildFigureLayers(
   selectedId: string | null,
   globe = false,
 ): Layer[] {
+  // Shared seats remain geographically accurate. A separate last pass keeps the selection
+  // above both portrait and fallback neighbours without depending on roster order.
+  const others = figures.filter((figure) => figure.id !== selectedId);
+  const selected = figures.filter((figure) => figure.id === selectedId);
+  return [
+    ...figureMarkerGroup(others, onSelect, selectedId, globe, 'public-figure'),
+    ...figureMarkerGroup(selected, onSelect, selectedId, globe, 'public-figure-selected'),
+  ];
+}
+
+function figureMarkerGroup(
+  figures: readonly PublicFigure[],
+  onSelect: (figure: PublicFigure) => void,
+  selectedId: string | null,
+  globe: boolean,
+  prefix: string,
+): Layer[] {
   if (!figures.length) return [];
   const size = (figure: PublicFigure) => (figure.id === selectedId ? 40 : 30);
   const position = (figure: PublicFigure): [number, number] => [
@@ -29,7 +47,7 @@ export function buildFigureLayers(
   const withoutPortrait = figures.filter((figure) => figure.portrait === null);
   const layers: Layer[] = [
     new ScatterplotLayer<PublicFigure>({
-      id: 'public-figure-rings',
+      id: `${prefix}-rings`,
       data: figures,
       pickable: true,
       stroked: true,
@@ -51,7 +69,7 @@ export function buildFigureLayers(
   if (withPortrait.length)
     layers.push(
       new IconLayer<PublicFigure>({
-        id: 'public-figure-portraits',
+        id: `${prefix}-portraits`,
         data: withPortrait,
         pickable: true,
         billboard: !globe,
@@ -77,7 +95,7 @@ export function buildFigureLayers(
   if (withoutPortrait.length)
     layers.push(
       new IconLayer<PublicFigure>({
-        id: 'public-figure-fallbacks',
+        id: `${prefix}-fallbacks`,
         data: withoutPortrait,
         pickable: true,
         billboard: !globe,

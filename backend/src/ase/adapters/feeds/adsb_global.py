@@ -68,22 +68,22 @@ class AdsbGlobalConnector(AdsbAreaConnector):
         )
         self._attempted_total = 0
 
-    async def fetch(self) -> list[Event]:
-        before = self._start_area
-        try:
-            events = await super().fetch()
-        finally:
-            self._attempted_total += (self._start_area - before) % len(self.areas)
-        regional_warning = self._warning
-        self._warning = (
+    @property
+    def coverage_warning(self) -> str:
+        return (
             f"Sampled worldwide sweep: {self._attempted_total % len(self.areas)}/{len(self.areas)} "
             "cells attempted in cycle "
             f"{self._attempted_total // len(self.areas) + 1}. "
             f"At most {CELLS_PER_POLL} queries per poll; "
             "aircraft expire after 10 minutes, so this is not simultaneous global coverage."
         )
-        if regional_warning:
-            self._warning += " " + regional_warning
+
+    async def fetch(self) -> list[Event]:
+        before = self._start_area
+        try:
+            events = await super().fetch()
+        finally:
+            self._attempted_total += (self._start_area - before) % len(self.areas)
         return [
             event.with_changes(
                 attributes=freeze_attributes(

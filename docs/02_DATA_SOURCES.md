@@ -92,12 +92,13 @@ receive the browser's network address and requested view.
 | State | Meaning and next step |
 | --- | --- |
 | Live / connected | The scheduled source has collected successfully. Check the last update and item dates before treating it as current. |
+| Live with warning | Collection succeeded with a stated coverage limit, such as a sampled worldwide sweep. It counts as live; read the warning before interpreting gaps. |
 | Waiting / idle | No collection has completed yet. A configured key can still be unverified. Allow for the source's polling interval and inspect its details. |
 | On demand | The capability runs when research or a map interaction needs it. It is not a failed scheduled feed. |
 | Available | A packaged snapshot or catalogue is present. This says nothing about current upstream availability. |
 | Needs key or setup | A required credential, local dataset, runtime or acknowledgement is absent. The detail names the requirement. |
-| Retrying / degraded | Collection failed and is being retried with backoff. |
-| Failing | Repeated failures paused collection. An administrator should inspect the cause before resetting the source. |
+| Retrying / degraded | Collection or an upstream refresh encountered a problem. Retained data may still be available. Failed requests use backoff. |
+| Failing | The administration overview groups degraded and paused collectors here. Inspect the cause; a source paused after repeated failures needs an administrator's review before reset. |
 | Blocked upstream | The provider has refused this client, registration or account tier. Repeated resets do not resolve access restrictions. |
 | Switched off | An administrator or the installation's configuration disabled it. |
 

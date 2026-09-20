@@ -108,7 +108,7 @@ async def test_global_warning_retains_partial_http_failure_counts():
     connector = AdsbGlobalConnector(http, FakeClock(NOW))
     connector._request_interval = 0
     assert await connector.fetch() == []
-    assert "Sampled worldwide sweep" in connector.warning
+    assert "Sampled worldwide sweep" in connector.coverage_warning
     assert "23/24 areas retrieved" in connector.warning
     assert "1 failed queries" in connector.warning
     assert "429 (1)" in connector.warning

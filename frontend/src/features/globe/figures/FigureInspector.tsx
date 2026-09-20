@@ -4,13 +4,18 @@ import { BASIS_LABELS, ROLE_LABELS, type PublicFigure } from '@/lib/api/figures'
 import { formatUtc } from '@/lib/format';
 
 import { FigurePortrait } from './FigurePortrait';
+import { FigureLocationPicker } from './FigureLocationPicker';
 
 export function FigureInspector({
   figure,
   onClose,
+  visibleFigures = [],
+  onSelectFigure,
 }: {
   figure: PublicFigure;
   onClose: () => void;
+  visibleFigures?: readonly PublicFigure[];
+  onSelectFigure?: (figure: PublicFigure) => void;
 }) {
   const close = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -32,7 +37,7 @@ export function FigureInspector({
   return (
     <aside
       aria-label="Public figure details"
-      className="map-details-inspector absolute bottom-16 right-16 z-20 w-80 max-w-[calc(100%-5rem)] rounded-lg border border-line bg-ground p-4 shadow-xl"
+      className="map-details-inspector absolute bottom-16 right-16 z-20 max-h-[calc(100%-6rem)] w-80 max-w-[calc(100%-5rem)] overflow-y-auto rounded-lg border border-line bg-ground p-4 shadow-xl"
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -56,6 +61,13 @@ export function FigureInspector({
           ×
         </button>
       </header>
+      {onSelectFigure && (
+        <FigureLocationPicker
+          figure={figure}
+          visibleFigures={visibleFigures}
+          onSelect={onSelectFigure}
+        />
+      )}
       <p className="mt-3 text-xs font-medium text-cyan">{BASIS_LABELS[placement.basis]}</p>
       <p className="mt-1 text-xs leading-relaxed text-muted">{placement.detail}</p>
       {placement.published_at && (

@@ -109,6 +109,8 @@ describe('public figures layer', () => {
       'public-figure-rings',
       'public-figure-portraits',
       'public-figure-fallbacks',
+      'public-figure-selected-rings',
+      'public-figure-selected-portraits',
     ]);
     const rings = layers[0]?.props as unknown as {
       getLineColor: (figure: (typeof figureBoard.figures)[number]) => number[];
@@ -122,7 +124,7 @@ describe('public figures layer', () => {
       data: unknown[];
       getIcon: (figure: (typeof figureBoard.figures)[number]) => { url: string; mask: boolean };
     };
-    expect(portraits.data).toHaveLength(2);
+    expect(portraits.data).toHaveLength(1);
     expect(portraits.getIcon(reported!).url.startsWith('data:image/png;base64,')).toBe(true);
     expect(portraits.getIcon(reported!).mask).toBe(false);
     expect(buildFigureLayers([], vi.fn(), null)).toEqual([]);

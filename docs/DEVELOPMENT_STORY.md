@@ -5462,3 +5462,23 @@ pinned actions. Full CI, code scanning and image checks on the combined branch
 remain required before the final merge. Migrations 0063 and 0064 require the
 reviewed manual deployment path and a verified backup; the automatic controller
 must retain its migration safeguard.
+
+### Live-site audit repairs, 20 September 2026
+
+The audit repairs cover public-figure markers, context-panel reads, delayed AIS
+updates and administration workflows. Selected portraits render above neighbours,
+and a labelled picker handles figures sharing a location without moving their
+coordinates. Context reads respect the server's concurrency allowance and stop
+after scope cancellation. Older vessel positions cannot replace newer ones or
+change their expiry timestamps.
+
+An optional coverage-diagnostics port separates the normal limits of a sampled
+feed from failed requests. Successful sampling remains live with a warning;
+unsuccessful satellite refreshes and partial upstream failures remain degraded.
+Source switches reload server-calculated family settings, and first-model setup
+requires a global default before a team or personal override.
+
+The changes preserve service, adapter and presentation boundaries. Focused
+regressions reproduced the defects before repair, and independent code-quality
+and defensive reviews found no remaining actionable issues after the source-health
+distinction was corrected. No production deployment is part of this repair step.
