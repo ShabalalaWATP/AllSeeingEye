@@ -81,3 +81,12 @@ it('withholds height advice for uncertain ground and unsupported heights', () =>
   area.terrain.kind = 'radial';
   expect(rfLinkAdvice(area)).toBeNull();
 });
+
+it('limits proposed heights to feasible site ceilings without altering the current study', () => {
+  const analysis = study([0, 0, 0, 150, 0]);
+  expect(rfLinkAdvice(analysis, { transmitter: 30, receiver: 30 })).toBeNull();
+  const unlimited = rfLinkAdvice(analysis);
+  expect(unlimited?.kind).toBe('height');
+  if (unlimited?.kind === 'height')
+    expect(rfLinkAdvice(analysis, { [unlimited.site]: unlimited.heightM })).toEqual(unlimited);
+});

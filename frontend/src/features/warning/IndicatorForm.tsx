@@ -76,13 +76,16 @@ export function IndicatorForm({
       enabled: true,
       cooldown_minutes: 60,
       severity_floor: 0,
-      countries: area.mode === 'area' ? [] : parseCountries(countries),
+      countries: area.mode !== 'nations' ? [] : parseCountries(countries),
+      ...(area.mode === 'shape' && area.geometry
+        ? { research_area: { geometry: { ...area.geometry } } }
+        : {}),
       ...(area.bbox ? { bbox: area.bbox } : {}),
       keywords: parseCommaList(keywords),
       categories: parseCategories(categories),
       threshold: Math.max(1, Number(threshold) || 1),
       window_minutes: Number(window),
-      report_template: template === '' ? null : template,
+      report_template: area.mode === 'shape' || template === '' ? null : template,
     });
   };
 
@@ -96,9 +99,11 @@ export function IndicatorForm({
         <div className="space-y-2 rounded border border-cyan/30 bg-cyan/5 p-3 text-sm">
           <h3 className="font-medium text-cyan">Watch this area</h3>
           <p>
-            {draft.source === 'sketch-envelope'
-              ? 'This approximate bounding rectangle includes areas outside your sketch. Adjust it before adding an indicator.'
-              : 'Your map bounds are ready to review. Adjust the location, categories and threshold before adding an indicator.'}
+            {draft.source === 'shape'
+              ? 'Your exact research boundary is ready. Review categories and thresholds before adding an indicator.'
+              : draft.source === 'sketch-envelope'
+                ? 'This approximate bounding rectangle includes areas outside your sketch. Adjust it before adding an indicator.'
+                : 'Your map bounds are ready to review. Adjust the location, categories and threshold before adding an indicator.'}
           </p>
           <p className="text-xs text-muted">
             Nothing is saved yet. Reports are off by default. An indicator counts published items in
@@ -185,7 +190,8 @@ export function IndicatorForm({
         <SelectField
           label="Report when it fires"
           hint="Generated as you, scoped like the indicator."
-          value={template}
+          value={area.mode === 'shape' ? '' : template}
+          disabled={area.mode === 'shape'}
           onChange={(event) => {
             setTemplate(event.target.value);
           }}

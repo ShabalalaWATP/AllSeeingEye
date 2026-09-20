@@ -46,6 +46,9 @@ class ReportRow(Base):
 
 
 class AoiRow(Base):
+    research_area: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
     __tablename__ = "aois"
 
     team_id: Mapped[UUID | None] = mapped_column(
@@ -124,6 +127,9 @@ class ReportVersionRow(Base):
 
 
 class IndicatorRow(Base):
+    research_area: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
     __tablename__ = "indicators"
 
     team_id: Mapped[UUID | None] = mapped_column(

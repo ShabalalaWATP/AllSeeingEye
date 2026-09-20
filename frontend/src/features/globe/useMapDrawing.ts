@@ -3,11 +3,10 @@ import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
 import { drawingVertices } from '@/lib/map/drawingGeometry';
 import type { DrawingShape } from '@/lib/map/drawingGeometry';
-import {
-  drawingReducer,
-  initialDrawingState,
-  type DrawingInteraction,
-} from '@/lib/map/drawingState';
+import { type DrawingInteraction } from '@/lib/map/drawingState';
+import { drawingHistoryReducer, initialDrawingHistory } from '@/lib/map/drawingHistory';
+import type { Position } from '@/lib/map/geoJsonTypes';
+import { drawingAuthority } from '@/lib/map/drawingAuthority';
 import { measurementText } from '@/lib/map/measurements';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 export function useMapDrawing(
@@ -15,7 +14,8 @@ export function useMapDrawing(
     Partial<Pick<GlobeEngineHandle, 'onDrag' | 'getZoom'>>,
   enabled: boolean,
 ) {
-  const [state, dispatch] = useReducer(drawingReducer, initialDrawingState);
+  const [history, dispatch] = useReducer(drawingHistoryReducer, initialDrawingHistory);
+  const state = history.current;
   const { shape, anchors, picking, error, interaction } = state;
   const maximum = shape === 'circle' || shape === 'rectangle' ? 2 : 32;
   const active = picking && enabled && (interaction !== 'click' || anchors.length < maximum);
@@ -41,10 +41,10 @@ export function useMapDrawing(
     [engine, active],
   );
   useEffect(() => {
-    const clear = () => dispatch({ type: 'clear' });
+    const clear = () => dispatch({ type: 'reset' });
     const offAccess = subscribeWorkspaceAccess(clear);
     const offUser = useAuthStore.subscribe((next, previous) => {
-      if (next.user?.id !== previous.user?.id) clear();
+      if (drawingAuthority(next) !== drawingAuthority(previous)) clear();
     });
     return () => {
       offAccess();
@@ -75,8 +75,13 @@ export function useMapDrawing(
       if (engine.onDrag && (next === 'circle' || next === 'rectangle'))
         dispatch({ type: 'interaction', interaction: 'drag' });
     },
-    undo: () => dispatch({ type: 'undo' }),
+    undo: () => dispatch({ type: 'history-undo' }),
+    redo: () => dispatch({ type: 'redo' }),
+    canUndo: history.past.length > 0,
+    canRedo: history.future.length > 0,
+    load: (shape: DrawingShape, anchors: Position[]) => dispatch({ type: 'load', shape, anchors }),
     clear: () => dispatch({ type: 'clear' }),
+    reset: () => dispatch({ type: 'reset' }),
   };
 }
 export type MapDrawing = ReturnType<typeof useMapDrawing>;

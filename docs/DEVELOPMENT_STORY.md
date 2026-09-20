@@ -5371,3 +5371,41 @@ Screenshots show the current UI with illustrative local data. Public deployment
 guidance explains requirements and release behaviour without live host access or
 recovery identifiers. Documentation checks cover links, model validation, diagram
 rendering and configuration examples; no application behaviour changes.
+
+## Map workspace, 20 September 2026
+
+The requested map improvements connect drawings, research and analysis through
+shared geometry and saved, scoped documents. The tool rail now leads to grouped
+search and four favourites; inspectors resize on desktop and use a collapsible
+bottom sheet on mobile. An object list provides a common route back to drawings
+and results.
+
+Drawing collections support multiple named objects, coordinate and vertex edits,
+locks, colours, notes, GeoJSON and bounded undo/redo. Personal/team storage checks
+revisions and current authority. Review-driven regressions cover hidden sketches,
+unapplied edits, metadata blur, pagination and late responses after same-user role
+or activity changes. Opening another collection clears the editing history.
+
+Research drafts survive tool switches. The map preview distinguishes precise
+membership from approximate and unknown locations, while capability checks remain
+separate from collection. Exact supported polygons carry through reusable areas
+and monitoring. Radio work gains precise named sites, saved input/result snapshots,
+comparison baselines and explicit idealised antenna assumptions. Terrain profiles,
+sampled ground visibility, coordinate conversion and reviewed corridor previews
+reuse bounded geometry and elevation services.
+
+The nuclear education entry opens an attributed external reference without
+forwarding workspace data. ITM, higher-resolution terrain and full event replay
+remain separate follow-ups. The [user guide](MAP_WORKSPACE.md) and
+[implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md) distinguish
+these limits from the implemented tools.
+
+Independent review corrected measurement input ownership, overlapping mobile
+controls, an area-of-interest research race and document payload limits. The
+combined new backend regression run passes 81 tests. Backend lint, formatting,
+mypy across 1,360 files and all three import contracts pass. Frontend type checks,
+production build and lint have passed, along with repository source-length checks.
+Local browser verification at 1600 × 1000, 390 × 844 and 320 × 568 used normal
+pointer interactions and found no fresh browser errors. Final frontend coverage,
+repeated static checks and CI are pending. This entry does not claim a merge or
+deployment, live source completeness or measured RF accuracy.

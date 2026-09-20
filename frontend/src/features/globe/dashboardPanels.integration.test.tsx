@@ -1,3 +1,4 @@
+import { openMapTool } from '@/test/mapTools';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -154,7 +155,7 @@ it('satellite list selection enables Space, then clearing details clears the sel
 
 it('only offers records allowed by location quality in traffic and satellite lists', async () => {
   const { user } = renderApp('/', 'user');
-  await screen.findByRole('button', { name: 'Location quality' });
+  await screen.findByRole('button', { name: 'Tools' });
   act(() =>
     useEventsStore.getState().applyUpsert([
       aircraft,
@@ -167,7 +168,7 @@ it('only offers records allowed by location quality in traffic and satellite lis
       }),
     ]),
   );
-  await user.click(screen.getByRole('button', { name: 'Location quality' }));
+  await openMapTool(user, 'Location quality');
   await user.selectOptions(
     screen.getByRole('combobox', { name: 'Show on map or globe' }),
     'approximate',
@@ -177,7 +178,7 @@ it('only offers records allowed by location quality in traffic and satellite lis
   expect(screen.queryByRole('button', { name: /EYE123/ })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Space filters' }));
   expect(screen.queryByRole('button', { name: /Orbital test/ })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Location quality' }));
+  await openMapTool(user, 'Location quality');
   await user.selectOptions(screen.getByRole('combobox', { name: 'Show on map or globe' }), 'all');
   await user.click(screen.getByRole('button', { name: 'Space filters' }));
   expect(screen.getByRole('button', { name: /Orbital test/ })).toBeInTheDocument();

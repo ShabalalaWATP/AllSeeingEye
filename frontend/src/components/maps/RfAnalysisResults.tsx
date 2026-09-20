@@ -1,3 +1,4 @@
+import type { Position } from '@/lib/map/geoJsonTypes';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 import { RfTerrainProfileChart } from './RfTerrainProfileChart';
 import { RfGroundwaveResults } from './RfGroundwaveResults';
@@ -16,9 +17,11 @@ const statusText = {
 };
 export function RfAnalysisResults({
   analysis,
+  onProfilePoint,
   bubble = false,
 }: {
   analysis: RfAnalysis;
+  onProfilePoint?: ((point: Position | null) => void) | undefined;
   bubble?: boolean;
 }) {
   if (analysis.kind === 'hf-groundwave') return <RfGroundwaveResults analysis={analysis} />;
@@ -73,7 +76,7 @@ export function RfAnalysisResults({
       {terrain.path && (
         <>
           <RfTerrainBudget profile={terrain.path} />
-          <RfTerrainProfileChart profile={terrain.path} />
+          <RfTerrainProfileChart profile={terrain.path} onProfilePoint={onProfilePoint} />
         </>
       )}
       <div className="border-y border-line py-3">

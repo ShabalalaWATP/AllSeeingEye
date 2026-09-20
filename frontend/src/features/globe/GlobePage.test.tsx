@@ -1,3 +1,4 @@
+import { openMapTool } from '@/test/mapTools';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -85,7 +86,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Event time' }));
+    await openMapTool(user, 'Event time');
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
@@ -124,7 +125,7 @@ describe('GlobePage', () => {
         id: null,
       });
     });
-    await user.click(screen.getByRole('button', { name: 'Event time' }));
+    await openMapTool(user, 'Event time');
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();
@@ -141,7 +142,7 @@ describe('GlobePage', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Location quality' }));
+    await openMapTool(user, 'Location quality');
     await user.click(screen.getByRole('button', { name: /^Flash flood in Valencia/ }));
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({
       center: [-0.38, 39.47],
@@ -177,7 +178,7 @@ describe('GlobePage', () => {
     act(() => {
       map.fire('style.load');
     });
-    await user.click(screen.getByRole('button', { name: 'Map style' }));
+    await openMapTool(user, 'Map style');
     const group = screen.getByRole('group', { name: 'Base layer' });
     expect(within(group).getByRole('radio', { name: 'OS Road' })).toBeDisabled();
     await user.click(within(group).getByRole('radio', { name: 'Satellite' }));
@@ -208,7 +209,7 @@ describe('GlobePage', () => {
       ),
     );
     const { user } = renderApp('/', 'user');
-    await user.click(await screen.findByRole('button', { name: 'Map style' }));
+    await openMapTool(user, 'Map style');
     const osRoad = screen.getByRole('radio', { name: 'OS Road' });
     await waitFor(() => expect(osRoad).toBeEnabled());
     await waitFor(() => {
@@ -228,7 +229,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     await screen.findByRole('switch', { name: 'Natural hazards 1' });
-    await user.click(screen.getByRole('button', { name: 'Find nation' }));
+    await openMapTool(user, 'Find nation');
     const picker = await screen.findByRole('combobox', { name: 'Nation filter' });
     await user.type(picker, 'Ukraine');
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [31.2, 48.4], zoom: 4 });
@@ -258,7 +259,7 @@ describe('GlobePage', () => {
     expect(map.setSky).toHaveBeenLastCalledWith(
       expect.objectContaining({ 'atmosphere-blend': expect.any(Array) }),
     );
-    await user.click(screen.getByRole('button', { name: 'Map style' }));
+    await openMapTool(user, 'Map style');
     await user.click(screen.getByRole('switch', { name: 'Day and night' }));
     expect(overlayLayerIds()).toEqual(['events-disaster']);
     await user.click(screen.getByRole('switch', { name: 'Day and night' }));
@@ -268,7 +269,7 @@ describe('GlobePage', () => {
     expect(useGlobeStore.getState().lite).toBe(true);
     expect(overlayLayerIds()).toEqual(['events-disaster']);
     expect(map.setSky).toHaveBeenLastCalledWith(expect.objectContaining({ 'atmosphere-blend': 0 }));
-    await user.click(screen.getByRole('button', { name: 'Location quality' }));
+    await openMapTool(user, 'Location quality');
     await user.click(screen.getByRole('button', { name: /^M4.2 near Somewhere/ }));
     expect(map.jumpTo).toHaveBeenCalledWith({ center: [10, 50], zoom: FOCUS_ZOOM });
     expect(map.flyTo).not.toHaveBeenCalled();

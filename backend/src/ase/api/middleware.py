@@ -40,6 +40,8 @@ ORIGINAL_UPLOAD_PATH = re.compile(
 MAP_IMAGE_MAX_BODY_BYTES = 12 * 1024 * 1024
 MAP_IMAGE_PATH = re.compile(rf"/api/map/views/{_UUID_PATH}/revisions/{_UUID_PATH}/image-package")
 MAP_VIEW_MAX_BODY_BYTES = 6 * 1024 * 1024 + 16 * 1024
+MAP_WORKSPACE_MAX_BODY_BYTES = 128 * 1024 + 4 * 1024
+MAP_WORKSPACE_PATH = re.compile(rf"/api/map/workspaces/{_UUID_PATH}")
 MAP_VIEW_REVISION_PATH = re.compile(
     r"/api/map/views/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
 )
@@ -100,6 +102,12 @@ class BodySizeLimitMiddleware:
             scope.get("method") == "PATCH"
             and MAP_VIEW_REVISION_PATH.fullmatch(scope.get("path", "")) is not None
         )
+        saving_workspace = (
+            scope.get("path") == "/api/map/workspaces" and scope.get("method") == "POST"
+        ) or (
+            scope.get("method") == "PATCH"
+            and MAP_WORKSPACE_PATH.fullmatch(scope.get("path", "")) is not None
+        )
         exporting_image = (
             scope.get("method") == "POST"
             and MAP_IMAGE_PATH.fullmatch(scope.get("path", "")) is not None
@@ -113,6 +121,8 @@ class BodySizeLimitMiddleware:
             if importing
             else MAP_VIEW_MAX_BODY_BYTES
             if saving_map
+            else MAP_WORKSPACE_MAX_BODY_BYTES
+            if saving_workspace
             else self.max_bytes
         )
         if declared is not None and declared.isdigit() and int(declared) > limit:

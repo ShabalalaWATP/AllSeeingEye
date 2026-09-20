@@ -14,6 +14,7 @@ from ase.domain.access import Visibility
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
 from ase.domain.errors import NotFound
 from ase.domain.events import BoundingBox, Category
+from ase.domain.research_area import area_from_dict, area_to_dict
 
 
 def _aoi_from_row(row: AoiRow) -> AreaOfInterest:
@@ -29,6 +30,7 @@ def _aoi_from_row(row: AoiRow) -> AreaOfInterest:
         id=row.id,
         name=row.name,
         kind=row.kind,
+        research_area=area_from_dict(row.research_area),
         bbox=bbox,
         countries=tuple(str(code) for code in row.countries),
         created_by=row.created_by,
@@ -117,6 +119,7 @@ class SqlAoiRepository:
                 name=aoi.name,
                 description=aoi.description,
                 kind=aoi.kind,
+                research_area=area_to_dict(aoi.research_area),
                 west=aoi.bbox.west if aoi.bbox else None,
                 south=aoi.bbox.south if aoi.bbox else None,
                 east=aoi.bbox.east if aoi.bbox else None,

@@ -1062,3 +1062,38 @@ and model-quality gates above remain separate.
 
 The documentation describes supported behaviour. Actual source connectivity,
 model quality and provider account permissions remain installation-specific.
+
+## 20 September 2026: map workspace implementation
+
+- [x] Add grouped tool discovery, four pinned favourites, resizable/collapsible
+  inspectors, mobile sheets and an object/result list.
+- [x] Add saved personal/team drawing collections, editable geometry, bounded
+  undo/redo, validated GeoJSON and revision conflict checks.
+- [x] Retain research drafts across tool changes, preview loaded evidence and
+  preserve exact supported boundaries in reusable areas and monitoring.
+- [x] Add named radio sites, saved study snapshots, comparisons, linked profile
+  inspection and idealised directional link assumptions.
+- [x] Add bounded terrain profiles, sampled visibility, coordinate conversion
+  and reviewed corridor generation.
+- [x] Document the external educational nuclear-effects reference without
+  sending workspace locations or questions to it.
+- [x] Add focused regressions for authority changes, stale responses, drawing
+  edits, imports, boundaries, document conflicts and pagination.
+- [x] Update the [map workspace guide](MAP_WORKSPACE.md) and
+  [implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
+- [x] Complete independent integration review and local desktop/mobile browser
+  verification, including input ownership and authority-boundary corrections.
+- [x] Pass 81 combined new backend regressions, backend lint/format/type/import
+  checks, frontend type checks/build/lint and repository source-length checks.
+- [ ] Complete the final full frontend coverage run, repeated static checks and CI.
+- [ ] Review and apply the new workspace/geometry database migrations during
+  an authorised release, then verify the deployed workflows.
+
+ITM and higher-resolution terrain are evaluated follow-ups, not implemented
+propagation upgrades. The app retains its existing model boundaries and bounded
+live-event storage. Software validation does not establish field radio accuracy
+or exhaustive research coverage. No production release is claimed here.
+
+Browser verification covers 1600 × 1000, 390 × 844 and 320 × 568 with normal
+pointer interactions and no fresh browser errors observed. Detailed evidence and
+remaining checks are recorded in the implementation checklist.

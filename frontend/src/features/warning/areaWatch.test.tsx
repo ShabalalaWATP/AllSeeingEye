@@ -11,11 +11,43 @@ import { plainUser, tokenFor, indicator } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import WarningPage from './WarningPage';
+import { researchAreaGeometry } from '@/lib/map/researchAreaGeometry';
 
 const area = {
   source: 'rectangle' as const,
   bounds: { west: 170, south: -10, east: -170, north: 10 },
 };
+it('keeps an exact shape through review and submission without an envelope or report', async () => {
+  const geometry = researchAreaGeometry('polygon', [
+    [0, 0],
+    [2, 0],
+    [0, 2],
+  ]);
+  useAuthStore.getState().setSession(tokenFor(plainUser));
+  prepareAreaWatch({ ...area, source: 'shape', geometry });
+  let submitted: unknown;
+  server.use(
+    http.post('/api/warning/indicators', async ({ request }) => {
+      submitted = await request.json();
+      return HttpResponse.json(indicator, { status: 201 });
+    }),
+  );
+  const { user } = renderApp('/warning', 'user');
+  const form = await screen.findByRole('form', { name: 'New indicator' });
+  expect(within(form).getByLabelText('Location scope')).toHaveValue('shape');
+  expect(within(form).getByLabelText('Report when it fires')).toBeDisabled();
+  expect(within(form).queryByLabelText('West bound')).not.toBeInTheDocument();
+  await user.type(within(form).getByLabelText('Indicator name'), 'Triangle watch');
+  await user.click(within(form).getByRole('button', { name: 'Add indicator' }));
+  await waitFor(() =>
+    expect(submitted).toMatchObject({
+      research_area: { geometry },
+      countries: [],
+      report_template: null,
+    }),
+  );
+  expect(submitted).not.toHaveProperty('bbox');
+});
 it('hands off a map area, edits its bounds and creates nothing until Add indicator', async () => {
   const requests: unknown[] = [];
   server.use(

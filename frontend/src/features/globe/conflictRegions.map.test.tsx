@@ -1,3 +1,4 @@
+import { openMapTool } from '@/test/mapTools';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -51,7 +52,7 @@ it('starts with only conflicts visible, without GNSS, cameras, infrastructure or
     );
   }
   expect(layers()!.every((item) => item.id.startsWith('conflict-region-'))).toBe(true);
-  await user.click(screen.getByRole('button', { name: 'Event time' }));
+  await openMapTool(user, 'Event time');
   const time = screen.getByRole('region', { name: 'Event time' });
   expect(within(time).queryByRole('switch')).not.toBeInTheDocument();
   expect(within(time).getByRole('radio', { name: 'All' })).toBeChecked();

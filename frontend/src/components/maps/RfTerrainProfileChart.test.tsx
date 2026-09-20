@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { expect, it, vi } from 'vitest';
 import { evaluateRfTerrainProfile } from '@/lib/map/rfTerrainProfile';
 import { DEFAULT_RF_INPUTS } from '@/lib/map/rfPlanning';
 import { RF_STATUS_CSS } from '@/lib/map/rfTerrainPresentation';
@@ -71,4 +71,16 @@ it('draws an assumed obstacle screen separately above unchanged source terrain',
   );
   rerender(<RfTerrainProfileChart profile={ground} />);
   expect(container.querySelector('[data-profile-series="assumed-obstacles"]')).toBeNull();
+});
+
+it('links keyboard-accessible sample inspection to the exact map coordinate', () => {
+  const onProfilePoint = vi.fn();
+  render(
+    <RfTerrainProfileChart profile={profile([0, 150, 0, 0])} onProfilePoint={onProfilePoint} />,
+  );
+  fireEvent.change(screen.getByRole('slider', { name: 'Inspect profile sample' }), {
+    target: { value: '1' },
+  });
+  expect(onProfilePoint).toHaveBeenLastCalledWith([0.005, 0]);
+  expect(screen.getByText(/0.50 km from TX · terrain 150.0 m/)).toBeVisible();
 });

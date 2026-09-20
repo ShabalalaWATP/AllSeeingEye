@@ -5,6 +5,11 @@ import { useMemo } from 'react';
 import { WatchAreaButton } from '@/components/maps/WatchAreaButton';
 import { drawingWatchArea } from '@/lib/map/areaWatchGeometry';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
+import {
+  DrawingCollectionControls,
+  type DrawingCollectionControlsProps,
+} from './DrawingCollectionControls';
+import { DrawingStorageControls } from './DrawingStorageControls';
 
 const icons: Record<DrawingShape, string> = {
   path: 'M3 18 9 6l6 10 6-12',
@@ -35,7 +40,12 @@ const iconPoints: Record<DrawingShape, readonly (readonly [number, number])[]> =
   ],
 };
 
-export function MapDrawingPanel({ value }: { value: MapDrawing }) {
+export function MapDrawingPanel({
+  value,
+  workspace,
+  onResearch,
+  onRadioSite,
+}: { value: MapDrawing } & Partial<DrawingCollectionControlsProps>) {
   const watch = useMemo(() => {
     // Envelope calculations run once a sketch is finished, never on live drag/click frames.
     if (value.picking) return { area: null, error: 'Finish drawing before watching this area.' };
@@ -51,33 +61,38 @@ export function MapDrawingPanel({ value }: { value: MapDrawing }) {
   const twoPoint = value.shape === 'rectangle' || value.shape === 'circle';
   const complete = value.anchors.length >= (twoPoint ? 2 : 32);
   const moving = value.interaction === 'move';
+  const editingVertex = value.interaction === 'vertex';
   const dragging = value.interaction === 'drag';
-  const instruction = moving
-    ? 'Press inside the shape or near its line, drag it to a new position, then release. Escape cancels the move.'
-    : dragging
-      ? value.shape === 'circle'
-        ? 'Press at the centre, drag out the radius, then release. Escape cancels this drag.'
-        : 'Press at one corner, drag to the opposite corner, then release. Escape cancels this drag.'
-      : DRAWING_SHAPES.find((item) => item.value === value.shape)?.instruction;
+  const instruction = editingVertex
+    ? 'Drag a vertex handle to edit it. Release commits one edit; Escape cancels the preview.'
+    : moving
+      ? 'Press inside the shape or near its line, drag it to a new position, then release. Escape cancels the move.'
+      : dragging
+        ? value.shape === 'circle'
+          ? 'Press at the centre, drag out the radius, then release. Escape cancels this drag.'
+          : 'Press at one corner, drag to the opposite corner, then release. Escape cancels this drag.'
+        : DRAWING_SHAPES.find((item) => item.value === value.shape)?.instruction;
   const cannotStart = !value.canPick || (value.interaction === 'click' && complete);
   const action = value.picking
     ? moving
       ? 'Finish moving'
       : 'Finish drawing'
-    : moving
-      ? 'Drag sketch to move'
-      : dragging
-        ? complete
-          ? 'Draw replacement shape'
-          : 'Drag to draw shape'
-        : complete
-          ? 'Shape complete'
-          : 'Draw with map clicks';
+    : editingVertex
+      ? 'Drag a vertex'
+      : moving
+        ? 'Drag sketch to move'
+        : dragging
+          ? complete
+            ? 'Draw replacement shape'
+            : 'Drag to draw shape'
+          : complete
+            ? 'Shape complete'
+            : 'Draw with map clicks';
   return (
     <section aria-label="Map drawing tools" className="map-tool-workspace">
       <MapToolIntro
         title="Draw on map"
-        description="Sketch an area or trace a path. Your drawing stays local."
+        description="Sketch an area or path, then add it to a saved drawing collection."
         status={value.picking ? (moving ? 'Moving sketch' : 'Drawing active') : 'Ready'}
         statusActive={value.picking}
       />
@@ -157,6 +172,20 @@ export function MapDrawingPanel({ value }: { value: MapDrawing }) {
       {value.canDrag && (
         <button
           type="button"
+          disabled={!value.canPick || !value.anchors.length}
+          aria-pressed={editingVertex}
+          onClick={() => {
+            value.setInteraction('vertex');
+            value.setPicking(true);
+          }}
+          className="map-tool-secondary w-full"
+        >
+          Edit vertices on map
+        </button>
+      )}
+      {value.canDrag && (
+        <button
+          type="button"
           disabled={!value.canPick || value.anchors.length < 2}
           aria-pressed={moving}
           onClick={() => {
@@ -171,16 +200,34 @@ export function MapDrawingPanel({ value }: { value: MapDrawing }) {
       <div className="map-tool-actions">
         <button
           type="button"
-          disabled={!value.anchors.length}
+          disabled={!value.canUndo}
           onClick={value.undo}
           className="map-tool-secondary"
         >
-          Undo point
+          Undo sketch
+        </button>
+        <button
+          type="button"
+          disabled={!value.canRedo}
+          onClick={value.redo}
+          className="map-tool-secondary"
+        >
+          Redo sketch
         </button>
         <button type="button" onClick={value.clear} className="map-tool-text-button">
           Clear drawing
         </button>
       </div>
+      {workspace && (
+        <>
+          <DrawingCollectionControls
+            workspace={workspace}
+            onResearch={onResearch}
+            onRadioSite={onRadioSite}
+          />
+          <DrawingStorageControls storage={workspace.storage} />
+        </>
+      )}
       <WatchAreaButton
         area={watch.area}
         disabled={value.picking}
@@ -188,13 +235,14 @@ export function MapDrawingPanel({ value }: { value: MapDrawing }) {
           value.picking
             ? 'Finish drawing or moving before preparing an area indicator.'
             : (watch.error ??
-              'Watch an approximate bounding rectangle around this sketch, including its curved edges and areas outside the shape. Review the bounds in Warning before adding an indicator.')
+              'Watch the same straight-edged boundary used by area research. Review precise-location rules in Warning before adding an indicator.')
         }
       />
       <details className="map-tool-disclosure">
         <summary>How drawings and measurements work</summary>
         <p className="map-tool-help">
-          One sketch, cleared when you leave this page. Selecting another shape replaces it.
+          The current sketch is temporary. Add it to the collection and save to keep it between
+          visits. Selecting another sketch shape replaces the current sketch, with undo available.
           Dragging a replacement keeps the old sketch until release. WGS84 surface measurements
           exclude terrain and altitude. Circles have a maximum 1,000 km radius and use 32 perimeter
           vertices. Other shapes retain their longitude/latitude offsets when moved, so their

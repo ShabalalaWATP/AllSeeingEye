@@ -62,7 +62,7 @@ it('opens with the keyboard and moves through results with the arrow keys', asyn
   expect(within(palette).getAllByRole('option')[1]).toHaveAttribute('aria-selected', 'true');
   await user.keyboard('{ArrowUp}{Enter}');
   await waitFor(() => {
-    expect(router.state.location.search).toContain('panel=CCTV');
+    expect(router.state.location.search).toContain('panel=cameras');
   });
 });
 
@@ -91,7 +91,7 @@ it('reaches pages, trackers and map layers, and never administration', () => {
   // Alerts and rules are reached from Settings now, not from the primary rail.
   expect(routes).not.toContain('/warning');
   expect(routes).toContain('/trackers/space');
-  expect(routes).toContain('/?panel=CCTV');
+  expect(routes).toContain('/?panel=cameras');
   // The catalogue is an administrator's page now, so an analyst cannot jump to it.
   expect(routes.some((route) => route.startsWith('/admin'))).toBe(false);
   expect(new Set(targets.map((target) => target.id)).size).toBe(targets.length);

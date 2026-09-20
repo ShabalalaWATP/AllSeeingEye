@@ -17,7 +17,10 @@ export type RfLinkAdvice =
 /** A local what-if using the same DEM. It neither changes equipment inputs nor requests data. */
 export function rfLinkAdvice(
   analysis: Extract<RfAnalysis, { kind: 'terrain' }>,
+  limits: Partial<Record<'transmitter' | 'receiver', number>> = {},
 ): RfLinkAdvice | null {
+  if (Object.values(limits).some((value) => !Number.isFinite(value) || value < 0 || value > 10_000))
+    return null;
   const { terrain, input } = analysis;
   const profile = terrain.path;
   if (
@@ -43,7 +46,7 @@ export function rfLinkAdvice(
     const key = site === 'transmitter' ? 'transmitHeightM' : 'receiveHeightM';
     // Round upward with a one-metre allowance for the sampled screen, not a DEM accuracy claim.
     const heightM = Math.ceil(input[key] + extra + 1);
-    if (!Number.isFinite(heightM) || heightM > 10_000) return [];
+    if (!Number.isFinite(heightM) || heightM > Math.min(10_000, limits[site] ?? 10_000)) return [];
     const trial = evaluateRfTerrainProfile(
       { ...input, [key]: heightM },
       profile.points.map((point) => point.position),

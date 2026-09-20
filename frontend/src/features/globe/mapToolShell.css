@@ -1,9 +1,9 @@
 .map-tool-panel {
   position: absolute;
   z-index: 13;
-  right: 68px;
+  right: 72px;
   top: 4rem;
-  width: min(320px, calc(100% - 136px));
+  width: min(var(--map-inspector-width, 360px), calc(100% - 144px));
   max-height: calc(100% - 10rem);
   display: flex;
   flex-direction: column;
@@ -11,15 +11,15 @@
   border-radius: 12px;
   background: #0b0e12f8;
   box-shadow: 0 12px 36px #0007;
-  overflow: hidden;
   animation: dashboard-arrive 120ms ease-out;
 }
-.map-tool-panel[data-side='left'] {
-  left: 68px;
-  right: auto;
+.map-tool-panel[hidden],
+.map-tool-content[hidden] {
+  display: none;
 }
-.map-tool-panel[data-size='medium'] {
-  width: min(360px, calc(100% - 136px));
+.map-tool-panel[data-side='left'] {
+  left: 72px;
+  right: auto;
 }
 .map-tool-heading {
   display: flex;
@@ -29,6 +29,9 @@
   min-height: 56px;
   padding: 6px 8px 6px 16px;
   border-bottom: 1px solid var(--color-line);
+}
+.map-tool-panel[data-collapsed='true'] .map-tool-heading {
+  border-bottom: 0;
 }
 .map-tool-heading h2 {
   flex: 1;
@@ -54,6 +57,7 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: #4b535d transparent;
+  border-radius: 0 0 12px 12px;
 }
 .map-tool-content > section,
 .map-tool-content > div {
@@ -61,20 +65,195 @@
   border-radius: 0;
   background: transparent;
 }
-@media (max-width: 639px) {
+.map-tool-resizer {
+  position: absolute;
+  left: -5px;
+  top: 12px;
+  bottom: 12px;
+  width: 10px;
+  cursor: ew-resize;
+  touch-action: none;
+  border-radius: 4px;
+}
+.map-tool-panel[data-side='left'] .map-tool-resizer {
+  left: auto;
+  right: -5px;
+}
+.map-tool-resizer:hover,
+.map-tool-resizer:focus-visible {
+  background: #79d8eb60;
+  outline: 1px solid var(--color-ember);
+}
+.map-tool-chooser {
+  padding: 16px;
+  font-size: 12px;
+}
+.map-tool-chooser label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.map-tool-chooser input {
+  width: 100%;
+  background: #171a1e;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+.map-tool-chooser input:focus-visible {
+  outline: 2px solid var(--color-ember);
+}
+.map-tool-chooser-hint {
+  color: var(--color-muted);
+  margin: 8px 0 18px;
+}
+.map-tool-chooser h3 {
+  margin: 18px 0 8px;
+  color: var(--color-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.map-tool-choice {
+  display: flex;
+  border-top: 1px solid #ffffff0a;
+}
+.map-tool-choice > button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 4px;
+  text-align: left;
+  border-radius: 5px;
+}
+.map-tool-choice > button:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.map-tool-choice > button:hover {
+  background: #ffffff09;
+}
+.map-tool-choice > button:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: -2px;
+}
+.map-tool-choice strong,
+.map-tool-choice small {
+  display: block;
+}
+.map-tool-choice strong {
+  font-weight: 600;
+  font-size: 13px;
+}
+.map-tool-choice small {
+  color: var(--color-muted);
+  line-height: 1.45;
+  margin-top: 3px;
+}
+.map-tool-choice .map-tool-pin {
+  width: 40px;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-muted);
+}
+.map-tool-pin[aria-pressed='true'] {
+  color: var(--color-ember);
+}
+.map-tool-pin:disabled {
+  opacity: 0.35;
+}
+.map-navigation-rail {
+  position: absolute;
+  z-index: 12;
+  top: 8px;
+  right: 12px;
+  border: 1px solid #ffffff12;
+  border-radius: 10px;
+  background: #080a0de8;
+  padding: 2px;
+}
+.map-navigation-rail > [role='group'] {
+  flex-direction: row;
+  border: 0;
+  padding-top: 0;
+}
+.map-active-mode {
+  position: absolute;
+  z-index: 15;
+  bottom: 7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 144px);
+  padding: 8px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #0b0e12f8;
+  font-size: 12px;
+}
+.map-active-mode:empty {
+  display: none;
+}
+/* The shell positions the activity strip; its content must stay in normal flow. */
+.map-active-mode > section {
+  position: static;
+  transform: none;
+  translate: none;
+  max-width: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+@media (max-width: 767px) {
+  .globe-dashboard {
+    /* Reserve the 82px Eye launcher, its bottom gap, clocks and touch spacing. */
+    --map-mobile-footer-space: calc(128px + env(safe-area-inset-bottom, 0px));
+    /* Keep the top Tools launcher reachable on short phone viewports as well. */
+    --map-mobile-panel-height: min(58%, calc(100% - var(--map-mobile-footer-space) - 128px));
+  }
   .map-tool-panel,
   .map-tool-panel[data-side='left'] {
-    right: 58px;
-    left: auto;
-    width: min(320px, calc(100% - 116px));
+    right: 6px;
+    left: 6px;
+    top: auto;
+    bottom: var(--map-mobile-footer-space, 128px);
+    width: auto;
+    max-height: var(--map-mobile-panel-height, 58%);
+    border-radius: 14px;
   }
-  .map-tool-panel[data-size='medium'] {
-    left: auto;
-    width: min(360px, calc(100% - 116px));
+  .map-tool-panel .map-tool-heading {
+    min-height: 52px;
   }
-  .map-tool-panel[data-side='left'] {
-    left: 58px;
-    right: auto;
+  .map-tool-resizer {
+    display: none;
+  }
+  .map-navigation-rail {
+    right: 6px;
+    top: 8px;
+  }
+  .map-navigation-rail button {
+    width: 36px;
+    height: 36px;
+  }
+  .map-active-mode {
+    max-width: calc(100% - 124px);
+    bottom: calc(var(--map-mobile-footer-space, 128px) + 64px);
+    flex-wrap: wrap;
+  }
+  .globe-dashboard:has(.map-tool-panel:not([hidden]):not([data-collapsed='true']))
+    .map-active-mode {
+    bottom: calc(
+      var(--map-mobile-footer-space, 128px) + var(--map-mobile-panel-height, 58%) + 12px
+    );
+  }
+}
+@media (max-width: 359px) {
+  .map-navigation-rail button {
+    width: 32px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

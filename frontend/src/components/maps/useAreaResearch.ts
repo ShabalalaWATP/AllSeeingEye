@@ -6,6 +6,7 @@ import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useResearchRun } from '@/lib/hooks/useResearchRun';
 import { areasEqual } from '@/lib/map/areaGeometry';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
+import { prepareAreaResearchHandoff, useAreaResearchDraft } from '@/lib/areaResearchDraft';
 
 export const AREA_OVERVIEW_QUESTION =
   'What does the available public evidence show about this area during the selected period? ' +
@@ -17,7 +18,6 @@ export const AREA_PERIODS = [
   { days: 7, label: 'Last 7 days' },
   { days: 14, label: 'Last 14 days' },
 ] as const;
-type AreaPeriod = (typeof AREA_PERIODS)[number]['days'];
 type Preview = Awaited<ReturnType<typeof previewResearchPlan>>;
 type AreaInput = ResearchPlanInput & {
   research_area: NonNullable<ResearchPlanInput['research_area']>;
@@ -25,6 +25,7 @@ type AreaInput = ResearchPlanInput & {
 };
 interface CheckedArea {
   key: string;
+  scopeKey: string;
   input: AreaInput;
   data: Preview;
 }
@@ -35,9 +36,8 @@ export function useAreaResearch(
   areaError: string | null,
   preferences: Profile | null,
 ) {
-  const [question, setQuestion] = useState('');
-  const [days, setDays] = useState<AreaPeriod>(1);
-  const [mode, setMode] = useState<Profile['research_mode']>('detailed');
+  const { question, setQuestion, days, setDays, mode, setMode, sourceIds, setSourceIds, interval } =
+    useAreaResearchDraft();
   const [checked, setChecked] = useState<CheckedArea | null>(null);
   const [approved, setApproved] = useState<CheckedArea | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -47,14 +47,23 @@ export function useAreaResearch(
   const action = useResearchRun();
   const cancel = action.progress.cancel;
   const resolvedQuestion = question.trim() || AREA_OVERVIEW_QUESTION;
-  const key = JSON.stringify({
+  const scopeKey = JSON.stringify({
     area,
     areaError,
     question: resolvedQuestion,
     days,
     mode,
     preferences,
+    interval,
   });
+  const key = JSON.stringify({ scopeKey, sourceIds });
+  const [previousKey, setPreviousKey] = useState(key);
+  // Remember invalidation even if an operator edits a value and then restores it.
+  if (previousKey !== key) {
+    setPreviousKey(key);
+    setApproved(null);
+    if (checked) setChecked(checked.scopeKey === scopeKey ? { ...checked, key: '' } : null);
+  }
   useEffect(
     () => () => {
       pending.current?.abort();
@@ -72,14 +81,16 @@ export function useAreaResearch(
   const checkSources = async () => {
     if (busy || action.busy || !preferences) return;
     if (pending.current && !pending.current.signal.aborted) return;
-    if (!area || areaError || resolvedQuestion.length > 1000) {
+    if (!area || areaError || resolvedQuestion.length > 1000 || sourceIds?.length === 0) {
       setFailure({
         key,
         message:
           areaError ??
           (!area
             ? 'Complete an area on the map first.'
-            : 'Use a question of at most 1,000 characters.'),
+            : sourceIds?.length === 0
+              ? 'Select at least one research source or use all available sources.'
+              : 'Use a question of at most 1,000 characters.'),
       });
       return;
     }
@@ -96,13 +107,13 @@ export function useAreaResearch(
       research_web_search: false,
       research_area: { geometry: { ...area } },
       question: resolvedQuestion,
-      since: new Date(until.getTime() - days * 86_400_000).toISOString(),
-      until: until.toISOString(),
+      since: interval?.since ?? new Date(until.getTime() - days * 86_400_000).toISOString(),
+      until: interval?.until ?? until.toISOString(),
       languages: preferences.research_languages,
       mode,
       focus: 'general',
       time_basis: 'acquisition_or_publication',
-      source_ids: null,
+      source_ids: sourceIds,
       team_id: null,
     };
     try {
@@ -118,14 +129,16 @@ export function useAreaResearch(
         data.time_basis !== input.time_basis ||
         JSON.stringify(data.languages) !== JSON.stringify(input.languages) ||
         Date.parse(data.since) !== Date.parse(input.since) ||
-        Date.parse(data.until) !== Date.parse(input.until)
+        Date.parse(data.until) !== Date.parse(input.until) ||
+        (sourceIds !== null &&
+          data.tasks.some((task) => task.selected !== sourceIds.includes(task.source_id)))
       )
         throw new ApiError(
           422,
           'invalid_request',
           'The source preview does not match this area and research scope. Check sources again.',
         );
-      setChecked({ key, input, data });
+      setChecked({ key, scopeKey, input, data });
     } catch (error) {
       if (!signal.aborted) setFailure({ key, message: describeError(error) });
     } finally {
@@ -150,13 +163,32 @@ export function useAreaResearch(
       research_focus: 'general',
       research_web_search: false,
       research_languages: input.languages,
-      research_source_ids: null,
+      research_source_ids: input.source_ids ?? null,
       report_language: preferences.report_language,
       report_style: preferences.report_style,
       devils_advocacy: mode !== 'quick',
       team_id: null,
       disclose_area_to_provider: true,
     });
+  };
+  const prepareHandoff = () => {
+    if (!area || areaError || !preferences || busy || action.busy) return false;
+    try {
+      prepareAreaResearchHandoff(
+        area,
+        preview
+          ? { since: preview.input.since, until: preview.input.until }
+          : (interval ?? undefined),
+        preferences,
+      );
+      return true;
+    } catch (error) {
+      setFailure({
+        key,
+        message: error instanceof Error ? error.message : 'The area draft could not be prepared.',
+      });
+      return false;
+    }
   };
   return {
     question,
@@ -165,6 +197,11 @@ export function useAreaResearch(
     setDays,
     mode,
     setMode,
+    sourceIds,
+    setSourceIds,
+    sourcePlan: checked?.scopeKey === scopeKey ? checked.data : null,
+    interval: preview ? { since: preview.input.since, until: preview.input.until } : interval,
+    fixedInterval: interval,
     preview: preview?.data ?? null,
     eligible,
     consent,
@@ -174,5 +211,6 @@ export function useAreaResearch(
     error: failure?.key === key ? failure.message : null,
     checkSources,
     generate,
+    prepareHandoff,
   };
 }

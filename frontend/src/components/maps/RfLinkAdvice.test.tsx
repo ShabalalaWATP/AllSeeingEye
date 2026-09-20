@@ -5,7 +5,7 @@ import { rfLinkAdvice } from '@/lib/map/rfLinkAdvice';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 
 vi.mock('@/lib/map/rfLinkAdvice', () => ({ rfLinkAdvice: vi.fn() }));
-const analysis = {} as Extract<RfAnalysis, { kind: 'terrain' }>;
+const analysis = { terrain: { path: null } } as Extract<RfAnalysis, { kind: 'terrain' }>;
 
 it('explains an automatic height scenario without presenting it as a measured or applied change', () => {
   vi.mocked(rfLinkAdvice).mockReturnValue({

@@ -1,5 +1,6 @@
 /** Direction: areas of interest and collection plans with the evidence gathered against them. */
 import { z } from 'zod';
+import { frozenAreaSchema } from './areaSchemas';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
@@ -14,6 +15,7 @@ export const aoiSchema = z.object({
   description: z.string(),
   kind: z.string(),
   bbox: z.array(z.number()).nullable(),
+  research_area: frozenAreaSchema.nullable().optional(),
   countries: z.array(z.string()),
   created_by: z.string(),
   created_at: z.string(),

@@ -66,9 +66,16 @@ class ReportJobBuilder:
             for iso in request.country_isos
         ]
         conflict, hazard = self.conflict(request), self.hazard(request)
+        aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
+        if plan is not None and plan.aoi_id is not None and aoi is None:
+            raise InvalidRequest("The linked area is unavailable; repair the plan before use.")
+        if aoi is not None and aoi.research_area is not None:
+            raise InvalidRequest(
+                "Use this exact area in standalone area research or an area subscription; "
+                "collection-plan report templates cannot honour its polygon."
+            )
         provider = self._backgrounds.get(template.id)
         background = await provider() if provider is not None else conflict_background(conflict)
-        aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
         if plan is not None:
             background = plan.description or None
             request = replace(request, question=request.question or plan.pirs[0].text)

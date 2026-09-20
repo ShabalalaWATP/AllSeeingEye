@@ -6,7 +6,7 @@ import type { MapBounds } from '@/lib/map/MapEngine';
 
 const COORDINATES = ['west', 'south', 'east', 'north'] as const;
 export function useIndicatorArea(draft: AreaWatchDraft | null) {
-  const [mode, setMode] = useState(draft ? 'area' : 'nations');
+  const [mode, setMode] = useState(draft?.geometry ? 'shape' : draft ? 'area' : 'nations');
   const [fields, setFields] = useState(
     () =>
       Object.fromEntries(
@@ -28,7 +28,8 @@ export function useIndicatorArea(draft: AreaWatchDraft | null) {
     } catch (failure) {
       error = failure instanceof Error ? failure.message : 'Enter valid bounds.';
     }
-  return { mode, setMode, fields, setFields, bbox, error };
+  const geometry = draft?.geometry;
+  return { mode, setMode, fields, setFields, bbox, error, geometry };
 }
 
 export function IndicatorAreaFields({
@@ -50,9 +51,16 @@ export function IndicatorAreaFields({
         options={[
           { value: 'nations', label: 'Nations or worldwide' },
           { value: 'area', label: 'Map area (rectangle)' },
+          ...(value.geometry ? [{ value: 'shape', label: 'Exact drawn shape' }] : []),
         ]}
       />
-      {value.mode === 'nations' ? (
+      {value.mode === 'shape' ? (
+        <p className="text-xs text-muted">
+          The exact research boundary is retained, including holes. Only precisely located
+          observations count. Switching to rectangle explicitly uses its enclosing bounds. Alerts
+          only; use an area research subscription for reports.
+        </p>
+      ) : value.mode === 'nations' ? (
         <TextField
           label="Nations"
           hint="ISO codes, comma separated; blank watches everywhere."

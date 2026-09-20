@@ -20,8 +20,16 @@ it('only accepts a panel the map actually defines', () => {
 it('links to a panel without smuggling other route parameters', () => {
   const url = new URL(mapPanelHref('Technology & communications'), 'http://local.test');
   expect(url.pathname).toBe('/');
-  expect(url.searchParams.get('panel')).toBe('Technology & communications');
+  expect(url.searchParams.get('panel')).toBe('technology');
   expect([...url.searchParams.keys()]).toEqual(['panel']);
+});
+
+it('supports stable tool links and legacy display labels', () => {
+  expect(readMapPanel(new URLSearchParams({ panel: 'rf' }))).toBe('RF link calculator');
+  expect(readMapPanel(new URLSearchParams({ panel: 'RF coverage' }))).toBe('RF link calculator');
+  expect(readMapPanel(new URLSearchParams({ panel: 'Measure' }))).toBe('Measure distance and area');
+  expect(mapPanelHref('rf')).toBe('/?panel=rf');
+  expect(mapPanelHref('missing')).toBe('/');
 });
 
 it('describes every listed layer and keeps identifiers unique', () => {

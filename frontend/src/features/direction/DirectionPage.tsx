@@ -13,9 +13,11 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { AreaForm } from './AreaForm';
+import { ResearchAreaButton } from './ResearchAreaButton';
 import { PlanForm } from './PlanForm';
 
 export function describeArea(area: AreaOfInterest): string {
+  if (area.research_area) return `exact shape � ${area.research_area.sha256.slice(0, 12)}`;
   if (area.kind === 'bbox' && area.bbox !== null) {
     return `box ${area.bbox.map((n) => n.toFixed(1)).join(', ')}`;
   }
@@ -74,6 +76,7 @@ export default function DirectionPage() {
                   </Td>
                   <Td className="font-mono text-xs text-muted">{describeArea(area)}</Td>
                   <Td>
+                    <ResearchAreaButton area={area} />
                     <Link
                       to={`/?area=${encodeURIComponent(area.id)}`}
                       className="mr-3 text-sm text-ember hover:underline"

@@ -6,6 +6,7 @@ import type { Country } from '@/lib/api/geoSchemas';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { rectangleArea } from '@/lib/map/areaGeometry';
 import { geometryBounds } from '@/lib/map/geometryBounds';
+import { parseLocalGeoJson } from '@/lib/map/localGeoJson';
 import type { LocalGeometry } from '@/lib/map/geoJsonTypes';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 
@@ -22,6 +23,15 @@ export function useSavedMapArea(
   const area = resource.data?.find((item) => item.id === id) ?? null;
   const outline = useMemo(() => {
     if (!area) return null;
+    if (area.research_area) {
+      try {
+        const geometry = parseLocalGeoJson(JSON.stringify(area.research_area.geometry)).canonical
+          .features[0]?.geometry;
+        return geometry ? { geometry, bounds: geometryBounds(geometry) } : null;
+      } catch {
+        return null;
+      }
+    }
     const boxes =
       area.kind === 'bbox' && area.bbox
         ? [area.bbox]

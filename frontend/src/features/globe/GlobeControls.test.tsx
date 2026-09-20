@@ -24,6 +24,35 @@ it('starts closed at every viewport and leaves only compact controls', () => {
     'false',
   );
 });
+it('opens a newly requested tool without remounting the map shell', () => {
+  const panels = [
+    <ControlPanel key="draw" label="Draw on map" icon="draw">
+      <p>Drawing options</p>
+    </ControlPanel>,
+    <ControlPanel key="rf" label="RF link calculator" icon="rf">
+      <p>Radio options</p>
+    </ControlPanel>,
+  ];
+  const { rerender } = render(
+    <GlobeControls layers={null} initial="Draw on map">
+      {panels}
+    </GlobeControls>,
+  );
+  expect(screen.getByText('Drawing options')).toBeVisible();
+  rerender(
+    <GlobeControls layers={null} initial="RF link calculator">
+      {panels}
+    </GlobeControls>,
+  );
+  expect(screen.getByText('Radio options')).toBeVisible();
+  expect(screen.queryByText('Drawing options')).not.toBeInTheDocument();
+  rerender(
+    <GlobeControls layers={null} initial={null}>
+      {panels}
+    </GlobeControls>,
+  );
+  expect(screen.queryByText('Radio options')).not.toBeInTheDocument();
+});
 it('opens one tool at a time, supports interaction and restores focus on Escape', async () => {
   const user = userEvent.setup();
   const action = vi.fn();

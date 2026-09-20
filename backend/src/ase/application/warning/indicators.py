@@ -16,6 +16,7 @@ from ase.application.ports.warning import IndicatorRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import BoundingBox, Category
+from ase.domain.research_area import ResearchArea, validate_direct_area
 from ase.domain.users import User
 from ase.domain.warning import (
     MAX_COOLDOWN_MINUTES,
@@ -43,6 +44,24 @@ class IndicatorInput:
     report_template: str | None = None
     enabled: bool = True
     team_id: UUID | None = None
+    research_area: ResearchArea | None = None
+
+
+def _validate_area(data: IndicatorInput) -> None:
+    if data.research_area is not None:
+        try:
+            validate_direct_area(data.research_area)
+        except ValueError as exc:
+            raise InvalidRequest(str(exc)) from exc
+        if data.bbox is not None or data.countries:
+            raise InvalidRequest(
+                "Choose an exact shape, a rectangle or nations, not several scopes."
+            )
+        if data.report_template is not None:
+            raise InvalidRequest(
+                "Exact-shape indicators support alerts only. "
+                "Use an area research subscription for reports."
+            )
 
 
 def build_indicator(
@@ -57,6 +76,7 @@ def build_indicator(
     name = " ".join(data.name.split())
     if not name:
         raise InvalidRequest("An indicator needs a name.")
+    _validate_area(data)
     bbox: BoundingBox | None = None
     if data.bbox is not None:
         west, south, east, north = data.bbox
@@ -83,6 +103,7 @@ def build_indicator(
         plan_id=data.plan_id,
         countries=tuple(dict.fromkeys(c.strip().upper() for c in data.countries if c.strip())),
         bbox=bbox,
+        research_area=data.research_area,
         categories=tuple(dict.fromkeys(data.categories)),
         keywords=keywords,
         threshold=data.threshold,

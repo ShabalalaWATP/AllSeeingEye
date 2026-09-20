@@ -1,6 +1,8 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import type { SketchDrag } from '@/lib/map/MapEngine';
 import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
+import { snapshotRfStudy } from '@/lib/map/rfStudy';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { adminUser, plainUser } from '@/test/fixtures';
@@ -119,4 +121,142 @@ it('removes the receiver and obsolete link while keeping the transmitter and rad
   expect(screen.getByLabelText('Map estimate radius')).toHaveTextContent('none');
   expect(screen.getByRole('button', { name: 'Show estimate on map' })).toBeEnabled();
   expect(screen.getByRole('button', { name: '360° area' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+it('edits and swaps named sites while retaining an independent baseline until access changes', () => {
+  const { engine } = fakeEngine();
+  const { result } = renderHook(() => useRfMapPlacement(engine, true));
+  act(() => {
+    result.current.setSite('origin', [0, 51], 'Hill');
+    result.current.setSite('receiver', [1, 51], 'Valley');
+  });
+  const saved = snapshotRfStudy(
+    result.current.draft,
+    result.current.origin,
+    result.current.receiver,
+    result.current.siteNames,
+    null,
+  );
+  act(() => {
+    result.current.setBaseline(saved);
+    result.current.setProfilePoint([0.5, 51]);
+    result.current.swapSites();
+  });
+  expect(result.current.origin).toEqual([1, 51]);
+  expect(result.current.siteNames.origin).toBe('Valley');
+  expect(result.current.baseline?.origin).toEqual([0, 51]);
+  expect(result.current.profilePoint).toBeNull();
+  act(() => result.current.restoreStudy(saved));
+  expect(result.current.origin).toEqual([0, 51]);
+  expect(result.current.analysis).toBeNull();
+  act(() => invalidateWorkspaceAccess());
+  expect(result.current.baseline).toBeNull();
+  expect(result.current.siteNames).toEqual({ origin: '', receiver: '' });
+});
+
+function dragEngine() {
+  const base = fakeEngine();
+  const listeners = new Set<(event: SketchDrag) => void>();
+  return {
+    ...base,
+    engine: {
+      ...base.engine,
+      getZoom: () => 10,
+      onDrag: (handler: (event: SketchDrag) => void) => {
+        listeners.add(handler);
+        return () => {
+          listeners.delete(handler);
+        };
+      },
+    },
+    drag: (event: SketchDrag) => listeners.forEach((handler) => handler(event)),
+  };
+}
+it('moves only the armed site after a near-marker drag start and invalidates obsolete analysis', () => {
+  const engine = dragEngine();
+  const { result } = renderHook(() => useRfMapPlacement(engine.engine, true));
+  act(() => {
+    result.current.setSite('origin', [0, 51]);
+    result.current.setSite('receiver', [1, 51]);
+    result.current.setEstimate({
+      origin: [0, 51],
+      receiver: [1, 51],
+      radiusKm: 5,
+      horizonKm: 5,
+      sensitivityDistanceKm: 5,
+      label: 'Old reference',
+    });
+  });
+  act(() => result.current.setDragSite('origin'));
+  const event = (phase: SketchDrag['phase'], lon: number): SketchDrag => ({
+    phase,
+    start: { lon: 0, lat: 51 },
+    current: { lon, lat: 51 },
+  });
+  act(() => engine.drag(event('start', 0)));
+  expect(result.current.estimate).toBeNull();
+  act(() => engine.drag(event('move', 0.1)));
+  expect(result.current.origin).toEqual([0.1, 51]);
+  expect(result.current.receiver).toEqual([1, 51]);
+  act(() => engine.drag(event('end', 0.2)));
+  expect(result.current.origin).toEqual([0.2, 51]);
+  expect(result.current.picking).toBeNull();
+  act(() => engine.click(2, 52));
+  expect(result.current.origin).toEqual([0.2, 51]);
+});
+it('rejects distant drag starts and restores the committed site after cancel or access changes', () => {
+  const engine = dragEngine();
+  const { result } = renderHook(() => useRfMapPlacement(engine.engine, true));
+  act(() => {
+    result.current.setSite('origin', [0, 51]);
+  });
+  act(() => result.current.setDragSite('origin'));
+  const event = (phase: SketchDrag['phase'], start = 0, current = 0.1): SketchDrag => ({
+    phase,
+    start: { lon: start, lat: 51 },
+    current: { lon: current, lat: 51 },
+  });
+  act(() => {
+    engine.drag(event('start', 1));
+    engine.drag(event('end', 1, 2));
+  });
+  expect(result.current.origin).toEqual([0, 51]);
+  act(() => engine.drag(event('start', 0, 0)));
+  act(() => engine.drag(event('move')));
+  expect(result.current.origin).toEqual([0.1, 51]);
+  act(() => engine.drag(event('cancel')));
+  expect(result.current.origin).toEqual([0, 51]);
+  expect(result.current.picking).toBeNull();
+  act(() => result.current.setDragSite('origin'));
+  act(() => engine.drag(event('start', 0, 0)));
+  act(() => engine.drag(event('move')));
+  act(() => invalidateWorkspaceAccess());
+  act(() => engine.drag(event('end')));
+  expect(result.current.origin).toBeNull();
+});
+
+it('clears radio sites and saved comparison while retaining engineering configuration', () => {
+  const { engine } = fakeEngine();
+  const { result } = renderHook(() => useRfMapPlacement(engine, true));
+  act(() => {
+    result.current.setSite('origin', [0, 51], 'Private site');
+    result.current.setDraft({
+      ...result.current.draft,
+      engineering: { reserveDb: '15', obstacleHeightM: '5', earthFactor: '1.33' },
+    });
+  });
+  const baseline = snapshotRfStudy(
+    result.current.draft,
+    result.current.origin,
+    null,
+    result.current.siteNames,
+    null,
+  );
+  act(() => result.current.setBaseline(baseline));
+  act(() => result.current.clearSites());
+  expect(result.current.origin).toBeNull();
+  expect(result.current.receiver).toBeNull();
+  expect(result.current.baseline).toBeNull();
+  expect(result.current.siteNames.origin).toBe('');
+  expect(result.current.draft.engineering?.reserveDb).toBe('15');
 });

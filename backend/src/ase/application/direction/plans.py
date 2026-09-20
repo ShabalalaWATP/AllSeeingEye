@@ -11,6 +11,7 @@ from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
+from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.audit import AuditAction
@@ -236,7 +237,9 @@ class PlanEvidenceUseCase:
         self._plans, self._aois, self._store, self._clock = plans, aois, store, clock
         self._access = access
 
-    async def execute(self, actor: User, plan_id: UUID) -> PlanEvidence:
+    async def _scope(
+        self, actor: User, plan_id: UUID
+    ) -> tuple[CollectionPlan, AreaOfInterest | None]:
         decision = await self._access.context(actor)
         plan = await self._plans.get(plan_id)
         if plan is None:
@@ -247,8 +250,34 @@ class PlanEvidenceUseCase:
             raise InvalidRequest("The linked area is unavailable; repair the plan before use.")
         if aoi is not None:
             decision.require_same_scope(plan.created_by, plan.team_id, aoi.created_by, aoi.team_id)
+        return plan, aoi
+
+    async def execute(self, actor: User, plan_id: UUID) -> PlanEvidence:
+        plan, aoi = await self._scope(actor, plan_id)
         now = self._clock.now()
+        if (
+            aoi is not None
+            and aoi.research_area is not None
+            and isinstance(self._store, CooperativeEventReader)
+        ):
+            result = await self._store.read_cooperatively(
+                EventQuery(
+                    research_area=aoi.research_area, since=now - EVIDENCE_WINDOW, limit=POOL
+                ),
+                lambda events: self._evidence(plan, aoi, events),
+                admission_key=f"user:{actor.id}",
+            )
+            # Worker admission yields. Recheck access and the selected records before return.
+            if await self._scope(actor, plan_id) != (plan, aoi):
+                raise InvalidRequest("The collection plan or area changed. Refresh its evidence.")
+            return result
         pool = self._pool(plan, aoi, now)
+        return self._evidence(plan, aoi, pool)
+
+    @staticmethod
+    def _evidence(
+        plan: CollectionPlan, aoi: AreaOfInterest | None, pool: list[Event]
+    ) -> PlanEvidence:
         matched: dict[str, list[Event]] = {sir.code: [] for sir in plan.sirs}
         for event in pool:
             if not in_scope(plan, aoi, event):
@@ -269,7 +298,9 @@ class PlanEvidenceUseCase:
     def _pool(self, plan: CollectionPlan, aoi: AreaOfInterest | None, now: datetime) -> list[Event]:
         since = now - EVIDENCE_WINDOW
         queries: list[EventQuery] = []
-        if aoi is not None and aoi.kind == "bbox":
+        if aoi is not None and aoi.research_area is not None:
+            queries.append(EventQuery(research_area=aoi.research_area, since=since, limit=POOL))
+        elif aoi is not None and aoi.kind == "bbox":
             queries.append(EventQuery(bbox=aoi.bbox, since=since, limit=POOL))
         countries = aoi.countries if aoi is not None and aoi.kind == "countries" else plan.countries
         queries.extend(EventQuery(country_iso=iso, since=since, limit=POOL) for iso in countries)

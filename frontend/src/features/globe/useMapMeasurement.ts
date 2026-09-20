@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
+import { drawingAuthority } from '@/lib/map/drawingAuthority';
 import type { Position } from '@/lib/map/geoJsonTypes';
 import { MAX_MEASUREMENT_POINTS, measurementPoint, measurementText } from '@/lib/map/measurements';
 import type { MeasurementMode } from '@/lib/map/measurements';
@@ -21,7 +22,7 @@ export function useMapMeasurement(engine: Pick<GlobeEngineHandle, 'onClick'>, en
     };
     const offAccess = subscribeWorkspaceAccess(clear);
     const offUser = useAuthStore.subscribe((next, previous) => {
-      if (next.user?.id !== previous.user?.id) clear();
+      if (drawingAuthority(next) !== drawingAuthority(previous)) clear();
     });
     return () => {
       offAccess();

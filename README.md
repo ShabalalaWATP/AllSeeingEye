@@ -20,6 +20,9 @@ sample observations. Screenshots are not a statement of live source coverage.*
 
 - **Explore the live picture.** Switch between globe and map, filter observations,
   inspect source details, measure areas and distances, and save map views.
+- **Work with map tools.** Save editable drawing collections, research the same
+  boundary, compare radio studies and inspect terrain. The [map workspace guide](docs/MAP_WORKSPACE.md)
+  explains the tools and their limits.
 - **Research a question.** Choose countries, regions, dates and research depth.
   Add supported private inputs or start from a selected map area. Save reusable
   Research Briefs with your requirements.
