@@ -28,6 +28,8 @@ class SourceHealth:
     polls: int = 0
     # Fixed operator-facing text from FeedBlocked; cleared by any other outcome.
     blocked_reason: str | None = None
+    # Current successful poll's coverage/quality caveat, separate from failure history.
+    warning: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,12 +69,14 @@ class HealthRegistry:
         interval: timedelta,
         *,
         warning: str | None = None,
+        coverage_warning: str | None = None,
     ) -> SourceHealth:
         entry = self.get(source_id)
         entry.blocked_reason = None
         entry.status = SourceStatus.DEGRADED if warning else SourceStatus.HEALTHY
         if warning:
             entry.last_error, entry.last_error_at = warning[:300], now
+        entry.warning = coverage_warning[:300] if coverage_warning else None
         entry.last_success = now
         entry.consecutive_failures = 0
         entry.items_last_poll = items
@@ -93,6 +97,7 @@ class HealthRegistry:
         """A deliberate wait is not another failed upstream request."""
         entry = self.get(source_id)
         entry.blocked_reason = error[:300] if blocked else None
+        entry.warning = None
         entry.status = SourceStatus.DEGRADED
         entry.last_error, entry.last_error_at = error[:300], now
         entry.next_poll_at = retry_at
@@ -101,6 +106,7 @@ class HealthRegistry:
 
     def record_failure(self, source_id: str, error: str, now: datetime) -> SourceHealth:
         entry = self.get(source_id)
+        entry.warning = None
         entry.blocked_reason = None
         entry.consecutive_failures += 1
         entry.last_error = error[:300]
@@ -119,6 +125,7 @@ class HealthRegistry:
     ) -> SourceHealth:
         """Back off at least as long as the upstream asked; a throttle never disables."""
         entry = self.get(source_id)
+        entry.warning = None
         entry.blocked_reason = None
         entry.consecutive_failures += 1
         entry.last_error, entry.last_error_at = error[:300], now
@@ -131,6 +138,7 @@ class HealthRegistry:
     def reset(self, source_id: str) -> SourceHealth:
         """An administrator re-enables a disabled source."""
         entry = self.get(source_id)
+        entry.warning = None
         entry.blocked_reason = None
         entry.status = SourceStatus.IDLE
         entry.consecutive_failures = 0

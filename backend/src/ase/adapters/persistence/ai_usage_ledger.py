@@ -27,6 +27,7 @@ from ase.adapters.persistence.ai_usage_models import (
     AiUsageReservationRow,
     AiUsageTotalRow,
 )
+from ase.adapters.persistence.llm_profile_lock import lock_profile_reference
 from ase.domain.ai_usage import (
     AiAllowanceExceeded,
     AiAllowancePeriod,
@@ -85,6 +86,11 @@ class SqlAiLedger:
             raise ValueError("AI reservations need a positive bounded token amount.")
         _checked_text(model, 2048, "model identifier")
         _checked_text(purpose, 64, "purpose")
+        if profile_id is not None:
+            # Lock before policy/counter rows, matching profile deletion's order.
+            # A previously selected model may have been removed; retain its model
+            # snapshot and charge normally without a dangling credential reference.
+            profile_id = await lock_profile_reference(self._session, profile_id)
         await self.lock_policy(policy_id)
         row = await self._session.get(AiUsagePolicyRow, policy_id, populate_existing=True)
         if row is None:

@@ -24,7 +24,7 @@ it('caps multi-selection at 100 while keeping selected items available for desel
         onChange={setValue}
         teams={teams}
         users={[]}
-        connections={[]}
+        connections={[binding(draft())]}
       />
     );
   }

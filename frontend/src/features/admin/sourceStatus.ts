@@ -30,6 +30,8 @@ export function sourceStatusPresentation(source: Source): { label: string; tone:
   const state = scheduledSourceStatus(source);
   if (state === 'blockedByOperator' || state === 'switchedOff') return STATUS_PRESENTATION[state];
   if (isOnDemandSource(source)) return { label: 'On-demand', tone: 'info' };
+  if (state === 'healthy' && source.health.warning)
+    return { label: 'Live with warning', tone: 'warning' };
   if (source.health.status === 'disabled')
     return { label: 'Paused after failures', tone: 'critical' };
   return STATUS_PRESENTATION[state];

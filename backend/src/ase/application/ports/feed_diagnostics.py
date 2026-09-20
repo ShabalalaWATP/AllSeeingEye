@@ -31,6 +31,14 @@ class FeedRateLimited(Exception):
 
 
 @runtime_checkable
+class CoverageFeedConnector(FeedConnector, Protocol):
+    """Expected coverage limits, independent of failed requests or cached-input fallback."""
+
+    @property
+    def coverage_warning(self) -> str | None: ...
+
+
+@runtime_checkable
 class DiagnosticFeedConnector(FeedConnector, Protocol):
     @property
     def warning(self) -> str | None: ...

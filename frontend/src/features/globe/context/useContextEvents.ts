@@ -51,23 +51,36 @@ export function useContextEvents(
   useEffect(() => {
     if (!enabled || !auth.startsWith('authenticated:')) return;
     const signal = request();
+    const cancelled = () => signal.aborted;
     // Separate capped reads prevent a busy bulletin source from hiding singleton indices.
     const limit = Math.max(1, Math.floor(100 / sources.length));
-    void Promise.allSettled(
-      sources.map((source) =>
-        fetchEvents({ sources: [source], limit, ...(country ? { country } : {}) }, signal),
-      ),
-    ).then((results) => {
-      if (signal.aborted) return;
+    const load = async () => {
+      const events: LiveEvent[] = [];
+      let failures = 0;
+      // The server admits two reads per user. Leave one slot for another map panel.
+      for (const source of sources) {
+        if (cancelled()) return;
+        try {
+          const result = await fetchEvents(
+            { sources: [source], limit, ...(country ? { country } : {}) },
+            signal,
+          );
+          if (cancelled()) return;
+          events.push(...result.slice(0, limit));
+        } catch {
+          if (cancelled()) return;
+          failures += 1;
+        }
+      }
+      if (cancelled()) return;
       setSnapshot({
         scope,
-        events: results.flatMap((result) =>
-          result.status === 'fulfilled' ? result.value.slice(0, limit) : [],
-        ),
-        failures: results.filter((result) => result.status === 'rejected').length,
+        events,
+        failures,
         fetchedAt: new Date().toISOString(),
       });
-    });
+    };
+    void load();
     return () => {
       request();
     };

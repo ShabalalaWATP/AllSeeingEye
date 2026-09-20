@@ -4,6 +4,12 @@ Use the globe and map to draw an area, inspect observations and start research,
 or to study terrain and radio links. The tools share map geometry; saved drawing
 collections and radio studies keep work between visits.
 
+Public figures can share a seat-of-office marker. Select a marker and use
+**Figure at this map location** in its details to choose among the visible
+figures at those coordinates. The selected portrait appears above other markers.
+Shared placement does not establish that those people are together; check the
+placement explanation and reporting dates.
+
 ## Find and arrange tools
 
 Open **Tools** to search the tool list. Tools are grouped into drawing,

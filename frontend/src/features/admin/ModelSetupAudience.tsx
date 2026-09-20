@@ -14,6 +14,7 @@ export function ModelSetupAudience({
   onChange: (value: Audience) => void;
 } & Pick<ModelSetupProps, 'teams' | 'users' | 'connections'>) {
   const [search, setSearch] = useState('');
+  const hasDefault = connections.some((connection) => !connection.team_id && !connection.user_id);
   const targets =
     value.scope === 'team'
       ? teams
@@ -50,6 +51,7 @@ export function ModelSetupAudience({
               name="audience"
               value={option.scope}
               checked={value.scope === option.scope}
+              disabled={option.scope !== 'global' && !hasDefault}
               onChange={() => {
                 setSearch('');
                 onChange({ scope: option.scope, targetIds: [] });
@@ -59,6 +61,11 @@ export function ModelSetupAudience({
           </label>
         ))}
       </fieldset>
+      {!hasDefault && (
+        <p className="text-sm text-muted">
+          Set a global default before assigning models to specific teams or people.
+        </p>
+      )}
       {value.scope === 'global' ? (
         <p className="rounded-lg border border-amber/30 bg-amber/5 p-3 text-sm leading-6">
           This changes the default for all users and teams without their own override. Existing team
@@ -88,8 +95,9 @@ export function ModelSetupAudience({
                   type="checkbox"
                   checked={value.targetIds.includes(target.id)}
                   disabled={
-                    !value.targetIds.includes(target.id) &&
-                    value.targetIds.length >= MODEL_SETUP_MAX_TARGETS
+                    !hasDefault ||
+                    (!value.targetIds.includes(target.id) &&
+                      value.targetIds.length >= MODEL_SETUP_MAX_TARGETS)
                   }
                   onChange={(event) =>
                     onChange({

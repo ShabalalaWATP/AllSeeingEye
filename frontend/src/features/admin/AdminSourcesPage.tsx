@@ -35,7 +35,7 @@ export function summarise(sources: readonly Source[]): string {
 }
 
 export default function AdminSourcesPage() {
-  const { data, error, loading, setData, key, refresh } = useScopedResource(fetchSources);
+  const { data, error, loading, setData, key, refresh, reload } = useScopedResource(fetchSources);
   const now = useNow();
 
   const replaceHealth = useCallback(
@@ -103,14 +103,9 @@ export default function AdminSourcesPage() {
                   source={item}
                   now={now}
                   onReset={replaceHealth}
-                  onActivation={(id, enabled) =>
-                    setData(
-                      (current) =>
-                        current?.map((source) =>
-                          source.id === id ? { ...source, enabled } : source,
-                        ) ?? null,
-                    )
-                  }
+                  // Parent controls also affect variants. Reload their effective states
+                  // from the server, including independently disabled children.
+                  onActivation={() => void reload()}
                 />
               ))}
             </tbody>

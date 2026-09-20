@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import * as api from '@/lib/api/events';
+import { ApiError } from '@/lib/api/errors';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { applySession } from '@/test/render';
@@ -12,6 +13,61 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
+
+it.each([SOURCES, ['ioda_outages', 'ioda_outage_events', 'cloudflare_radar_outages']])(
+  'loads every context source while leaving room for another panel: %s',
+  async (...sources) => {
+    applySession('user');
+    let active = 1; // Another map panel occupies one of the server's two user slots.
+    let peak = active;
+    const fetch = vi.spyOn(api, 'fetchEvents').mockImplementation(async (query) => {
+      if (active >= 2) throw new ApiError(429, 'rate_limited', 'Too many reads.');
+      active += 1;
+      peak = Math.max(peak, active);
+      try {
+        await new Promise<void>((resolve) => queueMicrotask(resolve));
+        const source = query?.sources?.[0];
+        if (!source) throw new Error('Expected a source-specific context query.');
+        return [liveEvent({ id: source, source_id: source })];
+      } finally {
+        active -= 1;
+      }
+    });
+    const view = renderHook(() => useContextEvents(sources));
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+    expect(view.result.current.failures).toBe(0);
+    expect(view.result.current.events.map((event) => event.source_id)).toEqual(sources);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(peak).toBe(2);
+  },
+);
+
+it.each(['resolve', 'reject'] as const)(
+  'stops queued sources when an in-flight request settles after logout (%s)',
+  async (outcome) => {
+    applySession('user');
+    let release!: (events: LiveEvent[]) => void;
+    let reject!: (error: Error) => void;
+    const pending = new Promise<LiveEvent[]>((resolve, fail) => {
+      release = resolve;
+      reject = fail;
+    });
+    const fetch = vi.spyOn(api, 'fetchEvents').mockReturnValue(pending);
+    const view = renderHook(() => useContextEvents(SOURCES));
+    expect(fetch).toHaveBeenCalledTimes(1);
+    act(() => applySession('anonymous'));
+    await act(async () => {
+      if (outcome === 'resolve') release([liveEvent()]);
+      else reject(new Error('late failure'));
+      await Promise.resolve();
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0]?.[1]?.aborted).toBe(true);
+    expect(view.result.current.events).toEqual([]);
+    expect(view.result.current.failures).toBe(0);
+    expect(view.result.current.loading).toBe(false);
+  },
+);
 
 it('loads separate bounded source snapshots without bbox, streams or polling', async () => {
   applySession('user');

@@ -37,6 +37,14 @@ The browser retains its 5,000-event global bound. It reserves up to 1,500 places
 
 The satellite panel offers all, stations/crewed vehicles, public military and Skynet selections. Counts describe loaded distinct objects. Rendering collapses overlapping feeds by NORAD ID and favours Skynet, military, then stations records; other map categories pass through unchanged. The event inspector retains original source attribution and orbital-age attributes. Failed supplements show an error while retaining a successful primary snapshot. Existing live-update reconciliation, session cancellation and tombstone handling remain in force.
 
+Supplemental requests run one at a time. The event API permits two queued or
+active reads per user, so a snapshot leaves capacity for another panel instead
+of exhausting that allowance before the smaller satellite catalogues load.
+These requests read retained server data; they do not download orbital elements
+again. A failed supplement does not prevent later catalogues from loading.
+Cancellation stops queued requests and prevents late results from replacing a
+newer snapshot or restoring a signed-out session.
+
 
 ## Final runtime and freshness checks
 

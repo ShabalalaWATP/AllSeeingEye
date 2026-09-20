@@ -125,6 +125,7 @@ class SourceHealthOut(BaseModel):
     polls: int
     # Fixed operator-facing text for an upstream refusal; never raw error detail.
     blocked_reason: str | None = None
+    warning: str | None = None
 
     @classmethod
     def from_health(cls, health: SourceHealth) -> Self:
@@ -140,6 +141,7 @@ class SourceHealthOut(BaseModel):
             next_poll_at=health.next_poll_at,
             polls=health.polls,
             blocked_reason=health.blocked_reason,
+            warning=health.warning,
         )
 
 

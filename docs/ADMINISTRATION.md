@@ -38,3 +38,17 @@ their authorised action commits. Revocation prevents release of the link without
 undoing a completed approval. See the [scoped access review](security/ADMIN_WORKSPACE_REVIEW.md).
 
 For provider setup, see [AI connections](AI_CONNECTIONS_OPERATIONS.md).
+
+## Source controls and health
+
+A successful sampled collection counts as live and shows its coverage warning.
+Failed requests and unsuccessful refreshes remain degraded, even when retained
+data can still be displayed. The last error is failure history, not a coverage
+statement. Check the last successful poll and the dates of the actual observations.
+
+Changing a source switch reloads the full list of effective settings. Parent
+controls can affect related sources, while explicit child overrides remain in
+force. If the reload fails, retry before relying on the displayed state.
+
+The first AI connection must be assigned as the global default. Team and personal
+assignments become available after that default exists.

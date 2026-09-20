@@ -14389,6 +14389,8 @@ export interface components {
             polls: number;
             /** Blocked Reason */
             blocked_reason?: string | null;
+            /** Warning */
+            warning?: string | null;
         };
         /**
          * SourceHealthSummaryOut

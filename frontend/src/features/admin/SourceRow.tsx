@@ -53,6 +53,9 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
       </Td>
       <Td>
         <StatusPill tone={status.tone}>{status.label}</StatusPill>
+        {!onDemand && !stopped && health.warning && (
+          <p className="mt-1 max-w-xs text-xs text-amber">{health.warning}</p>
+        )}
         {!onDemand && !stopped && health.consecutive_failures > 0 && (
           <span className="mt-1 block text-[11px] text-muted">
             {health.consecutive_failures} failed in a row

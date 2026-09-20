@@ -245,7 +245,10 @@ async def test_provider_migration_roundtrip_and_refuses_lossy_downgrade(
                 )
                 await connection.run_sync(lambda sync: _assert_preserved(sync, before_refusal))
             async with factory() as session:
-                await SqlLlmProfileRepository(session).delete(created.id)
+                # Clean up against schema 0018. Runtime deletion also maintains the
+                # usage ledger introduced later, which does not exist in this fixture.
+                profiles = sa.table("llm_profiles", sa.column("id", sa.Uuid()))
+                await session.execute(profiles.delete().where(profiles.c.id == created.id))
                 if case == "historical_model":
                     version = await session.get(
                         ReportVersionRow, UUID(str(original["report_versions"][0]["id"]))

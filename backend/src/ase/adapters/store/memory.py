@@ -94,16 +94,26 @@ class InMemoryEventStore:
                 added += 1
                 changed_ids.append(event.id)
             elif (
-                event.category is Category.AVIATION
-                and existing.category is Category.AVIATION
-                and "adsb" in event.tags
-                and "adsb" in existing.tags
+                (
+                    (
+                        event.category is Category.AVIATION
+                        and existing.category is Category.AVIATION
+                        and "adsb" in event.tags
+                        and "adsb" in existing.tags
+                    )
+                    or (
+                        event.category is Category.MARITIME
+                        and existing.category is Category.MARITIME
+                        and event.subtype == "vessel_position"
+                        and existing.subtype == "vessel_position"
+                    )
+                )
                 and event.published_at is not None
                 and existing.published_at is not None
                 and event.published_at < existing.published_at
             ):
-                # Overlapping regional/list polls share an ICAO identity. A slow
-                # response must not move a newer transponder position backwards.
+                # Position reports can arrive out of order across polls. Keep the
+                # newer position and its original timestamps, including for expiry.
                 unchanged += 1
             elif existing.content_hash == event.content_hash:
                 unchanged += 1

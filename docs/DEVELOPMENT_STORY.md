@@ -5462,3 +5462,77 @@ pinned actions. Full CI, code scanning and image checks on the combined branch
 remain required before the final merge. Migrations 0063 and 0064 require the
 reviewed manual deployment path and a verified backup; the automatic controller
 must retain its migration safeguard.
+
+### Live-site audit repairs, 20 September 2026
+
+The audit repairs cover public-figure markers, context-panel reads, delayed AIS
+updates and administration workflows. Selected portraits render above neighbours,
+and a labelled picker handles figures sharing a location without moving their
+coordinates. Context reads respect the server's concurrency allowance and stop
+after scope cancellation. Older vessel positions cannot replace newer ones or
+change their expiry timestamps.
+
+An optional coverage-diagnostics port separates the normal limits of a sampled
+feed from failed requests. Successful sampling remains live with a warning;
+unsuccessful satellite refreshes and partial upstream failures remain degraded.
+Source switches reload server-calculated family settings, and first-model setup
+requires a global default before a team or personal override.
+
+The changes preserve service, adapter and presentation boundaries. Focused
+regressions reproduced the defects before repair, and independent code-quality
+and defensive reviews found no remaining actionable issues after the source-health
+distinction was corrected. No production deployment is part of this repair step.
+
+The combined repair branch also includes the model-removal and satellite-loading
+fixes described below. Its final selected suites passed 130 backend and 252
+frontend tests. Type checks, lint, formatting, production build, import contracts
+and scoped Bandit checks passed. Local browser checks covered globe/map portraits,
+the fallback silhouette, keyboard choice and a 390 × 844 mobile layout.
+
+A full local frontend coverage run was stopped after timeouts in five other
+suites. All 17 tests in those suites passed in isolation; no complete coverage
+result is claimed for this patch. Full CI, including PostgreSQL and coverage
+gates, remains a release requirement. Browser checks saw transient WebGL texture
+warnings on the first selection switch, with no visible failure or recurrence.
+
+### Removing unused AI connections, 20 September 2026
+
+Deleting a tested, unassigned model could fail because allowance reservations
+still referenced its saved profile. Profile removal now detaches that optional
+reference in the same transaction, retaining model names, usage history,
+allowance charges and pending settlements. Active assignments and administrator
+session checks keep their existing protections.
+
+The persistence adapters coordinate deletion and admission through a shared
+database lock helper. PostgreSQL uses row locks; SQLite takes its writer lock
+before checking the profile. A request holding an earlier model snapshot can
+still be accounted for after removal. No schema change is required. Regression
+tests cover the original failure, reservation states, settlement, rollback and
+concurrent admission. The connection guide explains removal and retained usage.
+Removal returns a retryable conflict if usage rows are busy, avoiding a lock cycle
+with settlement or reconciliation. Independent review checked this ordering and
+the unchanged assignment and session guards.
+
+The affected suites passed 58 SQLite and 60 PostgreSQL tests. After the locking
+refinements, final removal suites passed 10 SQLite and 11 PostgreSQL tests,
+including contention and retry. All 12 frontend removal/recovery tests passed,
+along with Ruff, formatting, targeted mypy, import contracts and file-length checks.
+Full CI and verification in the deployed app remain release steps.
+
+### Satellite catalogue loading, 20 September 2026
+
+A read-only check found usable military and Skynet orbital inputs on the live
+server despite zero counts in the map. The browser launched up to seven
+supplemental event requests together, exceeding the server's two-read allowance
+per user. A controlled reproduction showed that later catalogues were rejected.
+
+Supplemental loading now uses one request at a time, preserving capacity for
+another panel. Per-request errors, successful results, geographic scope and
+snapshot limits are retained. Cancellation stops remaining requests. No source
+reset, provider request, server limit change or production deployment was used
+to make the tests pass.
+
+Four new regressions failed before the fix. All 47 selected map, satellite,
+reconciliation and coverage tests passed afterwards. Independent code/security
+review found no blockers. CI and deployed-browser verification remain release steps.
+Type checks, the production build, lint, formatting and source-length checks passed.

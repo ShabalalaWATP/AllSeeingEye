@@ -1126,3 +1126,40 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Preserve isolated Semgrep publication while updating pinned CI actions.
 - [ ] Require successful full CI and security checks before the final main merge.
 - [ ] Verify the migration-aware release and running application after deployment.
+
+### Live-site audit repairs, 20 September 2026
+
+- [x] Correct public-figure fallback transparency and selected-marker ordering;
+  provide a keyboard-accessible choice at shared locations.
+- [x] Serialise context-panel reads with cancellation and partial-result handling.
+- [x] Reject older vessel positions across collection batches without extending retention.
+- [x] Distinguish ordinary sampling limits from failed upstream refreshes in source health.
+- [x] Refresh authoritative source-family settings after activation changes.
+- [x] Require a global default before targeted first-model assignments.
+- [x] Add failing regression cases, verify focused suites and complete independent
+  code-quality and defensive reviews.
+- [x] Integrate the model-removal and satellite-supplement fixes into one repair
+  branch. Combined suites passed 130 backend and 252 frontend tests; type checks,
+  lint, formatting, build, import contracts and scoped Bandit checks passed.
+- [ ] Complete full CI and coverage gates for the combined repair pull request.
+- [ ] Merge and verify an authorised production release.
+
+### Unused AI connection removal, 20 September 2026
+
+- [x] Reproduce deletion failure with enforced foreign keys and metered model tests.
+- [x] Detach the optional profile reference while preserving usage and allowances.
+- [x] Coordinate removal with allowance admission without holding locks across model calls.
+- [x] Preserve active-assignment, administrator and session protections.
+- [x] Document removal of tested and untested unused connections.
+- [x] Complete SQLite and PostgreSQL concurrency regressions and final review:
+  final removal suites passed 10 SQLite and 11 PostgreSQL tests; all 12 frontend
+  removal/recovery tests passed. Ruff, mypy and import contracts passed.
+- [ ] Release the fix through reviewed CI and verify removal in the deployed app.
+
+### Satellite catalogue loading, 20 September 2026
+
+- [x] Check live orbital caches without resetting sources or making new provider requests.
+- [x] Reproduce supplemental requests exceeding the server's per-user read allowance.
+- [x] Load supplements sequentially while preserving errors, scope and cancellation.
+- [x] Pass all 47 selected map/satellite tests and independent code/security review.
+- [ ] Complete release CI and verify catalogue counts in the deployed browser.

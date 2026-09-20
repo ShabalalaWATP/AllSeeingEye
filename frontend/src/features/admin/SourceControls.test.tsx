@@ -19,14 +19,20 @@ async function row() {
 describe('administrator source controls', () => {
   it('confirms activation changes and describes retained evidence', async () => {
     const bodies: unknown[] = [];
+    let enabled = true;
     server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({ items: [{ ...sources[0], enabled }] }),
+      ),
       http.patch('/api/admin/sources/:id/activation', async ({ request }) => {
-        bodies.push(await request.json());
+        const body = (await request.json()) as { enabled: boolean };
+        bodies.push(body);
+        enabled = body.enabled;
         return new HttpResponse(null, { status: 204 });
       }),
     );
     const { user } = renderApp('/admin/sources', 'admin');
-    const source = await row();
+    let source = await row();
     await user.click(source.getByRole('button', { name: 'Disable USGS earthquakes' }));
     expect(bodies).toEqual([]);
     expect(source.getByText(/Existing live records and saved reports are retained/)).toBeVisible();
@@ -34,10 +40,12 @@ describe('administrator source controls', () => {
     expect(bodies).toEqual([]);
     await user.click(source.getByRole('button', { name: 'Disable USGS earthquakes' }));
     await user.click(source.getByRole('button', { name: 'Confirm disable' }));
+    source = await row();
     expect(await source.findByText('Collection disabled')).toBeVisible();
     expect(bodies).toEqual([{ enabled: false }]);
     await user.click(source.getByRole('button', { name: 'Enable USGS earthquakes' }));
     await user.click(source.getByRole('button', { name: 'Confirm enable' }));
+    source = await row();
     expect(await source.findByText('Collection enabled')).toBeVisible();
     expect(bodies).toEqual([{ enabled: false }, { enabled: true }]);
   });

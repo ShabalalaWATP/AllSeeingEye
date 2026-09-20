@@ -88,9 +88,10 @@ export function GlobeInspectors({
   if (figures?.selected)
     return (
       <FigureInspector
-        key={figures.selected.id}
         figure={figures.selected}
         onClose={figures.close}
+        visibleFigures={figures.visible}
+        onSelectFigure={figures.select}
       />
     );
   return <SelectedMapDetails {...eventDetails} />;

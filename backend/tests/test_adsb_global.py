@@ -44,11 +44,12 @@ async def test_sweep_queries_are_bounded_and_resume_without_duplicate_cells():
     assert http.get_json.await_count == 24 and len(first) == 1
     assert first[0].published_at == NOW - timedelta(seconds=3)
     assert first[0].attributes["simultaneous_global_coverage"] is False
-    assert "24/" in connector.warning
+    assert "24/" in connector.coverage_warning
+    assert connector.warning is None
     await connector.fetch()
     urls = [call.args[0] for call in http.get_json.await_args_list]
     assert len(urls) == len(set(urls)) == 48
-    assert "48/" in connector.warning
+    assert "48/" in connector.coverage_warning
 
 
 async def test_interests_are_bounded_expire_and_rotate_without_renewing():

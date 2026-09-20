@@ -6,7 +6,7 @@ import { adminUser, plainUser } from '@/test/fixtures';
 import { applySession } from '@/test/render';
 import type { LlmProfile } from '@/lib/api/llm';
 import { ModelSetupWizard } from './ModelSetupWizard';
-import { installConnections, team } from './llmTestFixtures';
+import { binding, draft, installConnections, team } from './llmTestFixtures';
 
 export const secondTeam = {
   ...team,
@@ -47,7 +47,7 @@ export async function openWizard(initial?: LlmProfile) {
             profiles={state.profiles}
             teams={[team, secondTeam]}
             users={[plainUser, adminUser]}
-            connections={[]}
+            connections={[binding(draft())]}
             onSaved={onSaved}
             onApply={onApply}
             onClose={() => {
