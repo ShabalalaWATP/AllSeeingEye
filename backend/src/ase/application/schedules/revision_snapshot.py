@@ -46,6 +46,18 @@ def revision_from_schedule(
         if brief is not None
         else scheduled_report_request(schedule)
     )
+    if brief is not None:
+        # Execution history belongs to the subscription, not the authored brief.
+        # Keep it in subscription_context, outside the analytical fingerprint.
+        request = replace(
+            request,
+            subscription_previous_report_id=schedule.baseline_report_id
+            if schedule.avoid_repetition
+            else None,
+            subscription_seen_signatures=schedule.seen_content_signatures
+            if schedule.avoid_repetition
+            else (),
+        )
     scope = report_scope(request, TEMPLATES[request.template_id])
     settings = request_to_dict(request)
     fingerprint_body = {

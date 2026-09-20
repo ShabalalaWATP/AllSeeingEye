@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.adapters.persistence.subscription_edition_models import (
@@ -187,6 +188,7 @@ async def due_retry_ids(session: AsyncSession, now: datetime, limit: int = 20) -
     rows = await session.scalars(
         select(SubscriptionEditionRow.id)
         .join(latest, SubscriptionEditionRow.id == latest.c.edition_id)
+        .join(ScheduleRow, SubscriptionEditionRow.subscription_id == ScheduleRow.id)
         .join(
             SubscriptionAttemptRow,
             and_(
@@ -195,6 +197,8 @@ async def due_retry_ids(session: AsyncSession, now: datetime, limit: int = 20) -
             ),
         )
         .where(
+            ScheduleRow.enabled.is_(True),
+            ScheduleRow.archived_at.is_(None),
             SubscriptionEditionRow.workflow == "retry_wait",
             SubscriptionAttemptRow.outcome == "known_transient_failure",
             SubscriptionAttemptRow.next_retry_at <= now,
