@@ -1,4 +1,5 @@
 import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
+import { MeasurementReadout } from './MeasurementReadout';
 
 /** Editing actions stay reachable while the inspector is collapsed. */
 export function MapToolActivity({ tools }: { tools: ReturnType<typeof useMapWorkspaceTools> }) {
@@ -8,6 +9,7 @@ export function MapToolActivity({ tools }: { tools: ReturnType<typeof useMapWork
       ? tools.drawing
       : null;
   if (!drawing && !tools.rf.picking && !tools.measurement.picking) return null;
+  if (tools.measurement.picking) return <MeasurementReadout value={tools.measurement} />;
   return (
     <section
       aria-label="Active map tool"
@@ -45,27 +47,6 @@ export function MapToolActivity({ tools }: { tools: ReturnType<typeof useMapWork
             </button>
             <button type="button" className="min-h-11 underline" onClick={drawing.clear}>
               Discard sketch
-            </button>
-          </div>
-        </>
-      ) : tools.measurement.picking ? (
-        <>
-          <p role="status">Measuring · {tools.measurement.points.length} points</p>
-          <div className="flex gap-4">
-            <button
-              type="button"
-              className="min-h-11 underline"
-              disabled={!tools.measurement.points.length}
-              onClick={tools.measurement.undo}
-            >
-              Undo point
-            </button>
-            <button
-              type="button"
-              className="min-h-11 underline"
-              onClick={() => tools.measurement.setPicking(false)}
-            >
-              Finish measuring
             </button>
           </div>
         </>

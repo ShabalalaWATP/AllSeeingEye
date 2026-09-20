@@ -1,5 +1,4 @@
 import { CoordinateReadout } from './CoordinateReadout';
-import { MeasurementReadout } from './MeasurementReadout';
 import { RfMapReadout } from './RfMapReadout';
 import { WorldClocks } from './WorldClocks';
 import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
@@ -22,7 +21,6 @@ export function MapStatusReadouts({
   return (
     <>
       <WorldClocks />
-      <MeasurementReadout value={tools.measurement} />
       {!opsRoom && !tools.picking && (
         <RfMapReadout analysis={tools.rf.analysis} estimate={tools.rf.estimate} />
       )}

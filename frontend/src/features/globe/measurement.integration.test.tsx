@@ -45,7 +45,7 @@ it('picks only when enabled, preserves vertices across projection changes and cl
       false,
     );
   });
-  await user.click(screen.getByRole('button', { name: 'Close tool' }));
+  await user.click(screen.getByRole('button', { name: 'Collapse tool' }));
   expect(screen.queryByRole('region', { name: 'Map measurement' })).not.toBeInTheDocument();
   act(() => {
     map.fire('click', { lngLat: { lng: 0, lat: 0 } });
@@ -56,13 +56,19 @@ it('picks only when enabled, preserves vertices across projection changes and cl
   expect(readout).toHaveTextContent('111.319 km');
   expect(within(readout).getByRole('button', { name: 'Finish measuring' })).toBeVisible();
   expect(within(readout).getByRole('button', { name: 'Undo point' })).toBeEnabled();
-  await user.click(screen.getByRole('button', { name: 'Measure distance and area' }));
+  await user.click(screen.getByRole('button', { name: 'Expand tool' }));
   panel = screen.getByRole('region', { name: 'Map measurement' });
   expect(within(panel).getByLabelText('Measurement result')).toHaveTextContent('111.319 km');
   await user.click(
     within(screen.getByRole('group', { name: 'View mode' })).getByRole('button', { name: 'Map' }),
   );
   expect(FakeMap.instances).toHaveLength(1);
+  expect(within(panel).getByText('2/32 points')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Close tool' }));
+  expect(screen.queryByRole('region', { name: 'Active measurement' })).not.toBeInTheDocument();
+  act(() => map.fire('click', { lngLat: { lng: 2, lat: 0 } }));
+  await user.click(screen.getByRole('button', { name: 'Measure distance and area' }));
+  panel = screen.getByRole('region', { name: 'Map measurement' });
   expect(within(panel).getByText('2/32 points')).toBeInTheDocument();
   await user.click(within(panel).getByRole('button', { name: 'Clear measure' }));
   const layers = MapboxOverlay.instances[0]!.props.layers as { id: string }[];
