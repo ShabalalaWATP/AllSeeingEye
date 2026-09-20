@@ -5320,3 +5320,14 @@ the Git checkout subprocess a normal source-file umask, keeps the enclosing
 release/backup directories private, and probes each new image as its non-root
 runtime user before cutover. GitHub's production deployment history and private
 per-release success records provide the subsequent rollout evidence.
+
+On 20 September, a SOLID assessment rated the codebase 7/10: enforced core
+layering and useful ports, with concentrated responsibility and contract problems.
+The clearest behavioural finding was inconsistent token-exhaustion exceptions
+across model adapters, allowing provider selection to change retry behaviour.
+The review also identified partial-startup cleanup gaps, persistence-heavy routes,
+subscription execution inside the wiring package, implicit provider capabilities
+and four frontend cross-feature imports. Architecture and type checks passed,
+alongside 41 focused backend tests; these did not establish the missing adapter
+contract. The [review and remediation plan](SOLID_REVIEW.md) records ordered work
+and acceptance criteria. No runtime fixes or deployment were made in this review.
