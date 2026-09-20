@@ -1,6 +1,7 @@
 import type { Report } from '@/lib/api/reports';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import type { FollowUpRequest } from '@/lib/followUpScope';
+import { regionLabel } from '@/lib/regions';
 
 export function FollowUpSummary({
   parent,
@@ -11,6 +12,10 @@ export function FollowUpSummary({
   request: FollowUpRequest;
   workspaces: Workspaces;
 }) {
+  const geography = [
+    ...(request.regions ?? []).map(regionLabel),
+    ...(request.countries ?? (request.country ? [request.country] : [])),
+  ].join(', ');
   return (
     <section
       aria-label="Follow-up scope"
@@ -27,11 +32,8 @@ export function FollowUpSummary({
       </p>
       <p>
         {workspaces.label(parent.report.team_id)} · {request.research_focus} ·{' '}
-        {request.research_subject ??
-          (request.countries?.length
-            ? request.countries.join(', ')
-            : (request.country ?? 'Worldwide'))}{' '}
-        · {request.research_languages?.join(', ')}
+        {request.research_subject ?? (geography || 'Worldwide')} ·{' '}
+        {request.research_languages?.join(', ')}
       </p>
       <p>
         {request.research_since && request.research_until

@@ -4,6 +4,7 @@ import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 import { candidateHypothesisSchema, plannedQueryTaskSchema } from '@/lib/api/researchPlan';
 import { researchDateError } from '@/lib/researchPeriod';
+import { MAX_REGIONS, regionSchema } from '@/lib/regions';
 
 export type FollowUpRequest = ReportRequest & { parent_version: number };
 
@@ -35,6 +36,11 @@ const savedScope = z.object({
   report_style: z.enum(['briefing', 'assessment']).optional(),
   country: countryCode.nullable().optional(),
   countries: countryList.optional(),
+  regions: z
+    .array(regionSchema)
+    .max(MAX_REGIONS)
+    .transform((values) => [...new Set(values)])
+    .optional(),
   country_isos: countryList.optional(),
   categories: z.array(categorySchema).optional(),
   window_hours: z.number().int().nonnegative().optional(),
@@ -116,6 +122,7 @@ export function followUpRequest(parent: Report): FollowUpRequest {
     report_style: scope.report_style ?? 'assessment',
     country: scope.country ?? null,
     countries,
+    regions: scope.regions ?? [],
     research_web_search: scope.research_web_search ?? false,
     categories: scope.categories ?? [],
     hazard: scope.hazard ?? null,

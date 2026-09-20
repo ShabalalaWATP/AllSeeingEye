@@ -5343,3 +5343,20 @@ SQLite and isolated PostgreSQL tests pass, as do architecture/type checks, Bandi
 and the frontend build. Regenerated baseline/current OpenAPI schemas match. The
 review documents residual legacy subscription coupling and the later manual
 deployment gate; this implementation does not change production.
+
+A subsequent application audit found ten workflow defects despite the green test
+baseline. The requested repairs add board mutation fencing, stable brief retry
+identity, subscription pause/retry recovery, retained regional and brief scope,
+library pagination, consistent map selection and guarded team reactivation.
+Relative-window brief retries required a server-side replay boundary as well as
+client state. Team reactivation gained an explicit Manager-selection recovery
+control rather than leaving archived teams impossible to repair.
+
+Regression tests reproduced the failures before the corresponding changes.
+Independent review also found that merely skipping disabled retries could starve
+the bounded queue; due selection now filters inactive subscriptions before its
+limit. The changes retain the application's existing ports and transaction
+boundaries, with focused hooks for UI lifecycle responsibilities. SQLite and
+isolated PostgreSQL checks cover concurrency and compatibility; final full-suite
+results are recorded with the remediation pull request. The deployed app's missing
+AI connection remains a configuration task, not a claimed result of these fixes.

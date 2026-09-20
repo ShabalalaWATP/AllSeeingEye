@@ -1026,3 +1026,28 @@ Implementation evidence and residual legacy subscription boundaries are recorded
 in the review. Focused SQLite/PostgreSQL regressions, security review, static
 checks and the frontend build pass. Final full-suite/CI results belong to PR #35.
 No migration or production deployment is included.
+
+## 20 September 2026: application audit remediation
+
+- [x] Reproduce and document ten functional findings in
+  [the application audit](APP_AUDIT_2026-09-20.md).
+- [x] Fence team-board mutations against concurrent revocation and preserve
+  archived read tracking, authorship, moderation reasons and revision checks.
+- [x] Preserve unresolved brief-run identity across network retries and replay
+  admitted relative windows server-side without duplicate jobs.
+- [x] Repair subscription pause/retry transitions and prevent inactive retry waits
+  from starving the bounded due queue.
+- [x] Preserve regional follow-up scope, regenerated brief requirements/provenance
+  and recurring brief comparison/repetition context.
+- [x] Add brief-library pagination and repair supplemental news selection and
+  effective conflict-region controls.
+- [x] Require an active team Manager on reactivation with an atomic administrator
+  recovery path and matching UI.
+- [x] Add behavioural regressions and independent boundary/regression review.
+- [ ] Configure a production AI connection and evaluate real-model workflows.
+- [ ] Verify the repaired workflows after an authorised production release.
+
+Keep business rules in application services and async interaction state in hooks.
+No new production dependency or database migration is required. Local validation
+and final CI evidence are recorded in the remediation pull request; the deployment
+and model-quality gates above remain separate.

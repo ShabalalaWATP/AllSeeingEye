@@ -15248,6 +15248,8 @@ export interface components {
             is_active?: boolean | null;
             /** Description */
             description?: string | null;
+            /** Reactivation Manager Id */
+            reactivation_manager_id?: string | null;
         };
         /** TeamsOut */
         TeamsOut: {

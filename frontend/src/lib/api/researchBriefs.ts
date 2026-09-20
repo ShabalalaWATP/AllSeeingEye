@@ -19,8 +19,13 @@ const briefPage = z.object({
   offset: z.number().int().nonnegative(),
 });
 
-export async function fetchBriefs(signal: AbortSignal) {
-  return apiCall('/api/research/briefs?limit=50', { schema: briefPage, signal });
+export const BRIEF_PAGE_SIZE = 50;
+
+export async function fetchBriefs(signal: AbortSignal, offset = 0) {
+  return apiCall(`/api/research/briefs?limit=${BRIEF_PAGE_SIZE}&offset=${offset}`, {
+    schema: briefPage,
+    signal,
+  });
 }
 
 export async function fetchBrief(id: string, revision: number | undefined, signal: AbortSignal) {
@@ -81,12 +86,12 @@ export async function reviseBrief(brief: ResearchBrief, draft: BriefDraft, signa
   return result;
 }
 
-export function runBrief(brief: ResearchBrief, signal: AbortSignal) {
+export function runBrief(brief: ResearchBrief, signal: AbortSignal, requestId: string) {
   return scopedMutation(() =>
     apiCall('/api/report-jobs/from-brief', {
       method: 'POST',
       body: {
-        request_id: crypto.randomUUID(),
+        request_id: requestId,
         brief_id: brief.identity.id,
         revision: brief.identity.revision,
       },

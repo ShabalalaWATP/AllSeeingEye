@@ -32,7 +32,8 @@ async def _pause_active(
     if (
         edition is None
         or edition.job_id is None
-        or edition.workflow not in {EditionWorkflow.QUEUED, EditionWorkflow.RUNNING}
+        or edition.workflow
+        not in {EditionWorkflow.QUEUED, EditionWorkflow.RUNNING, EditionWorkflow.RETRY_WAIT}
     ):
         return None
     jobs = SqlReportJobRepository(session)

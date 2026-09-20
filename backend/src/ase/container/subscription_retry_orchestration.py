@@ -224,7 +224,13 @@ class SubscriptionRetryOrchestrator:
         async with self.container.session_factory() as session:
             due = await due_retry_ids(session, now)
         for edition_id in due:
-            async with self.container.session_factory() as session:
+            async with (
+                self.container.source_admission.guard(),
+                self.container.session_factory() as session,
+            ):
+                # Match schedule controls: source guard, then the DB administration guard.
+                repos = self.container.repositories(session)
+                await repos.users.lock_administration()
                 editions = SqlSubscriptionEditionRepository(session)
                 jobs = SqlReportJobRepository(session)
                 edition = await editions.get(edition_id)
@@ -233,6 +239,9 @@ class SubscriptionRetryOrchestrator:
                     or edition.workflow is not EditionWorkflow.RETRY_WAIT
                     or edition.job_id is None
                 ):
+                    continue
+                schedule = await repos.schedules.get(edition.subscription_id)
+                if schedule is None or not schedule.enabled or schedule.archived_at is not None:
                     continue
                 job = await jobs.get(edition.job_id)
                 attempt = await latest_attempt(session, edition_id)

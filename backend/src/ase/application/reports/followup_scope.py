@@ -8,6 +8,7 @@ from ase.application.reports.request import ReportRequest
 from ase.domain.errors import InvalidRequest
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_research_origin import origin_from_dict
+from ase.domain.regions import normalise_regions
 from ase.domain.research_area import area_from_dict
 from ase.domain.research_scope import normalise_countries
 
@@ -15,6 +16,7 @@ from ase.domain.research_scope import normalise_countries
 def require_followup_scope(scope: Mapping[str, Any], request: ReportRequest) -> None:
     try:
         countries = normalise_countries(scope.get("country"), scope.get("countries", ()))
+        regions = normalise_regions(scope.get("regions", ()))
         since = (
             datetime.fromisoformat(str(scope["research_since"]))
             if scope.get("research_since")
@@ -58,6 +60,10 @@ def require_followup_scope(scope: Mapping[str, Any], request: ReportRequest) -> 
         raise InvalidRequest(
             "A follow-up must retain the saved report's countries; "
             "start new research to change them"
+        )
+    if frozenset(request.regions) != frozenset(regions):
+        raise InvalidRequest(
+            "A follow-up must retain the saved report's regions; start new research to change them"
         )
     if request.effective_area != saved_area:
         raise InvalidRequest("Area research follow-up must retain the exact saved area")

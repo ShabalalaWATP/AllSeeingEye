@@ -2,9 +2,21 @@
  * The world regions a subscription or research question can name instead of listing
  * countries. The values are the backend's own, so a saved choice survives a reload.
  */
+import { z } from 'zod';
 import type { components } from './api/types.gen';
 
 export type Region = components['schemas']['Region'];
+
+export const regionSchema = z.enum([
+  'africa',
+  'asia',
+  'europe',
+  'middle_east',
+  'north_america',
+  'south_america',
+  'oceania',
+  'antarctica',
+]);
 
 export const REGIONS: readonly { value: Region; label: string; hint: string }[] = [
   { value: 'europe', label: 'Europe', hint: 'Including Russia, Ukraine and the Caucasus' },

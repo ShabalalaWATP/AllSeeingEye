@@ -30,17 +30,29 @@ class BoardActor:
 
 
 async def board_actor(
-    users: UserRepository, teams: TeamRepository, actor: User, team_id: UUID, *, write: bool
+    users: UserRepository,
+    teams: TeamRepository,
+    actor: User,
+    team_id: UUID,
+    *,
+    write: bool,
+    mutation: bool = False,
 ) -> BoardActor:
     """Rebuild authority from the current account and membership, never from the token."""
-    current = await users.get_by_id(actor.id)
+    if write or mutation:
+        # Match membership, archive and account mutation ordering. All repositories
+        # share the caller's transaction, so authority remains protected until commit.
+        await users.lock_administration()
+        current = await users.lock_by_id(actor.id)
+    else:
+        current = await users.get_by_id(actor.id)
     if (
         current is None
         or not current.is_active
         or current.security_version != actor.security_version
     ):
         raise Unauthenticated()
-    team = await teams.get(team_id)
+    team = await teams.get_for_update(team_id) if write or mutation else await teams.get(team_id)
     membership = await teams.get_membership(team_id, current.id)
     if team is None or (not current.is_admin and membership is None):
         raise NotFound()

@@ -17,6 +17,7 @@ import { AddMemberForm, TeamNameForm } from './TeamForms';
 import { ConfirmAction, TeamRoster } from './TeamRoster';
 import { TeamDashboard, type TeamDashboardTab } from './TeamDashboard';
 import { TeamInvitationPanel } from './TeamInvitationPanel';
+import { TeamReactivation } from './TeamReactivation';
 import { teamCapabilities } from './teamCapabilities';
 import { useTeamAction, useTeamsResource } from './useTeams';
 
@@ -215,12 +216,13 @@ export function TeamPanel({
                         }}
                       />
                     ) : admin ? (
-                      <Button
-                        variant="secondary"
+                      <TeamReactivation
+                        detail={detail}
+                        actorId={user.id}
                         busy={action.busy}
-                        onClick={() => {
+                        onReactivate={(body) => {
                           void action.run(
-                            () => updateTeam(id, { is_active: true }),
+                            () => updateTeam(id, body),
                             'Team reactivated.',
                             async () => {
                               await reload();
@@ -228,9 +230,7 @@ export function TeamPanel({
                             },
                           );
                         }}
-                      >
-                        Reactivate team
-                      </Button>
+                      />
                     ) : null}
                     {!admin && !detail.team.is_active ? (
                       <p className="text-sm text-muted">

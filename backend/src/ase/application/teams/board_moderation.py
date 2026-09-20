@@ -56,10 +56,11 @@ class TeamBoardModerationService:
     async def _load(
         self, actor: User, team_id: UUID, post_id: UUID
     ) -> tuple[TeamBoardPost, BoardActor]:
+        access = await board_actor(self._users, self._teams, actor, team_id, write=True)
         post = await self._board.get(post_id)
         if post is None or post.team_id != team_id:
             raise NotFound()
-        return post, await board_actor(self._users, self._teams, actor, team_id, write=True)
+        return post, access
 
     @staticmethod
     def _reason(access: BoardActor, post: TeamBoardPost, reason: str | None) -> str | None:
@@ -136,18 +137,12 @@ class TeamBoardModerationService:
             raise InvalidRequest("Removed posts cannot be pinned.")
         require_revision(post, expected_revision)
         if pinned == post.is_pinned:
+            await self._uow.commit()
             return post
-        if pinned:
-            # The team row lock serialises every pin in this team, so concurrent
-            # requests cannot each see two pins and together exceed the cap.
-            await self._teams.get_for_update(team_id)
-            current = await self._board.get(post_id)
-            if current is None:
-                raise NotFound()
-            require_revision(current, expected_revision)
-            if await self._board.pinned_count(team_id) >= MAX_PINNED_POSTS:
-                await self._uow.rollback()
-                raise Conflict(f"A team can pin up to {MAX_PINNED_POSTS} board posts.")
+        # The authority check holds the team lock through the write and commit.
+        if pinned and await self._board.pinned_count(team_id) >= MAX_PINNED_POSTS:
+            await self._uow.rollback()
+            raise Conflict(f"A team can pin up to {MAX_PINNED_POSTS} board posts.")
         updated = replace(
             post, is_pinned=pinned, updated_at=self._clock.now(), revision=post.revision + 1
         )

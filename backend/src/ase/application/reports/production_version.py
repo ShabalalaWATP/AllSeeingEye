@@ -161,6 +161,8 @@ async def build_version(
         data_cutoff=header.data_cutoff,
         direction=direction,
         canonical_requirements=job.request.canonical_requirements,
+        brief_id=job.previous.brief_id if job.previous is not None else None,
+        brief_revision=job.previous.brief_revision if job.previous is not None else None,
         document_schema_version=2,
         advocacy=advocacy,
         research=receipt,

@@ -82,6 +82,7 @@ async def update_team(
         team_id,
         name=body.name,
         is_active=body.is_active,
+        reactivation_manager_id=body.reactivation_manager_id,
         description=(
             body.description if "description" in body.model_fields_set else DESCRIPTION_UNSET
         ),

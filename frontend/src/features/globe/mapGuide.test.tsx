@@ -12,7 +12,7 @@ import { useGlobeStore } from '@/stores/globe';
 
 import { ControlPanel, GlobeControls } from './GlobeControls';
 import { mapGuidePanel } from './MapGuidePanel';
-import type { MapGuideSources } from './mapGuideControls';
+import { guideSwitches, type MapGuideSources } from './mapGuideControls';
 
 const toggleFires = vi.fn();
 const setCameras = vi.fn();
@@ -110,3 +110,29 @@ it('offers the source catalogue to an administrator only', () => {
   );
   useAuthStore.setState({ user: plainUser, status: 'authenticated' });
 });
+
+it.each([false, true])(
+  'enables a hidden parent when regions are switched on (remembered regions %s)',
+  (remembered) => {
+    useEventsStore.setState({ hidden: ['conflict'] });
+    const sources = guideSources();
+    sources.regions.showRegions = remembered;
+    sources.regions.setShowRegions = (value) => {
+      sources.regions.showRegions = value;
+    };
+    const switches = () =>
+      guideSwitches(
+        sources,
+        useEventsStore.getState().hidden,
+        useEventsStore.getState().toggleCategory,
+      );
+    expect(switches().regions?.on).toBe(false);
+    switches().regions?.set();
+    expect(useEventsStore.getState().hidden).not.toContain('conflict');
+    expect(sources.regions.showRegions).toBe(true);
+    expect(switches().regions?.on).toBe(true);
+    switches().regions?.set();
+    expect(sources.regions.showRegions).toBe(false);
+    expect(useEventsStore.getState().hidden).not.toContain('conflict');
+  },
+);

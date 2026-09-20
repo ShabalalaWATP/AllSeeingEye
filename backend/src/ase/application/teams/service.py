@@ -9,6 +9,8 @@ from ase.application.dto import RequestContext
 from ase.application.ports.repositories import UnitOfWork, UserRepository
 from ase.application.ports.services import Clock
 from ase.application.ports.teams import TeamRepository
+from ase.application.teams.reactivation import prepare_reactivation
+from ase.application.teams.validation import team_description, team_name
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.teams import MembershipRole, Team, TeamMember, TeamMembership
@@ -19,22 +21,6 @@ MAX_ACTIVE_TEAMS_PER_ACCOUNT = 5
 MAX_TEAM_MEMBERS = 100
 LAST_MANAGER_MESSAGE = "Each active team must retain at least one active Manager."
 DIRECT_ADD_MESSAGE = "Team Managers add people by sending an invitation."
-
-
-def _name(value: str) -> str:
-    result = value.strip()
-    if not result or len(result) > 120 or any(ord(char) < 32 for char in result):
-        raise InvalidRequest("Team names must contain 1 to 120 printable characters.")
-    return result
-
-
-def _description(value: str | None) -> str | None:
-    if value is None:
-        return None
-    result = value.strip()
-    if len(result) > 500 or any(ord(char) < 32 for char in result):
-        raise InvalidRequest("Team descriptions must contain at most 500 printable characters.")
-    return result or None
 
 
 class TeamService:
@@ -52,12 +38,17 @@ class TeamService:
         self._auditor = auditor
         self._uow = uow
 
-    async def _actor(self, actor: User, *, mutation: bool = False) -> User:
+    async def _actor(
+        self, actor: User, *, mutation: bool = False, lock_user_id: UUID | None = None
+    ) -> User:
         if mutation:
             # The shared account guard also serialises role/status changes. Acquire it
             # before any user/team lock; never hold these locks during outbound work.
             await self._users.lock_administration()
-            fresh = await self._users.lock_by_id(actor.id)
+            locked = {}
+            for user_id in sorted({actor.id, *([lock_user_id] if lock_user_id else [])}):
+                locked[user_id] = await self._users.lock_by_id(user_id)
+            fresh = locked[actor.id]
         else:
             fresh = await self._users.get_by_id(actor.id)
         if fresh is None or not fresh.is_active or fresh.security_version != actor.security_version:
@@ -99,7 +90,9 @@ class TeamService:
                 f"An account can create at most {MAX_ACTIVE_TEAMS_PER_ACCOUNT} active teams."
             )
         now = self._clock.now()
-        team = Team(uuid4(), _name(name), True, actor.id, now, now, _description(description))
+        team = Team(
+            uuid4(), team_name(name), True, actor.id, now, now, team_description(description)
+        )
         await self._teams.add(team)
         # The creator's membership is part of the same transaction as the team
         # row. This makes a newly created team immediately usable and prevents
@@ -121,12 +114,33 @@ class TeamService:
         name: str | None,
         is_active: bool | None,
         description: str | object | None = DESCRIPTION_UNSET,
+        reactivation_manager_id: UUID | None = None,
         context: RequestContext,
     ) -> Team:
-        actor, team = await self._team_editor(actor, team_id, allow_archived=True)
+        actor, team = await self._team_editor(
+            actor, team_id, allow_archived=True, lock_user_id=reactivation_manager_id
+        )
+        if reactivation_manager_id is not None and (
+            not actor.is_admin or team.is_active or is_active is not True
+        ):
+            raise InvalidRequest(
+                "A recovery Manager can only be chosen during administrator reactivation."
+            )
+        if is_active is True and not team.is_active:
+            await prepare_reactivation(
+                actor,
+                team,
+                reactivation_manager_id,
+                teams=self._teams,
+                users=self._users,
+                clock=self._clock,
+                auditor=self._auditor,
+                context=context,
+                max_members=MAX_TEAM_MEMBERS,
+            )
         changes: dict[str, object] = {}
         if name is not None:
-            team.name = _name(name)
+            team.name = team_name(name)
             changes["name"] = team.name
         if is_active is not None:
             team.is_active = is_active
@@ -134,7 +148,7 @@ class TeamService:
         if description is not DESCRIPTION_UNSET:
             if description is not None and not isinstance(description, str):
                 raise InvalidRequest("Supply a valid team description.")
-            team.description = _description(description)
+            team.description = team_description(description)
             changes["description"] = team.description
         if not changes:
             raise InvalidRequest("Supply a team name, description or active status.")
@@ -151,10 +165,15 @@ class TeamService:
         return team
 
     async def _team_editor(
-        self, actor: User, team_id: UUID, *, allow_archived: bool = False
+        self,
+        actor: User,
+        team_id: UUID,
+        *,
+        allow_archived: bool = False,
+        lock_user_id: UUID | None = None,
     ) -> tuple[User, Team]:
         """Reload a team and require its current Manager or Administrator authority."""
-        actor = await self._actor(actor, mutation=True)
+        actor = await self._actor(actor, mutation=True, lock_user_id=lock_user_id)
         team = await self._teams.get_for_update(team_id)
         membership = await self._teams.get_membership(team_id, actor.id)
         if team is None or (not actor.is_admin and membership is None):

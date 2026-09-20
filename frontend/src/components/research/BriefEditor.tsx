@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
-import { createBrief, reviseBrief, runBrief } from '@/lib/api/researchBriefs';
+import { createBrief, reviseBrief } from '@/lib/api/researchBriefs';
 import type { BriefDraft, ResearchBrief } from '@/lib/api/researchBriefSchema';
 import { briefCanRun, draftFromBrief } from '@/lib/researchBriefDraft';
 
@@ -18,6 +18,7 @@ import { BriefJourney, BriefRunSummary, BRIEF_STEPS, type BriefStep } from './Br
 import { BriefPerspectiveEditor } from './BriefPerspectiveEditor';
 import { ResearchDepth } from './ResearchDepth';
 import { useBriefJourney } from './useBriefJourney';
+import { useBriefRun } from './useBriefRun';
 
 export interface InitialBrief {
   brief: ResearchBrief | null;
@@ -47,10 +48,13 @@ export function BriefEditor({
   }, [draft]);
   const [saved, setSaved] = useState(initial.copy ? null : initial.brief);
   const [baseline, setBaseline] = useState(() => structuredClone(initial.draft));
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [saving, setBusy] = useState(false);
+  const execution = useBriefRun(saved);
+  const busy = saving || execution.busy;
+  const [saveProblem, setProblem] = useState<string | null>(null);
+  const problem = saveProblem ?? execution.error;
   const [notice, setNotice] = useState<string | null>(null);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const jobId = execution.jobId;
   const [showPresets, setShowPresets] = useState(false);
   const { step, setStep, root, heading, errorSummary, validate, reviewField } = useBriefJourney(
     draft,
@@ -96,22 +100,10 @@ export function BriefEditor({
   };
   const run = async () => {
     if (!saved || dirty || busy || controller.current || runReason || !validate()) return;
-    setBusy(true);
     setProblem(null);
     setNotice(null);
-    const pending = new AbortController();
-    controller.current = pending;
-    try {
-      const job = await runBrief(saved, pending.signal);
-      if (pending.signal.aborted) return;
-      setJobId(job.id);
-      setNotice(`Research started from brief revision ${saved.identity.revision}.`);
-    } catch (caught) {
-      if (!pending.signal.aborted) setProblem(describeError(caught));
-    } finally {
-      if (!pending.signal.aborted) setBusy(false);
-      if (controller.current === pending) controller.current = null;
-    }
+    const job = await execution.run();
+    if (job) setNotice(`Research started from brief revision ${saved.identity.revision}.`);
   };
   const cancel = () => {
     if (busy) return;
@@ -270,7 +262,7 @@ export function BriefEditor({
         </Button>
         {step === 'run' && (
           <Button onClick={() => void run()} disabled={!saved || dirty || !!runReason || busy}>
-            Run once
+            {execution.error ? 'Retry research run' : 'Run once'}
           </Button>
         )}
         <Button variant="ghost" onClick={cancel} disabled={!dirty || busy}>
