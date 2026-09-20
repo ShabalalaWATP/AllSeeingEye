@@ -107,6 +107,13 @@ configuration captured when it started.
 
 ## Change or remove access
 
+To remove an unused model, select **Remove** on its card, then **Confirm removal**.
+This also works after a successful or failed connection test. Assigned models must
+be replaced or unassigned first. Removing a model frees its slot and deletes its
+saved credentials; usage history and allowance charges remain. Work already using
+the model can finish with the configuration it captured when it started.
+If usage is being updated at the same time, wait a moment and retry removal.
+
 Use the same test-and-apply flow to replace an active connection. Enter an explicit
 replacement key when changing the endpoint or provider. Changing request settings
 invalidates the old test proof, so test the new configuration before applying it.

@@ -5462,3 +5462,27 @@ pinned actions. Full CI, code scanning and image checks on the combined branch
 remain required before the final merge. Migrations 0063 and 0064 require the
 reviewed manual deployment path and a verified backup; the automatic controller
 must retain its migration safeguard.
+
+### Removing unused AI connections, 20 September 2026
+
+Deleting a tested, unassigned model could fail because allowance reservations
+still referenced its saved profile. Profile removal now detaches that optional
+reference in the same transaction, retaining model names, usage history,
+allowance charges and pending settlements. Active assignments and administrator
+session checks keep their existing protections.
+
+The persistence adapters coordinate deletion and admission through a shared
+database lock helper. PostgreSQL uses row locks; SQLite takes its writer lock
+before checking the profile. A request holding an earlier model snapshot can
+still be accounted for after removal. No schema change is required. Regression
+tests cover the original failure, reservation states, settlement, rollback and
+concurrent admission. The connection guide explains removal and retained usage.
+Removal returns a retryable conflict if usage rows are busy, avoiding a lock cycle
+with settlement or reconciliation. Independent review checked this ordering and
+the unchanged assignment and session guards.
+
+The affected suites passed 58 SQLite and 60 PostgreSQL tests. After the locking
+refinements, final removal suites passed 10 SQLite and 11 PostgreSQL tests,
+including contention and retry. All 12 frontend removal/recovery tests passed,
+along with Ruff, formatting, targeted mypy, import contracts and file-length checks.
+Full CI and verification in the deployed app remain release steps.
