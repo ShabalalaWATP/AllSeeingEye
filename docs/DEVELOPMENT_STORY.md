@@ -5462,3 +5462,21 @@ pinned actions. Full CI, code scanning and image checks on the combined branch
 remain required before the final merge. Migrations 0063 and 0064 require the
 reviewed manual deployment path and a verified backup; the automatic controller
 must retain its migration safeguard.
+
+### Satellite catalogue loading, 20 September 2026
+
+A read-only check found usable military and Skynet orbital inputs on the live
+server despite zero counts in the map. The browser launched up to seven
+supplemental event requests together, exceeding the server's two-read allowance
+per user. A controlled reproduction showed that later catalogues were rejected.
+
+Supplemental loading now uses one request at a time, preserving capacity for
+another panel. Per-request errors, successful results, geographic scope and
+snapshot limits are retained. Cancellation stops remaining requests. No source
+reset, provider request, server limit change or production deployment was used
+to make the tests pass.
+
+Four new regressions failed before the fix. All 47 selected map, satellite,
+reconciliation and coverage tests passed afterwards. Independent code/security
+review found no blockers. CI and deployed-browser verification remain release steps.
+Type checks, the production build, lint, formatting and source-length checks passed.

@@ -1126,3 +1126,11 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Preserve isolated Semgrep publication while updating pinned CI actions.
 - [ ] Require successful full CI and security checks before the final main merge.
 - [ ] Verify the migration-aware release and running application after deployment.
+
+### Satellite catalogue loading, 20 September 2026
+
+- [x] Check live orbital caches without resetting sources or making new provider requests.
+- [x] Reproduce supplemental requests exceeding the server's per-user read allowance.
+- [x] Load supplements sequentially while preserving errors, scope and cancellation.
+- [x] Pass all 47 selected map/satellite tests and independent code/security review.
+- [ ] Complete release CI and verify catalogue counts in the deployed browser.

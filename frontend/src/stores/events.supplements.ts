@@ -70,23 +70,22 @@ export async function loadCoverageSupplements(
       },
     });
   }
-  const results = await Promise.allSettled(
-    requests.map(({ query }) => fetchEvents({ ...query, ...scope }, signal)),
-  );
   const additional: LiveEvent[] = [];
   const errors: string[] = [];
   let limited = false;
-  results.forEach((result, index) => {
-    const request = requests[index];
-    if (!request) return;
-    if (result.status === 'fulfilled') {
-      additional.push(...result.value);
-      limited ||= result.value.length >= (request.query.limit ?? Infinity);
-    } else {
-      errors.push(
-        `Additional ${request.label} coverage unavailable: ${describeError(result.reason)}`,
-      );
+  // The server admits two event reads per user. Use one slot for this snapshot,
+  // leaving room for another panel instead of rejecting later catalogues with 429.
+  for (const request of requests) {
+    signal.throwIfAborted();
+    try {
+      const result = await fetchEvents({ ...request.query, ...scope }, signal);
+      signal.throwIfAborted();
+      additional.push(...result);
+      limited ||= result.length >= (request.query.limit ?? Infinity);
+    } catch (failure) {
+      signal.throwIfAborted();
+      errors.push(`Additional ${request.label} coverage unavailable: ${describeError(failure)}`);
     }
-  });
+  }
   return { events: additional, error: errors.length ? errors.join(' ') : null, limited };
 }
