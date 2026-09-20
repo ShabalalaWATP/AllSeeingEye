@@ -1,0 +1,26 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: The All Seeing Eye"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Researcher</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Explores observations, asks<br />questions and reviews saved<br />evidence.</div>"]
+    style 1 fill:#145a71,stroke:#0e3e4f,color:#ffffff
+    2["<div style='font-weight: bold'>Administrator</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Manages access, source<br />connections and AI<br />configuration.</div>"]
+    style 2 fill:#145a71,stroke:#0e3e4f,color:#ffffff
+    3["<div style='font-weight: bold'>Public sources</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Feeds, APIs, catalogues and<br />reference data.</div>"]
+    style 3 fill:#596579,stroke:#3e4654,color:#ffffff
+    4["<div style='font-weight: bold'>Configured AI provider</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Optional language, vision and<br />embedding capabilities.</div>"]
+    style 4 fill:#596579,stroke:#3e4654,color:#ffffff
+    5["<div style='font-weight: bold'>Email service</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Optional account messages and<br />email verification.</div>"]
+    style 5 fill:#596579,stroke:#3e4654,color:#ffffff
+    6["<div style='font-weight: bold'>The All Seeing Eye</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Self-hosted OSINT collection,<br />research and evidence review.</div>"]
+    style 6 fill:#24364b,stroke:#192534,color:#ffffff
+
+    1-. "<div>Uses</div><div style='font-size: 70%'></div>" .->6
+    2-. "<div>Administers</div><div style='font-size: 70%'></div>" .->6
+    6-. "<div>Collects public information</div><div style='font-size: 70%'>[HTTPS / provider protocols]</div>" .->3
+    6-. "<div>Sends selected context;<br />receives model output</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    6-. "<div>Sends account messages when<br />configured</div><div style='font-size: 70%'>[SMTP with TLS]</div>" .->5
+
+  end

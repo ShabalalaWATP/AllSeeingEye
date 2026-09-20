@@ -1,0 +1,34 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Container View: The All Seeing Eye"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    3["<div style='font-weight: bold'>Public sources</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Feeds, APIs, catalogues and<br />reference data.</div>"]
+    style 3 fill:#596579,stroke:#3e4654,color:#ffffff
+    4["<div style='font-weight: bold'>Configured AI provider</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Optional language, vision and<br />embedding capabilities.</div>"]
+    style 4 fill:#596579,stroke:#3e4654,color:#ffffff
+
+    subgraph 6 ["The All Seeing Eye"]
+      style 6 fill:#ffffff,stroke:#192534,color:#192534
+
+      10[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL; SQLite in native development]</div><div style='font-size: 80%; margin-top:10px'>Accounts, configuration,<br />briefs, jobs, report versions<br />and selected evidence.</div>")]
+      style 10 fill:#24364b,stroke:#192534,color:#ffffff
+      11["<div style='font-weight: bold'>Isolated file parser</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python worker]</div><div style='font-size: 80%; margin-top:10px'>Bounded extraction of<br />supplied documents and media.<br />No network in Compose.</div>"]
+      style 11 fill:#24364b,stroke:#192534,color:#ffffff
+      7["<div style='font-weight: bold'>Browser application</div><div style='font-size: 70%; margin-top: 0px'>[Container: React, TypeScript, MapLibre, deck.gl]</div><div style='font-size: 80%; margin-top:10px'>Globe, research, reports and<br />administration.</div>"]
+      style 7 fill:#24364b,stroke:#192534,color:#ffffff
+      8["<div style='font-weight: bold'>Web server</div><div style='font-size: 70%; margin-top: 0px'>[Container: Caddy]</div><div style='font-size: 80%; margin-top:10px'>Serves the browser<br />application and proxies API<br />traffic.</div>"]
+      style 8 fill:#24364b,stroke:#192534,color:#ffffff
+      9["<div style='font-weight: bold'>Application API</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python, FastAPI]</div><div style='font-size: 80%; margin-top:10px'>Collection, live memory<br />store, research, access<br />policy and background jobs.<br />One API process.</div>"]
+      style 9 fill:#24364b,stroke:#192534,color:#ffffff
+    end
+
+    7-. "<div>Loads UI and calls API</div><div style='font-size: 70%'>[HTTPS / JSON / SSE]</div>" .->8
+    8-. "<div>Proxies requests and streams</div><div style='font-size: 70%'>[HTTP]</div>" .->9
+    9-. "<div>Saves durable records</div><div style='font-size: 70%'>[SQLAlchemy]</div>" .->10
+    9-. "<div>Extracts supplied files</div><div style='font-size: 70%'>[Local socket in Compose]</div>" .->11
+    9-. "<div>Collects public information</div><div style='font-size: 70%'>[HTTPS / provider protocols]</div>" .->3
+    9-. "<div>Sends selected context;<br />receives model output</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+
+  end
