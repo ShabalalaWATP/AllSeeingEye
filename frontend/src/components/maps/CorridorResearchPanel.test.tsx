@@ -66,3 +66,53 @@ it('requires an explicit approximation preview and opt-in before using a long ro
     screen.queryByRole('img', { name: 'Original and simplified route comparison' }),
   ).not.toBeInTheDocument();
 });
+
+it('rejects blank corridor widths and reports failures handed back by research', () => {
+  const research = vi.fn(() => {
+    // Exercise the external callback's non-Error failure boundary deliberately.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw 'Research unavailable';
+  });
+  render(
+    <CorridorResearchPanel
+      points={[
+        [0, 51],
+        [0.01, 51],
+      ]}
+      onResearchArea={research}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText('Distance on each side (km)'), { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Preview corridor for research' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Enter the distance on each side');
+  expect(research).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText('Distance on each side (km)'), { target: { value: '1' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Preview corridor for research' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Could not create the corridor');
+});
+
+it('reports a rejected approximation and invalidates prior opt-in when tolerance changes', () => {
+  const points = Array.from({ length: 80 }, (_, index): Position => [
+    index * 0.001,
+    index % 2 ? 0.003 : 0,
+  ]);
+  render(<CorridorResearchPanel points={points} onResearchArea={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText('Allowed route deviation (m)'), {
+    target: { value: '50' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Prepare simplified route preview' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('can deviate by up to');
+  expect(screen.getByRole('button', { name: 'Preview corridor for research' })).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('Allowed route deviation (m)'), {
+    target: { value: '5000' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Prepare simplified route preview' }));
+  fireEvent.click(
+    screen.getByRole('checkbox', { name: 'Use this approximate path for the corridor' }),
+  );
+  expect(screen.getByRole('button', { name: 'Preview corridor for research' })).toBeEnabled();
+  fireEvent.change(screen.getByLabelText('Allowed route deviation (m)'), {
+    target: { value: '1000' },
+  });
+  expect(screen.getByRole('button', { name: 'Preview corridor for research' })).toBeDisabled();
+});

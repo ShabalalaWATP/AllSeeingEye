@@ -8,6 +8,71 @@ import {
   validateDrawingObject,
 } from './drawingCollection';
 
+it.each([
+  null,
+  [],
+  { shape: 'ellipse' },
+  { shape: 'point', anchors: null },
+  { shape: 'point', anchors: [null] },
+  { shape: 'point', anchors: [[0, 0, 1]] },
+  { shape: 'point', anchors: [['0', 0]] },
+  { shape: 'point', anchors: [] },
+  { shape: 'path', anchors: [[0, 0]] },
+])('rejects malformed geometry at the collection boundary: %j', (input) => {
+  expect(() => validateDrawingObject(input)).toThrow();
+});
+it.each([
+  { id: '' },
+  { id: 'x'.repeat(81) },
+  { name: '' },
+  { name: 3 },
+  { notes: 'x'.repeat(2001) },
+  { visible: 'yes' },
+  { locked: null },
+])('rejects invalid stored metadata: %j', (patch) => {
+  expect(() =>
+    validateDrawingObject({ ...newDrawingObject('point', [[0, 0]], 0), ...patch }),
+  ).toThrow();
+});
+it('rejects a missing selected object and zero-height rectangles', () => {
+  expect(() =>
+    validateDrawingCollection({ ...emptyDrawingCollection, selectedId: 'missing' }),
+  ).toThrow(/selected/);
+  expect(() =>
+    newDrawingObject(
+      'rectangle',
+      [
+        [0, 0],
+        [1, 0],
+      ],
+      0,
+    ),
+  ).toThrow(/height/);
+});
+it('imports ordinary GeoJSON with absent metadata and honours label fallback', () => {
+  const input = JSON.stringify({
+    type: 'FeatureCollection',
+    features: [
+      { type: 'Feature', properties: null, geometry: { type: 'Point', coordinates: [0, 0] } },
+      {
+        type: 'Feature',
+        properties: { label: 'Harbour' },
+        geometry: { type: 'Point', coordinates: [1, 1] },
+      },
+    ],
+  });
+  const result = importDrawingGeoJson(input);
+  expect(result.objects.map((item) => [item.name, item.colour, item.notes])).toEqual([
+    ['Imported 1', '#79d8eb', ''],
+    ['Harbour', '#79d8eb', ''],
+  ]);
+  expect(() =>
+    importDrawingGeoJson(
+      JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Point' }] }),
+    ),
+  ).toThrow(/features/);
+});
+
 it('round-trips named points, lines and polygons without losing labels or coordinates', () => {
   const objects = [
     newDrawingObject('point', [[-2, 54]], 0),

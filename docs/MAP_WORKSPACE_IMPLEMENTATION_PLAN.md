@@ -1,8 +1,9 @@
 # Map workspace implementation
 
 Status: implementation, focused regressions, independent review and local browser
-verification are complete on `codex/map-workspace-improvements`. Final frontend
-coverage, repeated static checks and CI results are pending.
+verification are complete on `codex/map-workspace-improvements`,
+[PR #38](https://github.com/ShabalalaWATP/AllSeeingEye/pull/38). SQLite and PostgreSQL
+CI pass at 94% backend coverage. Final frontend coverage verification is pending.
 
 ## Scope
 

@@ -92,3 +92,39 @@ it('clears drafts, result and pending work on workspace authority changes', asyn
   await waitFor(() => expect(result.current.result).toBeNull());
   expect(result.current.draft.originLat).toBe('');
 });
+
+it('suppresses a late rejected request after a replacement study succeeds', async () => {
+  let reject!: (reason: unknown) => void;
+  fetch.mockImplementationOnce(
+    () =>
+      new Promise((_, fail) => {
+        reject = fail;
+      }),
+  );
+  fetch.mockImplementation((positions) => Promise.resolve(source(positions.length)));
+  const { result } = renderHook(useTerrainAnalysis);
+  let first!: Promise<void>;
+  act(() => {
+    first = result.current.run(input);
+  });
+  await act(async () => {
+    await result.current.run({ ...input, end: [0.002, 51] });
+  });
+  await act(async () => {
+    reject(new Error('Late request failed'));
+    await first;
+  });
+  expect(result.current.result?.input.end).toEqual([0.002, 51]);
+  expect(result.current.error).toBeNull();
+  expect(result.current.busy).toBe(false);
+});
+
+it('provides a useful fallback for a transport rejection without an Error object', async () => {
+  fetch.mockRejectedValue('Unavailable');
+  const { result } = renderHook(useTerrainAnalysis);
+  await act(async () => {
+    await result.current.run(input);
+  });
+  expect(result.current.error).toBe('Terrain analysis failed.');
+  expect(result.current.result).toBeNull();
+});

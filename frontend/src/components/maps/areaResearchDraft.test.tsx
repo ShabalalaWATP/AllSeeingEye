@@ -3,7 +3,12 @@ import { beforeEach, expect, it } from 'vitest';
 import { applySession } from '@/test/render';
 import { mountAreaPanel, researchArea } from '@/test/areaResearchPanel';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
-import { prepareAreaResearchHandoff, readAreaResearchHandoff } from '@/lib/areaResearchDraft';
+import {
+  prepareAreaResearchHandoff,
+  readAreaResearchHandoff,
+  useAreaResearchDraft,
+} from '@/lib/areaResearchDraft';
+import { useAuthStore } from '@/stores/auth';
 
 beforeEach(() => applySession('user'));
 
@@ -58,4 +63,45 @@ it('rejects invalid geometry, time windows and anonymous handoffs', () => {
   act(() => applySession('anonymous'));
   expect(() => prepareAreaResearchHandoff(researchArea)).toThrow(/Sign in/);
   expect(readAreaResearchHandoff()).toBeNull();
+});
+
+it('rejects oversized, overly detailed and non-area geometry before replacing a valid draft', () => {
+  prepareAreaResearchHandoff(researchArea);
+  const previous = readAreaResearchHandoff();
+  const oversized = structuredClone(researchArea);
+  oversized.features[0]!.properties = { label: 'x'.repeat(17000) };
+  expect(() => prepareAreaResearchHandoff(oversized)).toThrow('16 KiB');
+  const detailed = structuredClone(researchArea);
+  const ring = Array.from({ length: 257 }, (_, i): [number, number] => {
+    const angle = (i * 2 * Math.PI) / 257;
+    return [Number(Math.cos(angle).toFixed(6)), Number(Math.sin(angle).toFixed(6))];
+  });
+  detailed.features[0]!.geometry = { type: 'Polygon', coordinates: [[...ring, ring[0]!]] };
+  expect(() => prepareAreaResearchHandoff(detailed)).toThrow('256 vertices');
+  const point = structuredClone(researchArea);
+  point.features[0]!.geometry = { type: 'Point', coordinates: [0, 0] };
+  expect(() => prepareAreaResearchHandoff(point)).toThrow('polygon boundary');
+  expect(readAreaResearchHandoff()).toBe(previous);
+});
+
+it.each(['role', 'inactive'] as const)('clears the draft on same-account %s change', (change) => {
+  prepareAreaResearchHandoff(researchArea);
+  act(() => {
+    const user = useAuthStore.getState().user!;
+    useAuthStore.setState({
+      user: change === 'role' ? { ...user, role: 'admin' } : { ...user, is_active: false },
+    });
+  });
+  expect(readAreaResearchHandoff()).toBeNull();
+  if (change === 'inactive')
+    expect(() => prepareAreaResearchHandoff(researchArea)).toThrow('Sign in');
+});
+
+it('copies explicit source selection and restores automatic source choice with null', () => {
+  const ids = ['research-firms'];
+  useAreaResearchDraft.getState().setSourceIds(ids);
+  ids.push('research-news');
+  expect(useAreaResearchDraft.getState().sourceIds).toEqual(['research-firms']);
+  useAreaResearchDraft.getState().setSourceIds(null);
+  expect(useAreaResearchDraft.getState().sourceIds).toBeNull();
 });

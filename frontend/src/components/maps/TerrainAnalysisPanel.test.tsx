@@ -3,20 +3,20 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { TerrainAnalysisPanel } from './TerrainAnalysisPanel';
 import { useTerrainAnalysis } from './useTerrainAnalysis';
 import { fetchTerrainElevations } from '@/lib/api/terrain';
+import type { Position } from '@/lib/map/geoJsonTypes';
 
 vi.mock('@/lib/api/terrain', () => ({ fetchTerrainElevations: vi.fn() }));
 const fetch = vi.mocked(fetchTerrainElevations);
-function Fixture() {
+function Fixture({
+  points = [
+    [0, 51],
+    [0.01, 51],
+  ],
+}: {
+  points?: Position[];
+}) {
   const study = useTerrainAnalysis();
-  return (
-    <TerrainAnalysisPanel
-      points={[
-        [0, 51],
-        [0.01, 51],
-      ]}
-      study={study}
-    />
-  );
+  return <TerrainAnalysisPanel points={points} study={study} />;
 }
 beforeEach(() => {
   fetch.mockReset();
@@ -31,6 +31,44 @@ beforeEach(() => {
       limitations: 'Fixture only',
     }),
   );
+});
+
+it('explains that a multi-point sketch profile uses only its first segment', () => {
+  render(
+    <Fixture
+      points={[
+        [0, 51],
+        [0.01, 51],
+        [0.02, 51],
+      ]}
+    />,
+  );
+  expect(screen.getByText(/not the complete drawn path/)).toBeVisible();
+});
+
+it('supports a single observer while rejecting empty visibility settings before fetching', async () => {
+  render(<Fixture points={[[0, 51]]} />);
+  expect(screen.getByRole('button', { name: /Use first two points/ })).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('Analysis'), { target: { value: 'visibility' } });
+  fireEvent.click(screen.getByRole('button', { name: /Use first point/ }));
+  fireEvent.change(screen.getByLabelText('Radius (km)'), { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Analyse terrain' }));
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Enter an observer height and visibility radius',
+  );
+  expect(fetch).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText('Radius (km)'), { target: { value: '1' } });
+  fireEvent.change(screen.getByLabelText('Observer height above ground (m)'), {
+    target: { value: '' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Analyse terrain' }));
+  expect(fetch).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText('Observer height above ground (m)'), {
+    target: { value: '2' },
+  });
+  fetch.mockRejectedValue(new Error('Terrain is temporarily unavailable'));
+  fireEvent.click(screen.getByRole('button', { name: 'Analyse terrain' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Terrain is temporarily unavailable');
 });
 
 it('reuses drawing coordinates only on request, then exposes an inspectable ground profile', async () => {

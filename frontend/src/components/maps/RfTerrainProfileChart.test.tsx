@@ -84,3 +84,21 @@ it('links keyboard-accessible sample inspection to the exact map coordinate', ()
   expect(onProfilePoint).toHaveBeenLastCalledWith([0.005, 0]);
   expect(screen.getByText(/0.50 km from TX · terrain 150.0 m/)).toBeVisible();
 });
+
+it('links pointer hover and clicks to nearest bounded samples and ignores unmeasurable layout', () => {
+  const inspect = vi.fn();
+  render(<RfTerrainProfileChart profile={profile([0, 150, 0, 0])} onProfilePoint={inspect} />);
+  const svg = screen.getByRole('img', { name: /Terrain profile/ });
+  const bounds = vi
+    .spyOn(svg, 'getBoundingClientRect')
+    .mockReturnValue({ left: 0, width: 0 } as DOMRect);
+  fireEvent(svg, new MouseEvent('pointermove', { bubbles: true, clientX: 100 }));
+  expect(inspect).not.toHaveBeenCalled();
+  bounds.mockReturnValue({ left: 0, width: 320 } as DOMRect);
+  fireEvent(svg, new MouseEvent('pointermove', { bubbles: true, clientX: 125 }));
+  expect(inspect).toHaveBeenLastCalledWith([0.005, 0]);
+  fireEvent(svg, new MouseEvent('pointerdown', { bubbles: true, clientX: 500 }));
+  expect(inspect).toHaveBeenLastCalledWith([0.015, 0]);
+  fireEvent(svg, new MouseEvent('pointerdown', { bubbles: true, clientX: -100 }));
+  expect(inspect).toHaveBeenLastCalledWith([0, 0]);
+});

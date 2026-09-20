@@ -39,6 +39,7 @@ export function radioSiteLayers(
     }),
     new TextLayer<RadioSiteMarker>({
       id: 'radio-workspace-site-labels',
+      characterSet: 'auto',
       data: sites,
       getPosition: (site) => site.point,
       getText: (site) => site.label,

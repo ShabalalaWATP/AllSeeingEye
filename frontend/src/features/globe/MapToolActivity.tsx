@@ -26,7 +26,10 @@ export function MapToolActivity({ tools }: { tools: ReturnType<typeof useMapWork
               type="button"
               className="min-h-11 underline disabled:opacity-40"
               disabled={!drawing.canUndo}
-              onClick={drawing.undo}
+              onClick={() => {
+                drawing.undo();
+                drawing.setPicking(true);
+              }}
             >
               Undo
             </button>
@@ -34,7 +37,10 @@ export function MapToolActivity({ tools }: { tools: ReturnType<typeof useMapWork
               type="button"
               className="min-h-11 underline disabled:opacity-40"
               disabled={!drawing.canRedo}
-              onClick={drawing.redo}
+              onClick={() => {
+                drawing.redo();
+                drawing.setPicking(true);
+              }}
             >
               Redo
             </button>
