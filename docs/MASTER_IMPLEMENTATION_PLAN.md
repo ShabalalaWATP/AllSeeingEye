@@ -1153,3 +1153,11 @@ release follow-ups are recorded in the implementation checklist.
   final removal suites passed 10 SQLite and 11 PostgreSQL tests; all 12 frontend
   removal/recovery tests passed. Ruff, mypy and import contracts passed.
 - [ ] Release the fix through reviewed CI and verify removal in the deployed app.
+
+### Satellite catalogue loading, 20 September 2026
+
+- [x] Check live orbital caches without resetting sources or making new provider requests.
+- [x] Reproduce supplemental requests exceeding the server's per-user read allowance.
+- [x] Load supplements sequentially while preserving errors, scope and cancellation.
+- [x] Pass all 47 selected map/satellite tests and independent code/security review.
+- [ ] Complete release CI and verify catalogue counts in the deployed browser.
