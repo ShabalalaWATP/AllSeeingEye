@@ -5483,6 +5483,18 @@ regressions reproduced the defects before repair, and independent code-quality
 and defensive reviews found no remaining actionable issues after the source-health
 distinction was corrected. No production deployment is part of this repair step.
 
+The combined repair branch also includes the model-removal and satellite-loading
+fixes described below. Its final selected suites passed 130 backend and 252
+frontend tests. Type checks, lint, formatting, production build, import contracts
+and scoped Bandit checks passed. Local browser checks covered globe/map portraits,
+the fallback silhouette, keyboard choice and a 390 × 844 mobile layout.
+
+A full local frontend coverage run was stopped after timeouts in five other
+suites. All 17 tests in those suites passed in isolation; no complete coverage
+result is claimed for this patch. Full CI, including PostgreSQL and coverage
+gates, remains a release requirement. Browser checks saw transient WebGL texture
+warnings on the first selection switch, with no visible failure or recurrence.
+
 ### Removing unused AI connections, 20 September 2026
 
 Deleting a tested, unassigned model could fail because allowance reservations

@@ -1138,9 +1138,11 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Require a global default before targeted first-model assignments.
 - [x] Add failing regression cases, verify focused suites and complete independent
   code-quality and defensive reviews.
-- [ ] Complete final combined validation and review the repair pull request.
-- [ ] Merge and verify an authorised production release, including the separate
-  model-removal and satellite-supplement fixes.
+- [x] Integrate the model-removal and satellite-supplement fixes into one repair
+  branch. Combined suites passed 130 backend and 252 frontend tests; type checks,
+  lint, formatting, build, import contracts and scoped Bandit checks passed.
+- [ ] Complete full CI and coverage gates for the combined repair pull request.
+- [ ] Merge and verify an authorised production release.
 
 ### Unused AI connection removal, 20 September 2026
 
