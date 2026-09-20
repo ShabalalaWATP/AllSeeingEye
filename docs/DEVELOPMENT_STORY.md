@@ -5360,3 +5360,14 @@ boundaries, with focused hooks for UI lifecycle responsibilities. SQLite and
 isolated PostgreSQL checks cover concurrency and compatibility; final full-suite
 results are recorded with the remediation pull request. The deployed app's missing
 AI connection remains a configuration task, not a claimed result of these fixes.
+
+## Documentation, 20 September 2026
+
+The reader documentation describes the app's supported workflows, architecture,
+source families, AI routing and evidence limits. The README leads into a guide
+index and Windows 11, macOS and Linux setup instructions. Architecture views have
+an editable Structurizr model and rendered SVGs; process flows use Mermaid.
+Screenshots show the current UI with illustrative local data. Public deployment
+guidance explains requirements and release behaviour without live host access or
+recovery identifiers. Documentation checks cover links, model validation, diagram
+rendering and configuration examples; no application behaviour changes.

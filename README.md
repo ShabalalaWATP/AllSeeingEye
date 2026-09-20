@@ -1,117 +1,144 @@
 # The All Seeing Eye
 
-An AI-assisted open-source intelligence (OSINT) fusion application: a 3D globe of live, graded events from free sources, with LLM-written intelligence products that follow UK and NATO assessment doctrine.
+The All Seeing Eye is a self-hosted workspace for open-source intelligence
+(OSINT). It brings public observations onto a globe and map, lets you research a
+question, and saves the resulting assessment with the evidence used to produce it.
 
-Status: Phase 5 social/language features and Phase 6 features are implemented alongside the globe, trackers, collection plans, warning and report pipeline. Phase 6 adds optional administrator TOTP, PDF/DOCX export, version comparison, bounded semantic search of saved reports, performance and accessibility changes, and backup/restore tools. Remaining verification and deployment gates are tracked in [the implementation plan](docs/MASTER_IMPLEMENTATION_PLAN.md) and [the Phase 6 security review](docs/security/PHASE6_ASVS_REVIEW.md). This is a self-hosted LAN application; public exposure requires the remaining review gates.
+The main workflow is simple: **observe, ask, collect, assess, review**. AI helps
+with planning and writing. Source records, grades, collection gaps and citations
+remain available so you can check the result.
 
-Start with [the approved proposal](docs/00_PROPOSAL_OVERVIEW.md), [current architecture](docs/01_ARCHITECTURE.md) and [feature operations](docs/PHASE5_PHASE6_OPERATIONS.md). Contributor conventions are in [CLAUDE.md](CLAUDE.md).
+![The All Seeing Eye globe with navigation and map controls](docs/images/globe.png)
 
-## Quick start (development)
+*The current app interface, captured locally with an illustrative account and
+sample observations. Screenshots are not a statement of live source coverage.*
 
-Prerequisites: Python 3.12 or later, [uv](https://docs.astral.sh/uv/), Node 22.12 or later, pnpm, and Docker Desktop for the full stack.
+[Set up the app](docs/SETUP.md) · [Using the app](docs/04_FEATURES_AND_VIEWS.md) ·
+[Documentation](docs/README.md)
 
-Run the setup commands from the repository root. For a new development setup,
-copy the example into the backend working directory. Preserve an existing `.env`:
+## What you can do
 
-```powershell
-Copy-Item .env.example backend/.env
-```
+- **Explore the live picture.** Switch between globe and map, filter observations,
+  inspect source details, measure areas and distances, and save map views.
+- **Research a question.** Choose countries, regions, dates and research depth.
+  Add supported private inputs or start from a selected map area. Save reusable
+  Research Briefs with your requirements.
+- **Read the evidence behind an answer.** Reports retain selected evidence,
+  collection receipts, source grades, uncertainty and model details. Review saved
+  versions, follow up on a question, or export a report.
+- **Keep a subject under review.** Subscriptions run research on a schedule and
+  retain editions, progress and retry controls.
+- **Use specialist workspaces.** Live monitoring, Ukraine, cyber intelligence,
+  economy and photo geolocation provide focused ways to explore their subject.
+- **Share work with a team.** Personal and team scopes control access to saved
+  work. Administrators manage accounts, sources, model connections and usage.
 
-Backend (SQLite, no Docker needed):
+![Research workspace with an example question and scope controls](docs/images/research.png)
 
-```powershell
-cd backend
-uv sync
-uv run ase migrate
-uv run ase create-admin --email you@example.com --display-name "You"
-uv run uvicorn ase.main:app --reload --port 8001
-```
+*Research begins with a question and an explicit scope. This example uses local
+sample data and does not submit a model request.*
 
-Frontend, in a second terminal starting at the repository root:
+## Where the information comes from
 
-```powershell
-cd frontend
-pnpm install
-pnpm dev
-```
+The app combines public feeds and APIs, on-demand research connectors and
+packaged reference data. Examples include USGS, NASA, NOAA, public news and
+humanitarian publishers, aviation and maritime data, CelesTrak orbital inputs,
+cyber advisories and economic series.
 
-Open [the development app](http://localhost:5173), sign in with the administrator you created, and you land on the globe. With the backend commands above, the default SQLite file is `backend/data/ase.db`.
+These sources have different coverage, update intervals, licences and access
+requirements. Some need credentials or an approved account. A catalogue entry
+is not a promise that its provider is available or that every item has a precise
+location. The source screens show the installation's actual state.
 
-The frontend proxy defaults to API port 8001. To use another port, set `ASE_DEV_API_TARGET` in `frontend/.env.local` (ignored by git). Live feeds start with the API; `ASE_FEEDS_DISABLED` can exclude source ids. Report archiving attempts to preserve cited URLs through the Wayback Machine; set `ASE_ARCHIVE_ENABLED=false` to disable that outbound step.
+See [sources and coverage](docs/02_DATA_SOURCES.md) for the source families,
+optional connections and how to interpret their status.
 
-Configure `ASE_ENCRYPTION_KEY` before saving model profiles or enrolling TOTP.
-Profiles have separate roles for reporting, translation and embeddings. Semantic
-search is explicitly indexed from saved reports; it never stores raw live events.
-No real LLM endpoint is configured on the current development host, so model
-integration is tested with scripted adapters rather than a live provider.
+## How AI is used
 
-## Full stack with Docker Compose
+An administrator chooses and tests the model connection. The app supports
+OpenAI-compatible endpoints and native Amazon Bedrock; features such as vision,
+embeddings and fresh web search depend on the selected provider and model.
+There is no bundled model that must be used.
 
-For a new Compose setup, copy `.env.example` to `.env` at the repository root.
-Set `POSTGRES_PASSWORD` to a unique random value and configure `ASE_JWT_SECRET`.
-Preserve an existing `.env`, its database password and `ASE_ENCRYPTION_KEY`.
-Changing the password in an existing `.env` alone does not change the PostgreSQL
-role password in its persistent volume; rotate that role explicitly before
-updating the app configuration. From the repository root:
+AI can plan collection, draft reports, challenge an assessment, translate text
+and suggest photo-location leads. Application code handles access, collection
+limits, source grading and structured validation. A source grade, model answer
+or passing validator does not establish that a claim is true.
 
-```powershell
-docker compose up --build -d
-```
+Browsing the map does not require an AI account. Cloud AI calls send the relevant
+context to the configured provider and can incur charges. See [AI in the app](docs/AI.md)
+for routing, privacy, capabilities and usage controls.
 
-Caddy serves [the local app](https://localhost) with an internal certificate and proxies `/api` to the FastAPI service, which runs its migrations on start. Create the first administrator inside the container:
+## Architecture and engineering
 
-```powershell
-docker compose exec api ase create-admin --email you@example.com --display-name "You"
-```
+The application uses a Python/FastAPI backend and a React/TypeScript frontend.
+MapLibre GL and deck.gl render the map and globe. SQLite supports native
+development; Docker Compose runs PostgreSQL, an isolated file parser, the API
+and Caddy. Live observations stay in a bounded memory store. Saved research,
+selected evidence, accounts and configuration are durable.
 
-Keep the API and PostgreSQL ports unpublished. The API intentionally uses one
-process: live data, rate limits, model admission and search coordination are
-process-local. Public exposure requires the remaining security review gates.
+The code follows **SOLID principles** through focused use cases, narrow protocol
+interfaces, replaceable adapters and explicit dependency injection. Routes and UI
+components delegate policy and asynchronous work to dedicated modules. Backend
+import contracts, frontend feature boundaries, strict typing and regression tests
+help enforce that design. This is a practical standard, not a claim of perfect
+separation.
 
-To run the same stack on a server rather than this machine, [deployment](docs/DEPLOYMENT.md)
-is the step-by-step runbook: hardening, certificates, the first administrator, backups and
-the gates to close first. `ASE_TLS` and `ASE_HSTS_MAX_AGE` switch Caddy between the
-internal certificate used here and real ones for a public domain.
+Read the [architecture guide](docs/01_ARCHITECTURE.md) for the stack, Structurizr
+C4 diagrams, data flows and concrete SOLID examples.
 
-The web image builds the standard Caddy release with locked, patched Go
-dependencies. Its [build and update notes](infra/caddy-build/README.md) cover
-rebuilding, module checks and scanning the resulting image.
+## Run it on your machine
 
-## Recovery and verification limits
+Choose one of the two routes in the [setup guide](docs/SETUP.md):
 
-[Backup and restore](docs/BACKUP_RESTORE.md) covers consistent SQLite snapshots,
-Compose PostgreSQL dumps, hash verification and restoration into new destinations.
-Actual `.env` files require explicit opt-in. No backup schedule or automatic
-retention deletion is installed. Real CLI recovery drills passed on temporary
-SQLite and PostgreSQL 17 databases, including all 19 migrated tables and secret
-decryption. Repeat the drill with the operator's storage and key handling before
-depending on a backup.
+| Route | What you need | What it runs |
+| --- | --- | --- |
+| Native development | Git, uv, Python 3.12+, Node 22.12+ and the pinned pnpm version | API, SQLite and Vite |
+| Docker Compose | Git and Docker with Compose | Packaged app, PostgreSQL and isolated parser |
 
-The repository has no configured remote, so GitHub CI results have not been
-observed. Local test results and the remaining real-model, load and
-staging security checks are recorded in the implementation plan.
+The guide covers **Windows 11, macOS and Linux**, including Apple Silicon
+container requirements, configuration, the first administrator, MFA and local
+certificates. AI and keyed sources are optional additions after sign-in.
 
-## Checks
+For a hosted installation, use [self-hosting guidance](docs/DEPLOYMENT.md).
+Reader-facing documentation describes the deployment contract without publishing
+an individual server's addresses, login details or recovery paths.
 
-Run each block from the repository root:
+## Limits to understand
 
-```powershell
-uv run --project backend pytest backend/tests
-uv run --project backend ruff check backend
-uv run --project backend mypy --config-file backend/pyproject.toml backend/src
-```
+Public sources are incomplete and sometimes delayed, blocked or unavailable.
+Country-level locations are not exact event coordinates; calculated satellite
+positions are not direct observations. Similar reports may share an original
+source and should not be counted as independent confirmation.
 
-```powershell
-cd backend
+Saved evidence supports traceability, not automatic authentication. Check the
+original sources, dates, assumptions and contrary evidence before relying on a
+report. Photo geolocation produces candidates to investigate. Provider compatibility
+tests and software tests do not measure research accuracy.
+
+## Contributing and checks
+
+Start with [architecture](docs/01_ARCHITECTURE.md) and the repository conventions
+in [CLAUDE.md](CLAUDE.md). Use the committed lockfiles. Run backend checks from
+`backend`:
+
+```text
+uv run ruff check src tests
+uv run ruff format --check src tests alembic
+uv run mypy src
 uv run lint-imports
+uv run pytest
 ```
 
-```powershell
-pnpm --dir frontend test
-pnpm --dir frontend lint
-pnpm --dir frontend typecheck
-pnpm --dir frontend build
-python scripts/check_file_length.py
+Run frontend checks from `frontend`:
+
+```text
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
-A `justfile` wraps these (`just check`, `just test`, `just dev-api`, `just dev-web`).
+CI also runs PostgreSQL tests, coverage gates, dependency and security checks,
+and container builds. Keep new behaviour covered by meaningful tests and keep
+source, AI and setup documentation aligned with the code.

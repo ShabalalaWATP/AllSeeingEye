@@ -1,175 +1,128 @@
-# AI cost controls
+# AI usage and cost controls
 
-How the app keeps mechanical model work cheap, what an administrator can control
-per person and per team, what the shipped defaults are, and how estimated spend is
-shown. Connection setup itself lives in
-[AI_CONNECTIONS_OPERATIONS.md](AI_CONNECTIONS_OPERATIONS.md); the allowance ledger
-design lives in [adr/0019-ai-usage-allowances.md](adr/0019-ai-usage-allowances.md).
+The app records model attempts and token usage, checks allowance policies before
+calls, and shows estimated spend. A report can use several calls for planning,
+drafting, review and optional tools. A call limit is therefore not a report limit,
+and a token allowance is not a guaranteed monetary cap.
 
-## The measured starting point
+Configure models through [AI connections](AI_CONNECTIONS_OPERATIONS.md). Review
+usage and policies under **Administration > AI access and usage**; the AI connections
+matrix also provides daily presets for people and teams.
 
-Five days of the operator's own ledger, before any of this work:
+## Applicable allowances
 
-| Purpose | Calls | Tokens |
+Policies can limit requests, tokens or both over daily, weekly and monthly UTC
+periods. Several periods can apply to one target at the same time.
+
+| Scope | What it covers |
+| --- | --- |
+| Everyone | Shared site usage across accounts and purposes |
+| System work | Unattended background work, alongside the site allowance |
+| Person | That person's personal and team requests |
+| Team | Work explicitly assigned to that team, alongside applicable person and site limits |
+
+All applicable policies must permit the call. Setting a generous user limit does not
+increase a shared site or team limit. A user must be authorised for a team to charge
+work to it. Temporary overrides are dated and revocable; resolve active or future
+overrides before changing an underlying daily preset.
+
+A fresh installation starts with these protective token policies:
+
+| Scope | Period | Tokens |
+| --- | --- | ---: |
+| Everyone | Day | 300,000 |
+| Everyone | Month | 9,000,000 |
+| System work | Day | 100,000 |
+
+Initial policy seeding preserves installations that already have policy records.
+Administrators can change or disable policies. If no enabled policy applies, usage
+is observed without that allowance restriction, and the interface says so.
+
+The suggested-policy action previews the set before applying it and can add a daily
+300,000-token policy for each active account. It does not overwrite an existing
+enabled policy for the same scope, target and period. Accounts created later do not
+automatically gain those personal policies, although shared site limits still apply.
+Choose limits against the installation's expected workload rather than assuming
+these defaults suit every team.
+
+## Daily presets
+
+The AI connections matrix offers:
+
+| Preset | Calls per day | Tokens per day |
+| --- | ---: | ---: |
+| Light | 50 | 100,000 |
+| Standard | 250 | 500,000 |
+| Intensive | 1,000 | 2,000,000 |
+| Power | 2,500 | 5,000,000 |
+
+**Blocked** sets both daily limits to zero. **Inherit** removes that target's daily
+policy, leaving other applicable policies in force. Weekly and monthly caps continue
+to apply. A team preset is a shared allowance, not an allowance for each member.
+
+## Reasoning and output budgets
+
+Analytical stages use the model connection's configured reasoning setting. Mechanical
+stages can use a lower effort cap to avoid spending report-level reasoning on short
+transformations and classifications.
+
+The built-in capped purposes are translation, query translation, conflict screening,
+claim proposals, economy explainers, Ukraine digests and connection tests. Report
+analysis, planning, review, Ask Eye and photo analysis retain the configured effort.
+
+| Setting | Default | Meaning |
 | --- | --- | --- |
-| Report generation | 117 | 870,000 (about 75 per cent of spend) |
-| Conflict screening | 753 | 76,000 |
-| Translation | 42 | 23,000 |
-| Total | 912 | about 969,000 |
+| `ASE_AI_MECHANICAL_REASONING_EFFORT` | `medium` | Cap explicit reasoning effort for mechanical purposes; `inherit` removes the cap |
+| `ASE_AI_MECHANICAL_PURPOSES` | Built-in list | Optional comma-separated replacement list of purpose names |
 
-That is roughly 194,000 tokens a day, about 5.8 million a month, costing about
-six US dollars a month at GPT-5.6 Luna prices ($0.20 per million input, $1.20 per
-million output). Output dominates, and the profile runs at **Max** reasoning, so
-reasoning tokens bill as output tokens. Reasoning effort is therefore the largest
-single lever on the bill.
+The policy only lowers an explicit setting. A profile already below the cap stays
+there; a profile using the provider's default is not assigned a new effort. Providers
+still control which settings their models support. The effective-model preview shows
+the configured model effort and applicable mechanical effort separately.
 
-## 1. Reasoning effort per purpose
+Reasoning can consume the completion allowance before visible output is produced.
+Increasing that allowance can improve headroom and increase cost, but cannot guarantee
+completion or a valid report. Failed and cancelled requests can still be billed.
+Inspect recorded failures before repeating them.
 
-`ase.domain.reasoning` holds the policy. A *purpose* is the request's
-`schema_name`, which every request builder already sets and which is the only
-purpose identifier that reaches the provider gateway.
+## Recurring research
 
-Mechanical purposes, capped by default:
+New subscriptions default to **weekly** at **Basic** depth. More frequent runs and
+Deep or Advanced research create more collection and model work. The subscription
+form's relative-cost indicator is a rough comparison between choices, not an invoice
+forecast.
 
-`translation`, `query_translation`, `conflict_screening`, `claim_proposals`,
-`economy_explainer`, `ukraine_digest`, `connection_test`.
+Start with a cadence that matches how quickly the subject changes. Inspect a completed
+edition's coverage and usage before increasing frequency or depth. Pausing stops
+further scheduled admissions; it does not refund work already sent to a provider.
 
-Everything else keeps whatever the operator chose on the connection: reports and
-their sections, direction, devil's advocacy, Ask Eye, research planning and
-replanning, continuation and photo geolocation.
+## Estimated spend
 
-The cap is applied once, by `MechanicalEffortGateway` in
-`ase.adapters.llm.effort`, which wraps the provider gateway in the container. It
-rewrites only `reasoning_effort`, and only downwards:
+The app estimates spend using recorded input/output tokens and operator-configured
+rates:
 
-- a connection already set below the cap keeps its own setting;
-- a connection with no explicit effort keeps the provider default rather than
-  being pushed up to the cap;
-- recorded model provenance still reflects the profile the operator configured,
-  because the profile is not modified.
+| Setting | Purpose |
+| --- | --- |
+| `ASE_AI_PRICE_INPUT_PER_MILLION` | Estimated price per million input tokens |
+| `ASE_AI_PRICE_OUTPUT_PER_MILLION` | Estimated price per million output tokens |
+| `ASE_AI_PRICE_CURRENCY` | Display currency |
 
-Settings (see `.env.example`):
+Set these rates for the intended comparison and update them when pricing changes.
+They are installation-level estimates, so a mixture of differently priced models
+will not produce an exact provider-by-provider bill. Set both prices to zero to
+hide monetary estimates and display token usage instead.
 
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `ASE_AI_MECHANICAL_REASONING_EFFORT` | `medium` | `inherit` disables the cap; otherwise one of the effort names |
-| `ASE_AI_MECHANICAL_PURPOSES` | blank | Comma separated schema names replacing the built-in list |
+When a provider does not supply a usable split, accounting can retain a conservative
+charge rather than inventing exact input/output counts. The provider can apply cached
+input rates, tool charges, discounts, minimums and other adjustments that this estimate
+does not reproduce. Its account billing remains the authority on actual spend.
 
-## 2. What an administrator can control
+Allowances reduce exposure to unplanned usage but are not a substitute for provider
+account limits. Review both the app's policies and the provider's own usage controls.
 
-All of this is administrator-only, checked in the application layer, audited, and
-never returns a credential or a key hint.
+## Implementation boundaries
 
-For a named person or a named team, through **Administration > AI access and
-usage**:
-
-- **See the effective allowance and spend.** The allowance preview lists every
-  policy that would apply to that person, or to that person working for that
-  team, with recorded usage and estimated spend for the period.
-- **See the effective model.** The same preview names the connection that
-  destination would actually use (personal override, team override, global
-  connection, or the legacy first-enabled profile), its reasoning effort, and the
-  lower effort mechanical work will run at. When no usable connection is assigned
-  it shows the routing reason instead of a model.
-- **Set or clear a limit.** Requests and tokens, daily, weekly or monthly. One
-  target may now carry several periods at once, for example a daily and a monthly
-  cap: policy uniqueness is per scope, target **and** period (migration `0060`).
-  "Set a limit for this account/team" in the preview opens the policy form with
-  that target already chosen, or the existing policy ready to edit. Disabling a
-  policy clears the limit.
-- **Set or clear a model binding.** Through **Administration > AI connections**:
-  apply a tested connection to one person or one team, replace it, or reset that
-  audience back to the global connection.
-- **Grant a temporary override.** Dated, bounded and revocable, on top of a
-  policy, without editing the policy itself.
-
-Team allowances are charged only when work is explicitly assigned to that team,
-and a caller who cannot act for a team cannot charge or read it.
-
-## 3. Default policies
-
-Nothing is enforced until a policy exists. With no policy the ledger observes and
-records only, and the interface says so in those words. The suggested set is
-previewed first and applied deliberately, by one click, in one audited action; a
-scope, target and period that already carries an enabled policy is never
-overwritten.
-
-The set lives in `ase.domain.ai_defaults`:
-
-| Scope | Period | Tokens | Why |
-| --- | --- | --- | --- |
-| Everyone | day | 300,000 | A daily ceiling for the whole site |
-| Everyone | month | 9,000,000 | Thirty daily budgets |
-| System work | day | 100,000 | Unattended background work, about five times the measured 20,000 a day |
-| Each active account | day | 300,000 | One account cannot exceed the whole site's day |
-
-**Read the headroom before adopting these.** The site-wide daily figure of
-300,000 tokens is about 1.5 times the measured average of 194,000 a day, which is
-not a wide margin: a busy day of report generation can reach it and requests will
-then be refused until the period resets. The suggestion panel computes and shows
-this multiple from the site's own recorded usage, so it stays honest as usage
-changes. Raise the figure before applying it if you want real slack.
-
-Per-account policies are created for the accounts that exist when the set is
-applied. An account added later has no personal cap until one is created for it;
-the site-wide policies still cover it.
-
-## 4. Subscription defaults
-
-New subscriptions default to a **weekly** cadence at **Quick** depth, the cheapest
-useful recurring shape (`DEFAULT_CADENCE` and `DEFAULT_RESEARCH_MODE` in
-`ase.domain.schedules`). Existing subscriptions are untouched; the default applies
-only where no cadence is given.
-
-The subscription form states the running cost of the chosen shape relative to a
-weekly Quick subscription, and says plainly that a daily Advanced subscription
-costs roughly twenty times a weekly Quick one: it runs seven times as often and
-each run does far more model work, because Detailed and Advanced add challenge and
-devil's advocate passes. Those weights
-(`frontend/src/features/reports/subscriptionCost.ts`) are deliberately rough
-guides for the choice being made, not predictions of an invoice.
-
-## 5. Estimated spend
-
-Recorded totals carry an input/output token split, so tokens can be priced. Where
-a provider reported no split, the conservative charge is counted as output, the
-dearer rate: the split always sums to the token total and an estimate never
-understates.
-
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `ASE_AI_PRICE_INPUT_PER_MILLION` | `0.20` | GPT-5.6 Luna input price |
-| `ASE_AI_PRICE_OUTPUT_PER_MILLION` | `1.20` | GPT-5.6 Luna output price |
-| `ASE_AI_PRICE_CURRENCY` | `USD` | Shown beside the figure |
-
-Edit these when the model or its price changes. Set both prices to zero to hide
-money and show tokens only.
-
-Every figure is an estimate from recorded tokens at the configured prices and is
-labelled as such. It is **not a bill**: providers round, cache input, apply
-minimum charges and discounts, and change prices mid-period. The provider's own
-account remains the authority on what was charged.
-
-## What the cap was hiding (17 September 2026)
-
-Capping mechanical effort at medium made conflict screening work, and that
-concealed the real defect rather than fixing it. Screening asked for at most
-4,000 completion tokens whatever the administrator's profile allowed. Reasoning
-tokens come out of that same allowance, so a profile set to Max spent the budget
-thinking, the provider returned an incomplete response, and screening recorded
-the generic "call failed". Over six days that was 740 failures in 906 calls,
-every one of them billed. A 45 second stage ceiling cut off most of the rest.
-
-The stages that reason now ask for the administrator's tested budget and keep
-their own small ceiling only for a profile that does not reason: conflict
-screening, the economy explainer and the Ukraine digest all had the same shape.
-Screening also has 240 seconds against the 300 the gateway allows a thinking
-stage, and an exhausted budget or a gateway timeout is recorded as itself, with
-the tokens the attempt cost.
-
-So the effort cap is now a cost choice rather than a correctness crutch.
-Measured on this operator's ledger, the same screening work costs 3,304
-completion tokens per call at Max against 1,224 at medium, about 2.7 times, or
-roughly 38 pence a day more at 150 calls a day.
-`ASE_AI_MECHANICAL_REASONING_EFFORT=inherit` removes the cap; any effort name
-restores it.
+Allowance admission and accounting live in application services, separate from
+provider transport. They cover text requests, native web-search requests and charged
+embedding work. Policy changes are administrator-only and audited. The design and
+reservation behaviour are documented in [the usage allowance ADR](adr/0019-ai-usage-allowances.md).

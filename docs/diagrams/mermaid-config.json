@@ -1,0 +1,16 @@
+{
+  "layout": "dagre",
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Arial, sans-serif",
+    "fontSize": "16px",
+    "primaryTextColor": "#182331",
+    "lineColor": "#596579"
+  },
+  "flowchart": {
+    "defaultRenderer": "dagre",
+    "nodeSpacing": 100,
+    "rankSpacing": 90,
+    "htmlLabels": true
+  }
+}

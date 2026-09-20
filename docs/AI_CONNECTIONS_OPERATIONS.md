@@ -1,249 +1,138 @@
-# Configure an AI connection
+# Configure AI connections
 
-Administrator connection controls are implemented. A real account connection
-still requires entering its key and testing it through the app.
+Administrators configure models under **Administration > AI connections**. A
+connection contains the provider, endpoint, model, credential, reasoning setting and
+completion allowance. An assignment decides which personal or team workspace uses it.
 
-## Model workspace
+Read [AI in the app](AI.md) for the data sent to providers and the limits of generated
+assessments. You do not need to configure an AI connection to inspect public map data,
+but research generation and other model-backed features need a usable connection.
 
-Open **Administration > AI connections**, then **Add model**. The popup walks
-through name, API key, account model, reasoning, test and audience. OpenAI's
-endpoint is supplied automatically. Provider details in the first step also
-allow Bedrock or a custom compatible endpoint. Account discovery runs when the
-model step opens, retries transient failures up to three times, and supports
-search, refresh and an exact-ID fallback.
+## Add and test a model
 
-**Test connection** saves an inactive draft before making the compatibility
-request. Only **Save and close** applies assignments. A failed save retains the
-entered key for correction; a saved draft retains its encrypted key and can be
-finished later. Closing after a test leaves that draft in its model slot.
+1. Select **Add model** and give the connection a recognisable name.
+2. Choose the provider and enter its key directly in the password field. Never put
+   a key in the endpoint URL, a research question, a screenshot or a source file.
+3. Select an account-visible model, or enter its exact ID when discovery is unavailable.
+4. Choose supported reasoning and completion settings. A larger output allowance can
+   increase cost; reasoning may consume that allowance before a visible answer appears.
+5. Select **Test connection**. This saves an inactive draft and makes a small model
+   request that can incur a charge.
+6. After a successful test, select the audience and **Save and close** to apply it.
 
-Up to five text-model connections, including drafts, appear under **Live models**.
-Embedding-only connections are managed separately in advanced settings. Cards
-and the matrix share the same saved assignments. Moving a user or team to another
-model removes that explicit assignment from the previous card. Audience selection
-supports up to 100 targets per save.
+The workspace supports up to five text-model connections, including drafts.
+Embedding-only connections are managed separately in advanced settings.
 
-The matrix provides these daily UTC presets:
+Testing and applying are separate actions. Closing after a test leaves a saved draft
+in its slot; it does not apply the audience. A successful test proves only that the
+selected configuration answered the small test request. It does not validate model
+accuracy, photo analysis or every full-report schema.
 
-| Preset | Model calls | Tokens |
-| --- | ---: | ---: |
-| Light | 50 | 100,000 |
-| Standard | 250 | 500,000 |
-| Intensive | 1,000 | 2,000,000 |
-| Power | 2,500 | 5,000,000 |
+Keys are encrypted using the server's configured encryption key. Saved connections
+show a short hint rather than the full key. Preserve the encryption key with your
+backup material: a database backup alone cannot recover encrypted credentials.
 
-A report can make several model calls, so a call limit is not a report count
-or a monetary spending limit. Scheduled report text, native web-search and
-evidence-reranking embedding calls use the same allowance ledger. Shared
-background work consumes the site allowance and any separate system allowance.
-**Blocked** sets both daily limits to zero. **Inherit** removes that target's
-daily policy, leaving other applicable limits in force. Site and team caps are
-shared; a user cap covers their personal and team requests. Existing weekly and
-monthly caps still apply. Resolve active or future temporary overrides in
-advanced settings before changing the underlying daily preset.
+## Provider settings
 
-Model and allowance edits in one row save atomically. If another administrator
-changed the same records, use **Refresh workspace**, review the current values
-and retry. Advanced settings cannot close while a write is pending.
+### OpenAI
 
-## OpenAI GPT-5.6 Luna
+Use the official API base `https://api.openai.com/v1` and an API key for the intended
+account. Select a model available to that account that accepts the application's
+structured-output contract. Model names, supported reasoning settings and available
+input types depend on the account and provider.
 
-Sign in as an administrator and open **Administration > AI connections**.
-Create an OpenAI connection using:
+The app uses Chat Completions for its compatible text route. An explicit **Max**
+reasoning setting at the official OpenAI endpoint uses Responses. Supported photo
+requests use sanitised image input. Native fresh web research also uses Responses,
+but requires its own supported model capability and explicit selection in research.
 
-| Setting | Value |
+New popup connections start with a 16,000-token completion allowance. The app accepts
+configured allowances up to 32,000 tokens; individual stages can impose smaller
+limits. These are app limits, not a promise that a particular model accepts them or
+finishes within them. An exhausted reasoning budget is reported as such rather than
+silently lowering the requested model or effort.
+
+### Custom OpenAI-compatible endpoint
+
+Enter the backend-reachable API base URL and the exact model ID. Remote endpoints
+must use HTTPS. Local model servers are supported through local/private addresses,
+subject to the same structured-output contract.
+
+Model discovery may not be implemented by the endpoint. Use the exact-ID option and
+test the connection. Compatibility with ordinary chat does not establish compatibility
+with strict JSON schemas, images, reasoning parameters or embeddings.
+
+A container's `localhost` is the container itself. If the model runs on the host,
+use the host address appropriate to your container platform and confirm reachability
+from the backend. See [setup](SETUP.md) for the application's local environments.
+
+### Amazon Bedrock
+
+Choose **Amazon Bedrock**, select the AWS region, enter a **Bedrock API key** and
+paste the exact model or inference-profile ID permitted in that region. The app
+constructs the regional runtime endpoint and calls the native Converse API.
+
+This integration uses bearer authentication. It does not accept an AWS access-key
+ID/secret pair, use an instance role or renew short-lived keys. The chosen model
+must support Converse structured outputs; image requests additionally require image
+support. Reasoning uses provider defaults. Embeddings retain their separate compatible
+profile.
+
+Model selection is manual because the app does not call the AWS control-plane model
+catalogue. A first use of a structured-output schema can take longer than an ordinary
+request. If a test times out, inspect provider availability and permissions before
+retrying. A successful small test does not exercise every report schema.
+
+## Assign a connection
+
+Apply a tested global connection first. It supplies personal work and teams that
+inherit the default, including administrator work. Then add personal or team overrides
+where needed.
+
+| Destination | Resolution |
 | --- | --- |
-| API base URL | `https://api.openai.com/v1` |
-| Model | `gpt-5.6-luna` |
-| Reasoning | Max |
-| Completion budget | New popup connections use 16,000 tokens; existing saved budgets are preserved |
-| API key | Enter directly into the password field in the app |
+| Personal workspace | Owner's personal assignment, then global default |
+| Team workspace | Team assignment, then global default |
+| Shared background text work | Global routing |
+| Embeddings | Separate global embeddings profile |
 
-Earlier local live acceptance found that Max report drafting could consume all
-16,000 tokens on reasoning without producing an answer. The tested 32,000-token setting
-uses the app's existing upper limit; it increases the per-request token allowance
-and possible cost, not the reasoning level. It does not guarantee completion.
-OpenAI recommends initially reserving at least 25,000 tokens for reasoning plus
-output. See [reasoning allowance guidance](https://developers.openai.com/api/docs/guides/reasoning#allocating-space-for-reasoning).
-The subsequent local 32,000-token checks still encountered exhaustion and invalid
-judgement citations. Full-report reliability at Max remains an open acceptance
-item; see the [actual live results](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
+Use **Use default** in a matrix row to remove that audience's override. Changing
+the global connection preserves other overrides. An administrator working on someone
+else's report uses the destination's routing, not their own personal model.
 
-The key goes to the application server and is encrypted using the existing
-server encryption configuration. It is never returned by the API; an existing
-connection shows only a short hint. Do not put the key in a model URL, source
-file, evaluation profile JSON or chat message.
+Cards and the assignment matrix represent the same saved configuration. **Manage
+access** opens the matrix; **Assign model** on an already tested, unassigned card
+returns to audience selection without another paid test. In-flight work retains the
+configuration captured when it started.
 
-Select the account model in the popup and test the connection. The test sends a small synthetic structured-output
-request with the selected model and reasoning setting, not saved research.
-It can consume API tokens. A successful test establishes connectivity and a
-small output contract, not the quality of a full research assessment.
+## Change or remove access
 
-At the official OpenAI base URL, an explicit **Max** reasoning setting uses
-`/v1/responses`. This preserves the selected model and reasoning level instead of
-silently lowering them when Chat Completions rejects `max`. Structured output uses
-strict `text.format` JSON schema; sanitised photo analysis uses native `input_image`
-content. The request sets `store: false`, which does not override the provider's
-account-level retention policy. Other reasoning settings and custom compatible
-endpoints retain the existing Chat Completions route.
+Use the same test-and-apply flow to replace an active connection. Enter an explicit
+replacement key when changing the endpoint or provider. Changing request settings
+invalidates the old test proof, so test the new configuration before applying it.
 
-Official OpenAI **Max** report drafts have a five-minute request deadline by
-default. Full drafts can need several minutes; the longer deadline does not
-guarantee completion. Other gateway requests retain their two-minute default,
-and shorter stage deadlines still apply. An explicitly configured gateway timeout
-overrides these defaults. Admission waiting, HTTP transfer and response parsing
-all count towards the selected deadline. The whole report remains bounded by its
-ten-minute production deadline. Transient failures and schema-repair requests
-retain the existing retry limit; explicit native token exhaustion stops immediately
-instead of repeating the same allowance. Known exhausted-call usage is recorded
-once; absent or invalid token counts remain unknown.
-Cancellation, concurrency and response-size limits still apply to both routes.
-Incomplete responses, refusals and malformed response bodies fail the connection
-test rather than being treated as successful answers. The official
-[Luna model documentation](https://developers.openai.com/api/docs/models/gpt-5.6-luna)
-lists `max` reasoning, image input and structured outputs. The request shape follows
-the [structured output guide](https://developers.openai.com/api/docs/guides/structured-outputs)
-and [image input guide](https://developers.openai.com/api/docs/guides/images-vision).
+The current connection can continue serving work while a replacement draft is tested.
+An assigned configuration that becomes unavailable does not silently fall back to a
+different audience's provider.
 
-Full report schemas require every declared property, including nullable values.
-For example, each new key judgement includes `change_from_previous: null` when
-there is no previous judgement to compare. The new-output validator enforces
-this contract; existing saved reports that omitted the field remain readable.
-Recursive local tests cover the actual schemas used by drafting, planning,
-review, translation, conflict screening and photo analysis. These checks prevent
-missing-required-field errors but do not establish full provider compatibility.
+The matrix also offers daily allowance presets and **Blocked**. Model and allowance
+edits in a row save together. If another administrator changes the same records,
+refresh the workspace, review the new values and retry. See [cost controls](AI_COST_CONTROLS.md)
+for how shared limits and temporary overrides interact.
 
-Direction questions guide coverage; they do not establish that requested checks
-were performed. Related supported questions can share a cited assessment section.
-Unsupported questions are recorded as named intelligence gaps, with missing
-evidence and future collection recommendations kept separate from completed work.
+## Troubleshooting
 
-Apply the tested connection globally, to selected teams or to selected users.
-Global applies to personal work and teams that inherit it, including
-administrators' work. Explicit team and personal overrides stay in place when
-the global default changes. A personal model override does not affect team work.
-In-flight research keeps the configuration with which it started.
+| Symptom | Check |
+| --- | --- |
+| No model available | Global assignment, destination override and whether the assigned configuration is still tested and enabled |
+| Model list unavailable | Account permissions, endpoint discovery support, or the exact-ID fallback |
+| Small test works but a report fails | Report schema support, completion allowance, provider limits and the saved failure reason |
+| Budget exhausted | Reasoning and visible output share the allowance; review the model settings and expected cost before increasing it |
+| Allowance reached | Every applicable site, system, user and team policy, including weekly/monthly caps |
+| Embeddings unavailable | A separate enabled embeddings profile and a compatible index/model configuration |
+| Fresh web search unsupported | Official OpenAI destination and native web-search support; custom endpoints and Bedrock have no automatic fallback |
 
-Set the global default first. To return a team or user to it, select **Use default**
-in that matrix row and save. Other overrides stay unchanged. Use **Manage access**
-on an assigned card to reach the matrix. A tested unassigned card offers
-**Assign model**, which resumes directly at audience selection without requiring
-the key or another paid test.
-
-## Amazon Bedrock
-
-Open **Administration > AI connections**, create a connection and choose
-**Amazon Bedrock**. Select the AWS region, enter a Bedrock API key in the password
-field and paste the exact model or inference-profile ID from the AWS console.
-The app builds the regional endpoint, for example
-`https://bedrock-runtime.us-east-1.amazonaws.com`.
-
-This connection uses the native Converse API with bearer authentication. Enter
-a **Bedrock API key**, not an AWS access-key ID or secret access key. AWS documents
-how to obtain [Bedrock API keys](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html).
-The key is encrypted on the application server using the same storage as other
-connections. Its permissions and the selected model must allow inference in the
-chosen region. Short-term keys expire; this version does not renew credentials
-or use an IAM role, AWS credential chain or SigV4 signing.
-
-Choose a model that supports native Converse structured outputs, such as the
-documented model ID `openai.gpt-oss-120b-1:0`, subject to your account and regional
-availability. This is an example, not an automatically selected model. A direct
-OpenAI model name and reasoning setting cannot be assumed to work on Bedrock.
-See [Bedrock structured outputs](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html)
-and the [model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-oss-120b.html).
-
-Model selection is manual. The app does not enumerate the AWS model catalogue,
-which requires a separate control-plane integration. Bedrock supports text and
-sanitised image requests through Converse, subject to the selected model accepting
-those inputs, with provider-default reasoning and temperature from 0 to 1. Embeddings retain their separate OpenAI-compatible profile. The app accepts
-model and inference-profile identifiers up to 2,048 characters; AWS still checks
-the identifier, model access and model-specific token budget during the test.
-The configured completion budget applies to every native text stage, including
-provider reasoning. Larger budgets can increase inference cost.
-
-Choose **Test connection**, then review the audience and **Save and close**.
-The test is a small billable structured-output request. It establishes that the
-saved connection can answer that request, not that every research task will
-succeed. Changing region or provider clears any typed key; a replacement needs
-its own explicit key. Existing connections continue serving work while a
-replacement is tested, and in-flight work retains its captured provider.
-
-AWS may take several minutes to compile a new structured-output schema. The app
-keeps a 120-second request deadline, so a first attempt can time out; retry the
-saved connection test after checking AWS availability. A different report schema
-may need its own first compilation even after the small connection test succeeds.
-
-## Provider and model changes
-
-An active connection is replaced through the same test-and-apply flow. This
-keeps the current connection available while the replacement is being tested.
-Use an explicit new key when changing the destination endpoint. A provider's
-model catalogue is the account-visible list, not a guarantee that every listed
-model supports the application's text and structured-output requirements.
-
-For a compatible endpoint without model discovery, enter its exact model ID and
-use the connection test. Provider-specific APIs that do not implement the
-OpenAI-compatible contract require a separate adapter; Bedrock has its own native
-Converse adapter.
-
-Luna does not replace an embeddings model. Semantic-search embeddings keep a
-separate profile and existing index compatibility rules. Shared live-feed
-translation follows the global text connection, rather than a particular team.
-
-## Existing installations
-
-The connection workflow adds migration `0017`; native Bedrock adds `0018`.
-Back up the intended database and its
-encryption configuration using the existing [backup procedure](BACKUP_RESTORE.md),
-then run `uv run ase migrate` from `backend` against that explicitly selected
-database and restart the application. Development checks use disposable databases;
-they do not migrate an operator installation.
-
-Migration preserves existing encrypted keys and enabled legacy profiles without
-automatically choosing a global or team connection. The existing role selection
-continues until the first tested global replacement is applied. Until then,
-enabled legacy text profiles are protected from editing and deletion. New text
-profiles are saved as inactive drafts. An embeddings-only profile can still be
-enabled separately when saved.
-
-The five-model workspace adds no schema migration. If an old installation has
-five enabled partial-role profiles and no explicit global binding, it requires
-a separate migration plan before adding a complete default model. Testing alone
-does not add missing roles, and the matrix excludes incomplete configurations.
-
-Downgrading `0017` is refused while connection assignments or explicit reasoning
-settings exist, rather than silently discarding the selected routing policy.
-
-Migration `0018` defaults existing profiles to OpenAI-compatible without changing
-their encrypted keys, successful test hashes or assignments. It expands encrypted
-credential storage and model identifiers, including saved report model IDs.
-Downgrade is refused while native Bedrock profiles, values exceeding the former
-storage bounds or provider-bearing frozen report routing records remain. The old
-reader cannot interpret those new records. Do not remove historical reports merely
-to force a downgrade.
-
-## Research quality evaluation
-
-The chosen public configuration is provided in
-`backend/evaluations/openai-luna-profile.json`. It contains no credential.
-For a deliberate standalone evaluation, set `ASE_EVAL_API_KEY` in the process
-environment using your normal secret-management workflow, then run from backend:
-
-```powershell
-uv run python -m evaluations run --profile evaluations/openai-luna-profile.json --cases-dir evaluations/research_cases --out ../data/luna-research-eval --max-calls 24
-```
-
-The output directory must be new. This makes actual API calls against synthetic
-research scenarios. The harness deliberately does not decrypt saved app keys.
-This standalone evaluator currently uses the OpenAI-compatible adapter; it does
-not accept a native Bedrock configuration.
-Human review and the wider representative evaluation remain necessary; the
-two replay cases do not measure general factual accuracy or live retrieval.
-
-See [evaluation instructions](../backend/evaluations/README.md) and
-[connection design](AI_CONNECTIONS_PLAN.md).
-
-Reasoning effort for mechanical work, per-person and per-team allowances, the
-suggested default policies and estimated spend are covered separately in
-[AI cost controls](AI_COST_CONTROLS.md).
+Use a small representative research question after connection setup and inspect its
+collection receipts, evidence and validation findings. Automated tests use controlled
+responses; they do not establish a provider's current availability or general factual
+accuracy. Evaluation tooling is documented in [backend evaluations](../backend/evaluations/README.md).

@@ -1,16 +1,19 @@
 # The All Seeing Eye (code name `ase`)
 
-Self-hosted OSINT fusion app: free feeds on a 3D globe (the default view), graded before an LLM writes mechanically validated assessments. The approved design lives in `docs/`. Read in this order when starting work: `docs/MASTER_AUTOMATED_RESEARCH_PLAN.md`, `docs/OSINT_PRODUCT_DIRECTION.md`, `docs/01_ARCHITECTURE.md`, `docs/07_SECURITY_BY_DESIGN.md`, `docs/DEVELOPMENT_STORY.md`. `docs/MASTER_IMPLEMENTATION_PLAN.md` preserves the earlier Phase 0 to 6 delivery history; `docs/00_PROPOSAL_OVERVIEW.md` is the original proposal. API contracts live in `docs/api/`.
+Self-hosted OSINT collection, research and evidence review. Public observations
+appear on a globe and map; question-led research produces saved assessments with
+selected evidence, provenance and uncertainty. AI provider connections are
+configured per installation.
 
-Phase 5 and Phase 6 features are implemented. See
-`docs/PHASE5_PHASE6_OPERATIONS.md` for operator flows and
-`docs/security/PHASE6_ASVS_REVIEW.md` for outstanding deployment gates. Do not
-equate local tests with public readiness, recovery of the operator's backups,
-a real-model integration or an observed GitHub CI run. A prior synthetic
-SQLite/PostgreSQL 17 recovery through migration `0011` is recorded separately;
-the earlier improvement plan preserves identity/team delivery history. The active
-automated-research plan tracks the current, unfinished collection/input/follow-up
-milestone. Its focused tests do not establish final integration or model quality.
+Start with `README.md` and `docs/README.md`. The current reader guides are
+`docs/SETUP.md`, `docs/01_ARCHITECTURE.md`, `docs/02_DATA_SOURCES.md`,
+`docs/AI.md` and `docs/07_SECURITY_BY_DESIGN.md`. API contracts live in `docs/api/`.
+Implementation plans, reviews and development notes support engineering work;
+they do not replace checking the current code and tests.
+
+Do not equate software tests with measured research accuracy, provider coverage,
+recovery of an operator's backups or successful use of a particular live model.
+Keep installation-specific host access and recovery details out of reader docs.
 
 ## Layout
 

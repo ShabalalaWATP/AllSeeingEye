@@ -1051,3 +1051,14 @@ Keep business rules in application services and async interaction state in hooks
 No new production dependency or database migration is required. Local validation
 and final CI evidence are recorded in the remediation pull request; the deployment
 and model-quality gates above remain separate.
+
+## Current-state reader documentation
+
+- [x] Explain the app and connect its principal workflows in the README and docs index.
+- [x] Document architecture, stack, source families, AI use and pragmatic SOLID boundaries.
+- [x] Provide Windows 11, macOS and Linux native/Compose setup, including MFA and local TLS.
+- [x] Add current UI screenshots with illustrative data, editable Structurizr views and Mermaid flows.
+- [x] Keep installation-specific VPS access and recovery details out of reader-facing deployment guides.
+
+The documentation describes supported behaviour. Actual source connectivity,
+model quality and provider account permissions remain installation-specific.
