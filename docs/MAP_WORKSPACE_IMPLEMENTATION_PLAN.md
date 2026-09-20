@@ -3,7 +3,9 @@
 Status: implementation, focused regressions, independent review and local browser
 verification are complete on `codex/map-workspace-improvements`,
 [PR #38](https://github.com/ShabalalaWATP/AllSeeingEye/pull/38). SQLite and PostgreSQL
-CI pass at 94% backend coverage. Final frontend coverage verification is pending.
+CI pass at 94% backend coverage. The final frontend run passes 3,109 tests, with
+90.53% branch coverage. All 31 GitHub checks passed for implementation commit
+`7b0a90f3`. Merge, migration application and deployment remain separate release work.
 
 ## Scope
 
@@ -25,7 +27,7 @@ boundaries explicit. Preserve existing report maps and radio models.
 - [x] Add an attributed external nuclear-effects educational reference.
 - [x] Complete integration, focused regression tests and independent review.
 - [x] Verify desktop and mobile interaction in the local browser.
-- [ ] Complete final full frontend coverage, repeated static checks and CI.
+- [x] Complete final full frontend coverage, repeated static checks and CI.
 - [x] Update reader guides and development story with implemented capabilities and limits.
 
 Checked implementation items do not imply a production release or measured radio
@@ -36,8 +38,11 @@ accuracy. Release verification remains separate from the local checks below.
 - The combined new backend regression run passes: 81 tests.
 - Backend Ruff lint and formatting pass. Mypy passes across 1,360 source files;
   all three backend import contracts pass.
-- Frontend type checks, production build and lint have passed. Final repeated
-  static checks and the full frontend coverage run remain pending.
+- Frontend type checks, production build and lint pass. The full suite passes
+  3,109 tests, with one existing skip: statements 95.21%, branches 90.53%,
+  functions 93.20% and lines 96.52%. All 90% gates remain unchanged.
+- SQLite and PostgreSQL CI pass with 94% backend coverage. Security, Semgrep,
+  CodeQL, dependency review and container build/scanning checks pass.
 - Repository source-file length checks pass.
 - Local browser checks pass at 1600 × 1000, 390 × 844 and 320 × 568, using normal
   pointer interactions, with no fresh browser errors observed.

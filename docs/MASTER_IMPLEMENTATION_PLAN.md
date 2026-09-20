@@ -1085,7 +1085,9 @@ model quality and provider account permissions remain installation-specific.
   verification, including input ownership and authority-boundary corrections.
 - [x] Pass 81 combined new backend regressions, backend lint/format/type/import
   checks, frontend type checks/build/lint and repository source-length checks.
-- [ ] Complete the final full frontend coverage run, repeated static checks and CI.
+- [x] Complete the final full frontend coverage run, repeated static checks and CI:
+  3,109 frontend tests pass at 90.53% branch coverage; SQLite and PostgreSQL
+  backend coverage is 94%. All 31 checks pass for implementation commit `7b0a90f3`.
 - [ ] Review and apply the new workspace/geometry database migrations during
   an authorised release, then verify the deployed workflows.
 
@@ -1096,4 +1098,4 @@ or exhaustive research coverage. No production release is claimed here.
 
 Browser verification covers 1600 × 1000, 390 × 844 and 320 × 568 with normal
 pointer interactions and no fresh browser errors observed. Detailed evidence and
-remaining checks are recorded in the implementation checklist.
+release follow-ups are recorded in the implementation checklist.
