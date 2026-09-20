@@ -17,6 +17,8 @@ import { buildApproximateLayer } from './layers/approximate';
 import { buildSelectionLayer } from './layers/selection';
 
 interface Accessors {
+  data: readonly unknown[];
+  billboard: boolean;
   getPosition: (item: unknown) => number[];
   getRadius: (item: unknown) => number;
   getLineColor: (item: unknown) => number[];
@@ -59,28 +61,54 @@ describe('globe layer helpers', () => {
     const onSelect = vi.fn();
     const withPortrait = publicFigure();
     const bare = publicFigure({ id: 'bare', portrait: null, wikidata_id: 'Q2' });
-    const layers = buildFigureLayers([withPortrait, bare], onSelect, 'bare', true);
+    // Selection starts first in roster order but must render above its neighbours.
+    const layers = buildFigureLayers([bare, withPortrait], onSelect, 'bare', true);
     expect(layers.map((layer) => layer.id)).toEqual([
       'public-figure-rings',
       'public-figure-portraits',
-      'public-figure-fallbacks',
+      'public-figure-selected-rings',
+      'public-figure-selected-fallbacks',
     ]);
     const rings = props(layers[0]!);
-    expect(rings.getLineWidth(bare)).toBe(3);
+    const selectedRings = props(layers[2]!);
+    expect(rings.data).toEqual([withPortrait]);
+    expect(selectedRings.data).toEqual([bare]);
+    expect(selectedRings.getLineWidth(bare)).toBe(3);
     expect(rings.getLineWidth(withPortrait)).toBe(2);
-    expect(rings.getRadius(bare)).toBeGreaterThan(rings.getRadius(withPortrait));
-    expect(rings.onClick({ object: bare })).toBe(true);
+    expect(selectedRings.getRadius(bare)).toBeGreaterThan(rings.getRadius(withPortrait));
+    expect(selectedRings.getPosition(bare)).toEqual([36.23, 49.99]);
+    expect(selectedRings.onClick({ object: bare })).toBe(true);
     expect(onSelect).toHaveBeenCalledWith(bare);
     const portraits = props(layers[1]!);
+    expect(portraits.data).toEqual([withPortrait]);
     expect(portraits.getIcon(withPortrait).url.startsWith('data:image/png')).toBe(true);
     expect(portraits.getAngle).toBe(180);
+    expect(portraits.billboard).toBe(false);
     portraits.onClick({});
-    const fallbacks = props(layers[2]!);
+    const fallbacks = props(layers[3]!);
+    expect(fallbacks.data).toEqual([bare]);
     expect(fallbacks.getIcon(bare).mask).toBe(true);
+    expect(fallbacks.getAngle).toBe(180);
+    expect(fallbacks.getSize(bare)).toBeGreaterThan(portraits.getSize(withPortrait));
     fallbacks.onClick({ object: bare });
     expect(onSelect).toHaveBeenCalledTimes(2);
-    expect(buildFigureLayers([withPortrait], onSelect, null, false)).toHaveLength(2);
-    expect(props(buildFigureLayers([withPortrait], onSelect, null, false)[1]!).getAngle).toBe(0);
+    const flat = buildFigureLayers([withPortrait], onSelect, null, false);
+    expect(flat).toHaveLength(2);
+    expect(props(flat[1]!).getAngle).toBe(0);
+    expect(props(flat[1]!).billboard).toBe(true);
+
+    const portraitSelected = buildFigureLayers([withPortrait, bare], onSelect, withPortrait.id);
+    expect(portraitSelected.map((layer) => layer.id)).toEqual([
+      'public-figure-rings',
+      'public-figure-fallbacks',
+      'public-figure-selected-rings',
+      'public-figure-selected-portraits',
+    ]);
+    expect(props(portraitSelected[1]!).data).toEqual([bare]);
+    expect(props(portraitSelected[3]!).data).toEqual([withPortrait]);
+    expect(props(portraitSelected[3]!).getSize(withPortrait)).toBeGreaterThan(
+      props(portraitSelected[1]!).getSize(bare),
+    );
   });
 
   it('selects and flies to figures unless a tool is picking', () => {
