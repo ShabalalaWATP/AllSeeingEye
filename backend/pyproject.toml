@@ -30,7 +30,7 @@ dependencies = [
     "python-docx>=1.2",
     "pypdf>=6.17.0",
     "pillow>=12.3.0",
-    "tzdata>=2026.3",
+    "tzdata>=2026.4",
     "shapely>=2.1.2,<3",
     "proplib-lfmf==1.1.0",
 ]
