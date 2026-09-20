@@ -5,51 +5,48 @@ from contextlib import AbstractAsyncContextManager, nullcontext
 from dataclasses import replace
 from datetime import datetime
 from typing import Any, Literal
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from ase.application.access import AccessContext, AccessPolicy
+from ase.application.access import AccessPolicy
 from ase.application.dto import RequestContext
-from ase.application.model_routing import RoleProfiles
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.report_jobs import ReportJobRepository
-from ase.application.report_jobs.admission_payload import initial_payload
+from ase.application.report_jobs.admission import (
+    FreezeJob,
+    PrepareJob,
+    prepare_candidate,
+    require_same_submission,
+)
 from ase.application.report_jobs.controls import (
     request_digest,
     require_capacity,
     require_discardable,
-    require_same_request,
     resumed_payload,
 )
-from ase.application.report_jobs.views import error_message, job_view, refresh_summary
-from ase.application.reports.production_types import Job
+from ase.application.report_jobs.release import can_control, load_job, release_job
+from ase.application.report_jobs.views import job_view, refresh_summary
 from ase.application.reports.request import ReportRequest
-from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
+from ase.application.research.brief_conversion import run_request_from_brief
+from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.report_jobs import ReportJob
+from ase.domain.research_brief import ResearchBrief
 from ase.domain.users import User
+
+__all__ = ["FreezeJob", "PrepareJob", "ReportJobService"]
 
 SessionCheck = Callable[[], Awaitable[None]]
 JobCheck = Callable[[ReportJob], Awaitable[None]]
-PrepareJob = Callable[[User, ReportRequest], Awaitable[tuple[Job, RoleProfiles]]]
-FreezeJob = Callable[[Job, RoleProfiles], dict[str, Any]]
 SourceGuard = Callable[[], AbstractAsyncContextManager[None]]
 EditionAction = Literal["pause", "resume", "discard"]
 EditionControl = Callable[[UUID, EditionAction, datetime], Awaitable[None]]
 MonthlyCheck = Callable[[UUID, UUID | None, datetime], Awaitable[None]]
 
 
-def _can_control(context: AccessContext, job: ReportJob) -> bool:
-    try:
-        context.require_write(job.owner_id, job.team_id)
-    except (Forbidden, NotFound):
-        return False
-    return True
-
-
 class ReportJobService:
     """Callbacks perform DB-only checks and must not reacquire the source guard.
 
-    The source guard precedes administration locks. Preparation and freezing finish
-    before admission locks; only the worker may perform paid provider requests.
+    Source guards precede administration locks; preparation/freezing precede admission.
+    Only the worker may perform paid provider requests.
     """
 
     def __init__(
@@ -80,35 +77,49 @@ class ReportJobService:
         self,
         actor: User,
         request_id: UUID,
-        request: ReportRequest,
+        request: ReportRequest | ResearchBrief,
         context: RequestContext,
         *,
         check_session: SessionCheck,
         brief_ref: tuple[UUID, int] | None = None,
     ) -> dict[str, Any]:
-        digest = request_digest(request)
+        brief = request if isinstance(request, ResearchBrief) else None
+        if brief is not None:
+            expected_ref = (brief.identity.id, brief.identity.revision)
+            if brief_ref is not None and brief_ref != expected_ref:
+                raise InvalidRequest("The immutable brief reference does not match.")
+            brief_ref = expected_ref
+        digest = request_digest(request) if isinstance(request, ReportRequest) else None
+        team_id = (
+            request.team_id if isinstance(request, ReportRequest) else request.identity.team_id
+        )
         await check_session()
         try:
             access = await self._access.context(actor)
-            access.require_create(request.team_id)
+            access.require_create(team_id)
+            if brief is not None:
+                access.require_same_scope(actor.id, team_id, brief.identity.owner_id, team_id)
             existing = await self._repo.get_by_request(actor.id, request_id)
             if existing is not None:
                 access.require_read(existing.owner_id, existing.team_id)
-                require_same_request(existing, digest)
-                if (existing.brief_id, existing.brief_revision) != (
-                    brief_ref if brief_ref is not None else (None, None)
-                ):
-                    raise Conflict("This request identifier belongs to another Research Brief.")
+                require_same_submission(existing, digest, brief_ref)
         finally:
             await self._uow.rollback()
         if existing is not None:
             return await self._release(actor, existing, check_session)
-        candidate = await self.prepare_candidate(actor, request_id, request)
+        resolved = (
+            run_request_from_brief(request, now=self._clock.now())
+            if isinstance(request, ResearchBrief)
+            else request
+        )
+        candidate = await self.prepare_candidate(actor, request_id, resolved)
         if brief_ref is not None:
             candidate = replace(candidate, brief_id=brief_ref[0], brief_revision=brief_ref[1])
         async with self._guard():
             try:
-                candidate = await self.admit_prepared(actor, candidate, check_session=check_session)
+                candidate = await self.admit_prepared(
+                    actor, candidate, check_session=check_session, replay_brief=brief is not None
+                )
                 await self._uow.commit()
             except BaseException:
                 await self._uow.rollback()
@@ -118,39 +129,14 @@ class ReportJobService:
     async def prepare_candidate(
         self, actor: User, request_id: UUID, request: ReportRequest
     ) -> ReportJob:
-        """Freeze a candidate before entering the short admission transaction.
-
-        Callers use a preparation session and must not hold the source or DB
-        admission guard here. This method performs no persistence or paid call.
-        """
-        digest = request_digest(request)
-        prepared, routing = await self._prepare(actor, request)
-        if prepared.actor.id != actor.id or prepared.request.team_id != request.team_id:
-            raise InvalidRequest("The prepared report does not match the requested owner or team.")
-        report_id, version_id = uuid4(), uuid4()
-        prepared = replace(prepared, report_id=report_id)
-        try:
-            frozen = self._freeze(prepared, routing)
-        except (ValueError, TypeError, RecursionError):
-            raise InvalidRequest(
-                "The research inputs could not be saved within supported limits. "
-                "Reduce the scope or refresh the inputs."
-            ) from None
-        payload = initial_payload(request, digest, frozen)
-        now = self._clock.now()
-        return ReportJob(
-            id=uuid4(),
-            request_key=request_id,
-            owner_id=actor.id,
-            team_id=request.team_id,
-            title=prepared.title[:300],
-            status="queued",
-            stage="queued",
-            created_at=now,
-            updated_at=now,
-            payload=payload,
-            report_id=report_id,
-            version_id=version_id,
+        """Freeze without persistence or paid calls, outside source and admission locks."""
+        return await prepare_candidate(
+            actor,
+            request_id,
+            request,
+            prepare=self._prepare,
+            freeze=self._freeze,
+            clock=self._clock,
         )
 
     async def admit_prepared(
@@ -160,12 +146,11 @@ class ReportJobService:
         *,
         check_session: SessionCheck,
         subscription_id: UUID | None = None,
+        replay_brief: bool = False,
     ) -> ReportJob:
         """Admit inside a caller-owned transaction, without commit or rollback.
-
-        The caller must already hold the source admission guard, and must commit
-        the edition link and job together. Existing one-off admission uses the
-        same seam inside its own guard and transaction.
+        The caller holds the source guard and commits the edition link and job together.
+        One-off admission uses the same seam inside its own guard and transaction.
         """
         if candidate.owner_id != actor.id:
             raise InvalidRequest("The prepared report owner changed.")
@@ -175,12 +160,13 @@ class ReportJobService:
         existing = await self._repo.get_by_request(actor.id, candidate.request_key)
         if existing is not None:
             access.require_read(existing.owner_id, existing.team_id)
-            require_same_request(existing, candidate.payload["request_digest"])
-            if (existing.brief_id, existing.brief_revision) != (
-                candidate.brief_id,
-                candidate.brief_revision,
-            ):
-                raise Conflict("This request identifier belongs to another Research Brief.")
+            require_same_submission(
+                existing,
+                None if replay_brief else candidate.payload["request_digest"],
+                (candidate.brief_id, candidate.brief_revision)
+                if candidate.brief_id is not None and candidate.brief_revision is not None
+                else None,
+            )
             return existing
         await self._strict_check(candidate)
         await require_capacity(self._repo, actor.id, creating=True)
@@ -191,15 +177,7 @@ class ReportJobService:
         return candidate
 
     async def _load(self, actor: User, job_id: UUID) -> ReportJob:
-        try:
-            access = await self._access.context(actor)
-            job = await self._repo.get(job_id)
-            if job is None:
-                raise NotFound()
-            access.require_read(job.owner_id, job.team_id)
-            return job
-        finally:
-            await self._uow.rollback()
+        return await load_job(actor, job_id, self._repo, self._access, self._uow)
 
     async def _release(
         self,
@@ -209,27 +187,16 @@ class ReportJobService:
         *,
         allow_source_summary: bool = False,
     ) -> dict[str, Any]:
-        async with self._guard():
-            detail = True
-            try:
-                await self._check_job(job)
-            except InvalidRequest as error:
-                if not allow_source_summary or error.code != "report_job_source_disabled":
-                    raise
-                detail = False
-            finally:
-                await self._uow.rollback()
-            try:
-                access = await self._access.context(actor)
-                access.require_read(job.owner_id, job.team_id)
-                result = job_view(job, detail=detail, can_control=_can_control(access, job))
-                if not detail:
-                    result.update(error=error_message("source_disabled"), can_resume=False)
-            finally:
-                await self._uow.rollback()
-            # No DB cleanup or other awaited work follows this final original-session check.
-            await check_session()
-            return result
+        return await release_job(
+            actor,
+            job,
+            guard=self._guard,
+            check_job=self._check_job,
+            uow=self._uow,
+            access_policy=self._access,
+            check_session=check_session,
+            allow_source_summary=allow_source_summary,
+        )
 
     async def read(
         self,
@@ -269,9 +236,7 @@ class ReportJobService:
                         access.require_read(job.owner_id, job.team_id)
                     except NotFound:
                         continue
-                    result.append(
-                        job_view(job, detail=False, can_control=_can_control(access, job))
-                    )
+                    result.append(job_view(job, detail=False, can_control=can_control(access, job)))
             finally:
                 await self._uow.rollback()
             await check_session()

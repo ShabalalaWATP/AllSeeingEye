@@ -1,15 +1,13 @@
-import { useCallback } from 'react';
 import { Link } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
-import { fetchBriefs } from '@/lib/api/researchBriefs';
-import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useBriefLibrary } from './useBriefLibrary';
 
 export function BriefLibrary() {
-  const loader = useCallback(async () => fetchBriefs(new AbortController().signal), []);
-  const { data, loading, error, reload } = useScopedResource(loader);
+  const { data, loading, error, reload, pageNumber, canPrevious, canNext, previous, next } =
+    useBriefLibrary();
   return (
     <div className="space-y-4 rounded-xl border border-line p-5">
       <h2 className="text-xl font-semibold">My Research Briefs</h2>
@@ -25,7 +23,11 @@ export function BriefLibrary() {
           </Button>
         </Alert>
       )}
-      {data?.items.length === 0 && <p className="text-sm text-muted">No saved briefs yet.</p>}
+      {data?.items.length === 0 && (
+        <p className="text-sm text-muted">
+          {pageNumber === 1 ? 'No saved briefs yet.' : 'No more briefs on this page.'}
+        </p>
+      )}
       <ul className="space-y-2">
         {data?.items.map((item) => (
           <li key={item.id}>
@@ -38,6 +40,17 @@ export function BriefLibrary() {
           </li>
         ))}
       </ul>
+      <nav aria-label="Research Brief pages" className="flex items-center gap-3">
+        <Button variant="secondary" disabled={loading || !canPrevious} onClick={previous}>
+          Previous briefs
+        </Button>
+        <span className="text-sm text-muted" aria-live="polite">
+          Page {pageNumber}
+        </span>
+        <Button variant="secondary" disabled={loading || !canNext} onClick={next}>
+          Next briefs
+        </Button>
+      </nav>
     </div>
   );
 }

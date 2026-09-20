@@ -2,22 +2,12 @@
 import { z } from 'zod';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
+import { regionSchema } from '@/lib/regions';
 
 import { categorySchema } from './eventSchemas';
 import type { components } from './types.gen';
 
 import { apiCall, apiSend } from './client';
-
-const regionSchema = z.enum([
-  'africa',
-  'asia',
-  'europe',
-  'middle_east',
-  'north_america',
-  'south_america',
-  'oceania',
-  'antarctica',
-]);
 
 export const scheduleSchema = z.object({
   brief_id: z.uuid().nullable().optional(),

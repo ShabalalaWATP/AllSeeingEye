@@ -66,7 +66,7 @@ export function initialDraft(
     countries:
       request?.countries ??
       (request?.country ? [request.country] : !parent && initialCountry ? [initialCountry] : []),
-    regions: [],
+    regions: request?.regions ?? [],
     themes: [],
     conflictId: '',
     hazard: '',

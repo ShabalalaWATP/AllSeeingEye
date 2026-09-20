@@ -216,6 +216,8 @@ class GenerateReportUseCase:
         previous = await self._reports.get_version(report_id, record.latest_version)
         if previous is None:
             raise NotFound()
+        # The saved edition owns the authored task, independently of later brief edits.
+        request = replace(request, canonical_requirements=previous.canonical_requirements)
         inputs = await self._research_inputs.prepare(
             actor, request, previous, owner_id=record.created_by
         )

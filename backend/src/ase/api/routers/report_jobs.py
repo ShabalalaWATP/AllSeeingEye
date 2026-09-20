@@ -15,7 +15,6 @@ from ase.api.schemas_report_jobs import (
     public_job,
 )
 from ase.api.session_guard import validate_request_expiry, validate_request_session
-from ase.application.research.brief_conversion import run_request_from_brief
 from ase.domain.research_brief_values import BriefValidationError
 
 router = APIRouter(prefix="/report-jobs", tags=["report-jobs"])
@@ -81,17 +80,15 @@ async def create_job_from_brief(
     )
     access.require_create(brief.identity.team_id)
     try:
-        request = run_request_from_brief(brief, now=container.clock.now())
+        result = await container.report_jobs(session).create(
+            user,
+            body.request_id,
+            brief,
+            context,
+            check_session=lambda: validate_request_session(container, claims, session=session),
+        )
     except BriefValidationError as exc:
         raise _invalid(exc) from exc
-    result = await container.report_jobs(session).create(
-        user,
-        body.request_id,
-        request,
-        context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
-        brief_ref=(body.brief_id, body.revision),
-    )
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
     validate_request_expiry(container, claims)
