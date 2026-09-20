@@ -1014,10 +1014,15 @@ the current local configuration. No cap bypass or destructive migration is used.
   adapter contract comparison. Record a qualitative overall rating of 7/10.
 - [x] Document evidence, priorities and acceptance criteria in
   [the SOLID review](SOLID_REVIEW.md). This is an assessment, not completed fixes.
-- [ ] Normalise explicit model-token exhaustion and add cross-adapter contracts.
-- [ ] Make partial-startup and cleanup failure handling reliable.
-- [ ] Repair and enforce frontend feature boundaries.
-- [ ] Extract persistence and policy from research-brief and adjacent API routes.
-- [ ] Separate subscription execution and report assembly from wiring concerns.
-- [ ] Make provider capability contracts explicit and wrapper-tested.
-- [ ] Simplify form policy and map composition where the review identifies coupling.
+- [x] Normalise explicit model-token exhaustion and add cross-adapter contracts.
+- [x] Make partial-startup and cleanup failure handling reliable, including digest drain.
+- [x] Repair and enforce frontend feature boundaries.
+- [x] Extract persistence and policy from research-brief and adjacent API routes.
+- [x] Separate subscription admission execution and report assembly from wiring concerns.
+- [x] Make provider capability contracts explicit and wrapper-tested.
+- [x] Simplify form policy and map composition where the review identifies coupling.
+
+Implementation evidence and residual legacy subscription boundaries are recorded
+in the review. Focused SQLite/PostgreSQL regressions, security review, static
+checks and the frontend build pass. Final full-suite/CI results belong to PR #35.
+No migration or production deployment is included.

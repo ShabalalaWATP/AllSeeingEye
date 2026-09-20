@@ -109,11 +109,30 @@ backend/src/ase/
 adapters and API depend inward. Import-linter checks backend layering. Thin
 routes validate the transport boundary and call use cases.
 
+The reusable factory lives in `ase.app_factory`; importing it does not construct
+an application. `ase.main:app` remains the ASGI entry point. `ase.app_lifecycle`
+owns workers and housekeeping tasks through cleanup stacks, unwinds partial
+startup, and completes cleanup even if one close fails. Digest cancellation is
+drained before its HTTP/database dependencies close.
+
+API-to-persistence imports are separately forbidden, with five explicit legacy
+subscription-read exceptions tracked in `pyproject.toml`. Research briefs, saved
+assistant conversations and original passage release use application services,
+repository ports and result values instead of exposing ORM rows in schemas.
+
 `container/__init__.py` builds shared services and auth/admin factories.
 `features.py` holds feature factories; `reporting.py` holds report production,
 export and search factories; `repositories.py` builds the session-scoped
 repository bundle. Mixins declare borrowed attributes under `TYPE_CHECKING`.
 Concrete wiring stays in this package; the split is not a new service boundary.
+
+`map_services.py` assembles map catalogues and routing; `private_records.py`
+assembles the private-record use cases. `report_generation.py` constructs the
+report stages supplied to the report use case. Subscription admission policy,
+preparation and due polling live under `application/schedules`; a transaction
+port preserves same-session access checks and the SQL adapter owns row handling.
+Separate legacy publication and explicit retry/control workflows remain in the
+container and are not claimed to have been extracted by this remediation.
 
 ### 4.2 Ports and adapters
 
@@ -149,6 +168,10 @@ grades are published after storage. Translation runs separately every thirty
 seconds, handles up to twenty titles per batch and sixty model calls per hour,
 and keeps a bounded cache. It merges only a still-current title translation, so a
 slow reply cannot restore a removed event or overwrite newer grading.
+
+On-demand providers expose immutable capability metadata and optional area and
+registry-operation protocols. Pacing and source-control decorators share metadata
+forwarding; a single conservative compatibility boundary supports legacy providers.
 
 Enabled collection plans supply Google News watchlist terms only while their
 owner is active and, for team work, remains a member of an active team. The same
@@ -353,6 +376,11 @@ deadline including admission, and two concurrent requests per shared gateway.
 Embeddings have a 2 MiB cap and a 30-second endpoint deadline. Provider errors
 never include response excerpts, credentials or request payloads.
 
+Explicit output-token exhaustion is the same non-retryable application exception
+for Responses, Chat Completions and Bedrock. Validated usage is retained, malformed
+optional counts stay unknown, and partial output is discarded. Other transient
+errors retain the existing bounded retry behaviour.
+
 ### 4.9 Configuration and recovery
 
 Settings use the `ASE_` prefix and optional working-directory `.env`. Profiles
@@ -378,6 +406,12 @@ recovery of the operator's current database or the newer scope migrations.
 `app/` owns routing and shell composition. Feature folders own focused pages and
 hooks; shared UI, API clients, URL guards, formatting and stores live under
 `components/`, `lib/` and `stores/`. Features do not import each other.
+
+ESLint resolves module paths using the application TypeScript configuration and
+enforces this boundary for relative paths, aliases, type imports and re-exports.
+Research/schedule form transitions and payload policies are pure functions with
+small coordinating hooks. Map scenes consume ordered layer groups; their layer
+contract explicitly uses the deck.gl payload accepted by the renderer.
 
 Administration lives under `/admin` in a dedicated, administrator-only shell.
 Its overview and navigation cover account requests, users, teams, AI connections,

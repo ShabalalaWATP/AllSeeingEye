@@ -2,7 +2,59 @@
 
 Reviewed 20 September 2026 against commit
 `6f4d2757f0963af9905ddee4479870fb0ef381da`.
-Status: assessment and proposed work only. No application refactoring performed.
+Status: the seven remediation slices below are implemented on
+`codex/solid-review-plan`. The original assessment and line references describe
+the reviewed baseline; they are retained as the rationale for the changes.
+
+## Implementation outcome
+
+- Model adapters share safe, non-retryable output-exhaustion handling. Regression
+  tests first reproduced two calls for Chat Completions and Bedrock; all three
+  gateway paths now stop after one call and retain validated accounting only.
+- Side-effect-free factory imports and owned lifecycle stacks unwind partial
+  startup and continue cleanup after failures. Admission stops before consumers;
+  digest cancellation drains before its clients/database close.
+- The three private-record API slices use application services and repository
+  ports. Dependent report-job/preflight routes also stopped importing persistence.
+- Subscription admission, preparation, recovery and fair polling moved into the
+  application behind transaction/queue ports. Report stages are assembled in the
+  container and injected into the use case.
+- Thirty-one provider classes expose typed capability metadata. A shared
+  decorator preserves metadata and optional behaviour, with one conservative
+  legacy compatibility boundary.
+- Frontend feature imports are enforced using TypeScript-aware ESLint resolution,
+  including type/re-export/dynamic imports and static template literals. Shared
+  presentation and scope policy moved out of individual features.
+- Form policy and transitions are pure functions with narrower component inputs.
+  Map scenes consume ordered groups, use honest layer types and narrow camera
+  capabilities, and separate infrastructure filtering from rendering.
+
+No schema migration or runtime dependency was added. Regenerating OpenAPI from
+both the baseline commit and the changed code produced identical schemas. The
+checked-in schema has unrelated pre-existing photo-schema drift, which this change
+does not silently regenerate.
+
+Residual coupling is explicit: five legacy subscription read projections remain
+on the API/persistence exception list; separate container subscription publication,
+manual control and retry workflows remain outside the admission extraction. The
+review's 7/10 is the historical baseline, not an automatic post-change score.
+
+Focused validation passed for model adapters, lifecycle, API scope/release,
+provider wrappers, report continuation/accounting, subscription admission and
+frontend behaviour. Seventeen subscription PostgreSQL tests passed against a
+separate disposable database. Independent reviews checked behavioural and access
+boundaries; their digest-drain and static-template-import findings were fixed.
+Backend lint, formatting of all source/test/migration files, strict typing, all
+three import contracts, Bandit and the frontend production build passed. Root
+script tests passed (42 passed, one POSIX-only skip on Windows).
+
+The repository-wide `ruff format --check .` command hit a local Ruff panic while
+traversing existing inaccessible temporary directories. Explicit source, test and
+migration roots passed (2,264 files); clean-checkout CI is the full-tree check.
+Final full-suite and CI evidence is recorded on the pull request. No production
+deployment is part of this implementation. The CLI factory-import change touches
+a manually gated deployment path, so a later production release needs the existing
+reviewed manual procedure; the deployment guard has not been weakened.
 
 ## Assessment
 
