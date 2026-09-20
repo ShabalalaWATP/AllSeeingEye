@@ -5419,3 +5419,27 @@ editing now stays active through those history actions. Unicode radio labels are
 verified in the browser. All 31 GitHub checks passed for implementation commit
 `7b0a90f3`, including security, CodeQL, Semgrep and container scanning. The change
 is ready for review in [PR #38](https://github.com/ShabalalaWATP/AllSeeingEye/pull/38).
+
+### RF results for non-experts, 20 September 2026
+
+Radio results lead with an explanation, a next step and the limits of the
+estimate. Detailed figures, model sources and an inline glossary sit under
+**Engineering details**. Terrain profiles stay visible with a reading guide.
+Weak signals, insufficient reserve, obstructed paths and missing terrain have
+distinct messages. Groundwave checks the chosen receiver within the modelled
+distance range; skywave explains that its rings show travel distances only.
+
+Interpretation lives in a pure module, separate from the existing propagation
+calculations and rendering components. No new dependency, backend change or
+production deployment is part of this refinement. Independent review found no
+actionable accuracy, accessibility or security issue. Browser checks used
+synthetic terrain and groundwave responses and covered all four models,
+keyboard-operated disclosures and desktop/mobile layouts.
+
+Type checks, lint, formatting, build and source-length checks passed. Full
+coverage measured 95.22% statements, 90.55% branches, 93.21% functions and
+96.53% lines. That run passed 3,144 tests and found one outdated assertion that
+expected a technical figure before opening the disclosure. The corrected test
+passed. An overlapping suite rerun hit four unrelated timeouts; all four and
+the RF regressions passed in a separate 86-test run with two workers. A clean
+full-suite result for the final commit remains a CI release check.

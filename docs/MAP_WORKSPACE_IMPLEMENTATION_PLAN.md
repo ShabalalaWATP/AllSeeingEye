@@ -75,6 +75,11 @@ reference without including workspace coordinates or questions.
 
 ## Follow-up work
 
+- [x] Give every RF model a plain-English result, next step and visible limits,
+  with technical figures and a glossary under **Engineering details**.
+- [x] Keep weak signals, obstructions, missing data, sampled area bounds and
+  illustrative skywave distances distinct in the explanations.
+
 - [ ] Integrate ITM only after the validation and execution requirements in
   [radio modelling and terrain evidence](RADIO_MODEL_EVALUATION.md) are met.
 - [ ] Assess licensed higher-resolution terrain and land-cover/building data.

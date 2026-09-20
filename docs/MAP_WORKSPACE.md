@@ -102,6 +102,20 @@ named coordinates in decimal degrees or degrees/minutes/seconds. Sites can be
 swapped. Configure the study, run an analysis, then inspect the profile and linked
 map position. Planning constraints can limit the mast-height suggestions.
 
+Start with **Your result**. It explains what the estimate shows, what to try next
+and what has not been checked. A weak signal, an obstructed direct path and missing
+terrain are different results. None is a measurement of reception on site.
+
+The terrain profile reads from transmitter on the left to receiver on the right.
+Grey shows the ground; the dashed amber line shows the lower edge of the required
+space around the radio path. Select a profile point to inspect its values and
+location. Area studies assess sampled directions, not every place inside an outline.
+
+Open **Engineering details** for the figures, model assumptions and source quality.
+**Explain the terms** defines signal strength, spare signal margin, receiver
+sensitivity and terrain clearance. HF skywave results show illustrative travel
+distances only, without predicting signal strength or reception.
+
 Under **Saved studies and comparison**, save a personal or team study or retain
 a comparison baseline. A saved study contains its setup, a frozen result
 summary and bounded terrain samples when available. Reopening restores the

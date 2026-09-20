@@ -1099,3 +1099,20 @@ or exhaustive research coverage. No production release is claimed here.
 Browser verification covers 1600 × 1000, 390 × 844 and 320 × 568 with normal
 pointer interactions and no fresh browser errors observed. Detailed evidence and
 release follow-ups are recorded in the implementation checklist.
+
+### RF results for non-experts, 20 September 2026
+
+- [x] Add a shared plain-English result, suggested next step and model limits.
+- [x] Keep detailed figures and an explanation of terms available on demand.
+- [x] Distinguish weak signal, insufficient spare signal strength, obstructed
+  paths and missing data without changing propagation calculations.
+- [x] Preserve receiver-specific HF checks and sampled area limits; describe
+  skywave as illustrative travel distances only.
+- [x] Verify desktop/mobile layouts and keyboard disclosures, and complete an
+  independent accuracy, accessibility and security review.
+- [x] Complete full coverage measurement and targeted follow-up checks before
+  push: 95.22% statements, 90.55% branches, 93.21% functions, 96.53% lines.
+  The full run passed 3,144 tests with one outdated disclosure-visibility
+  assertion, corrected and verified afterwards. A concurrent rerun hit four
+  unrelated timeouts; all four and the RF regressions passed in an isolated
+  86-test run. Final-commit CI remains the full-suite release check.

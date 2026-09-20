@@ -26,10 +26,10 @@ export function RfLinkAdvice({ analysis }: { analysis: Extract<RfAnalysis, { kin
       className="rf-result-next-step space-y-2"
     >
       <details>
-        <summary>Feasible mast heights</summary>
+        <summary>Set practical antenna height limits</summary>
         <p className="rf-help">
-          Limit suggested heights above ground. Blank leaves the model's 10,000 m numerical ceiling;
-          this is not a recommended mast height.
+          Enter the highest antenna you could realistically install above the ground. Blank applies
+          no practical installation limit, so a calculated suggestion may be impractical.
         </p>
         {(['transmitter', 'receiver'] as const).map((site) => (
           <label className="rf-field" key={site}>
@@ -49,8 +49,8 @@ export function RfLinkAdvice({ analysis }: { analysis: Extract<RfAnalysis, { kin
       {!valid && <p role="alert">Enter a maximum height from 0 to 10,000 m.</p>}
       {valid && !advice && (
         <p className="rf-help">
-          No single-site improvement suggestion within these limits. Missing terrain or sufficient
-          clearance may also leave no suggestion.
+          No antenna-height suggestion is available. The path may already pass the checks, terrain
+          data may be missing, or changing one antenna alone may not be enough within your limits.
         </p>
       )}
       {advice && (
@@ -58,22 +58,23 @@ export function RfLinkAdvice({ analysis }: { analysis: Extract<RfAnalysis, { kin
           <p className="font-medium">Possible improvement</p>
           {advice.kind === 'budget' ? (
             <p>
-              Terrain clearance passes, but the model needs another {advice.shortfallDb.toFixed(1)}{' '}
-              dB of usable margin. Check receiver sensitivity for your operating mode, antenna gain
-              and cable losses.
+              The sampled terrain leaves enough clear space, but the signal estimate is short of
+              your chosen allowance by {advice.shortfallDb.toFixed(1)} dB. Check the receiver
+              setting against its specification, and review antenna gain and cable losses.
             </p>
           ) : (
             <>
               <p>
-                In a calculated scenario, raising the {advice.site} antenna to{' '}
-                <strong>{advice.heightM} m above ground</strong> (+{advice.addedM.toFixed(1)} m)
-                clears the sampled Fresnel screen while the other site stays unchanged.
+                Try comparing a {advice.site} antenna at{' '}
+                <strong>{advice.heightM} m above ground</strong> (+{advice.addedM.toFixed(1)} m) in
+                the calculator. This leaves enough clear space around the modelled signal path while
+                the other antenna stays unchanged.
               </p>
               <p>
-                Remaining margin after your reserve: {advice.planningMarginDb.toFixed(1)} dB.{' '}
+                Signal margin after your extra allowance: {advice.planningMarginDb.toFixed(1)} dB.{' '}
                 {advice.status === 'clear'
-                  ? 'This scenario passes the sampled checks.'
-                  : 'The link would still fall short on signal margin.'}
+                  ? 'This scenario passes the selected checks; it still needs testing on site.'
+                  : 'The signal estimate would still fall short of your settings.'}
               </p>
               <p>
                 This uses the same coarse terrain data. Check whether that mast height is practical
