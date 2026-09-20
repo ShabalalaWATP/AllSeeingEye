@@ -11,6 +11,7 @@ import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { EventRow } from '@/components/events/EventRow';
 import { describeArea } from './DirectionPage';
+import { ResearchAreaButton } from './ResearchAreaButton';
 
 export default function PlanPage() {
   const { id = '' } = useParams();
@@ -54,12 +55,22 @@ export default function PlanPage() {
               Open area on map
             </Link>
           )}
-          <Link
-            to={`/reports?template=ask&plan=${plan.id}`}
-            className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
-          >
-            Generate assessment
-          </Link>
+          {aoi?.research_area ? (
+            <div>
+              <ResearchAreaButton area={aoi} />
+              <p className="text-xs text-muted">
+                Opens standalone personal area research. Plan requirements are not transferred; add
+                your question in the research form.
+              </p>
+            </div>
+          ) : (
+            <Link
+              to={`/reports?template=ask&plan=${plan.id}`}
+              className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
+            >
+              Generate assessment
+            </Link>
+          )}
           <Button
             disabled={!workspaces.canManage(plan)}
             variant="danger"

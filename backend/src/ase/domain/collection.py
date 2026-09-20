@@ -13,13 +13,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from ase.domain.area_membership import area_contains_event
 from ase.domain.direction import Direction
 from ase.domain.events import BoundingBox, Category, Event
+from ase.domain.research_area import ResearchArea
 
 MAX_PIRS = 8
 MAX_SIRS = 12
 MAX_KEYWORDS = 20
-AREA_KINDS = ("bbox", "countries")
+AREA_KINDS = ("bbox", "countries", "geometry")
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,7 +36,11 @@ class AreaOfInterest:
     description: str = ""
     team_id: UUID | None = None
 
+    research_area: ResearchArea | None = None
+
     def contains(self, event: Event) -> bool:
+        if self.kind == "geometry":
+            return self.research_area is not None and area_contains_event(self.research_area, event)
         if self.kind == "bbox":
             return (
                 self.bbox is not None

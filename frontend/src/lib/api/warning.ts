@@ -1,5 +1,6 @@
 /** Warning: indicators over the live picture and the alerts they raise. */
 import { z } from 'zod';
+import { frozenAreaSchema } from './areaSchemas';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
@@ -14,6 +15,7 @@ export const indicatorSchema = z.object({
   plan_id: z.string().nullable(),
   countries: z.array(z.string()),
   bbox: z.array(z.number()).nullable(),
+  research_area: frozenAreaSchema.nullable().optional(),
   categories: z.array(z.string()),
   keywords: z.array(z.string()),
   threshold: z.number().int(),

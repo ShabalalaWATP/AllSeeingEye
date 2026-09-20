@@ -184,7 +184,7 @@ export function AreaResearchForm({
               />
             </div>
             <p className="text-xs text-muted">
-              At most two years (730 days), subject to each source�s archive limits. The start is
+              At most two years (730 days), subject to each source’s archive limits. The start is
               included and the end excluded. Observations use acquisition time; other reporting uses
               publication time. Map display filters are not copied into this collection interval.
             </p>

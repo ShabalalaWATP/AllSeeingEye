@@ -102,6 +102,7 @@
 }
 .map-icon-button[aria-checked='true'],
 .map-icon-button[aria-expanded='true'],
+.map-icon-button[data-active='true'],
 .map-icon-button[data-on='true'] {
   color: var(--color-ember);
   background: #79d8eb12;
@@ -175,9 +176,9 @@
     z-index: 14;
   }
   .globe-dashboard:has(> aside[aria-label='Event details'])
-    :is(.map-layer-rail, .map-tool-rail, .map-tool-panel),
+    :is(.map-layer-rail, .map-tool-rail, .map-tool-panel, .map-navigation-rail),
   .globe-dashboard:has(> aside[aria-label='Map details'])
-    :is(.map-layer-rail, .map-tool-rail, .map-tool-panel) {
+    :is(.map-layer-rail, .map-tool-rail, .map-tool-panel, .map-navigation-rail) {
     display: none;
   }
 }

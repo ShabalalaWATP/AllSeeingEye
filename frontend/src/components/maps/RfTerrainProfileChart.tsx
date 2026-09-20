@@ -1,8 +1,23 @@
+import { useState, type PointerEvent } from 'react';
+import type { Position } from '@/lib/map/geoJsonTypes';
 import type { RfTerrainProfile } from '@/lib/map/rfTerrainTypes';
 import { RF_STATUS_CSS, rfPathSegmentStatus, rfPathSummary } from '@/lib/map/rfTerrainPresentation';
 
 /** Side view in the effective-Earth frame used by the sampled clearance calculation. */
-export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }) {
+export function RfTerrainProfileChart({
+  profile,
+  onProfilePoint,
+}: {
+  profile: RfTerrainProfile;
+  onProfilePoint?: ((point: Position | null) => void) | undefined;
+}) {
+  const [selected, setSelected] = useState(0);
+  const select = (index: number) => {
+    const bounded = Math.max(0, Math.min(profile.points.length - 1, index));
+    setSelected(bounded);
+    onProfilePoint?.(profile.points[bounded]?.position ?? null);
+  };
+  const focused = profile.points[selected];
   if (profile.points.some((p) => p.elevationM === null || p.rayHeightM === null))
     return (
       <p className="text-muted">
@@ -25,9 +40,26 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
   const obstruction = summary.firstBlocked ?? summary.firstRisk;
   const obstructionColour = summary.firstBlocked ? RF_STATUS_CSS.blocked : RF_STATUS_CSS.risk;
   const maximumObstacleM = Math.max(...profile.points.map((point) => point.obstacleHeightM ?? 0));
+  const inspect = (event: PointerEvent<SVGSVGElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    if (!box.width) return;
+    const distance =
+      ((((event.clientX - box.left) / box.width) * 320 - 36) / 268) * profile.distanceKm * 1000;
+    let nearest = 0;
+    profile.points.forEach((point, index) => {
+      if (
+        Math.abs(point.distanceM - distance) <
+        Math.abs((profile.points[nearest]?.distanceM ?? Infinity) - distance)
+      )
+        nearest = index;
+    });
+    select(nearest);
+  };
   return (
     <figure className="rf-profile overflow-hidden rounded-lg border border-cyan/20 bg-black/40 p-2">
       <svg
+        onPointerMove={inspect}
+        onPointerDown={inspect}
         viewBox="0 0 320 158"
         className="w-full"
         role="img"
@@ -113,6 +145,16 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
             />
           </g>
         )}
+        {focused && (
+          <line
+            x1={x(focused.distanceM)}
+            x2={x(focused.distanceM)}
+            y1="28"
+            y2="132"
+            stroke="#fff"
+            strokeDasharray="2 2"
+          />
+        )}
         <g fill="#a0a6ae" fontSize="9" fontFamily="monospace">
           <text x="1" y="31">
             {high}m
@@ -128,6 +170,25 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
           </text>
         </g>
       </svg>
+      <label className="rf-field">
+        <span>Inspect profile sample</span>
+        <input
+          type="range"
+          min={0}
+          max={profile.points.length - 1}
+          step={1}
+          value={selected}
+          onChange={(event) => select(Number(event.target.value))}
+        />
+      </label>
+      {focused && (
+        <p className="rf-help" aria-live="polite">
+          {(focused.distanceM / 1000).toFixed(2)} km from TX · terrain{' '}
+          {focused.elevationM?.toFixed(1)} m · Fresnel clearance{' '}
+          {focused.fresnelClearanceM?.toFixed(1) ?? 'unknown'} m. Position{' '}
+          {focused.position[1].toFixed(5)}, {focused.position[0].toFixed(5)}.
+        </p>
+      )}
       <figcaption className="text-[10px] leading-relaxed text-muted">
         Grey: sampled terrain plus Earth curvature. Mint: clear direct ray. Amber: clearance or
         power risk, including the interval before a sampled intrusion. Red: obstructed direct ray.

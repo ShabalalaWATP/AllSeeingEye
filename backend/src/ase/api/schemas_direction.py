@@ -9,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from ase.api.schemas_events import EventOut
+from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.direction.areas import AoiInput
 from ase.application.direction.plans import PirInput, PlanEvidence, PlanInput, SirInput
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
@@ -19,15 +20,18 @@ class AoiIn(BaseModel):
     team_id: UUID | None = None
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=1000)
-    kind: str = Field(pattern="^(bbox|countries)$")
+    kind: str = Field(pattern="^(bbox|countries|geometry)$")
     bbox: list[float] | None = Field(default=None, min_length=4, max_length=4)
     countries: list[str] = Field(default_factory=list, max_length=30)
+
+    research_area: ResearchAreaIn | None = None
 
     def to_input(self) -> AoiInput:
         box = tuple(self.bbox) if self.bbox else None
         return AoiInput(
             name=self.name,
             kind=self.kind,
+            research_area=self.research_area.to_domain() if self.research_area else None,
             bbox=box,  # type: ignore[arg-type]
             countries=[code[:2] for code in self.countries],
             description=self.description,
@@ -36,6 +40,7 @@ class AoiIn(BaseModel):
 
 
 class AoiOut(BaseModel):
+    research_area: ResearchAreaOut | None = None
     team_id: UUID | None
     id: UUID
     name: str
@@ -54,6 +59,9 @@ class AoiOut(BaseModel):
             name=area.name,
             description=area.description,
             kind=area.kind,
+            research_area=ResearchAreaOut.model_validate(area.research_area)
+            if area.research_area
+            else None,
             bbox=[box.west, box.south, box.east, box.north] if box else None,
             countries=list(area.countries),
             created_by=area.created_by,

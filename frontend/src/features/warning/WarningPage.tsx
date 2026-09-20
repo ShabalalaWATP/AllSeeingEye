@@ -27,6 +27,8 @@ import { AlertDestination } from './AlertDestination';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
+  if (indicator.research_area)
+    return `exact shape � ${indicator.research_area.sha256.slice(0, 12)}`;
   if (indicator.bbox !== null) return `box ${indicator.bbox.map((n) => n.toFixed(1)).join(', ')}`;
   if (indicator.countries.length > 0) return indicator.countries.join(', ');
   return 'anywhere';

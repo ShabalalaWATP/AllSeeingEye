@@ -1,3 +1,4 @@
+import { openMapTool } from '@/test/mapTools';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -123,7 +124,7 @@ it('creates an unpickable route layer only after Calculate and removes it on Cle
   );
   const { user } = renderApp('/', 'user');
   await screen.findByRole('region', { name: '3D globe' });
-  await user.click(screen.getByRole('button', { name: 'Route planner' }));
+  await openMapTool(user, 'Route planner');
   await screen.findByRole('link', { name: 'operator@example.com' });
   await user.selectOptions(
     screen.getByRole('combobox', { name: 'Enter stops using' }),

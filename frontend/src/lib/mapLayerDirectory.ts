@@ -211,6 +211,30 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         description: 'Measure along the ground and close a shape for its area.',
         panel: 'Measure distance and area',
       },
+      {
+        id: 'workspace',
+        label: 'On this map',
+        description: 'Manage saved drawings, radio studies and the objects on this map.',
+        panel: 'On this map',
+      },
+      {
+        id: 'terrain',
+        label: 'Terrain profile and visibility',
+        description: 'Inspect ground elevation and geometric visibility along a measured path.',
+        panel: 'Terrain profile and visibility',
+      },
+      {
+        id: 'coordinates',
+        label: 'Coordinates',
+        description: 'Read, convert and navigate to geographic or projected coordinates.',
+        panel: 'Coordinates',
+      },
+      {
+        id: 'nuclear-education',
+        label: 'Nuclear effects (education)',
+        description: 'Explore attributed educational references about humanitarian consequences.',
+        panel: 'Nuclear effects (education)',
+      },
     ],
   },
 ];
@@ -230,13 +254,29 @@ export function isMapPanel(label: string | null): label is string {
   return label !== null && PANELS.includes(label);
 }
 
+/** Stable route identifiers remain independent of the visible tool title. */
+export function mapPanelId(label: string): string | null {
+  if (label === MAP_GUIDE_PANEL) return 'guide';
+  return mapLayerEntries().find((entry) => entry.panel === label)?.id ?? null;
+}
+
+/** Accept old bookmarked labels as well as the canonical route identifiers. */
+export function resolveMapPanel(value: string | null): string | null {
+  if (value === null) return null;
+  if (value === 'guide') return MAP_GUIDE_PANEL;
+  if (value === 'RF coverage') return 'RF link calculator';
+  if (value === 'Measure') return 'Measure distance and area';
+  if (isMapPanel(value)) return value;
+  return mapLayerEntries().find((entry) => entry.id === value)?.panel ?? null;
+}
+
 export function readMapPanel(params: URLSearchParams): string | null {
-  const label = params.get('panel');
-  return isMapPanel(label) ? label : null;
+  return resolveMapPanel(params.get('panel'));
 }
 
 export function mapPanelHref(label: string): string {
-  return `/?panel=${encodeURIComponent(label)}`;
+  const panel = resolveMapPanel(label);
+  return panel ? `/?panel=${encodeURIComponent(mapPanelId(panel) ?? panel)}` : '/';
 }
 
 export function mapLayerEntries(): readonly MapLayerEntry[] {

@@ -1464,6 +1464,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/map/workspaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_map_workspaces_get"];
+        put?: never;
+        /** Create Document */
+        post: operations["create_document_api_map_workspaces_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/map/workspaces/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document */
+        get: operations["get_document_api_map_workspaces__document_id__get"];
+        put?: never;
+        post?: never;
+        /** Remove Document */
+        delete: operations["remove_document_api_map_workspaces__document_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Document */
+        patch: operations["update_document_api_map_workspaces__document_id__patch"];
+        trace?: never;
+    };
     "/api/map/views/{view_id}/revisions/{revision_id}/image-package": {
         parameters: {
             query?: never;
@@ -4922,9 +4959,11 @@ export interface components {
             bbox?: number[] | null;
             /** Countries */
             countries?: string[];
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
         };
         /** AoiOut */
         AoiOut: {
+            research_area?: components["schemas"]["ResearchAreaOut"] | null;
             /** Team Id */
             team_id: string | null;
             /**
@@ -8733,6 +8772,7 @@ export interface components {
                 number,
                 number
             ] | null;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
             /** Categories */
             categories?: components["schemas"]["Category"][];
             /** Keywords */
@@ -8779,6 +8819,7 @@ export interface components {
         };
         /** IndicatorOut */
         IndicatorOut: {
+            research_area?: components["schemas"]["ResearchAreaOut"] | null;
             /**
              * Id
              * Format: uuid
@@ -9925,6 +9966,71 @@ export interface components {
              * Format: uuid
              */
             base_revision_id: string;
+        };
+        /** MapWorkspaceCreateIn */
+        MapWorkspaceCreateIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "drawings" | "radio";
+            /** Title */
+            title: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Team Id */
+            team_id?: string | null;
+        };
+        /** MapWorkspaceOut */
+        MapWorkspaceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "drawings" | "radio";
+            /** Title */
+            title: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Revision */
+            revision: number;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** MapWorkspaceUpdateIn */
+        MapWorkspaceUpdateIn: {
+            /** Title */
+            title: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Expected Revision */
+            expected_revision: number;
         };
         /** MaritimeBoardOut */
         MaritimeBoardOut: {
@@ -18761,6 +18867,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SavedMapViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_api_map_workspaces_get: {
+        parameters: {
+            query: {
+                kind: "drawings" | "radio";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapWorkspaceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_document_api_map_workspaces_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapWorkspaceCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapWorkspaceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_api_map_workspaces__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapWorkspaceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_document_api_map_workspaces__document_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_document_api_map_workspaces__document_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapWorkspaceUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapWorkspaceOut"];
                 };
             };
             /** @description Validation Error */

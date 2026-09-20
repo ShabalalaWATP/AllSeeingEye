@@ -180,6 +180,7 @@ export function rfMapLayers(
     }),
     new TextLayer<ReferenceLabel>({
       id: 'rf-estimate-label',
+      characterSet: 'auto',
       data: labels.filter(({ point }) => rfReferenceVisible(point, flat)),
       getPosition: (item) => item.point,
       getText: (item) => item.label,

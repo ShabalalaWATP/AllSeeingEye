@@ -8,6 +8,7 @@ evidence into one workspace. Start with the guide that matches what you need.
 | [App overview](../README.md) | What is the app, and what can I do with it? |
 | [Setup](SETUP.md) | How do I run it on Windows 11, macOS or Linux? |
 | [Using the app](04_FEATURES_AND_VIEWS.md) | Where do I start, and how do the workspaces connect? |
+| [Map workspace](MAP_WORKSPACE.md) | How do I draw, save, research an area and use radio or terrain tools? |
 | [Architecture](01_ARCHITECTURE.md) | What is the stack, where is data stored, and how is SOLID applied? |
 | [Sources and coverage](02_DATA_SOURCES.md) | Which providers are used, and what does source availability mean? |
 | [AI](AI.md) | Which models can I connect, what do they do, and what data leaves the app? |
@@ -23,7 +24,7 @@ evidence into one workspace. Start with the guide that matches what you need.
 
 ## Go deeper
 
-- [Map tools and layers](MAP_TOOLS_AND_LAYERS.md), [map news and evidence](MAP_NEWS_AND_EVIDENCE.md) and [saved map image export](SAVED_MAP_IMAGE_EXPORT.md).
+- [Map tools and layers](MAP_TOOLS_AND_LAYERS.md), [radio modelling and terrain evidence](RADIO_MODEL_EVALUATION.md), [map news and evidence](MAP_NEWS_AND_EVIDENCE.md) and [saved map image export](SAVED_MAP_IMAGE_EXPORT.md).
 - [Research workspace](RESEARCH_WORKSPACE_OPERATIONS.md), [subscriptions](SUBSCRIPTIONS_OPERATIONS.md), [area research](AREA_RESEARCH.md) and [fresh web research](FRESH_WEB_RESEARCH.md).
 - [Aviation](AVIATION_COVERAGE.md), [maritime](MARITIME_COVERAGE.md), [satellites](SATELLITE_COVERAGE.md), [cyber intelligence](CYBER_THREAT_INTELLIGENCE.md), [economy](ECONOMY_WORKSPACE.md) and [Ukraine](UKRAINE_WAR_TRACKER.md).
 

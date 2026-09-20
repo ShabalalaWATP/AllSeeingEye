@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from './workspaceAccess';
 import { validateAreaBounds } from './map/areaGeometry';
 import type { WatchAreaInput } from './map/areaWatchGeometry';
+import { parseLocalGeoJson } from './map/localGeoJson';
 
 export interface AreaWatchDraft extends WatchAreaInput {
   id: number;
@@ -35,9 +36,24 @@ export function prepareAreaWatch(input: WatchAreaInput) {
   const actor = actorKey();
   if (!actor) throw new Error('Sign in before preparing an area indicator.');
   const bounds = validateAreaBounds(input.bounds);
-  if (!['rectangle', 'sketch-envelope', 'viewport'].includes(input.source))
+  if (!['rectangle', 'sketch-envelope', 'viewport', 'shape'].includes(input.source))
     throw new Error('Choose a supported area.');
-  pending = Object.freeze({ ...input, bounds: Object.freeze(bounds), id: ++sequence, actor });
+  const geometry = input.geometry
+    ? parseLocalGeoJson(JSON.stringify(input.geometry)).canonical
+    : undefined;
+  if (
+    input.source === 'shape' &&
+    (geometry?.features.length !== 1 ||
+      !['Polygon', 'MultiPolygon'].includes(geometry.features[0]?.geometry.type ?? ''))
+  )
+    throw new Error('An exact watch needs one polygon boundary.');
+  pending = Object.freeze({
+    ...input,
+    ...(geometry ? { geometry } : {}),
+    bounds: Object.freeze(bounds),
+    id: ++sequence,
+    actor,
+  });
   notify();
 }
 function subscribe(listener: () => void) {

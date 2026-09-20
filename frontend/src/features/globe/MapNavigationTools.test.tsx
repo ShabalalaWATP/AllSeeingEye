@@ -20,6 +20,8 @@ function engineAt(zoom = 4): GlobeEngineHandle {
 describe('compact map navigation', () => {
   afterEach(() => {
     Reflect.deleteProperty(document, 'fullscreenEnabled');
+    Reflect.deleteProperty(document, 'fullscreenElement');
+    Reflect.deleteProperty(document, 'exitFullscreen');
     Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -76,5 +78,41 @@ describe('compact map navigation', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('Fullscreen is unavailable'),
     );
     Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
+  });
+
+  it('tracks browser fullscreen changes and exits through the visible control', async () => {
+    let fullscreen: Element | null = null;
+    Object.defineProperty(document, 'fullscreenEnabled', { value: true, configurable: true });
+    Object.defineProperty(document, 'fullscreenElement', {
+      get: () => fullscreen,
+      configurable: true,
+    });
+    const enter = vi.fn(() => {
+      fullscreen = document.documentElement;
+      fireEvent(document, new Event('fullscreenchange'));
+      return Promise.resolve();
+    });
+    const exit = vi.fn(() => {
+      fullscreen = null;
+      fireEvent(document, new Event('fullscreenchange'));
+      return Promise.resolve();
+    });
+    Object.defineProperty(document.documentElement, 'requestFullscreen', {
+      value: enter,
+      configurable: true,
+    });
+    Object.defineProperty(document, 'exitFullscreen', { value: exit, configurable: true });
+    render(<MapNavigationTools engine={engineAt()} enabled />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter fullscreen' }));
+    expect(enter).toHaveBeenCalledOnce();
+    const exitButton = await screen.findByRole('button', { name: 'Exit fullscreen' });
+    expect(exitButton).toHaveAttribute('aria-pressed', 'true');
+    expect(exitButton).toHaveAttribute('title', 'Exit fullscreen');
+    fireEvent.click(exitButton);
+    expect(exit).toHaveBeenCalledOnce();
+    expect(await screen.findByRole('button', { name: 'Enter fullscreen' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
   });
 });

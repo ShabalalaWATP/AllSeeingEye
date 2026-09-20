@@ -1,7 +1,7 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 
-import { readMapPanel } from '@/lib/mapLayerDirectory';
+import { mapPanelId, readMapPanel } from '@/lib/mapLayerDirectory';
 
 import { SavedMapAreaNotice } from './SavedMapAreaNotice';
 import { GlobeInspectors } from './GlobeInspectors';
@@ -10,6 +10,7 @@ import { MaritimeAttribution } from './MaritimeAttribution';
 import { dashboardCataloguePanels } from './dashboardCataloguePanels';
 import { eventControlPanels } from './eventControlPanels';
 import { MapStatusReadouts } from './MapStatusReadouts';
+import { MapToolActivity } from './MapToolActivity';
 import { GlobeControls } from './GlobeControls';
 import { DashboardLayerRail } from './DashboardLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
@@ -88,7 +89,8 @@ export default function GlobePage() {
     },
     now,
   } = useGlobePage();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const requestedPanel = readMapPanel(params);
   return (
     <div className="globe-dashboard absolute inset-0 bg-ground">
@@ -113,7 +115,15 @@ export default function GlobePage() {
             />
           )}
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
-          initial={requestedPanel}
+          activity={<MapToolActivity tools={tools} />}
+          requestedPanel={requestedPanel}
+          requestKey={location.key}
+          onPanelChange={(label) => {
+            const next = new URLSearchParams(params);
+            if (label) next.set('panel', mapPanelId(label) ?? label);
+            else next.delete('panel');
+            if (next.toString() !== params.toString()) setParams(next);
+          }}
         >
           {(openPanel) => [
             mapGuidePanel(openPanel, {
@@ -179,7 +189,12 @@ export default function GlobePage() {
               cameras: { cameras, onSelect: focusCamera },
               figures: { figures, onSelect: focusFigure },
             }),
-            mapPlanningPanels(tools),
+            mapPlanningPanels(tools, {
+              open: openPanel,
+              events: data.list,
+              onHighlight: focus,
+              onNavigate: (center) => engine.flyTo({ center, zoom: 12 }),
+            }),
             eventControlPanels(data, networkSelection.selectRecord),
           ]}
         </GlobeControls>

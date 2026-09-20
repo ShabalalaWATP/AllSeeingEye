@@ -7,7 +7,7 @@ describe('drawing watch bounds', () => {
       [-20, 50],
       [20, 60],
     ]);
-    expect(rectangle.source).toBe('sketch-envelope');
+    expect(rectangle.source).toBe('shape');
     expect(rectangle.bounds.west).toBeLessThan(-20);
     expect(rectangle.bounds.east).toBeGreaterThan(20);
     expect(rectangle.bounds.south).toBeLessThan(50);
@@ -26,26 +26,24 @@ describe('drawing watch bounds', () => {
     expect(dateline.south).toBeLessThan(-10);
     expect(dateline.north).toBeGreaterThan(10);
   });
-  it('bounds circle and polygon sketches with an explicitly approximate envelope', () => {
+  it('retains exact circle geometry and refuses unsplit crossing polygons', () => {
     const circle = drawingWatchArea('circle', [
       [0, 50],
       [0.1, 50],
     ]);
-    expect(circle.source).toBe('sketch-envelope');
+    expect(circle.source).toBe('shape');
     expect(circle.bounds.west).toBeLessThan(-0.09);
     expect(circle.bounds.east).toBeGreaterThan(0.1);
     expect(circle.bounds.south).toBeLessThan(50);
     expect(circle.bounds.north).toBeGreaterThan(50);
-    const polygon = drawingWatchArea('polygon', [
-      [179, 1],
-      [-179, 1],
-      [-179, 3],
-    ]);
-    expect(polygon.source).toBe('sketch-envelope');
-    expect(polygon.bounds.west).toBeGreaterThan(178);
-    expect(polygon.bounds.east).toBeLessThan(-178);
-    expect(polygon.bounds.south).toBeLessThan(1);
-    expect(polygon.bounds.north).toBeGreaterThan(3);
+    expect(circle.geometry?.features[0]?.geometry.type).toBe('Polygon');
+    expect(() =>
+      drawingWatchArea('polygon', [
+        [179, 1],
+        [-179, 1],
+        [-179, 3],
+      ]),
+    ).toThrow('rectangle');
   });
   it('rejects paths, incomplete, zero-area, invalid and oversized sketches', () => {
     expect(() =>

@@ -1,14 +1,18 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/stores/auth';
 import { useProfile } from '@/stores/profile';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { describeError } from '@/lib/api/errors';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
+import type { LiveEvent } from '@/lib/api/eventSchemas';
+import type { Profile } from '@/lib/api/profile';
 import { RESEARCH_DEPTHS } from '@/components/research/ResearchDepth';
 import { ResearchProgress } from '@/components/research/ResearchProgress';
 import { MapToolIntro } from './MapToolIntro';
 import { SaveResearchArea } from './SaveResearchArea';
 import { AreaResearchSources } from './AreaResearchSources';
+import { AreaEvidencePreview } from './AreaEvidencePreview';
 import { AREA_PERIODS, useAreaResearch } from './useAreaResearch';
 
 interface Props {
@@ -17,6 +21,10 @@ interface Props {
   picking: boolean;
   onStopDrawing: () => void;
   children: ReactNode;
+  events?: readonly LiveEvent[];
+  onHighlight?: (event: LiveEvent) => void;
+  fullPage?: boolean;
+  initialPreferences?: Profile | null;
 }
 
 /** Remount private drafts when account or workspace permissions change. */
@@ -31,12 +39,23 @@ export function MapAreaResearchPanel(props: Props) {
   );
 }
 
-function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, children }: Props) {
+function AreaResearchWorkspace({
+  area,
+  areaError,
+  picking,
+  onStopDrawing,
+  children,
+  events,
+  onHighlight,
+  fullPage,
+  initialPreferences,
+}: Props) {
   const preferences = useProfile();
-  const research = useAreaResearch(area, areaError, preferences.profile);
+  const profile = initialPreferences ?? preferences.profile;
+  const research = useAreaResearch(area, areaError, profile);
+  const navigate = useNavigate();
   const { action } = research;
-  const canCheck =
-    !!area && !areaError && !picking && !!preferences.profile && !research.busy && !action.busy;
+  const canCheck = !!area && !areaError && !picking && !!profile && !research.busy && !action.busy;
   return (
     <form
       aria-label="Research this area"
@@ -105,6 +124,26 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
             ))}
           </select>
         </label>
+        {research.interval && (
+          <p className="map-tool-help">
+            Fixed interval:{' '}
+            {new Date(research.interval.since).toLocaleString('en-GB', { timeZone: 'UTC' })}
+            {' to '}
+            {new Date(research.interval.until).toLocaleString('en-GB', {
+              timeZone: 'UTC',
+            })}{' '}
+            UTC.{' '}
+            {research.fixedInterval && (
+              <button
+                type="button"
+                className="map-tool-text-button"
+                onClick={() => research.setDays(research.days)}
+              >
+                Use a fresh rolling period
+              </button>
+            )}
+          </p>
+        )}
         <label className="map-tool-field">
           Research depth
           <select
@@ -118,12 +157,33 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
           >
             {RESEARCH_DEPTHS.map((item) => (
               <option key={item.value} value={item.value}>
-                {item.label} � {item.length}
+                {item.label} · {item.length}
               </option>
             ))}
           </select>
         </label>
       </fieldset>
+      {area && !areaError && !picking && events && (
+        <AreaEvidencePreview
+          area={area}
+          events={events}
+          days={research.days}
+          interval={research.interval}
+          {...(onHighlight ? { onHighlight } : {})}
+        />
+      )}
+      {!fullPage && (
+        <button
+          type="button"
+          className="map-tool-secondary"
+          disabled={!canCheck}
+          onClick={() => {
+            if (research.prepareHandoff()) void navigate('/research?map_draft=1');
+          }}
+        >
+          Continue on research page
+        </button>
+      )}
       <section className="map-tool-section">
         <h3 className="map-tool-section-title">3 · Check sources and research</h3>
         <p className="map-tool-help">
@@ -146,12 +206,12 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
           <p className="map-tool-help">Complete a boundary to check source coverage.</p>
         )}
         {picking && <p className="map-tool-help">Finish drawing before checking sources.</p>}
-        {preferences.loading && !preferences.profile && (
+        {preferences.loading && !profile && (
           <p role="status" className="map-tool-help">
             Loading your report preferences…
           </p>
         )}
-        {preferences.error && !preferences.profile && (
+        {preferences.error && !profile && (
           <div className="map-tool-notice" role="alert">
             <p>Report preferences could not be loaded.</p>
             <button
@@ -169,7 +229,15 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
           </p>
         )}
       </section>
-      {research.preview && <AreaResearchSources plan={research.preview} />}
+      {research.sourcePlan && (
+        <AreaResearchSources
+          plan={research.sourcePlan}
+          selectedIds={research.sourceIds}
+          onSelection={research.setSourceIds}
+          current={!!research.preview}
+          disabled={action.busy || research.busy || picking}
+        />
+      )}
       <fieldset
         disabled={action.busy || !research.eligible || picking}
         className="map-tool-section min-w-0"
@@ -203,9 +271,10 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
         onRetry={() => void action.retry()}
       />
       <p className="map-tool-help">
-        Saved to your personal reports using the configured AI connection. Closing this tool or
-        accepted jobs continue when you leave this tool. Reports include cited evidence and
-        uncertainty; collection is not exhaustive.
+        Saved to your personal reports using the configured AI connection. Accepted jobs continue
+        when you leave this tool. Your question and settings remain during this signed-in session;
+        source checks and disclosure approval must be renewed after reopening. Reports include cited
+        evidence and uncertainty; collection is not exhaustive.
       </p>
     </form>
   );

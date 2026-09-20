@@ -1,4 +1,4 @@
-/** Convert a bounded sketch to an explicitly rectangular indicator scope. */
+/** Preserve the research boundary, with a separate optional enclosing rectangle. */
 import { Geodesic } from 'geographiclib-geodesic';
 import { validateAreaBounds } from './areaGeometry';
 import { drawingVertices } from './drawingGeometry';
@@ -6,10 +6,13 @@ import type { DrawingShape } from './drawingGeometry';
 import type { Position } from './geoJsonTypes';
 import type { MapBounds } from './MapEngine';
 import { measure, measurementPaths } from './measurements';
+import { researchAreaGeometry } from './researchAreaGeometry';
+import type { LocalCollection } from './geoJsonTypes';
 
 export interface WatchAreaInput {
   bounds: MapBounds;
-  source: 'rectangle' | 'sketch-envelope' | 'viewport';
+  source: 'rectangle' | 'sketch-envelope' | 'viewport' | 'shape';
+  geometry?: LocalCollection;
 }
 
 export function drawingWatchArea(
@@ -70,5 +73,9 @@ export function drawingWatchArea(
   const wrap = (value: number) => ((value + 540) % 360) - 180;
   west = wrap(west - longitudeMargin);
   east = wrap(east + longitudeMargin);
-  return { bounds: validateAreaBounds({ west, east, south, north }), source: 'sketch-envelope' };
+  return {
+    bounds: validateAreaBounds({ west, east, south, north }),
+    source: 'shape',
+    geometry: researchAreaGeometry(shape, anchors),
+  };
 }

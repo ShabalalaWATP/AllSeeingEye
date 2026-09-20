@@ -3,43 +3,39 @@ import { Link } from 'react-router';
 import { createAoi } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { geometryBounds } from '@/lib/map/geometryBounds';
-import { validateAreaBounds } from '@/lib/map/areaGeometry';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 
 /** Map research is personal. Reusable areas retain that scope and require an explicit save. */
 export function SaveResearchArea({ area }: { area: LocalCollection }) {
   const [name, setName] = useState('');
-  const [saved, setSaved] = useState(false);
-  const bounds = useMemo(() => {
-    if (area.features.length !== 1) return null;
+  const [saved, setSaved] = useState<LocalCollection | null>(null);
+  const geometry = useMemo(() => {
     const feature = area.features[0];
-    if (!feature) return null;
-    try {
-      return validateAreaBounds(geometryBounds(feature.geometry));
-    } catch {
-      return null;
-    }
+    return area.features.length === 1 &&
+      feature &&
+      ['Polygon', 'MultiPolygon'].includes(feature.geometry.type)
+      ? area
+      : null;
   }, [area]);
   const save = useAsyncAction(async () => {
-    if (!bounds || !name.trim()) return;
+    if (!geometry || !name.trim()) return;
     await createAoi({
       name: name.trim(),
-      description: 'Enclosing bounding box saved from map research.',
-      kind: 'bbox',
-      bbox: [bounds.west, bounds.south, bounds.east, bounds.north],
+      description: 'Exact boundary saved from map research.',
+      kind: 'geometry',
+      research_area: { geometry: { ...geometry } },
       team_id: null,
     });
     setName('');
-    setSaved(true);
+    setSaved(geometry);
   });
-  if (!bounds) return null;
+  if (!geometry) return null;
   return (
     <details className="mt-3 border-t border-line pt-3">
       <summary className="cursor-pointer text-xs text-ember">Save as a reusable area</summary>
       <p className="map-tool-help">
-        Save the enclosing rectangle to your personal Plans & areas for subscriptions and future
-        research. This includes any space outside your drawn shape within its bounds.
+        Save this exact boundary to your personal Plans & areas for future research. Its geometry
+        and content hash are retained; it is not widened to a rectangle.
       </p>
       <label className="map-tool-field">
         Reusable area name
@@ -63,7 +59,7 @@ export function SaveResearchArea({ area }: { area: LocalCollection }) {
           {describeError(save.error)}
         </p>
       )}
-      {saved && (
+      {saved === geometry && (
         <p role="status" className="map-tool-help">
           Area saved to your personal Plans & areas.
         </p>

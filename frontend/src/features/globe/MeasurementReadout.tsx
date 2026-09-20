@@ -1,5 +1,5 @@
 import type { MeasurementControls } from '@/components/maps/MapMeasurementPanel';
-/** Keep measurement actions reachable while the tool panel is closed. */
+/** Keep measurement actions reachable while the tool inspector is collapsed. */
 export function MeasurementReadout({ value }: { value: MeasurementControls }) {
   return (
     value.picking && (

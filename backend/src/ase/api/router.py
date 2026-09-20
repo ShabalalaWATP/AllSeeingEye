@@ -40,6 +40,7 @@ from ase.api.routers import (
     infrastructure,
     map_image,
     map_views,
+    map_workspace,
     me,
     mfa,
     navigation,
@@ -110,6 +111,7 @@ api_router.include_router(recovery.router)
 api_router.include_router(events.router)
 api_router.include_router(footprints.router)
 api_router.include_router(map_views.router)
+api_router.include_router(map_workspace.router)
 api_router.include_router(map_image.router)
 api_router.include_router(original_assets.router)
 api_router.include_router(original_passages.router)

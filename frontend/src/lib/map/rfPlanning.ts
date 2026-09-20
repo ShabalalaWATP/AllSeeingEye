@@ -47,10 +47,13 @@ export const DEFAULT_RF_INPUTS: RfInputs = {
 };
 
 export function calculateRf(
-  input: RfInputs,
+  input: RfInputs & { directionalLossDb?: number },
   settings: RfEngineeringSettings = RF_PHYSICAL_REFERENCE,
 ) {
   validateRfEngineering(settings);
+  const directionalLossDb = input.directionalLossDb ?? 0;
+  if (!Number.isFinite(directionalLossDb) || directionalLossDb < 0 || directionalLossDb > 120)
+    throw new Error('Derived antenna attenuation must be between 0 and 120 dB.');
   for (const { key, label, min, max } of RF_FIELDS) {
     if (!Number.isFinite(input[key]) || input[key] < min || input[key] > max)
       throw new Error(`${label}: enter a value from ${min} to ${max}.`);
@@ -62,6 +65,7 @@ export function calculateRf(
     input.transmitGainDbi +
     input.receiveGainDbi -
     input.lossesDb -
+    directionalLossDb -
     freeSpaceLossDb;
   // Invert the same equation at sensitivity plus the explicit planning reserve.
   // Work in logarithms so intermediate powers cannot overflow before scaling.
@@ -70,6 +74,7 @@ export function calculateRf(
     input.transmitGainDbi +
     input.receiveGainDbi -
     input.lossesDb -
+    directionalLossDb -
     input.sensitivityDbm -
     settings.reserveDb;
   const logDistanceKm = allowableLossDb / 20 + Math.log10(wavelengthM / (4 * Math.PI * 1000));

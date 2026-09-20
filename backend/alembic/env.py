@@ -17,6 +17,7 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     identity_models,
     llm_bindings,
     map_view_models,
+    map_workspace,
     mfa_models,
     models,
     original_asset_models,

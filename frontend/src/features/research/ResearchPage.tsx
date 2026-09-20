@@ -14,6 +14,7 @@ import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { readResearchDraftDates } from '@/lib/researchNavigation';
 
 import { SavedAreaResearch } from './SavedAreaResearch';
+import { MapDraftResearch } from './MapDraftResearch';
 import { ResearchForm } from './ResearchForm';
 import { followUpAvailability } from '@/lib/followUpScope';
 
@@ -36,6 +37,7 @@ export default function ResearchPage() {
     (requestedVersionText !== null && (requestedVersion === undefined || !parentId)) ||
     (parentId !== null && parentId.length === 0);
   const areaRequested = params.has('map_view') || params.has('map_revision');
+  const mapDraftRequested = params.get('map_draft') === '1';
   const briefId = params.get('brief');
   const briefRevision = versionFromQuery(params.get('revision'));
   const fromReportVersion = versionFromQuery(params.get('from_report_version'));
@@ -69,7 +71,8 @@ export default function ResearchPage() {
           </p>
         </header>
         <ResearchNavigation />
-        {!briefId && (
+        {mapDraftRequested && <MapDraftResearch />}
+        {!briefId && !mapDraftRequested && (
           <div className="flex flex-wrap gap-4 text-sm">
             <Link className="text-ember underline" to="/research?brief=new">
               Create a Research Brief
@@ -90,7 +93,7 @@ export default function ResearchPage() {
         {invalidBriefLink && (
           <Alert tone="error">Choose an exact Research Brief and report edition.</Alert>
         )}
-        {briefId && !invalidBriefLink && (
+        {briefId && !invalidBriefLink && !mapDraftRequested && (
           <BriefWorkspace
             briefId={briefId}
             revision={briefRevision}
@@ -102,7 +105,7 @@ export default function ResearchPage() {
             intent={params.get('intent') === 'subscribe' ? 'subscribe' : undefined}
           />
         )}
-        {!briefId && (
+        {!briefId && !mapDraftRequested && (
           <>
             {templates.loading && <LoadingNote label="Loading research options" />}
             {countries.loading && params.get('country') && (

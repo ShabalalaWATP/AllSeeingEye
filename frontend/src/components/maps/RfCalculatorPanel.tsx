@@ -1,11 +1,13 @@
+import type { RfCalculatorPanelProps } from './rfCalculatorTypes';
+import { RfStudyLibrary } from './RfStudyLibrary';
+import { snapshotRfStudy } from '@/lib/map/rfStudy';
+import { rfPlannerInputs } from '@/lib/map/rfPlannerInputs';
+import { RfAntennaControls } from './RfAntennaControls';
 import { useState } from 'react';
-import { calculateRf } from '@/lib/map/rfPlanning';
-import type { RfInputs } from '@/lib/map/rfPlanning';
+import { calculateRf, type RfInputs } from '@/lib/map/rfPlanning';
 import { RF_PRESETS } from '@/lib/map/rfPresets';
 import { rfMapEstimate } from '@/lib/map/rfMap';
 import type { RfMapEstimate } from '@/lib/map/rfMap';
-import type { Position } from '@/lib/map/geoJsonTypes';
-import { measure } from '@/lib/map/measurements';
 import { RfResults } from './RfResults';
 import { RfCoverageControls } from './RfCoverageControls';
 import { RfReferenceControls } from './RfReferenceControls';
@@ -14,14 +16,13 @@ import { RfPowerInput } from './RfPowerInput';
 import { RfPlannerTabs } from './RfPlannerTabs';
 import { RfAnalysisAction } from './RfAnalysisAction';
 import { RfPositions } from './RfPositions';
-import { RfModelSummary, rfEnvironmentValid } from './RfModelControls';
+import { rfEnvironmentValid } from './RfModelControls';
 import { RfReferences } from './RfReferences';
-import { RfPresetSelect } from './RfPresetSelect';
+import { RfPresetControls } from './RfPresetControls';
 import { useRfAnalysis } from './useRfAnalysis';
 import { RfAnalysisResults } from './RfAnalysisResults';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
-import { createRfDraft, RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
-import type { RfDraft } from '@/lib/map/rfDraft';
+import { createRfDraft, type RfDraft } from '@/lib/map/rfDraft';
 import { parseRfEngineering } from '@/lib/map/rfEngineering';
 import { resolveRfMode } from '@/lib/map/rfAutomation';
 import { useRfAutoUpdate } from './useRfAutoUpdate';
@@ -29,24 +30,16 @@ import './rfPlanner.css';
 import './rfPlannerFields.css';
 import './rfPlannerResults.css';
 
-export interface RfCalculatorPanelProps {
-  measuredDistanceKm?: number | undefined;
-  origin?: Position | null;
-  receiver?: Position | null;
-  picking?: 'origin' | 'receiver' | null;
-  onPick?: ((point: 'origin' | 'receiver' | null) => void) | undefined;
-  onOverlayChange?: (estimate: RfMapEstimate | null) => void;
-  overlayVisible?: boolean;
-  coverageBubble?: boolean;
-  onCoverageBubbleChange?: (value: boolean) => void;
-  draft?: RfDraft;
-  onDraftChange?: (draft: RfDraft) => void;
-  onClearReceiver?: (() => void) | undefined;
-  analysis?: RfAnalysis | null;
-  onAnalysisChange?: ((value: RfAnalysis | null) => void) | undefined;
-}
+export type { RfCalculatorPanelProps } from './rfCalculatorTypes';
 
 export function RfCalculatorPanel({
+  siteNames = { origin: '', receiver: '' },
+  interaction = 'click',
+  onDragSite,
+  onSetSite,
+  onSwapSites,
+  onProfilePoint,
+  studyWorkspace,
   measuredDistanceKm,
   origin = null,
   receiver = null,
@@ -76,10 +69,7 @@ export function RfCalculatorPanel({
   const currentAnalysis = analysis === undefined ? localAnalysis : analysis;
   const setDraft = onDraftChange ?? setLocalDraft;
   const preset = RF_PRESETS.find((item) => item.id === presetId) ?? RF_PRESETS[0];
-  const input = Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, value.trim() ? Number(value) : NaN]),
-  ) as unknown as RfInputs;
-  if (origin && target) input.distanceKm = measure([origin, target], 'distance').metres / 1000;
+  const { input, error: antennaError } = rfPlannerInputs(currentDraft, origin, target);
   const worker = useRfAnalysis(input, currentDraft, origin, receiver, changeAnalysis);
   const update = (next: RfDraft) => {
     setSelectedView('configure');
@@ -89,9 +79,10 @@ export function RfCalculatorPanel({
   };
   let result: ReturnType<typeof calculateRf> | null = null;
   let estimate: RfMapEstimate | null = null;
-  let error: string | null = null;
+  let error: string | null = antennaError;
   let mapError: string | null = null;
   try {
+    if (antennaError) throw new Error(antennaError);
     if (mode !== 'hf-skywave')
       result = calculateRf(
         mode === 'free-space' ? input : { ...input, distanceKm: 1 },
@@ -166,6 +157,21 @@ export function RfCalculatorPanel({
           {worker.busy ? 'Analysing' : currentAnalysis ? 'Analysed' : 'Planning'}
         </span>
       </header>
+      {studyWorkspace && (
+        <RfStudyLibrary
+          workspace={{
+            ...studyWorkspace,
+            restoreStudy: (value) => {
+              automation.disarm();
+              studyWorkspace.restoreStudy(value);
+            },
+          }}
+          draft={currentDraft}
+          snapshot={() =>
+            snapshotRfStudy(currentDraft, origin, receiver, siteNames, currentAnalysis)
+          }
+        />
+      )}
       <RfPlannerTabs view={view} onChange={setSelectedView} hasResults={!!currentAnalysis}>
         {view === 'configure' ? (
           <>
@@ -177,34 +183,7 @@ export function RfCalculatorPanel({
                   onChange={(value) => change('transmitDbm', value)}
                   disabled={mode === 'hf-skywave'}
                 />
-                <RfPresetSelect
-                  presetId={presetId}
-                  onSelect={(selected) => {
-                    update({
-                      ...currentDraft,
-                      values: createRfDraft(selected.values, selected.id).values,
-                      presetId: selected.id,
-                      ...(selected.id !== 'custom'
-                        ? {
-                            automaticHfMode:
-                              selected.propagation === 'hf-skywave'
-                                ? ('hf-skywave' as const)
-                                : ('hf-groundwave' as const),
-                          }
-                        : {}),
-                      propagation:
-                        selected.id === 'custom' || currentDraft.propagation === 'free-space'
-                          ? (currentDraft.propagation ?? 'automatic')
-                          : 'automatic',
-                      environment: {
-                        ...RF_ENVIRONMENT_DEFAULTS,
-                        ...currentDraft.environment,
-                        ...selected.environment,
-                      },
-                    });
-                  }}
-                />
-                <RfModelSummary draft={currentDraft} />
+                <RfPresetControls currentDraft={currentDraft} update={update} />
                 <RfRadioFields
                   draft={currentDraft}
                   mode={mode}
@@ -233,6 +212,11 @@ export function RfCalculatorPanel({
                   />
                 )}
                 <RfPositions
+                  interaction={interaction}
+                  onDragSite={onDragSite}
+                  siteNames={siteNames}
+                  onSetSite={onSetSite}
+                  onSwapSites={onSwapSites}
                   pathActive={target !== null}
                   origin={origin}
                   receiver={receiver}
@@ -267,6 +251,7 @@ export function RfCalculatorPanel({
                       Use measured path ({measuredDistanceKm.toFixed(3)} km)
                     </button>
                   )}
+                <RfAntennaControls draft={currentDraft} onChange={update} />
                 <RfReferences preset={preset} />
               </section>
             </div>
@@ -313,6 +298,7 @@ export function RfCalculatorPanel({
                 Analysis complete. Review the path, limits and source quality below.
               </p>
               <RfAnalysisResults
+                onProfilePoint={onProfilePoint}
                 analysis={currentAnalysis}
                 bubble={coverageBubble ?? localBubble}
               />

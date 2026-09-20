@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { expect, it } from 'vitest';
 import { Geodesic } from 'geographiclib-geodesic';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
@@ -34,6 +34,7 @@ function terrain(radial = false): Extract<RfAnalysis, { kind: 'terrain' }> {
 
 it('shows source elevation separately from antenna height and an obstructed path profile', () => {
   render(<RfAnalysisResults analysis={terrain()} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('-10.0 m')).toBeVisible();
   expect(screen.getByText('-5.0 m antenna elevation')).toBeVisible();
   expect(screen.getByText('23.0 m antenna elevation')).toBeVisible();
@@ -45,6 +46,7 @@ it('shows source elevation separately from antenna height and an obstructed path
 it('shows radial survey scope and refuses to draw a profile with missing heights', () => {
   const analysis = terrain(true);
   const { unmount } = render(<RfAnalysisResults analysis={analysis} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('Sampled terrain sectors')).toBeVisible();
   expect(screen.getByText('24 bearings, 3 m receiver AGL')).toBeVisible();
   expect(screen.queryByRole('img')).not.toBeInTheDocument();
@@ -71,6 +73,7 @@ it.each([3, 29])(
         analysis={{ kind: 'hf-skywave', estimate: { origin: [0, 51], frequencyMHz, scenario } }}
       />,
     );
+    fireEvent.click(screen.getByText('Engineering details'));
     expect(screen.getByText('Single-hop geometry scenario')).toBeVisible();
     expect(screen.getByText(/do not predict signal strength or reception/)).toBeVisible();
     if (!scenario.compatible)
@@ -107,6 +110,7 @@ function groundwave(
 
 it('keeps HF range conservative and displays an interpolated receiver only within the sample domain', () => {
   render(<RfAnalysisResults analysis={groundwave([-80, -90, -110], Math.sqrt(10))} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('Last consecutive passing sample')).toBeVisible();
   expect(screen.getByText('-85.0 dBm')).toBeVisible();
   expect(screen.getByText(/threshold crossing between samples is unresolved/)).toBeVisible();
@@ -117,6 +121,7 @@ it('keeps HF range conservative and displays an interpolated receiver only withi
 
 it('does not call the study limit a maximum range or extrapolate receiver power beyond it', () => {
   render(<RfAnalysisResults analysis={groundwave([-70, -80, -90], 150)} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('Passes through sampled limit')).toBeVisible();
   expect(screen.getByText(/search limit, not a maximum range/)).toBeVisible();
   expect(screen.getByText(/Receiver is outside the sampled interval/)).toBeVisible();
@@ -125,6 +130,7 @@ it('does not call the study limit a maximum range or extrapolate receiver power 
 
 it('shows no passing range when the first groundwave sample fails', () => {
   render(<RfAnalysisResults analysis={groundwave([-110, -90, -80])} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('No passing range established')).toBeVisible();
   expect(screen.getByText('Below threshold')).toBeVisible();
 });
@@ -140,6 +146,7 @@ it('shows physical receive power and both margins separately when a terrain rese
   });
   analysis.elevations.elevations_m = heights;
   render(<RfAnalysisResults analysis={analysis} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   const path = analysis.terrain.path!;
   expect(screen.getByText('Modelled receive power').parentElement).toHaveTextContent(
     `${path.receivedDbm!.toFixed(1)} dBm`,
@@ -159,6 +166,7 @@ it('does not replace missing site elevations with a zero-height antenna estimate
   const analysis = terrain();
   analysis.terrain = analyseRfTerrain(analysis.input, analysis.plan, [null, 90, null]);
   render(<RfAnalysisResults analysis={analysis} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getAllByText('Antenna elevation unknown')).toHaveLength(2);
   expect(screen.queryByText('-5.0 m antenna elevation')).not.toBeInTheDocument();
   expect(screen.getByText(/2 missing terrain samples/)).toBeVisible();
@@ -169,6 +177,7 @@ it('applies the same reserve to the HF range, power curve threshold and receiver
   const analysis = groundwave([-80, -95, -110], Math.sqrt(10));
   analysis.engineering = { reserveDb: 10, obstacleHeightM: 0, earthFactor: 4 / 3 };
   const { container } = render(<RfAnalysisResults analysis={analysis} />);
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText('Last consecutive passing sample').parentElement).toHaveTextContent(
     '1 km',
   );

@@ -16,6 +16,7 @@ from ase.domain.audit import AuditAction
 from ase.domain.collection import AREA_KINDS, AreaOfInterest
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import BoundingBox
+from ase.domain.research_area import ResearchArea, validate_direct_area
 from ase.domain.users import User
 
 
@@ -27,6 +28,7 @@ class AoiInput:
     countries: Sequence[str] = ()
     description: str = ""
     team_id: UUID | None = None
+    research_area: ResearchArea | None = None
 
 
 def build_area(data: AoiInput, actor: User, aoi_id: UUID, now: datetime) -> AreaOfInterest:
@@ -35,12 +37,21 @@ def build_area(data: AoiInput, actor: User, aoi_id: UUID, now: datetime) -> Area
     if not name:
         raise InvalidRequest("An area needs a name.")
     if data.kind not in AREA_KINDS:
-        raise InvalidRequest("An area is a bounding box or a set of nations.")
+        raise InvalidRequest("An area is a polygon, bounding box or a set of nations.")
     bbox: BoundingBox | None = None
     countries = tuple(
         dict.fromkeys(code.strip().upper() for code in data.countries if code.strip())
     )
-    if data.kind == "bbox":
+    if data.kind == "geometry":
+        if data.research_area is None or data.bbox is not None or countries:
+            raise InvalidRequest("An exact area needs geometry only, without a box or nations.")
+        try:
+            validate_direct_area(data.research_area)
+        except ValueError as exc:
+            raise InvalidRequest(str(exc)) from exc
+    elif data.research_area is not None:
+        raise InvalidRequest("Choose the geometry kind for an exact area.")
+    elif data.kind == "bbox":
         if data.bbox is None:
             raise InvalidRequest("A bounding box needs west, south, east and north.")
         west, south, east, north = data.bbox
@@ -59,6 +70,7 @@ def build_area(data: AoiInput, actor: User, aoi_id: UUID, now: datetime) -> Area
         created_at=now,
         description=" ".join(data.description.split())[:1000],
         team_id=data.team_id,
+        research_area=data.research_area,
     )
 
 

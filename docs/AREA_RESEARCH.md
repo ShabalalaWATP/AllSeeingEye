@@ -1,177 +1,176 @@
-# Research an area from the main map
+# Research an area
 
-Implemented 10 September 2026. The **Research area** button on the right-hand
-map toolbar opens a compact 360 px drawer in both globe and flat-map modes.
+Area research answers a question about a specific boundary and time period. It
+combines supported public sources, records their coverage limits and produces a
+saved report with citations. The boundary remains part of the report.
 
-## Operator flow
+For drawing collections, the tool menu and saved workspace documents, see
+[Map workspace](MAP_WORKSPACE.md). For provider configuration, see
+[Sources](02_DATA_SOURCES.md) and [AI](AI.md).
 
-1. Draw a polygon, rectangle or circle. Rectangles and circles support dragging
-   or two clicks. Completed areas can be moved, redrawn or cleared.
-2. Optionally enter a question. Leaving it blank requests a neutral overview of
-   the available evidence, developments, uncertainty and gaps.
-3. Choose the last 24 hours, 3, 7 or 14 days. Detailed collection is the default;
-   Quick uses the existing smaller research budget.
-4. Check sources. This local capability preview makes no provider or model
-   calls. It shows supported sources, unsupported capabilities, the fixed UTC
-   interval and request, item and collection-time limits.
-5. Confirm disclosure and generate the report. The configured AI connection
-   performs the existing evidence assessment, citation checking and report flow.
-   Progress and cancellation remain visible. Closing or changing tools cancels
-   the request; a report already being saved may still complete.
+## Start from a drawing or saved area
 
-The result opens in personal Reports. It retains the exact canonical geometry,
-server-calculated hash, interval and collection receipts. Its evidence map starts
-with that boundary. A saved map view can subsequently use the existing saved-area
-research flow. Regeneration preserves the original boundary and interval.
-Ordinary follow-ups cannot silently drop the spatial scope.
+1. Open **Research area** from the map's Tools menu, or choose **Research** on an
+   area in the drawing collection. Draw a polygon, rectangle or circle.
+2. Inspect **What is already loaded here?**. It separates precisely located
+   observations inside the boundary from approximate markers, outside records,
+   country-level records and records without a usable position or publication date.
+   Select a listed observation to highlight it on the map.
+3. Enter a question, or leave it blank for an overview of the available evidence,
+   developments, uncertainty and gaps.
+4. Choose 24 hours, 3, 7 or 14 days and **Basic**, **Deep** or **Advanced** research.
+   Deeper research allows more collection and analysis; it does not guarantee
+   better source coverage.
+5. Choose sources and use **Check sources**. This checks capabilities and budgets
+   without making provider or model calls. It freezes the proposed UTC interval
+   and shows selected, unsupported and unavailable source tasks.
+6. Review disclosure, then generate the report. Collection sends the necessary
+   boundary information to the selected providers. The configured AI connection
+   assesses the returned evidence and produces the report.
+
+The local evidence preview covers records currently loaded by the map, using
+publication time. Display filters and bounded retention can reduce that sample.
+Research collection can use acquisition time and fetch additional evidence.
+Neither the local preview nor a successful capability check establishes that
+external collection has happened. Empty results do not establish no activity.
+
+The question, period, depth and source choices survive switching map tools. Use
+**Continue in full research** for more space; the boundary and draft travel in
+account-scoped memory, not in the URL or browser storage. This draft does not
+survive a reload. Source preview and provider disclosure must still match the
+current geometry and question before generation.
+
+Submitted report generation is a durable job. Closing a panel or leaving the
+page does not cancel an admitted server job. Its progress and outcome remain
+available through research jobs and saved reports; use the explicit job controls
+when cancellation or pausing is required. Unsaved previews and other temporary
+map requests are separate from that job.
+
+## Save and reuse an exact boundary
+
+**Save as a reusable area** stores the polygon or multipolygon in personal
+**Plans & areas**. It retains canonical geometry and a server-calculated SHA-256
+hash, including holes and split dateline rectangles. It does not replace a shape
+with its enclosing rectangle. Each saved area is an immutable record; saving a
+changed boundary creates another record.
+
+In Plans & areas, **Open on map** displays the saved boundary and **Research area**
+opens a personal research draft using it. Existing rectangular areas can also be
+reused, including rectangles that cross the date line. The current server access
+policy determines which records can be read. Copying a boundary into a research
+draft does not automatically copy a collection plan's questions or requirements.
+
+Collection plans can match retained evidence against exact areas. Their legacy
+assessment templates do not support polygon scope. An exact-area plan therefore
+offers standalone area research and explains that plan requirements are not
+transferred. The backend rejects incompatible plan assessment requests rather
+than widening the boundary.
+
+Research Briefs and research subscriptions retain their exact area and hash in
+frozen scope. Use the report/Brief subscription workflow for recurring reports.
+A map workspace document, reusable area, Research Brief and report are distinct
+records; saving one does not automatically create the others.
+
+## Watch an area
+
+**Watch this area** prepares an editable indicator draft in Warning. Nothing is
+saved until **Add indicator** is selected. Exact-shape indicators use the same
+straight-edged canonical boundary as area research. Geodesic sketch strokes can
+look different on the globe; the research boundary defines membership.
+
+Only precisely located incident or site points count towards an exact-shape
+indicator. Country centres, approximate points, unrelated footprints and unknown
+locations do not become inside evidence. Polygon holes exclude their interiors;
+outer and hole boundaries are included. Exact membership is applied before the
+candidate result limit.
+
+Exact-shape indicators create alerts only. Use an area research subscription for
+recurring reports. The ordinary rectangle and nation indicators keep their own
+supported report choices. Switching an exact shape to **Map area (rectangle)**
+is an explicit choice to use its enclosing bounds, and may include space outside
+the shape. This is a count of matching published items, not an arrival or
+boundary-crossing detector.
 
 ## What collection covers
 
-The source catalogue is not an assertion that every entry can search a polygon.
-The flow checks the existing registry and uses selected supported capabilities
-within the existing budget. Display-layer switches do not limit research, and
-research does not switch those layers on.
+A catalogue entry does not imply polygon search support. The planner checks the
+selected source capabilities and current administrator controls. Display-layer
+switches do not define the collection scope or turn sources on for research.
 
-- **Retained public feeds:** reads enabled public feed data already held by the
-  server, including precise point records for conflicts, news, hazards, aircraft,
-  vessels, satellites and other event categories. Original source IDs, URLs,
-  grades and timestamps survive into evidence and citations. This is not a
-  fresh external search, historical backfill or guaranteed current position.
-- **Copernicus:** the existing external scene-metadata query supports a single
-  axis-aligned rectangle of at most 10 degrees per side and a suitable interval.
-  It does not analyse imagery or widen another shape to a rectangle.
-- **Fresh USGS and EONET searches:** one dated catalogue request per selected
-  source, followed by exact local polygon/multipolygon intersection. USGS uses
-  earthquake origin time; EONET uses dated original event geometry and includes
-  open and closed events. At most 50 Quick or 100 Detailed candidates and a
-  14-day interval. Question terms do not filter these observations. Provider
-  bounding-box/page limits mean overlapping or older records can be omitted.
-  Fresh records precede retained duplicates; original source identities remain.
-- **OpenAQ air-quality observations:** optional keyed, on-demand collection of
-  stationary sensor readings. A bounded station page prioritises recently active
-  sites; each reading must match the exact area, measurement interval and permitted
-  dated licence. Original pollutant units and provider credit are retained. This
-  samples latest sensor values, not a complete historical series or an area-wide
-  air-quality assessment. One admitted source task can make up to 11 HTTP requests
-  within its own deadline and shared pacing. See [OpenAQ operations](OPENAQ_RESEARCH.md).
-- **Other capabilities:** unsupported scope and collection failures are recorded.
-  The configured AidData historical-project flow uses its recorded-year policy;
-  this recent-area drawer does not activate that mode. CCTV imagery, camera
-  directories and infrastructure catalogues are not searched by the retained
-  event provider.
+| Source route | What it provides | Important limit |
+| --- | --- | --- |
+| Retained public feeds | Precise public observations already held by the server, with original source IDs, dates and grades | A bounded live snapshot, not historical backfill or guaranteed current positions |
+| USGS and EONET | Dated hazard catalogue records followed by exact local geometry intersection | Bounded requests and candidate pages can omit records; a displayed centre is not an original incident geometry |
+| Copernicus | Satellite scene metadata for supported intervals | Requires a single axis-aligned rectangle, at most 10 degrees per side; no image interpretation or automatic polygon widening |
+| OpenAQ | Optional keyed collection of permitted, dated stationary sensor readings | Samples latest values, not a complete historical series or an area-wide air-quality assessment |
+| Packaged asset registers and retained instruments | Context about supported infrastructure and observations when relevant to the scope | Dataset snapshots and limited observation windows do not establish current site status or complete coverage |
 
-Retained-feed selection checks exact polygon membership, including split
-multipolygons and holes. Country-only, approximate, ungeolocated and unsupported
-footprint records are excluded. Dates use observation acquisition time where
-present, otherwise publication time. Unknown dates are excluded. Source and
-category sampling prevents traffic volume from consuming the whole allowance.
-Legacy EONET records without validated original incident point geometry are
-excluded because a displayed polygon centre is not an exact incident location.
-Most conflict/news records only have city, regional or country precision and
-therefore do not qualify for exact-area selection. This is a coverage gap,
-not evidence that the area has no conflict. The new 21 publisher headline
-capabilities serve ordinary question research and do not claim polygon support.
-Receipts state missing categories, exclusions and truncation. Empty results do
-not establish absence of activity; model output does not establish complete
-collection or independently verified facts.
+Retained-feed selection checks exact geometry and excludes country-only,
+approximate, unlocated and unsupported footprint records. It uses acquisition
+time where present, otherwise publication time; unknown dates are excluded.
+Source and category sampling prevents high-volume traffic feeds from consuming
+the entire allowance. Most news and conflict reports have city, regional or
+country precision, so many cannot support strict area membership.
 
-## Bounds and access
+Fresh USGS/EONET collection is bounded to a 14-day interval. USGS uses earthquake
+origin time; EONET uses dated original event geometry, including open and closed
+events. Original provider identity survives deduplication and citation. OpenAQ
+retains pollutant units, licence and provider attribution; see
+[OpenAQ research](OPENAQ_RESEARCH.md).
 
-- Drawing retains at most 32 points. Circles use 32 perimeter points and a
-  maximum 1,000 km radius. Dateline rectangles are split exactly; crossing
-  polygons/circles request a rectangle instead of guessing another area.
-- Direct-area input is limited to 16 KiB and 256 vertices. Server-side canonical
-  validation rejects invalid topology, extra features and non-area geometries.
-  No supplied fetch URL is used.
-- Geometry, question or period changes invalidate preview and disclosure.
-  Obsolete requests abort. Account, role and workspace changes clear private
-  state and suppress late navigation or result delivery.
-- Drawing, research, measurement and RF placement have one active map-input
-  owner. Research layers have distinct IDs and do not intercept evidence picks.
-- The retained provider scans at most 2,000 candidates per category through
-  cooperative work outside the API event loop. It selects at most 88 Quick or
-  264 Detailed records with fair source/category sampling. Global collector
-  request, item, duration and cancellation limits remain in force.
-- The retained capability and original sources pass current administrator
-  controls before release. Report access is checked before collection and again
-  before persistence. No new database or dependency is introduced; only selected
-  frozen report evidence is persisted.
+Provider receipts distinguish unsupported scope, unavailable sources, failures,
+empty responses and truncated collection. Review those receipts alongside the
+answer. Model output does not independently verify facts or establish complete
+coverage.
 
-The existing plan and report endpoints accept
-`research_area: { geometry: <GeoJSON FeatureCollection> }`. A saved-map origin and
-a direct area are mutually exclusive. Preview returns the canonical area and
-hash. Generation still requires `disclose_area_to_provider: true`.
+## Map context in a report
 
-## Validation limits
+A scope receipt explains the geographic basis and its limits: an operator's
+outline is a collection choice, a country outline is coarse near coasts, and a
+curated conflict box is not a front line.
 
-Automated tests cover both projections using a mocked engine, drawing input
-ownership, exact scope replay, source failures, cancellation, access changes,
-geometry validation, regeneration, source controls and bounded selection.
-Interactive browser/GPU acceptance remains unavailable under the existing
-administrator browser-control policy. Configured-model report quality and
-exhaustive real-world source coverage are not established by these tests.
+The containment receipt separates precise inside evidence, precise outside
+context, approximate positions, country-level records and unlocated records.
+Selection for a report does not by itself mean an event happened inside the area.
 
-Frontend validation: the broader run passed 1,839 tests with one existing skip.
-Coverage was 95.45% statements, 90.69% branches, 93.45% functions and 96.63%
-lines; unchanged gates passed. A final 43-test area-specific run passed after
-the last presentation and lint corrections. Full frontend ESLint, application
-and tooling TypeScript, production build and changed-file formatting passed.
-Existing vendor-chunk and untouched MapLibre file-length warnings remain.
+Packaged registers can include data centres, energy sites, nuclear facilities,
+semiconductor sites, submarine cables, ground stations and cameras. Retained
+instruments can include aircraft, vessels, thermal detections and navigation
+accuracy cells. Eligibility follows the question and scope. A drawn area is an
+explicit geographic context request; unrelated questions do not automatically
+read map data.
 
-The local API was restarted on port 8001. Health returned 200, the served
-OpenAPI includes both direct-area inputs, and unauthenticated plan/report
-requests returned 401. The ASE frontend on port 5174 returned 200.
+The report states whether counts come from a short live window or a dated
+register. Comparisons use only an available compatible baseline. Selected
+readings survive in the report's frozen receipt; the app does not persist raw
+live-event history to support this workflow.
 
-Backend validation: 189 affected tests passed in 4 minutes 11 seconds, with
-93.49% combined statement/branch coverage across seven area/request/provider
-modules and the normal 90% gate. Full Ruff, formatting, mypy and import-linter
-passed. Changed-source Bandit and independent security/correctness reviews
-found no actionable findings. Eight follow-up frontend regressions also passed,
-including the direct-area scope guard.
+## Geometry, access and validation
 
-The whole backend suite was stopped at about 5% after twelve minutes because
-repeated app/database setup made it an hours-long run. No failures had been
-observed; full-suite backend coverage is not claimed.
+- Direct area requests allow one Polygon or MultiPolygon feature, at most
+  256 vertices and 16 KiB of GeoJSON. Invalid topology and non-area geometry are
+  rejected. Supplied URLs are never fetched as geometry.
+- Map sketches have a 32-anchor bound. Circles use 32 perimeter points and a
+  maximum 1,000 km radius. Dateline rectangles are split; unsplit crossing
+  polygons and circles require a supported boundary instead of an inferred box.
+- Editing scope invalidates the capability preview and provider disclosure.
+  Account or workspace access changes clear private drafts and suppress late
+  delivery. Reads and writes recheck the current object access policy.
+- Saved-map origins and direct research areas are mutually exclusive inputs.
+  Regeneration retains the original boundary and interval; ordinary follow-ups
+  cannot silently remove spatial scope.
+- Retained collection and exact indicator matching are bounded. Their limits
+  describe application work budgets, not a claim that the underlying area was
+  fully observed.
 
-## What a report may read from the map (17 September 2026)
+The plan and generation endpoints accept
+`research_area: { geometry: <GeoJSON FeatureCollection> }`. Outputs include the
+canonical geometry and hash. External area collection requires
+`disclose_area_to_provider: true`.
 
-A report about a place can now see what the application already holds for that
-place. It is offered three separate things, and each is a statement about the
-scope rather than about the world.
-
-**The scope receipt.** Where the geography came from, and what that basis cannot
-establish: a drawn outline is an operator's collection choice, a Natural Earth
-country outline is coarse near coasts and excludes territorial waters, and a
-curated conflict box is deliberately generous and is not a front line.
-
-**The containment split.** How many selected items are precisely located inside
-the scope, how many are precisely located outside it, how many carry only a city
-or region centre, how many are attached by a country code, and how many have no
-location at all. A country centroid is never presented as inside the scope, so
-"selected for this report" is never mistaken for "happened here".
-
-**Packaged registers and live instruments, only when the question asks.** The
-registers are the datasets shipped with the application: data centres, energy
-sites, nuclear facilities, semiconductor sites, submarine cables, ground
-stations and the curated cameras. The instruments are what the bounded live
-store already collects: aircraft, vessels, satellite thermal detections and the
-navigation-accuracy cells. A reviewed phrase table in
-`domain/area_assets.py` decides eligibility, and a drawn area counts as the
-request in itself.
-
-Restraint is the point of the design. A question about an election, a ransomware
-advisory, a sanctions designation on a shipping company or an aircraft crash
-reads nothing from the map, and the first tests in
-`tests/test_area_asset_triggers.py`, `tests/test_area_instrument_sweep.py` and
-`tests/test_asset_register_research.py` assert exactly that silence. If a change
-makes one of those match, the vocabulary is wrong and must be tightened; the
-expectation must not be loosened.
-
-Every reading states its limits beside it: a register record is a snapshot of
-what a public dataset held, not evidence of a site's current state; an
-instrument count covers only the short rolling window the store still holds;
-and a detection is not an incident. Where the application records a baseline,
-which today is only hourly military-aircraft counts by country, the report says
-how the current count compares; where it records none, it says so rather than
-inventing one. No reading is persisted beyond the report version's own frozen
-receipt, and none of it costs a model call.
+Automated regression checks cover geometry preservation, dateline and hole
+membership, result-limit ordering, private handoffs, compatible existing
+rectangles, access changes and migration behaviour. They do not establish live
+provider availability, model quality, exhaustive source coverage or real-world
+location accuracy. Release validation is recorded in the implementation plan
+and development story rather than as historical test totals in this guide.

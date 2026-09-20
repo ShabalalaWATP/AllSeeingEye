@@ -3,7 +3,7 @@ import { drawingVertices } from './drawingGeometry';
 import type { DrawingShape } from './drawingGeometry';
 import { measurementPoint } from './measurements';
 import { hitsDrawing, moveDrawing } from './drawingMove';
-export type DrawingInteraction = 'click' | 'drag' | 'move';
+export type DrawingInteraction = 'click' | 'drag' | 'move' | 'vertex';
 export const initialDrawingState = {
   shape: 'polygon' as DrawingShape,
   anchors: [] as Position[],
@@ -13,13 +13,13 @@ export const initialDrawingState = {
   preview: null as Position[] | null,
   dragStart: null as Position | null,
 };
-type Action =
+export type DrawingAction =
   | { type: 'add'; lon: number; lat: number }
   | { type: 'shape'; shape: DrawingShape }
   | { type: 'picking'; picking: boolean }
   | { type: 'undo' }
   | { type: 'clear' };
-interface DragAction {
+export interface DragAction {
   type: 'drag';
   phase: 'start' | 'move' | 'end' | 'cancel';
   start: Position;
@@ -29,8 +29,26 @@ interface DragAction {
 /** Atomic updates validate two map clicks delivered in the same render batch. */
 export function drawingReducer(
   state: typeof initialDrawingState,
-  action: Action | DragAction | { type: 'interaction'; interaction: DrawingInteraction },
+  action:
+    | DrawingAction
+    | DragAction
+    | { type: 'interaction'; interaction: DrawingInteraction }
+    | { type: 'load'; shape: DrawingShape; anchors: Position[] },
 ): typeof initialDrawingState {
+  if (action.type === 'load') {
+    try {
+      drawingVertices(action.shape, action.anchors);
+      const maximum = action.shape === 'circle' || action.shape === 'rectangle' ? 2 : 32;
+      if (action.anchors.length > maximum) throw new Error('Too many anchors for this shape.');
+      return {
+        ...initialDrawingState,
+        shape: action.shape,
+        anchors: action.anchors.map((p) => [...p]),
+      };
+    } catch (error) {
+      return { ...state, error: error instanceof Error ? error.message : 'Invalid geometry.' };
+    }
+  }
   if (action.type === 'clear')
     return {
       ...initialDrawingState,
@@ -54,6 +72,11 @@ export function drawingReducer(
     if (!state.picking || state.interaction === 'click') return state;
     if (action.phase === 'start') {
       if (
+        state.interaction === 'vertex' &&
+        nearestAnchor(state.anchors, action.start, action.tolerance) < 0
+      )
+        return { ...state, error: 'Start the drag on a vertex handle.' };
+      if (
         state.interaction === 'move' &&
         !hitsDrawing(state.shape, state.anchors, action.start, action.tolerance)
       )
@@ -62,10 +85,18 @@ export function drawingReducer(
     }
     if (!state.dragStart) return state;
     try {
+      const vertexIndex =
+        state.interaction === 'vertex'
+          ? nearestAnchor(state.anchors, state.dragStart, action.tolerance)
+          : -1;
       const anchors =
-        state.interaction === 'move'
-          ? moveDrawing(state.shape, state.anchors, state.dragStart, action.current)
-          : [measurementPoint(...state.dragStart), measurementPoint(...action.current)];
+        state.interaction === 'vertex'
+          ? state.anchors.map((point, index) =>
+              index === vertexIndex ? measurementPoint(...action.current) : point,
+            )
+          : state.interaction === 'move'
+            ? moveDrawing(state.shape, state.anchors, state.dragStart, action.current)
+            : [measurementPoint(...state.dragStart), measurementPoint(...action.current)];
       if (
         state.shape === 'rectangle' &&
         anchors[0] &&
@@ -105,4 +136,18 @@ export function drawingReducer(
   } catch (caught) {
     return { ...state, error: caught instanceof Error ? caught.message : 'Invalid drawing point.' };
   }
+}
+
+function nearestAnchor(anchors: Position[], point: Position, tolerance: number): number {
+  let nearest = -1;
+  let distance = tolerance;
+  anchors.forEach((anchor, index) => {
+    const lon = ((((anchor[0] - point[0] + 180) % 360) + 360) % 360) - 180;
+    const delta = Math.hypot(lon * Math.cos((point[1] * Math.PI) / 180), anchor[1] - point[1]);
+    if (delta <= distance) {
+      distance = delta;
+      nearest = index;
+    }
+  });
+  return nearest;
 }

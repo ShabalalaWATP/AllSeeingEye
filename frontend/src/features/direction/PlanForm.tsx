@@ -65,6 +65,12 @@ export function PlanForm({
           area.
         </Alert>
       )}
+      {matchingAreas.find((area) => area.id === selectedArea)?.research_area && (
+        <p className="text-sm text-muted">
+          Exact-shape plans support evidence matching. For reports, start standalone area research
+          from the saved area; collection-plan report templates cannot use this polygon.
+        </p>
+      )}
       <WorkspaceField
         workspaces={workspaces}
         value={scope.teamId}

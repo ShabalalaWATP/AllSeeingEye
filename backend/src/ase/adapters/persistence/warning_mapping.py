@@ -2,6 +2,7 @@
 
 from ase.adapters.persistence.models import AlertRow, IndicatorRow
 from ase.domain.events import BoundingBox, Category
+from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.warning import Alert, Indicator
 
 
@@ -17,6 +18,7 @@ def _indicator_from_row(row: IndicatorRow) -> Indicator:
         plan_id=row.plan_id,
         countries=tuple(str(code) for code in row.countries),
         bbox=bbox,
+        research_area=area_from_dict(row.research_area),
         categories=tuple(Category(str(value)) for value in row.categories),
         keywords=tuple(str(word) for word in row.keywords),
         threshold=row.threshold,
@@ -33,6 +35,7 @@ def _indicator_from_row(row: IndicatorRow) -> Indicator:
 
 
 def _fill_indicator(row: IndicatorRow, indicator: Indicator) -> None:
+    row.research_area = area_to_dict(indicator.research_area)
     row.name = indicator.name
     row.description = indicator.description
     row.plan_id = indicator.plan_id

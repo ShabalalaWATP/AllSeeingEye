@@ -20,6 +20,9 @@ sample observations. Screenshots are not a statement of live source coverage.*
 
 - **Explore the live picture.** Switch between globe and map, filter observations,
   inspect source details, measure areas and distances, and save map views.
+- **Work with map tools.** Save editable drawing collections, research the same
+  boundary, compare radio studies and inspect terrain. The [map workspace guide](docs/MAP_WORKSPACE.md)
+  explains the tools and their limits.
 - **Research a question.** Choose countries, regions, dates and research depth.
   Add supported private inputs or start from a selected map area. Save reusable
   Research Briefs with your requirements.
@@ -93,7 +96,7 @@ Choose one of the two routes in the [setup guide](docs/SETUP.md):
 
 | Route | What you need | What it runs |
 | --- | --- | --- |
-| Native development | Git, uv, Python 3.12+, Node 22.12+ and the pinned pnpm version | API, SQLite and Vite |
+| Native development | Git, uv, Python 3.12+, Node 22.22+ (Node 24 LTS recommended) and the pinned pnpm version | API, SQLite and Vite |
 | Docker Compose | Git and Docker with Compose | Packaged app, PostgreSQL and isolated parser |
 
 The guide covers **Windows 11, macOS and Linux**, including Apple Silicon

@@ -40,7 +40,7 @@ it('draws a bounded two-click circle, stops collecting, then undoes and clears i
   expect(screen.getByRole('button', { name: 'Shape complete' })).toBeDisabled();
   act(() => click({ lon: 1, lat: 1 }));
   expect(screen.getByLabelText('Vertex count')).toHaveTextContent('32');
-  fireEvent.click(screen.getByRole('button', { name: 'Undo point' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Undo sketch' }));
   expect(screen.getByLabelText('Vertex count')).toHaveTextContent('1');
   fireEvent.click(screen.getByRole('button', { name: 'Clear drawing' }));
   expect(screen.getByLabelText('Vertex count')).toHaveTextContent('0');
@@ -136,7 +136,8 @@ it('only hands completed area sketches to the editable Warning draft', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Finish drawing' }));
   expect(watch).toBeEnabled();
   fireEvent.click(watch);
-  expect(readAreaWatchDraft()?.source).toBe('sketch-envelope');
+  expect(readAreaWatchDraft()?.source).toBe('shape');
+  expect(readAreaWatchDraft()?.geometry?.features[0]?.geometry.type).toBe('Polygon');
   expect(readAreaWatchDraft()?.bounds.west).toBeLessThan(0);
   fireEvent.click(screen.getByRole('button', { name: 'Path' }));
   expect(watch).toBeDisabled();

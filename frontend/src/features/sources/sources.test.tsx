@@ -272,7 +272,7 @@ it('links a filtered catalogue and points each family at where it is used', asyn
   const where = await screen.findByRole('navigation', { name: 'Where Camera indexes appear' });
   expect(within(where).getByRole('link', { name: 'Open cameras on the map' })).toHaveAttribute(
     'href',
-    '/?panel=CCTV',
+    '/?panel=cameras',
   );
   expect(screen.getByLabelText('Family')).toHaveValue('camera_index');
   await user.selectOptions(screen.getByLabelText('Family'), 'research');

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
@@ -20,6 +21,7 @@ class IndicatorIn(BaseModel):
     plan_id: UUID | None = None
     countries: list[str] = Field(default_factory=list, max_length=50)
     bbox: tuple[float, float, float, float] | None = None
+    research_area: ResearchAreaIn | None = None
     categories: list[Category] = Field(default_factory=list, max_length=20)
     keywords: list[str] = Field(default_factory=list, max_length=20)
     threshold: int = Field(default=1, ge=1, le=10_000)
@@ -37,6 +39,7 @@ class IndicatorIn(BaseModel):
             plan_id=self.plan_id,
             countries=[code[:2] for code in self.countries],
             bbox=self.bbox,
+            research_area=self.research_area.to_domain() if self.research_area else None,
             categories=self.categories,
             keywords=[word[:60] for word in self.keywords],
             threshold=self.threshold,
@@ -50,6 +53,7 @@ class IndicatorIn(BaseModel):
 
 
 class IndicatorOut(BaseModel):
+    research_area: ResearchAreaOut | None = None
     id: UUID
     name: str
     description: str
@@ -74,6 +78,9 @@ class IndicatorOut(BaseModel):
         box = indicator.bbox
         return cls(
             id=indicator.id,
+            research_area=ResearchAreaOut.model_validate(indicator.research_area)
+            if indicator.research_area
+            else None,
             name=indicator.name,
             description=indicator.description,
             plan_id=indicator.plan_id,

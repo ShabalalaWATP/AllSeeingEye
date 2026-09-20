@@ -53,12 +53,16 @@ it.each(['measurement', 'drawing'] as const)(
   },
 );
 
-it('preserves close-panel measuring but transfers click ownership to other panels', () => {
-  const { engine } = fakeEngine();
+it('stops measuring on close and transfers click ownership without discarding points', () => {
+  const { engine, click } = fakeEngine();
   const { result } = renderHook(() => useMapWorkspaceTools(engine, true, 'map'));
   act(() => result.current.measurement.setPicking(true));
+  act(click);
   act(() => result.current.activatePanel(null));
-  expect(result.current.measurement.picking).toBe(true);
+  expect(result.current.measurement.picking).toBe(false);
+  act(click);
+  expect(result.current.measurement.points).toHaveLength(1);
+  act(() => result.current.measurement.setPicking(true));
   act(() => result.current.activatePanel('Route planner'));
   expect(result.current.picking).toBe(false);
   act(() => result.current.drawing.setPicking(true));

@@ -1062,3 +1062,67 @@ and model-quality gates above remain separate.
 
 The documentation describes supported behaviour. Actual source connectivity,
 model quality and provider account permissions remain installation-specific.
+
+## 20 September 2026: map workspace implementation
+
+- [x] Add grouped tool discovery, four pinned favourites, resizable/collapsible
+  inspectors, mobile sheets and an object/result list.
+- [x] Add saved personal/team drawing collections, editable geometry, bounded
+  undo/redo, validated GeoJSON and revision conflict checks.
+- [x] Retain research drafts across tool changes, preview loaded evidence and
+  preserve exact supported boundaries in reusable areas and monitoring.
+- [x] Add named radio sites, saved study snapshots, comparisons, linked profile
+  inspection and idealised directional link assumptions.
+- [x] Add bounded terrain profiles, sampled visibility, coordinate conversion
+  and reviewed corridor generation.
+- [x] Document the external educational nuclear-effects reference without
+  sending workspace locations or questions to it.
+- [x] Add focused regressions for authority changes, stale responses, drawing
+  edits, imports, boundaries, document conflicts and pagination.
+- [x] Update the [map workspace guide](MAP_WORKSPACE.md) and
+  [implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
+- [x] Complete independent integration review and local desktop/mobile browser
+  verification, including input ownership and authority-boundary corrections.
+- [x] Pass 81 combined new backend regressions, backend lint/format/type/import
+  checks, frontend type checks/build/lint and repository source-length checks.
+- [x] Complete the final full frontend coverage run, repeated static checks and CI:
+  3,109 frontend tests pass at 90.53% branch coverage; SQLite and PostgreSQL
+  backend coverage is 94%. All 31 checks pass for implementation commit `7b0a90f3`.
+- [ ] Review and apply the new workspace/geometry database migrations during
+  an authorised release, then verify the deployed workflows.
+
+ITM and higher-resolution terrain are evaluated follow-ups, not implemented
+propagation upgrades. The app retains its existing model boundaries and bounded
+live-event storage. Software validation does not establish field radio accuracy
+or exhaustive research coverage. No production release is claimed here.
+
+Browser verification covers 1600 × 1000, 390 × 844 and 320 × 568 with normal
+pointer interactions and no fresh browser errors observed. Detailed evidence and
+release follow-ups are recorded in the implementation checklist.
+
+### RF results for non-experts, 20 September 2026
+
+- [x] Add a shared plain-English result, suggested next step and model limits.
+- [x] Keep detailed figures and an explanation of terms available on demand.
+- [x] Distinguish weak signal, insufficient spare signal strength, obstructed
+  paths and missing data without changing propagation calculations.
+- [x] Preserve receiver-specific HF checks and sampled area limits; describe
+  skywave as illustrative travel distances only.
+- [x] Verify desktop/mobile layouts and keyboard disclosures, and complete an
+  independent accuracy, accessibility and security review.
+- [x] Complete full coverage measurement and targeted follow-up checks before
+  push: 95.22% statements, 90.55% branches, 93.21% functions, 96.53% lines.
+  The full run passed 3,144 tests with one outdated disclosure-visibility
+  assertion, corrected and verified afterwards. A concurrent rerun hit four
+  unrelated timeouts; all four and the RF regressions passed in an isolated
+  86-test run. Final-commit CI remains the full-suite release check.
+
+### Open pull request integration, 20 September 2026
+
+- [x] Review feature, dependency and CI PRs together; preserve application fixes
+  already delivered through PR #28 when reconciling duplicate feature PRs.
+- [x] Pair React with React DOM, align router Node requirements and use Node 24 LTS.
+- [x] Repair and build the Caddy dependency graph with the pinned Go toolchain.
+- [x] Preserve isolated Semgrep publication while updating pinned CI actions.
+- [ ] Require successful full CI and security checks before the final main merge.
+- [ ] Verify the migration-aware release and running application after deployment.

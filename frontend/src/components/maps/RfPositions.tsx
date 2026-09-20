@@ -1,5 +1,11 @@
-import type { RfCalculatorPanelProps } from './RfCalculatorPanel';
+import { RfSiteEditor } from './RfSiteEditor';
+import type { RfCalculatorPanelProps } from './rfCalculatorTypes';
 export function RfPositions({
+  siteNames = { origin: '', receiver: '' },
+  interaction = 'click',
+  onDragSite,
+  onSetSite,
+  onSwapSites,
   origin,
   receiver,
   picking,
@@ -8,10 +14,65 @@ export function RfPositions({
   pathActive = true,
 }: Pick<
   RfCalculatorPanelProps,
-  'origin' | 'receiver' | 'picking' | 'onPick' | 'onClearReceiver'
+  | 'interaction'
+  | 'onDragSite'
+  | 'origin'
+  | 'receiver'
+  | 'picking'
+  | 'onPick'
+  | 'onClearReceiver'
+  | 'siteNames'
+  | 'onSetSite'
+  | 'onSwapSites'
 > & { pathActive?: boolean }) {
   return (
     <>
+      {onSetSite && (
+        <details className="mt-2">
+          <summary>Enter precise sites</summary>
+          <p className="rf-help">
+            WGS84 latitude then longitude. Decimal degrees or degrees, minutes and seconds with
+            hemisphere.
+          </p>
+          {(['origin', 'receiver'] as const).map((kind) => (
+            <RfSiteEditor
+              key={`${kind}:${String(kind === 'origin' ? origin : receiver)}:${siteNames[kind]}`}
+              kind={kind}
+              position={(kind === 'origin' ? origin : receiver) ?? null}
+              name={siteNames[kind]}
+              onSet={onSetSite}
+            />
+          ))}
+        </details>
+      )}
+      {onDragSite && (
+        <div className="flex flex-wrap gap-2">
+          {(['origin', 'receiver'] as const).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              className="rf-secondary-button"
+              disabled={!(kind === 'origin' ? origin : receiver)}
+              aria-pressed={interaction === 'drag' && picking === kind}
+              onClick={() =>
+                interaction === 'drag' && picking === kind ? onPick?.(null) : onDragSite(kind)
+              }
+            >
+              Drag {kind === 'origin' ? 'transmitter' : 'receiver'}
+            </button>
+          ))}
+        </div>
+      )}
+      {onSwapSites && (
+        <button
+          className="rf-secondary-button"
+          type="button"
+          disabled={!origin || !receiver}
+          onClick={onSwapSites}
+        >
+          Swap transmitter and receiver
+        </button>
+      )}
       {onPick && (
         <div className="rf-positions">
           <div className="rf-stations">
@@ -43,7 +104,11 @@ export function RfPositions({
                     </span>
                   </span>
                   <span className="rf-station-title">
-                    {id === 'origin' ? 'Transmitter' : 'Receiver'}
+                    {siteNames[id].length > 0
+                      ? siteNames[id]
+                      : id === 'origin'
+                        ? 'Transmitter'
+                        : 'Receiver'}
                   </span>
                   <span className="rf-station-position">
                     {point
@@ -60,8 +125,11 @@ export function RfPositions({
           </div>
           {picking && (
             <p role="status" className="rf-placement-status">
-              Click the map to place the {picking === 'origin' ? 'transmitter' : 'receiver'}. Select
-              the button again to cancel.
+              {interaction === 'drag'
+                ? 'Drag the existing site marker to move the'
+                : 'Click the map to place the'}{' '}
+              {picking === 'origin' ? 'transmitter' : 'receiver'}. Select the button again to
+              cancel.
             </p>
           )}
           {receiver && onClearReceiver && (

@@ -11,8 +11,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID
 
+from ase.domain.area_membership import area_contains_event
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import publication_order
+from ase.domain.research_area import ResearchArea
 
 MAX_KEYWORDS = 20
 MAX_THRESHOLD = 10_000
@@ -43,6 +45,7 @@ class Indicator:
     created_at: datetime
     updated_at: datetime
     team_id: UUID | None = None
+    research_area: ResearchArea | None = None
 
     @property
     def window(self) -> timedelta:
@@ -54,6 +57,8 @@ class Indicator:
 
     def in_scope(self, event: Event) -> bool:
         """Inside the box when there is one, else filed under one of the nations, else anywhere."""
+        if self.research_area is not None:
+            return area_contains_event(self.research_area, event)
         if self.bbox is not None:
             point = event.point
             if point is None:

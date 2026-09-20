@@ -9,7 +9,7 @@ import { applySession } from '@/test/render';
 import { rectangleArea } from '@/lib/map/areaGeometry';
 import { SaveResearchArea } from './SaveResearchArea';
 
-it('saves a personal reusable dateline area with explicit enclosing-box semantics', async () => {
+it('saves a personal reusable dateline area without replacing it with its envelope', async () => {
   applySession('user');
   let saved: unknown;
   server.use(
@@ -25,14 +25,15 @@ it('saves a personal reusable dateline area with explicit enclosing-box semantic
   );
   const user = userEvent.setup();
   await user.click(screen.getByText('Save as a reusable area'));
-  expect(screen.getByText(/includes any space outside your drawn shape/)).toBeInTheDocument();
+  expect(screen.getByText(/not widened to a rectangle/)).toBeInTheDocument();
   await user.type(screen.getByLabelText('Reusable area name'), 'Pacific watch');
   await user.click(screen.getByRole('button', { name: 'Save reusable area' }));
   await waitFor(() =>
     expect(saved).toMatchObject({
       name: 'Pacific watch',
       team_id: null,
-      bbox: [170, -10, -170, 10],
+      kind: 'geometry',
+      research_area: { geometry: rectangleArea({ west: 170, east: -170, south: -10, north: 10 }) },
     }),
   );
   expect(await screen.findByRole('status')).toHaveTextContent('Area saved');

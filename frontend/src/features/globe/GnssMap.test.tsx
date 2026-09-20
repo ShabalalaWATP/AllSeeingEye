@@ -87,20 +87,24 @@ it.each(['globe', 'map'] as const)(
 
 it('keeps shared time and appearance controls on the right without duplicating layer switches', async () => {
   const { user } = renderApp('/', 'user');
-  const timeButton = await screen.findByRole('button', { name: 'Event time' });
+  await screen.findByRole('button', { name: 'Tools' });
   const tools = screen.getByRole('group', { name: 'Map tools' });
   const layers = screen.getByRole('group', { name: 'Map layers' });
-  expect(within(tools).getByRole('button', { name: 'Event time' })).toBe(timeButton);
+  expect(within(tools).queryByRole('button', { name: 'Event time' })).not.toBeInTheDocument();
   expect(within(layers).queryByRole('button', { name: 'Event time' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Topics & time' })).not.toBeInTheDocument();
-  await user.click(timeButton);
+  await openMapTool(user, 'Event time');
   const filters = screen.getByRole('region', { name: 'Event time' });
   expect(filters).toHaveAttribute('data-side', 'right');
   expect(within(filters).queryByRole('switch')).not.toBeInTheDocument();
   expect(within(filters).getByRole('radiogroup', { name: 'Time window' })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Layers and settings' })).not.toBeInTheDocument();
-  expect(within(tools).getByRole('button', { name: 'British National Grid' })).toBeInTheDocument();
-  await user.click(within(tools).getByRole('button', { name: 'Map style' }));
+  await user.click(within(tools).getByRole('button', { name: 'Tools' }));
+  const chooser = screen.getByRole('region', { name: 'Tools' });
+  expect(
+    within(chooser).getByRole('button', { name: 'British National Grid' }),
+  ).toBeInTheDocument();
+  await user.click(within(chooser).getByRole('button', { name: 'Map style' }));
   expect(screen.queryByRole('region', { name: 'Event time' })).not.toBeInTheDocument();
   const style = screen.getByRole('region', { name: 'Map style' });
   expect(within(style).getByRole('switch', { name: 'Day and night' })).toBeInTheDocument();
@@ -108,3 +112,4 @@ it('keeps shared time and appearance controls on the right without duplicating l
   await user.click(within(style).getByRole('radio', { name: 'Streets' }));
   expect(useGlobeStore.getState().baseLayer).toBe('streets');
 });
+import { openMapTool } from '@/test/mapTools';

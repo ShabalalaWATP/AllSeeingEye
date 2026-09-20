@@ -17,6 +17,7 @@ export type RfEnvironment = typeof RF_ENVIRONMENT_DEFAULTS;
 
 /** In-memory form strings preserve incomplete edits when the tool panel closes. */
 export interface RfDraft {
+  antenna?: import('./rfAntenna').RfAntennaDraft;
   values: Record<keyof RfInputs, string>;
   presetId: string;
   propagation?: RfPropagation | 'automatic';

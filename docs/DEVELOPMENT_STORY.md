@@ -5371,3 +5371,94 @@ Screenshots show the current UI with illustrative local data. Public deployment
 guidance explains requirements and release behaviour without live host access or
 recovery identifiers. Documentation checks cover links, model validation, diagram
 rendering and configuration examples; no application behaviour changes.
+
+## Map workspace, 20 September 2026
+
+The requested map improvements connect drawings, research and analysis through
+shared geometry and saved, scoped documents. The tool rail now leads to grouped
+search and four favourites; inspectors resize on desktop and use a collapsible
+bottom sheet on mobile. An object list provides a common route back to drawings
+and results.
+
+Drawing collections support multiple named objects, coordinate and vertex edits,
+locks, colours, notes, GeoJSON and bounded undo/redo. Personal/team storage checks
+revisions and current authority. Review-driven regressions cover hidden sketches,
+unapplied edits, metadata blur, pagination and late responses after same-user role
+or activity changes. Opening another collection clears the editing history.
+
+Research drafts survive tool switches. The map preview distinguishes precise
+membership from approximate and unknown locations, while capability checks remain
+separate from collection. Exact supported polygons carry through reusable areas
+and monitoring. Radio work gains precise named sites, saved input/result snapshots,
+comparison baselines and explicit idealised antenna assumptions. Terrain profiles,
+sampled ground visibility, coordinate conversion and reviewed corridor previews
+reuse bounded geometry and elevation services.
+
+The nuclear education entry opens an attributed external reference without
+forwarding workspace data. ITM, higher-resolution terrain and full event replay
+remain separate follow-ups. The [user guide](MAP_WORKSPACE.md) and
+[implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md) distinguish
+these limits from the implemented tools.
+
+Independent review corrected measurement input ownership, overlapping mobile
+controls, an area-of-interest research race and document payload limits. The
+combined new backend regression run passes 81 tests. Backend lint, formatting,
+mypy across 1,360 files and all three import contracts pass. Frontend type checks,
+production build and lint have passed, along with repository source-length checks.
+Local browser verification at 1600 × 1000, 390 × 844 and 320 × 568 used normal
+pointer interactions and found no fresh browser errors. This entry does not claim
+a merge or deployment, live source completeness or measured RF accuracy.
+
+The SQLite and PostgreSQL CI suites pass with 94% backend coverage.
+The final frontend suite passes 3,109 tests, with one existing skip and unchanged
+90% gates: statements 95.21%, branches 90.53%, functions 93.20% and lines 96.52%.
+Additional tests cover saved-study comparisons and conflicts,
+invalid geometry, source selection, stale responses, import/export and mobile tool
+controls. They also exposed an Undo action that hid the floating Redo control;
+editing now stays active through those history actions. Unicode radio labels are
+verified in the browser. All 31 GitHub checks passed for implementation commit
+`7b0a90f3`, including security, CodeQL, Semgrep and container scanning. The change
+is ready for review in [PR #38](https://github.com/ShabalalaWATP/AllSeeingEye/pull/38).
+
+### RF results for non-experts, 20 September 2026
+
+Radio results lead with an explanation, a next step and the limits of the
+estimate. Detailed figures, model sources and an inline glossary sit under
+**Engineering details**. Terrain profiles stay visible with a reading guide.
+Weak signals, insufficient reserve, obstructed paths and missing terrain have
+distinct messages. Groundwave checks the chosen receiver within the modelled
+distance range; skywave explains that its rings show travel distances only.
+
+Interpretation lives in a pure module, separate from the existing propagation
+calculations and rendering components. No new dependency, backend change or
+production deployment is part of this refinement. Independent review found no
+actionable accuracy, accessibility or security issue. Browser checks used
+synthetic terrain and groundwave responses and covered all four models,
+keyboard-operated disclosures and desktop/mobile layouts.
+
+Type checks, lint, formatting, build and source-length checks passed. Full
+coverage measured 95.22% statements, 90.55% branches, 93.21% functions and
+96.53% lines. That run passed 3,144 tests and found one outdated assertion that
+expected a technical figure before opening the disclosure. The corrected test
+passed. An overlapping suite rerun hit four unrelated timeouts; all four and
+the RF regressions passed in a separate 86-test run with two workers. A clean
+full-suite result for the final commit remains a CI release check.
+
+### Integrating open pull requests, 20 September 2026
+
+The map workspace branch also integrates the reviewed dependency and CI pull
+requests before a single release to main. The older AI setup and report recovery
+PRs were already delivered through PR #28; their ancestry is reconciled without
+replacing the newer application code, and the duplicate PRs are closed.
+
+React and React DOM are paired at 19.3.0. React Router 8 requires Node 22.22 or
+later; CI and the web build use Node 24 LTS. Dependabot groups the React runtime
+and its types so updates can be tested together. Caddy keeps the compatible CEL
+version and aligns all OpenTelemetry logging exporters with its logging API.
+The pinned Go toolchain builds Caddy 2.11.4 with the expected standard modules.
+
+Semgrep publishes its report outside the scanner container, with separately
+pinned actions. Full CI, code scanning and image checks on the combined branch
+remain required before the final merge. Migrations 0063 and 0064 require the
+reviewed manual deployment path and a verified backup; the automatic controller
+must retain its migration safeguard.

@@ -17,12 +17,14 @@ it('uses a supplied measurement explicitly and hides results for incomplete inpu
   render(<RfCalculatorPanel measuredDistanceKm={20} />);
   fireEvent.click(screen.getByRole('button', { name: /Use measured path/ }));
   expect(screen.getByLabelText('Path length (km)')).toHaveValue(20);
-  expect(screen.getByText(/Beyond the model horizon/)).toBeVisible();
+  expect(screen.getByRole('region', { name: 'Result explained' })).toBeVisible();
+  expect(screen.getByText(/Beyond the model horizon/)).not.toBeVisible();
   fireEvent.change(screen.getByLabelText('Frequency (MHz)'), { target: { value: '' } });
   expect(screen.getByRole('alert')).toHaveTextContent('Frequency');
   expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('Frequency (MHz)'), { target: { value: '2400' } });
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText(/Estimated receive level/)).toBeVisible();
 });
 

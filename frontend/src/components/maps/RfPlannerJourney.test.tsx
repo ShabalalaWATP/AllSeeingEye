@@ -130,6 +130,7 @@ it('exposes equipment assumptions on demand and shows the active planning reserv
   render(<RfCalculatorPanel draft={draft} origin={[0, 51]} onOverlayChange={vi.fn()} />);
   fireEvent.click(screen.getByText('Preset details & assumptions'));
   expect(screen.getByText(/Presets do not establish current network settings/)).toBeVisible();
+  fireEvent.click(screen.getByText('Engineering details'));
   expect(screen.getByText(/10 dB planning reserve applied/)).toBeVisible();
 });
 

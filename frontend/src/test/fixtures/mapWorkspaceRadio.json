@@ -1,0 +1,76 @@
+{
+  "terrainEvidence": {
+    "zoom": 10,
+    "resolutionM": 150,
+    "samples": [
+      [0, 0, 0],
+      [-0.005, 0, 0],
+      [-0.01, 0, 100],
+      [-0.014999999999999996, 0, 0],
+      [-0.02, 0, 0]
+    ],
+    "profiles": [
+      {
+        "bearingDegrees": 270,
+        "indices": [0, 1, 2, 3, 4],
+        "distancesM": [
+          0, 556.5974539663679, 1113.1949079327358, 1669.7923618991035, 2226.3898158654715
+        ]
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "savedAt": "2026-09-20T00:00:00.000Z",
+  "draft": {
+    "values": {
+      "distanceKm": "10",
+      "frequencyMHz": "900",
+      "transmitDbm": "30",
+      "transmitGainDbi": "2",
+      "receiveGainDbi": "2",
+      "lossesDb": "2",
+      "sensitivityDbm": "-100",
+      "transmitHeightM": "10",
+      "receiveHeightM": "2"
+    },
+    "presetId": "custom",
+    "propagation": "automatic",
+    "radiusMode": "automatic",
+    "environment": {
+      "radiusKm": "25",
+      "conductivitySm": "0.005",
+      "permittivity": "15",
+      "refractivity": "301",
+      "criticalFrequencyMHz": "5",
+      "virtualHeightKm": "300",
+      "minElevationDeg": "10",
+      "maxElevationDeg": "80"
+    },
+    "engineering": {
+      "reserveDb": "10",
+      "obstacleHeightM": "0",
+      "earthFactor": "1.3333333333333333"
+    }
+  },
+  "origin": [0, 0],
+  "receiver": [-0.02, 0],
+  "siteNames": {
+    "origin": "Hill",
+    "receiver": "Village"
+  },
+  "result": {
+    "kind": "terrain",
+    "status": "blocked",
+    "distanceKm": 2.2263898158654714,
+    "receivedDbm": -99.13742792834339,
+    "marginDb": 0.862572071656615,
+    "sampleCount": 5,
+    "missingSamples": 0
+  },
+  "provenance": {
+    "model": "ASE sampled terrain/Fresnel and single-edge screen v1",
+    "limitations": "Planning scenario only. Results are not field measurements or guaranteed reception. Reopen restores inputs; run analysis to rebuild map results. Synthetic test samples.",
+    "terrainAttribution": "Synthetic contract fixture DEM",
+    "terrainSourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md"
+  }
+}

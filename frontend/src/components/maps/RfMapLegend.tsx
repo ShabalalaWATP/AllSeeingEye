@@ -4,10 +4,10 @@ import type { RfTerrainStatus } from '@/lib/map/rfTerrainTypes';
 export function RfMapLegend({ terrain = true }: { terrain?: boolean }) {
   const entries: { status: RfTerrainStatus; symbol: string; label: string }[] = terrain
     ? [
-        { status: 'clear', symbol: '━', label: 'Sampled clearance' },
-        { status: 'risk', symbol: '△', label: 'Fresnel / power risk' },
+        { status: 'clear', symbol: '━', label: 'Clear at checked points' },
+        { status: 'risk', symbol: '△', label: 'Clearance or weak-signal risk' },
         { status: 'blocked', symbol: '×', label: 'Direct path obstructed' },
-        { status: 'unknown', symbol: '···', label: 'Unknown / unassessed' },
+        { status: 'unknown', symbol: '···', label: 'Not assessed' },
       ]
     : [
         { status: 'clear', symbol: '━', label: 'Within ideal limit' },
