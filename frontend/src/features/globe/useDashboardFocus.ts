@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
-import type { GlobeEngineHandle } from './useGlobeEngine';
+import type { MapFocus } from '@/lib/map/MapEngine';
 import { isMappedEvent } from './geographicPrecision';
 
 /** Catalogue and context picks share navigation but keep their evidence scopes separate. */
@@ -13,7 +13,7 @@ export function useDashboardFocus({
   close,
   chooseContext,
 }: {
-  engine: GlobeEngineHandle;
+  engine: MapFocus;
   picking: boolean;
   hidden: readonly Category[];
   toggleCategory: (category: Category) => void;

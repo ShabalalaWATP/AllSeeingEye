@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { ViewMode } from '@/stores/globe';
-import type { GlobeEngineHandle } from '../useGlobeEngine';
+import type { MapFocus } from '@/lib/map/MapEngine';
 import { buildInfrastructureLayers } from './infrastructureLayers';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 
@@ -8,7 +8,7 @@ export function useInfrastructureSelection(
   state: InfrastructureState,
   picking: boolean,
   closeOther: () => void,
-  engine: GlobeEngineHandle,
+  engine: MapFocus,
   mode: ViewMode,
 ) {
   const select = state.select;

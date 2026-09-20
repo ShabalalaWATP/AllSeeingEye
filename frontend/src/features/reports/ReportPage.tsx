@@ -16,7 +16,7 @@ import {
   launchAssistantReportQuestion,
   registerAssistantReportContext,
 } from '@/lib/assistantReportContext';
-import { followUpAvailability } from '@/features/research/followUpScope';
+import { followUpAvailability } from '@/lib/followUpScope';
 
 import { EvidenceNavigation } from './EvidenceLinks';
 import { LegacyReportReferences } from './LegacyReportReferences';

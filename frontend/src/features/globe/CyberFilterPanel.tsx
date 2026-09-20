@@ -11,7 +11,7 @@ import { utcDate } from './context/contextPresentation';
 import { ContextTabs } from './context/ContextTabs';
 import { CyberLayerSwitches } from './CyberLayerSwitches';
 import { GnssPanel } from './GnssPanel';
-import { RadarAttackResults } from '../cyber/RadarAttackTrends';
+import { RadarAttackResults } from '@/components/cyber/RadarAttackResults';
 import type { useRadarAttackMap } from './useRadarAttackMap';
 
 interface CyberRecordsProps {

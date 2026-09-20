@@ -7,7 +7,7 @@ import { server } from '@/test/server';
 import { report } from '@/test/fixtures';
 import type { ReportRequest } from '@/lib/api/reports';
 import type { ResearchPlanInput } from '@/lib/api/researchPlan';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 
 it('previews and submits distinct same-source tasks, preserves exact phrases and invalidates changed candidates', async () => {

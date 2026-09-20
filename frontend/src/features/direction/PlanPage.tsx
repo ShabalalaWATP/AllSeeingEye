@@ -9,7 +9,7 @@ import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
-import { EventRow } from '../trackers/TrackerParts';
+import { EventRow } from '@/components/events/EventRow';
 import { describeArea } from './DirectionPage';
 
 export default function PlanPage() {

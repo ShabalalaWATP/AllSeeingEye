@@ -1,6 +1,6 @@
 import type { Report } from '@/lib/api/reports';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
-import type { FollowUpRequest } from './followUpScope';
+import type { FollowUpRequest } from '@/lib/followUpScope';
 
 export function FollowUpSummary({
   parent,

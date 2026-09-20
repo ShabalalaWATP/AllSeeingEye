@@ -1,5 +1,6 @@
 /** Orchestrates the live map data, selections and scene outside the page view. */
 import { useMemo } from 'react';
+import { useGlobeLayerGroups } from './useGlobeLayerGroups';
 import { useSavedMapArea } from './useSavedMapArea';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
@@ -231,6 +232,19 @@ export function useGlobePage() {
     infrastructure,
     selectAssistantMapSource,
   );
+  const layerGroups = useGlobeLayerGroups({
+    grid: britishGrid.layers,
+    infrastructure: infrastructureLayers,
+    regions: regionSelection.layers,
+    cameras: cameraLayers,
+    figures: figureLayers,
+    context: context.layers,
+    cyber: cyberSelection.layers,
+    radar: radarAttackLayers,
+    network: networkSelection.layers,
+    news: newsLayers,
+    tools: toolLayers,
+  });
   useGlobeScene({
     engine,
     events: quality.filtered,
@@ -242,17 +256,7 @@ export function useGlobePage() {
     onJam,
     jamCells: gnssFilters.filtered,
     jamSelection: details?.kind === 'jam' ? details.cell : null,
-    gridLayers: britishGrid.layers,
-    cameraLayers,
-    figureLayers,
-    infrastructureLayers,
-    conflictRegionLayers: regionSelection.layers,
-    contextLayers: context.layers,
-    cyberCountryLayers: cyberSelection.layers,
-    radarAttackLayers,
-    networkCountryLayers: networkSelection.layers,
-    newsCountryLayers: newsLayers,
-    measured: toolLayers,
+    layerGroups,
     supported,
     terminator,
     lite,

@@ -6,7 +6,7 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { report } from '@/test/fixtures';
 import type { ResearchPlanInput } from '@/lib/api/researchPlan';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 import type { ReportRequest } from '@/lib/api/reports';
 
 it('previews and submits distinct translation and transliteration with exact original linkage', async () => {

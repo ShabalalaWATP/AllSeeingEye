@@ -5,31 +5,40 @@
 import { FocusPicker } from '@/components/research/FocusPicker';
 import { Button } from '@/components/ui/Button';
 
-import type { ScheduleFormState } from './useScheduleForm';
+interface ScheduleFocusProps {
+  conflictId: string;
+  hazard: string;
+  hasBoundary: boolean;
+  discloseArea: boolean;
+  onEventFocus: (value: { conflictId: string; hazard: string }) => void;
+  onClearBoundary: () => void;
+  onDiscloseArea: (value: boolean) => void;
+}
 
-export function ScheduleFocus({ state }: { state: ScheduleFormState }) {
-  const clearBoundary = () => {
-    state.setResearchArea(null);
-    state.setDiscloseArea(false);
-  };
+export function ScheduleFocus({
+  conflictId,
+  hazard,
+  hasBoundary,
+  discloseArea,
+  onEventFocus,
+  onClearBoundary,
+  onDiscloseArea,
+}: ScheduleFocusProps) {
   return (
     <div className="space-y-4">
       <FocusPicker
-        conflictId={state.conflictId}
-        hazard={state.hazard}
-        disabled={Boolean(state.researchArea)}
-        onChange={({ conflictId, hazard }) => {
-          state.setConflictId(conflictId);
-          state.setHazard(hazard);
-        }}
+        conflictId={conflictId}
+        hazard={hazard}
+        disabled={hasBoundary}
+        onChange={onEventFocus}
       />
-      {state.researchArea && (
+      {hasBoundary && (
         <div className="space-y-3 rounded-xl border border-ember/30 bg-ember/5 p-4">
           <div className="flex items-center justify-between gap-3 text-sm">
             <span>
               A boundary drawn on the map is saved with this subscription and searched each run.
             </span>
-            <Button variant="ghost" onClick={clearBoundary}>
+            <Button variant="ghost" onClick={onClearBoundary}>
               Clear boundary
             </Button>
           </div>
@@ -37,8 +46,8 @@ export function ScheduleFocus({ state }: { state: ScheduleFormState }) {
             <input
               type="checkbox"
               className="mt-1 h-4 w-4 accent-ember"
-              checked={state.discloseArea}
-              onChange={(event) => state.setDiscloseArea(event.target.checked)}
+              checked={discloseArea}
+              onChange={(event) => onDiscloseArea(event.target.checked)}
             />
             <span>
               Allow source providers to receive this area

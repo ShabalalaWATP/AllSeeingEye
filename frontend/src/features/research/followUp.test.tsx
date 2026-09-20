@@ -6,7 +6,7 @@ import { report } from '@/test/fixtures';
 import { roster, team } from '@/test/fixtures.teams';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 
 const privateScope = {
   report_language: 'es',

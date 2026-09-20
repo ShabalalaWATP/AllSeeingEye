@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import type { LiveEvent, Category } from '@/lib/api/eventSchemas';
-import type { GlobeEngineHandle } from './useGlobeEngine';
+import type { MapFocus } from '@/lib/map/MapEngine';
 import type { ObservationKind, ObservationVisibility } from './ObservationControls';
 
 /** A list selection enables its overlay, then uses the same inspector/highlight as a map pick. */
 export function useTrafficSelection(
-  engine: GlobeEngineHandle,
+  engine: MapFocus,
   choose: (event: LiveEvent | null) => void,
   visibility: ObservationVisibility,
   toggle: (kind: ObservationKind) => void,

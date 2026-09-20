@@ -1,9 +1,9 @@
+import { useResearchForm, type ResearchFormProps } from './useResearchForm';
 /**
  * One column, read top to bottom in the order a person decides: what to ask, how deep to
  * go, where to look, which themes, which conflict or disaster, what to read and which
  * period. The rarely changed settings sit folded at the end, before the start button.
  */
-import { useCallback, useState, type SyntheticEvent } from 'react';
 
 import { ReportOptions } from '@/components/reports/ReportOptions';
 import { ChipPicker } from '@/components/research/ChipPicker';
@@ -15,133 +15,39 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
-import type { Country } from '@/lib/api/geoSchemas';
-import type { Profile } from '@/lib/api/profile';
-import type { ReportTemplate } from '@/lib/api/reports';
-import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspaces';
 import { MAX_REGIONS, REGIONS } from '@/lib/regions';
-import type { ResearchDates } from '@/lib/researchPeriod';
 import { MAX_THEMES, THEMES } from '@/lib/themes';
 
 import { DocumentResearchInput } from './DocumentResearchInput';
 import { FollowUpSummary } from './FollowUpSummary';
-import { projectInterval } from './ProjectHistory';
 import { ResearchFocusField } from './ResearchFocusField';
 import { ResearchInput } from './ResearchInput';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
 import { ResearchProgress } from './ResearchProgress';
-import {
-  initialDraft,
-  isPrivateFocus,
-  researchIssue,
-  researchRequest,
-  type Parent,
-  type ResearchDraft,
-  type ResearchFocus,
-} from './researchRequest';
+
 import { ResearchScope } from './ResearchScope';
 import { ResearchTimeScope } from './ResearchTimeScope';
-import { useResearchPlan } from './useResearchPlan';
-import { useResearchRun } from './useResearchRun';
 
-export function ResearchForm({
-  preferences,
-  workspaces,
-  countries,
-  countriesLoading,
-  template,
-  initialQuestion,
-  initialDates,
-  initialCountry,
-  parent,
-}: {
-  preferences: Profile;
-  workspaces: Workspaces;
-  countries: readonly Country[];
-  countriesLoading: boolean;
-  template: ReportTemplate | undefined;
-  initialQuestion: string;
-  initialDates?: ResearchDates | null;
-  initialCountry: string;
-  parent?: Parent | undefined;
-}) {
-  const scope = useWorkspaceSelection(workspaces);
-  const action = useResearchRun();
-  const { clearError } = action;
-  const [draft, setDraft] = useState<ResearchDraft>(() =>
-    initialDraft(preferences, parent, initialQuestion, initialDates, initialCountry),
-  );
-  const patch = (changes: Partial<ResearchDraft>) =>
-    setDraft((current) => ({ ...current, ...changes }));
-  const [validation, setValidation] = useState<string | null>(null);
-  const [inputBusy, setInputBusy] = useState(false);
-  const changeInput = useCallback(
-    (inputId: string | null) => {
-      setDraft((current) => ({ ...current, inputId }));
-      setValidation(null);
-      clearError();
-    },
-    [clearError],
-  );
-  const { focus } = draft;
-  const privateFocus = isPrivateFocus(focus);
-  const general = focus === 'general';
-  const historical = !parent && general && draft.history.enabled;
-  const interval = historical ? projectInterval(draft.history) : null;
-  const plan = useResearchPlan({
-    ...(historical
-      ? {
-          history: {
-            ...(interval ?? { since: '', until: '' }),
-            projectId: draft.history.projectId ?? '',
-          },
-        }
-      : {}),
-    question: draft.question,
-    windowHours: draft.windowHours,
-    languages: draft.languages,
-    mode: draft.mode,
+export function ResearchForm(props: ResearchFormProps) {
+  const {
+    scope,
+    action,
+    draft,
+    patch,
+    validation,
+    setInputBusy,
+    changeInput,
     focus,
-    subject: draft.subject,
-    countries: general ? draft.countries : [],
-    ...(draft.dates && !historical ? { dates: draft.dates } : {}),
-    webSearch: draft.webSearch && !privateFocus,
-  });
-  const teamId = parent ? (parent.report.report.team_id ?? '') : scope.teamId;
-  const ready = parent
-    ? !workspaces.loading && (!teamId || workspaces.teams.some((entry) => entry.team.id === teamId))
-    : scope.ready;
-  const waiting =
-    !template ||
-    !ready ||
-    plan.busy ||
-    inputBusy ||
-    (!parent && draft.countries.length > 0 && countriesLoading);
-  const changeFocus = (value: ResearchFocus) =>
-    patch({
-      focus: value,
-      subject: '',
-      inputId: null,
-      ...(isPrivateFocus(value) ? { webSearch: false } : {}),
-      ...(value !== 'general'
-        ? {
-            countries: [],
-            regions: [],
-            conflictId: '',
-            hazard: '',
-            history: { ...draft.history, enabled: false },
-          }
-        : {}),
-    });
-  const submit = (event: SyntheticEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (action.busy || waiting) return;
-    const ctx = { parent, countries, historical, interval, plan };
-    const issue = researchIssue(draft, ctx);
-    setValidation(issue);
-    if (issue) return;
-    void action.run(researchRequest(draft, ctx, template, scope.teamId));
-  };
+    privateFocus,
+    general,
+    historical,
+    plan,
+    teamId,
+    waiting,
+    changeFocus,
+    submit,
+  } = useResearchForm(props);
+  const { workspaces, countries, parent } = props;
   let step = 0;
   const next = () => ++step;
   const showRead = privateFocus || !parent;

@@ -1,22 +1,18 @@
+import { evaluateSchedule } from './scheduleDraft';
+import {
+  CADENCE_DAYS,
+  convertLookback,
+  lookbackForCadence,
+  type Cadence,
+  type LookbackUnit,
+} from './scheduleTimingPolicy';
 import { useState, type SyntheticEvent } from 'react';
 import type { Category } from '@/lib/api/eventSchemas';
 import type { CollectionPlan } from '@/lib/api/direction';
 import type { ReportTemplate } from '@/lib/api/reports';
 import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
 import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspaces';
-import { MAX_REGIONS, type Region } from '@/lib/regions';
-import { MAX_THEMES } from '@/lib/themes';
-import type { Cadence, LookbackUnit } from './ScheduleTiming';
-
-const CADENCE_DAYS: Record<Cadence, number> = {
-  daily: 1,
-  weekdays: 3,
-  weekly: 7,
-  monthly: 31,
-  quarterly: 92,
-  semiannual: 184,
-  annual: 366,
-};
+import type { Region } from '@/lib/regions';
 
 export interface ScheduleFormStateProps {
   templates: readonly ReportTemplate[];
@@ -27,12 +23,6 @@ export interface ScheduleFormStateProps {
   draftQuestion?: string | undefined;
   draftCountry?: string | undefined;
   onSubmit: (request: ScheduleRequest) => void;
-}
-
-export interface ScheduleIssue {
-  field: string;
-  message: string;
-  advanced?: boolean;
 }
 
 /**
@@ -126,145 +116,86 @@ export function useScheduleForm({
     ),
   );
   const setCadence = (value: Cadence) => {
-    if (!initial && lookbackUnit === 'days' && Number(lookback) === CADENCE_DAYS[cadence])
-      setLookback(String(CADENCE_DAYS[value]));
+    setLookback(lookbackForCadence(lookback, lookbackUnit, cadence, value, Boolean(initial)));
     updateCadence(value);
   };
-  const windowHours =
-    lookbackUnit === 'default' ? null : Number(lookback) * (lookbackUnit === 'days' ? 24 : 1);
   const changeLookbackUnit = (value: LookbackUnit) => {
+    setLookback(convertLookback(lookback, lookbackUnit, value));
     setLookbackUnit(value);
-    if (value !== 'default')
-      setLookback(
-        String(
-          value === 'days'
-            ? Math.max(1, Math.ceil((windowHours ?? 168) / 24))
-            : (windowHours ?? 168),
-        ),
-      );
   };
-  const product = templates.find((item) => item.id === template);
-  const needsQuestion = product?.needs_question === true;
-  const activeResearch = needsQuestion;
-  const languageCodes = [
-    ...new Set(
-      languages
-        .split(',')
-        .map((code) => code.trim().toLowerCase())
-        .filter(Boolean),
-    ),
-  ];
-  const validLanguages =
-    languageCodes.length >= 1 &&
-    languageCodes.length <= 8 &&
-    languageCodes.every((code) => /^[a-z]{2,3}(-[a-z]{2,4})?$/.test(code));
-  const subjectScoped = activeResearch && focus !== 'general';
-  const boundaryScoped = activeResearch && researchArea !== null;
-  const countriesInScope = subjectScoped || boundaryScoped ? [] : selectedCountries;
-  const regionsInScope = subjectScoped || boundaryScoped ? [] : regions;
-  const invalidQuestion =
-    needsQuestion &&
-    ((!question.trim() && (!selectedPlan || activeResearch)) ||
-      (activeResearch && !validLanguages) ||
-      (subjectScoped && !subject.trim()));
-  const validWindow =
-    windowHours === null ||
-    (Number.isInteger(Number(lookback)) && windowHours >= 1 && windowHours <= 17520);
-  const invalidCountry = product?.needs_country === true && countriesInScope.length !== 1;
-  const issues: ScheduleIssue[] = [
-    ...(!name.trim()
-      ? [{ field: 'Subscription name', message: 'Enter a subscription name.' }]
-      : []),
-    ...(!scope.ready
-      ? [{ field: 'Workspace', message: 'Choose an available workspace.', advanced: true }]
-      : []),
-    ...(!product ? [{ field: 'Product', message: 'Choose a product.', advanced: true }] : []),
-    ...(invalidPlan
-      ? [
-          {
-            field: 'Collection plan',
-            message: 'Choose an available collection plan.',
-            advanced: true,
-          },
-        ]
-      : []),
-    ...(needsQuestion && !question.trim() && (!selectedPlan || activeResearch)
-      ? [{ field: 'Question', message: 'Enter a question.' }]
-      : []),
-    ...(activeResearch && !validLanguages
-      ? [
-          {
-            field: 'Research languages',
-            message: 'Enter one to eight valid language codes.',
-            advanced: true,
-          },
-        ]
-      : []),
-    ...(subjectScoped && !subject.trim()
-      ? [{ field: 'Research subject', message: 'Enter a research subject.', advanced: true }]
-      : []),
-    ...(invalidCountry ? [{ field: 'Nation', message: 'Choose one nation.' }] : []),
-    ...(countriesInScope.length > 8
-      ? [{ field: 'Countries', message: 'Choose no more than eight countries.' }]
-      : []),
-    ...(regionsInScope.length > MAX_REGIONS
-      ? [{ field: 'Regions', message: `Choose no more than ${MAX_REGIONS} regions.` }]
-      : []),
-    ...(themes.length > MAX_THEMES
-      ? [{ field: 'Themes', message: `Choose no more than ${MAX_THEMES} themes.` }]
-      : []),
-    ...(!validWindow
-      ? [{ field: 'Search period', message: 'Choose a search period within two years.' }]
-      : []),
-    ...(boundaryScoped && initial?.enabled !== false && !discloseArea
-      ? [{ field: 'Area disclosure', message: 'Allow providers to receive the saved area.' }]
-      : []),
-  ];
-  const invalid = issues.length > 0;
+  const {
+    product,
+    needsQuestion,
+    activeResearch,
+    languageCodes,
+    validLanguages,
+    subjectScoped,
+    boundaryScoped,
+    countriesInScope,
+    regionsInScope,
+    invalidQuestion,
+    validWindow,
+    invalid,
+    issues,
+    windowHours,
+    request,
+  } = evaluateSchedule(
+    {
+      name,
+      template,
+      selectedCountries,
+      regions,
+      themes,
+      question,
+      notifyOnChange,
+      researchMode,
+      languages,
+      focus,
+      subject,
+      webSearch,
+      sourceIds,
+      hour,
+      cadence,
+      weekday,
+      anchorMonth,
+      avoidRepetition,
+      conflictId,
+      hazard,
+      researchArea,
+      discloseArea,
+      monthday,
+      lookbackUnit,
+      lookback,
+    },
+    { templates, scope, selectedPlan, invalidPlan, initial },
+  );
+  const clearBoundary = () => {
+    setResearchArea(null);
+    setDiscloseArea(false);
+  };
+  const changeEventFocus = (value: { conflictId: string; hazard: string }) => {
+    setConflictId(value.conflictId);
+    setHazard(value.hazard);
+  };
+  const changeWorkspace = (teamId: string) => {
+    scope.select(teamId);
+    setPlanId('');
+    clearBoundary();
+    setSourceIds(null);
+  };
+  const changeSubjectFocus = (value: typeof focus) => {
+    setFocus(value);
+    setSubject('');
+    setSourceIds(null);
+  };
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (invalid || busy) return;
-    onSubmit({
-      ...(scope.teamId ? { team_id: scope.teamId } : {}),
-      ...(selectedPlan && !boundaryScoped ? { plan_id: selectedPlan } : {}),
-      ...(needsQuestion && question.trim() ? { question: question.trim() } : {}),
-      ...(activeResearch
-        ? {
-            research_mode: researchMode,
-            research_languages: languageCodes,
-            research_subject: focus === 'general' ? null : subject.trim() || null,
-            research_source_ids: sourceIds,
-          }
-        : {}),
-      research_focus: activeResearch ? focus : 'general',
-      notify_on_change: needsQuestion && notifyOnChange,
-      name: name.trim(),
-      enabled: initial?.enabled ?? true,
-      template_id: template,
-      country_iso: countriesInScope.length === 1 ? (countriesInScope[0] ?? null) : null,
-      country_isos: countriesInScope,
-      regions: regionsInScope,
-      categories: needsQuestion ? themes : [],
-      research_web_search: activeResearch && webSearch,
-      window_hours: windowHours,
-      hour_utc: Number(hour),
-      timezone: initial?.timezone ?? 'UTC',
-      local_hour: Number(hour),
-      local_minute: initial?.local_minute ?? 0,
-      collection_policy: initial?.collection_policy ?? 'rolling_snapshot',
-      cadence,
-      anchor_month: Number(anchorMonth),
-      avoid_repetition: avoidRepetition,
-      conflict_id: needsQuestion && !subjectScoped && !researchArea ? conflictId || null : null,
-      hazard: needsQuestion && !subjectScoped && !researchArea ? hazard || null : null,
-      research_area: activeResearch && !subjectScoped ? researchArea : null,
-      disclose_area_to_provider: boundaryScoped && !subjectScoped && discloseArea,
-      weekday: Number(weekday),
-      monthday: Number(monthday),
-    });
+    if (!invalid && !busy) onSubmit(request);
   };
   return {
     scope,
+    changeWorkspace,
+    changeSubjectFocus,
     anchorMonth,
     setAnchorMonth,
     avoidRepetition,
@@ -275,6 +206,8 @@ export function useScheduleForm({
     setHazard,
     researchArea,
     setResearchArea,
+    clearBoundary,
+    changeEventFocus,
     discloseArea,
     setDiscloseArea,
     matchingPlans,

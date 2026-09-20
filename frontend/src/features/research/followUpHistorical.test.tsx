@@ -5,7 +5,7 @@ import { expect, it } from 'vitest';
 import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
-import { followUpAvailability, followUpRequest } from './followUpScope';
+import { followUpAvailability, followUpRequest } from '@/lib/followUpScope';
 
 const area = {
   geometry: {

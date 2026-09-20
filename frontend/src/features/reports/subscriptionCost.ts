@@ -7,7 +7,7 @@
  * These weights are deliberately rough: they are there to make the choice visible at
  * creation, not to predict an invoice. The AI usage pages show what was actually recorded.
  */
-import type { Cadence } from './ScheduleTiming';
+import type { Cadence } from './scheduleTimingPolicy';
 
 export type Depth = 'quick' | 'detailed' | 'advanced';
 

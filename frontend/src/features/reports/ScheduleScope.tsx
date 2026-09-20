@@ -6,19 +6,53 @@ import type { ReportTemplate } from '@/lib/api/reports';
 import { ScheduleSources } from './ScheduleSources';
 import type { ScheduleFormState } from './useScheduleForm';
 
+/** Only advanced-scope controls, not scheduling, submission or notification state. */
+type ScheduleScopeState = Pick<
+  ScheduleFormState,
+  | 'template'
+  | 'setTemplate'
+  | 'selectedPlan'
+  | 'matchingPlans'
+  | 'activeResearch'
+  | 'languages'
+  | 'setLanguages'
+  | 'validLanguages'
+  | 'focus'
+  | 'subject'
+  | 'setSubject'
+  | 'invalidQuestion'
+  | 'validWindow'
+  | 'chooseSources'
+  | 'setChooseSources'
+  | 'question'
+  | 'researchMode'
+  | 'languageCodes'
+  | 'countriesInScope'
+  | 'webSearch'
+  | 'previewLookbackDays'
+  | 'sourceIds'
+  | 'setSourceIds'
+  | 'setPlanId'
+  | 'researchArea'
+  | 'changeWorkspace'
+  | 'changeSubjectFocus'
+> & { scope: { teamId: string } };
+
 export function ScheduleScope({
   state,
   workspaces,
   templates,
   initial,
 }: {
-  state: ScheduleFormState;
+  state: ScheduleScopeState;
   workspaces: Workspaces;
   templates: readonly ReportTemplate[];
   initial: boolean;
 }) {
   const {
     scope,
+    changeWorkspace,
+    changeSubjectFocus,
     setPlanId,
     template,
     setTemplate,
@@ -29,7 +63,6 @@ export function ScheduleScope({
     setLanguages,
     validLanguages,
     focus,
-    setFocus,
     setSourceIds,
     subject,
     setSubject,
@@ -53,13 +86,7 @@ export function ScheduleScope({
           workspaces={workspaces}
           disabled={initial}
           value={scope.teamId}
-          onChange={(value) => {
-            scope.select(value);
-            setPlanId('');
-            state.setResearchArea(null);
-            state.setDiscloseArea(false);
-            setSourceIds(null);
-          }}
+          onChange={changeWorkspace}
         />
         <SelectField
           label="Product"
@@ -95,11 +122,7 @@ export function ScheduleScope({
               label="Research focus"
               disabled={Boolean(state.researchArea)}
               value={focus}
-              onChange={(event) => {
-                setFocus(event.target.value as typeof focus);
-                setSubject('');
-                setSourceIds(null);
-              }}
+              onChange={(event) => changeSubjectFocus(event.target.value as typeof focus)}
               options={['general', 'company', 'domain'].map((value) => ({
                 value,
                 label: value.charAt(0).toUpperCase() + value.slice(1),

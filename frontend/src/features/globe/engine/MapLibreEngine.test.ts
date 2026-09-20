@@ -1,3 +1,4 @@
+import { ScatterplotLayer } from '@deck.gl/layers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MapboxOverlay } from '@/test/fakeDeck';
@@ -51,7 +52,7 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     const container = document.createElement('div');
     engine.setProjection('mercator');
     engine.flyTo({ center: [0, 0], zoom: 2 });
-    engine.setLayers([{ id: 'early' }]);
+    engine.setLayers([new ScatterplotLayer({ id: 'early' })]);
     expect(MapboxOverlay.instances).toHaveLength(0);
     // Subscribing before mount is a no-op whose unsubscribe is safe to call.
     const unsubscribe = engine.on('click', () => undefined);
@@ -73,7 +74,7 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     const overlay = MapboxOverlay.instances[0]!;
     expect(overlay.props).toMatchObject({ interleaved: false, layers: [], useDevicePixels: 1 });
     expect(map.addControl).toHaveBeenCalledWith(overlay);
-    const layer = { id: 'events-disaster' };
+    const layer = new ScatterplotLayer({ id: 'events-disaster' });
     engine.setLayers([layer]);
     expect(overlay.setProps).toHaveBeenCalledWith({ layers: [layer] });
 
@@ -189,7 +190,7 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     const overlay = MapboxOverlay.instances[0]!;
     map.fire('style.load');
     engine.setProjection('mercator');
-    engine.setLayers([{ id: 'events' }]);
+    engine.setLayers([new ScatterplotLayer({ id: 'events' })]);
     map.setPaintProperty.mockClear();
     map.setLayoutProperty.mockClear();
     map.addSource.mockClear();
@@ -207,7 +208,9 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     expect(map.setLayoutProperty).toHaveBeenLastCalledWith('place_city', 'visibility', 'visible');
     expect(map.addControl).toHaveBeenCalledTimes(1);
     expect(map.addControl).toHaveBeenCalledWith(overlay);
-    expect(overlay.setProps).toHaveBeenLastCalledWith({ layers: [{ id: 'events' }] });
+    expect(overlay.setProps).toHaveBeenLastCalledWith({
+      layers: [expect.objectContaining({ id: 'events' })],
+    });
 
     engine.setBaseLayer('light');
     expect(map.setStyle).toHaveBeenLastCalledWith('https://tiles.openfreemap.org/styles/positron', {

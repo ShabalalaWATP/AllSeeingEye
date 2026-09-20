@@ -1,3 +1,4 @@
+import { featureBoundaryRule } from './scripts/feature-boundaries.js';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
@@ -33,7 +34,9 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    plugins: { boundaries: { rules: { features: featureBoundaryRule(import.meta.dirname) } } },
     rules: {
+      'boundaries/features': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },

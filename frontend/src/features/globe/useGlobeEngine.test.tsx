@@ -1,3 +1,4 @@
+import { ScatterplotLayer } from '@deck.gl/layers';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef } from 'react';
@@ -32,7 +33,7 @@ function fakeEngine() {
   } satisfies MapEngine;
 }
 
-const layers = [{ id: 'selected-events' }];
+const layers = [new ScatterplotLayer({ id: 'selected-events' })];
 function Harness({
   factory,
   baseLayer = 'hybrid',

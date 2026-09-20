@@ -1,3 +1,4 @@
+import { ScatterplotLayer } from '@deck.gl/layers';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createMapLibreEngine } from './MapLibreEngine';
 import { FakeMap } from '@/test/fakeMap';
@@ -21,8 +22,8 @@ it('restores only the latest layers after base context recovery and ignores dupl
   const first = MapboxOverlay.instances[0]!;
   map.fire('webglcontextlost');
   expect(first.finalize).toHaveBeenCalledOnce();
-  engine.setLayers([{ id: 'old' }]);
-  engine.setLayers([{ id: 'latest' }]);
+  engine.setLayers([new ScatterplotLayer({ id: 'old' })]);
+  engine.setLayers([new ScatterplotLayer({ id: 'latest' })]);
   engine.setProjection('mercator');
   engine.setBaseLayer('streets');
   expect(map.setStyle).not.toHaveBeenCalled();
@@ -32,7 +33,9 @@ it('restores only the latest layers after base context recovery and ignores dupl
   expect(map.setStyle).toHaveBeenCalledOnce();
   map.fire('webglcontextrestored');
   expect(MapboxOverlay.instances).toHaveLength(2);
-  expect(MapboxOverlay.instances[1]!.props.layers).toEqual([{ id: 'latest' }]);
+  expect(MapboxOverlay.instances[1]!.props.layers).toEqual([
+    expect.objectContaining({ id: 'latest' }),
+  ]);
   expect(map.setProjection).toHaveBeenLastCalledWith({ type: 'mercator' });
   expect(status).toHaveBeenLastCalledWith('ready', '');
   engine.destroy();
@@ -51,7 +54,7 @@ it('bounds independent overlay recovery attempts and never recreates after destr
   }
   expect(MapboxOverlay.instances).toHaveLength(3);
   expect(status).toHaveBeenLastCalledWith('failed', expect.stringContaining('Reload'));
-  engine.setLayers([{ id: 'ignored-after-failure' }]);
+  engine.setLayers([new ScatterplotLayer({ id: 'ignored-after-failure' })]);
   engine.destroy();
   vi.runAllTimers();
   expect(MapboxOverlay.instances).toHaveLength(3);
@@ -108,7 +111,9 @@ it('ignores callbacks from a failed overlay before and after its replacement is 
   expect(replacement.finalize).not.toHaveBeenCalled();
   expect(replacement.getCanvas).not.toHaveBeenCalled();
   expect(status).not.toHaveBeenCalled();
-  engine.setLayers([{ id: 'still-visible' }]);
-  expect(replacement.setProps).toHaveBeenCalledWith({ layers: [{ id: 'still-visible' }] });
+  engine.setLayers([new ScatterplotLayer({ id: 'still-visible' })]);
+  expect(replacement.setProps).toHaveBeenCalledWith({
+    layers: [expect.objectContaining({ id: 'still-visible' })],
+  });
   engine.destroy();
 });

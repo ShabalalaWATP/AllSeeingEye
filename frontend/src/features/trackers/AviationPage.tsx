@@ -8,7 +8,8 @@ import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
 import { useResource } from '@/lib/hooks/useResource';
 
-import { BackToTrackers, EventRow, ShowOnGlobe } from './TrackerParts';
+import { EventRow } from '@/components/events/EventRow';
+import { BackToTrackers, ShowOnGlobe } from './TrackerParts';
 
 /** The count against its baseline in words: rising, steady, quiet or no baseline yet. */
 export function describeRatio(ratio: number | null): string {

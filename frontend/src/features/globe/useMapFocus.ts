@@ -3,13 +3,13 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
 import { isMappedEvent } from './geographicPrecision';
-import type { GlobeEngineHandle } from './useGlobeEngine';
+import type { MapFocus } from '@/lib/map/MapEngine';
 
 export const FOCUS_ZOOM = 4;
 
 /** Move the map from evidence and nation lists, clearing unrelated inspection. */
 export function useMapFocus(
-  engine: GlobeEngineHandle,
+  engine: MapFocus,
   select: (id: string | null) => void,
   clearCamera: () => void,
   setCountry: (iso: string | null) => void,

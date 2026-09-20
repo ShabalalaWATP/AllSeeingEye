@@ -5,7 +5,8 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Tally } from '@/lib/api/modules';
 
-import { BackToTrackers, EventRow, ShowOnGlobe } from './TrackerParts';
+import { EventRow } from '@/components/events/EventRow';
+import { BackToTrackers, ShowOnGlobe } from './TrackerParts';
 
 /** A labelled figure on a tracker board. */
 export function Stat({ label, value }: { label: string; value: string | number }) {

@@ -1,4 +1,4 @@
-import type { ScheduleIssue } from './useScheduleForm';
+import type { ScheduleIssue } from './scheduleDraft';
 
 function controlFor(root: HTMLFormElement, field: string): HTMLElement | null {
   if (field === 'Countries')

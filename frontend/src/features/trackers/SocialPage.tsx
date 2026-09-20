@@ -4,7 +4,8 @@ import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
 
-import { BackToTrackers, EventRow } from './TrackerParts';
+import { EventRow } from '@/components/events/EventRow';
+import { BackToTrackers } from './TrackerParts';
 import { describeSocialActivity, useSocialBoard } from './useSocialBoard';
 
 export default function SocialPage() {
