@@ -13,6 +13,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss_seeds import RssSeed
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Reliability
 from ase.domain.languages import LANGUAGES
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
@@ -105,4 +106,12 @@ class GoogleNewsResearchProvider:
         )
         return await collect_feed(
             self._http, self._clock, RssSeed(spec, OPTIONS), query, LIMITATIONS
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

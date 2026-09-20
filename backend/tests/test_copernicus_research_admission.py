@@ -64,5 +64,5 @@ def test_source_wrapper_retains_spatial_capability_and_limits():
         CopernicusResearchProvider(Catalogue(None)), Admission(True)
     )
     assert provider.supports_area(QUERY)
-    assert "10 degrees" in provider.spatial_scope
-    assert "14 days" in provider.temporal_scope
+    assert "10 degrees" in provider.capabilities.spatial_scope
+    assert "14 days" in provider.capabilities.temporal_scope

@@ -17,6 +17,7 @@ from ase.adapters.feeds.bluesky_posts import to_event
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.research.feed import receipt, search_terms
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Event, Reliability
 from ase.domain.languages import matching_text
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
@@ -169,3 +170,11 @@ class BlueskyResearchProvider:
                 continue
             found.append(replace(event, grade_rationale=RATIONALE))
         return found
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
+        )

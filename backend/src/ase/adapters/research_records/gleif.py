@@ -15,6 +15,7 @@ from ase.adapters.research_records.record_metadata import bounded_json
 from ase.adapters.research_records.records import collect_json, receipt, record_event, text
 from ase.adapters.research_records.registry_lookup import RegistryLookupCapability
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 
@@ -135,6 +136,13 @@ class GleifProfileProvider(RegistryLookupCapability):
             )
         ]
 
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            registry_namespaces=self.registry_namespaces,
+            temporal_scope=self.temporal_scope,
+        )
+
 
 class GleifParentProvider(RegistryLookupCapability):
     registry_namespaces = ("lei",)
@@ -253,3 +261,10 @@ class GleifParentProvider(RegistryLookupCapability):
                 )
             )
         ]
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            registry_namespaces=self.registry_namespaces,
+            temporal_scope=self.temporal_scope,
+        )

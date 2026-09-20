@@ -1,5 +1,6 @@
 """Bounded private Ask Eye snapshots; these are user-controlled chat text, not evidence."""
 
+from collections.abc import Iterable
 from datetime import datetime
 from ipaddress import ip_address
 from urllib.parse import urlsplit
@@ -8,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.api.schemas_assistant import AssistantAnswerOut
+from ase.application.ports.assistant_history import SavedConversation
 
 
 def _public_https_url(value: str) -> bool:
@@ -144,3 +146,22 @@ class SavedConversationSummaryOut(BaseModel):
 
 class SavedConversationPageOut(BaseModel):
     items: list[SavedConversationSummaryOut]
+
+
+def report_references(turns: Iterable[SavedTurnIn]) -> tuple[tuple[UUID, int], ...]:
+    """Map validated transport references to the application input contract."""
+    return tuple(
+        (turn.report.id, turn.report.version)
+        for turn in turns
+        if turn.scope == "report" and turn.report is not None
+    )
+
+
+def conversation_out(record: SavedConversation) -> SavedConversationOut:
+    return SavedConversationOut(
+        id=record.id,
+        title=record.title,
+        turns=[SavedTurnOut.model_validate(turn) for turn in record.turns],
+        created_at=record.created_at,
+        updated_at=record.updated_at,
+    )

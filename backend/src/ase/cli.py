@@ -11,6 +11,7 @@ from uuid import uuid4
 import typer
 
 from ase.adapters.persistence.session import ensure_sqlite_directory
+from ase.app_factory import create_app
 from ase.cli_aiddata import import_aiddata
 from ase.cli_designations import import_designations
 from ase.cli_infrastructure import (
@@ -35,7 +36,6 @@ from ase.domain.password_policy import validate_password
 from ase.domain.users import Role, User, normalise_email
 from ase.infrastructure.migrations import upgrade_to_head
 from ase.infrastructure.settings import Environment, Settings
-from ase.main import create_app
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
 app.command("import-designations")(import_designations)

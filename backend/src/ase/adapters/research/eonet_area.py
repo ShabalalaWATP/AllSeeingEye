@@ -17,6 +17,7 @@ from ase.adapters.research.hazard_area import (
     supports,
 )
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Credibility,
@@ -187,4 +188,11 @@ class EonetAreaResearchProvider:
                 }
             ),
             content_hash=content_hash(title, acquired.isoformat(), geometry.sha256, url),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
         )

@@ -14,6 +14,7 @@ from functools import partial
 from ase.adapters.geo.asset_registers import scan_registers
 from ase.adapters.geo.scope_geography import ResolvedScope, from_area, from_countries
 from ase.application.feeds.cooperative_work import joined_thread_call
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.area_assets import (
     NO_TRIGGER_REASON,
     AssetClass,
@@ -183,4 +184,11 @@ class AssetRegisterProvider:
             content_hash=content_hash(
                 identity, str(entry.count), entry.as_of, *(row.name for row in entry.listed)
             ),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
         )

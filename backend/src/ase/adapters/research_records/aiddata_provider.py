@@ -9,6 +9,7 @@ from ase.adapters.research_records.aiddata_records import SOURCE_ID, AidDataReco
 from ase.adapters.research_records.aiddata_search import CatalogueResults, search_catalogue
 from ase.adapters.research_records.records import receipt
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Event,
@@ -165,4 +166,12 @@ class AidDataProvider:
                 record.geometry.sha256 if record.geometry else None,
                 amount,
             ),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

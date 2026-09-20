@@ -50,5 +50,7 @@ class EconomyWiring:
         self.research_sources = (*self.research_sources, ECB_SPEC)
 
     async def close_economy(self) -> None:
-        await self.economy.aclose()
-        await self.economy_http.aclose()
+        try:
+            await self.economy.aclose()
+        finally:
+            await self.economy_http.aclose()

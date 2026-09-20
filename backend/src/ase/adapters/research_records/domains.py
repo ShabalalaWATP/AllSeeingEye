@@ -18,6 +18,7 @@ from ase.adapters.research_records.records import (
     text,
 )
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 
@@ -152,6 +153,12 @@ class DnsResearchProvider:
             )
         ]
 
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
+        )
+
 
 class RdapResearchProvider:
     temporal_scope = "Current domain-registry snapshot only; not historical-window evidence."
@@ -232,3 +239,9 @@ class RdapResearchProvider:
                 },
             )
         ]
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
+        )

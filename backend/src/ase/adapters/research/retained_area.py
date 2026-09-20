@@ -14,6 +14,7 @@ from ase.adapters.research.retained_area_selection import (
 from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import EvidenceTimeBasis
@@ -171,4 +172,11 @@ class RetainedAreaFeedProvider:
             CollectionStatus.COMPLETED if items else CollectionStatus.EMPTY,
             LIMITATIONS + " " + detail,
             items,
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
         )

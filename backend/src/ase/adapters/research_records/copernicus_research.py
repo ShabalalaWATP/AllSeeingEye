@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 
 from ase.application.ports.footprints import FootprintProvider
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Event,
@@ -164,4 +165,11 @@ class CopernicusResearchProvider:
                     explanation,
                 ),
             ),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
         )

@@ -23,6 +23,7 @@ from ase.adapters.research.openaq_records import (
 )
 from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Event
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchMode, ResearchQuery
 
@@ -211,3 +212,10 @@ class OpenAqAreaResearchProvider:
                 return []
             admitted.append((scope, licence))
         return admitted
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
+        )

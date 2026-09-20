@@ -22,6 +22,7 @@ from ase.adapters.research_records.records import (
     text,
 )
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 
@@ -220,3 +221,9 @@ class CertificateTransparencyProvider:
             if len(events) >= MAX_RESULTS:
                 break
         return events
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
+        )

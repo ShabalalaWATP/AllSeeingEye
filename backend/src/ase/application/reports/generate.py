@@ -6,43 +6,18 @@ the previous key judgements shown to the model so it can say what changed.
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from uuid import UUID
 
-from ase.application.access import AccessPolicy
-from ase.application.ai_usage import AiUsageAccounting
-from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
-from ase.application.ports.claims import ClaimRepository
-from ase.application.ports.direction import AoiRepository, PlanRepository
-from ase.application.ports.embeddings import EmbeddingGateway
-from ase.application.ports.evidence_urls import EvidenceUrlResolver
-from ase.application.ports.feeds import EventStore
-from ase.application.ports.geo import CountryDirectory
-from ase.application.ports.llm import (
-    LlmBindingRepository,
-    LlmGateway,
-    LlmProfileRepository,
-    LlmUsageRepository,
-    SecretCipher,
-)
-from ase.application.ports.map_views import MapViewRepository
-from ase.application.ports.report_export import AsyncReportProjector
+from ase.application.ports.llm import SecretCipher
 from ase.application.ports.reports import ReportRepository
-from ase.application.ports.research import ResearchCollection
-from ase.application.ports.research_inputs import ResearchInputStore
-from ase.application.ports.trackers import ConflictDirectory
-from ase.application.reports.area_context import AreaContextService
 from ase.application.reports.authorisation import ReportAuthorisation
-from ase.application.reports.automatic_claims import AutomaticClaims
-from ase.application.reports.evidence_rerank import EvidenceReranker
-from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.map_origin import ReportMapOrigin
-from ase.application.reports.original_followthrough import OriginalFollowThrough
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.production_checkpoint import ProductionCheckpoints
 from ase.application.reports.production_result import ProductionResult
@@ -57,7 +32,6 @@ from ase.domain.errors import (
     NotFound,
     RateLimited,
 )
-from ase.domain.grading import SourceProfile
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.users import User
 
@@ -68,82 +42,33 @@ class GenerateReportUseCase:
     def __init__(
         self,
         *,
-        store: EventStore,
-        source_profiles: Mapping[str, SourceProfile],
-        countries: CountryDirectory,
-        conflicts: ConflictDirectory,
-        plans: PlanRepository,
-        aois: AoiRepository,
-        llm_profiles: LlmProfileRepository,
-        usage: LlmUsageRepository,
+        producer: Producer,
+        builder: ReportJobBuilder,
+        routing: ModelRouting,
         cipher: SecretCipher,
-        gateway: LlmGateway,
         reports: ReportRepository,
         clock: Clock,
         limiter: RateLimiter,
         limits: RateLimits,
-        auditor: Auditor,
+        save: SaveProduction,
         uow: UnitOfWork,
-        access: AccessPolicy,
-        backgrounds: Mapping[str, Callable[[], Awaitable[str]]] | None = None,
-        url_resolver: EvidenceUrlResolver | None = None,
-        research: ResearchCollection | None = None,
-        private_store_factory: Callable[[], EventStore] | None = None,
-        research_inputs: ResearchInputStore | None = None,
-        llm_bindings: LlmBindingRepository | None = None,
-        map_views: MapViewRepository | None = None,
-        claims: ClaimRepository | None = None,
-        web_research: FreshWebResearch | None = None,
-        original_followthrough: OriginalFollowThrough | None = None,
-        projector: AsyncReportProjector | None = None,
-        ai_usage: AiUsageAccounting | None = None,
-        embedding_ai_usage: AiUsageAccounting | None = None,
-        embeddings: EmbeddingGateway | None = None,
-        area_context: AreaContextService | None = None,
+        map_origin: ReportMapOrigin,
+        authorisation: ReportAuthorisation,
+        research_inputs: ReportResearchInputs,
     ) -> None:
-        self._backgrounds = dict(backgrounds or {})
-        routing = ModelRouting(llm_profiles, llm_bindings)
-        # Queued text gateways already meter their calls; raw embeddings still need accounting.
-        rerank_usage = embedding_ai_usage if embedding_ai_usage is not None else ai_usage
-        self._producer = Producer(
-            store=store,
-            source_profiles=source_profiles,
-            cipher=cipher,
-            gateway=gateway,
-            usage=usage,
-            url_resolver=url_resolver,
-            research=research,
-            web_research=web_research,
-            original_followthrough=original_followthrough,
-            private_store_factory=private_store_factory,
-            automatic_claims=AutomaticClaims(gateway, cipher, clock, limiter)
-            if claims is not None
-            else None,
-            projector=projector,
-            ai_usage=ai_usage,
-            area_context=area_context,
-            # Without an embeddings gateway the pipeline keeps its deterministic order.
-            reranker=(
-                EvidenceReranker(cipher=cipher, gateway=embeddings, ai_usage=rerank_usage)
-                if embeddings is not None
-                else None
-            ),
-        )
-        self._builder = ReportJobBuilder(countries, conflicts, aois, self._backgrounds)
-        self._plans = plans
+        self._producer = producer
+        self._builder = builder
         self._routing = routing
         self._cipher = cipher
         self._reports = reports
         self._clock = clock
         self._limiter = limiter
         self._limits = limits
-        self._save = SaveProduction(reports, claims, access, auditor, uow)
+        self._save = save
         self._uow = uow
-        self._map_origin = ReportMapOrigin(access, reports, map_views)
-        self._authorisation = ReportAuthorisation(
-            access, reports, plans, aois, uow, self._map_origin
-        )
-        self._research_inputs = ReportResearchInputs(access, reports, research_inputs)
+        self._map_origin = map_origin
+        self._authorisation = authorisation
+        self._research_inputs = research_inputs
 
     async def execute(
         self,

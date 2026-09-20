@@ -6,10 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Path, Response
 
-from ase.adapters.persistence.research_briefs import _decode
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
-from ase.api.routers.research_briefs import _visible_row
 from ase.api.schemas_research_preflight import ResearchPreflightOut
 from ase.api.session_guard import validate_request_expiry, validate_request_session
 from ase.application.research.preflight import preview_brief
@@ -39,7 +37,7 @@ async def research_preflight(
     response: Response,
 ) -> ResearchPreflightOut:
     access = await container.access_policy(session).context(user)
-    brief = _decode(await _visible_row(session, access, brief_id, revision))
+    brief = await container.research_briefs(session).get_authorised(access, brief_id, revision)
     registry, presets = _catalogue()
     preset = next(
         (

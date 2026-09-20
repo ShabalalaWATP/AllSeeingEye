@@ -12,10 +12,10 @@ from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
 from ase.adapters.persistence.base import Base
+from ase.app_factory import create_app
 from ase.container import Container
 from ase.domain.users import Role, User
 from ase.infrastructure.settings import Environment, Settings
-from ase.main import create_app
 from helpers import (
     ADMIN_EMAIL,
     ADMIN_PASSWORD,

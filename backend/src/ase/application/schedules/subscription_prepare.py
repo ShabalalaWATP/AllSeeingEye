@@ -7,10 +7,11 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from ase.adapters.persistence.operational_models import ScheduleRow
-from ase.adapters.persistence.schedules import _from_row
-from ase.adapters.persistence.subscription_briefs import load_schedule_brief
-from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
+from ase.application.ports.services import Clock
+from ase.application.ports.subscription_admission import (
+    SourceGuard,
+    SubscriptionTransactions,
+)
 from ase.application.schedules.brief_link import standing_request_from_brief
 from ase.application.schedules.edition_planning import DuePlan, plan_due_slots, window_for_slot
 from ase.application.schedules.revision_snapshot import (
@@ -33,35 +34,34 @@ from ase.domain.subscription_editions import (
 )
 
 if TYPE_CHECKING:
-    from ase.container import Container
     from ase.domain.users import User
 
 
 class SubscriptionPreparation:
-    container: Container
+    transactions: SubscriptionTransactions
+    clock: Clock
+    guard: SourceGuard
 
     async def _prepare_manual(
         self, schedule: Schedule, request_id: UUID, actor: User
     ) -> tuple[SubscriptionRevision, SubscriptionEdition, ReportJob, User]:
         """Freeze a requested run and prepare its job before taking admission locks."""
-        async with self.container.session_factory() as session:
-            row = await session.get(ScheduleRow, schedule.id)
-            if row is None or _from_row(row) != schedule:
+        async with self.transactions() as session:
+            row = await session.schedule(schedule.id)
+            if row is None or row != schedule:
                 raise Conflict("The subscription changed before manual admission.")
-            access = await self.container.access_policy(session).context(actor)
+            access = await session.access.context(actor)
             access.require_write(row.created_by, row.team_id)
             if not row.enabled:
                 raise Conflict("Enable the subscription before running it.")
-            owner_access = await self.container.access_policy(session).background(
-                row.created_by, row.team_id
-            )
+            owner_access = await session.access.background(row.created_by, row.team_id)
             owner = owner_access.actor
-            brief = await load_schedule_brief(session, owner_access, schedule)
+            brief = await session.brief(owner_access, schedule)
             if brief is not None:
-                standing_request_from_brief(brief, now=self.container.clock.now())
-            ledger = SqlSubscriptionEditionRepository(session)
+                standing_request_from_brief(brief, now=self.clock.now())
+            ledger = session.ledger
             latest = await ledger.latest_revision(schedule.id)
-            now = self.container.clock.now()
+            now = self.clock.now()
             proposed = revision_from_schedule(
                 schedule, latest.revision + 1 if latest else 1, created_at=now, brief=brief
             )
@@ -79,9 +79,7 @@ class SubscriptionPreparation:
             interval = window.interval or ObservationInterval(now - lookback, now)
             baseline = None
             if request.subscription_previous_report_id is not None:
-                baseline = await self.container.repositories(session).reports.get_version(
-                    request.subscription_previous_report_id, 1
-                )
+                baseline = await session.report_version(request.subscription_previous_report_id, 1)
             edition = SubscriptionEdition(
                 id=manual_edition_id(schedule.id, EditionTrigger.RUN_NOW, request_id),
                 subscription_id=schedule.id,
@@ -106,7 +104,7 @@ class SubscriptionPreparation:
                 research_since=interval.start,
                 research_until=interval.end,
             )
-            candidate = await self.container.report_jobs(session).prepare_candidate(
+            candidate = await session.jobs.prepare_candidate(
                 owner, edition.job_request_key, request
             )
             if brief is not None:
@@ -124,8 +122,8 @@ class SubscriptionPreparation:
         ]
         | None
     ):
-        async with self.container.session_factory() as session:
-            ledger = SqlSubscriptionEditionRepository(session)
+        async with self.transactions() as session:
+            ledger = session.ledger
             if edition_id is not None:
                 edition = await ledger.get(edition_id)
                 if edition is None or edition.workflow is not EditionWorkflow.PENDING:
@@ -133,29 +131,27 @@ class SubscriptionPreparation:
                 frozen = await ledger.get_revision(edition.subscription_id, edition.frozen_revision)
                 if frozen is None:
                     raise Conflict("The frozen subscription revision is unavailable.")
-                row = await session.get(ScheduleRow, edition.subscription_id)
+                row = await session.schedule(edition.subscription_id)
                 plan = None
                 superseded = None
             else:
                 if schedule is None:
                     raise ValueError("A due schedule is required.")
-                row = await session.get(ScheduleRow, schedule.id)
-                if row is None or _from_row(row) != schedule:
+                row = await session.schedule(schedule.id)
+                if row is None or row != schedule:
                     return None
-                now = self.container.clock.now()
+                now = self.clock.now()
                 try:
                     plan = plan_due_slots(schedule, now)
                 except ValueError as exc:
                     raise Conflict(str(exc)) from exc
                 latest = await ledger.latest_revision(schedule.id)
-                access = await self.container.access_policy(session).background(
-                    row.created_by, row.team_id
-                )
-                brief = await load_schedule_brief(session, access, schedule)
+                access = await session.access.background(row.created_by, row.team_id)
+                brief = await session.brief(access, schedule)
                 proposed = revision_from_schedule(
                     schedule,
                     latest.revision + 1 if latest else 1,
-                    created_at=self.container.clock.now(),
+                    created_at=self.clock.now(),
                     brief=brief,
                 )
                 frozen = (
@@ -195,7 +191,7 @@ class SubscriptionPreparation:
                 interval = window.interval or ObservationInterval(due - timedelta(hours=hours), due)
                 baseline = None
                 if request.subscription_previous_report_id is not None:
-                    baseline = await self.container.repositories(session).reports.get_version(
+                    baseline = await session.report_version(
                         request.subscription_previous_report_id, 1
                     )
                 edition = SubscriptionEdition(
@@ -220,13 +216,11 @@ class SubscriptionPreparation:
                 return None
             if (row.created_by, row.team_id) != (frozen.owner_id, frozen.team_id):
                 return None
-            access = await self.container.access_policy(session).background(
-                row.created_by, row.team_id
-            )
+            access = await session.access.background(row.created_by, row.team_id)
             actor = access.actor
-            brief = await load_schedule_brief(session, access, _from_row(row))
+            brief = await session.brief(access, row)
             if brief is not None:
-                standing_request_from_brief(brief, now=self.container.clock.now())
+                standing_request_from_brief(brief, now=self.clock.now())
             request = request_from_revision(frozen)
             request = replace(
                 request,
@@ -234,7 +228,7 @@ class SubscriptionPreparation:
                 research_since=edition.requested.start,
                 research_until=edition.requested.end,
             )
-            candidate = await self.container.report_jobs(session).prepare_candidate(
+            candidate = await session.jobs.prepare_candidate(
                 actor, edition.job_request_key, request
             )
             if brief is not None:

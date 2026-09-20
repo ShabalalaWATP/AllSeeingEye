@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
 from uuid import UUID
 
-from ase.adapters.persistence.operational_models import ScheduleRow
-from ase.adapters.persistence.schedules import _from_row
-from ase.adapters.persistence.subscription_briefs import load_schedule_brief
-from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
+from ase.application.ports.services import Clock
+from ase.application.ports.subscription_admission import (
+    SourceGuard,
+    SubscriptionTransactions,
+)
+from ase.application.ports.subscription_editions import SubscriptionEditionRepository
 from ase.application.schedules.brief_link import standing_request_from_brief
 from ase.application.schedules.edition_planning import (
     DuePlan,
@@ -35,12 +36,9 @@ from ase.domain.subscription_editions import (
     scheduled_edition_id,
 )
 
-if TYPE_CHECKING:
-    from ase.container import Container
-
 
 async def skip_unstarted(
-    ledger: SqlSubscriptionEditionRepository,
+    ledger: SubscriptionEditionRepository,
     old: SubscriptionEdition,
     covering_id: UUID,
     now: datetime,
@@ -56,7 +54,7 @@ async def skip_unstarted(
 
 
 async def record_skipped(
-    ledger: SqlSubscriptionEditionRepository,
+    ledger: SubscriptionEditionRepository,
     covering: SubscriptionEdition,
     plan: DuePlan,
     frozen: SubscriptionRevision,
@@ -85,23 +83,23 @@ async def record_skipped(
             raise Conflict("A missed subscription slot has already started.")
 
 
-async def skip_covered_due(container: Container, schedule: Schedule) -> bool:
+async def skip_covered_due(
+    transactions: SubscriptionTransactions, clock: Clock, guard: SourceGuard, schedule: Schedule
+) -> bool:
     """Advance a fully covered old slot without preparing or charging a job."""
-    now = container.clock.now()
-    async with container.source_admission.guard(), container.session_factory() as session:
-        ledger = SqlSubscriptionEditionRepository(session)
-        row = await session.get(ScheduleRow, schedule.id, populate_existing=True)
-        if row is None or not row.enabled or _from_row(row) != schedule:
+    now = clock.now()
+    async with guard(), transactions() as session:
+        ledger = session.ledger
+        row = await session.schedule(schedule.id, refresh=True)
+        if row is None or not row.enabled or row != schedule:
             return False
-        access = await container.access_policy(session).background(
-            row.created_by, row.team_id, for_update=True
-        )
-        row = await session.get(ScheduleRow, schedule.id, populate_existing=True)
-        if row is None or not row.enabled or _from_row(row) != schedule:
+        access = await session.access.background(row.created_by, row.team_id, for_update=True)
+        row = await session.schedule(schedule.id, refresh=True)
+        if row is None or not row.enabled or row != schedule:
             return False
         plan = plan_due_slots(schedule, now)
         latest = await ledger.latest_revision(schedule.id)
-        brief = await load_schedule_brief(session, access, schedule)
+        brief = await session.brief(access, schedule)
         if brief is not None:
             standing_request_from_brief(brief, now=now)
         proposed = revision_from_schedule(
@@ -161,6 +159,6 @@ async def skip_covered_due(container: Container, schedule: Schedule) -> bool:
             reserved = await ledger.reserve(pending)
             if not await skip_unstarted(ledger, reserved, covering.id, now):
                 raise Conflict("A covered subscription slot has already started.")
-        row.next_run_at = plan.next_run_at
+        await session.advance_schedule(row.id, plan.next_run_at)
         await session.commit()
         return True
