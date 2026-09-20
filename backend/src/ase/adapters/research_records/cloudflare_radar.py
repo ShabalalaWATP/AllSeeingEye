@@ -23,6 +23,7 @@ from ase.adapters.feeds.radar_attack_trends import (
 from ase.adapters.research_records.cloudflare_radar_records import radar_record
 from ase.adapters.research_records.records import receipt
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.research_scope import COUNTRY_CODES
@@ -228,3 +229,10 @@ class CloudflareRadarResearchProvider:
                 or math.fsum(row.share_percent for row in countries) > 100.0001
             ):
                 raise ValueError("Invalid Radar country distribution")
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            temporal_scope=self.temporal_scope,
+        )

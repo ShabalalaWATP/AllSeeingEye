@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { expect, it } from 'vitest';
 import type { RadarAttackSnapshot } from '@/lib/api/cyber';
-import { RadarAttackResults } from './RadarAttackTrends';
+import { RadarAttackResults } from '@/components/cyber/RadarAttackResults';
 
 const snapshot: RadarAttackSnapshot = {
   status: 'ready',

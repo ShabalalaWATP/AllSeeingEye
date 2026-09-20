@@ -5320,3 +5320,26 @@ the Git checkout subprocess a normal source-file umask, keeps the enclosing
 release/backup directories private, and probes each new image as its non-root
 runtime user before cutover. GitHub's production deployment history and private
 per-release success records provide the subsequent rollout evidence.
+
+On 20 September, a SOLID assessment rated the codebase 7/10: enforced core
+layering and useful ports, with concentrated responsibility and contract problems.
+The clearest behavioural finding was inconsistent token-exhaustion exceptions
+across model adapters, allowing provider selection to change retry behaviour.
+The review also identified partial-startup cleanup gaps, persistence-heavy routes,
+subscription execution inside the wiring package, implicit provider capabilities
+and four frontend cross-feature imports. Architecture and type checks passed,
+alongside 41 focused backend tests; these did not establish the missing adapter
+contract. The [review and remediation plan](SOLID_REVIEW.md) records ordered work
+and acceptance criteria. No runtime fixes or deployment were made in this review.
+
+Alex then requested implementation. Cross-provider failure handling and partial
+startup cleanup were corrected from failing regressions. Private-record routes,
+subscription admission and report assembly gained explicit application boundaries;
+provider capability metadata now passes through shared decorators. Frontend
+feature imports are enforced and form/map responsibilities are narrower.
+Independent review found two remaining gaps, digest cancellation not being drained
+and static-template imports bypassing the new rule; both were fixed. Focused
+SQLite and isolated PostgreSQL tests pass, as do architecture/type checks, Bandit
+and the frontend build. Regenerated baseline/current OpenAPI schemas match. The
+review documents residual legacy subscription coupling and the later manual
+deployment gate; this implementation does not change production.

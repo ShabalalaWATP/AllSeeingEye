@@ -12,7 +12,7 @@ import {
   type ResearchPlanInput,
 } from '@/lib/api/researchPlan';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 
 const lookup = {
   candidate_id: 'candidate',

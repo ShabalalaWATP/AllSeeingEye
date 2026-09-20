@@ -25,6 +25,7 @@ from ase.adapters.feeds.telegram_preview import (
 )
 from ase.adapters.research.feed import receipt, search_terms
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Credibility,
@@ -211,4 +212,12 @@ class TelegramResearchProvider:
                 }
             ),
             content_hash=content_hash(post.key, post.text[:200]),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

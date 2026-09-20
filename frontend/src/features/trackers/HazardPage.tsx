@@ -7,7 +7,8 @@ import { fetchDisasterDetail } from '@/lib/api/trackers';
 import { researchHref } from '@/lib/researchNavigation';
 import { useResource } from '@/lib/hooks/useResource';
 
-import { ActivityCells, BackToTrackers, EventRow, ShowOnGlobe, Timeline } from './TrackerParts';
+import { EventRow } from '@/components/events/EventRow';
+import { ActivityCells, BackToTrackers, ShowOnGlobe, Timeline } from './TrackerParts';
 
 export default function HazardPage() {
   const { hazard = '' } = useParams();

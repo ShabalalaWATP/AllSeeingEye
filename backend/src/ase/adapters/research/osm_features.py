@@ -22,6 +22,7 @@ from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.adapters.research.hazard_area import MAX_BODY_BYTES, HazardArea, receipt
 from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Credibility,
@@ -186,6 +187,13 @@ class OsmFeaturesResearchProvider:
                 "a later run may succeed.",
             )
         return receipt(self.id, self.name, CollectionStatus.FAILED, FAILED_TEXT)
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
+        )
 
 
 def parse(

@@ -119,6 +119,8 @@ type = "layers"
 layers = [
     "ase.cli",
     "ase.main",
+    "ase.app_factory",
+    "ase.app_lifecycle",
     "ase.api",
     "ase.container",
     "ase.adapters | ase.infrastructure",
@@ -139,4 +141,21 @@ forbidden_modules = [
     "argon2",
     "jwt",
     "pydantic_settings",
+]
+
+[[tool.importlinter.contracts]]
+name = "HTTP transport does not import persistence adapters"
+type = "forbidden"
+source_modules = ["ase.api"]
+forbidden_modules = ["ase.adapters.persistence"]
+# Transport reaches persistence through composition-root factories, never by
+# importing an implementation. Existing subscription read projections are the
+# remaining explicit exceptions; unmatched entries fail so this list must shrink.
+allow_indirect_imports = true
+ignore_imports = [
+    "ase.api.routers.admin_subscription_diagnostics -> ase.adapters.persistence.subscription_diagnostics",
+    "ase.api.routers.subscription_usage -> ase.adapters.persistence.monthly_report_usage",
+    "ase.api.routers.schedules -> ase.adapters.persistence.subscription_briefs",
+    "ase.api.routers.schedules -> ase.adapters.persistence.subscription_comparisons",
+    "ase.api.routers.schedules -> ase.adapters.persistence.subscription_editions",
 ]

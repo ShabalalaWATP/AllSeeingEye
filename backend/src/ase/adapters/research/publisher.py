@@ -11,6 +11,7 @@ from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import freeze_attributes
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
@@ -100,4 +101,13 @@ class PublisherFeedResearchProvider:
             batch,
             items=items,
             attempts=tuple(replace(attempt, source_id=self.id) for attempt in batch.attempts),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            spatial_scope=self.spatial_scope,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

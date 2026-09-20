@@ -11,10 +11,10 @@ from starlette.types import Message, Scope
 
 import ase.container as container_module
 from ase.adapters.persistence.base import Base
+from ase.app_factory import create_app
 from ase.application.dto import RequestContext
 from ase.application.ports.feeds import BusMessage
 from ase.infrastructure.settings import Settings
-from ase.main import create_app
 from helpers import USER_EMAIL, USER_PASSWORD, FakeClock, bearer, create_user
 
 

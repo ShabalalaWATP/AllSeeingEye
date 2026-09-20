@@ -16,6 +16,7 @@ from urllib.parse import urlencode, urlsplit
 from ase.adapters.feeds.http import FeedFetchError, NotModified
 from ase.adapters.research_records.records import receipt, record_event, text
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, GeoConfidence, Reliability
 from ase.domain.evidence_time import EvidenceTimeBasis, publication_order
 from ase.domain.observation import ObservationMetadata
@@ -322,3 +323,10 @@ class OnsCpihProvider:
         if len(items) > MAX_MONTHS:
             raise ValueError("ONS result exceeds the selected interval")
         return sorted(items, key=publication_order)
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            temporal_scope=self.temporal_scope,
+        )

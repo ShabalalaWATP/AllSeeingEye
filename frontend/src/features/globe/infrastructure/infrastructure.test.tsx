@@ -7,6 +7,11 @@ import { infrastructureSchema, type Infrastructure } from '@/lib/api/infrastruct
 import { useInfrastructure } from './useInfrastructure';
 import { buildInfrastructureLayers } from './infrastructureLayers';
 import { InfrastructurePanel } from './InfrastructurePanel';
+import {
+  filterInfrastructureRecords,
+  infrastructureRecordDescription,
+  type InfrastructureRecordsState,
+} from './infrastructurePanelModel';
 import { InfrastructureInspector } from './InfrastructureInspector';
 
 const data: Infrastructure = {
@@ -211,4 +216,28 @@ it('supports panel searching, source attribution and an accessible inspector clo
   expect(
     screen.queryByRole('complementary', { name: 'Infrastructure details' }),
   ).not.toBeInTheDocument();
+});
+
+it('filters infrastructure records by enabled layer, group and normalised search text', () => {
+  const state: InfrastructureRecordsState = {
+    data,
+    cablesEnabled: true,
+    stationsEnabled: true,
+    nuclearEnabled: true,
+    dataCentresEnabled: true,
+    energyEnabled: true,
+    semiconductorEnabled: true,
+  };
+  expect(filterInfrastructureRecords(state, ' SSC SPACE ', 'technology')).toEqual([
+    { kind: 'station', item: stationFixture },
+  ]);
+  expect(filterInfrastructureRecords(state, 'telecom')).toEqual([
+    { kind: 'cable', item: cableFixture },
+  ]);
+  expect(filterInfrastructureRecords(state, '', 'infrastructure')).toEqual([]);
+  expect(filterInfrastructureRecords({ ...state, stationsEnabled: false }, 'SSC')).toEqual([]);
+  expect(filterInfrastructureRecords({ ...state, data: null }, '')).toEqual([]);
+  expect(infrastructureRecordDescription({ kind: 'station', item: stationFixture })).toBe(
+    'SSC Space \u00b7 SE',
+  );
 });

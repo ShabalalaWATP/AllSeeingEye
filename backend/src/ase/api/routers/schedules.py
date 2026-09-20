@@ -60,7 +60,9 @@ async def run_subscription_now(
         body.request_id,
         user,
         context,
-        lambda guarded: validate_request_session(container, claims, session=guarded),
+        SubscriptionAdmission.session_check(
+            lambda guarded: validate_request_session(container, claims, session=guarded)
+        ),
     )
     await validate_request_session(container, claims)
     validate_request_expiry(container, claims)

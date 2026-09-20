@@ -23,6 +23,7 @@ from ase.adapters.research_records.registry_lookup import RegistryLookupCapabili
 from ase.adapters.research_records.sec_client import SecClient
 from ase.adapters.research_records.sec_history import archives, index
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.sec_filing_time import filing_source_date
@@ -194,6 +195,13 @@ class SecSubmissionsProvider(RegistryLookupCapability):
             for item in items
         ]
 
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            registry_namespaces=self.registry_namespaces,
+            temporal_scope=self.temporal_scope,
+        )
+
 
 class SecCompanyDirectoryProvider:
     temporal_scope = (
@@ -272,6 +280,12 @@ class SecCompanyDirectoryProvider:
                 break
         return items
 
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
+        )
+
 
 class CompaniesHouseUnavailableProvider:
     temporal_scope = "No collection capability configured; historical coverage is unavailable."
@@ -290,4 +304,10 @@ class CompaniesHouseUnavailableProvider:
             CollectionStatus.UNAVAILABLE if self.supports(query) else CollectionStatus.UNSUPPORTED,
             "Companies House requires a configured API key and host-bound per-request Basic "
             "authentication. This integration is unavailable; no request or credential was sent.",
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
         )

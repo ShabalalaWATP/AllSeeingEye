@@ -224,7 +224,15 @@ export function ScheduleForm(
             lead="Optional. Pin the subscription to one tracked conflict or one kind of hazard."
             id="subscription-coverage"
           >
-            <ScheduleFocus state={state} />
+            <ScheduleFocus
+              conflictId={state.conflictId}
+              hazard={state.hazard}
+              hasBoundary={Boolean(state.researchArea)}
+              discloseArea={state.discloseArea}
+              onEventFocus={state.changeEventFocus}
+              onClearBoundary={state.clearBoundary}
+              onDiscloseArea={state.setDiscloseArea}
+            />
           </Step>
         )}
 

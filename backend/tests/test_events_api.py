@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from ase.adapters.persistence.base import Base
+from ase.app_factory import create_app
 from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
@@ -19,7 +20,6 @@ from ase.domain.events import Category, Point
 from ase.domain.news_time import news_index_date
 from ase.domain.users import User
 from ase.infrastructure.settings import Settings
-from ase.main import create_app
 from feeds_helpers import NOW, FakeConnector, make_event, make_spec
 from helpers import (
     ADMIN_EMAIL,

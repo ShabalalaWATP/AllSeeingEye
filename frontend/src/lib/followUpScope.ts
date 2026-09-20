@@ -3,7 +3,7 @@ import { queryVariantSchema } from '@/lib/api/sourceProvenance';
 import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 import { candidateHypothesisSchema, plannedQueryTaskSchema } from '@/lib/api/researchPlan';
-import { researchDateError } from './ResearchTimeScope';
+import { researchDateError } from '@/lib/researchPeriod';
 
 export type FollowUpRequest = ReportRequest & { parent_version: number };
 

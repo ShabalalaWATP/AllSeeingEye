@@ -1006,3 +1006,23 @@ the current local configuration. No cap bypass or destructive migration is used.
 - [x] Exercise the GitHub trigger and automatic restoration after a failed VPS
   cutover; correct build-checkout permissions and add isolated runtime probes.
   Subsequent release outcomes are recorded in GitHub's production environment.
+
+## 20 September 2026: SOLID review and proposed remediation
+
+- [x] Review backend, frontend and composition boundaries at `6f4d2757`, with
+  architecture/type checks, a focused 41-test baseline and an offline model
+  adapter contract comparison. Record a qualitative overall rating of 7/10.
+- [x] Document evidence, priorities and acceptance criteria in
+  [the SOLID review](SOLID_REVIEW.md). This is an assessment, not completed fixes.
+- [x] Normalise explicit model-token exhaustion and add cross-adapter contracts.
+- [x] Make partial-startup and cleanup failure handling reliable, including digest drain.
+- [x] Repair and enforce frontend feature boundaries.
+- [x] Extract persistence and policy from research-brief and adjacent API routes.
+- [x] Separate subscription admission execution and report assembly from wiring concerns.
+- [x] Make provider capability contracts explicit and wrapper-tested.
+- [x] Simplify form policy and map composition where the review identifies coupling.
+
+Implementation evidence and residual legacy subscription boundaries are recorded
+in the review. Focused SQLite/PostgreSQL regressions, security review, static
+checks and the frontend build pass. Final full-suite/CI results belong to PR #35.
+No migration or production deployment is included.

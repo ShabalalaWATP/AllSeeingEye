@@ -10,8 +10,8 @@ import { secChoice, secPage, secReceipt } from '@/test/fixtures.secFilings';
 import type { InputDeclarations } from '@/lib/api/inputDeclarations';
 import type { ReportRequest } from '@/lib/api/reports';
 import type { SourceDate } from '@/lib/api/sourceProvenance';
-import './ResearchPage';
-import '../reports/ReportPage';
+import '@/features/research/ResearchPage';
+import '@/features/reports/ReportPage';
 
 const original = 'Company statement 1404-01-01';
 const sourceDate: SourceDate = {

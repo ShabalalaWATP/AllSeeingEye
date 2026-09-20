@@ -1,7 +1,8 @@
 /**
- * The seam between the globe page and the map library. Everything the page
- * needs goes through this interface so the library can be swapped in one folder.
+ * Base-map and renderer lifecycle shared by live and saved-report maps.
+ * Data overlays deliberately use deck.gl layers across engine implementations.
  */
+import type { Layer } from '@deck.gl/core';
 import type { BaseLayer } from './baseLayers';
 
 export type Projection = 'globe' | 'mercator';
@@ -51,8 +52,13 @@ export interface FitBoundsOptions {
   maxZoom?: number;
 }
 
-/** Data layers are opaque to the engine interface; the registry decides their shape. */
-export type DataLayer = object;
+/** The overlay renderer consumes deck.gl layers, including their loading lifecycle. */
+export type DataLayer = Layer;
+
+/** Capability used by selection controls that only move the camera. */
+export interface MapFocus {
+  flyTo(target: FlyToTarget): void;
+}
 
 export type MapRenderStatus = 'ready' | 'recovering' | 'failed';
 
@@ -65,7 +71,7 @@ export interface EngineOptions {
   authHeader?: () => string | null;
 }
 
-export interface MapEngine {
+export interface MapEngine extends MapFocus {
   mount(container: HTMLElement): void;
   setProjection(projection: Projection): void;
   setBaseLayer(layer: BaseLayer): void;
@@ -75,7 +81,6 @@ export interface MapEngine {
   onCursor(handler: CursorHandler): () => void;
   onDrag?(handler: SketchDragHandler): () => void;
   setSketchMode?(mode: SketchMode): void;
-  flyTo(target: FlyToTarget): void;
   /** Slowly turns the globe while enabled (the ops-room idle motion); off stops the camera. */
   spin(enabled: boolean): void;
   /** The camera's current zoom level, 0 when nothing is mounted. */

@@ -5,9 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.adapters.persistence.research_briefs import _decode
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
-from ase.api.routers.research_briefs import _invalid, _visible_row
+from ase.api.routers.research_briefs import _invalid
 from ase.api.schemas_report_jobs import (
     BriefJobCreateIn,
     ReportJobCreateIn,
@@ -74,7 +73,9 @@ async def create_job_from_brief(
 ) -> ReportJobOut:
     """Pin the exact immutable brief revision before report-job preparation."""
     access = await container.access_policy(session).context(user)
-    brief = _decode(await _visible_row(session, access, body.brief_id, body.revision))
+    brief = await container.research_briefs(session).get_authorised(
+        access, body.brief_id, body.revision
+    )
     access.require_same_scope(
         user.id, brief.identity.team_id, brief.identity.owner_id, brief.identity.team_id
     )

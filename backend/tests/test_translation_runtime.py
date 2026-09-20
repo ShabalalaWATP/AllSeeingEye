@@ -10,9 +10,9 @@ from fastapi import FastAPI
 
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.app_lifecycle import lifespan
 from ase.application.translate.queue import TranslationQueue
 from ase.domain.events import Credibility
-from ase.main import lifespan
 from feeds_helpers import NOW, make_event
 from helpers import FakeClock
 
@@ -153,5 +153,5 @@ async def test_lifespan_controls_translation_before_disposal(app: FastAPI, monke
     async with lifespan(app):
         assert mocks[-1].start.await_count == int(enabled)
         assert mocks[jobs.index("schedule_runner")].start.await_count == 1
-    mocks[-1].stop.assert_awaited_once()
+    assert mocks[-1].stop.await_count == int(enabled)
     mocks[jobs.index("schedule_runner")].stop.assert_awaited_once()

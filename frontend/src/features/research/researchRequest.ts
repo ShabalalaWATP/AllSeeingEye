@@ -9,7 +9,7 @@ import type { Report, ReportRequest, ReportTemplate } from '@/lib/api/reports';
 import type { Region } from '@/lib/regions';
 import { MAX_RESEARCH_HOURS, researchDateError, type ResearchDates } from '@/lib/researchPeriod';
 
-import type { FollowUpRequest } from './followUpScope';
+import type { FollowUpRequest } from '@/lib/followUpScope';
 import type { ProjectHistoryState } from './ProjectHistory';
 import { recordScopeError } from './recordScope';
 import type { useResearchPlan } from './useResearchPlan';

@@ -1,5 +1,6 @@
 """Owner-scoped persistence for explicitly saved Ask Eye transcripts."""
 
+import json
 from collections.abc import Sequence
 from datetime import datetime
 from typing import cast
@@ -11,7 +12,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.assistant_history_models import AssistantConversationRow
 from ase.adapters.persistence.models import UserRow
 from ase.application.assistant_history.service import encode_transcript, require_capacity
+from ase.application.ports.assistant_history import SavedConversation, SavedConversationSummary
 from ase.domain.errors import NotFound
+
+
+def _record(row: AssistantConversationRow) -> SavedConversation:
+    turns = json.loads(row.transcript)["turns"]
+    for turn in turns:
+        # Never restore transient continuation authority or private model details.
+        turn["answer"]["continuation_id"] = None
+        turn["answer"]["model"] = None
+    return SavedConversation(row.id, row.title, turns, row.created_at, row.updated_at)
 
 
 class SqlAssistantHistory:
@@ -35,8 +46,8 @@ class SqlAssistantHistory:
             or 0
         )
 
-    async def list(self, owner_id: UUID) -> list[AssistantConversationRow]:
-        return list(
+    async def list(self, owner_id: UUID) -> list[SavedConversationSummary]:
+        rows = list(
             await self.session.scalars(
                 select(AssistantConversationRow)
                 .where(AssistantConversationRow.owner_id == owner_id)
@@ -45,7 +56,18 @@ class SqlAssistantHistory:
             )
         )
 
-    async def get(self, owner_id: UUID, conversation_id: UUID) -> AssistantConversationRow | None:
+        return [
+            SavedConversationSummary(
+                row.id, row.title, row.turn_count, row.created_at, row.updated_at
+            )
+            for row in rows
+        ]
+
+    async def get(self, owner_id: UUID, conversation_id: UUID) -> SavedConversation | None:
+        row = await self._row(owner_id, conversation_id)
+        return _record(row) if row is not None else None
+
+    async def _row(self, owner_id: UUID, conversation_id: UUID) -> AssistantConversationRow | None:
         return cast(
             AssistantConversationRow | None,
             await self.session.scalar(
@@ -59,7 +81,7 @@ class SqlAssistantHistory:
         )
 
     async def remove(self, owner_id: UUID, conversation_id: UUID) -> bool:
-        row = await self.get(owner_id, conversation_id)
+        row = await self._row(owner_id, conversation_id)
         if row is None:
             return False
         await self.session.delete(row)
@@ -68,7 +90,7 @@ class SqlAssistantHistory:
 
     async def create(
         self, owner_id: UUID, title: str, turns: Sequence[dict[str, object]], now: datetime
-    ) -> AssistantConversationRow:
+    ) -> SavedConversation:
         transcript, size = encode_transcript(turns)
         await self.lock_owner(owner_id)
         require_capacity(await self.count(owner_id))
@@ -84,7 +106,7 @@ class SqlAssistantHistory:
         )
         self.session.add(row)
         await self.session.flush()
-        return row
+        return _record(row)
 
     async def update(
         self,
@@ -93,9 +115,9 @@ class SqlAssistantHistory:
         title: str,
         turns: Sequence[dict[str, object]],
         now: datetime,
-    ) -> AssistantConversationRow:
+    ) -> SavedConversation:
         transcript, size = encode_transcript(turns)
-        row = await self.get(owner_id, conversation_id)
+        row = await self._row(owner_id, conversation_id)
         if row is None:
             raise NotFound()
         row.title = title.strip()
@@ -104,4 +126,4 @@ class SqlAssistantHistory:
         row.turn_count = len(turns)
         row.updated_at = now
         await self.session.flush()
-        return row
+        return _record(row)

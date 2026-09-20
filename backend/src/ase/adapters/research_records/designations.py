@@ -10,6 +10,7 @@ from ase.adapters.research_records.designation_snapshot import (
 )
 from ase.adapters.research_records.records import MAX_RESULTS, receipt, record_event
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 
@@ -151,4 +152,10 @@ class DesignationProvider:
             CollectionStatus.COMPLETED if items else CollectionStatus.EMPTY,
             limitations,
             items,
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
         )

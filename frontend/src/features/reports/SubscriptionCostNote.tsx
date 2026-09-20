@@ -1,6 +1,6 @@
 /** Make the cost consequence of cadence and depth visible while the choice is being made. */
 import { describeRelativeCost, relativeCost, type Depth } from './subscriptionCost';
-import type { Cadence } from './ScheduleTiming';
+import type { Cadence } from './scheduleTimingPolicy';
 
 export function SubscriptionCostNote({
   cadence,

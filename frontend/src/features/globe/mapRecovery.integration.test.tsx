@@ -1,3 +1,4 @@
+import { ScatterplotLayer } from '@deck.gl/layers';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect, useRef } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -20,7 +21,7 @@ function Harness() {
   const engine = useGlobeEngine(container, { enabled: true, mode: 'map', baseLayer: 'hybrid' });
   const { setLayers } = engine;
   useEffect(() => {
-    setLayers([{ id: 'latest-scene' }]);
+    setLayers([new ScatterplotLayer({ id: 'latest-scene' })]);
   }, [setLayers]);
   return <MapCanvas containerRef={container} supported mode="map" engine={engine} />;
 }
@@ -47,7 +48,7 @@ it('shows graphics recovery status and restores camera and scene only after manu
     pitch: 0,
   });
   expect(MapboxOverlay.instances[1]!.setProps).toHaveBeenCalledWith({
-    layers: [{ id: 'latest-scene' }],
+    layers: [expect.objectContaining({ id: 'latest-scene' })],
   });
   expect(screen.queryByRole('status', { name: 'Map graphics status' })).not.toBeInTheDocument();
 });

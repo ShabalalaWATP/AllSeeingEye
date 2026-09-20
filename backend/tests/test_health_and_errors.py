@@ -11,9 +11,9 @@ from pydantic import SecretStr
 
 from ase import __version__
 from ase.adapters.persistence.session import create_engine, create_session_factory
+from ase.app_factory import create_app
 from ase.container import Container
 from ase.infrastructure.settings import Environment, Settings
-from ase.main import create_app
 
 
 async def test_health_reports_version(client: AsyncClient) -> None:

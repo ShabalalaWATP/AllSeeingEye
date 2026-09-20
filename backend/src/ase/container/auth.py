@@ -30,9 +30,12 @@ from ase.application.auth.set_password import SetPasswordUseCase
 from ase.application.auth.totp import TotpUseCase
 
 if TYPE_CHECKING:
+    from datetime import timedelta
+
     from ase.application.auditing import Auditor
     from ase.application.dto import RateLimits
     from ase.application.ports import (
+        AccessTokenIssuer,
         Clock,
         EmailSender,
         LinkBuilder,
@@ -52,13 +55,19 @@ class AuthWiring:
         limiter: RateLimiter
         limits: RateLimits
         generator: TokenGenerator
+        issuer: AccessTokenIssuer
+        refresh_ttl: timedelta
         links: LinkBuilder
         email_sender: EmailSender
         _dummy_hash: str
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def _auditor(self, repos: Repositories) -> Auditor: ...
-        def _sessions(self, repos: Repositories) -> SessionFactory: ...
+
+    def _sessions(self, repos: Repositories) -> SessionFactory:
+        return SessionFactory(
+            repos.refresh_tokens, self.issuer, self.generator, self.clock, self.refresh_ttl
+        )
 
     def mfa(self, session: AsyncSession) -> MfaUseCase:
         r = self.repositories(session)

@@ -40,9 +40,10 @@ Checks:    uvx pre-commit run --all-files ; python scripts/check_file_length.py
 
 ## Conventions (non-negotiable)
 
-- Layering: `domain` imports nothing from other layers; `application` imports `domain` only; `adapters`, `api` and `infrastructure` may import `application` and `domain`. Enforced by `import-linter` in the backend and by review in the frontend (features do not import each other; they share through `components`, `lib` and `stores`).
+- Layering: `domain` imports nothing from other layers; `application` imports `domain` only; `adapters`, `api` and `infrastructure` may import `application` and `domain`. Enforced by `import-linter` in the backend. API modules must not import persistence adapters except the named legacy subscription projections in `pyproject.toml`. Frontend ESLint resolves and rejects cross-feature imports; features share through `components`, `lib` and `stores`.
 - Ports are `typing.Protocol` classes under `ase/application/ports/`; adapters implement them. `ase.container` remains a package and the only composition root: `__init__.py` builds shared services and admin factories, `auth.py` holds authentication factories, `features.py` holds feature factories, `reporting.py` holds report factories, and `repositories.py` builds the session-scoped repository bundle. Mixin dependencies are declared under `TYPE_CHECKING`; keep this shape.
 - Routers and React components are thin. Business rules live in use cases (backend) and hooks or stores (frontend).
+- Import the reusable application factory from `ase.app_factory`; `ase.main:app` is the ASGI instance entry point. `ase.app_lifecycle` owns worker startup and cleanup, including partial-startup unwinding. Report stages are assembled in the container; subscription admission executes through application services and a transaction port.
 - File length: 350 lines target, 400 hard maximum (CI fails). Split by responsibility, never by line count.
 - Security: follow `docs/07_SECURITY_BY_DESIGN.md`. Never log or echo secrets. Never render HTML from data. Validate at boundaries. Authorisation is checked at object level in the application layer, not only at the route.
 - Tests: pytest and vitest. No live network in tests; use fixtures and MSW. Coverage gate 90 percent, higher on auth, grading and validation.

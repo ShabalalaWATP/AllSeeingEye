@@ -6,6 +6,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss_seeds import RssSeed
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
@@ -96,4 +97,13 @@ class RegionalFeedResearchProvider:
             query,
             LIMITATIONS,
             local_match=True,
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            query_language_aliases=self.query_language_aliases,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

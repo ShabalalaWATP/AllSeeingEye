@@ -4,6 +4,8 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
+from ase.application.ports.research_capabilities import AreaResearchProvider
+from ase.application.research.provider_capabilities import provider_capabilities
 from ase.application.research.registry_routing import (
     lookup_options,
     resolve_lookup,
@@ -13,8 +15,6 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchQuery
 from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLAN_TASKS
 from ase.domain.research_plan import (
-    UNKNOWN_SPATIAL_SCOPE,
-    UNKNOWN_TEMPORAL_SCOPE,
     QueryVariant,
     ResearchPlan,
     ResearchTask,
@@ -28,16 +28,13 @@ def spatial_capability(provider: ResearchProvider, query: ResearchQuery) -> tupl
     The optional supports_area(query) hook is independent of ordinary country or
     subject support. Legacy providers remain usable without an area, never with one.
     """
-    supports = getattr(provider, "supports_area", None)
     supported = False
-    if query.area is not None and callable(supports):
+    if query.area is not None and isinstance(provider, AreaResearchProvider):
         try:
-            supported = supports(query) is True
+            supported = provider.supports_area(query) is True
         except Exception:
             supported = False
-    explanation = getattr(provider, "spatial_scope", UNKNOWN_SPATIAL_SCOPE)
-    if not isinstance(explanation, str) or not explanation.strip() or len(explanation) > 1000:
-        explanation = UNKNOWN_SPATIAL_SCOPE
+    explanation = provider_capabilities(provider).spatial_scope
     return supported, explanation
 
 
@@ -74,16 +71,13 @@ def build_plan(
         raise InvalidRequest("Planned task source is unavailable for this research scope")
     tasks = []
     for provider in providers:
-        language = getattr(provider, "language", None)
-        language = language if isinstance(language, str) else None
-        aliases = getattr(provider, "query_language_aliases", ())
-        aliases = tuple(value.lower() for value in aliases if isinstance(value, str))
+        capabilities = provider_capabilities(provider)
+        language = capabilities.language
+        aliases = tuple(value.lower() for value in capabilities.query_language_aliases)
         variant = task_variant(query, language, aliases)
         routed = replace(query, terms=variant.terms) if variant is not None else query
         provenance = "operator_supplied_variant" if routed is not query else "original_terms"
-        temporal_scope = getattr(provider, "temporal_scope", UNKNOWN_TEMPORAL_SCOPE)
-        if not isinstance(temporal_scope, str) or not temporal_scope or len(temporal_scope) > 1000:
-            temporal_scope = UNKNOWN_TEMPORAL_SCOPE
+        temporal_scope = capabilities.temporal_scope
         spatial_supported, spatial_scope = spatial_capability(provider, routed)
         tasks.append(
             ResearchTask(
@@ -100,8 +94,8 @@ def build_plan(
                 spatial_supported=spatial_supported,
                 spatial_scope=spatial_scope,
                 task_id="source:" + provider.id,
-                planned_terms_supported=getattr(provider, "supports_planned_terms", False) is True,
-                registry_namespaces=getattr(provider, "registry_namespaces", ()),
+                planned_terms_supported=capabilities.supports_planned_terms,
+                registry_namespaces=capabilities.registry_namespaces,
                 registry_options=lookup_options(provider, query),
             )
         )

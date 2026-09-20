@@ -22,6 +22,7 @@ from ase.adapters.research_records.records import (
     text,
 )
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, Reliability
 from ase.domain.languages import matching_text
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
@@ -181,3 +182,10 @@ class ContractsFinderProvider:
                 )
             )
         return events
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
+        )

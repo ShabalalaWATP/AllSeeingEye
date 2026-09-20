@@ -10,6 +10,7 @@ from ase.adapters.feeds.usgs import SPEC, UsgsConnector
 from ase.adapters.research.feed import web_url
 from ase.adapters.research.hazard_area import HazardArea, collect, number, page_limit, supports
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Event, content_hash, freeze_attributes
 from ase.domain.observation import ObservationMetadata
 from ase.domain.research import ResearchBatch, ResearchQuery
@@ -152,4 +153,11 @@ class UsgsAreaResearchProvider:
             ),
             attributes=freeze_attributes({**event.attributes, "collection_capability": self.id}),
             content_hash=content_hash(event.content_hash, geometry.sha256, acquired.isoformat()),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            spatial_scope=self.spatial_scope,
+            temporal_scope=self.temporal_scope,
         )

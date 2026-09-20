@@ -38,6 +38,7 @@ from ase.adapters.feeds.youtube import (
 from ase.adapters.research.feed import search_terms
 from ase.adapters.research_records.records import receipt
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import (
     Category,
     Credibility,
@@ -222,4 +223,12 @@ class YouTubeSearchResearchProvider:
                 }
             ),
             content_hash=content_hash(video_id, title[:200]),
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            supports_planned_terms=self.supports_planned_terms,
+            temporal_scope=self.temporal_scope,
         )

@@ -12,7 +12,7 @@ export function useCameraSelection(
   cameras: ReturnType<typeof useCameras>,
   picking: boolean,
   close: () => void,
-  engine: GlobeEngineHandle,
+  engine: Pick<GlobeEngineHandle, 'flyTo' | 'onView' | 'getZoom' | 'getViewportBounds'>,
   mode: ViewMode,
 ) {
   const [view, setView] = useState<{ zoom: number; bounds: MapBounds | null }>({

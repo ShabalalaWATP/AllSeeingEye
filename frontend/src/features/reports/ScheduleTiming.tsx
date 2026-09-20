@@ -1,9 +1,7 @@
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { Schedule } from '@/lib/api/schedules';
 
-export type LookbackUnit = 'days' | 'hours' | 'default';
-export type Cadence =
-  'daily' | 'weekdays' | 'weekly' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+import type { Cadence, LookbackUnit } from './scheduleTimingPolicy';
 const MONTHS = [
   'January',
   'February',

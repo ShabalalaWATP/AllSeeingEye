@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import type { Layer } from '@deck.gl/core';
+import type { GlobeLayerGroups } from './useGlobeLayerGroups';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import type { JamCell } from '@/lib/api/aviation';
 import type { ViewMode } from '@/stores/globe';
@@ -10,7 +10,7 @@ import { buildJamLayer } from './layers/jamming';
 import { buildTerminatorLayer } from './layers/terminator';
 
 interface Scene {
-  engine: GlobeEngineHandle;
+  engine: Pick<GlobeEngineHandle, 'setLayers' | 'spin'>;
   events: readonly LiveEvent[];
   hidden: readonly Category[];
   selectedId: string | null;
@@ -20,17 +20,8 @@ interface Scene {
   onJam: (cell: JamCell) => void;
   jamCells: readonly JamCell[];
   jamSelection?: JamCell | null;
-  gridLayers: readonly Layer[];
-  cameraLayers: readonly Layer[];
-  figureLayers?: readonly Layer[];
-  infrastructureLayers?: readonly Layer[];
-  conflictRegionLayers?: readonly Layer[];
-  contextLayers?: readonly Layer[];
-  cyberCountryLayers?: readonly Layer[];
-  radarAttackLayers?: readonly Layer[];
-  networkCountryLayers?: readonly Layer[];
-  newsCountryLayers?: readonly Layer[];
-  measured: readonly Layer[];
+  /** Catalogue groups in draw order; events marks the event layer position. */
+  layerGroups: GlobeLayerGroups;
   supported: boolean;
   terminator: boolean;
   lite: boolean;
@@ -56,17 +47,7 @@ export function useGlobeScene({
   onJam,
   jamCells,
   jamSelection = null,
-  gridLayers,
-  cameraLayers,
-  figureLayers,
-  infrastructureLayers,
-  conflictRegionLayers,
-  contextLayers,
-  cyberCountryLayers,
-  radarAttackLayers,
-  networkCountryLayers,
-  newsCountryLayers,
-  measured,
+  layerGroups,
   supported,
   terminator,
   lite,
@@ -103,37 +84,9 @@ export function useGlobeScene({
       engine.setLayers([
         ...night,
         ...(jam === null ? [] : [jam]),
-        ...gridLayers,
-        ...(infrastructureLayers ?? []),
-        ...eventLayers,
-        ...(conflictRegionLayers ?? []),
-        ...cameraLayers,
-        ...(figureLayers ?? []),
-        ...(contextLayers ?? []),
-        ...(cyberCountryLayers ?? []),
-        ...(radarAttackLayers ?? []),
-        ...(networkCountryLayers ?? []),
-        ...(newsCountryLayers ?? []),
-        ...measured,
+        ...layerGroups.flatMap((group) => (group === 'events' ? eventLayers : group)),
       ]);
-  }, [
-    engine,
-    eventLayers,
-    jam,
-    night,
-    supported,
-    measured,
-    gridLayers,
-    cameraLayers,
-    figureLayers,
-    infrastructureLayers,
-    conflictRegionLayers,
-    contextLayers,
-    cyberCountryLayers,
-    radarAttackLayers,
-    networkCountryLayers,
-    newsCountryLayers,
-  ]);
+  }, [engine, eventLayers, jam, night, supported, layerGroups]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
   useEffect(() => {

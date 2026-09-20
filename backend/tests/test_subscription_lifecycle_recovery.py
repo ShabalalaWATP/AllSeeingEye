@@ -10,8 +10,9 @@ from sqlalchemy import func, select
 from ase.adapters.persistence.base import Base
 from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
+from ase.app_factory import create_app
+from ase.app_lifecycle import lifespan
 from ase.application.schedules.manage import ScheduleInput
-from ase.main import create_app, lifespan
 from helpers import create_user
 from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE
@@ -32,9 +33,10 @@ async def test_feed_disabled_restarts_admit_once_and_stop_all_loops(
     async def idle(*_args) -> None:
         await asyncio.Event().wait()
 
-    monkeypatch.setattr("ase.main.expire_original_assets", idle)
+    monkeypatch.setattr("ase.app_lifecycle.expire_original_assets", idle)
     monkeypatch.setattr(
-        "ase.main.build_annotation_monitor_worker", lambda _container: SimpleNamespace(run=idle)
+        "ase.app_lifecycle.build_annotation_monitor_worker",
+        lambda _container: SimpleNamespace(run=idle),
     )
 
     first_app = create_app(local_settings, clock=clock)

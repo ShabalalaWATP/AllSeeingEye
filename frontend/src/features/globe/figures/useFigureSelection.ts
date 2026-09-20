@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import type { PublicFigure } from '@/lib/api/figures';
 import type { ViewMode } from '@/stores/globe';
 
-import type { GlobeEngineHandle } from '../useGlobeEngine';
+import type { MapFocus } from '@/lib/map/MapEngine';
 import { buildFigureLayers } from './figureLayers';
 import type { FigureState } from './useFigures';
 
@@ -12,7 +12,7 @@ export function useFigureSelection(
   figures: FigureState,
   picking: boolean,
   close: () => void,
-  engine: GlobeEngineHandle,
+  engine: MapFocus,
   mode: ViewMode,
 ) {
   const selectFigure = figures.select;

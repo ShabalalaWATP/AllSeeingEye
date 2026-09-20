@@ -3,6 +3,7 @@
 from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
+from ase.application.ports.research_capabilities import RegistryResearchProvider
 from ase.domain.registry_identifiers import RegistryLookup, registry_subject
 from ase.domain.research import ResearchFocus, ResearchQuery
 from ase.domain.research_tasks import PlannedQueryTask
@@ -25,10 +26,10 @@ def resolve_lookup(query: ResearchQuery, task: PlannedQueryTask) -> RegistryLook
 def supports_lookup(
     provider: ResearchProvider, query: ResearchQuery, lookup: RegistryLookup
 ) -> bool:
-    method = getattr(provider, "registry_subject", None)
     return (
-        callable(method)
-        and method(lookup.namespace, lookup.original_value) == lookup.subject
+        isinstance(provider, RegistryResearchProvider)
+        and callable(provider.registry_subject)
+        and provider.registry_subject(lookup.namespace, lookup.original_value) == lookup.subject
         and provider.supports(replace(query, subject=lookup.subject))
     )
 

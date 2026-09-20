@@ -15,7 +15,7 @@ import { readResearchDraftDates } from '@/lib/researchNavigation';
 
 import { SavedAreaResearch } from './SavedAreaResearch';
 import { ResearchForm } from './ResearchForm';
-import { followUpAvailability } from './followUpScope';
+import { followUpAvailability } from '@/lib/followUpScope';
 
 function versionFromQuery(value: string | null): number | undefined {
   if (value === null || !/^[1-9]\d*$/.test(value)) return undefined;

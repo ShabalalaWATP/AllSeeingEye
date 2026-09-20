@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
-from ase.adapters.feeds.adsb_viewport import AircraftInterestQueue
 from ase.adapters.feeds.adsb_watch import load_watch_areas
 from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
 from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
@@ -29,8 +28,6 @@ from ase.adapters.feeds.mastodon_watch import watch_host_intervals
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.satellite_http import SatelliteHttpClient
 from ase.adapters.feeds.youtube_channels import channel_host_intervals
-from ase.adapters.geo.camera_http import CameraHttpClient
-from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
@@ -44,11 +41,6 @@ from ase.adapters.persistence.session import (
 )
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
-from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
-from ase.adapters.routing.groundwave import NtiaGroundwaveSolver
-from ase.adapters.routing.photon import PhotonPlaceSearchGateway
-from ase.adapters.routing.terrarium import TERRAIN_TILE_BYTES, TerrariumGateway
-from ase.adapters.routing.valhalla import ValhallaRoutingGateway
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
@@ -56,20 +48,13 @@ from ase.adapters.store.memory import InMemoryEventStore
 from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.auditing import Auditor
-from ase.application.auth.sessions import SessionFactory
-from ase.application.cameras import CameraCatalogueService
 from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.language import LanguageStage
-from ase.application.feeds.map_interests import MapCollectionInterests
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
-from ase.application.footprints import FootprintSearchUseCase
-from ase.application.groundwave import GroundwaveStudy
-from ase.application.navigation import RoutePlanner
-from ase.application.place_search import PlaceSearch
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.archive import Archiver
 from ase.application.ports.feeds import FeedConnector
@@ -78,7 +63,6 @@ from ase.application.ports.language import LanguageDetector
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier
-from ase.application.terrain import TerrainSampler
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
@@ -92,6 +76,8 @@ from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
+from ase.container.map_services import MapWiring
+from ase.container.private_records import PrivateRecordWiring
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
 from ase.container.repositories import Repositories as Repositories
@@ -112,6 +98,8 @@ log = structlog.get_logger(__name__)
 
 
 class Container(
+    MapWiring,
+    PrivateRecordWiring,
     FeatureWiring,
     ResearchInputWiring,
     SecFilingWiring,
@@ -350,39 +338,6 @@ class Container(
         self.conflict_screening = build_conflict_screening(self)
         self.social_monitor = self.build_social_monitor()
 
-    def _initialise_map_catalogues(self) -> None:
-        self.groundwave_study = GroundwaveStudy(NtiaGroundwaveSolver(), self.limiter)
-        self.aircraft_interests = AircraftInterestQueue(self.clock)
-        self.map_interests = MapCollectionInterests(self.aircraft_interests, self.limiter)
-        self.routing_http = FeedHttpClient(self.http.user_agent, max_bytes=2 * 1024 * 1024)
-        self.route_planner = RoutePlanner(ValhallaRoutingGateway(self.routing_http), self.limiter)
-        self.place_search = PlaceSearch(PhotonPlaceSearchGateway(self.routing_http), self.limiter)
-        self.terrain_http = FeedHttpClient(
-            self.http.user_agent, max_bytes=TERRAIN_TILE_BYTES, timeout_seconds=10
-        )
-        self.terrain_gateway = TerrariumGateway(self.terrain_http)
-        self.terrain_sampler = TerrainSampler(self.terrain_gateway, self.limiter)
-        self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=16 * 1024 * 1024)
-        self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
-        self.cameras = CameraCatalogueService(
-            build_camera_sources(
-                self.camera_http,
-                self.marine_http,
-                wsdot_access_code=(
-                    self.settings.wsdot_access_code.get_secret_value()
-                    if self.settings.wsdot_access_code
-                    else None
-                ),
-            ),
-            self.clock,
-        )
-        self.footprints = FootprintSearchUseCase(
-            CopernicusFootprintProvider(self.http, self.clock),
-            self.limiter,
-            self.clock,
-            admission=self.source_admission,
-        )
-
     async def dispose(self) -> None:
         await dispose_resources(self)
 
@@ -391,8 +346,3 @@ class Container(
 
     def _auditor(self, repos: Repositories) -> Auditor:
         return Auditor(repos.audit, self.clock)
-
-    def _sessions(self, repos: Repositories) -> SessionFactory:
-        return SessionFactory(
-            repos.refresh_tokens, self.issuer, self.generator, self.clock, self.refresh_ttl
-        )

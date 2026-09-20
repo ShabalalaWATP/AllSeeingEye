@@ -18,6 +18,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.http_contracts import FeedFetchError, NotModified
 from ase.adapters.research_records.records import receipt, record_event, text
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, GeoConfidence, Reliability
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.observation import ObservationMetadata
@@ -237,4 +238,10 @@ class IodaOutageResearchProvider:
             )
         return sorted(
             items, key=lambda item: item.observation.acquired_at if item.observation else now
+        )
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            temporal_scope=self.temporal_scope,
         )

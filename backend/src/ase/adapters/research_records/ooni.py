@@ -15,6 +15,7 @@ from urllib.parse import urlencode
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.research_records.records import receipt, record_event
 from ase.application.ports import Clock
+from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Category, Event, GeoConfidence, Reliability
 from ase.domain.evidence_time import publication_order
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
@@ -204,3 +205,10 @@ class OoniAggregateProvider:
                 )
             )
         return sorted(items, key=publication_order)
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            language=self.language,
+            temporal_scope=self.temporal_scope,
+        )

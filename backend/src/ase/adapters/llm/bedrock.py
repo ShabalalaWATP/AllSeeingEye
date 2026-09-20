@@ -13,9 +13,10 @@ from urllib.parse import quote
 import httpx
 
 from ase.adapters.llm.bedrock_schema import project_schema
+from ase.adapters.llm.exhaustion import budget_exhausted
 from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
 from ase.domain.bedrock import normalise_bedrock_base_url
-from ase.domain.llm import MAX_API_KEY_LENGTH, LlmRequest, LlmResult
+from ase.domain.llm import MAX_API_KEY_LENGTH, MAX_MODEL_ID_LENGTH, LlmRequest, LlmResult
 
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 
@@ -98,7 +99,13 @@ def parse_response(data: Any, model: str, latency_ms: float) -> LlmResult:
         raise LlmGatewayError("Bedrock returned an invalid response.")
     stop = data.get("stopReason")
     if stop == "max_tokens":
-        raise LlmGatewayError("Bedrock exhausted the completion token budget before finishing.")
+        raise budget_exhausted(
+            model,
+            data.get("usage"),
+            "inputTokens",
+            "outputTokens",
+            model_limit=MAX_MODEL_ID_LENGTH,
+        )
     if stop != "end_turn":
         raise LlmGatewayError("Bedrock did not return a completed, unblocked response.")
     output = data.get("output")

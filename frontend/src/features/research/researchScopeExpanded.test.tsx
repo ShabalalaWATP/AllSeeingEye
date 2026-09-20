@@ -7,7 +7,7 @@ import type { ResearchPlanInput } from '@/lib/api/researchPlan';
 import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 import { researchDateError } from './ResearchTimeScope';
 
 function captureRequest() {

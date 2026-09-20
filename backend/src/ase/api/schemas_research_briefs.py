@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
-from ase.adapters.persistence.research_brief_models import ResearchBriefRevisionRow
+from ase.application.ports.brief_management import BriefSummary
 from ase.application.research.brief_codec import brief_from_dict, brief_to_dict
 from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.research_area import (
@@ -151,9 +151,9 @@ class ResearchBriefSummaryOut(BaseModel):
     revised_at: datetime
 
     @classmethod
-    def from_row(cls, row: ResearchBriefRevisionRow) -> ResearchBriefSummaryOut:
+    def from_summary(cls, row: BriefSummary) -> ResearchBriefSummaryOut:
         return cls(
-            id=row.brief_id,
+            id=row.id,
             revision=row.revision,
             owner_id=row.owner_id,
             team_id=row.team_id,

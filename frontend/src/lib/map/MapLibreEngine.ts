@@ -248,8 +248,8 @@ export class MapLibreEngine implements MapEngine {
 
   setLayers(layers: readonly DataLayer[]): void {
     this.revision += 1;
-    this.layers = layers as readonly Layer[];
-    this.overlays?.setLayers(layers as readonly Layer[]);
+    this.layers = layers;
+    this.overlays?.setLayers(layers);
   }
 
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void {

@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth';
 import { plainUser, report, tokenFor } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
-import { followUpRequest } from './followUpScope';
+import { followUpRequest } from '@/lib/followUpScope';
 
 function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
   return {
