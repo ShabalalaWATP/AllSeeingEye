@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import delete, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import delete, select, update
+from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.ai_usage_models import AiUsageReservationRow
+from ase.adapters.persistence.llm_profile_lock import lock_profile_reference
 from ase.adapters.persistence.models import LlmProfileRow, LlmUsageRow
 from ase.domain.errors import Conflict, NotFound
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage, ReasoningEffort
@@ -101,6 +103,29 @@ class SqlLlmProfileRepository:
             raise
 
     async def delete(self, profile_id: UUID) -> None:
+        # Serialise with admission's key-share lock before detaching history. Model
+        # identifiers and allowance charges survive removal of saved credentials.
+        await lock_profile_reference(self._session, profile_id, for_delete=True)
+        try:
+            # Settlement can hold several calls' rows in one transaction. Do not
+            # wait with partial ledger locks and create a lock-order cycle.
+            await self._session.execute(
+                select(AiUsageReservationRow.id)
+                .where(AiUsageReservationRow.profile_id == profile_id)
+                .order_by(AiUsageReservationRow.id)
+                .with_for_update(nowait=True)
+            )
+        except DBAPIError as exc:
+            if getattr(exc.orig, "sqlstate", None) == "55P03":
+                raise Conflict(
+                    "Usage for this model is being updated. Try removing it again."
+                ) from None
+            raise
+        await self._session.execute(
+            update(AiUsageReservationRow)
+            .where(AiUsageReservationRow.profile_id == profile_id)
+            .values(profile_id=None)
+        )
         await self._session.execute(delete(LlmProfileRow).where(LlmProfileRow.id == profile_id))
         await self._session.flush()
 

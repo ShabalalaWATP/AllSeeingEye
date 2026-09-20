@@ -1141,3 +1141,15 @@ release follow-ups are recorded in the implementation checklist.
 - [ ] Complete final combined validation and review the repair pull request.
 - [ ] Merge and verify an authorised production release, including the separate
   model-removal and satellite-supplement fixes.
+
+### Unused AI connection removal, 20 September 2026
+
+- [x] Reproduce deletion failure with enforced foreign keys and metered model tests.
+- [x] Detach the optional profile reference while preserving usage and allowances.
+- [x] Coordinate removal with allowance admission without holding locks across model calls.
+- [x] Preserve active-assignment, administrator and session protections.
+- [x] Document removal of tested and untested unused connections.
+- [x] Complete SQLite and PostgreSQL concurrency regressions and final review:
+  final removal suites passed 10 SQLite and 11 PostgreSQL tests; all 12 frontend
+  removal/recovery tests passed. Ruff, mypy and import contracts passed.
+- [ ] Release the fix through reviewed CI and verify removal in the deployed app.
