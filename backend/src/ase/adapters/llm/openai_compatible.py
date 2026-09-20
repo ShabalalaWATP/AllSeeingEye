@@ -17,6 +17,7 @@ from typing import Any
 
 import httpx
 
+from ase.adapters.llm.exhaustion import budget_exhausted
 from ase.adapters.llm.model_discovery import discover_models, model_id
 from ase.adapters.llm.openai_responses import (
     RESPONSES_URL,
@@ -130,9 +131,11 @@ def parse_completion(data: Any, fallback_model: str, latency_ms: float) -> LlmRe
     if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
         raise LlmGatewayError("The model endpoint returned no choices.")
     if choices[0].get("finish_reason") == "length":
-        raise LlmGatewayError(
-            "The model exhausted its completion token budget before finishing. "
-            "Increase the token budget or reduce reasoning effort."
+        raise budget_exhausted(
+            data.get("model") or fallback_model,
+            data.get("usage"),
+            "prompt_tokens",
+            "completion_tokens",
         )
     message = choices[0].get("message")
     content = message.get("content") if isinstance(message, dict) else None
