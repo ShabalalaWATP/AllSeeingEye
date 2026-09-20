@@ -202,7 +202,8 @@ jobs:
   semgrep:
     permissions:
       contents: read
-      security-events: write
+    outputs:
+      sarif: ${{ steps.sarif.outcome }}
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep@sha256:34ab619bf1391a24bfda3f05debd0d8a6ce3093c2d5f9d39cfc00f83c1397823
@@ -210,9 +211,30 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       # The application requires Python >=3.12; Python 3.7 compatibility is inapplicable.
       - run: semgrep scan --config p/default --config p/security-audit --exclude-rule python.lang.compatibility.python37.python37-compatibility-importlib2 --no-rewrite-rule-ids --error --sarif --output semgrep.sarif backend/src frontend/src
-      - name: Publish Semgrep code scanning results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: sarif
         if: ${{ !cancelled() && hashFiles('semgrep.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@311b4ee155dcdab395044f00946f664bd51ff173 # v4
+        with:
+          name: semgrep-sarif
+          path: semgrep.sarif
+          if-no-files-found: error
+
+  # Publishing runs outside the Semgrep container. Inside it the checkout has no usable
+  # git context, so upload-sarif cannot tell which commit it is describing and code
+  # scanning waits forever for a report it never associates, blocking the merge.
+  semgrep-publish:
+    needs: semgrep
+    if: ${{ !cancelled() && needs.semgrep.outputs.sarif == 'success' }}
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: semgrep-sarif
+      - uses: github/codeql-action/upload-sarif@311b4ee155dcdab395044f00946f664bd51ff173 # v4
         with:
           sarif_file: semgrep.sarif
           category: semgrep
