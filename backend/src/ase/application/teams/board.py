@@ -48,8 +48,12 @@ class TeamBoardService:
         self._auditor = auditor
         self._uow = uow
 
-    async def _actor(self, actor: User, team_id: UUID, *, write: bool) -> BoardActor:
-        return await board_actor(self._users, self._teams, actor, team_id, write=write)
+    async def _actor(
+        self, actor: User, team_id: UUID, *, write: bool, mutation: bool = False
+    ) -> BoardActor:
+        return await board_actor(
+            self._users, self._teams, actor, team_id, write=write, mutation=mutation
+        )
 
     async def unread_for(self, access: BoardActor) -> int:
         """Unread posts for the caller's current membership; a stale cursor counts as none."""
@@ -69,7 +73,7 @@ class TeamBoardService:
 
     async def mark_read(self, actor: User, team_id: UUID, last_seen_post_id: UUID) -> int:
         """Advance the caller's cursor to a post they have loaded, then return unread."""
-        access = await self._actor(actor, team_id, write=False)
+        access = await self._actor(actor, team_id, write=False, mutation=True)
         post = await self._board.get(last_seen_post_id)
         if post is None or post.team_id != team_id:
             raise NotFound()
@@ -135,10 +139,10 @@ class TeamBoardService:
         expected_revision: int,
         context: RequestContext,
     ) -> TeamBoardPost:
+        access = await self._actor(actor, team_id, write=True)
         post = await self._board.get(post_id)
         if post is None or post.team_id != team_id:
             raise NotFound()
-        access = await self._actor(actor, team_id, write=True)
         # Only the author may change the words attributed to them. Moderators can
         # pin or remove a post, but never rewrite it under someone else's name.
         if post.author_id != access.user.id:

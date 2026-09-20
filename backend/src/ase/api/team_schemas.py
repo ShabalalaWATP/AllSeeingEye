@@ -24,6 +24,7 @@ class TeamUpdateIn(BaseModel):
     name: TeamName | None = None
     is_active: bool | None = None
     description: TeamDescription | None = None
+    reactivation_manager_id: UUID | None = None
 
 
 class MemberIn(BaseModel):
