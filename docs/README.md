@@ -20,6 +20,7 @@ evidence into one workspace. Start with the guide that matches what you need.
 - [AI connections](AI_CONNECTIONS_OPERATIONS.md) and [AI cost controls](AI_COST_CONTROLS.md).
 - [Sources and connections](SOURCES_AND_CONNECTIONS.md), [source provenance](SOURCE_PROVENANCE_OPERATIONS.md) and [catalogue browsing](SOURCE_CATALOGUE_BROWSING.md).
 - [Account security and MFA](MFA_OPERATIONS.md) and [administration](ADMINISTRATION.md).
+- [Account email setup](EMAIL_SETUP.md): provider choice, SMTP settings and delivery checks.
 - [Self-hosting](DEPLOYMENT.md), [automatic releases](AUTOMATIC_DEPLOYMENT.md) and [backup and restore](BACKUP_RESTORE.md).
 
 ## Go deeper

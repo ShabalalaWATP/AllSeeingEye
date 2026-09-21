@@ -99,6 +99,10 @@ class MessageOut(BaseModel):
     message: str
 
 
+class ForgotPasswordOut(MessageOut):
+    email_available: bool
+
+
 class AccountRequestOut(BaseModel):
     id: UUID
     email: str

@@ -252,6 +252,15 @@ docker compose stop
 
 SMTP is optional if you use an authenticator. To enable email MFA and account emails, configure `ASE_SMTP_HOST` and `ASE_SMTP_FROM_EMAIL` together, then the port, TLS mode and credentials required by your mail provider. Email MFA requires working delivery; the app does not display email codes as a fallback.
 
+See [Set up account email](EMAIL_SETUP.md) for a recommended provider, exact SMTP
+settings, DNS verification, restart commands and a delivery check.
+
+Without SMTP, self-service password recovery explains that email is unavailable.
+An administrator can issue a password reset link from **Administration > Users**
+and share it privately after verifying the requester's identity. Once SMTP is
+configured, verify delivery using a test account. Configuration alone does not
+prove that messages reach inboxes.
+
 ## Optional capabilities
 
 Source-specific keys and permissions are listed in [the sources guide](02_DATA_SOURCES.md). Do not enable every optional source merely to make the dashboard green. Some require an account, approved use or a licence acknowledgement.

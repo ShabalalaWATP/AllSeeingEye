@@ -15,6 +15,7 @@ from ase.api.schemas_model_routing import ModelRoutingOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_documents import ReportPublicationOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
+from ase.api.schemas_report_listing import ReportsOut, ReportSummaryOut
 from ase.api.schemas_research import ResearchReceiptOut
 from ase.api.schemas_research_area import ResearchAreaIn
 from ase.api.schemas_research_context import ResearchContextOut
@@ -47,6 +48,8 @@ from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.research_scope import MAX_RESEARCH_HOURS, validate_research_interval
 from ase.domain.source_review_records import SourceReviewSnapshot
+
+__all__ = ["ReportSummaryOut", "ReportsOut"]
 
 
 class ReportCreateIn(BaseModel):
@@ -212,40 +215,6 @@ class TemplatesOut(BaseModel):
     @classmethod
     def all(cls) -> Self:
         return cls(items=[TemplateOut.from_template(t) for t in TEMPLATES.values()])
-
-
-class ReportSummaryOut(BaseModel):
-    id: UUID
-    template: str
-    title: str
-    scope: dict[str, Any]
-    period_from: datetime
-    period_to: datetime
-    status: ReportStatus
-    created_by: UUID
-    created_at: datetime
-    latest_version: int
-    team_id: UUID | None
-
-    @classmethod
-    def from_record(cls, record: ReportRecord) -> Self:
-        return cls(
-            id=record.id,
-            template=record.template,
-            title=record.title,
-            scope=dict(record.scope),
-            period_from=record.period_from,
-            period_to=record.period_to,
-            status=record.status,
-            created_by=record.created_by,
-            created_at=record.created_at,
-            latest_version=record.latest_version,
-            team_id=record.team_id,
-        )
-
-
-class ReportsOut(BaseModel):
-    items: list[ReportSummaryOut]
 
 
 class ReportVersionOut(BaseModel):

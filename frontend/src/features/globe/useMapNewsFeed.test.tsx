@@ -11,7 +11,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
-const record = liveEvent({ category: 'news' });
+const record = liveEvent({ category: 'news', country_iso: 'GB' });
 
 it('loads a bounded geographic snapshot only while enabled and authenticated', async () => {
   applySession('user');

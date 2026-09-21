@@ -84,6 +84,7 @@ export function useDrawingWorkspace(drawing: MapDrawing, flat: boolean) {
       setEditingId(null);
     },
     pendingEdits,
+    JSON.stringify([drawing.shape, drawing.anchors, drawing.displayedAnchors, drawing.picking]),
   );
   useEffect(() => {
     const clear = () => {

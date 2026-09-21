@@ -2,6 +2,7 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import { BedrockRegion } from './BedrockRegion';
 
 export function LlmProviderFields({
+  embeddingsOnly = false,
   provider,
   setProvider,
   name,
@@ -16,6 +17,7 @@ export function LlmProviderFields({
   keyHint,
   discover,
 }: {
+  embeddingsOnly?: boolean;
   provider: string;
   setProvider: (value: string) => void;
   name: string;
@@ -39,7 +41,7 @@ export function LlmProviderFields({
           onChange={(event) => setProvider(event.target.value)}
           options={[
             { value: 'openai', label: 'OpenAI' },
-            { value: 'bedrock', label: 'Amazon Bedrock' },
+            ...(!embeddingsOnly ? [{ value: 'bedrock', label: 'Amazon Bedrock' }] : []),
             { value: 'custom', label: 'Custom OpenAI-compatible' },
           ]}
         />

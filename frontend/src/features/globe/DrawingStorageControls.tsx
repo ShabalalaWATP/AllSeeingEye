@@ -1,10 +1,15 @@
 import type { DrawingWorkspace } from './useDrawingWorkspace';
+import { useEffect, useRef } from 'react';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import { useWorkspaces, useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 
 export function DrawingStorageControls({ storage }: { storage: DrawingWorkspace['storage'] }) {
   const workspaces = useWorkspaces();
   const scope = useWorkspaceSelection(workspaces);
+  const decision = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (storage.pendingLoad) decision.current?.focus();
+  }, [storage.pendingLoad]);
   return (
     <section aria-label="Saved drawing collections" className="map-tool-section">
       <label className="map-tool-help">
@@ -64,6 +69,51 @@ export function DrawingStorageControls({ storage }: { storage: DrawingWorkspace[
           Add the sketch to the collection or apply its edits before saving. Clearing the temporary
           sketch discards those edits.
         </p>
+      )}
+      {storage.pendingLoad && (
+        <section
+          ref={decision}
+          tabIndex={-1}
+          aria-label="Unsaved drawing changes"
+          className="map-tool-section"
+        >
+          <p role="alert">
+            Opening another collection will replace your unsaved drawings and sketch.
+          </p>
+          <div className="map-tool-actions">
+            <button
+              type="button"
+              className="map-tool-primary"
+              disabled={
+                storage.busy || storage.pendingEdits || !storage.title.trim() || !scope.ready
+              }
+              onClick={() => void storage.confirmLoad('save', scope.teamId || undefined)}
+            >
+              Save and open
+            </button>
+            <button
+              type="button"
+              className="map-tool-secondary"
+              disabled={storage.busy}
+              onClick={() => void storage.confirmLoad('discard')}
+            >
+              Discard and open
+            </button>
+            <button
+              type="button"
+              className="map-tool-text-button"
+              disabled={storage.busy}
+              onClick={storage.cancelLoad}
+            >
+              Cancel opening
+            </button>
+          </div>
+          {storage.pendingEdits && (
+            <p className="map-tool-help">
+              Finish and add the sketch, or apply its edits, to enable Save and open.
+            </p>
+          )}
+        </section>
       )}
       {storage.documents.map((item) => (
         <button

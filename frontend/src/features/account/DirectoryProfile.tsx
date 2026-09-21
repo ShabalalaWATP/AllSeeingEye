@@ -1,19 +1,11 @@
-import { useEffect, useState } from 'react';
-
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
-import { asApiError, describeError } from '@/lib/api/errors';
-import {
-  DIRECTORY_FIELDS,
-  getDirectoryProfile,
-  updateDirectoryProfile,
-  type DirectoryField,
-  type DirectoryProfile as DirectoryProfileData,
-} from '@/lib/api/directoryProfile';
+import { DIRECTORY_FIELDS, type DirectoryField } from '@/lib/api/directoryProfile';
 import { useAuthStore } from '@/stores/auth';
 
 import { DirectoryAvatarEditor } from './DirectoryAvatarEditor';
+import { useDirectoryProfileEditor } from './useDirectoryProfileEditor';
 
 const timezones = () => ['UTC', ...Intl.supportedValuesOf('timeZone')];
 
@@ -27,46 +19,11 @@ const fieldLabels: Record<DirectoryField, string> = {
   timezone: 'Timezone',
 };
 
-function splitList(value: string): string[] {
-  return [
-    ...new Set(
-      value
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean),
-    ),
-  ];
-}
-
 export function DirectoryProfile() {
-  const [profile, setProfile] = useState<DirectoryProfileData | null>(null);
-  const [draft, setDraft] = useState<DirectoryProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const editor = useDirectoryProfileEditor();
+  const { profile, draft, loading, busy, error, saved, dirty, load, edit, submit, avatarChanged } =
+    editor;
   const displayName = useAuthStore((state) => state.user?.display_name ?? 'You');
-
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const value = await getDirectoryProfile();
-      setProfile(value);
-      setDraft(value);
-    } catch (caught) {
-      setError(describeError(asApiError(caught)));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    // The request updates this component when it resolves; it is intentionally
-    // started after the first render so loading feedback is visible.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, []);
 
   if (loading && draft === null) return <LoadingNote label="Loading directory profile" />;
   if (draft === null || profile === null) {
@@ -80,12 +37,6 @@ export function DirectoryProfile() {
   const currentDraft = draft;
   const currentProfile = profile;
 
-  const edit = <K extends keyof DirectoryProfileData>(key: K, value: DirectoryProfileData[K]) => {
-    setDraft((current) => (current ? { ...current, [key]: value } : current));
-    setSaved(false);
-    setError(null);
-  };
-  const dirty = JSON.stringify(currentDraft) !== JSON.stringify(currentProfile);
   const toggleField = (field: DirectoryField, shown: boolean) => {
     const selected = new Set(currentDraft.visible_fields);
     if (shown) selected.add(field);
@@ -95,51 +46,6 @@ export function DirectoryProfile() {
       DIRECTORY_FIELDS.filter((item) => selected.has(item)),
     );
   };
-  // Avatar changes save immediately and bump the revision; keep unsaved text edits.
-  const avatarChanged = (updated: DirectoryProfileData) => {
-    const sync = { avatar_url: updated.avatar_url, revision: updated.revision };
-    setProfile((current) =>
-      current ? { ...current, ...sync, updated_at: updated.updated_at } : current,
-    );
-    setDraft((current) =>
-      current ? { ...current, ...sync, updated_at: updated.updated_at } : current,
-    );
-    setSaved(false);
-  };
-
-  async function submit() {
-    if (busy || !dirty) return;
-    setBusy(true);
-    setError(null);
-    setSaved(false);
-    try {
-      const optionalText = (value: string | null): string | null => {
-        const cleaned = value?.trim() ?? '';
-        return cleaned === '' ? null : cleaned;
-      };
-      const updated = await updateDirectoryProfile({
-        username: optionalText(currentDraft.username)?.toLowerCase() ?? null,
-        job_title: optionalText(currentDraft.job_title),
-        organisation: optionalText(currentDraft.organisation),
-        biography: optionalText(currentDraft.biography),
-        country: optionalText(currentDraft.country)?.toUpperCase() ?? null,
-        languages: splitList(currentDraft.languages.join(', ')),
-        expertise: splitList(currentDraft.expertise.join(', ')),
-        timezone: currentDraft.timezone ?? null,
-        is_discoverable: currentDraft.is_discoverable,
-        visible_fields: currentDraft.visible_fields,
-        expected_revision: currentProfile.revision,
-      });
-      setProfile(updated);
-      setDraft(updated);
-      setSaved(true);
-    } catch (caught) {
-      setError(describeError(asApiError(caught)));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <form
       aria-label="Directory profile"
@@ -160,10 +66,13 @@ export function DirectoryProfile() {
       <DirectoryAvatarEditor
         profile={currentProfile}
         name={displayName}
-        disabled={busy}
+        disabled={busy || editor.latest !== null || editor.needsReload}
         onChange={avatarChanged}
       />
-      <fieldset disabled={busy} className="flex flex-col gap-5">
+      <fieldset
+        disabled={busy || editor.latest !== null || editor.needsReload}
+        className="flex flex-col gap-5"
+      >
         <TextField
           label="Username"
           hint="A unique handle, 3 to 32 lowercase letters, numbers or underscores."
@@ -207,14 +116,14 @@ export function DirectoryProfile() {
         <TextField
           label="Languages"
           hint="Comma-separated ISO language codes, up to eight."
-          value={currentDraft.languages.join(', ')}
-          onChange={(event) => edit('languages', splitList(event.target.value))}
+          value={currentDraft.languages}
+          onChange={(event) => edit('languages', event.target.value)}
         />
         <TextField
           label="Expertise"
           hint="Comma-separated topics, up to ten."
-          value={currentDraft.expertise.join(', ')}
-          onChange={(event) => edit('expertise', splitList(event.target.value))}
+          value={currentDraft.expertise}
+          onChange={(event) => edit('expertise', event.target.value)}
         />
         <div className="flex items-start gap-3 text-sm">
           <input
@@ -255,12 +164,42 @@ export function DirectoryProfile() {
         </fieldset>
       </fieldset>
       {error ? <Alert tone="error">{error}</Alert> : null}
+      {editor.latest && (
+        <Alert tone="warning">
+          <p>
+            Your profile changed elsewhere. Your unsaved edits are kept. Keeping your edits replaces
+            the latest values only in fields you edited; other fields use the latest profile. Review
+            the result before saving.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button disabled={busy} onClick={() => editor.resolveConflict(true)}>
+              Keep my edits over latest profile
+            </Button>
+            <Button disabled={busy} variant="ghost" onClick={() => editor.resolveConflict(false)}>
+              Discard my edits and use latest profile
+            </Button>
+          </div>
+        </Alert>
+      )}
+      {editor.needsReload && (
+        <Button busy={busy} onClick={() => void editor.reloadLatest()}>
+          Retry loading latest profile
+        </Button>
+      )}
       {saved ? <Alert tone="success">Directory profile saved.</Alert> : null}
       <div className="flex items-center gap-3 border-t border-line pt-5">
-        <Button type="submit" busy={busy} disabled={!dirty}>
+        <Button
+          type="submit"
+          busy={busy}
+          disabled={!dirty || editor.latest !== null || editor.needsReload}
+        >
           {busy ? 'Saving…' : 'Save directory profile'}
         </Button>
-        <Button variant="ghost" disabled={busy || !dirty} onClick={() => setDraft(currentProfile)}>
+        <Button
+          variant="ghost"
+          disabled={busy || !dirty || editor.latest !== null || editor.needsReload}
+          onClick={editor.reset}
+        >
           Reset
         </Button>
       </div>

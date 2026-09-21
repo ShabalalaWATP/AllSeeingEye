@@ -29,6 +29,7 @@ from ase.adapters.geo import (
 from ase.application.cameras import CameraCatalogueService
 from ase.application.source_assets import AssetDelivery, SourceAsset, delivery_detail
 from ase.application.source_inventory import ConnectionState, SourceRequirement
+from ase.container.camera_coverage import CAMERA_COVERAGE
 from ase.domain.cameras import CameraProviderStatus
 from ase.domain.users import User
 
@@ -39,58 +40,54 @@ OPENCCTV_HOME = "https://opencctv.org/"
 @dataclass(frozen=True, slots=True)
 class _Family:
     delivery: AssetDelivery
-    coverage: str
     document: str
 
 
-_AMERICAS = _Family("official_index", "United States and Canada", "docs/CAMERA_AMERICAS.md")
-_EUROPE = _Family("official_index", "Europe", "docs/CAMERA_EUROPE.md")
-_UK = _Family("official_index", "United Kingdom", "docs/CAMERA_EUROPE.md")
-_CURATED_EUROPE = _Family("curated_catalogue", "Europe", "docs/CAMERA_EUROPE.md")
-_CURATED_REGION = _Family(
-    "curated_catalogue", "The region named in the provider title", "docs/CAMERA_WORLD.md"
-)
+_AMERICAS = _Family("official_index", "docs/CAMERA_AMERICAS.md")
+_EUROPE = _Family("official_index", "docs/CAMERA_EUROPE.md")
+_UK = _Family("official_index", "docs/CAMERA_EUROPE.md")
+_CURATED_EUROPE = _Family("curated_catalogue", "docs/CAMERA_EUROPE.md")
+_CURATED_REGION = _Family("curated_catalogue", "docs/CAMERA_WORLD.md")
 _FAMILIES: tuple[tuple[type, _Family], ...] = (
-    (cameras.OfficialCameraSource, _Family("official_index", "", "docs/CAMERA_FEEDS.md")),
+    (cameras.OfficialCameraSource, _Family("official_index", "docs/CAMERA_FEEDS.md")),
     (
         camera_wsdot.WsdotCameraSource,
-        _Family("official_index", "Washington State", _AMERICAS.document),
+        _Family("official_index", _AMERICAS.document),
     ),
     (camera_americas.AmericanCameraSource, _AMERICAS),
     (camera_americas_ibi.IbiCameraSource, _AMERICAS),
     (camera_americas_cars.CarsCameraSource, _AMERICAS),
     (
         camera_americas.AmericanPublishedLinks,
-        _Family("curated_catalogue", "United States", _AMERICAS.document),
+        _Family("curated_catalogue", _AMERICAS.document),
     ),
     (camera_europe_open.OpenEuropeSource, _EUROPE),
     (camera_europe_maps.EuropeMapSource, _EUROPE),
-    (camera_britain.TrafficScotlandSource, _Family("official_index", "Scotland", _UK.document)),
+    (camera_britain.TrafficScotlandSource, _UK),
     (
         camera_britain.CuratedBritainSource,
-        _Family("curated_catalogue", "United Kingdom", _UK.document),
+        _Family("curated_catalogue", _UK.document),
     ),
     (
         camera_britain_councils.CouncilCameraSource,
-        _Family("official_index", "England", _UK.document),
+        _UK,
     ),
-    (camera_east.EstoniaCameraSource, _Family("official_index", "Estonia", _UK.document)),
+    (camera_east.EstoniaCameraSource, _EUROPE),
     (camera_east.CuratedEastSource, _CURATED_EUROPE),
     (
         camera_world.WorldCameraSource,
-        _Family("official_index", "Asia-Pacific", _CURATED_REGION.document),
+        _Family("official_index", _CURATED_REGION.document),
     ),
     (camera_world.CuratedWorldSource, _CURATED_REGION),
     (
         camera_world_directory.DirectorySource,
-        _Family("third_party_directory", "Asia", _CURATED_REGION.document),
+        _Family("third_party_directory", _CURATED_REGION.document),
     ),
     (
         camera_world_open.WorldOpenSource,
-        _Family("official_index", "Queensland and Puerto Rico", _CURATED_REGION.document),
+        _Family("official_index", _CURATED_REGION.document),
     ),
 )
-_OFFICIAL_COVERAGE = {"tfl": "London", "hongkong": "Hong Kong", "fintraffic": "Finland"}
 
 
 def _family(source: object) -> _Family:
@@ -99,7 +96,7 @@ def _family(source: object) -> _Family:
     for kind, family in _FAMILIES:
         if isinstance(source, kind):
             return family
-    return _Family("official_index", "Unspecified", "docs/CAMERA_FEEDS.md")
+    return _Family("official_index", "docs/CAMERA_FEEDS.md")
 
 
 def _homepage(source: object, provider: str) -> str | None:
@@ -198,7 +195,7 @@ def camera_assets(
                 description="Public camera provider in the CCTV layer.",
                 licence_note=_licence(family.delivery, source.id, family.document),
                 homepage=_homepage(inner, source.id),
-                coverage_note=_OFFICIAL_COVERAGE.get(source.id, family.coverage),
+                coverage_note=CAMERA_COVERAGE.get(source.id, "Coverage not specified."),
                 refresh_note="Cached for 15 minutes after the map requests this provider."
                 if family.delivery != "curated_catalogue"
                 else "Updated with the application.",

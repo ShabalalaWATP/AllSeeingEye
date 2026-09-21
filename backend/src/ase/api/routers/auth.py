@@ -11,6 +11,7 @@ from ase.api.deps import ContainerDep, ContextDep, SessionDep, require_csrf
 from ase.api.mfa_schemas import MfaPendingOut
 from ase.api.schemas import (
     ForgotPasswordIn,
+    ForgotPasswordOut,
     LoginIn,
     MessageOut,
     RequestAccountIn,
@@ -27,6 +28,10 @@ REQUEST_ACCOUNT_MESSAGE = "If the address is eligible, an administrator will rev
 FORGOT_MESSAGE = (
     "If the address is registered, check your email for a reset link. "
     "You can request another if it does not arrive."
+)
+FORGOT_UNAVAILABLE_MESSAGE = (
+    "Email password recovery is unavailable on this installation. "
+    "Contact an administrator to request a password reset link."
 )
 FORGOT_RESPONSE_FLOOR_SECONDS = 0.5
 
@@ -101,17 +106,22 @@ async def forgot_password(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-) -> MessageOut:
+) -> ForgotPasswordOut:
     started = asyncio.get_running_loop().time()
     email = normalise_email(body.email)
     link = await container.forgot_password(session).execute(email, context, send_email=False)
-    if link is not None:
+    email_available = container.email_sender.available
+    if link is not None and email_available:
         background_tasks.add_task(container.email_sender.send_link, email, TokenPurpose.RESET, link)
     # SMTP cannot affect response timing; both addresses wait to a common floor.
     await asyncio.sleep(
         max(0, FORGOT_RESPONSE_FLOOR_SECONDS - (asyncio.get_running_loop().time() - started))
     )
-    return MessageOut(message=FORGOT_MESSAGE)
+    # Transport availability is installation-wide, never an account lookup result.
+    return ForgotPasswordOut(
+        message=FORGOT_MESSAGE if email_available else FORGOT_UNAVAILABLE_MESSAGE,
+        email_available=email_available,
+    )
 
 
 @router.post("/set-password", status_code=status.HTTP_204_NO_CONTENT)

@@ -197,7 +197,11 @@ it('passes the selected nation and publication interval to the API and hides the
       requests.push(new URL(request.url));
       if (requests.length > 1) await next.promise;
       return HttpResponse.json({
-        items: [article(requests.length === 1 ? 'GB' : 'world')],
+        items: [
+          article(requests.length === 1 ? 'GB' : 'world', {
+            country_iso: requests.length === 1 ? 'GB' : null,
+          }),
+        ],
         count: 1,
       });
     }),

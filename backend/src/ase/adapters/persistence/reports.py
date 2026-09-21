@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import case, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
@@ -46,7 +46,7 @@ from ase.domain.report_records import (
     quality_to_dict,
     requirements_from_analysis,
 )
-from ase.domain.reports import ReportStatus
+from ase.domain.reports import ReportOrigin, ReportStatus
 from ase.domain.research_context_records import context_from_dict
 from ase.domain.research_records import research_from_dict
 from ase.domain.source_assessment_capture import source_assessment_from_analysis
@@ -208,11 +208,30 @@ class SqlReportRepository:
         )
         return [_record_from_row(row) for row in rows]
 
-    async def list_visible(self, visibility: Visibility, limit: int) -> list[ReportRecord]:
+    async def list_visible(
+        self,
+        visibility: Visibility,
+        limit: int,
+        *,
+        origin: ReportOrigin | None = None,
+        offset: int = 0,
+    ) -> list[ReportRecord]:
+        query = select(ReportRow).where(
+            visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility)
+        )
+        if origin is not None:
+            # Recognised explicit origins win. Older or unrecognised scopes retain
+            # the same media/research classification used by saved report links.
+            stated = ReportRow.scope["origin"].as_string()
+            effective = case(
+                (stated.in_([value.value for value in ReportOrigin]), stated),
+                (ReportRow.scope["research_focus"].as_string() == "media", "geolocation"),
+                else_="research",
+            )
+            query = query.where(effective == origin.value)
         rows = await self._session.scalars(
-            select(ReportRow)
-            .where(visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility))
-            .order_by(ReportRow.created_at.desc(), ReportRow.id)
+            query.order_by(ReportRow.created_at.desc(), ReportRow.id)
+            .offset(offset)
             .limit(limit)
             .execution_options(populate_existing=True)
         )

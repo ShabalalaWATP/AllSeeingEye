@@ -1541,7 +1541,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageOut"
+                  "$ref": "#/components/schemas/ForgotPasswordOut"
                 }
               }
             }
@@ -8121,6 +8121,33 @@
               "minimum": 1,
               "default": 50,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "origin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportOrigin"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Origin"
             }
           }
         ],
@@ -26473,6 +26500,24 @@
         ],
         "title": "ForgotPasswordIn"
       },
+      "ForgotPasswordOut": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "email_available": {
+            "type": "boolean",
+            "title": "Email Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "email_available"
+        ],
+        "title": "ForgotPasswordOut"
+      },
       "FreshnessOut": {
         "properties": {
           "control_assessed": {
@@ -37811,6 +37856,15 @@
         ],
         "title": "ReportMethodologyOut"
       },
+      "ReportOrigin": {
+        "type": "string",
+        "enum": [
+          "research",
+          "subscription",
+          "geolocation"
+        ],
+        "title": "ReportOrigin"
+      },
       "ReportOut": {
         "properties": {
           "report": {
@@ -38520,11 +38574,26 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
           }
         },
         "type": "object",
         "required": [
-          "items"
+          "items",
+          "limit",
+          "offset",
+          "has_more"
         ],
         "title": "ReportsOut"
       },

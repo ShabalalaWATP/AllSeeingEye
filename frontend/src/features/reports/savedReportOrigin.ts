@@ -21,13 +21,6 @@ export function reportOrigin(report: ReportSummary): SavedOrigin {
   );
 }
 
-export function reportsFrom(
-  reports: readonly ReportSummary[] | null,
-  origin: SavedOrigin,
-): readonly ReportSummary[] | null {
-  return reports === null ? null : reports.filter((report) => reportOrigin(report) === origin);
-}
-
 const SAVED_PATHS: Record<SavedOrigin, string> = {
   research: '/research/saved',
   subscription: '/subscriptions/saved',

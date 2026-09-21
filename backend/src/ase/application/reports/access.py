@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
@@ -12,9 +13,18 @@ from ase.application.ports.reports import ReportRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import NotFound
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.reports import ReportOrigin
 from ase.domain.users import User
 
 MAX_LIST = 200
+
+
+@dataclass(frozen=True)
+class ReportPage:
+    items: list[ReportRecord]
+    limit: int
+    offset: int
+    has_more: bool
 
 
 class ListReportsUseCase:
@@ -22,9 +32,23 @@ class ListReportsUseCase:
         self._reports = reports
         self._access = access
 
-    async def execute(self, actor: User, limit: int = 50) -> list[ReportRecord]:
+    async def execute(
+        self,
+        actor: User,
+        limit: int = 50,
+        *,
+        origin: ReportOrigin | None = None,
+        offset: int = 0,
+    ) -> ReportPage:
         access = await self._access.context(actor)
-        return await self._reports.list_visible(access.visibility, min(max(1, limit), MAX_LIST))
+        limit, offset = min(max(1, limit), MAX_LIST), max(0, offset)
+        records = await self._reports.list_visible(
+            access.visibility,
+            limit + 1,
+            origin=origin,
+            offset=offset,
+        )
+        return ReportPage(records[:limit], limit, offset, len(records) > limit)
 
 
 class GetReportUseCase:

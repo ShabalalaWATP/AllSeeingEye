@@ -61,9 +61,10 @@ export function LlmProfileForm({
   const [baseUrl, setBaseUrl] = useState(initial?.base_url ?? OPENAI_BASE_URL);
   const [model, setModel] = useState(initial?.model ?? '');
   const [apiKey, setApiKey] = useState('');
-  const [embeddings, setEmbeddings] = useState(
+  const [embeddingPurpose, setEmbeddings] = useState(
     initial?.roles.includes('embeddings') ?? embeddingsOnly,
   );
+  const embeddings = embeddingsOnly || embeddingPurpose;
   const [embeddingEnabled, setEmbeddingEnabled] = useState(initial?.enabled ?? false);
   const [maxTokens, setMaxTokens] = useState(String(initial?.max_output_tokens ?? 16_000));
   const [temperature, setTemperature] = useState(String(initial?.temperature ?? 0.2));
@@ -100,9 +101,10 @@ export function LlmProfileForm({
   };
 
   const selectProvider = (value: string) => {
+    if (embeddingsOnly && value === 'bedrock') return;
     setProvider(value);
     setApiKey('');
-    setEmbeddings(false);
+    if (value === 'bedrock') setEmbeddings(false);
     setEmbeddingEnabled(false);
     if (value === 'bedrock') setTemperature(String(Math.min(Number(temperature) || 0, 1)));
     if (!customName.current)
@@ -144,6 +146,7 @@ export function LlmProfileForm({
       <fieldset disabled={busy} className="space-y-5">
         <div>
           <LlmProviderFields
+            embeddingsOnly={embeddingsOnly}
             provider={provider}
             setProvider={selectProvider}
             name={name}
@@ -194,6 +197,7 @@ export function LlmProfileForm({
           canDiscover={provider === 'custom' || !!apiKey.trim() || sameCredentials}
         />
         <LlmAdvancedSettings
+          embeddingsOnly={embeddingsOnly}
           bedrock={provider === 'bedrock'}
           maxTokens={maxTokens}
           setMaxTokens={(value) => {

@@ -5536,3 +5536,34 @@ Four new regressions failed before the fix. All 47 selected map, satellite,
 reconciliation and coverage tests passed afterwards. Independent code/security
 review found no blockers. CI and deployed-browser verification remain release steps.
 Type checks, the production build, lint, formatting and source-length checks passed.
+
+### Workflow audit repairs, 21 September 2026
+
+The workflow audit identified twelve defects across drawing replacement, corridor
+selection, saved report lists, embedding connections, directory editing,
+subscription time validation, feed retries, live news and source metadata.
+Regression tests reproduce the user actions and the asynchronous races involved.
+
+Drawing replacement now requires a decision when work is unsaved and preserves
+edits made during pending requests. Corridor research names its path source.
+Report origin and access filters apply before pagination, with controls for older
+pages and stale-response protection after account or team changes. Directory
+editing retains raw text and offers explicit revision-conflict reconciliation.
+Embedding purpose remains independent of provider defaults, and missing schedule
+times no longer become midnight.
+
+Source resets wait for cancelled requests to finish and coalesce repeated reset
+requests. Provider cooldowns start at response receipt and cannot be shortened by
+jitter. News snapshots reconcile live corrections and removals through bounded
+state. Camera coverage is explicit for each registered provider.
+
+Password recovery explains installation-wide email availability without exposing
+whether an address is registered. The email setup guide includes provider choice,
+DNS verification, exact SMTP settings, restart instructions and delivery checks.
+Real SMTP credentials and successful delivery still require operator setup.
+
+Independent code-quality and defensive reviews found and resolved two additional
+edge cases: overlapping fetch cleanup after repeated source resets, and a news
+refresh journal exhausted by a full live-event mirror. Both now have regression
+tests. The repairs use focused hooks, domain types and existing ports, with no new
+runtime dependencies or database migration.

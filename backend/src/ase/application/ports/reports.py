@@ -8,6 +8,7 @@ from uuid import UUID
 
 from ase.domain.access import Visibility
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.reports import ReportOrigin
 
 
 class ReportRepository(Protocol):
@@ -23,5 +24,12 @@ class ReportRepository(Protocol):
         ...
 
     async def list_recent(self, limit: int) -> list[ReportRecord]: ...
-    async def list_visible(self, visibility: Visibility, limit: int) -> list[ReportRecord]: ...
+    async def list_visible(
+        self,
+        visibility: Visibility,
+        limit: int,
+        *,
+        origin: ReportOrigin | None = None,
+        offset: int = 0,
+    ) -> list[ReportRecord]: ...
     async def delete(self, report_id: UUID) -> None: ...
