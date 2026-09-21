@@ -84,6 +84,7 @@ from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
+from ase.container.research_usage import ResearchUsageWiring
 from ase.container.sec_filings import SecFilingWiring
 from ase.container.source_inventory import SourceInventoryWiring
 from ase.container.source_requirements import source_requirements
@@ -98,6 +99,7 @@ log = structlog.get_logger(__name__)
 
 
 class Container(
+    ResearchUsageWiring,
     MapWiring,
     PrivateRecordWiring,
     FeatureWiring,

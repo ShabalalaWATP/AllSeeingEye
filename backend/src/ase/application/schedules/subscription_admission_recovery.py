@@ -11,9 +11,10 @@ from ase.application.ports.subscription_admission import (
     SourceGuard,
     SubscriptionTransactions,
 )
-from ase.application.schedules.edition_planning import (
-    budget_retry_due,
-    rebased_next_run,
+from ase.application.schedules.edition_planning import rebased_next_run
+from ase.application.schedules.subscription_admission_wait import (
+    RESEARCH_BLOCK_REASON,
+    admission_retry_due,
     reopened_for_admission,
 )
 from ase.domain.schedules import Schedule
@@ -21,7 +22,7 @@ from ase.domain.schedules import Schedule
 log = logging.getLogger(__name__)
 
 
-async def reopen_budget_block(
+async def reopen_admission_block(
     transactions: SubscriptionTransactions,
     clock: Clock,
     guard: SourceGuard,
@@ -29,7 +30,7 @@ async def reopen_budget_block(
     schedule_id: UUID | None,
     edition_id: UUID | None,
 ) -> None:
-    """Return a job-less budget block to pending once its retry delay has passed."""
+    """Recover admission waits without preparing jobs while a research quota is exhausted."""
     now = clock.now()
     async with guard(), transactions() as session:
         ledger = session.ledger
@@ -39,9 +40,18 @@ async def reopen_budget_block(
             edition = await ledger.active(schedule_id)
         else:
             return
-        if edition is None or not budget_retry_due(edition, now):
+        if edition is None or not admission_retry_due(edition, now):
             return
         reopened = reopened_for_admission(edition, now)
+        if edition.safe_reason == RESEARCH_BLOCK_REASON:
+            row = await session.schedule(edition.subscription_id, refresh=True)
+            if row is None or not row.enabled or row.archived_at is not None:
+                return
+            await session.access.background(row.created_by, row.team_id, for_update=True)
+            if not await session.research_available(row.created_by, now):
+                # Keep the block and postpone the next DB-only probe. Admission still
+                # rechecks the current allowance atomically if it becomes available.
+                reopened = replace(edition, updated_at=now, revision=edition.revision + 1)
         if await ledger.advance(reopened, expected_revision=edition.revision) is None:
             await session.rollback()
             return

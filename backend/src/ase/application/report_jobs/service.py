@@ -64,6 +64,7 @@ class ReportJobService:
         check_resume: JobCheck | None = None,
         edition_control: EditionControl | None = None,
         check_monthly: MonthlyCheck | None = None,
+        admit_research: Callable[[UUID, datetime], Awaitable[None]] | None = None,
     ) -> None:
         self._repo, self._access, self._uow, self._clock = repo, access, uow, clock
         self._prepare, self._freeze = prepare_job, freeze
@@ -72,6 +73,7 @@ class ReportJobService:
         self._guard: SourceGuard = source_guard or nullcontext
         self._edition_control = edition_control
         self._check_monthly = check_monthly
+        self._admit_research = admit_research
 
     async def create(
         self,
@@ -173,6 +175,8 @@ class ReportJobService:
         if self._check_monthly is not None:
             await self._check_monthly(actor.id, subscription_id, self._clock.now())
         await check_session()
+        if self._admit_research is not None:
+            await self._admit_research(actor.id, self._clock.now())
         await self._repo.add(candidate)
         return candidate
 

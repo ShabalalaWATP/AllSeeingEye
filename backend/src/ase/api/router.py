@@ -63,6 +63,7 @@ from ase.api.routers import (
     research_preflight,
     research_presets,
     research_runs,
+    research_usage,
     schedules,
     sec_filings,
     social,
@@ -91,6 +92,7 @@ api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)
 api_router.include_router(assistant_history.router)
 api_router.include_router(ai_usage.router)
+api_router.include_router(research_usage.router)
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)
 api_router.include_router(terrain.router)

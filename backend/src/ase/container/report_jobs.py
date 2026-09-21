@@ -49,7 +49,7 @@ class ReportJobWiring:
     def daily_briefing(self, session: AsyncSession) -> DailyBriefingService:
         container = cast("Container", self)
         return DailyBriefingService(
-            container.report_jobs(session),
+            container.report_jobs(session, charge_research=False),
             SqlReportJobRepository(session),
             container.repositories(session).uow,
             container.clock,
@@ -66,8 +66,13 @@ class ReportJobWiring:
         return await check_job(cast("Container", self), session, stored)
 
     def report_jobs(
-        self, session: AsyncSession, *, prepare_job: PrepareJob | None = None
+        self,
+        session: AsyncSession,
+        *,
+        prepare_job: PrepareJob | None = None,
+        charge_research: bool = True,
     ) -> ReportJobService:
+        """Only fixed dashboard factories opt out; no request value selects this policy."""
         container = cast("Container", self)
         repos = container.repositories(session)
 
@@ -105,4 +110,7 @@ class ReportJobWiring:
                 session, job_id, action, now
             ),
             check_monthly=check_monthly,
+            admit_research=container.research_usage(session).admit_locked
+            if charge_research
+            else None,
         )

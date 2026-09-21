@@ -60,14 +60,15 @@ export function SubscriptionUsage({
   const choice = subscriptions.find((item) => item.id === selected) ?? subscriptions[0];
   return (
     <section
-      aria-label="Monthly report usage"
+      aria-label="Monthly AI provider usage"
       className="rounded-xl border border-line/70 bg-surface/40 p-4"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold">This month's report allowance</h3>
+          <h3 className="text-sm font-semibold">Monthly AI provider budget</h3>
           <p className="mt-1 text-xs text-muted">
-            UTC calendar month. Unknown provider outcomes retain their full output reservation.
+            Separate from your research run allowance. Resets each UTC calendar month. Unknown
+            provider outcomes retain their full output reservation.
           </p>
         </div>
         <Button variant="secondary" onClick={() => void owner.reload()}>
@@ -81,8 +82,8 @@ export function SubscriptionUsage({
           <>
             <UsageLine label="All your report work" value={owner.data} />
             <p className="text-xs text-muted">
-              Resets {formatUtc(owner.data.month_end)}. These are request and token allowances, not
-              a currency limit.
+              Resets {formatUtc(owner.data.month_end)}. These limits count model calls and tokens,
+              not complete research runs or currency.
             </p>
           </>
         )}

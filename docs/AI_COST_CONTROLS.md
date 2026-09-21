@@ -5,11 +5,55 @@ calls, and shows estimated spend. A report can use several calls for planning,
 drafting, review and optional tools. A call limit is therefore not a report limit,
 and a token allowance is not a guaranteed monetary cap.
 
-Configure models through [AI connections](AI_CONNECTIONS_OPERATIONS.md). Review
-usage and policies under **Administration > AI access and usage**; the AI connections
-matrix also provides daily presets for people and teams.
+Configure models through [AI connections](AI_CONNECTIONS_OPERATIONS.md). Assign
+research tiers under **Administration > Users**. Provider-call and token policies
+remain under **Administration > AI connections > Advanced limits and embedding
+connections**; the model assignments matrix also provides daily provider presets.
 
-## Applicable allowances
+## Research tiers
+
+Each account has one research tier. A research run is one accepted request to
+produce a report, including a new report version or a subscription edition.
+The internal model calls needed to produce that report do not each use another
+research run.
+
+| Tier | Research allowance | Reset |
+| --- | ---: | --- |
+| Level 1 | 4 runs per week | Monday, 00:00 UTC |
+| Level 2 | 4 runs per day | 00:00 UTC |
+| Level 3 | 13 runs per day | 00:00 UTC |
+| Level 4 | 32 runs per day | 00:00 UTC |
+
+Accounts without an assignment, including new accounts, use Level 1.
+Administrators can change another account's tier or their own research tier.
+This does not change account roles, model assignments or provider budgets.
+
+Manual and scheduled research share the owner's allowance. A subscription run
+uses its owner's allowance even when a team manager starts it. Team research
+uses the initiating account's research allowance as well as any applicable
+provider budgets. Ordinary page loads, map actions, feed refreshes, reading or
+exporting saved reports, and assistant chat do not consume research runs.
+Fixed briefings generated automatically by dashboard pages also do not consume
+research runs. Assistant chat, dashboard briefings and other model features still
+have provider-call and token limits.
+
+Usage is saved when a run is admitted. Invalid requests rejected before admission
+do not count. An admitted run counts even if it later fails or is cancelled.
+Resuming the same job, automatically retrying its stages or repeating its existing
+submission does not use another run. Starting fresh research or regenerating a
+report does. Deleting a report or discarding a job does not return an allowance slot.
+
+Changing tiers does not reset usage: the app retains both daily and weekly counts.
+Usage and the next reset are visible alongside research and in account settings.
+An exhausted subscription waits for allowance to become available. The scheduler
+rechecks blocked subscriptions at five-minute intervals. After a reset or tier
+increase, work can resume on the next eligible scheduler pass.
+
+Research tiers limit whole runs. The provider allowances below also apply, so a
+run can still be stopped by a shared token limit or a provider error before it
+finishes. A research allowance is not a guaranteed monetary budget.
+
+## Provider-call allowances
 
 Policies can limit requests, tokens or both over daily, weekly and monthly UTC
 periods. Several periods can apply to one target at the same time.

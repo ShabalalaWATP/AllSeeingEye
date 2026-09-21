@@ -8,7 +8,7 @@ research interface. Only authenticated, active administrators see its entry.
 | Area | Purpose |
 | --- | --- |
 | Account requests | Review applications and approve or reject access |
-| Users | Manage roles, active status and reset links |
+| Users | Manage roles, active status, research tiers and reset links |
 | Teams | Create teams, maintain membership and archive teams |
 | AI connections | Configure, test and apply global or team model connections |
 | Sources | Inspect collector health and reset failed sources |
@@ -38,6 +38,23 @@ their authorised action commits. Revocation prevents release of the link without
 undoing a completed approval. See the [scoped access review](security/ADMIN_WORKSPACE_REVIEW.md).
 
 For provider setup, see [AI connections](AI_CONNECTIONS_OPERATIONS.md).
+
+## Assign a research tier
+
+Open **Users** and use the account's **Research allowance** selector. Each option
+shows its limit: Level 1 allows four research runs per week; Levels 2, 3 and 4
+allow four, thirteen and thirty-two runs per day. Changes save when selected.
+The row shows usage and the next UTC reset. If another administrator changed the
+tier while you were editing, review the refreshed value before choosing again.
+
+New and unassigned accounts use Level 1. You can change your own research tier;
+the restrictions on changing your own role or active status still apply.
+Subscriptions and manual research share the owner's allowance. Changing a tier
+preserves usage already recorded. The existing AI connections controls continue
+to manage provider-call and token limits independently.
+
+See [research tiers](AI_COST_CONTROLS.md#research-tiers) for counting, resets and
+failure behaviour.
 
 ## Source controls and health
 

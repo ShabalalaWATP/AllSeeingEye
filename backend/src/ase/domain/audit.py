@@ -103,6 +103,7 @@ class AuditAction(StrEnum):
     AI_USAGE_OVERRIDE_CREATED = "ai_usage_override_created"
     AI_USAGE_OVERRIDE_REVOKED = "ai_usage_override_revoked"
     AI_USAGE_DEFAULTS_APPLIED = "ai_usage_defaults_applied"
+    RESEARCH_TIER_ASSIGNED = "research_tier_assigned"
     UKRAINE_DIGEST_REFRESH_REQUESTED = "ukraine_digest_refresh_requested"
     ECONOMY_EXPLAINER_REFRESHED = "economy_explainer_refreshed"
 

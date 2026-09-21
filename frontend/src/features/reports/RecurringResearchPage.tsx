@@ -9,6 +9,7 @@ import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { useSearchParams } from 'react-router';
 
 import { SectionTabs, subscriptionTabs } from '@/components/research/SectionTabs';
+import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
 
 import { SchedulesSection } from './SchedulesSection';
 
@@ -77,6 +78,11 @@ export default function RecurringResearchPage() {
             </ol>
           </div>
         </header>
+        <ResearchAllowanceSummary />
+        <p className="text-sm text-muted">
+          Subscription runs use the subscription owner's research allowance, including subscriptions
+          shared with a team.
+        </p>
         {options.loading && <LoadingNote label="Loading subscriptions" />}
         {options.error && (
           <Alert tone="error">

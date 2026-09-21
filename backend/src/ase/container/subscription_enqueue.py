@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import UUID
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.subscription_admission import (
     SqlSubscriptionDueQueue,
@@ -21,12 +25,16 @@ class SubscriptionAdmission(AdmissionService):
     session_check = staticmethod(sql_session_check)
 
     def __init__(self, container: Container) -> None:
+        async def research_available(session: AsyncSession, owner_id: UUID, now: datetime) -> bool:
+            return (await container.research_usage(session).allowance(owner_id, now)).remaining > 0
+
         super().__init__(
             SqlSubscriptionTransactions(
                 container.session_factory,
                 container.access_policy,
                 container.report_jobs,
                 lambda session: container._auditor(container.repositories(session)),
+                research_available,
             ),
             SqlSubscriptionDueQueue(container.session_factory, container.access_policy),
             container.clock,

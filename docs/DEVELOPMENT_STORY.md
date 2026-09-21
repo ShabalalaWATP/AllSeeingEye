@@ -5567,3 +5567,27 @@ edge cases: overlapping fetch cleanup after repeated source resets, and a news
 refresh journal exhausted by a full live-event mirror. Both now have regression
 tests. The repairs use focused hooks, domain types and existing ports, with no new
 runtime dependencies or database migration.
+
+## 21 September 2026: Research tier implementation
+
+The operator requested four account levels for research use, including subscriptions,
+with approximately 25 percent more headroom than the initial limits. The agreed
+allowances are four runs per week, then four, thirteen or thirty-two runs per day.
+These count admitted research runs rather than the internal model calls used to
+produce a report. Ordinary site requests do not consume this allowance.
+
+Migration 0065 adds tier assignments and bounded daily/weekly counters. One
+application service enforces admission for queued and synchronous reports. The
+queued job and counters commit together; synchronous admission commits before
+provider work. Tier changes and report deletion preserve usage. Existing-job
+resumes and retries reuse their admission.
+
+Administrators assign levels under Users, and research, subscriptions and account
+pages show allowance and reset time. Exhausted subscriptions retain a waiting
+edition and periodically check for a reset or tier increase. The Run now action
+shows the returned state and reuses a waiting request instead of claiming it queued.
+
+Independent quality and security reviews found and resolved the subscription
+notice issue and automatic dashboard briefings consuming research allowance. Only
+the three fixed server briefing factories now opt out; clients cannot select this
+exemption. Provider-call and token budgets remain in force for all model work.

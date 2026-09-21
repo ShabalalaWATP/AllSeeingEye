@@ -2,6 +2,7 @@
 import { z } from 'zod';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
+import { researchUsageMutation } from '@/lib/researchUsageEvents';
 import type { components } from './types.gen';
 
 import { apiCall, apiFile, apiSend } from './client';
@@ -300,7 +301,7 @@ export function generateReport(
   request: ReportRequest,
   options: { runId?: string; signal?: AbortSignal } = {},
 ): Promise<Report> {
-  return scopedMutation(() =>
+  return researchUsageMutation(() =>
     apiCall('/api/reports', {
       method: 'POST',
       body: request,
@@ -321,7 +322,7 @@ export function fetchReport(id: string, version?: number, signal?: AbortSignal):
 }
 
 export function regenerateReport(id: string): Promise<Report> {
-  return scopedMutation(() =>
+  return researchUsageMutation(() =>
     apiCall(`/api/reports/${encodeURIComponent(id)}/versions`, {
       method: 'POST',
       schema: reportSchema,

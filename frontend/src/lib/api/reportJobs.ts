@@ -3,6 +3,7 @@ import type { components } from './types.gen';
 import { apiCall, apiSend } from './client';
 import { ApiError } from './errors';
 import { scopedMutation } from '@/lib/workspaceAccess';
+import { researchUsageMutation } from '@/lib/researchUsageEvents';
 
 export type ReportJob = components['schemas']['ReportJobOut'];
 export type ReportJobCreate = components['schemas']['ReportJobCreateIn'];
@@ -47,7 +48,7 @@ export const reportJobSchema: z.ZodType<ReportJob> = z.object({
 });
 
 export function createReportJob(body: ReportJobCreate, signal: AbortSignal) {
-  return scopedMutation(() =>
+  return researchUsageMutation(() =>
     apiCall('/api/report-jobs', {
       method: 'POST',
       body,

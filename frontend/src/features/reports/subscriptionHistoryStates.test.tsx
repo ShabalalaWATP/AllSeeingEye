@@ -48,7 +48,7 @@ it('labels every edition state, pages older editions and retries a waiting editi
     edition(2, { workflow: 'completed', report_quality: 'ready', coverage: 'partial' }),
     edition(3, { workflow: 'pending', safe_reason: 'capacity_wait' }),
     edition(4, { workflow: 'retry_wait', job_id: jobId }),
-    edition(5, { workflow: 'blocked' }),
+    edition(5, { workflow: 'blocked', safe_reason: 'research_usage_limit' }),
     edition(6, { workflow: 'failed' }),
     edition(7, { workflow: 'cancelled' }),
     edition(8, { workflow: 'skipped' }),
@@ -106,6 +106,8 @@ it('labels every edition state, pages older editions and retries a waiting editi
   ])
     expect(panel.getByText(label)).toBeVisible();
   expect(panel.getByText('Waiting for queue space')).toBeVisible();
+  expect(panel.getByText(/Research allowance reached for the subscription owner/)).toBeVisible();
+  expect(panel.getByText('Not started')).toBeVisible();
   expect(panel.getAllByRole('link', { name: 'View progress' })[0]).toHaveAttribute(
     'href',
     `/research/jobs/${jobId}`,

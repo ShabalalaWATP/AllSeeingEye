@@ -27,6 +27,7 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import { useScheduleRefresh } from './useScheduleRefresh';
 import { SubscriptionUsage } from './SubscriptionUsage';
 import { runSubscriptionNow } from '@/lib/api/subscriptionControls';
+import { retainSubscriptionRequest, subscriptionRunNotice } from './subscriptionRunNotice';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
 export function SchedulesSection({
@@ -117,11 +118,12 @@ export function SchedulesSection({
   const runNow = useAsyncAction(
     useCallback(
       async (id: string) => {
+        setNotice(null);
         const requestId = runRequestIds.current.get(id) ?? crypto.randomUUID();
         runRequestIds.current.set(id, requestId);
-        await runSubscriptionNow(id, requestId);
-        runRequestIds.current.delete(id);
-        setNotice('A new report has been queued. Follow its progress in edition history.');
+        const edition = await runSubscriptionNow(id, requestId);
+        if (!retainSubscriptionRequest(edition)) runRequestIds.current.delete(id);
+        setNotice(subscriptionRunNotice(edition));
         await reload();
       },
       [reload],

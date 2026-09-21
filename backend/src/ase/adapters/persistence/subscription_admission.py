@@ -31,10 +31,12 @@ class SqlSubscriptionTransaction:
         access: AccessPolicy,
         jobs: ReportJobService,
         auditor: Auditor,
+        research_available: Callable[[UUID, datetime], Awaitable[bool]],
     ) -> None:
         self.session = session
         self.access, self.jobs, self.auditor = access, jobs, auditor
         self.ledger = SqlSubscriptionEditionRepository(session)
+        self._research_available = research_available
 
     async def schedule(self, identity: UUID, *, refresh: bool = False) -> Schedule | None:
         row = await self.session.get(ScheduleRow, identity, populate_existing=refresh)
@@ -53,6 +55,9 @@ class SqlSubscriptionTransaction:
     async def report_version(self, identity: UUID, version: int) -> ReportVersion | None:
         return await SqlReportRepository(self.session).get_version(identity, version)
 
+    async def research_available(self, owner_id: UUID, now: datetime) -> bool:
+        return await self._research_available(owner_id, now)
+
     async def commit(self) -> None:
         await self.session.commit()
 
@@ -67,15 +72,25 @@ class SqlSubscriptionTransactions:
         access: Callable[[AsyncSession], AccessPolicy],
         jobs: Callable[[AsyncSession], ReportJobService],
         auditor: Callable[[AsyncSession], Auditor],
+        research_available: Callable[[AsyncSession, UUID, datetime], Awaitable[bool]],
     ) -> None:
         self._sessions, self._access = sessions, access
         self._jobs, self._auditor = jobs, auditor
+        self._research_available = research_available
 
     @asynccontextmanager
     async def __call__(self) -> AsyncIterator[SubscriptionTransaction]:
         async with self._sessions() as session:
+
+            async def research_available(owner_id: UUID, now: datetime) -> bool:
+                return await self._research_available(session, owner_id, now)
+
             yield SqlSubscriptionTransaction(
-                session, self._access(session), self._jobs(session), self._auditor(session)
+                session,
+                self._access(session),
+                self._jobs(session),
+                self._auditor(session),
+                research_available,
             )
 
 

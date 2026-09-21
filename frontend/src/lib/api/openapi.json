@@ -990,6 +990,116 @@
         ]
       }
     },
+    "/api/research-usage/me": {
+      "get": {
+        "tags": [
+          "research-usage"
+        ],
+        "summary": "My Allowance",
+        "operationId": "my_allowance_api_research_usage_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchAllowanceOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/research-usage": {
+      "get": {
+        "tags": [
+          "research-usage"
+        ],
+        "summary": "All Allowances",
+        "operationId": "all_allowances_api_admin_research_usage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchUsagePageOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{user_id}/research-tier": {
+      "put": {
+        "tags": [
+          "research-usage"
+        ],
+        "summary": "Assign Tier",
+        "operationId": "assign_tier_api_admin_users__user_id__research_tier_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchTierIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResearchAllowanceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "tags": [
@@ -38639,6 +38749,71 @@
         ],
         "title": "RequestStatus"
       },
+      "ResearchAllowanceOut": {
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "title": "Tier"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week"
+            ],
+            "title": "Period"
+          },
+          "used": {
+            "type": "integer",
+            "title": "Used"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "resets_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Resets At"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier",
+          "label",
+          "limit",
+          "period",
+          "used",
+          "remaining",
+          "period_start",
+          "resets_at",
+          "revision"
+        ],
+        "title": "ResearchAllowanceOut"
+      },
       "ResearchAreaIn": {
         "properties": {
           "geometry": {
@@ -40992,6 +41167,66 @@
         ],
         "title": "ResearchTaskOut"
       },
+      "ResearchTierIn": {
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Tier"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tier",
+          "expected_revision"
+        ],
+        "title": "ResearchTierIn"
+      },
+      "ResearchTierOut": {
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "title": "Tier"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week"
+            ],
+            "title": "Period"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier",
+          "label",
+          "limit",
+          "period"
+        ],
+        "title": "ResearchTierOut"
+      },
       "ResearchTimelineEntryOut": {
         "properties": {
           "evidence_label": {
@@ -41105,6 +41340,30 @@
           "limitations"
         ],
         "title": "ResearchTimelineEntryOut"
+      },
+      "ResearchUsagePageOut": {
+        "properties": {
+          "tiers": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchTierOut"
+            },
+            "type": "array",
+            "title": "Tiers"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UserResearchAllowanceOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tiers",
+          "items"
+        ],
+        "title": "ResearchUsagePageOut"
       },
       "ResetLinkOut": {
         "properties": {
@@ -47496,6 +47755,77 @@
           "last_login_at"
         ],
         "title": "UserOut"
+      },
+      "UserResearchAllowanceOut": {
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "title": "Tier"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week"
+            ],
+            "title": "Period"
+          },
+          "used": {
+            "type": "integer",
+            "title": "Used"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "resets_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Resets At"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier",
+          "label",
+          "limit",
+          "period",
+          "used",
+          "remaining",
+          "period_start",
+          "resets_at",
+          "revision",
+          "user_id"
+        ],
+        "title": "UserResearchAllowanceOut"
       },
       "UsersOut": {
         "properties": {

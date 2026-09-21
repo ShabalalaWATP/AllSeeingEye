@@ -17,17 +17,18 @@ from ase.application.ports.subscription_admission import (
 )
 from ase.application.report_jobs.controls import ReportJobCapacity
 from ase.application.schedules.brief_link import standing_request_from_brief
-from ase.application.schedules.edition_planning import (
-    DuePlan,
-    admission_wait,
-)
+from ase.application.schedules.edition_planning import DuePlan
 from ase.application.schedules.revision_snapshot import (
     revision_from_schedule,
 )
 from ase.application.schedules.runner import DueCursor
 from ase.application.schedules.subscription_admission_recovery import (
     rebase_overdue,
-    reopen_budget_block,
+    reopen_admission_block,
+)
+from ase.application.schedules.subscription_admission_wait import (
+    admission_retry_due,
+    admission_wait,
 )
 from ase.application.schedules.subscription_catchup import (
     record_skipped,
@@ -86,7 +87,10 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
             await check_session(session)
             existing = await session.ledger.get(identity)
             if existing is not None and (
-                existing.workflow is not EditionWorkflow.PENDING
+                (
+                    existing.workflow is not EditionWorkflow.PENDING
+                    and not admission_retry_due(existing, self.clock.now())
+                )
                 or existing.job_id is not None
                 or not row.enabled
             ):
@@ -95,7 +99,7 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
                 raise Conflict("Enable the subscription before running it.")
             schedule = row
         if existing is not None:
-            # A repeated request retries a job-less edition left waiting for capacity.
+            # A repeated request may recover the same job-less admission wait.
             await self.enqueue(edition_id=identity, requester=actor, check_session=check_session)
             async with self.transactions() as session:
                 retried = await session.ledger.get(identity)
@@ -140,7 +144,7 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
             schedule = await rebase_overdue(self.transactions, self.clock, self.guard, schedule)
             if schedule is None:
                 return False
-        await reopen_budget_block(
+        await reopen_admission_block(
             self.transactions,
             self.clock,
             self.guard,
@@ -292,16 +296,9 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
                 check_session=check_current,
                 subscription_id=edition.subscription_id,
             )
-        except MonthlyBudgetExhausted as error:
+        except (MonthlyBudgetExhausted, RateLimited, ReportJobCapacity) as error:
             await check_current()
-            blocked = admission_wait(edition, self.clock.now(), budget_exhausted=True)
-            if await ledger.advance(blocked, expected_revision=edition.revision) is None:
-                raise Conflict() from error
-            await session.commit()
-            return False
-        except (RateLimited, ReportJobCapacity) as error:
-            await check_current()
-            waiting = admission_wait(edition, self.clock.now(), budget_exhausted=False)
+            waiting = admission_wait(edition, self.clock.now(), error)
             if await ledger.advance(waiting, expected_revision=edition.revision) is None:
                 raise Conflict() from error
             await session.commit()

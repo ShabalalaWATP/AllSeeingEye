@@ -77,7 +77,7 @@ class EconomyBriefingWiring:
             ), routing
 
         return DailyBriefingService(
-            container.report_jobs(session, prepare_job=prepare),
+            container.report_jobs(session, prepare_job=prepare, charge_research=False),
             SqlReportJobRepository(session),
             container.repositories(session).uow,
             container.clock,

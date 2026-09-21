@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
+import { researchUsageMutation } from '@/lib/researchUsageEvents';
 import { apiCall } from './client';
 import { ApiError } from './errors';
 import { reportJobSchema } from './reportJobs';
@@ -87,7 +88,7 @@ export async function reviseBrief(brief: ResearchBrief, draft: BriefDraft, signa
 }
 
 export function runBrief(brief: ResearchBrief, signal: AbortSignal, requestId: string) {
-  return scopedMutation(() =>
+  return researchUsageMutation(() =>
     apiCall('/api/report-jobs/from-brief', {
       method: 'POST',
       body: {

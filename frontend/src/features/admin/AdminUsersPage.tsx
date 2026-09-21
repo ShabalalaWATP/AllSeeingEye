@@ -11,7 +11,9 @@ import { Table, Th } from '@/components/ui/Table';
 import { listUsers } from '@/lib/api/admin';
 import { describeError } from '@/lib/api/errors';
 import type { ResetLinkResponse, User } from '@/lib/api/schemas';
+import { getAdminResearchUsage, type UserResearchAllowance } from '@/lib/api/researchUsage';
 import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { summariseUsers } from './overview/overviewSummaries';
 import { UserRow } from './UserRow';
@@ -32,8 +34,18 @@ export function matchesUser(user: User, query: string): boolean {
 
 export default function AdminUsersPage() {
   const { data, error, loading, setData, reload } = useResource(listUsers);
+  const allowances = useScopedResource(getAdminResearchUsage);
   const [resetIssue, setResetIssue] = useState<ResetIssue | null>(null);
   const [query, setQuery] = useState('');
+  const replaceAllowance = (updated: UserResearchAllowance) => {
+    allowances.setData(
+      (current) =>
+        current && {
+          ...current,
+          items: current.items.map((item) => (item.user_id === updated.user_id ? updated : item)),
+        },
+    );
+  };
 
   const replace = useCallback(
     (updated: User) => {
@@ -52,7 +64,7 @@ export default function AdminUsersPage() {
     <AdminPage
       eyebrow="Access and teams"
       title="Users"
-      description="Manage account roles and active access, and issue single-use password reset links. You cannot change your own role or active status."
+      description="Manage account roles, research levels and active access. You can change your own research level, but not your own role or active status."
       meta={
         summary === null ? undefined : (
           <ul aria-label="Account totals" className="flex flex-wrap gap-1.5">
@@ -71,7 +83,14 @@ export default function AdminUsersPage() {
         )
       }
       actions={
-        <Button variant="secondary" busy={loading} onClick={() => void reload()}>
+        <Button
+          variant="secondary"
+          busy={loading || allowances.loading}
+          onClick={() => {
+            void reload();
+            void allowances.reload();
+          }}
+        >
           <AdminIcon name="refresh" size={16} />
           Refresh
         </Button>
@@ -85,6 +104,19 @@ export default function AdminUsersPage() {
         />
       )}
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
+      {allowances.error && (
+        <Alert tone="error">
+          {describeError(allowances.error)}{' '}
+          <Button variant="ghost" onClick={() => void allowances.reload()}>
+            Retry research allowances
+          </Button>
+        </Alert>
+      )}
+      <p className="text-sm text-muted">
+        Research levels count manual and subscription runs together. New accounts start at Level 1.
+        Browsing, map tools and feed refreshes do not count. Daily limits reset at midnight UTC;
+        weekly limits reset on Monday at midnight UTC.
+      </p>
       <AdminSection
         title="Accounts"
         icon="users"
@@ -118,6 +150,7 @@ export default function AdminUsersPage() {
                 <Th>User</Th>
                 <Th>Role</Th>
                 <Th>Active</Th>
+                <Th>Research allowance</Th>
                 <Th>Last sign in</Th>
                 <Th>Actions</Th>
               </tr>
@@ -128,6 +161,11 @@ export default function AdminUsersPage() {
                   key={user.id}
                   user={user}
                   onUpdated={replace}
+                  allowance={allowances.data?.items.find((item) => item.user_id === user.id)}
+                  tiers={allowances.data?.tiers ?? []}
+                  allowanceLoading={allowances.loading}
+                  onAllowanceUpdated={replaceAllowance}
+                  onAllowanceReload={allowances.reload}
                   onResetLink={(response) => {
                     setResetIssue({ email: user.email, response });
                   }}

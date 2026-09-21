@@ -86,4 +86,5 @@ class ReportGenerationWiring:
                 access, r.reports, r.plans, r.aois, r.uow, map_origin
             ),
             research_inputs=ReportResearchInputs(access, r.reports, container.research_inputs),
+            research_usage=container.research_usage(session),
         )
