@@ -1,6 +1,7 @@
 import { TextField } from '@/components/ui/Field';
 
 export function LlmAdvancedSettings({
+  embeddingsOnly = false,
   bedrock,
   maxTokens,
   setMaxTokens,
@@ -11,6 +12,7 @@ export function LlmAdvancedSettings({
   embeddingEnabled,
   setEmbeddingEnabled,
 }: {
+  embeddingsOnly?: boolean;
   bedrock: boolean;
   maxTokens: string;
   setMaxTokens: (value: string) => void;
@@ -53,6 +55,7 @@ export function LlmAdvancedSettings({
               <input
                 type="checkbox"
                 checked={embeddings}
+                disabled={embeddingsOnly}
                 onChange={(event) => setEmbeddings(event.target.checked)}
                 className="mt-1"
               />
