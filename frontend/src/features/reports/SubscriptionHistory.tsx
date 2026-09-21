@@ -54,6 +54,8 @@ function editionLink(edition: SubscriptionEdition) {
       </Link>
     );
   }
+  if (edition.safe_reason === 'research_usage_limit')
+    return <span className="text-muted">Not started</span>;
   return <span className="text-muted">Pending admission</span>;
 }
 
@@ -192,6 +194,12 @@ export function SubscriptionHistory({
               </span>
               {edition.safe_reason === 'capacity_wait' && (
                 <span className="text-amber">Waiting for queue space</span>
+              )}
+              {edition.safe_reason === 'research_usage_limit' && (
+                <span className="text-amber">
+                  Research allowance reached for the subscription owner. This run will retry after
+                  their allowance resets or an administrator increases their level.
+                </span>
               )}
               <span className="ml-auto">{editionLink(edition)}</span>
               {edition.accepted_as_baseline && (

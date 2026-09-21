@@ -1192,14 +1192,15 @@ provider-call and token limits continue to apply separately.
 
 - [x] Trace durable, synchronous and scheduled admission paths and agree the
   subscription counting rule with the operator.
-- [ ] Add persisted tier assignments and daily/weekly counters with a migration.
-- [ ] Enforce admission atomically, preserve counts across tier changes and
+- [x] Add persisted tier assignments and daily/weekly counters with migration 0065.
+- [x] Enforce admission atomically, preserve counts across tier changes and
   deletion, and avoid charging existing-job retries or resumes twice.
-- [ ] Add administrator tier assignment and user-visible usage/reset information.
-- [ ] Give exhausted subscriptions a clear reason and retry at allowance reset.
-- [ ] Verify permissions, concurrent admission, idempotency, reset boundaries,
+- [x] Add administrator tier assignment and user-visible usage/reset information.
+- [x] Give exhausted subscriptions a clear reason and recheck after allowance reset
+  or a tier increase, preserving the same pending manual request.
+- [x] Verify permissions, concurrent admission, idempotency, reset boundaries,
   scheduled attribution and ordinary-request exclusions.
-- [ ] Update reader documentation and complete independent quality/security review.
+- [x] Update reader documentation and complete independent quality/security review.
 - [ ] Pass the relevant local checks and full CI before release review.
 
 Defaults: unassigned and newly created accounts use Level 1. Administrators may

@@ -26,6 +26,7 @@ from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ParentReference, ReportResearchInputs
 from ase.application.reports.save_production import SaveProduction
 from ase.application.reports.templates import Template
+from ase.application.research_usage import ResearchUsageService
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
@@ -55,6 +56,7 @@ class GenerateReportUseCase:
         map_origin: ReportMapOrigin,
         authorisation: ReportAuthorisation,
         research_inputs: ReportResearchInputs,
+        research_usage: ResearchUsageService | None = None,
     ) -> None:
         self._producer = producer
         self._builder = builder
@@ -69,6 +71,7 @@ class GenerateReportUseCase:
         self._map_origin = map_origin
         self._authorisation = authorisation
         self._research_inputs = research_inputs
+        self._research_usage = research_usage
 
     async def execute(
         self,
@@ -80,6 +83,7 @@ class GenerateReportUseCase:
     ) -> tuple[ReportRecord, ReportVersion]:
         """A new report from the live evidence: version 1 of a new record."""
         job, routing = await self.prepare_job(actor, request)
+        await self.admit_research(job)
         produced = await self._producer.produce_with_claims(
             job,
             routing.profile_for,
@@ -106,6 +110,21 @@ class GenerateReportUseCase:
             actor, record, produced, context, creating=True, automation=request.automation
         )
         return record, version
+
+    async def admit_research(
+        self, job: Job, *, revalidate: Callable[[], Awaitable[None]] | None = None
+    ) -> None:
+        """Charge synchronous/automatic production; durable workers were charged at admission."""
+        if self._research_usage is not None:
+            try:
+                # Recheck linked records under the same guard used to charge admission.
+                await (revalidate() if revalidate is not None else self._finish_prepared(job))
+                await self._research_usage.admit(
+                    job.actor, job.request.team_id, automation=job.request.automation
+                )
+            except BaseException:
+                await self._uow.rollback()
+                raise
 
     async def prepare_job(self, actor: User, request: ReportRequest) -> tuple[Job, RoleProfiles]:
         """Authorise and freeze inputs and routing, without generating model output."""
@@ -237,6 +256,12 @@ class GenerateReportUseCase:
         )
         job = inputs.apply(job)
         await self._uow.rollback()
+        await self.admit_research(
+            job,
+            revalidate=lambda: self._authorisation.finish(
+                actor, request, record, plan, inputs.parent
+            ),
+        )
         produced = await self._producer.produce_with_claims(
             job,
             routing.profile_for,

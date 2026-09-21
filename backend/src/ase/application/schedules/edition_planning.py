@@ -24,8 +24,6 @@ from ase.domain.subscription_recurrence import (
 )
 
 MAX_COALESCED_SLOTS = 366
-BUDGET_RETRY_AFTER = timedelta(hours=1)
-BUDGET_BLOCK_REASON = "monthly_budget_exhausted"
 # Search spans comfortably exceed each cadence's longest gap (daily to annual).
 _SLOT_SEARCH_DAYS = (2, 8, 33, 94, 186, 368, 734)
 
@@ -131,35 +129,4 @@ def missed_edition(
         due_at_utc=due,
         requested=requested,
         workflow=EditionWorkflow.PENDING,
-    )
-
-
-def admission_wait(
-    edition: SubscriptionEdition, now: datetime, *, budget_exhausted: bool
-) -> SubscriptionEdition:
-    return replace(
-        edition,
-        workflow=EditionWorkflow.BLOCKED if budget_exhausted else EditionWorkflow.PENDING,
-        safe_reason=BUDGET_BLOCK_REASON if budget_exhausted else "capacity_wait",
-        updated_at=now,
-        revision=edition.revision + 1,
-    )
-
-
-def budget_retry_due(edition: SubscriptionEdition, now: datetime) -> bool:
-    """A job-less admission budget block is retried later rather than wedging the slot."""
-    return (
-        edition.workflow is EditionWorkflow.BLOCKED
-        and edition.job_id is None
-        and edition.safe_reason == BUDGET_BLOCK_REASON
-        and now - edition.updated_at >= BUDGET_RETRY_AFTER
-    )
-
-
-def reopened_for_admission(edition: SubscriptionEdition, now: datetime) -> SubscriptionEdition:
-    return replace(
-        edition,
-        workflow=EditionWorkflow.PENDING,
-        updated_at=now,
-        revision=edition.revision + 1,
     )

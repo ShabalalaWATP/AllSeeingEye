@@ -116,7 +116,11 @@ terms before using sensitive material.
 
 A report can involve several billed calls. Reasoning tokens, retries, optional web
 search and embeddings can add cost. Administrators can inspect recorded usage,
-set shared and individual allowances, and cap reasoning for mechanical tasks.
+assign one of four research tiers, set shared and individual provider allowances,
+and cap reasoning for mechanical tasks. Research tiers count accepted research
+runs, including subscriptions, rather than individual model calls or ordinary
+site requests. The four tiers allow four runs per week, or four, thirteen or
+thirty-two runs per day.
 The app's monetary figures are estimates at configured prices, not provider bills.
 See [AI cost controls](AI_COST_CONTROLS.md).
 

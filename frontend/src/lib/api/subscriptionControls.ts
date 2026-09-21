@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { scopedMutation } from '@/lib/workspaceAccess';
+import { researchUsageMutation } from '@/lib/researchUsageEvents';
 
 import { apiCall } from './client';
 import { subscriptionEditionSchema } from './subscriptionEditions';
@@ -30,7 +31,7 @@ export type SubscriptionEvent = z.infer<typeof eventSchema>;
 export type EditionControl = 'pause' | 'resume' | 'retry';
 
 export function runSubscriptionNow(subscriptionId: string, requestId: string) {
-  return scopedMutation(() =>
+  return researchUsageMutation(() =>
     apiCall(`/api/schedules/${encodeURIComponent(subscriptionId)}/run-now`, {
       method: 'POST',
       body: { request_id: requestId },

@@ -9,10 +9,12 @@ import type { UserPatch } from '@/lib/api/admin';
 import { describeError } from '@/lib/api/errors';
 import { roleSchema } from '@/lib/api/schemas';
 import type { ResetLinkResponse, User } from '@/lib/api/schemas';
+import type { ResearchUsagePage, UserResearchAllowance } from '@/lib/api/researchUsage';
 import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 
 import { roleOptions } from './roleOptions';
+import { UserResearchTier } from './UserResearchTier';
 
 export const SELF_MODIFICATION_MESSAGE =
   'You cannot change your own role or active status. Ask another administrator to do it.';
@@ -21,9 +23,23 @@ export interface UserRowProps {
   user: User;
   onUpdated: (user: User) => void;
   onResetLink: (response: ResetLinkResponse) => void;
+  allowance: UserResearchAllowance | undefined;
+  tiers: ResearchUsagePage['tiers'];
+  allowanceLoading: boolean;
+  onAllowanceUpdated: (value: UserResearchAllowance) => void;
+  onAllowanceReload: () => Promise<void>;
 }
 
-export function UserRow({ user, onUpdated, onResetLink }: UserRowProps) {
+export function UserRow({
+  user,
+  onUpdated,
+  onResetLink,
+  allowance,
+  tiers,
+  allowanceLoading,
+  onAllowanceUpdated,
+  onAllowanceReload,
+}: UserRowProps) {
   const update = useAsyncAction(async (patch: UserPatch) => {
     onUpdated(await updateUser(user.id, patch));
   });
@@ -73,6 +89,16 @@ export function UserRow({ user, onUpdated, onResetLink }: UserRowProps) {
           </label>
           {user.is_active ? null : <StatusPill tone="neutral">Access paused</StatusPill>}
         </div>
+      </Td>
+      <Td className="py-3">
+        <UserResearchTier
+          email={user.email}
+          allowance={allowance}
+          tiers={tiers}
+          loading={allowanceLoading}
+          onUpdated={onAllowanceUpdated}
+          onReload={onAllowanceReload}
+        />
       </Td>
       <Td className="py-3 font-mono text-xs whitespace-nowrap text-muted">
         {user.last_login_at === null ? 'Never' : formatUtc(user.last_login_at)}

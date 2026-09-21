@@ -97,6 +97,12 @@ Subscriptions add scheduling, durable editions, retry controls and optional
 comparison with the previous successful report. Pausing stops future admission;
 it is not a promise to undo an external model call already made.
 
+Research tiers count admitted runs through a shared application service. Durable
+jobs and subscriptions commit admission and usage together; synchronous report
+generation reserves its run before model work. Separate daily and weekly counters
+preserve usage across tier changes and deletion. Provider-call and token accounting
+remain separate. See [the research tier decision](adr/0020-per-user-research-tiers.md).
+
 The [AI guide](AI.md) explains provider routing and which checks are deterministic.
 
 ## Code boundaries and SOLID

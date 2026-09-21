@@ -341,6 +341,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research-usage/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Allowance */
+        get: operations["my_allowance_api_research_usage_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/research-usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All Allowances */
+        get: operations["all_allowances_api_admin_research_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{user_id}/research-tier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Assign Tier */
+        put: operations["assign_tier_api_admin_users__user_id__research_tier_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -12587,6 +12638,39 @@ export interface components {
          * @enum {string}
          */
         RequestStatus: "pending" | "approved" | "rejected";
+        /** ResearchAllowanceOut */
+        ResearchAllowanceOut: {
+            /**
+             * Tier
+             * @enum {integer}
+             */
+            tier: 1 | 2 | 3 | 4;
+            /** Label */
+            label: string;
+            /** Limit */
+            limit: number;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "day" | "week";
+            /** Used */
+            used: number;
+            /** Remaining */
+            remaining: number;
+            /**
+             * Period Start
+             * Format: date-time
+             */
+            period_start: string;
+            /**
+             * Resets At
+             * Format: date-time
+             */
+            resets_at: string;
+            /** Revision */
+            revision: number;
+        };
         /** ResearchAreaIn */
         ResearchAreaIn: {
             /** Geometry */
@@ -13480,6 +13564,30 @@ export interface components {
             /** Registry Options */
             registry_options?: components["schemas"]["RegistryLookup"][];
         };
+        /** ResearchTierIn */
+        ResearchTierIn: {
+            /** Tier */
+            tier: number;
+            /** Expected Revision */
+            expected_revision: number;
+        };
+        /** ResearchTierOut */
+        ResearchTierOut: {
+            /**
+             * Tier
+             * @enum {integer}
+             */
+            tier: 1 | 2 | 3 | 4;
+            /** Label */
+            label: string;
+            /** Limit */
+            limit: number;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "day" | "week";
+        };
         /** ResearchTimelineEntryOut */
         ResearchTimelineEntryOut: {
             /** Evidence Label */
@@ -13507,6 +13615,13 @@ export interface components {
             temporal_attributes: components["schemas"]["EvidenceAttributeOut"][];
             /** Limitations */
             limitations: string[];
+        };
+        /** ResearchUsagePageOut */
+        ResearchUsagePageOut: {
+            /** Tiers */
+            tiers: components["schemas"]["ResearchTierOut"][];
+            /** Items */
+            items: components["schemas"]["UserResearchAllowanceOut"][];
         };
         /** ResetLinkOut */
         ResetLinkOut: {
@@ -15758,6 +15873,44 @@ export interface components {
             /** Last Login At */
             last_login_at: string | null;
         };
+        /** UserResearchAllowanceOut */
+        UserResearchAllowanceOut: {
+            /**
+             * Tier
+             * @enum {integer}
+             */
+            tier: 1 | 2 | 3 | 4;
+            /** Label */
+            label: string;
+            /** Limit */
+            limit: number;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "day" | "week";
+            /** Used */
+            used: number;
+            /** Remaining */
+            remaining: number;
+            /**
+             * Period Start
+             * Format: date-time
+             */
+            period_start: string;
+            /**
+             * Resets At
+             * Format: date-time
+             */
+            resets_at: string;
+            /** Revision */
+            revision: number;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
         /** UsersOut */
         UsersOut: {
             /** Items */
@@ -16552,6 +16705,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiUsageSummaryPageOut"];
+                };
+            };
+        };
+    };
+    my_allowance_api_research_usage_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchAllowanceOut"];
+                };
+            };
+        };
+    };
+    all_allowances_api_admin_research_usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchUsagePageOut"];
+                };
+            };
+        };
+    };
+    assign_tier_api_admin_users__user_id__research_tier_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResearchTierIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResearchAllowanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

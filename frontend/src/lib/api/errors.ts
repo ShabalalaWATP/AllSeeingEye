@@ -41,7 +41,7 @@ export function asApiError(value: unknown): ApiError {
 /** A safe, human readable message for any thrown value. Never echoes raw payloads. */
 export function describeError(value: unknown): string {
   if (isApiError(value)) {
-    if (value.status === 429) {
+    if (value.status === 429 && !['research_usage_limit', 'ai_usage_limit'].includes(value.code)) {
       const wait =
         value.retryAfterSeconds === null ? '' : ` Try again in ${value.retryAfterSeconds} seconds.`;
       return `Too many attempts.${wait}`;

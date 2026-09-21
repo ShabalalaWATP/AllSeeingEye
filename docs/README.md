@@ -17,7 +17,7 @@ evidence into one workspace. Start with the guide that matches what you need.
 
 ## Configure and operate
 
-- [AI connections](AI_CONNECTIONS_OPERATIONS.md) and [AI cost controls](AI_COST_CONTROLS.md).
+- [AI connections](AI_CONNECTIONS_OPERATIONS.md) and [AI cost controls](AI_COST_CONTROLS.md), including per-user research tiers.
 - [Sources and connections](SOURCES_AND_CONNECTIONS.md), [source provenance](SOURCE_PROVENANCE_OPERATIONS.md) and [catalogue browsing](SOURCE_CATALOGUE_BROWSING.md).
 - [Account security and MFA](MFA_OPERATIONS.md) and [administration](ADMINISTRATION.md).
 - [Account email setup](EMAIL_SETUP.md): provider choice, SMTP settings and delivery checks.
@@ -33,6 +33,8 @@ evidence into one workspace. Start with the guide that matches what you need.
 
 [CLAUDE.md](../CLAUDE.md) records contributor rules. The [API contracts](api/)
 and [architecture decisions](adr/) explain individual interfaces and design choices.
+The [research allowance API](api/RESEARCH_ALLOWANCES_API.md) covers tier assignment,
+usage and reset information.
 The architecture guide links the editable [Structurizr model](diagrams/workspace.dsl)
 and [diagram maintenance instructions](diagrams/README.md).
 

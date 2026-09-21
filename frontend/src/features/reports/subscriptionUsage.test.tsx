@@ -39,11 +39,11 @@ it('shows owner and selected subscription UTC-month usage without implying curre
     ),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const panel = within(await screen.findByRole('region', { name: 'Monthly report usage' }));
+  const panel = within(await screen.findByRole('region', { name: 'Monthly AI provider usage' }));
   expect(await panel.findByText(/3 of 800 model requests/)).toBeVisible();
   expect(await panel.findByText(/1 of 240 model requests/)).toBeVisible();
-  expect(panel.getByText(/Resets .* UTC/)).toBeVisible();
-  expect(panel.getByText(/not a currency limit/)).toBeVisible();
+  expect(panel.getByText(/^Resets .* UTC/)).toBeVisible();
+  expect(panel.getByText(/not complete research runs or currency/)).toBeVisible();
   await user.selectOptions(panel.getByLabelText('Subscription usage'), secondId);
   expect(await panel.findByText(/2 of 240 model requests/)).toBeVisible();
   expect(panel.queryByText(/1 of 240 model requests/)).not.toBeInTheDocument();

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { AllowanceCard, ObservedTotals } from '@/components/aiUsage/AllowanceCards';
+import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { asApiError, describeError } from '@/lib/api/errors';
@@ -30,12 +31,14 @@ export function AiUsageSummary() {
     <section aria-label="AI usage" className="flex max-w-2xl flex-col gap-6">
       <header>
         <p className="font-mono text-xs uppercase tracking-widest text-cyan">Usage awareness</p>
-        <h2 className="mt-2 text-xl font-semibold">AI allowance</h2>
+        <h2 className="mt-2 text-xl font-semibold">AI usage and research allowance</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          See the allowances that apply to your personal requests. Team work is counted against its
-          explicitly selected team policy as well as any site-wide ceiling.
+          Your level limits complete research runs. AI provider budgets separately limit the model
+          calls and tokens used inside those runs. Team and site budgets also apply.
         </p>
       </header>
+      <ResearchAllowanceSummary />
+      <h3 className="font-semibold">AI provider usage</h3>
       {error ? (
         <Alert tone="error">
           {error}{' '}
@@ -46,12 +49,16 @@ export function AiUsageSummary() {
       ) : null}
       {page === null && error === null ? <LoadingNote label="Loading AI allowance" /> : null}
       {page ? (
-        <ObservedTotals label="Your recorded usage" totals={page.observed} prices={page.prices} />
+        <ObservedTotals
+          label="Your recorded provider usage"
+          totals={page.observed}
+          prices={page.prices}
+        />
       ) : null}
       {page?.items.length === 0 ? (
         <p className="text-sm text-muted">
-          No administrator allowance is configured, so usage is recorded without a limit. Existing
-          app budgets still apply.
+          No additional AI provider policy is configured. Your research level and existing app
+          budgets still apply.
         </p>
       ) : null}
       {page && page.items.length > 0 ? (

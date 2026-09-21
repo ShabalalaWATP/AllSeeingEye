@@ -11,8 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.subscription_edition_models import SubscriptionEditionRow
-from ase.application.schedules.edition_planning import BUDGET_BLOCK_REASON, BUDGET_RETRY_AFTER
 from ase.application.schedules.runner import DueCursor
+from ase.application.schedules.subscription_admission_wait import (
+    BUDGET_BLOCK_REASON,
+    BUDGET_RETRY_AFTER,
+    RESEARCH_BLOCK_REASON,
+    RESEARCH_RETRY_AFTER,
+)
 from ase.domain.report_jobs import job_timestamp
 from ase.domain.subscription_editions import EditionWorkflow
 
@@ -118,6 +123,12 @@ async def due_edition_rows(
         SubscriptionEditionRow.safe_reason == BUDGET_BLOCK_REASON,
         SubscriptionEditionRow.updated_at <= now - BUDGET_RETRY_AFTER,
     )
+    research_retry = and_(
+        SubscriptionEditionRow.workflow == EditionWorkflow.BLOCKED.value,
+        SubscriptionEditionRow.job_id.is_(None),
+        SubscriptionEditionRow.safe_reason == RESEARCH_BLOCK_REASON,
+        SubscriptionEditionRow.updated_at <= now - RESEARCH_RETRY_AFTER,
+    )
     ranked = (
         select(
             SubscriptionEditionRow.id.label("item_id"),
@@ -131,7 +142,7 @@ async def due_edition_rows(
         )
         .join(ScheduleRow, SubscriptionEditionRow.subscription_id == ScheduleRow.id)
         .where(
-            or_(pending, budget_retry),
+            or_(pending, budget_retry, research_retry),
             ScheduleRow.enabled.is_(True),
             ScheduleRow.archived_at.is_(None),
         )

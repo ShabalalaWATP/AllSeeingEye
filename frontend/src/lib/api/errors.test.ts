@@ -25,6 +25,14 @@ describe('ApiError helpers', () => {
     expect(describeError(new ApiError(429, 'rate_limited', 'x'))).toBe('Too many attempts.');
   });
 
+  it.each(['research_usage_limit', 'ai_usage_limit'])(
+    'preserves the allowance and reset explanation for %s',
+    (code) => {
+      const message = 'Your research allowance is used. It resets on 22 September at 00:00 UTC.';
+      expect(describeError(new ApiError(429, code, message, {}, 3600))).toBe(message);
+    },
+  );
+
   it('hides unknown failures behind a generic message', () => {
     expect(describeError(new Error('stack details'))).toBe(
       'Something went wrong. Please try again.',

@@ -35,7 +35,9 @@ describe('AiUsageSummary', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Estimated spend: USD 0.0011/)).toBeInTheDocument();
     expect(screen.getByText(/not a bill/)).toBeInTheDocument();
-    expect(screen.getByText(/usage is recorded without a limit/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your research level and existing app budgets still apply/),
+    ).toBeInTheDocument();
   });
 
   it('uses the effective override limit and warns when an allowance is exhausted', async () => {

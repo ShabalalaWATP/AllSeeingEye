@@ -35,6 +35,9 @@ sample observations. Screenshots are not a statement of live source coverage.*
   economy and photo geolocation provide focused ways to explore their subject.
 - **Share work with a team.** Personal and team scopes control access to saved
   work. Administrators manage accounts, sources, model connections and usage.
+- **Set research allowances.** Assign each account one of four research tiers.
+  Manual runs and subscriptions share the allowance; ordinary site use does not
+  count. See [research tiers and AI limits](docs/AI_COST_CONTROLS.md).
 
 ![Research workspace with an example question and scope controls](docs/images/research.png)
 

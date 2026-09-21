@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router';
 import { useCallback } from 'react';
 import { useProfile } from '@/stores/profile';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
+import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
 import { BriefWorkspace } from '@/components/research/BriefWorkspace';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
@@ -71,6 +72,7 @@ export default function ResearchPage() {
           </p>
         </header>
         <ResearchNavigation />
+        <ResearchAllowanceSummary />
         {mapDraftRequested && <MapDraftResearch />}
         {!briefId && !mapDraftRequested && (
           <div className="flex flex-wrap gap-4 text-sm">
