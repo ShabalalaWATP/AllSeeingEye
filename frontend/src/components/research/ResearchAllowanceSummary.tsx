@@ -28,24 +28,39 @@ export function ResearchAllowanceSummary() {
       )}
       {data && (
         <div className="mt-2 space-y-2">
-          <p className="font-medium">
-            {data.remaining} of {data.limit} research runs remaining
-          </p>
-          <p className="text-xs text-muted">
-            {data.label} · {data.limit} runs per {data.period} · Resets {formatUtc(data.resets_at)}
-          </p>
-          {data.remaining === 0 && (
-            <p className="text-amber">
-              Your research allowance is used. New manual and subscription runs can start after the
-              reset.
-            </p>
+          {data.limit === null ? (
+            <>
+              <p className="font-medium">{data.label} · Unlimited research runs</p>
+              <p className="text-xs text-muted">No limit on research runs.</p>
+              <p className="text-xs text-muted">
+                {data.used} {data.used === 1 ? 'run' : 'runs'} recorded today (UTC)
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium">
+                {data.remaining} of {data.limit} research runs remaining
+              </p>
+              <p className="text-xs text-muted">
+                {data.label} · {data.limit} runs per {data.period} · Resets{' '}
+                {formatUtc(data.resets_at)}
+              </p>
+              {data.remaining === 0 && (
+                <p className="text-amber">
+                  Your research allowance is used. New manual and subscription runs can start after
+                  the reset.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
       <p className="mt-3 text-xs leading-5 text-muted">
-        Manual research and subscription runs share this allowance. Each new report or regeneration
-        counts once, including work that later fails or is cancelled. Resuming existing work does
-        not use another run.
+        {data?.limit === null
+          ? 'Manual research and subscription runs are recorded together.'
+          : 'Manual research and subscription runs share this allowance.'}{' '}
+        Each new report or regeneration counts once, including work that later fails or is
+        cancelled. Resuming existing work does not use another run.
       </p>
       <p className="mt-1 text-xs leading-5 text-muted">
         Browsing, map tools and feed refreshes do not count. AI provider limits also apply.

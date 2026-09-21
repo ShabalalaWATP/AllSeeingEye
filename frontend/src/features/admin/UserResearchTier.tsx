@@ -57,14 +57,28 @@ export function UserResearchTier({ email, allowance, tiers, loading, onUpdated, 
             disabled={loading || update.busy}
             options={tiers.map((tier) => ({
               value: String(tier.tier),
-              label: `${tier.label}: ${tier.limit} runs per ${tier.period}`,
+              label:
+                tier.limit === null
+                  ? `${tier.label}: Unlimited`
+                  : `${tier.label}: ${tier.limit} runs per ${tier.period}`,
             }))}
             onChange={(event) => void update.run(event.target.value)}
           />
-          <p className="text-xs text-muted">
-            {allowance.remaining} remaining · {allowance.used} used
-          </p>
-          <p className="text-xs text-muted">Resets {formatUtc(allowance.resets_at)}</p>
+          {allowance.limit === null ? (
+            <>
+              <p className="text-xs text-muted">No limit on research runs</p>
+              <p className="text-xs text-muted">
+                {allowance.used} {allowance.used === 1 ? 'run' : 'runs'} recorded today (UTC)
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted">
+                {allowance.remaining} remaining · {allowance.used} used
+              </p>
+              <p className="text-xs text-muted">Resets {formatUtc(allowance.resets_at)}</p>
+            </>
+          )}
         </>
       )}
       {update.error && <Alert tone="error">{describeError(update.error)}</Alert>}

@@ -14,7 +14,7 @@ async def test_allowance_and_administration_contract(client, admin, user):
     assert me.json()["remaining"] == 4 and me.json()["revision"] == 0
     listed = await client.get("/api/admin/research-usage", headers=admin_headers)
     assert listed.status_code == 200 and listed.headers["cache-control"] == "no-store"
-    assert [tier["limit"] for tier in listed.json()["tiers"]] == [4, 4, 13, 32]
+    assert [tier["limit"] for tier in listed.json()["tiers"]] == [4, 4, 13, 32, None]
     assert {row["user_id"] for row in listed.json()["items"]} == {str(user.id), str(admin.id)}
     for target in (user, admin):
         updated = await client.put(
@@ -46,7 +46,7 @@ async def test_allowance_and_administration_contract(client, admin, user):
     [
         {"tier": True, "expected_revision": 0},
         {"tier": 0, "expected_revision": 0},
-        {"tier": 5, "expected_revision": 0},
+        {"tier": 6, "expected_revision": 0},
         {"tier": "2", "expected_revision": 0},
         {"tier": 2.0, "expected_revision": 0},
         {"tier": 2, "expected_revision": -1},

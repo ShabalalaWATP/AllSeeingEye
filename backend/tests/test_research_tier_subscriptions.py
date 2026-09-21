@@ -89,10 +89,12 @@ async def test_due_quota_block_is_durable_and_does_not_charge_or_prepare_on_ever
     assert (await _allowance(container, user)).used == exhausted.used
 
 
+@pytest.mark.parametrize("tier", [3, 5])
 async def test_manual_subscription_recovers_after_upgrade_before_old_weekly_reset(
     container: Container,
     user: User,
     admin: User,
+    tier: int,
 ) -> None:
     schedule = await _schedule(container, user)
     exhausted = await _exhaust(container, user)
@@ -100,7 +102,7 @@ async def test_manual_subscription_recovers_after_upgrade_before_old_weekly_rese
         schedule.id, uuid4(), user, CONTEXT, AsyncMock()
     )
     assert blocked.workflow is EditionWorkflow.BLOCKED
-    await _assign(container, admin, user, 3)
+    await _assign(container, admin, user, tier)
     container.clock.advance(timedelta(minutes=5))
     assert container.clock.now() < exhausted.resets_at
     assert container.clock.now() < schedule.next_run_at

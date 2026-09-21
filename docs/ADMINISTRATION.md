@@ -43,15 +43,18 @@ For provider setup, see [AI connections](AI_CONNECTIONS_OPERATIONS.md).
 
 Open **Users** and use the account's **Research allowance** selector. Each option
 shows its limit: Level 1 allows four research runs per week; Levels 2, 3 and 4
-allow four, thirteen and thirty-two runs per day. Changes save when selected.
-The row shows usage and the next UTC reset. If another administrator changed the
+allow four, thirteen and thirty-two runs per day. Level 5 allows unlimited
+research runs. Changes save when selected.
+The row shows usage and the next UTC reset for capped levels, or today's recorded
+usage for Level 5. If another administrator changed the
 tier while you were editing, review the refreshed value before choosing again.
 
 New and unassigned accounts use Level 1. You can change your own research tier;
 the restrictions on changing your own role or active status still apply.
 Subscriptions and manual research share the owner's allowance. Changing a tier
 preserves usage already recorded. The existing AI connections controls continue
-to manage provider-call and token limits independently.
+to manage provider-call and token limits independently. These budgets still apply
+to Level 5; unlimited research does not bypass them.
 
 See [research tiers](AI_COST_CONTROLS.md#research-tiers) for counting, resets and
 failure behaviour.

@@ -12644,11 +12644,11 @@ export interface components {
              * Tier
              * @enum {integer}
              */
-            tier: 1 | 2 | 3 | 4;
+            tier: 1 | 2 | 3 | 4 | 5;
             /** Label */
             label: string;
             /** Limit */
-            limit: number;
+            limit: number | null;
             /**
              * Period
              * @enum {string}
@@ -12657,7 +12657,7 @@ export interface components {
             /** Used */
             used: number;
             /** Remaining */
-            remaining: number;
+            remaining: number | null;
             /**
              * Period Start
              * Format: date-time
@@ -13577,11 +13577,11 @@ export interface components {
              * Tier
              * @enum {integer}
              */
-            tier: 1 | 2 | 3 | 4;
+            tier: 1 | 2 | 3 | 4 | 5;
             /** Label */
             label: string;
             /** Limit */
-            limit: number;
+            limit: number | null;
             /**
              * Period
              * @enum {string}
@@ -15879,11 +15879,11 @@ export interface components {
              * Tier
              * @enum {integer}
              */
-            tier: 1 | 2 | 3 | 4;
+            tier: 1 | 2 | 3 | 4 | 5;
             /** Label */
             label: string;
             /** Limit */
-            limit: number;
+            limit: number | null;
             /**
              * Period
              * @enum {string}
@@ -15892,7 +15892,7 @@ export interface components {
             /** Used */
             used: number;
             /** Remaining */
-            remaining: number;
+            remaining: number | null;
             /**
              * Period Start
              * Format: date-time

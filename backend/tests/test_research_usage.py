@@ -12,14 +12,15 @@ from ase.domain.users import Role
 
 
 @pytest.mark.parametrize(
-    "tier,limit,period", [(1, 4, "week"), (2, 4, "day"), (3, 13, "day"), (4, 32, "day")]
+    "tier,limit,period",
+    [(1, 4, "week"), (2, 4, "day"), (3, 13, "day"), (4, 32, "day"), (5, None, "day")],
 )
 def test_tier_allowances(tier, limit, period):
     policy = tier_policy(tier)
     assert (policy.limit, policy.period) == (limit, period)
 
 
-@pytest.mark.parametrize("tier", [True, False, 0, 5, "1", 1.0])
+@pytest.mark.parametrize("tier", [True, False, 0, 6, "1", 1.0])
 def test_invalid_tiers(tier):
     with pytest.raises(InvalidRequest):
         tier_policy(tier)

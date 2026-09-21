@@ -24,6 +24,7 @@ export function researchUsagePage(): ResearchUsagePage {
       { tier: 2, label: 'Level 2', limit: 4, period: 'day' },
       { tier: 3, label: 'Level 3', limit: 13, period: 'day' },
       { tier: 4, label: 'Level 4', limit: 32, period: 'day' },
+      { tier: 5, label: 'Level 5', limit: null, period: 'day' },
     ],
     items: [adminUser, plainUser].map((user) => ({
       user_id: user.id,

@@ -38757,7 +38757,8 @@
               1,
               2,
               3,
-              4
+              4,
+              5
             ],
             "title": "Tier"
           },
@@ -38766,7 +38767,14 @@
             "title": "Label"
           },
           "limit": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Limit"
           },
           "period": {
@@ -38782,7 +38790,14 @@
             "title": "Used"
           },
           "remaining": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Remaining"
           },
           "period_start": {
@@ -41171,7 +41186,7 @@
         "properties": {
           "tier": {
             "type": "integer",
-            "maximum": 4.0,
+            "maximum": 5.0,
             "minimum": 1.0,
             "title": "Tier"
           },
@@ -41197,7 +41212,8 @@
               1,
               2,
               3,
-              4
+              4,
+              5
             ],
             "title": "Tier"
           },
@@ -41206,7 +41222,14 @@
             "title": "Label"
           },
           "limit": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Limit"
           },
           "period": {
@@ -47764,7 +47787,8 @@
               1,
               2,
               3,
-              4
+              4,
+              5
             ],
             "title": "Tier"
           },
@@ -47773,7 +47797,14 @@
             "title": "Label"
           },
           "limit": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Limit"
           },
           "period": {
@@ -47789,7 +47820,14 @@
             "title": "Used"
           },
           "remaining": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Remaining"
           },
           "period_start": {

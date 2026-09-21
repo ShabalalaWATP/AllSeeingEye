@@ -11,12 +11,12 @@ from ase.domain.research_usage import ResearchAllowance
 
 
 class ResearchAllowanceOut(BaseModel):
-    tier: Literal[1, 2, 3, 4]
+    tier: Literal[1, 2, 3, 4, 5]
     label: str
-    limit: int
+    limit: int | None
     period: Literal["day", "week"]
     used: int
-    remaining: int
+    remaining: int | None
     period_start: datetime
     resets_at: datetime
     revision: int
@@ -31,9 +31,9 @@ class UserResearchAllowanceOut(ResearchAllowanceOut):
 
 
 class ResearchTierOut(BaseModel):
-    tier: Literal[1, 2, 3, 4]
+    tier: Literal[1, 2, 3, 4, 5]
     label: str
-    limit: int
+    limit: int | None
     period: Literal["day", "week"]
 
 
@@ -44,5 +44,5 @@ class ResearchUsagePageOut(BaseModel):
 
 class ResearchTierIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    tier: Annotated[int, Field(strict=True, ge=1, le=4)]
+    tier: Annotated[int, Field(strict=True, ge=1, le=5)]
     expected_revision: Annotated[int, Field(strict=True, ge=0)]

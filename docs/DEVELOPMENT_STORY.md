@@ -5591,3 +5591,16 @@ Independent quality and security reviews found and resolved the subscription
 notice issue and automatic dashboard briefings consuming research allowance. Only
 the three fixed server briefing factories now opt out; clients cannot select this
 exemption. Provider-call and token budgets remain in force for all model work.
+
+## 21 September 2026: Unlimited research level
+
+Level 5 removes the cap on manual and subscription research runs. Unlimited is
+represented explicitly with nullable limit and remaining fields. Usage remains
+recorded for both day and week, so switching to a capped level does not erase it.
+The interface shows unlimited research and today's usage. Provider budgets and
+queue limits continue to apply. Migration 0066 widens the assignment constraint
+and protects retained Level 5 assignments from an incompatible downgrade.
+Focused local verification passed 44 backend/migration tests and 29 frontend
+tests. Independent quality and defensive reviews found no blocking issues.
+The release gate includes the full SQLite/PostgreSQL suites, frontend coverage,
+security checks and a migration-aware rollout.

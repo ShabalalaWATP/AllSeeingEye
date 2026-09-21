@@ -44,7 +44,7 @@ class ResearchUsageService:
             policy.limit,
             policy.period,
             used,
-            max(0, policy.limit - used),
+            None if policy.limit is None else max(0, policy.limit - used),
             start,
             end,
             revision,

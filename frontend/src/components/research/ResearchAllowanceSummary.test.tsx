@@ -11,6 +11,39 @@ import { server } from '@/test/server';
 import { ResearchAllowanceSummary } from './ResearchAllowanceSummary';
 
 describe('ResearchAllowanceSummary', () => {
+  it.each([
+    [0, '0 runs recorded today (UTC)'],
+    [1, '1 run recorded today (UTC)'],
+    [37, '37 runs recorded today (UTC)'],
+  ] as const)(
+    'shows unlimited research with %i recorded runs and no allowance reset or exhausted state',
+    async (used, recorded) => {
+      server.use(
+        http.get('/api/research-usage/me', () =>
+          HttpResponse.json(
+            researchAllowance({
+              tier: 5,
+              label: 'Level 5',
+              limit: null,
+              remaining: null,
+              used,
+              period: 'day',
+            }),
+          ),
+        ),
+      );
+      render(<ResearchAllowanceSummary />);
+      expect(await screen.findByText('Level 5 · Unlimited research runs')).toBeInTheDocument();
+      expect(screen.getByText('No limit on research runs.')).toBeInTheDocument();
+      expect(screen.getByText(recorded)).toBeInTheDocument();
+      expect(screen.getByText(/AI provider limits also apply/)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/remaining|Resets|Your research allowance is used/),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/null/)).not.toBeInTheDocument();
+    },
+  );
+
   it('shows remaining runs, reset time and what consumes an allowance', async () => {
     render(<ResearchAllowanceSummary />);
     expect(await screen.findByText('3 of 4 research runs remaining')).toBeInTheDocument();

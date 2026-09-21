@@ -12,7 +12,7 @@ from ase.adapters.persistence.base import Base, UTCDateTime
 class ResearchTierRow(Base):
     __tablename__ = "research_tiers"
     __table_args__ = (
-        CheckConstraint("tier BETWEEN 1 AND 4", name="ck_research_tier"),
+        CheckConstraint("tier BETWEEN 1 AND 5", name="ck_research_tier"),
         CheckConstraint("revision > 0", name="ck_research_tier_revision"),
     )
 

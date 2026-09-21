@@ -9,6 +9,50 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
 describe('User research tiers', () => {
+  it('assigns unlimited research using the exact revision and keeps its saved display after refresh', async () => {
+    let body: unknown;
+    let page = researchUsagePage();
+    page = { ...page, items: page.items.map((item) => ({ ...item, revision: 7 })) };
+    server.use(
+      http.get('/api/admin/research-usage', () => HttpResponse.json(page)),
+      http.put('/api/admin/users/:id/research-tier', async ({ request, params }) => {
+        body = await request.json();
+        expect(params.id).toBe(plainUser.id);
+        const updated = {
+          ...page.items.find((item) => item.user_id === plainUser.id)!,
+          tier: 5 as const,
+          label: 'Level 5',
+          limit: null,
+          remaining: null,
+          period: 'day' as const,
+          used: 37,
+          revision: 8,
+        };
+        page = {
+          ...page,
+          items: page.items.map((item) => (item.user_id === updated.user_id ? updated : item)),
+        };
+        return HttpResponse.json(updated);
+      }),
+    );
+    const { user } = renderApp('/admin/users', 'admin');
+    const label = `Research allowance for ${plainUser.email}`;
+    const select = await screen.findByRole('combobox', { name: label });
+    expect(within(select).getByRole('option', { name: 'Level 5: Unlimited' })).toBeInTheDocument();
+    await user.selectOptions(select, '5');
+    await waitFor(() => expect(select).toHaveValue('5'));
+    expect(body).toEqual({ tier: 5, expected_revision: 7 });
+    const row = select.closest('tr');
+    expect(row).not.toBeNull();
+    const cells = within(row!);
+    expect(cells.getByText('No limit on research runs')).toBeInTheDocument();
+    expect(cells.getByText('37 runs recorded today (UTC)')).toBeInTheDocument();
+    expect(cells.queryByText(/remaining|Resets|null/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Refresh' }));
+    expect(await screen.findByRole('combobox', { name: label })).toHaveValue('5');
+    expect(screen.getByText('37 runs recorded today (UTC)')).toBeInTheDocument();
+  });
+
   it('allows an administrator to change their own research tier with the current revision', async () => {
     let body: unknown;
     server.use(
