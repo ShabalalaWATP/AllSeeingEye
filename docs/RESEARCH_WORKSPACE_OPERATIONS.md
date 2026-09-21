@@ -19,6 +19,10 @@ to the source catalogue and alert rules. These preferences apply per user. See
 
 ## Questions and scope
 
+Saved research, subscription and geolocation lists show their own reports in
+pages of 50. Use **Previous** and **Next** to reach older work. Filtering happens
+before pagination and follows current account and team access.
+
 The form reads top to bottom in numbered steps: the question and research focus,
 Basic, Deep or Advanced, where to look, which themes, a conflict or disaster to pin
 to, what to read, which period, then scope and sources. Where to look takes up to

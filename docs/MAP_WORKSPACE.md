@@ -45,6 +45,11 @@ Updating a collection keeps its scope and checks the revision to avoid
 overwriting another edit. **Browse saved** and **Load more collections** open
 existing work. Opening a collection starts a fresh editing history.
 
+If there are unsaved changes, choose **Save and open**, **Discard and open** or
+**Cancel** before replacing the collection. Add or apply an unfinished sketch
+before saving it. If you edit while a load is pending, the current work is kept
+and the collection is not replaced.
+
 Select a drawing to edit it. Drag individual vertex handles, move the sketch,
 or use **Edit coordinates** to enter WGS84 longitude/latitude pairs. Paths and
 polygons support inserting and removing vertices; circles accept a numeric
@@ -67,6 +72,10 @@ are not retained when importing that export.
 Select an area drawing and choose **Research**. Named points can instead become
 radio transmitter sites. Drawn paths, measurements and planned routes can supply
 the corridor tool.
+
+The corridor tool shows which path it will research. A newly calculated route
+becomes the selected source; use the source selector to choose a named drawing,
+sketch or measurement instead. Check that selection before previewing the area.
 
 ```mermaid
 flowchart LR

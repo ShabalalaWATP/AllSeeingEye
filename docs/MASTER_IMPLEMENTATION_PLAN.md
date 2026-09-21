@@ -4,6 +4,24 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+### Workflow audit repairs, 21 September 2026
+
+- [x] Protect unsaved drawings and make corridor path selection explicit.
+- [x] Filter saved reports before pagination and expose older pages.
+- [x] Preserve embedding connection purpose across provider changes.
+- [x] Preserve raw directory input and offer revision-conflict recovery.
+- [x] Reject missing subscription times while accepting midnight.
+- [x] Wake reset source loops and honour provider retry deadlines.
+- [x] Reconcile map news snapshots with live corrections and removals.
+- [x] Explain unavailable email recovery without revealing account existence.
+- [x] Correct camera catalogue coverage by provider.
+- [ ] Complete regression suites, integration checks and independent reviews.
+- [ ] Complete PR CI before any merge or production release.
+
+SMTP delivery remains an installation responsibility. This repair provides a
+clear administrator reset-link fallback; it does not configure a mail provider
+or claim successful real-world delivery.
+
 19 September deployed source-health investigation: all 140 entries shown as waiting
 were research-only sources; the inspected registry had 263 healthy scheduled feeds
 out of 278. Local corrections separate polling health from on-demand registration,

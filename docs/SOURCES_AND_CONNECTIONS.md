@@ -44,6 +44,11 @@ missing; they are labelled optional.
 
 ## How the inventory is built
 
+Resetting a scheduled source wakes its poll loop after any cancelled request has
+finished cleaning up. Repeated resets are combined. A provider's required retry
+deadline still applies and remains visible as the next poll time; reset does not
+bypass that cooldown.
+
 `ase.application.source_inventory.SourceInventory` merges three lists: live
 connectors from the scheduler, on-demand research specifications, and the keyed
 connectors that the registry only constructs once their credential exists

@@ -28,6 +28,9 @@ The News icon loads a geographic sample of up to 300 retained reporting records
 on either the globe or map. It refreshes one minute after each completed request
 while visible and enabled, retaining the previous sample during refresh. Requests
 are cancelled on disable, scope changes and logout; slow requests do not overlap.
+Live corrections and removals also update the sample. Observation time, then
+publication time, determine freshness; live updates win ties. An older snapshot
+cannot restore an item removed while that request was pending.
 The source-supplied country references have labelled newspaper badges. Reports
 with supplied city or regional geography have approximate location symbols.
 Selecting a marker highlights it, and closing details or excluding it clears the
