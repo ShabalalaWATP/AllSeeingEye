@@ -23,10 +23,13 @@ research run.
 | Level 2 | 4 runs per day | 00:00 UTC |
 | Level 3 | 13 runs per day | 00:00 UTC |
 | Level 4 | 32 runs per day | 00:00 UTC |
+| Level 5 | Unlimited research runs | No research allowance reset |
 
 Accounts without an assignment, including new accounts, use Level 1.
 Administrators can change another account's tier or their own research tier.
 This does not change account roles, model assignments or provider budgets.
+Level 5 removes the research-run cap for both manual research and subscriptions.
+It does not remove provider-call, token, subscription budget or queue limits.
 
 Manual and scheduled research share the owner's allowance. A subscription run
 uses its owner's allowance even when a team manager starts it. Team research
@@ -44,6 +47,9 @@ submission does not use another run. Starting fresh research or regenerating a
 report does. Deleting a report or discarding a job does not return an allowance slot.
 
 Changing tiers does not reset usage: the app retains both daily and weekly counts.
+Unlimited runs are recorded too. Moving a Level 5 account to a capped tier uses
+its existing counts for that day or week. Level 5 shows today's recorded usage
+instead of a remaining allowance or allowance reset.
 Usage and the next reset are visible alongside research and in account settings.
 An exhausted subscription waits for allowance to become available. The scheduler
 rechecks blocked subscriptions at five-minute intervals. After a reset or tier

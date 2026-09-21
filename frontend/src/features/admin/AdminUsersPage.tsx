@@ -115,7 +115,8 @@ export default function AdminUsersPage() {
       <p className="text-sm text-muted">
         Research levels count manual and subscription runs together. New accounts start at Level 1.
         Browsing, map tools and feed refreshes do not count. Daily limits reset at midnight UTC;
-        weekly limits reset on Monday at midnight UTC.
+        weekly limits reset on Monday at midnight UTC. AI provider and token budgets still apply to
+        every level.
       </p>
       <AdminSection
         title="Accounts"

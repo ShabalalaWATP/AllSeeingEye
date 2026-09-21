@@ -10,7 +10,7 @@ Timestamps are ISO 8601 UTC. No endpoint changes a model assignment or account r
 | Method and path | Access | Result |
 | --- | --- | --- |
 | `GET /api/research-usage/me` | Signed-in account | Its research allowance and current usage |
-| `GET /api/admin/research-usage` | Administrator | The four tier definitions and account allowances |
+| `GET /api/admin/research-usage` | Administrator | The five tier definitions and account allowances |
 | `PUT /api/admin/users/{user_id}/research-tier` | Administrator | Assign a tier using the expected current revision |
 
 An allowance contains `tier`, `label`, `limit`, `period`, `used`, `remaining`,
@@ -18,9 +18,15 @@ An allowance contains `tier`, `label`, `limit`, `period`, `used`, `remaining`,
 contain `user_id`. The administrator list returns `tiers` and `items` arrays.
 
 Assignment input is `{ "tier": 1, "expected_revision": 0 }`. Tiers are integers
-from 1 to 4. An account without an explicit assignment has Level 1 and revision
+from 1 to 5. An account without an explicit assignment has Level 1 and revision
 zero. A stale revision returns HTTP 409; clients reload before offering another
 save. Changing a tier preserves usage already recorded in both periods.
+
+Level 5 returns `null` for `limit` and `remaining`, meaning no research-run cap.
+Its `period`, `used`, `period_start` and `resets_at` describe the daily usage
+counter, not an allowance reset. Clients show unlimited research and today's
+usage without a countdown or exhausted state. Usage continues to be recorded
+for both periods, so a later downgrade preserves it. Provider budgets still apply.
 
 Only administrators can change tiers, including their own. Assignment rechecks
 current administrator authority under the account locks and records an audit entry.

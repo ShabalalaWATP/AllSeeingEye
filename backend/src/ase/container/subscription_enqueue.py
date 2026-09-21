@@ -26,7 +26,8 @@ class SubscriptionAdmission(AdmissionService):
 
     def __init__(self, container: Container) -> None:
         async def research_available(session: AsyncSession, owner_id: UUID, now: datetime) -> bool:
-            return (await container.research_usage(session).allowance(owner_id, now)).remaining > 0
+            remaining = (await container.research_usage(session).allowance(owner_id, now)).remaining
+            return remaining is None or remaining > 0
 
         super().__init__(
             SqlSubscriptionTransactions(

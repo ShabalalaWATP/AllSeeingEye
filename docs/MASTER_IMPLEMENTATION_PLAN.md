@@ -1201,10 +1201,28 @@ provider-call and token limits continue to apply separately.
 - [x] Verify permissions, concurrent admission, idempotency, reset boundaries,
   scheduled attribution and ordinary-request exclusions.
 - [x] Update reader documentation and complete independent quality/security review.
-- [ ] Pass the relevant local checks and full CI before release review.
+- [x] Pass the relevant local checks and full CI before release review.
+  PR 59 is merged and release `3f0137aa` is deployed with migration 0065 verified.
 
 Defaults: unassigned and newly created accounts use Level 1. Administrators may
 change their own research tier without changing their role or account status.
 Admitted runs count even if they later fail or are cancelled. Rejected requests
 that never reach admission do not count. No production migration or deployment
 is part of development verification.
+
+### Unlimited research tier, 21 September 2026
+
+Add Level 5 with no research-run cap. Manual research and subscriptions remain
+attributed to the owner. Provider/token budgets and queue limits still apply.
+Both usage counters continue to advance, preserving usage on a later downgrade.
+
+- [x] Define explicit nullable limits and daily usage reporting for Level 5.
+- [x] Implement strict administration, admission/recovery and migration 0066.
+- [x] Show unlimited research without remaining/reset messages in the UI.
+- [x] Add regressions for finite limits, unlimited admission, downgrades, provider
+  budgets, permissions, subscription recovery and SQLite/PostgreSQL migrations.
+- [x] Pass focused local tests and independent quality/security review.
+
+Release gate: merge after full CI, then verify a backup, migration and live
+allowance reads. The merged pull request and deployment workflow record release
+completion. Recovery must preserve any Level 5 assignments and usage counters.

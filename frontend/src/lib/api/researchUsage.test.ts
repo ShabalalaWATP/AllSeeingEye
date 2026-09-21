@@ -14,7 +14,20 @@ describe('research allowance API', () => {
     expect(await getAdminResearchUsage()).toEqual(researchUsagePage());
   });
 
-  it.each([{ tier: 5 }, { remaining: -1 }, { period: 'month' }, { revision: -1 }])(
+  it('accepts null allowance counts for the unlimited research level', async () => {
+    const unlimited = researchAllowance({
+      tier: 5,
+      label: 'Level 5',
+      limit: null,
+      remaining: null,
+      used: 75,
+      period: 'day',
+    });
+    server.use(http.get('/api/research-usage/me', () => HttpResponse.json(unlimited)));
+    expect(await getMyResearchUsage()).toEqual(unlimited);
+  });
+
+  it.each([{ tier: 6 }, { remaining: -1 }, { period: 'month' }, { revision: -1 }])(
     'rejects an invalid allowance instead of displaying invented limits: %j',
     async (invalid) => {
       server.use(

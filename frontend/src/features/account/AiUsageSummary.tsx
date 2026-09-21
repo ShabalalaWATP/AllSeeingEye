@@ -33,8 +33,9 @@ export function AiUsageSummary() {
         <p className="font-mono text-xs uppercase tracking-widest text-cyan">Usage awareness</p>
         <h2 className="mt-2 text-xl font-semibold">AI usage and research allowance</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Your level limits complete research runs. AI provider budgets separately limit the model
-          calls and tokens used inside those runs. Team and site budgets also apply.
+          Your research level sets the allowance for complete research runs. AI provider budgets
+          separately limit the model calls and tokens used inside those runs. Team and site budgets
+          also apply.
         </p>
       </header>
       <ResearchAllowanceSummary />

@@ -12,14 +12,19 @@ of whole research runs therefore needs a separate admission boundary.
 
 ## Decision
 
-Every account has one of four tiers: four runs per week, or four, thirteen or
-thirty-two runs per day. An absent assignment means Level 1. Periods use UTC
+Every account has one of five tiers: four runs per week, four, thirteen or
+thirty-two runs per day, or unlimited research. An absent assignment means Level 1. Periods use UTC
 calendar days and Monday-start weeks.
 
 Store assignments and daily/weekly usage separately from provider-call policies,
 authentication session data and report contents. Both counters advance for each
 admitted run. Changing tiers selects which counter to enforce; it does not reset
 either counter. Deleting report content cannot return allowance.
+The unlimited tier uses nullable limits and remaining counts, not a large numeric
+sentinel. Its daily usage is still visible and both counters advance, preserving
+usage when an administrator later selects a capped tier. Provider budgets and
+queue limits remain independent. Migration 0066 permits Level 5 assignments and
+refuses a downgrade while any Level 5 assignment remains.
 
 Use one application service behind a narrow persistence port. Enforce it at both
 durable report admission and synchronous report generation. Subscriptions charge

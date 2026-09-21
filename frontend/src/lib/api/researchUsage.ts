@@ -13,18 +13,24 @@ export type ResearchUsagePage = Schemas['ResearchUsagePageOut'];
 export type UserResearchAllowance = Schemas['UserResearchAllowanceOut'];
 export type ResearchTierInput = Schemas['ResearchTierIn'];
 
-export const researchTierSchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
+export const researchTierSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+]);
 const period = z.enum(['day', 'week']);
 const count = z.number().int().nonnegative();
 const tierSchema = z.object({
   tier: researchTierSchema,
   label: z.string(),
-  limit: z.number().int().positive(),
+  limit: z.number().int().positive().nullable(),
   period,
 });
 const allowanceSchema = tierSchema.extend({
   used: count,
-  remaining: count,
+  remaining: count.nullable(),
   period_start: z.string(),
   resets_at: z.string(),
   revision: count,
