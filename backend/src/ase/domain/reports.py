@@ -31,6 +31,12 @@ class ReportStatus(StrEnum):
     FAILED = "failed"
 
 
+class ReportOrigin(StrEnum):
+    RESEARCH = "research"
+    SUBSCRIPTION = "subscription"
+    GEOLOCATION = "geolocation"
+
+
 class ChangeFromPrevious(StrEnum):
     NEW = "new"
     UNCHANGED = "unchanged"

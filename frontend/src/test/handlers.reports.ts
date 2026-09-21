@@ -7,7 +7,15 @@ export const reportHandlers = [
   http.get('/api/reports/:id/original-assets', () => HttpResponse.json({ items: [] })),
   http.get('/api/reports/templates', () => HttpResponse.json({ items: reportTemplates })),
 
-  http.get('/api/reports', () => HttpResponse.json({ items: [reportSummary] })),
+  http.get('/api/reports', ({ request }) => {
+    const query = new URL(request.url).searchParams;
+    return HttpResponse.json({
+      items: query.get('origin') === 'research' ? [reportSummary] : [],
+      limit: Number(query.get('limit') ?? 50),
+      offset: Number(query.get('offset') ?? 0),
+      has_more: false,
+    });
+  }),
 
   http.post('/api/reports', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;

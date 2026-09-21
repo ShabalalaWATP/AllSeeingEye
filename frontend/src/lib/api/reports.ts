@@ -21,8 +21,9 @@ import { evidenceGeometrySchema, observationSchema } from './observations';
 import { projectSchema } from './projects';
 import { sourceDateSchema, textTransformationSchema } from './sourceProvenance';
 
-export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
-export type ReportStatus = z.infer<typeof reportStatusSchema>;
+import { reportStatusSchema, reportSummarySchema } from './reportSummary';
+export { reportStatusSchema, reportSummarySchema } from './reportSummary';
+export type { ReportStatus, ReportSummary } from './reportSummary';
 
 export const templateSchema = z.object({
   id: z.string(),
@@ -35,21 +36,6 @@ export const templateSchema = z.object({
   window_hours: z.number().int(),
 });
 export type ReportTemplate = z.infer<typeof templateSchema>;
-
-export const reportSummarySchema = z.object({
-  team_id: z.uuid().nullable(),
-  id: z.string(),
-  template: z.string(),
-  title: z.string(),
-  scope: z.record(z.string(), z.unknown()),
-  period_from: z.string(),
-  period_to: z.string(),
-  status: reportStatusSchema,
-  created_by: z.string(),
-  created_at: z.string(),
-  latest_version: z.number().int(),
-});
-export type ReportSummary = z.infer<typeof reportSummarySchema>;
 
 const labels = z.array(z.string());
 
@@ -306,13 +292,6 @@ export type ReportRequest = components['schemas']['ReportCreateIn'];
 export async function fetchTemplates(): Promise<ReportTemplate[]> {
   const page = await apiCall('/api/reports/templates', {
     schema: z.object({ items: z.array(templateSchema) }),
-  });
-  return page.items;
-}
-
-export async function fetchReports(): Promise<ReportSummary[]> {
-  const page = await apiCall('/api/reports', {
-    schema: z.object({ items: z.array(reportSummarySchema) }),
   });
   return page.items;
 }

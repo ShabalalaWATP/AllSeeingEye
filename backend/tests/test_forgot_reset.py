@@ -36,10 +36,18 @@ async def test_forgot_password_never_reveals_accounts(
     known = await client.post("/api/auth/forgot-password", json={"email": USER_EMAIL})
     unknown = await client.post("/api/auth/forgot-password", json={"email": "ghost@example.com"})
     assert known.status_code == unknown.status_code == 202
-    assert known.json() == unknown.json() == {"message": FORGOT_MESSAGE}
-    # Without email transport nothing is delivered, but a token was still minted for the user.
-    assert len(email_sender.sent) == 1
-    assert email_sender.sent[0][1] is TokenPurpose.RESET
+    assert (
+        known.json()
+        == unknown.json()
+        == {
+            "message": (
+                "Email password recovery is unavailable on this installation. "
+                "Contact an administrator to request a password reset link."
+            ),
+            "email_available": False,
+        }
+    )
+    assert email_sender.sent == []
 
 
 async def test_forgot_password_rate_limit(client: AsyncClient) -> None:
@@ -100,6 +108,23 @@ class TestWithEmailDelivery:
     @pytest.fixture
     def email_sender(self) -> RecordingEmailSender:
         return RecordingEmailSender(delivered=True)
+
+    async def test_available_recovery_never_reveals_accounts(
+        self, client: AsyncClient, user: User
+    ) -> None:
+        known = await client.post("/api/auth/forgot-password", json={"email": USER_EMAIL})
+        unknown = await client.post(
+            "/api/auth/forgot-password", json={"email": "ghost@example.com"}
+        )
+        assert known.status_code == unknown.status_code == 202
+        assert (
+            known.json()
+            == unknown.json()
+            == {
+                "message": FORGOT_MESSAGE,
+                "email_available": True,
+            }
+        )
 
     async def test_delivered_link_resets_password(
         self, client: AsyncClient, user: User, email_sender: RecordingEmailSender

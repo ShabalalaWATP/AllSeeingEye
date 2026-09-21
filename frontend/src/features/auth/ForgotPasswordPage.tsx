@@ -4,22 +4,24 @@ import { Link } from 'react-router';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
-import { forgotPassword } from '@/lib/api/auth';
+import { forgotPassword, type PasswordRecoveryResult } from '@/lib/api/auth';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
+  const [result, setResult] = useState<PasswordRecoveryResult | null>(null);
   const { run, busy, error } = useAsyncAction(async () => {
-    setMessage(await forgotPassword(email));
+    setResult(await forgotPassword(email));
   });
 
-  if (message !== null) {
+  if (result !== null) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Check your inbox</h1>
-        <Alert tone="success">{message}</Alert>
+        <h1 className="text-lg font-semibold">
+          {result.email_available ? 'Check your inbox' : 'Contact an administrator'}
+        </h1>
+        <Alert tone={result.email_available ? 'info' : 'warning'}>{result.message}</Alert>
         <Link to="/login" className="text-sm text-muted hover:text-text">
           Back to sign in
         </Link>
@@ -37,7 +39,8 @@ export function ForgotPasswordPage() {
     >
       <h1 className="text-lg font-semibold">Forgotten password</h1>
       <p className="text-sm text-muted">
-        Enter your email address. If it is registered, a reset link will be issued.
+        Enter your email address to request a reset link. If email recovery is unavailable, an
+        administrator can help you recover access.
       </p>
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       <TextField

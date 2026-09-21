@@ -85,7 +85,8 @@ export function BriefSubscriptionForm({
         ? 'Enter a name of at most 120 characters.'
         : !validZone || timezone.length > 100
           ? 'Choose a valid IANA timezone.'
-          : !Number.isInteger(local_hour) ||
+          : !/^\d{2}:\d{2}$/.test(`${hour}:${minute}`) ||
+              !Number.isInteger(local_hour) ||
               local_hour < 0 ||
               local_hour > 23 ||
               !Number.isInteger(local_minute) ||
@@ -162,7 +163,7 @@ export function BriefSubscriptionForm({
           required
           value={`${hour}:${minute}`}
           onChange={(event) => {
-            const [nextHour = '06', nextMinute = '00'] = event.target.value.split(':');
+            const [nextHour = '', nextMinute = ''] = event.target.value.split(':');
             setHour(nextHour);
             setMinute(nextMinute);
           }}

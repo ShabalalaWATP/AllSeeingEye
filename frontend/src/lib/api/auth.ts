@@ -7,6 +7,13 @@ import { pendingMfaSchema, type PendingMfa } from './mfa';
 import { apiCall, apiSend } from './client';
 import { messageResponseSchema, tokenResponseSchema, userSchema } from './schemas';
 import type { TokenResponse, User } from './schemas';
+import type { components } from './types.gen';
+
+export type PasswordRecoveryResult = components['schemas']['ForgotPasswordOut'];
+const passwordRecoverySchema: z.ZodType<PasswordRecoveryResult> = z.object({
+  message: z.string(),
+  email_available: z.boolean(),
+});
 
 export function login(email: string, password: string): Promise<TokenResponse | PendingMfa> {
   return apiCall('/api/auth/login', {
@@ -46,14 +53,13 @@ export async function requestAccount(input: AccountRequestInput): Promise<string
   return result.message;
 }
 
-export async function forgotPassword(email: string): Promise<string> {
-  const result = await apiCall('/api/auth/forgot-password', {
+export function forgotPassword(email: string): Promise<PasswordRecoveryResult> {
+  return apiCall('/api/auth/forgot-password', {
     method: 'POST',
     body: { email },
-    schema: messageResponseSchema,
+    schema: passwordRecoverySchema,
     auth: false,
   });
-  return result.message;
 }
 
 export function setPassword(token: string, newPassword: string): Promise<void> {

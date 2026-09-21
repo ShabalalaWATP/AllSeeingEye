@@ -8331,6 +8331,13 @@ export interface components {
              */
             email: string;
         };
+        /** ForgotPasswordOut */
+        ForgotPasswordOut: {
+            /** Message */
+            message: string;
+            /** Email Available */
+            email_available: boolean;
+        };
         /** FreshnessOut */
         FreshnessOut: {
             /** Control Assessed */
@@ -12311,6 +12318,11 @@ export interface components {
             /** Probability Yardstick */
             probability_yardstick: components["schemas"]["YardstickBandOut"][];
         };
+        /**
+         * ReportOrigin
+         * @enum {string}
+         */
+        ReportOrigin: "research" | "subscription" | "geolocation";
         /** ReportOut */
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -12551,6 +12563,12 @@ export interface components {
         ReportsOut: {
             /** Items */
             items: components["schemas"]["ReportSummaryOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Has More */
+            has_more: boolean;
         };
         /** RequestAccountIn */
         RequestAccountIn: {
@@ -16890,7 +16908,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MessageOut"];
+                    "application/json": components["schemas"]["ForgotPasswordOut"];
                 };
             };
             /** @description Validation Error */
@@ -20727,6 +20745,8 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                offset?: number;
+                origin?: components["schemas"]["ReportOrigin"] | null;
             };
             header?: never;
             path?: never;

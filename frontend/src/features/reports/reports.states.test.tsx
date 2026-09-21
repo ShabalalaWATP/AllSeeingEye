@@ -28,7 +28,11 @@ describe('reports page states', () => {
   });
 
   it('says so when there are no reports yet', async () => {
-    server.use(http.get('/api/reports', () => HttpResponse.json({ items: [] })));
+    server.use(
+      http.get('/api/reports', () =>
+        HttpResponse.json({ items: [], limit: 50, offset: 0, has_more: false }),
+      ),
+    );
     renderApp('/research/saved', 'user');
     expect(
       await screen.findByText('No saved research yet. Ask a question to create your first report.'),
