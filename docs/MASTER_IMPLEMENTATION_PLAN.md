@@ -1181,3 +1181,29 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Load supplements sequentially while preserving errors, scope and cancellation.
 - [x] Pass all 47 selected map/satellite tests and independent code/security review.
 - [ ] Complete release CI and verify catalogue counts in the deployed browser.
+
+### Per-user research tiers, 21 September 2026
+
+Each account has one research tier: Level 1 allows four runs per UTC week;
+Levels 2, 3 and 4 allow four, thirteen and thirty-two runs per UTC day.
+Manual research and subscriptions share the owner's allowance. Ordinary site
+requests and internal provider calls do not consume research runs. Existing
+provider-call and token limits continue to apply separately.
+
+- [x] Trace durable, synchronous and scheduled admission paths and agree the
+  subscription counting rule with the operator.
+- [ ] Add persisted tier assignments and daily/weekly counters with a migration.
+- [ ] Enforce admission atomically, preserve counts across tier changes and
+  deletion, and avoid charging existing-job retries or resumes twice.
+- [ ] Add administrator tier assignment and user-visible usage/reset information.
+- [ ] Give exhausted subscriptions a clear reason and retry at allowance reset.
+- [ ] Verify permissions, concurrent admission, idempotency, reset boundaries,
+  scheduled attribution and ordinary-request exclusions.
+- [ ] Update reader documentation and complete independent quality/security review.
+- [ ] Pass the relevant local checks and full CI before release review.
+
+Defaults: unassigned and newly created accounts use Level 1. Administrators may
+change their own research tier without changing their role or account status.
+Admitted runs count even if they later fail or are cancelled. Rejected requests
+that never reach admission do not count. No production migration or deployment
+is part of development verification.

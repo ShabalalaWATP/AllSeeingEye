@@ -5567,3 +5567,17 @@ edge cases: overlapping fetch cleanup after repeated source resets, and a news
 refresh journal exhausted by a full live-event mirror. Both now have regression
 tests. The repairs use focused hooks, domain types and existing ports, with no new
 runtime dependencies or database migration.
+
+## 21 September 2026: Research tier implementation
+
+The operator requested four account levels for research use, including subscriptions,
+with approximately 25 percent more headroom than the initial limits. The agreed
+allowances are four runs per week, then four, thirteen or thirty-two runs per day.
+These count admitted research runs rather than the internal model calls used to
+produce a report. Ordinary site requests do not consume this allowance.
+
+Implementation work covers persisted assignments and counters, both durable and
+synchronous admission, administrator controls and visible usage/reset information.
+Daily and weekly usage must remain intact when a tier changes or a report is deleted.
+Existing-job resumes must not be charged again. Validation and release evidence will
+be recorded after those checks finish.
