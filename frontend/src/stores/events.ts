@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { boundedEvents, mergeSnapshots } from './events.coverage';
 import { SnapshotRefresh } from './events.refresh';
+import { publishEventChange } from './events.changes';
 import { selectionAfterMirrorUpdate, type SelectionOwner } from './events.selection';
 export {
   filterByCountry,
@@ -213,6 +214,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
 
     applyUpsert: (events) => {
       if (events.length === 0) return;
+      publishEventChange({ kind: 'upsert', events });
       const current = get();
       let merged = current.byId;
       for (const event of events) {
@@ -235,6 +237,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
 
     applyExpire: (ids) => {
       if (ids.length === 0) return;
+      publishEventChange({ kind: 'expire', ids });
       for (const id of ids) record(id, null);
       const selected = get().selectedId;
       if (selected !== null && ids.includes(selected)) get().select(null);
@@ -269,6 +272,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           refresh.request(pending !== null);
           return;
         }
+        publishEventChange({ kind: 'reset' });
         set({
           byId: {},
           list: [],
@@ -310,6 +314,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
 
     reset: () => {
+      publishEventChange({ kind: 'reset' });
       refresh.cancel();
       pending?.controller.abort();
       pending = null;

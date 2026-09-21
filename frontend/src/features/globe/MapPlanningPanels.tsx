@@ -4,7 +4,7 @@ import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
 import { RoutePlannerPanel } from '@/components/maps/RoutePlannerPanel';
 import { TerrainAnalysisPanel } from '@/components/maps/TerrainAnalysisPanel';
 import { CoordinateWorkbench } from '@/components/maps/CoordinateWorkbench';
-import { CorridorResearchPanel } from '@/components/maps/CorridorResearchPanel';
+import { CorridorSourcePanel, type CorridorSource } from '@/components/maps/CorridorSourcePanel';
 import { NuclearEducationPanel } from '@/components/maps/NuclearEducationPanel';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Position } from '@/lib/map/geoJsonTypes';
@@ -35,13 +35,24 @@ export function mapPlanningPanels(
   const selectedPoints =
     tools.drawingWorkspace.selected?.anchors ??
     (tools.drawing.points.length ? tools.drawing.points : measurement.points);
-  const corridorPoints =
-    tools.drawingWorkspace.selected?.shape === 'path'
-      ? tools.drawingWorkspace.selected.anchors
-      : tools.drawing.shape === 'path' && tools.drawing.points.length > 1
-        ? tools.drawing.points
-        : (tools.routePlanner.route?.coordinates ??
-          (measurement.mode === 'distance' ? measurement.points : []));
+  const corridorSources: CorridorSource[] = [
+    ...(tools.routePlanner.route
+      ? [{ id: 'route', label: 'Calculated route', points: tools.routePlanner.route.coordinates }]
+      : []),
+    ...tools.drawingWorkspace.objects
+      .filter((item) => item.shape === 'path')
+      .map((item) => ({
+        id: `drawing:${item.id}`,
+        label: `Drawing: ${item.name}`,
+        points: item.anchors,
+      })),
+    ...(tools.drawing.shape === 'path' && tools.drawing.points.length > 1
+      ? [{ id: 'sketch', label: 'Current sketch', points: tools.drawing.points }]
+      : []),
+    ...(measurement.mode === 'distance' && measurement.points.length > 1
+      ? [{ id: 'measurement', label: 'Measured path', points: measurement.points }]
+      : []),
+  ];
   return [
     <ControlPanel key="workspace" label="On this map" icon="layers" size="medium">
       <MapWorkspacePanel tools={tools} open={open} />
@@ -100,8 +111,8 @@ export function mapPlanningPanels(
           ? { initialWaypoints: measurement.points.slice(0, 8).map(([lon, lat]) => ({ lon, lat })) }
           : {})}
       />
-      <CorridorResearchPanel
-        points={corridorPoints}
+      <CorridorSourcePanel
+        sources={corridorSources}
         onResearchArea={(area) => {
           tools.adoptResearch(area);
           open('Research area');

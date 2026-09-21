@@ -13,6 +13,7 @@ import { fireKind } from '@/lib/hazards';
 import { isNewsCategory, useNewsFilters } from './newsFilters';
 import { useMapNewsFeed } from './useMapNewsFeed';
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
+import { mergeSnapshots } from '@/stores/events.coverage';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -35,11 +36,7 @@ export function useDashboardEvents(now: number) {
     true,
   );
   const combined = useMemo(
-    () => [
-      ...new Map(
-        [...list, ...(newsSnapshot.data?.items ?? [])].map((event) => [event.id, event]),
-      ).values(),
-    ],
+    () => [...mergeSnapshots(newsSnapshot.data?.items ?? [], list).values()],
     [list, newsSnapshot.data],
   );
   const countryEvents = useMemo(() => filterByCountry(combined, country), [combined, country]);

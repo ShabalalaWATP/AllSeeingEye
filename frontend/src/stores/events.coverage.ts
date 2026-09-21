@@ -1,4 +1,5 @@
 import { geographicOrder } from './events.geography';
+import { compareEventFreshness as observationOrder } from '@/lib/liveEventSnapshot';
 import { isSatellite, satellitePriority } from '@/lib/satellites';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { isMilitaryAircraft, isMilitaryVessel } from '@/lib/traffic';
@@ -17,13 +18,6 @@ export function isFirms(event: LiveEvent): boolean {
     event.category === 'disaster' &&
     event.subtype === 'thermal_detection' &&
     (event.source_id === 'firms' || event.source_id.startsWith('firms_'))
-  );
-}
-
-function observationOrder(a: LiveEvent, b: LiveEvent): number {
-  return (
-    Date.parse(a.observed_at) - Date.parse(b.observed_at) ||
-    Date.parse(a.published_at ?? a.observed_at) - Date.parse(b.published_at ?? b.observed_at)
   );
 }
 

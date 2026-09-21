@@ -62,6 +62,31 @@ it('clears explicit expiry even when the selected article exists only in a suppl
   const { result } = await selectArticle();
   act(() => useEventsStore.getState().applyExpire([article.id]));
   expect(result.current.selected).toBeNull();
+  expect(result.current.quality.filtered.some((event) => event.id === article.id)).toBe(false);
+});
+
+it('keeps a newer live correction instead of the older news snapshot', async () => {
+  const { result } = await selectArticle();
+  const corrected = {
+    ...article,
+    title: 'Corrected location',
+    observed_at: '2026-09-21T12:00:00Z',
+  };
+  act(() => useEventsStore.getState().applyUpsert([corrected]));
+  expect(result.current.selected?.title).toBe(corrected.title);
+  expect(result.current.newsSnapshot.data?.items[0]?.title).toBe(corrected.title);
+});
+
+it('does not retain a country-corrected article through its old snapshot', async () => {
+  const { result } = await selectArticle();
+  act(() => result.current.setCountry('DE'));
+  await waitFor(() => expect(result.current.newsSnapshot.loading).toBe(false));
+  act(() =>
+    useEventsStore
+      .getState()
+      .applyUpsert([{ ...article, country_iso: 'FR', observed_at: '2026-09-21T12:00:00Z' }]),
+  );
+  expect(result.current.newsSnapshot.data?.items).toEqual([]);
 });
 it('clears selection when its owning snapshot removes the article and never revives it', async () => {
   const { result } = await selectArticle();

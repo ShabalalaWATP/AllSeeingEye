@@ -118,6 +118,7 @@ it('starts a fresh undo history when opening a saved collection', async () => {
     updated_at: '',
   });
   await act(() => result.current.workspace.storage.load('saved'));
+  await act(() => result.current.workspace.storage.confirmLoad('discard'));
   expect(result.current.workspace.objects).toEqual([]);
   expect(result.current.workspace.canUndo).toBe(false);
   expect(result.current.drawing.canUndo).toBe(false);

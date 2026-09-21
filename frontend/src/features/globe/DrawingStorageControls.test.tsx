@@ -27,6 +27,10 @@ function state(): DrawingWorkspace['storage'] {
   return {
     active: null,
     pendingEdits: false,
+    dirty: false,
+    pendingLoad: null,
+    cancelLoad: vi.fn(),
+    confirmLoad: vi.fn(() => Promise.resolve()),
     documents: [],
     hasMore: false,
     title: 'Drawings',
@@ -80,4 +84,18 @@ it('keeps the active collection scope visible and makes copies personal', () => 
   expect(screen.getByRole('button', { name: 'Save a personal copy' })).toBeDisabled();
   expect(screen.getByRole('status')).toHaveTextContent('apply its edits');
   expect(screen.getByRole('alert')).toHaveTextContent('revision conflict');
+});
+it('offers save, discard and cancel decisions, requiring applied sketch geometry for saving', () => {
+  const storage = { ...state(), pendingLoad: 'saved', dirty: true };
+  const { rerender } = render(<DrawingStorageControls storage={storage} />);
+  expect(screen.getByRole('region', { name: 'Unsaved drawing changes' })).toHaveFocus();
+  fireEvent.click(screen.getByRole('button', { name: 'Save and open' }));
+  expect(storage.confirmLoad).toHaveBeenCalledWith('save', undefined);
+  fireEvent.click(screen.getByRole('button', { name: 'Discard and open' }));
+  expect(storage.confirmLoad).toHaveBeenCalledWith('discard');
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel opening' }));
+  expect(storage.cancelLoad).toHaveBeenCalledOnce();
+  rerender(<DrawingStorageControls storage={{ ...storage, pendingEdits: true }} />);
+  expect(screen.getByRole('button', { name: 'Save and open' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Discard and open' })).toBeEnabled();
 });
