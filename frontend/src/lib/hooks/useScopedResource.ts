@@ -11,6 +11,11 @@ function identity() {
   return `${user?.id ?? ''}:${user?.role ?? ''}:${user?.is_active ?? false}`;
 }
 
+/** The key a load started now would carry; it differs from `key` once access has changed. */
+export function currentScopeKey(): string {
+  return `${identity()}:${workspaceRevision()}`;
+}
+
 interface Snapshot<T> {
   key: string;
   loader: () => Promise<T>;

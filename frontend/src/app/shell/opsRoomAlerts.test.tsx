@@ -68,13 +68,17 @@ describe('ops-room alert strip', () => {
     ).not.toBeInTheDocument();
     useGlobeStore.setState({ opsRoom: false });
   });
-  it('does not fetch alerts in the regular workspace', async () => {
+  it('gives the regular workspace a bell count rather than the wall-screen strip', async () => {
     const fetch = vi.spyOn(warningApi, 'fetchAlerts');
     renderApp('/research/saved', 'user');
     await screen.findByRole('heading', { name: 'Saved research' });
-    // The rail links to alerts, but nothing in the regular workspace shows a live count.
-    expect(screen.queryByRole('link', { name: /unacknowledged/ })).not.toBeInTheDocument();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(
+      await screen.findByRole('button', { name: 'Notifications, 1 unread' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('complementary', { name: 'Unacknowledged alerts' }),
+    ).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('shows three alerts on the wall and counts the rest', async () => {

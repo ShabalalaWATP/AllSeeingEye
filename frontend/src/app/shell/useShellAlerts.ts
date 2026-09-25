@@ -1,17 +1,17 @@
-import { useEffect } from 'react';
-
 import { fetchAlerts } from '@/lib/api/warning';
-import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { usePolledResource } from '@/lib/hooks/usePolledResource';
 
 const loadAlerts = () => fetchAlerts(24);
-const POLL_MS = 60_000;
+export const SHELL_POLL_MS = 60_000;
 
-/** Poll within the current identity/access revision; stale alerts never survive revocation. */
+/**
+ * The last day's alerts, polled within the current identity and access revision while the
+ * page is visible. Stale alerts never survive revocation.
+ */
+export function useShellAlertsResource() {
+  return usePolledResource(loadAlerts, SHELL_POLL_MS);
+}
+
 export function useShellAlerts() {
-  const { data, reload } = useScopedResource(loadAlerts);
-  useEffect(() => {
-    const timer = window.setInterval(() => void reload(), POLL_MS);
-    return () => window.clearInterval(timer);
-  }, [reload]);
-  return data;
+  return useShellAlertsResource().data;
 }
