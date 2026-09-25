@@ -18,7 +18,7 @@ of the code clear responsibilities.
 | Maps | MapLibre GL, deck.gl | Globe, flat map, observations and overlays |
 | Specialised graphics | Three.js; OGL | Selected 3D views; animated Eye branding |
 | Client state and validation | Zustand, Zod | Shared session/live state and validated API responses |
-| API | Python 3.12+, FastAPI, Pydantic | Typed HTTP endpoints and server-sent events |
+| API | Python 3.13+, FastAPI, Pydantic | Typed HTTP endpoints and server-sent events |
 | Persistence | SQLAlchemy, Alembic | Database access and schema migrations |
 | Databases | SQLite for native development; PostgreSQL for Compose | Accounts, research, reports and configuration |
 | Model access | OpenAI-compatible HTTP APIs; AWS Bedrock Converse | Configurable AI connections behind gateway ports |

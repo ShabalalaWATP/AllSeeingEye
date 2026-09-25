@@ -56,7 +56,7 @@ pnpm install --frozen-lockfile
 cd ..
 ```
 
-`pnpm@11.25.0` matches the repository's `packageManager` setting. Python 3.12 is the minimum supported version; 3.13 matches the backend container and CI setup.
+`pnpm@11.25.0` matches the repository's `packageManager` setting. Python 3.13 is the minimum supported version, matching the backend container and CI.
 
 If PowerShell blocks an npm or pnpm script, use `npm.cmd` or `pnpm.cmd` for that command. If a global npm installation fails because of permissions, use a user-owned Node installation following the [pnpm installation guide](https://pnpm.io/installation).
 

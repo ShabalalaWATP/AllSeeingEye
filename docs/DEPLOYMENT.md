@@ -57,7 +57,9 @@ For public HTTPS, DNS must resolve to your host and the certificate challenge mu
 
 **Run one API process.** The live event store, rate limits and several coordination locks are process-local. Multiple API replicas or Uvicorn workers are not supported by this deployment design.
 
-Keep time synchronisation enabled. Watch memory, disk capacity, source status, model usage and job failures. Arrange log rotation and a retention policy appropriate to your installation.
+Keep time synchronisation enabled. Watch memory, disk capacity, source status, model usage and job failures. Compose bounds each service's container logs (json-file, five 20 MB files) and sets memory and process limits sized from the reference host; raise `mem_limit` in `docker-compose.yml` if a real workload needs more, since an API that reaches its limit is restarted and its live store warms up again. Arrange retention for any logs you ship elsewhere.
+
+Caddy serves pre-compressed Brotli and gzip copies of the web client. Content-hashed files under `/assets/` are cached for a year as immutable; `index.html` and other fixed names revalidate on every visit, so a deploy reaches returning browsers immediately. A missing `/assets/` file answers 404 rather than the application shell.
 
 Before an update, review migration requirements, take and verify a backup, and check the target revision passed CI. An update restarts application processes: live feeds warm up again and running research may be interrupted. Verify health, readiness and sign-in after the update. Restoring application images does not reverse a database migration.
 
