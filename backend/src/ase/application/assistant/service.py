@@ -23,6 +23,7 @@ from ase.application.ports.llm import (
     LlmTokenBudgetExhausted,
     SecretCipher,
 )
+from ase.application.ports.session import SessionCheck
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.assistant import (
@@ -39,7 +40,6 @@ from ase.domain.events import Category
 from ase.domain.llm import LlmProfile, LlmResult, LlmRole, LlmUsage
 from ase.domain.users import User
 
-SessionCheck = Callable[[], Awaitable[None]]
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
 ANSWER_SECONDS = 120
 FOLLOWUP_REFERENCE = re.compile(r"\b(those|these|them|earlier|previous|above)\b", re.I)

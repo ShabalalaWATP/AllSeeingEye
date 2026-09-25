@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./data/ase.db"
     jwt_secret: SecretStr | None = None
     access_token_minutes: int = Field(default=15, ge=1, le=120)
+    # How long a release fence or stream may trust a recent session check when no
+    # committed change was signalled in this process (see ADR 0021).
+    session_recheck_seconds: int = Field(default=15, ge=1, le=60)
     refresh_token_days: int = Field(default=14, ge=1, le=90)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"

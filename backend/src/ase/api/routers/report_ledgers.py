@@ -12,7 +12,7 @@ from ase.api.schemas_report_ledgers import (
     IndicatorCreateIn,
     MissingReadingIn,
 )
-from ase.api.session_guard import validate_request_expiry
+from ase.api.session_fence import FenceDep
 from ase.container.report_ledgers import report_ledgers
 from ase.domain.report_ledgers import ReportLedger
 
@@ -29,6 +29,7 @@ async def list_ledgers(
     report_id: UUID,
     number: VersionNumber,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
@@ -38,7 +39,7 @@ async def list_ledgers(
     items, total = await report_ledgers(container, session).list(
         claims, report_id, number, limit, offset
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return {"items": items, "total": total, "limit": limit, "offset": offset}
 
@@ -49,12 +50,13 @@ async def get_ledger(
     number: VersionNumber,
     ledger_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> ReportLedger:
     result = await report_ledgers(container, session).get(claims, report_id, number, ledger_id)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -65,6 +67,7 @@ async def create_forecast(
     number: VersionNumber,
     body: ForecastCreateIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     context: ContextDep,
@@ -73,7 +76,7 @@ async def create_forecast(
     result = await report_ledgers(container, session).create_forecast(
         claims, report_id, number, body.to_domain(), context
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -84,6 +87,7 @@ async def create_indicator(
     number: VersionNumber,
     body: IndicatorCreateIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     context: ContextDep,
@@ -92,7 +96,7 @@ async def create_indicator(
     result = await report_ledgers(container, session).create_indicator(
         claims, report_id, number, body.to_domain(), context
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -104,6 +108,7 @@ async def review_forecast(
     ledger_id: UUID,
     body: ForecastReviewIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     context: ContextDep,
@@ -112,7 +117,7 @@ async def review_forecast(
     result = await report_ledgers(container, session).decide(
         claims, report_id, number, ledger_id, body.to_domain(), context
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -124,6 +129,7 @@ async def record_missing(
     ledger_id: UUID,
     body: MissingReadingIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     context: ContextDep,
@@ -132,6 +138,6 @@ async def record_missing(
     result = await report_ledgers(container, session).record_missing(
         claims, report_id, number, ledger_id, body.to_domain(), context
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result

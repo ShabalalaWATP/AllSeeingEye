@@ -6,7 +6,7 @@ from datetime import timedelta
 from unittest.mock import AsyncMock
 
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
-from ase.api.routers import economy as economy_api
+from ase.api.session_fence import SessionFence
 from ase.domain.economy import EconomySnapshot
 from ase.domain.economy_catalogue import empty_fx, empty_regions
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
@@ -70,7 +70,7 @@ async def test_source_release_guard_covers_final_filter_and_session_check_only(
     held = False
     original_guard = container.source_admission.guard
     original_filter = container.economy.refilter
-    original_session = economy_api.validate_request_session
+    original_session = SessionFence.confirm
     now = container.clock.now()
 
     @asynccontextmanager
@@ -91,14 +91,14 @@ async def test_source_release_guard_covers_final_filter_and_session_check_only(
         assert held
         return await original_filter(snapshot)
 
-    async def session_check(*args):
+    async def session_check(fence, **options):
         assert held
-        await original_session(*args)
+        await original_session(fence, **options)
 
     monkeypatch.setattr(container.source_admission, "guard", guard)
     monkeypatch.setattr(container.economy, "snapshot", collection)
     monkeypatch.setattr(container.economy, "refilter", refilter)
-    monkeypatch.setattr(economy_api, "validate_request_session", session_check)
+    monkeypatch.setattr(SessionFence, "confirm", session_check)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     response = await client.get("/api/economy", headers=bearer(token))
     assert response.status_code == 200 and not held

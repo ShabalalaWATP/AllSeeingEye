@@ -7,7 +7,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_research_briefs import ResearchBriefDraftIn
 from ase.api.schemas_research_presets import (
@@ -16,7 +16,7 @@ from ase.api.schemas_research_presets import (
     ResearchPresetOut,
     ResearchPresetsOut,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.research.presets import load_presets, pinned_preset, search_presets
 from ase.application.research.presets_definition import preset_definition
 from ase.application.research.presets_readiness import preset_readiness
@@ -54,8 +54,8 @@ async def _source_context(
 @router.get("")
 async def list_presets(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     session: SessionDep,
     response: Response,
     q: Annotated[str, Query(max_length=120)] = "",
@@ -76,8 +76,8 @@ async def list_presets(
                 for preset in selected
             ]
         )
-        await validate_request_session(container, claims, session=session)
-        validate_request_expiry(container, claims)
+        await fence.confirm(session=session)
+        fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"
         return result
 
@@ -87,8 +87,8 @@ async def editable_definition(
     preset_id: str,
     body: PresetDefinitionIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     session: SessionDep,
     response: Response,
 ) -> PresetDefinitionOut:
@@ -121,7 +121,7 @@ async def editable_definition(
                 if selected is not None and row.id not in selected
             ],
         )
-        await validate_request_session(container, claims, session=session)
-        validate_request_expiry(container, claims)
+        await fence.confirm(session=session)
+        fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"
         return result

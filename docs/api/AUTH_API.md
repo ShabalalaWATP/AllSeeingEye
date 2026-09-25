@@ -146,10 +146,12 @@ accounts in stable order and recheck the acting administrator. Self-modification
 is refused. This preserves an active administrator across concurrent supported
 role/deactivation requests without trusting an earlier request-layer check.
 
-An open `/api/stream` rechecks identity and team authority before delivery and
-every 15 seconds while idle. It sends `bye` with `session_revoked` when the
-session ends, or `token_expired` at expiry. Membership/archive changes produce
-`access.changed` so clients can discard stale scoped state.
+An open `/api/stream` rechecks identity and team authority at least every
+`ASE_SESSION_RECHECK_SECONDS` (default 15), immediately after a committed session,
+membership or team change made through the application, and before every private
+alert. It sends `bye` with `session_revoked` when the session ends, or
+`token_expired` at expiry. Membership/archive changes produce `access.changed` so
+clients can discard stale scoped state. See ADR 0021.
 
 ## Password policy
 

@@ -15,6 +15,7 @@ from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
 from ase.application.ports.llm import SecretCipher
 from ase.application.ports.reports import ReportRepository
+from ase.application.ports.session import SessionCheck
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.map_origin import ReportMapOrigin
@@ -111,9 +112,7 @@ class GenerateReportUseCase:
         )
         return record, version
 
-    async def admit_research(
-        self, job: Job, *, revalidate: Callable[[], Awaitable[None]] | None = None
-    ) -> None:
+    async def admit_research(self, job: Job, *, revalidate: SessionCheck | None = None) -> None:
         """Charge synchronous/automatic production; durable workers were charged at admission."""
         if self._research_usage is not None:
             try:

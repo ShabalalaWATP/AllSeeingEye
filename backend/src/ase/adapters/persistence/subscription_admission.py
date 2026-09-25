@@ -14,7 +14,10 @@ from ase.adapters.persistence.subscription_briefs import load_schedule_brief
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
-from ase.application.ports.subscription_admission import SessionCheck, SubscriptionTransaction
+from ase.application.ports.subscription_admission import (
+    SubscriptionTransaction,
+    TransactionSessionCheck,
+)
 from ase.application.report_jobs.service import ReportJobService
 from ase.application.schedules.runner import DueCursor
 from ase.domain.errors import Conflict
@@ -118,7 +121,7 @@ class SqlSubscriptionDueQueue:
             return [edition for edition, _ in rows], following
 
 
-def sql_session_check(check: Callable[[AsyncSession], Awaitable[None]]) -> SessionCheck:
+def sql_session_check(check: Callable[[AsyncSession], Awaitable[None]]) -> TransactionSessionCheck:
     """Keep API session validation in the exact transaction that admits its job."""
 
     async def validate(transaction: SubscriptionTransaction) -> None:

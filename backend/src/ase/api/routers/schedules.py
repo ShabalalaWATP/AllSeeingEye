@@ -11,7 +11,7 @@ from ase.adapters.persistence.subscription_comparisons import (
     SqlSubscriptionComparisonRepository,
 )
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.routers.schedule_activation import router as activation_router
 from ase.api.routers.subscription_controls import router as edition_controls_router
@@ -30,7 +30,7 @@ from ase.api.schemas_subscription_editions import (
     SubscriptionEventOut,
     SubscriptionEventsOut,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.schedules.brief_link import standing_request_from_brief
 from ase.application.schedules.definition import ScheduleInput
 from ase.container.subscription_enqueue import SubscriptionAdmission
@@ -49,23 +49,21 @@ async def run_subscription_now(
     schedule_id: UUID,
     body: RunNowIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     context: ContextDep,
     response: Response,
 ) -> SubscriptionEditionOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     edition = await SubscriptionAdmission(container).run_now(
         schedule_id,
         body.request_id,
         user,
         context,
-        SubscriptionAdmission.session_check(
-            lambda guarded: validate_request_session(container, claims, session=guarded)
-        ),
+        SubscriptionAdmission.session_check(lambda guarded: fence.confirm(session=guarded)),
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SubscriptionEditionOut.from_edition(edition)
 
@@ -74,8 +72,8 @@ async def run_subscription_now(
 async def preview_schedule(
     body: ScheduleIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SchedulePreviewOut:
@@ -94,8 +92,8 @@ async def preview_schedule(
         occurrences = recurrence.preview(container.clock.now(), 3)
     except ValueError as exc:
         raise InvalidQuery("Invalid schedule preview.", fields={"recurrence": str(exc)}) from exc
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SchedulePreviewOut(
         next_three=[
@@ -116,8 +114,8 @@ async def preview_schedule(
 async def list_subscription_editions(
     schedule_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
     limit: int = Query(default=20, ge=1, le=100),
@@ -141,8 +139,8 @@ async def list_subscription_editions(
         limit=limit,
         offset=offset,
     )
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -151,8 +149,8 @@ async def list_subscription_editions(
 async def list_subscription_events(
     schedule_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
     limit: int = Query(default=20, ge=1, le=100),
@@ -171,8 +169,8 @@ async def list_subscription_events(
         limit=limit,
         offset=offset,
     )
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -180,14 +178,14 @@ async def list_subscription_events(
 @router.get("")
 async def list_schedules(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SchedulesOut:
     items = await container.list_schedules(session).execute(user)
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SchedulesOut(items=[ScheduleOut.from_schedule(item) for item in items])
 
@@ -196,20 +194,20 @@ async def list_schedules(
 async def create_schedule(
     body: ScheduleIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> ScheduleOut:
-    await validate_request_session(container, claims, session=session)
+    await fence.confirm(session=session)
     created = await container.create_schedule(session).execute(
         user,
         body.to_input(),
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return ScheduleOut.from_schedule(created)
 
@@ -218,13 +216,13 @@ async def create_schedule(
 async def create_schedule_from_brief(
     body: ScheduleFromBriefIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> ScheduleOut:
-    await validate_request_session(container, claims, session=session)
+    await fence.confirm(session=session)
     access = await container.access_policy(session).context(user, for_update=True)
     brief = await load_brief_revision(session, access, body.brief_id, body.brief_revision)
     access.require_same_scope(
@@ -276,10 +274,10 @@ async def create_schedule_from_brief(
         user,
         data,
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return ScheduleOut.from_schedule(created)
 
@@ -289,21 +287,21 @@ async def update_schedule(
     schedule_id: UUID,
     body: ScheduleIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> ScheduleOut:
-    await validate_request_session(container, claims, session=session)
+    await fence.confirm(session=session)
     updated = await container.update_schedule(session).execute(
         user,
         schedule_id,
         body.to_input(),
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return ScheduleOut.from_schedule(updated)
 
@@ -312,21 +310,21 @@ async def update_schedule(
 async def delete_schedule(
     schedule_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> Response:
-    await validate_request_session(container, claims, session=session)
+    await fence.confirm(session=session)
     await archive_schedule(
         container,
         session,
         user,
         schedule_id,
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return Response(status_code=204, headers={"Cache-Control": "private, no-store"})

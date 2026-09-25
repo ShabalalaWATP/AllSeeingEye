@@ -16,8 +16,11 @@ email options depend on the installation's configuration.
 
 Access tokens are short-lived and held in browser memory. Refresh sessions use
 an HttpOnly cookie, server-side records and rotation. Protected requests check
-the current account and session state. Streams also recheck access; the browser
-invalidates scoped state when authority changes.
+the current account and session state. Routes that release private material after
+slow work re-validate through a release fence first. Fences and streams may reuse a
+check for a short window unless a committed session or access change has been
+signalled since (ADR 0021). Streams also recheck access; the browser invalidates
+scoped state when authority changes.
 
 Personal records are visible to their owner and administrators. Team records are
 visible to current members and administrators. Object-level checks cover saved

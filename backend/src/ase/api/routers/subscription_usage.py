@@ -10,8 +10,8 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel
 
 from ase.adapters.persistence.monthly_report_usage import monthly_usage
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import NotFound
 from ase.domain.subscription_monthly_budget import MonthlyLimit, MonthlyUsage, utc_month
 
@@ -56,15 +56,15 @@ def _view(
 @router.get("/usage")
 async def owner_monthly_usage(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> MonthlyUsageOut:
     at = container.clock.now()
     owner, _ = await monthly_usage(session, user.id, None, at)
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     policy = container.monthly_budget_policy
     return _view("owner", None, at, policy.version, owner, policy.owner)
@@ -74,8 +74,8 @@ async def owner_monthly_usage(
 async def subscription_monthly_usage(
     subscription_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> MonthlyUsageOut:
@@ -86,8 +86,8 @@ async def subscription_monthly_usage(
     access.require_read(schedule.created_by, schedule.team_id)
     at = container.clock.now()
     _, subscription = await monthly_usage(session, schedule.created_by, subscription_id, at)
-    await validate_request_session(container, claims, session=session)
-    validate_request_expiry(container, claims)
+    await fence.confirm(session=session)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     policy = container.monthly_budget_policy
     return _view(

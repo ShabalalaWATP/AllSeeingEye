@@ -19,7 +19,7 @@ from ase.api.schemas_reports import (
     ReportSummaryOut,
     TemplatesOut,
 )
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.reports.document import build_document
 from ase.application.reports.document_release import release_document, release_report_view
 from ase.container.source_reviews import source_reviews
@@ -108,6 +108,7 @@ async def create_report(
     body: ReportCreateIn,
     user: CurrentUser,
     claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -122,7 +123,7 @@ async def create_report(
         lambda progress: container.generate_report(session).execute(
             user, body.to_request(), context, progress=progress
         ),
-        before_save=lambda: validate_request_session(container, claims),
+        before_save=fence.confirm,
     )
     background.add_task(container.archive_report_version, version)
     async with document_request(str(user.id)):
@@ -139,6 +140,7 @@ async def regenerate_report(
     report_id: UUID,
     user: CurrentUser,
     claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -153,7 +155,7 @@ async def regenerate_report(
         lambda progress: container.generate_report(session).regenerate(
             user, report_id, context, progress=progress
         ),
-        before_save=lambda: validate_request_session(container, claims),
+        before_save=fence.confirm,
     )
     background.add_task(container.archive_report_version, version)
     async with document_request(str(user.id)):

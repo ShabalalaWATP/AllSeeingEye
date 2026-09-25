@@ -11,6 +11,7 @@ from ase.application.access import AccessPolicy
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.report_jobs import ReportJobRepository
+from ase.application.ports.session import SessionCheck
 from ase.application.report_jobs.admission import (
     FreezeJob,
     PrepareJob,
@@ -34,7 +35,6 @@ from ase.domain.users import User
 
 __all__ = ["FreezeJob", "PrepareJob", "ReportJobService"]
 
-SessionCheck = Callable[[], Awaitable[None]]
 JobCheck = Callable[[ReportJob], Awaitable[None]]
 SourceGuard = Callable[[], AbstractAsyncContextManager[None]]
 EditionAction = Literal["pause", "resume", "discard"]

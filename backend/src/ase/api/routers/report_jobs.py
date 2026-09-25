@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.routers.research_briefs import _invalid
 from ase.api.schemas_report_jobs import (
     BriefJobCreateIn,
@@ -14,7 +14,7 @@ from ase.api.schemas_report_jobs import (
     ReportJobsOut,
     public_job,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.research_brief_values import BriefValidationError
 
 router = APIRouter(prefix="/report-jobs", tags=["report-jobs"])
@@ -24,16 +24,16 @@ router = APIRouter(prefix="/report-jobs", tags=["report-jobs"])
 async def discard_job(
     job_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
 ) -> Response:
     await container.report_jobs(session).discard(
         user,
         job_id,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return Response(status_code=204, headers={"Cache-Control": "private, no-store"})
 
 
@@ -41,8 +41,8 @@ async def discard_job(
 async def create_job(
     body: ReportJobCreateIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
@@ -52,11 +52,11 @@ async def create_job(
         body.request_id,
         body.report.to_request(),
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload
 
 
@@ -64,8 +64,8 @@ async def create_job(
 async def create_job_from_brief(
     body: BriefJobCreateIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
@@ -85,21 +85,21 @@ async def create_job_from_brief(
             body.request_id,
             brief,
             context,
-            check_session=lambda: validate_request_session(container, claims, session=session),
+            check_session=lambda: fence.confirm(session=session),
         )
     except BriefValidationError as exc:
         raise _invalid(exc) from exc
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload
 
 
 @router.get("")
 async def list_jobs(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
@@ -107,11 +107,11 @@ async def list_jobs(
     values = await container.report_jobs(session).list(
         user,
         limit,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = ReportJobsOut(items=[public_job(value) for value in values])
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload
 
 
@@ -119,19 +119,19 @@ async def list_jobs(
 async def get_job(
     job_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ReportJobOut:
     result = await container.report_jobs(session).read(
         user,
         job_id,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload
 
 
@@ -139,19 +139,19 @@ async def get_job(
 async def pause_job(
     job_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ReportJobOut:
     result = await container.report_jobs(session).pause(
         user,
         job_id,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload
 
 
@@ -159,17 +159,17 @@ async def pause_job(
 async def resume_job(
     job_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ReportJobOut:
     result = await container.report_jobs(session).resume(
         user,
         job_id,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = public_job(result)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload

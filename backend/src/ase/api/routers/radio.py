@@ -4,9 +4,9 @@ import asyncio
 
 from fastapi import APIRouter, Request, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.schemas_groundwave import GroundwaveIn, GroundwaveOut, GroundwaveSampleOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 from ase.domain.groundwave import GroundwaveInput
 
@@ -24,12 +24,12 @@ router = APIRouter(prefix="/radio", tags=["radio"])
 )
 async def groundwave(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     request: Request,
     response: Response,
 ) -> GroundwaveOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     if request.headers.get("content-type", "").split(";")[0].lower() != "application/json":
         raise InvalidRequest("Send groundwave study inputs as JSON.")
     raw = bytearray()
@@ -46,11 +46,11 @@ async def groundwave(
         ) from None
     finally:
         raw.clear()
-    await validate_request_session(container, claims)
+    await fence.confirm()
     samples = await container.groundwave_study.calculate(
         user.id, GroundwaveInput(**body.model_dump())
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return GroundwaveOut(samples=[GroundwaveSampleOut.model_validate(sample) for sample in samples])

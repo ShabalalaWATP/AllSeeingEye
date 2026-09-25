@@ -13,6 +13,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import StaticPool
 
+from ase.adapters.persistence.session_changes import SIGNALS_KEY
+from ase.application.ports.session import SessionSignals
+
 SQLITE_PREFIX = "sqlite"
 
 
@@ -46,5 +49,9 @@ def create_engine(url: str) -> AsyncEngine:
     return create_async_engine(url, **kwargs)
 
 
-def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(engine, expire_on_commit=False)
+def create_session_factory(
+    engine: AsyncEngine, *, signals: SessionSignals | None = None
+) -> async_sessionmaker[AsyncSession]:
+    # Sessions share this info dict read-only; per-transaction marks live elsewhere.
+    info = {SIGNALS_KEY: signals} if signals is not None else {}
+    return async_sessionmaker(engine, expire_on_commit=False, info=info)

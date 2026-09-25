@@ -10,7 +10,8 @@ from uuid import UUID
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.report_jobs import ReportJobRepository
-from ase.application.report_jobs.service import ReportJobService, SessionCheck
+from ase.application.ports.session import SessionCheck
+from ase.application.report_jobs.service import ReportJobService
 from ase.application.reports.request import ReportRequest
 from ase.domain.daily_briefing import REFRESH_INTERVAL, briefing_key
 from ase.domain.events import Category

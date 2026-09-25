@@ -4,7 +4,7 @@ import asyncio
 
 from fastapi import APIRouter, Request, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.routers.navigation_places import router as places_router
 from ase.api.schemas_navigation import (
     NavigationCapabilitiesOut,
@@ -13,7 +13,7 @@ from ase.api.schemas_navigation import (
     NavigationStepOut,
     navigation_capabilities,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Point
 
@@ -39,13 +39,13 @@ async def capabilities(user: CurrentUser, container: ContainerDep) -> Navigation
 )
 async def calculate_route(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     request: Request,
     response: Response,
 ) -> NavigationRouteOut:
     # Authenticate before body intake. Bound bytes as well as waypoint counts.
-    await validate_request_session(container, claims)
+    await fence.confirm()
     capability = navigation_capabilities(container.settings.feeds_contact)
     if not capability.available:
         raise InvalidRequest(capability.configuration_message)
@@ -65,12 +65,12 @@ async def calculate_route(
         ) from None
     finally:
         raw.clear()
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.route_planner.calculate(
         user.id, body.mode, tuple(Point(point.lon, point.lat) for point in body.waypoints)
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return NavigationRouteOut(
         mode=result.mode,

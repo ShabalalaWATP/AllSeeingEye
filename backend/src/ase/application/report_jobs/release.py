@@ -8,6 +8,7 @@ from uuid import UUID
 from ase.application.access import AccessContext, AccessPolicy
 from ase.application.ports import UnitOfWork
 from ase.application.ports.report_jobs import ReportJobRepository
+from ase.application.ports.session import SessionCheck
 from ase.application.report_jobs.views import error_message, job_view
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound
 from ase.domain.report_jobs import ReportJob
@@ -30,7 +31,7 @@ async def release_job(
     check_job: Callable[[ReportJob], Awaitable[None]],
     uow: UnitOfWork,
     access_policy: AccessPolicy,
-    check_session: Callable[[], Awaitable[None]],
+    check_session: SessionCheck,
     allow_source_summary: bool = False,
 ) -> dict[str, Any]:
     async with guard():

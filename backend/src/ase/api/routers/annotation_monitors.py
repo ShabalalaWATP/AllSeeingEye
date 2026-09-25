@@ -16,7 +16,7 @@ from ase.api.schemas_annotation_monitors import (
     AnnotationTransitionOut,
     AnnotationTransitionsOut,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.reports.monitor_history import list_transitions, retained_transition
 
 router = APIRouter(
@@ -30,11 +30,12 @@ router = APIRouter(
 async def create_monitor(
     body: AnnotationMonitorCreateIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> AnnotationMonitorOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.annotation_monitors(session).create(
         claims,
         body.name,
@@ -43,7 +44,7 @@ async def create_monitor(
         body.notify_on_change,
         body.mode,
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationMonitorOut.from_monitor(result)
 
@@ -51,6 +52,7 @@ async def create_monitor(
 @router.get("")
 async def monitors(
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
@@ -59,11 +61,11 @@ async def monitors(
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
 ) -> AnnotationMonitorsOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     values, total = await container.annotation_monitors(session).page(
         claims, report_id, version_number, limit, offset
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationMonitorsOut(
         items=[AnnotationMonitorOut.from_monitor(v) for v in values],
@@ -77,13 +79,14 @@ async def monitors(
 async def monitor(
     monitor_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> AnnotationMonitorOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.annotation_monitors(session).get(claims, monitor_id)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationMonitorOut.from_monitor(result)
 
@@ -93,11 +96,12 @@ async def update_monitor(
     monitor_id: UUID,
     body: AnnotationMonitorUpdateIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> AnnotationMonitorOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.annotation_monitors(session).update(
         claims,
         monitor_id,
@@ -108,7 +112,7 @@ async def update_monitor(
         body.notify_on_change,
         body.rebaseline,
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationMonitorOut.from_monitor(result)
 
@@ -117,17 +121,18 @@ async def update_monitor(
 async def transitions(
     monitor_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
 ) -> AnnotationTransitionsOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     values, total = await list_transitions(
         container.annotation_monitors(session), claims, monitor_id, limit, offset
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationTransitionsOut(
         items=[AnnotationTransitionOut.from_transition(v) for v in values],
@@ -142,15 +147,16 @@ async def transition(
     monitor_id: UUID,
     transition_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> AnnotationTransitionDetailOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     metadata, comparison, _ = await retained_transition(
         container.annotation_monitors(session), claims, monitor_id, transition_id
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationTransitionDetailOut(
         transition=AnnotationTransitionOut.from_transition(metadata), comparison=comparison
@@ -163,10 +169,11 @@ async def export_transition(
     transition_id: UUID,
     body: AnnotationTransitionExportIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
 ) -> Response:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     _, _, payload = await retained_transition(
         container.annotation_monitors(session),
         claims,
@@ -174,7 +181,7 @@ async def export_transition(
         transition_id,
         body.expected_comparison_sha256,
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return Response(
         payload,
         media_type="application/json",
@@ -190,11 +197,12 @@ async def export_transition(
 async def delete_monitor(
     monitor_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     expected_revision: Annotated[int, Query(ge=1)],
 ) -> Response:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     await container.annotation_monitors(session).delete(claims, monitor_id, expected_revision)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return Response(status_code=204, headers={"Cache-Control": "private, no-store"})

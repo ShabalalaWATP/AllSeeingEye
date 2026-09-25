@@ -12,7 +12,7 @@ from ase.api.schemas_annotation_comparisons import (
     ComparisonReportsOut,
 )
 from ase.api.schemas_reports import ReportSummaryOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(
     prefix="/annotation-comparisons",
@@ -25,13 +25,14 @@ router = APIRouter(
 async def preview_annotation_comparison(
     body: AnnotationComparisonIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
 ) -> AnnotationComparisonOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.annotation_comparisons(session).execute(claims, body.to_domain())
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationComparisonOut(result)
 
@@ -40,14 +41,15 @@ async def preview_annotation_comparison(
 async def export_annotation_comparison(
     body: AnnotationComparisonExportIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
 ) -> Response:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.annotation_comparisons(session).execute(
         claims, body.to_domain(), body.expected_comparison_sha256
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return Response(
         result.content,
         media_type=result.media_type,
@@ -62,6 +64,7 @@ async def export_annotation_comparison(
 @router.get("/reports")
 async def comparison_reports(
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     response: Response,
@@ -69,9 +72,9 @@ async def comparison_reports(
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
 ) -> ComparisonReportsOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     records, total = await container.comparison_reports(session).execute(claims, q, limit, offset)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return ComparisonReportsOut(
         items=[ReportSummaryOut.from_record(row) for row in records],

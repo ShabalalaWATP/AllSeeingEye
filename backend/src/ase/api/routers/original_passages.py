@@ -5,9 +5,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_original_passages import OriginalPassageOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/reports/{report_id}/original-passages", tags=["reports"])
 
@@ -17,19 +17,19 @@ async def read_original_passage(
     report_id: UUID,
     passage_ref: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     session: SessionDep,
     response: Response,
     version_number: Annotated[int, Query(ge=1)],
 ) -> OriginalPassageOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     staged = await container.original_passage_reader(session).execute(
         user,
         report_id,
         version_number,
         passage_ref,
-        lambda: validate_request_session(container, claims),
+        fence.confirm,
     )
     document = staged.document
     passage = document.passages[0]

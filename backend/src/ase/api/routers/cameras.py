@@ -6,9 +6,9 @@ import re
 from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.responses import Response as RawResponse
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.schemas_cameras import CameraCatalogueOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/cameras", tags=["cameras"])
 PROVIDER_ID = re.compile(r"[a-z][a-z0-9-]{0,39}")
@@ -20,8 +20,8 @@ async def camera_frame(
     provider: str,
     frame_id: str,
     actor: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
 ) -> RawResponse:
     """A JPEG relayed from a fixed provider endpoint for a camera in its last index."""
     if (
@@ -38,7 +38,7 @@ async def camera_frame(
         raise HTTPException(status_code=503, detail="Camera frame unavailable") from exc
     if data is None:
         raise HTTPException(status_code=404, detail="Unknown camera frame")
-    await validate_request_session(container, claims)
+    await fence.confirm()
     return RawResponse(
         content=data,
         media_type="image/jpeg",
@@ -49,8 +49,8 @@ async def camera_frame(
 @router.get("")
 async def camera_catalogue(
     actor: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     response: Response,
     provider: str | None = Query(default=None, max_length=100),
 ) -> CameraCatalogueOut:
@@ -61,6 +61,6 @@ async def camera_catalogue(
             result = await container.cameras.initial_catalogue(actor)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="Unknown camera provider") from exc
-    await validate_request_session(container, claims)
+    await fence.confirm()
     response.headers["Cache-Control"] = "private, no-store"
     return CameraCatalogueOut.model_validate(result)

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from uuid import UUID, uuid4
 
@@ -12,6 +11,7 @@ from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import PlanRepository
 from ase.application.ports.schedules import ScheduleRepository
+from ase.application.ports.session import SessionCheck
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.schedules.definition import ScheduleInput, build_schedule
 from ase.application.schedules.edition_planning import rebased_next_run
@@ -70,7 +70,7 @@ class CreateScheduleUseCase(_ScheduleUseCase):
         data: ScheduleInput,
         context: RequestContext,
         *,
-        check_session: Callable[[], Awaitable[None]] | None = None,
+        check_session: SessionCheck | None = None,
     ) -> Schedule:
         access = await self._access.context(actor, for_update=True)
         access.require_create(data.team_id)
@@ -96,7 +96,7 @@ class UpdateScheduleUseCase(_ScheduleUseCase):
         data: ScheduleInput,
         context: RequestContext,
         *,
-        check_session: Callable[[], Awaitable[None]] | None = None,
+        check_session: SessionCheck | None = None,
     ) -> Schedule:
         existing = await self._existing(actor, schedule_id)
         if existing.brief_id is not None:

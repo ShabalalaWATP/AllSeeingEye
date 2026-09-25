@@ -5,10 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_schedules import ScheduleOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
-from ase.application.dto import AccessClaims, RequestContext
+from ase.api.session_fence import FenceDep, SessionFence
+from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.container.subscription_schedule_controls import control_schedule
 from ase.domain.users import User
@@ -20,7 +20,7 @@ async def _control(
     schedule_id: UUID,
     enabled: bool,
     user: User,
-    claims: AccessClaims,
+    fence: SessionFence,
     session: AsyncSession,
     container: Container,
     context: RequestContext,
@@ -33,9 +33,9 @@ async def _control(
         schedule_id,
         enabled,
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return ScheduleOut.from_schedule(schedule)
 
@@ -44,23 +44,23 @@ async def _control(
 async def pause_schedule(
     schedule_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> ScheduleOut:
-    return await _control(schedule_id, False, user, claims, session, container, context, response)
+    return await _control(schedule_id, False, user, fence, session, container, context, response)
 
 
 @router.post("/{schedule_id}/resume")
 async def resume_schedule(
     schedule_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
 ) -> ScheduleOut:
-    return await _control(schedule_id, True, user, claims, session, container, context, response)
+    return await _control(schedule_id, True, user, fence, session, container, context, response)

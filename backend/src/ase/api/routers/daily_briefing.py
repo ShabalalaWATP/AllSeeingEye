@@ -5,9 +5,9 @@ from datetime import datetime
 from fastapi import APIRouter, Response
 from pydantic import BaseModel
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_report_jobs import ReportJobOut, public_job
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/live-monitor", tags=["live-monitor"])
 
@@ -21,8 +21,8 @@ class DailyBriefingOut(BaseModel):
 @router.post("/briefing", status_code=202)
 async def ensure_briefing(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
@@ -30,7 +30,7 @@ async def ensure_briefing(
     result = await container.daily_briefing(session).ensure(
         user,
         context,
-        check_session=lambda: validate_request_session(container, claims),
+        check_session=fence.confirm,
     )
     response.headers["Cache-Control"] = "private, no-store"
     payload = DailyBriefingOut(
@@ -38,5 +38,5 @@ async def ensure_briefing(
         next_refresh_at=result.next_refresh_at,
         coverage_note=result.coverage_note,
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return payload

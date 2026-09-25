@@ -10,6 +10,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import AccountRequestRow, AdministrationLockRow, UserRow
+from ase.adapters.persistence.session_changes import mark_session_change
 from ase.domain.errors import NotFound
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
@@ -96,7 +97,10 @@ class SqlUserRepository:
         row = await self._session.get(UserRow, user.id)
         if row is None:
             raise NotFound()
+        before = (row.is_active, row.role, row.security_version)
         _apply_user(row, user)
+        if before != (row.is_active, row.role, row.security_version):
+            mark_session_change(self._session, user.id)
         await self._session.flush()
 
     async def list_all(self) -> list[User]:

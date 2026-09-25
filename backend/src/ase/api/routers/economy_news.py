@@ -6,10 +6,10 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query, Response
 from pydantic import BaseModel, ConfigDict
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.routers.daily_briefing import DailyBriefingOut
 from ase.api.schemas_report_jobs import public_job
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.economy_news import EconomyRegion, PublisherViewpoint
 from ase.domain.economy_periods import EconomyWindowDays
 
@@ -48,8 +48,8 @@ class EconomyBriefingOut(DailyBriefingOut):
 @router.get("/news")
 async def economic_news(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     response: Response,
     region: EconomyRegion = "WORLD",
     limit: Annotated[int, Query(ge=1, le=100)] = 60,
@@ -58,8 +58,8 @@ async def economic_news(
     result = await container.economy_news.read(region, limit, days)
     async with container.source_admission.guard():
         result = await container.economy_news.refilter(result)
-        await validate_request_session(container, claims)
-        validate_request_expiry(container, claims)
+        await fence.confirm()
+        fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"
         return EconomyNewsOut(
             items=[EconomyNewsItemOut.model_validate(row) for row in result.items],
@@ -74,8 +74,8 @@ async def economic_news(
 @router.post("/briefing", status_code=202)
 async def economic_briefing(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     session: SessionDep,
     context: ContextDep,
     response: Response,
@@ -84,10 +84,10 @@ async def economic_briefing(
     result = await container.economy_briefing(session, days).ensure(
         user,
         context,
-        check_session=lambda: validate_request_session(container, claims),
+        check_session=fence.confirm,
     )
     response.headers["Cache-Control"] = "private, no-store"
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return EconomyBriefingOut(
         job=public_job(result.job),
         next_refresh_at=result.next_refresh_at,

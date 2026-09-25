@@ -8,7 +8,6 @@ from uuid import UUID, uuid4
 
 from ase.application.access import AccessPolicy
 from ase.application.admin.llm_capacity import require_text_capacity
-from ase.application.admin.llm_testing import SessionCheck
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
@@ -19,6 +18,7 @@ from ase.application.ports.llm import (
     LlmUsageRepository,
     SecretCipher,
 )
+from ase.application.ports.session import SessionCheck
 from ase.domain.audit import AuditAction
 from ase.domain.bedrock import normalise_bedrock_base_url
 from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound

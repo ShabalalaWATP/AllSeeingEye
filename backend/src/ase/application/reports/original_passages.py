@@ -1,10 +1,11 @@
 """Release retained original excerpts under fresh report and source authority."""
 
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Mapping
 from uuid import UUID
 
 from ase.application.ports.original_passages import LinkedOriginalPassages
 from ase.application.ports.services import Clock
+from ase.application.ports.session import SessionCheck
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.reports.access import GetReportUseCase
 from ase.application.research.original_policy import OriginalSourcePolicy
@@ -31,7 +32,7 @@ class ReadOriginalPassage:
         report_id: UUID,
         version_number: int,
         passage_ref: UUID,
-        validate_session: Callable[[], Awaitable[None]],
+        validate_session: SessionCheck,
     ) -> StagedOriginalPassage:
         report, version = await self._reports.execute(actor, report_id, version_number)
         receipt = version.research

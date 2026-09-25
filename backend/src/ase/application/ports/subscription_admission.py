@@ -13,6 +13,7 @@ from uuid import UUID
 
 from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
+from ase.application.ports.session import SessionCheck
 from ase.application.ports.subscription_editions import SubscriptionEditionRepository
 from ase.application.reports.request import ReportRequest
 from ase.application.schedules.runner import DueCursor
@@ -34,7 +35,7 @@ class SubscriptionJobAdmission(Protocol):
         actor: User,
         candidate: ReportJob,
         *,
-        check_session: Callable[[], Awaitable[None]],
+        check_session: SessionCheck,
         subscription_id: UUID | None = None,
     ) -> ReportJob: ...
 
@@ -61,7 +62,7 @@ class SubscriptionTransaction(Protocol):
     async def rollback(self) -> None: ...
 
 
-SessionCheck = Callable[[SubscriptionTransaction], Awaitable[None]]
+TransactionSessionCheck = Callable[[SubscriptionTransaction], Awaitable[None]]
 SourceGuard = Callable[[], AbstractAsyncContextManager[None]]
 
 

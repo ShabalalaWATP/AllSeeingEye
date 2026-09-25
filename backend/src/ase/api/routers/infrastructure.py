@@ -2,18 +2,21 @@
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.schemas_infrastructure import InfrastructureOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/map-infrastructure", tags=["map"])
 
 
 @router.get("")
 async def infrastructure(
-    user: CurrentUser, claims: ClaimsDep, response: Response, container: ContainerDep
+    user: CurrentUser,
+    response: Response,
+    container: ContainerDep,
+    fence: FenceDep,
 ) -> InfrastructureOut:
     result = InfrastructureOut.model_validate(container.public_infrastructure())
-    await validate_request_session(container, claims)
+    await fence.confirm()
     response.headers["Cache-Control"] = "private, no-store"
     return result

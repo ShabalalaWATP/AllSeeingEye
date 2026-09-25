@@ -58,12 +58,16 @@ async def get_current_user(
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise Unauthenticated()
     claims = container.issuer.verify(credentials.credentials)
+    checked_at = container.clock.now()
     # Authentication must release its connection before a streaming response starts.
+    # Every protected request reads the session here; later fences may reuse the result.
     async with container.session_factory() as session:
         repositories = container.repositories(session)
-        return await validate_current_session(
+        user = await validate_current_session(
             claims, repositories.users, repositories.refresh_tokens, container.clock
         )
+    container.session_freshness.remember(claims, user, checked_at)
+    return user
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]

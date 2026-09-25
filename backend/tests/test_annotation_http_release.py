@@ -8,7 +8,8 @@ import pytest
 
 from annotation_comparison_helpers import prepared
 from annotation_monitor_helpers import correct, seeded
-from ase.api.routers import annotation_comparisons, annotation_monitors
+from ase.api.routers import annotation_monitors
+from ase.api.session_fence import SessionFence
 from ase.application.reports.annotation_comparisons import AnnotationComparisons
 from helpers import USER_PASSWORD, bearer, login_token
 from team_helpers import CONTEXT
@@ -28,14 +29,14 @@ async def test_comparison_parent_deleted_during_async_http_check_never_releases_
             preview = await container.annotation_comparisons(session).execute(actor, request)
         payload["expected_comparison_sha256"] = preview.comparison_sha256
         path += "/export"
-    original = annotation_comparisons.validate_request_session
+    original = SessionFence.confirm
 
-    async def guarded_check(container, claims):
-        await original(container, claims)
+    async def guarded_check(fence, **options):
+        await original(fence, **options)
         async with container.session_factory() as session:
             await container.delete_report(session).execute(user, report.id, CONTEXT)
 
-    monkeypatch.setattr(annotation_comparisons, "validate_request_session", guarded_check)
+    monkeypatch.setattr(SessionFence, "confirm", guarded_check)
     response = await client.post(path, headers=headers, json=payload)
     assert response.status_code == 404, response.text
     assert "source_content_hash" not in response.text
@@ -54,14 +55,14 @@ async def test_monitor_parent_deleted_during_async_http_check_never_releases_ret
         )
     headers = bearer(await login_token(client, user.email, USER_PASSWORD))
     path = f"/api/annotation-monitors/{monitor.id}/transitions/{transitions[0].id}"
-    original = annotation_monitors.validate_request_session
+    original = SessionFence.confirm
 
-    async def guarded_check(container, claims):
-        await original(container, claims)
+    async def guarded_check(fence, **options):
+        await original(fence, **options)
         async with container.session_factory() as session:
             await container.delete_report(session).execute(user, report.id, CONTEXT)
 
-    monkeypatch.setattr(annotation_monitors, "validate_request_session", guarded_check)
+    monkeypatch.setattr(SessionFence, "confirm", guarded_check)
     if export:
         response = await client.post(
             path + "/export",

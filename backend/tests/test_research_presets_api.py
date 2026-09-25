@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
-from ase.api.routers import research_presets
+from ase.api.session_fence import SessionFence
 from ase.container import Container
 from ase.domain.errors import Unauthenticated
 from ase.domain.users import User
@@ -158,7 +158,7 @@ async def test_session_revalidated_before_catalogue_or_definition_release(
 ) -> None:
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     check = AsyncMock(side_effect=Unauthenticated("Session ended"))
-    monkeypatch.setattr(research_presets, "validate_request_session", check)
+    monkeypatch.setattr(SessionFence, "confirm", check)
     if definition:
         response = await client.post(
             "/api/research/presets/economy-uk/definition",

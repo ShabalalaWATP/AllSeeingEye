@@ -6,9 +6,9 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, ContextDep, SessionDep
+from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas import ResetLinkOut, UpdateUserIn, UserOut, UsersOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/admin/users", tags=["admin"])
 
@@ -41,8 +41,8 @@ async def issue_reset_link(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> ResetLinkOut:
     result = await container.issue_reset_link(session).execute(admin, user_id, context)
-    await validate_request_session(container, claims, admin_only=True)
+    await fence.confirm(admin_only=True)
     return ResetLinkOut(reset_link=result.reset_link, expires_at=result.expires_at)
