@@ -170,6 +170,7 @@ def push_offsite(archive: Path, destination: str, port: int) -> None:
             "--timeout=120",
             "-e",
             f"ssh -p {port} -o BatchMode=yes",
+            "--",
             str(archive),
             destination.rstrip("/") + "/",
         ],
