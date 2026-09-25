@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { report } from '@/test/fixtures';
 import type { ReportRequest } from '@/lib/api/reports';
@@ -122,6 +123,7 @@ it('selects only server-issued exact lookups, preserves original inputs and clea
   );
   const { user } = renderApp('/research?question=Which%20Acme%20is%20this%3F', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   fireEvent.change(screen.getByLabelText('Research focus'), { target: { value: 'company' } });
   fireEvent.change(screen.getByLabelText('Company name'), { target: { value: 'Acme' } });
   await user.click(screen.getByText('Collection plan (optional)'));

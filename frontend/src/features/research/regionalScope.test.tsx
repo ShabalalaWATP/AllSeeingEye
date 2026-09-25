@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { ReportRequest } from '@/lib/api/reports';
 import { countries } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 
 function nationChoices() {
@@ -41,6 +42,7 @@ describe('regional and specialist research scope', () => {
       const body = captureReport();
       const { user } = renderApp('/research?question=What%20changed%3F', 'user');
       await screen.findByLabelText('Your question');
+      await openAdvancedResearch();
       await user.click(screen.getByRole('radio', { name: /Deep/ }));
       await user.click(screen.getByText('Scope and sources'));
       await user.click(screen.getByText('Advanced source settings'));
@@ -67,6 +69,7 @@ describe('regional and specialist research scope', () => {
       'user',
     );
     await screen.findByLabelText('Your question');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'world_bank');
@@ -89,6 +92,7 @@ describe('regional and specialist research scope', () => {
     const body = captureReport();
     const { user } = renderApp('/research?country=GB&question=Review%20recent%20research', 'user');
     await screen.findByLabelText('Your question');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'academic');
@@ -105,6 +109,7 @@ describe('regional and specialist research scope', () => {
     const body = captureReport();
     const { user } = renderApp('/research?country=IR&question=Connectivity%20changes', 'user');
     await screen.findByLabelText('Your question');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'ooni');
@@ -118,6 +123,7 @@ describe('regional and specialist research scope', () => {
   it('keeps other record identifiers editable when cleared instead of switching modes', async () => {
     const { user } = renderApp('/research', 'user');
     await screen.findByLabelText('Your question');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'identifier');

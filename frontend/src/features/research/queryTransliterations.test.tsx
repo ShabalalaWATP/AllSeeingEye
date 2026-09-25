@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { report } from '@/test/fixtures';
 import type { ResearchPlanInput } from '@/lib/api/researchPlan';
@@ -47,6 +48,7 @@ it('previews and submits distinct translation and transliteration with exact ori
   );
   const { user } = renderApp('/research?question=Which%20company%3F', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.click(screen.getByText('Collection plan (optional)'));
   await user.click(screen.getByLabelText('Supply exact search terms'));
   const original = '\u0634\u0631\u06a9\u062a\u200c\u0627\u0644\u0641';

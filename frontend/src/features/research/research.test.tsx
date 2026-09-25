@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth';
 import { countries, plainUser, tokenFor } from '@/test/fixtures';
 import { setupTeams, team } from '@/test/fixtures.teams';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 
 describe('question-led research', () => {
@@ -85,6 +86,7 @@ describe('question-led research', () => {
       await screen.findByLabelText('Your question'),
       'Assess recent changes at Example Company.',
     );
+    await openAdvancedResearch();
     await user.click(screen.getByRole('radio', { name: /Deep/ }));
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
@@ -133,6 +135,7 @@ describe('question-led research', () => {
     await user.click(button);
     expect(screen.getByRole('alert')).toHaveTextContent('Enter a question to research.');
     await user.type(screen.getByLabelText('Your question'), 'Assess this domain.');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await user.click(screen.getByLabelText('English'));

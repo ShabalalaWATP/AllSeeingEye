@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { report } from '@/test/fixtures';
 import type { ReportRequest } from '@/lib/api/reports';
@@ -63,6 +64,7 @@ it('previews and submits distinct same-source tasks, preserves exact phrases and
   );
   const { user } = renderApp('/research?question=Which%20Acme%20is%20this%3F', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.click(screen.getByText('Collection plan (optional)'));
   await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
   await screen.findByText('Current preview');
@@ -108,6 +110,7 @@ it('previews and submits distinct same-source tasks, preserves exact phrases and
 it('does not carry candidate drafts into a changed workspace authority', async () => {
   const { user } = renderApp('/research?question=Identity%20check', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.click(screen.getByText('Collection plan (optional)'));
   await user.click(screen.getByText('Identity candidates and challenge searches'));
   await user.click(screen.getByRole('button', { name: 'Add identity candidate' }));

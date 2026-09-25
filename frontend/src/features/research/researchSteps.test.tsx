@@ -5,6 +5,7 @@ import { expect, it } from 'vitest';
 import { conflictCard } from '@/test/fixtures';
 import { jobId, readReportJobRequest, reportJob } from '@/test/reportJobFixture';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 
 function captureJob() {
@@ -22,6 +23,7 @@ it('reads top to bottom and sends regions, themes and a pinned conflict with the
   const read = captureJob();
   const { user, router } = renderApp('/research', 'user');
   const form = within(await screen.findByRole('form', { name: 'Research a question' }));
+  await openAdvancedResearch();
   const headings = form.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
   expect(headings).toEqual([
     'What to ask',
@@ -59,6 +61,7 @@ it('drops the place, theme and conflict steps for a company question and clears 
   const read = captureJob();
   const { user, router } = renderApp('/research', 'user');
   const form = within(await screen.findByRole('form', { name: 'Research a question' }));
+  await openAdvancedResearch();
   await user.type(form.getByLabelText('Your question'), 'What is Example Company doing?');
   await user.click(form.getByRole('checkbox', { name: 'Africa' }));
   await user.selectOptions(await form.findByLabelText('Natural disaster'), 'earthquake');

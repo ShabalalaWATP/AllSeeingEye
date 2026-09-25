@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { readReportJobRequest, reportJob } from '@/test/reportJobFixture';
 import { server } from '@/test/server';
 
@@ -21,6 +22,7 @@ it.each([
       }),
     );
     const { user } = renderApp('/research?question=What%20has%20changed%3F', 'user');
+    await openAdvancedResearch();
     await user.click(await screen.findByRole('radio', { name: (name) => name.startsWith(label) }));
     expect(screen.getByText(/Lengths are indicative/)).toBeVisible();
     await waitFor(() =>
