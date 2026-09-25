@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useGlobeStore } from '@/stores/globe';
+import { usePreferencesStore } from '@/stores/preferences';
 import { useShellStore } from '@/stores/shell';
 
 import { useViewNavigation } from './useViewNavigation';
@@ -18,16 +19,33 @@ export function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Keyboard shortcuts: Ctrl or Cmd K search, G globe, M map, O ops room, [ toggles
- * the rail. The single-letter ones are ignored in form fields.
+ * Keyboard shortcuts: Ctrl or Cmd K search, G globe, M map, O ops room, [ toggles the
+ * rail and ? opens the shortcut help. The single-key ones are ignored in form fields and
+ * dialogs, and are off entirely when the user turns single-key shortcuts off.
  */
 export function useViewShortcuts(): void {
   const { showGlobe, showMap } = useViewNavigation();
   const setOpsRoom = useGlobeStore((state) => state.setOpsRoom);
   const toggleRail = useShellStore((state) => state.toggleRail);
   const openPalette = useShellStore((state) => state.openPalette);
+  const singleKey = usePreferencesStore((state) => state.singleKeyShortcuts);
+  const openHelp = usePreferencesStore((state) => state.openShortcutHelp);
 
   useEffect(() => {
+    const actions: Record<string, () => void> = {
+      g: showGlobe,
+      m: showMap,
+      o: () => {
+        showGlobe();
+        setOpsRoom(true);
+      },
+      '[': toggleRail,
+      // The help lives in the top bar, which the ops room hides.
+      '?': () => {
+        setOpsRoom(false);
+        openHelp();
+      },
+    };
     function onKeyDown(event: KeyboardEvent) {
       const inDialog =
         event.target instanceof Element && event.target.closest('dialog[open]') !== null;
@@ -46,26 +64,18 @@ export function useViewShortcuts(): void {
       if (isEditableTarget(event.target)) return;
       if (inDialog) return;
       const key = event.key.toLowerCase();
-      if (key === 'g') {
-        event.preventDefault();
-        showGlobe();
-      } else if (key === 'm') {
-        event.preventDefault();
-        showMap();
-      } else if (key === 'o') {
-        event.preventDefault();
-        showGlobe();
-        setOpsRoom(true);
-      } else if (key === '[') {
-        event.preventDefault();
-        toggleRail();
-      } else if (key === 'escape') {
+      if (key === 'escape') {
         setOpsRoom(false);
+        return;
       }
+      const action = singleKey ? actions[key] : undefined;
+      if (action === undefined) return;
+      event.preventDefault();
+      action();
     }
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [openPalette, setOpsRoom, showGlobe, showMap, toggleRail]);
+  }, [openHelp, openPalette, setOpsRoom, showGlobe, showMap, singleKey, toggleRail]);
 }

@@ -47,7 +47,7 @@ export function ForceNodeDetail({
         {chain.map((step, index) => (
           <span key={step.id} className="flex items-center gap-1">
             {index > 0 ? (
-              <span aria-hidden="true" className="text-[10px] text-muted">
+              <span aria-hidden="true" className="text-2xs text-muted">
                 &gt;
               </span>
             ) : null}
@@ -67,7 +67,7 @@ export function ForceNodeDetail({
       </nav>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-text">{node.name}</h4>
-        <span className="font-mono text-[10px] text-muted">
+        <span className="font-mono text-2xs text-muted">
           as of {formatDate(node.as_of)}
           {stale ? ' (may be out of date)' : ''}
         </span>

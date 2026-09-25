@@ -57,13 +57,11 @@ function NodeCard({ node, props }: { node: ForceNode; props: ChartProps }) {
               <span className="mt-0.5 block text-[11px] text-muted">{node.commander}</span>
             ) : null}
             {node.strength ? (
-              <span className="mt-1 line-clamp-2 block text-[10px] text-muted">
-                {node.strength}
-              </span>
+              <span className="mt-1 line-clamp-2 block text-2xs text-muted">{node.strength}</span>
             ) : null}
           </span>
         </button>
-        <p className="border-t border-line/60 px-2 py-1 font-mono text-[10px] text-muted">
+        <p className="border-t border-line/60 px-2 py-1 font-mono text-2xs text-muted">
           as of {formatDate(node.as_of)}
           {stale ? ' (may be out of date)' : ''}
         </p>
@@ -78,9 +76,7 @@ function NodeCard({ node, props }: { node: ForceNode; props: ChartProps }) {
           >
             {expanded ? `Hide ${children.length}` : `Show ${children.length}`}
             <span aria-hidden="true">{expanded ? ' ▴' : ' ▾'}</span>
-            {hidden > children.length ? (
-              <span className="text-[10px]"> ({hidden} below)</span>
-            ) : null}
+            {hidden > children.length ? <span className="text-2xs"> ({hidden} below)</span> : null}
           </button>
         ) : null}
       </div>

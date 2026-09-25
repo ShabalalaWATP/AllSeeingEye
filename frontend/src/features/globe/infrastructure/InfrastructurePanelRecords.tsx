@@ -58,9 +58,7 @@ export function InfrastructureRecordList({
               className="min-h-14 w-full border-b border-line px-2 py-3 text-left text-xs hover:bg-white/5 aria-pressed:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-cyan"
             >
               <span className="block">{value.item.name}</span>
-              <span className="text-[10px] text-muted">
-                {infrastructureRecordDescription(value)}
-              </span>
+              <span className="text-2xs text-muted">{infrastructureRecordDescription(value)}</span>
             </button>
           </li>
         ))}

@@ -61,7 +61,7 @@ export function PlatformConnections({
               </div>
               <p className="text-xs leading-5 text-muted">{item.purpose}</p>
               <p className="text-xs leading-5 text-text/90">{item.requirement.note}</p>
-              <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 font-mono text-[10px] text-muted">
+              <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 font-mono text-2xs text-muted">
                 <span>{KIND_LABELS[item.requirement.kind]}</span>
                 {item.requirement.setting && <span>{item.requirement.setting}</span>}
                 <span>{item.detail}</span>

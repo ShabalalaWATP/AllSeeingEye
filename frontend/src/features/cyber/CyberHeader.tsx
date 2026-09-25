@@ -26,7 +26,7 @@ export function CyberHeader({
       />
       <div className="relative flex flex-wrap items-end justify-between gap-5">
         <div className="max-w-3xl">
-          <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+          <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
             Cyber intelligence
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">

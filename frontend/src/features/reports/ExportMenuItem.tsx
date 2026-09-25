@@ -31,12 +31,12 @@ export function ExportMenuItem({
         <span className="text-sm font-medium text-text">{description.label}</span>
         <span className="flex shrink-0 items-center gap-1.5">
           {caveat && (
-            <span className="rounded-full bg-amber/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber">
+            <span className="rounded-full bg-amber/15 px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-amber">
               Limited
             </span>
           )}
           {preferred && (
-            <span className="rounded-full bg-ember/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ember">
+            <span className="rounded-full bg-ember/15 px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-ember">
               Preferred
             </span>
           )}

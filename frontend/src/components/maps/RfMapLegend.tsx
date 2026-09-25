@@ -14,7 +14,7 @@ export function RfMapLegend({ terrain = true }: { terrain?: boolean }) {
         { status: 'blocked', symbol: '×', label: 'Beyond ideal limit' },
       ];
   return (
-    <div aria-label="RF map legend" className="grid grid-cols-2 gap-x-3 gap-y-2 text-[10px]">
+    <div aria-label="RF map legend" className="grid grid-cols-2 gap-x-3 gap-y-2 text-2xs">
       {entries.map(({ status, symbol, label }) => (
         <div key={status} className="flex items-center gap-2">
           <span

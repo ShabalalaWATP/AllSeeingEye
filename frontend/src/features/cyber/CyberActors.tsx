@@ -97,7 +97,7 @@ export function CyberActors({
                     </span>
                     <span className="shrink-0 text-right font-mono text-xs text-cyan">
                       {activityStatus === 'ready' ? activity : '…'}
-                      <span className="mt-1 block font-sans text-[10px] text-muted">
+                      <span className="mt-1 block font-sans text-2xs text-muted">
                         {activityStatus === 'ready' ? 'mentions' : activityNote}
                       </span>
                     </span>
@@ -126,7 +126,7 @@ export function CyberActors({
           {selected ? (
             <div className="space-y-5">
               <header>
-                <p className="font-mono text-[10px] text-cyan">
+                <p className="font-mono text-2xs text-cyan">
                   {selected.group_id} · HISTORICAL REFERENCE
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold">{selected.name}</h3>

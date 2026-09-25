@@ -188,7 +188,7 @@
 }
 .rf-station-state {
   color: var(--rf-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .rf-station-title {
   font-size: 14px;
@@ -196,7 +196,7 @@
 }
 .rf-station-position {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--rf-muted);
   overflow-wrap: anywhere;
 }

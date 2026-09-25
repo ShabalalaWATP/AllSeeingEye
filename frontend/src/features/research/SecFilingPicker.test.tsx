@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw';
 import { expect, it, vi } from 'vitest';
 import { server } from '@/test/server';
 import { applySession, renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { secPage, secChoice, secReceipt } from '@/test/fixtures.secFilings';
 import type { SecFilingsSearch } from '@/lib/api/secFilings';
 import type { ReportRequest } from '@/lib/api/reports';
@@ -33,6 +34,7 @@ it('uses the imported document ID for actual research and cannot start from meta
     }),
   );
   renderApp('/research?question=Analyse%20this%20filing', 'user');
+  await openAdvancedResearch();
   await screen.findByLabelText('Research focus');
   await userEvent.click(screen.getByText('Scope and sources'));
   await userEvent.selectOptions(screen.getByLabelText('Research focus'), 'document');

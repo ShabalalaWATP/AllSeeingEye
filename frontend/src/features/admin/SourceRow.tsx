@@ -38,7 +38,7 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
             {source.flags.map((flag) => (
               <span
                 key={flag}
-                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-muted"
+                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs text-muted"
               >
                 {flag.replace(/_/g, ' ')}
               </span>

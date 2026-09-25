@@ -107,7 +107,7 @@ export function CameraPanel({
                       (provider) => provider.id === camera.provider,
                     )?.name ?? camera.provider}
                   </span>
-                  <span className="mt-1 block text-[10px] text-cyan">
+                  <span className="mt-1 block text-2xs text-cyan">
                     {cameraMedia(camera).label}
                     {camera.coordinate_precision === 'approximate' ? ' / Approximate location' : ''}
                   </span>

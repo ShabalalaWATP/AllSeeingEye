@@ -18,18 +18,18 @@ export function UpdateRow({ update }: { update: UkraineUpdate }) {
   return (
     <li className="flex flex-col gap-1 border-t border-line/60 py-2 text-sm">
       <div className="flex flex-wrap items-baseline gap-2">
-        <span className="font-mono text-[10px] uppercase text-muted">{sourceLabel(event)}</span>
+        <span className="font-mono text-2xs uppercase text-muted">{sourceLabel(event)}</span>
         {state ? (
-          <span className="rounded border border-amber-300/60 px-1 font-mono text-[10px] text-amber-300">
+          <span className="rounded border border-amber-300/60 px-1 font-mono text-2xs text-amber-300">
             state media
           </span>
         ) : null}
-        <span className="font-mono text-[10px] text-muted" title={event.grade_rationale}>
+        <span className="font-mono text-2xs text-muted" title={event.grade_rationale}>
           {event.grade}
         </span>
-        <span className="font-mono text-[10px] text-muted">{formatUtc(event.published_at)}</span>
+        <span className="font-mono text-2xs text-muted">{formatUtc(event.published_at)}</span>
         {update.lenses.map((lens) => (
-          <span key={lens} className="rounded bg-surface-2 px-1 font-mono text-[10px] text-muted">
+          <span key={lens} className="rounded bg-surface-2 px-1 font-mono text-2xs text-muted">
             {LENS_LABELS[lens]}
           </span>
         ))}

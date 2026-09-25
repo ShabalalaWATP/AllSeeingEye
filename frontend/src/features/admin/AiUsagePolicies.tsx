@@ -105,7 +105,7 @@ export function AiUsagePolicies({
   return (
     <section aria-label="AI access and usage" className="space-y-5">
       <header>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember">
+        <p className="font-mono text-2xs uppercase tracking-[0.2em] text-ember">
           AI access &amp; usage
         </p>
         <h2 className="mt-2 text-lg font-semibold">Allowance policies</h2>

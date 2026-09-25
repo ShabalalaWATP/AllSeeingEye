@@ -66,7 +66,7 @@ export function ContextShell({
           </button>
         </div>
         <p className="leading-relaxed text-muted">{scope}</p>
-        <p className="text-[10px] text-muted">
+        <p className="text-2xs text-muted">
           Snapshot fetched: {utcDate(snapshot.fetchedAt)}. Refresh reads collected records, not a
           new provider scan.
         </p>
@@ -86,7 +86,7 @@ export function ContextShell({
         </p>
       )}
       {children}
-      <p className="border-t border-line pt-3 text-[10px] leading-relaxed text-muted">
+      <p className="border-t border-line pt-3 text-2xs leading-relaxed text-muted">
         Limited to 100 collected records and 25 list entries. An empty list does not establish
         normal conditions or provider health.
       </p>

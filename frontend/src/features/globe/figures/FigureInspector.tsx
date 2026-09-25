@@ -43,7 +43,7 @@ export function FigureInspector({
         <div className="flex items-center gap-3">
           <FigurePortrait figure={figure} size="lg" />
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-cyan">
+            <p className="text-2xs uppercase tracking-wider text-cyan">
               {ROLE_LABELS[figure.role]}
               {figure.country_iso ? ` · ${figure.country_iso}` : ''}
             </p>
@@ -95,7 +95,7 @@ export function FigureInspector({
                 ) : (
                   <span>{event.title_en ?? event.title}</span>
                 )}
-                <span className="ml-1 font-mono text-[10px] text-muted">
+                <span className="ml-1 font-mono text-2xs text-muted">
                   {event.grade}
                   {event.published_at ? ` · ${formatUtc(event.published_at)}` : ''}
                 </span>

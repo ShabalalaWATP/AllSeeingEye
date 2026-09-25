@@ -37,7 +37,7 @@ function SunChecks({ checks }: { checks: ResearchGeolocation['sun_checks'] }) {
         >
           <p className="font-medium text-text">
             {SUN_STATUS[check.status] ?? check.status}
-            <span className="ml-2 font-mono text-[10px] text-muted">
+            <span className="ml-2 font-mono text-2xs text-muted">
               {check.photo_id.replace('photo-', 'Photo ')} · {formatUtc(check.captured_at)}
             </span>
           </p>

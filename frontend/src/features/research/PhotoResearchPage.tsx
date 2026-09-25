@@ -31,7 +31,7 @@ export default function PhotoResearchPage() {
           />
           <div className="relative grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
             <div>
-              <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+              <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
                 Visual research
               </p>
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Geolocation</h1>
@@ -46,7 +46,7 @@ export default function PhotoResearchPage() {
                   key={step.title}
                   className="flex gap-3 rounded-lg border border-line/60 bg-ground/40 px-3 py-2.5"
                 >
-                  <span className="font-mono text-[10px] text-ember">0{index + 1}</span>
+                  <span className="font-mono text-2xs text-ember">0{index + 1}</span>
                   <span>
                     <span className="block font-medium text-text">{step.title}</span>
                     <span className="mt-0.5 block leading-5 text-muted">{step.detail}</span>

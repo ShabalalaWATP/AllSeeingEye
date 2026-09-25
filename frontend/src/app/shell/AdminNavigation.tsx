@@ -36,7 +36,7 @@ export function AdminNavigation({
           <span className="block truncate text-xs text-muted">The All Seeing Eye</span>
           <span className="mt-0.5 flex items-center gap-2 font-semibold">
             Administration
-            <span className="rounded border border-ember/40 bg-ember/10 px-1 font-mono text-[9px] tracking-widest text-ember uppercase">
+            <span className="rounded border border-ember/40 bg-ember/10 px-1 font-mono text-2xs tracking-widest text-ember uppercase">
               Ops
             </span>
           </span>
@@ -52,7 +52,7 @@ export function AdminNavigation({
             {collapsed ? (
               <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
             ) : (
-              <p className="px-3 pb-1 font-mono text-[10px] tracking-[0.18em] text-muted/90 uppercase">
+              <p className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted/90 uppercase">
                 {section.title}
               </p>
             )}

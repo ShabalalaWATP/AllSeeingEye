@@ -97,7 +97,7 @@ export function TeamPanel({
           members={
             <div className="flex flex-col gap-6" aria-labelledby="team-members-heading">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
+                <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">
                   People and access
                 </p>
                 <h3 id="team-members-heading" className="mt-2 text-xl font-semibold">

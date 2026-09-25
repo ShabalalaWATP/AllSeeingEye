@@ -31,7 +31,7 @@ export function ChartCard({
     >
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold">{title}</h3>
-        {note && <span className="font-mono text-[10px] text-muted">{note}</span>}
+        {note && <span className="font-mono text-2xs text-muted">{note}</span>}
       </div>
       {children}
     </section>

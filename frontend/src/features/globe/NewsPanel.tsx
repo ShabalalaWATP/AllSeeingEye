@@ -174,7 +174,7 @@ export function NewsPanel({
           <ol className="divide-y divide-line" aria-label="News stories">
             {stories.slice(0, limit).map(({ lead, records }) => (
               <li key={lead.id} className="space-y-3 py-4">
-                <p className="font-mono text-[10px] text-muted">
+                <p className="font-mono text-2xs text-muted">
                   {newsSourceLabel(lead)} ·{' '}
                   {lead.published_at ? formatUtc(lead.published_at) : 'Publication date unknown'}
                 </p>
@@ -183,12 +183,12 @@ export function NewsPanel({
                 {lead.summary && lead.summary !== lead.title && (
                   <p className="line-clamp-3 text-xs leading-6 text-muted">{lead.summary}</p>
                 )}
-                <p className="text-[10px] text-muted">
+                <p className="text-2xs text-muted">
                   {precisionLabel(lead)}
                   {records.length > 1 ? ` · ${records.length} related reports` : ''}
                 </p>
                 {lead.source_id === 'gdelt_news' && (
-                  <p className="text-[10px] leading-5 text-muted">
+                  <p className="text-2xs leading-5 text-muted">
                     GDELT-coded action geography, not a verified event position. Map recency uses
                     GDELT indexing time; publisher publication time is unknown.
                   </p>

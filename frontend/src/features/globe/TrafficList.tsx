@@ -67,14 +67,14 @@ export function TrafficList({
           />
         </label>
       )}
-      <p className="font-mono text-[10px] text-muted">
+      <p className="font-mono text-2xs text-muted">
         {events.length.toLocaleString()} loaded in this scope
         {available === undefined
           ? ''
           : ` / ${available.toLocaleString()} total category records on server`}{' '}
         · {results.length.toLocaleString()} matching
       </p>
-      <p className="text-[10px] text-muted">
+      <p className="text-2xs text-muted">
         The browser keeps a bounded sample. Server totals cover all scopes and may include
         non-position records; this is not worldwide coverage.
       </p>
@@ -100,12 +100,12 @@ export function TrafficList({
                 </span>
                 {military && (
                   <span
-                    className={`block text-[10px] ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}
+                    className={`block text-2xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}
                   >
                     {military}
                   </span>
                 )}
-                <span className="block font-mono text-[10px] text-muted">
+                <span className="block font-mono text-2xs text-muted">
                   {event.source_id} · {formatAgo(event.published_at, now)}
                   {event.point === null ? ' · no position' : ''}
                 </span>

@@ -148,7 +148,7 @@ export function ConflictFilterPanel({
             <span className="flex-1">
               <span className="block">{choice.label}</span>
               {choice.note && (
-                <span className="mt-1 block text-[10px] leading-relaxed text-muted">
+                <span className="mt-1 block text-2xs leading-relaxed text-muted">
                   {choice.note}
                 </span>
               )}

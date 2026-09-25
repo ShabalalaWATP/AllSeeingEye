@@ -100,7 +100,7 @@
 .map-reference-badge {
   color: var(--color-muted);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
 }
 .map-reference-swatch {
   width: 42px;

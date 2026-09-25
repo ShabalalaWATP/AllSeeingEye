@@ -70,7 +70,7 @@ export function RfTerrainReach({ terrain }: { terrain: RfTerrainAnalysis }) {
               : 'Check equipment sensitivity, power and cable losses against the intended operating mode, then recalculate.'}
           </p>
         )}
-        <p className="text-[10px] text-muted">
+        <p className="text-2xs text-muted">
           Obstruction positions are coarse samples. Clear sections of this ray do not establish
           coverage for other receiver heights.
         </p>
@@ -111,7 +111,7 @@ export function RfTerrainReach({ terrain }: { terrain: RfTerrainAnalysis }) {
       <details className="rounded-lg border border-line p-3">
         <summary className="cursor-pointer">Distances and limits by bearing</summary>
         <div className="mt-3 max-h-60 overflow-auto">
-          <table className="w-full text-left text-[10px]">
+          <table className="w-full text-left text-2xs">
             <caption className="pb-2 text-left text-muted">
               Distances from TX. A failed target does not locate the obstructing ridge.
             </caption>

@@ -125,7 +125,7 @@ export function ModelSetupWizard(props: ModelSetupProps) {
               <li
                 key={label}
                 aria-current={state.step === index ? 'step' : undefined}
-                className={`border-t-2 pt-2 text-[10px] sm:text-xs ${index <= state.step ? 'border-ember text-text' : 'border-line text-muted'}`}
+                className={`border-t-2 pt-2 text-2xs sm:text-xs ${index <= state.step ? 'border-ember text-text' : 'border-line text-muted'}`}
               >
                 <span className="font-mono">{index + 1}</span>
                 <span className="ml-1 hidden sm:inline">{label}</span>

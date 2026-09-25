@@ -184,3 +184,10 @@ export const citationChecks: components['schemas']['ReportCitationChecksOut'] = 
     },
   ],
 };
+
+/** Default server capabilities: AI research is ready, so no set-up notice appears. */
+export const serverCapabilities: components['schemas']['CapabilitiesOut'] = {
+  os_maps: false,
+  os_layers: [],
+  ai_research: true,
+};

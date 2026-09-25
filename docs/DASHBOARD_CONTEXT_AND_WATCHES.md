@@ -25,7 +25,7 @@
   and provider-only links. Provider names are searchable. A camera can match more
   than one media kind. Filtering away its selection closes its media/details.
 - **Draw on map > Watch this area:** finish a rectangle, polygon or circle, then
-  review a watch in Warning. All geodesic sketches use a conservative geographic
+  review a watch in Alerts. All geodesic sketches use a conservative geographic
   envelope, including their curved edges and some surrounding area. Edit bounds,
   category, terms, threshold and workspace before Add indicator. A path has no area.
   The default is No report; nothing is submitted by opening the form.

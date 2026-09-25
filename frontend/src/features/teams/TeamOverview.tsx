@@ -18,7 +18,7 @@ function formatDate(value: string): string {
 function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="border-l-2 border-ember/60 pl-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{label}</p>
+      <p className="font-mono text-2xs uppercase tracking-[0.18em] text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold tracking-tight text-text">{value}</p>
       <p className="mt-1 text-xs text-muted">{detail}</p>
     </div>
@@ -163,9 +163,7 @@ export function TeamOverview({
   return (
     <div className="flex flex-col gap-7" aria-labelledby="team-overview-heading">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
-          Workspace pulse
-        </p>
+        <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">Workspace pulse</p>
         <h3 id="team-overview-heading" className="mt-2 text-xl font-semibold">
           What needs attention in this team
         </h3>

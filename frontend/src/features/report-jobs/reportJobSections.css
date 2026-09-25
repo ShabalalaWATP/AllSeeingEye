@@ -76,7 +76,7 @@
   color: var(--color-muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  font-size: 10px;
+  font-size: 11px;
 }
 .job-section-body p + p {
   margin-top: 10px;

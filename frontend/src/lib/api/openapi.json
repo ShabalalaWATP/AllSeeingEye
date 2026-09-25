@@ -18445,12 +18445,17 @@
             },
             "type": "array",
             "title": "Os Layers"
+          },
+          "ai_research": {
+            "type": "boolean",
+            "title": "Ai Research"
           }
         },
         "type": "object",
         "required": [
           "os_maps",
-          "os_layers"
+          "os_layers",
+          "ai_research"
         ],
         "title": "CapabilitiesOut",
         "description": "What this deployment can offer the browser beyond the always-on features."

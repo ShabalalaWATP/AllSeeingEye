@@ -43,7 +43,7 @@ export function CyberFocusAreas({
               </div>
             </div>
             <div className="mt-4 border-t border-line/60 pt-3">
-              <p className="font-mono text-[10px] tracking-[0.18em] text-cyan uppercase">
+              <p className="font-mono text-2xs tracking-[0.18em] text-cyan uppercase">
                 {passage ? 'From the AI briefing' : 'AI briefing'}
               </p>
               {passage ? (

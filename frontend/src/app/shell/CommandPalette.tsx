@@ -108,7 +108,7 @@ export function CommandPalette() {
             >
               <span className="flex items-baseline gap-2">
                 <span className="min-w-0 truncate text-sm">{target.label}</span>
-                <span className="shrink-0 font-mono text-[10px] tracking-widest text-muted uppercase">
+                <span className="shrink-0 font-mono text-2xs tracking-widest text-muted uppercase">
                   {target.group}
                 </span>
               </span>

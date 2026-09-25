@@ -21,7 +21,7 @@ export function PointList({
   return (
     <section aria-label={title} className="min-w-0">
       <h3
-        className={`mb-2 font-mono text-[10px] tracking-[0.18em] uppercase ${tone === 'ember' ? 'text-ember' : 'text-muted'}`}
+        className={`mb-2 font-mono text-2xs tracking-[0.18em] uppercase ${tone === 'ember' ? 'text-ember' : 'text-muted'}`}
       >
         {title}
       </h3>
@@ -70,7 +70,7 @@ export function WorldExplainer({ state }: { state: EconomyExplainerState }) {
     >
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="mb-1 font-mono text-[10px] tracking-[0.22em] text-ember uppercase">
+          <p className="mb-1 font-mono text-2xs tracking-[0.22em] text-ember uppercase">
             In plain English
           </p>
           <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{TITLE}</h2>

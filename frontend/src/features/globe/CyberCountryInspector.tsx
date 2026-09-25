@@ -35,7 +35,7 @@ export function CyberCountryInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-cyan">Cyber country context</p>
+          <p className="text-2xs uppercase tracking-wider text-cyan">Cyber country context</p>
           <h2 className="mt-1 text-sm font-medium">{group.country.name}</h2>
         </div>
         <button
@@ -66,7 +66,7 @@ export function CyberCountryInspector({
               className="w-full rounded border border-line p-3 text-left text-xs hover:border-cyan"
             >
               <span className="block">{event.title}</span>
-              <span className="mt-1 block text-[10px] text-muted">
+              <span className="mt-1 block text-2xs text-muted">
                 {CYBER_KIND_LABELS[cyberKind(event)]} · {event.source_id.replaceAll('_', ' ')}
               </span>
             </button>
@@ -74,9 +74,7 @@ export function CyberCountryInspector({
         ))}
       </ul>
       {group.events.length > 25 && (
-        <p className="mt-2 text-[10px] text-muted">
-          Showing the first 25 records in this snapshot.
-        </p>
+        <p className="mt-2 text-2xs text-muted">Showing the first 25 records in this snapshot.</p>
       )}
     </aside>
   );

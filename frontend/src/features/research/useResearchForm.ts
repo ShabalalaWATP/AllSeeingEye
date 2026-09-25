@@ -15,6 +15,7 @@ import {
   type ResearchFocus,
 } from './researchRequest';
 import { changeResearchFocus } from './researchTransitions';
+import { useResearchFormMode } from './useResearchFormMode';
 import { useResearchPlan } from './useResearchPlan';
 import { useResearchRun } from './useResearchRun';
 
@@ -62,6 +63,7 @@ export function useResearchForm({
   const general = focus === 'general';
   const historical = !parent && general && draft.history.enabled;
   const interval = historical ? projectInterval(draft.history) : null;
+  const mode = useResearchFormMode({ followUp: Boolean(parent), focus, historical });
   const plan = useResearchPlan({
     ...(historical
       ? {
@@ -119,6 +121,7 @@ export function useResearchForm({
     waiting,
     changeFocus,
     submit,
+    mode,
   };
 }
 export type ResearchFormProps = Parameters<typeof useResearchForm>[0];

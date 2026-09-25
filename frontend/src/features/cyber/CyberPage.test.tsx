@@ -38,6 +38,7 @@ it('opens one scrolling CTI workspace with figures, lenses, GNSS, activity and c
   const sections = within(screen.getByRole('navigation', { name: 'Cyber workspace sections' }));
   expect(sections.getAllByRole('link').map((link) => link.textContent)).toEqual([
     'Overview',
+    'Live board',
     'Assessment',
     'Focus areas',
     'Nation-state',

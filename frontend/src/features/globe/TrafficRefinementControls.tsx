@@ -65,7 +65,7 @@ export function TrafficRefinementControls({
           </select>
         </label>
       )}
-      <p className="text-[10px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Searches loaded positions in the current time and geographic scope. Source choices remain
         available while other filters change.
         {kind === 'aircraft' && ' Unknown means the feed supplied no usable ground-status flag.'}

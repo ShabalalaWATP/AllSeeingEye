@@ -30,7 +30,7 @@ export const RfMapReadout = memo(function RfMapReadout({
       </summary>
       <div className="mt-2 max-w-72 border-t border-line pt-2">
         <RfMapLegend terrain={!!terrain} />
-        <p className="mt-2 text-[10px] text-muted">
+        <p className="mt-2 text-2xs text-muted">
           {terrain
             ? 'Sampled estimate, not measured reception. Shaded gaps are illustrative.'
             : 'Ideal reference only. Terrain has not been checked.'}

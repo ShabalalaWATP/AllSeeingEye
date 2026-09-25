@@ -39,17 +39,23 @@ describe('AppShell', () => {
     ).toEqual([
       'Map',
       'Research',
-      'Subscriptions',
+      'Research progress',
       'Geolocation',
+      'Watches',
+      'Subscriptions',
+      'Alerts',
+      'Plans and areas',
+      'Annotation monitors',
       'Live monitor',
       'Ukraine war',
       'Cyber intelligence',
       'Economy',
       'Teams',
     ]);
-    for (const group of ['Standing desks', 'Directory']) {
+    for (const group of ['Standing watches', 'Monitoring', 'Collaboration']) {
       expect(within(nav).getByText(group)).toBeInTheDocument();
     }
+    expect(within(nav).queryByText('Standing desks')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',
@@ -121,13 +127,16 @@ describe('AppShell', () => {
   it('derives the top bar title and detects editable targets', () => {
     expect(viewTitle('/', 'globe')).toBe('Globe');
     expect(viewTitle('/', 'map')).toBe('Map');
-    expect(viewTitle('/admin/audit', 'globe')).toBe('Admin');
+    expect(viewTitle('/admin/audit', 'globe')).toBe('Audit log · Administration');
     expect(viewTitle('/subscriptions', 'globe')).toBe('Subscriptions');
     expect(viewTitle('/economy', 'globe')).toBe('Economy');
     expect(viewTitle('/settings', 'globe')).toBe('Your settings');
     expect(viewTitle('/warning', 'globe')).toBe('Alerts');
-    expect(viewTitle('/annotation-monitors', 'globe')).toBe('Annotation monitoring');
+    expect(viewTitle('/annotation-monitors', 'globe')).toBe('Annotation monitors');
     expect(viewTitle('/conflicts/ukraine', 'globe')).toBe('Ukraine war');
+    // A single saved report is a report, not the retired saved reports list.
+    expect(viewTitle('/reports/11111111-1111-4111-8111-111111111111', 'globe')).toBe('Report');
+    expect(viewTitle('/direction', 'globe')).toBe('Plans and areas');
     expect(viewTitle('/elsewhere', 'globe')).toBe('The All Seeing Eye');
 
     const editable = document.createElement('div');

@@ -61,7 +61,7 @@ export function ReferenceNotes({ event }: { event: LiveEvent }) {
     <section aria-label="Reference notes" className="mt-3 rounded border border-line p-3 text-xs">
       {items.map((item) => (
         <div key={`${item.kind}:${item.key}`} className="mb-2 last:mb-0">
-          <p className="text-[10px] uppercase tracking-wider text-cyan">
+          <p className="text-2xs uppercase tracking-wider text-cyan">
             {KIND_LABELS[item.kind]} · {item.key}
           </p>
           <p className="mt-0.5 font-medium text-text">{item.name}</p>

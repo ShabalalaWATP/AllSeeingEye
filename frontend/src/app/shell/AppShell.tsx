@@ -14,6 +14,7 @@ import { TopBar } from './TopBar';
 import { useViewShortcuts } from './useViewShortcuts';
 import { MobileHeader } from './MobileNavigation';
 import { useNarrowShell } from './useNarrowShell';
+import { useRouteFocus } from './useRouteFocus';
 
 // Rarely opened and it pulls in the whole destination catalogue, so keep it out of the shell chunk.
 const CommandPalette = lazy(() =>
@@ -28,6 +29,7 @@ export function AppShell() {
   const opsRoom = useGlobeStore((state) => state.opsRoom) && pathname === '/';
   const paletteOpen = useShellStore((state) => state.paletteOpen);
   const mainRef = useRef<HTMLElement>(null);
+  const announcer = useRouteFocus(mainRef);
 
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-ground text-text">
@@ -39,6 +41,7 @@ export function AppShell() {
       >
         Skip to main content
       </a>
+      <p ref={announcer} aria-live="polite" aria-atomic="true" className="sr-only" />
       {!opsRoom && !narrow && <LeftRail />}
       <div className="flex min-w-0 flex-1 flex-col">
         {!opsRoom && (narrow ? <MobileHeader /> : <TopBar />)}

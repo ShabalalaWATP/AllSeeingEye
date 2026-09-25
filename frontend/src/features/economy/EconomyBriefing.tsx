@@ -27,7 +27,7 @@ export function EconomyBriefing({
             selected {days} days. Each period refreshes every 24 hours while this page is visible.
           </p>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-ember">
+        <span className="font-mono text-2xs uppercase tracking-wider text-ember">
           AI assisted · source backed
         </span>
       </header>
@@ -49,7 +49,7 @@ export function EconomyBriefing({
         </Alert>
       )}
       {briefing && (
-        <p className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] text-muted">
+        <p className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-2xs text-muted">
           <span>
             {report ? 'Updated' : 'Started'}{' '}
             {formatUtc(report?.version.created_at ?? job?.created_at ?? '')}

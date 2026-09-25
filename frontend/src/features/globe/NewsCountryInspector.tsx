@@ -32,7 +32,7 @@ export function NewsCountryInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted">News country context</p>
+          <p className="text-2xs uppercase tracking-wider text-muted">News country context</p>
           <h2 className="mt-1 text-sm font-medium">{group.country.name}</h2>
         </div>
         <button
@@ -54,7 +54,7 @@ export function NewsCountryInspector({
           .slice(0, 25)
           .map(({ lead }) => (
             <li key={lead.id} className="rounded border border-line p-3 text-xs">
-              <p className="mb-2 text-[10px] text-muted">{newsSourceLabel(lead)}</p>
+              <p className="mb-2 text-2xs text-muted">{newsSourceLabel(lead)}</p>
               <button
                 className="w-full text-left leading-5 hover:text-cyan"
                 type="button"
@@ -68,7 +68,7 @@ export function NewsCountryInspector({
             </li>
           ))}
       </ul>
-      <p className="mt-3 text-[10px] text-muted">
+      <p className="mt-3 text-2xs text-muted">
         Up to 25 stories from the current bounded map sample. Related reports are not independent
         confirmation.
       </p>

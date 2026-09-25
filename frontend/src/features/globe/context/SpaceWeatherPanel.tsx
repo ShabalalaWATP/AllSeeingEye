@@ -42,7 +42,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
             /^[0-5]$/.test(String(value));
           return (
             <div key={key} className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] p-2">
-              <p className="text-[10px] leading-snug text-muted">{label}</p>
+              <p className="text-2xs leading-snug text-muted">{label}</p>
               <p className="mt-2 font-mono text-xl text-cyan">
                 {known ? `${key.toUpperCase()}${value}` : 'Unknown'}
               </p>
@@ -50,7 +50,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
           );
         })}
       </div>
-      <p className="text-[10px] text-muted">
+      <p className="text-2xs text-muted">
         Scales issued: {utcDate(scales?.attributes.stamp)}. Reported levels, not inferred from Kp.
       </p>
       <div className="rounded-lg border border-line p-3">
@@ -62,7 +62,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
               : 'Unknown'}
           </span>
         </p>
-        <p className="mt-1 text-[10px] text-muted">
+        <p className="mt-1 text-2xs text-muted">
           Three-hour index. Observation: {utcDate(kp?.attributes.time_tag)}.
         </p>
       </div>
@@ -88,7 +88,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
           placeholder="Watch, warning, cancellation…"
         />
       </label>
-      <p className="text-[10px] text-muted">
+      <p className="text-2xs text-muted">
         {Math.min(25, bulletins.length)} of {bulletins.length} matching collected bulletins
       </p>
       {!snapshot.loading && bulletins.length === 0 && (
@@ -98,7 +98,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
         {bulletins.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
             <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
-            <p className="mt-1 text-[10px] text-muted">Issued: {utcDate(event.published_at)}</p>
+            <p className="mt-1 text-2xs text-muted">Issued: {utcDate(event.published_at)}</p>
             <EventActions event={event} onSelect={onSelect} />
           </li>
         ))}

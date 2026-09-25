@@ -10,13 +10,13 @@ export function EventRow({ event }: { event: LiveEvent }) {
   const style = CATEGORY_STYLES[event.category];
   return (
     <li className="flex flex-wrap items-baseline gap-2 border-t border-line/60 py-2 text-sm">
-      <span className="rounded px-1.5 font-mono text-[10px]" style={{ color: style.css }}>
+      <span className="rounded px-1.5 font-mono text-2xs" style={{ color: style.css }}>
         {style.label}
       </span>
-      <span className="font-mono text-[10px] text-muted" title={event.grade_rationale}>
+      <span className="font-mono text-2xs text-muted" title={event.grade_rationale}>
         {event.grade}
       </span>
-      <span className="font-mono text-[10px] text-muted">{formatUtc(event.published_at)}</span>
+      <span className="font-mono text-2xs text-muted">{formatUtc(event.published_at)}</span>
       {isHttpUrl(event.url) ? (
         <a
           href={event.url}

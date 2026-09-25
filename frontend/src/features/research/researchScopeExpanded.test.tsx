@@ -6,6 +6,7 @@ import type { ReportRequest } from '@/lib/api/reports';
 import type { ResearchPlanInput } from '@/lib/api/researchPlan';
 import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { followUpRequest } from '@/lib/followUpScope';
 import { researchDateError } from './ResearchTimeScope';
@@ -25,6 +26,7 @@ it('sends multiple selected countries, a two-year window and the explicit web-se
   const body = captureRequest();
   const { user } = renderApp('/research?country=UA&question=Compare%20recent%20events', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.click(screen.getByText('Choose countries'));
   await user.type(screen.getByLabelText('Search countries'), 'United');
   await user.click(screen.getByRole('checkbox', { name: /United Kingdom/ }));
@@ -47,6 +49,7 @@ it('preserves a custom UTC interval without silently reverting to a rolling wind
   const body = captureRequest();
   const { user } = renderApp('/research?question=Review%20this%20period', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.selectOptions(screen.getByLabelText('Reporting window'), 'custom');
   fireEvent.change(screen.getByLabelText('Start date (UTC)'), {
     target: { value: '2025-01-01T12:00' },
@@ -68,6 +71,7 @@ it('preserves a custom UTC interval without silently reverting to a rolling wind
 it('removes public-web disclosure when switching to a private attachment', async () => {
   const { user } = renderApp('/research', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.click(screen.getByRole('checkbox', { name: /Fresh web search/ }));
   await user.selectOptions(screen.getByLabelText('Research focus'), 'document');
   expect(screen.queryByRole('checkbox', { name: /Fresh web search/ })).not.toBeInTheDocument();
@@ -109,6 +113,7 @@ it('previews the same countries, dates and web choice that will be collected', a
   );
   const { user } = renderApp('/research?country=UA&question=Review%20this%20period', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await user.selectOptions(screen.getByLabelText('Reporting window'), 'custom');
   fireEvent.change(screen.getByLabelText('Start date (UTC)'), {
     target: { value: '2025-01-01T12:00' },

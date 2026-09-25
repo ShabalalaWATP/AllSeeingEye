@@ -95,7 +95,7 @@ describe('direction', () => {
       `/reports?template=ask&plan=${plan.id}`,
     );
     await user.click(screen.getByRole('button', { name: 'Delete plan' }));
-    expect(await screen.findByRole('heading', { name: 'Plans & areas' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Plans and areas' })).toBeInTheDocument();
   });
 
   it('generates a plan-scoped ask without typing a question', async () => {

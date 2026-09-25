@@ -23,7 +23,7 @@ export function RegionExplainer({ name, view }: { name: string; view: RegionExpl
       className="rounded-xl border border-line/70 bg-surface/40 px-4 py-5 sm:px-6"
     >
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-ember uppercase">
+        <p className="font-mono text-2xs tracking-[0.22em] text-ember uppercase">
           {name} in plain English
         </p>
         <ExplainerBadge status={view.status} />

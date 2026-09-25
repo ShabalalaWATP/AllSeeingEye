@@ -36,7 +36,7 @@ export function InfrastructureInspector({
       >
         <header className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-cyan">Country source index</p>
+            <p className="text-2xs uppercase tracking-wider text-cyan">Country source index</p>
             <h2 className="mt-1 text-sm font-medium">{selected.item.name}</h2>
           </div>
           <button
@@ -75,9 +75,7 @@ export function InfrastructureInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-cyan">
-            {selectionLabel(selected)}
-          </p>
+          <p className="text-2xs uppercase tracking-wider text-cyan">{selectionLabel(selected)}</p>
           <h2 className="mt-1 text-sm font-medium">{selected.item.name}</h2>
         </div>
         <button

@@ -46,7 +46,7 @@ export function RadarAttackResults({
           <section key={layer.layer} className="rounded-xl border border-line/70 bg-surface/60 p-4">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-sm font-semibold">{LABELS[layer.layer]}</h3>
-              <span className="font-mono text-[10px] text-muted">Top billing countries</span>
+              <span className="font-mono text-2xs text-muted">Top billing countries</span>
             </div>
             <p className="mt-1 text-[11px] text-muted">
               {date(layer.period_from)} to {date(layer.period_to)} UTC

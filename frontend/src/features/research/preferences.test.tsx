@@ -5,6 +5,7 @@ import { expect, it } from 'vitest';
 import { useProfileStore } from '@/stores/profile';
 import { defaultProfile } from '@/test/handlers.profile';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 
 it('loads defaults before editing, honours URL scope and preserves edits after preferences refresh', async () => {
@@ -35,6 +36,10 @@ it('loads defaults before editing, honours URL scope and preserves edits after p
   expect(await screen.findByText('Loading your research defaults')).toBeVisible();
   expect(screen.queryByLabelText('Your question')).not.toBeInTheDocument();
   release();
+  // Quick research states the saved defaults it will use before anything is opened.
+  expect(await screen.findByText(/Research depth: Deep\. Search languages: 1\./)).toBeVisible();
+  expect(screen.getByLabelText('Reporting window')).toHaveValue('168');
+  await openAdvancedResearch();
   expect(await screen.findByLabelText('Narrative language')).toHaveValue('fr');
   expect(screen.getByLabelText('Report style')).toHaveValue('briefing');
   expect(screen.getByRole('radio', { name: /Deep/ })).toBeChecked();

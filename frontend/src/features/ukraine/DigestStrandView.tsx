@@ -18,7 +18,7 @@ function Citation({ citation }: { citation: UkraineDigestCitation }) {
   const label = `${citation.label}${dated}`;
   return (
     <li className="flex min-w-0 max-w-full items-baseline gap-1.5 rounded border border-line bg-surface px-2 py-1 sm:max-w-[22rem]">
-      <span className="shrink-0 font-mono text-[10px] text-muted" aria-hidden="true">
+      <span className="shrink-0 font-mono text-2xs text-muted" aria-hidden="true">
         {citation.id}
       </span>
       <span

@@ -45,12 +45,12 @@ export function EquipmentCard({
           <span className="flex shrink-0 flex-wrap justify-end gap-1">
             {showSide ? (
               <span
-                className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${SIDE_CHIP[entry.side]}`}
+                className={`rounded-full px-2 py-0.5 font-mono text-2xs ${SIDE_CHIP[entry.side]}`}
               >
                 {SIDE_LABELS[entry.side]}
               </span>
             ) : null}
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted">
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-2xs text-muted">
               {entry.origin}
             </span>
           </span>
@@ -71,7 +71,7 @@ export function EquipmentCard({
         ) : null}
         {entry.numbers ? (
           <p className="rounded border border-line/60 bg-ground px-2 py-1.5 text-xs leading-5 text-text">
-            <span className="mr-1 font-mono text-[10px] tracking-wide text-muted uppercase">
+            <span className="mr-1 font-mono text-2xs tracking-wide text-muted uppercase">
               Reported
             </span>
             {entry.numbers}
@@ -91,7 +91,7 @@ export function EquipmentCard({
               </a>
             ))}
           </span>
-          <span className="font-mono text-[10px] text-muted">
+          <span className="font-mono text-2xs text-muted">
             as of {formatDate(entry.as_of)}
             {stale ? ' (may be out of date)' : ''}
           </span>

@@ -1,5 +1,8 @@
+import type { ReactNode } from 'react';
+
 export const CYBER_SECTIONS = [
   { id: 'cyber-overview', label: 'Overview' },
+  { id: 'cyber-live', label: 'Live board' },
   { id: 'cyber-assessment', label: 'Assessment' },
   { id: 'cyber-focus', label: 'Focus areas' },
   { id: 'cyber-nation-state', label: 'Nation-state' },
@@ -27,7 +30,7 @@ export function CyberSectionNav({ preparing }: { preparing: boolean }) {
             >
               {section.label}
               {section.id === 'cyber-briefing' && preparing && (
-                <span className="font-mono text-[10px] text-cyan">Preparing</span>
+                <span className="font-mono text-2xs text-cyan">Preparing</span>
               )}
             </a>
           </li>
@@ -48,14 +51,12 @@ export function SectionHeading({
   eyebrow: string;
   title: string;
   lede?: string | undefined;
-  aside?: React.ReactNode | undefined;
+  aside?: ReactNode | undefined;
 }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-3xl">
-        <p className="mb-1 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
-          {eyebrow}
-        </p>
+        <p className="mb-1 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">{eyebrow}</p>
         <h2 id={`${id}-title`} className="text-xl font-semibold tracking-tight">
           {title}
         </h2>
@@ -63,5 +64,29 @@ export function SectionHeading({
       </div>
       {aside}
     </div>
+  );
+}
+
+/** One titled workspace section; the heading doubles as the jump-link target's label. */
+export function Section({
+  id,
+  eyebrow,
+  title,
+  lede,
+  aside,
+  children,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-16 space-y-5">
+      <SectionHeading id={id} eyebrow={eyebrow} title={title} lede={lede} aside={aside} />
+      {children}
+    </section>
   );
 }

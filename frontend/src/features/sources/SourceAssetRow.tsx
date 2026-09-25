@@ -39,7 +39,7 @@ export function SourceAssetRow({ asset }: { asset: SourceAsset }) {
         >
           {requirement.note}
           {requirement.setting && (
-            <span className="ml-2 font-mono text-[10px] text-muted">{requirement.setting}</span>
+            <span className="ml-2 font-mono text-2xs text-muted">{requirement.setting}</span>
           )}
         </p>
       )}

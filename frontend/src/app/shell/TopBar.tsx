@@ -7,26 +7,15 @@ import { useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
 
+import { NotificationBell } from './NotificationBell';
 import { PersonalLinks } from './PersonalLinks';
+import { pageTitle } from './pageTitles';
+import { ShortcutHelp } from './ShortcutHelp';
 
+/** The root route names the current projection; every other route names its page. */
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
-  if (pathname.startsWith('/admin')) return 'Admin';
-  if (pathname.startsWith('/reports')) return 'Saved reports';
-  if (pathname.startsWith('/subscriptions')) return 'Subscriptions';
-  if (pathname.startsWith('/economy')) return 'Economy';
-  if (pathname.startsWith('/cyber')) return 'Cyber intelligence';
-  if (pathname.startsWith('/settings')) return 'Your settings';
-  if (pathname.startsWith('/research')) return 'Research';
-  if (pathname.startsWith('/geolocation')) return 'Geolocation';
-  if (pathname.startsWith('/trackers')) return 'Live monitor';
-  if (pathname.startsWith('/annotation-monitors')) return 'Annotation monitoring';
-  if (pathname.startsWith('/conflicts/ukraine')) return 'Ukraine war';
-  if (pathname.startsWith('/direction')) return 'Plans & areas';
-  if (pathname.startsWith('/warning')) return 'Alerts';
-  if (pathname.startsWith('/teams')) return 'Teams';
-  if (pathname.startsWith('/account')) return 'Account';
-  return 'The All Seeing Eye';
+  return pageTitle(pathname);
 }
 
 const UTC_CLOCK = new Intl.DateTimeFormat('en-GB', {
@@ -45,7 +34,7 @@ function UtcClock() {
       className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums md:inline-flex"
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
-      {UTC_CLOCK.format(now)} <span className="text-muted/70">UTC</span>
+      {UTC_CLOCK.format(now)} <span className="text-muted">UTC</span>
     </time>
   );
 }
@@ -92,7 +81,9 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
       <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-2">
         <UtcClock />
         <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line/70 md:block" />
+        <NotificationBell />
         <PersonalLinks />
+        <ShortcutHelp />
         <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
           Logout
         </Button>

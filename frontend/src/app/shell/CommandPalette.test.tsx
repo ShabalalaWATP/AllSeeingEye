@@ -31,7 +31,7 @@ afterEach(() => {
   useShellStore.setState({ paletteOpen: false });
 });
 
-it('opens from the rail, jumps to a tracker and returns focus to its trigger', async () => {
+it('opens from the rail, jumps to a tracker and focuses the new page heading', async () => {
   const { user, router } = renderApp('/research/saved', 'user');
   const trigger = await screen.findByRole('button', { name: /Find anything/ });
   await user.click(trigger);
@@ -45,8 +45,10 @@ it('opens from the rail, jumps to a tracker and returns focus to its trigger', a
     expect(router.state.location.pathname).toBe('/trackers/maritime');
   });
   expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
+  // A jump is a navigation, so focus moves into the new page rather than back to the rail.
+  const heading = await screen.findByRole('heading', { name: 'Maritime', level: 1 });
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: /Find anything/ })).toHaveFocus();
+    expect(heading).toHaveFocus();
   });
 });
 
@@ -78,6 +80,10 @@ it('closes on dismissal without navigating', async () => {
     expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
   });
   expect(router.state.location.pathname).toBe('/research/saved');
+  // Dismissing without a jump returns focus to the control that opened the palette.
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: /Find anything/ })).toHaveFocus();
+  });
   await user.click(screen.getByRole('button', { name: /Find anything/ }));
   await user.click(await screen.findByRole('button', { name: 'Close search' }));
   await waitFor(() => {
@@ -88,13 +94,35 @@ it('closes on dismissal without navigating', async () => {
 it('reaches pages, trackers and map layers, and never administration', () => {
   const targets = commandTargets();
   const routes = targets.map((target) => target.to);
-  // Alerts and rules are reached from Settings now, not from the primary rail.
-  expect(routes).not.toContain('/warning');
+  for (const page of [
+    '/watches',
+    '/warning',
+    '/direction',
+    '/annotation-monitors',
+    '/research/jobs',
+  ]) {
+    expect(routes).toContain(page);
+  }
+  // The cyber board is part of the cyber workspace, so it has one entry, not two.
+  expect(routes).not.toContain('/trackers/cyber');
+  expect(routes).toContain('/cyber');
   expect(routes).toContain('/trackers/space');
   expect(routes).toContain('/?panel=cameras');
   // The catalogue is an administrator's page now, so an analyst cannot jump to it.
   expect(routes.some((route) => route.startsWith('/admin'))).toBe(false);
   expect(new Set(targets.map((target) => target.id)).size).toBe(targets.length);
+});
+
+it('offers Watches first for watch searches and groups pages as the rail does', () => {
+  const targets = commandTargets();
+  expect(matchTargets(targets, 'watches')[0]).toMatchObject({
+    label: 'Watches',
+    to: '/watches',
+    group: 'Standing watches',
+  });
+  expect(matchTargets(targets, 'alerts')[0]).toMatchObject({ to: '/warning', label: 'Alerts' });
+  expect(targets.find((target) => target.to === '/')?.group).toBe('Pages');
+  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Collaboration');
 });
 
 it('offers the source catalogue by family only to an administrator', () => {

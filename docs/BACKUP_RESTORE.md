@@ -138,13 +138,67 @@ independent authentication key. A PostgreSQL `--verify-only` command without a k
 performs integrity checks only and says so; it does not authenticate the bundle.
 Full restore compatibility is checked with the database tools during an actual drill.
 
-These scripts do not install a schedule, prune backups or remove old data. For a
-nightly operator-scheduled run, use a distinct UTC timestamp in the output name,
-check the exit status, and periodically perform a restore drill. A practical
-retention policy is seven daily and four weekly verified bundles, with a copy on
-another private device. Review available space and remove older bundles manually
-only after a newer recovery point has been verified. A failed dump may leave a
-partial file, so monitor free disk space as well as exit status.
+`backup.py` and `restore.py` never schedule, prune or delete anything. Scheduling,
+encryption and retention live in the separate wrapper described next.
+
+## Scheduled encrypted backups
+
+`scripts/scheduled_backup.py` runs from the operator's crontab on the Compose host.
+Each `run` takes a verified PostgreSQL bundle with `backup.py`, packs it into one
+tar file, encrypts it with GnuPG (symmetric AES-256, SHA-512 key derivation, no
+agent passphrase cache) and decrypts it again in memory to prove the archive opens
+and matches byte for byte. Only then is `scheduled-<UTC time>.tar.gpg` moved into
+the backup root. The plaintext bundle and tar never leave a private temporary
+directory that is removed afterwards. At least 1 GiB must be free.
+
+Retention keeps the newest `--keep` archives (default 30, minimum 3) and deletes
+only files named `scheduled-*.tar.gpg` in the root. Other bundles are never touched.
+A failed run never prunes. `status.json` in the root records the last attempt, the
+last success, the archive name and size, and any failure message.
+
+The encryption passphrase file must be private to its owner and hold 32 to 4,096
+bytes. Create it once, keep a copy in your password manager next to the HMAC
+authentication key, and never store either inside the backup root:
+
+```bash
+umask 077
+python3 -c "import secrets, sys; sys.stdout.write(secrets.token_urlsafe(48))"   > ~/.config/all-seeing-eye/backup-encryption.key
+mkdir -m 700 -p ~/backups/scheduled
+```
+
+A typical crontab runs the backup nightly and a restore drill weekly:
+
+```cron
+17 3 * * * cd /home/ase/ase && /usr/bin/python3 scripts/scheduled_backup.py run --root /home/ase/backups/scheduled --authentication-key-file /home/ase/.config/all-seeing-eye/backup-auth.key --encryption-key-file /home/ase/.config/all-seeing-eye/backup-encryption.key >> /home/ase/backups/scheduled/backup.log 2>&1
+47 4 * * 0 cd /home/ase/ase && /usr/bin/python3 scripts/scheduled_backup.py drill --root /home/ase/backups/scheduled --authentication-key-file /home/ase/.config/all-seeing-eye/backup-auth.key --encryption-key-file /home/ase/.config/all-seeing-eye/backup-encryption.key >> /home/ase/backups/scheduled/backup.log 2>&1
+```
+
+`drill` decrypts the newest archive into a temporary directory, extracts it with
+tar's data filter (no links, devices or path traversal) and authenticates the
+manifest HMAC with `restore.py --verify-only`. It does not touch Docker. A full
+database restore to a fresh target remains a separate, deliberate drill.
+
+Two options are off until configured:
+
+- `--heartbeat-url https://...` pings a dead man's switch monitor (for example
+  healthchecks.io) after each run, adding `/fail` on failure. Missing pings raise
+  the alarm even when the host itself is down. A monitor outage never fails a backup.
+- `--offsite user@host:path` (with `--offsite-port`) copies each new archive over
+  SSH with rsync, for example to a Hetzner Storage Box. The remote copy is never
+  pruned from this host, so a compromised or mistaken local deletion cannot
+  propagate; set retention or snapshots at the destination instead. A failed copy
+  keeps the local archive and marks the run failed.
+
+To recover, decrypt an archive into a new directory, then restore it as usual:
+
+```bash
+python3 scripts/scheduled_backup.py decrypt ~/backups/scheduled/scheduled-20260926T031701Z.tar.gpg --encryption-key-file ~/.config/all-seeing-eye/backup-encryption.key --output ~/recovery-20260926
+python3 scripts/restore.py ~/recovery-20260926/scheduled-20260926T031701Z --authentication-key-file ~/.config/all-seeing-eye/backup-auth.key --verify-only
+```
+
+Losing the encryption passphrase makes every scheduled archive unreadable, so check
+the password-manager copy after creating it. Losing the host loses local archives
+too, which is why the off-site option exists.
 
 ## Offline restore drill
 
