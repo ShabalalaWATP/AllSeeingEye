@@ -11,6 +11,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import PasswordTokenRow, RefreshTokenRow
+from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.token_families import (
     family_is_revoked,
     prune_revoked_families,
@@ -109,6 +110,11 @@ class SqlRefreshTokenRepository:
 
     async def revoke_family(self, family_id: UUID, now: datetime) -> int:
         await record_family_revocation(self._session, family_id, now)
+        owner = await self._session.scalar(
+            select(RefreshTokenRow.user_id).where(RefreshTokenRow.family_id == family_id).limit(1)
+        )
+        if owner is not None:
+            mark_session_change(self._session, owner)
         stmt = (
             update(RefreshTokenRow)
             .where(RefreshTokenRow.family_id == family_id, RefreshTokenRow.revoked_at.is_(None))
@@ -120,6 +126,7 @@ class SqlRefreshTokenRepository:
 
     async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
         await record_user_revocations(self._session, user_id, now)
+        mark_session_change(self._session, user_id)
         stmt = (
             update(RefreshTokenRow)
             .where(RefreshTokenRow.user_id == user_id, RefreshTokenRow.revoked_at.is_(None))

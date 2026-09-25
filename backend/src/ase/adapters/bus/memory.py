@@ -106,6 +106,10 @@ class InMemoryEventBus:
         return subscription
 
     async def publish(self, message: BusMessage) -> None:
+        self.publish_nowait(message)
+
+    def publish_nowait(self, message: BusMessage) -> None:
+        """Fan out without awaiting, for synchronous hooks such as a commit listener."""
         # A sensor batch may contain tens of thousands of immutable events. Never
         # retain or serialise that batch per slow browser: reload its bounded snapshot.
         if _oversized_upsert(message):

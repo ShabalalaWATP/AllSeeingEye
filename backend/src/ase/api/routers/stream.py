@@ -20,6 +20,7 @@ from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims
 from ase.application.feeds.health import SourceHealth
 from ase.application.ports.feeds import BusMessage
+from ase.application.ports.session import SESSION_CHANGED
 from ase.container import Container
 from ase.domain.errors import NotFound, RateLimited, Unauthenticated
 from ase.domain.events import Category, Event
@@ -31,7 +32,7 @@ STREAM_RETRY_SECONDS = 15
 
 
 async def _stream_access(claims: AccessClaims, container: Container) -> AccessContext | None:
-    # A stream cannot reuse the request transaction: each delivery must observe
+    # A stream cannot reuse the request transaction: each re-check must observe
     # committed logout, credential changes and account deactivation.
     async with container.session_factory() as session:
         repos = container.repositories(session)
@@ -126,6 +127,7 @@ async def stream(
     async def generate() -> AsyncIterator[dict[str, str]]:
         subscription = container.bus.subscribe()
         try:
+            checked_at = container.clock.now()
             access = await _stream_access(claims, container)
             if access is None:
                 yield {"event": "bye", "data": json.dumps({"reason": "session_revoked"})}
@@ -151,15 +153,19 @@ async def stream(
                 if container.clock.now() >= deadline:
                     yield {"event": "bye", "data": json.dumps({"reason": "token_expired"})}
                     return
-                access = await _stream_access(claims, container)
-                if access is None:
-                    yield {"event": "bye", "data": json.dumps({"reason": "session_revoked"})}
-                    return
-                current_signature = _access_signature(access)
-                if signature != current_signature:
-                    signature = current_signature
-                    yield {"event": "access.changed", "data": "{}"}
-                if message is None:
+                # Public deliveries reuse a check until the recheck window passes or a
+                # committed session change is signalled; alerts still re-read below.
+                if container.session_freshness.is_due(claims.user_id, checked_at):
+                    checked_at = container.clock.now()
+                    access = await _stream_access(claims, container)
+                    if access is None:
+                        yield {"event": "bye", "data": json.dumps({"reason": "session_revoked"})}
+                        return
+                    current_signature = _access_signature(access)
+                    if signature != current_signature:
+                        signature = current_signature
+                        yield {"event": "access.changed", "data": "{}"}
+                if message is None or message.kind == SESSION_CHANGED:
                     continue
                 payload = await _authorised_payload(message, wanted, claims, container)
                 if payload is not None:

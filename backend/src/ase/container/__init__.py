@@ -34,11 +34,7 @@ from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
 from ase.adapters.persistence.baselines import SqlBaselineSink
-from ase.adapters.persistence.session import (
-    create_engine,
-    create_session_factory,
-    ensure_sqlite_directory,
-)
+from ase.adapters.persistence.session import create_engine, ensure_sqlite_directory
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
 from ase.adapters.security.hasher import Argon2PasswordHasher
@@ -86,6 +82,7 @@ from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
 from ase.container.research_usage import ResearchUsageWiring
 from ase.container.sec_filings import SecFilingWiring
+from ase.container.session_freshness import build_sessions
 from ase.container.source_inventory import SourceInventoryWiring
 from ase.container.source_requirements import source_requirements
 from ase.container.team_board import TeamBoardWiring
@@ -133,7 +130,10 @@ class Container(
         self.email_sender: EmailSender = email_sender or build_email_sender(settings)
         ensure_sqlite_directory(settings.database_url)
         self.engine = create_engine(settings.database_url)
-        self.session_factory = create_session_factory(self.engine)
+        self.bus, self.health = InMemoryEventBus(), HealthRegistry()
+        self.session_signals, self.session_freshness, self.session_factory = build_sessions(
+            settings, self.clock, self.bus, self.engine
+        )
         self.hasher = Argon2PasswordHasher()
         self.issuer = JwtAccessTokenIssuer(
             settings.jwt_secret_value, timedelta(minutes=settings.access_token_minutes), self.clock
@@ -150,7 +150,6 @@ class Container(
         self.store = InMemoryEventStore(
             memory_budget_bytes=settings.live_store_memory_mb * 1024 * 1024
         )
-        self.bus, self.health = InMemoryEventBus(), HealthRegistry()
         self.countries: CountryDirectory = CountryIndex.from_resource()
         self.conflicts: ConflictDirectory = ConflictIndex.from_resource()
         self.streams = StreamLimiter(settings.max_streams_per_user)

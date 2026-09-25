@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.base import UTCDateTime
 from ase.adapters.persistence.models import RefreshTokenRow
+from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.token_families import RefreshFamilyRevocationRow, family_is_revoked
 from ase.domain.session_summary import SessionPage, SessionSummary
 
@@ -100,6 +101,7 @@ class SqlAccountSessionRepository:
         )
 
     async def revoke_others(self, user_id: UUID, current_family: UUID, now: datetime) -> None:
+        mark_session_change(self._session, user_id)
         scope = (
             RefreshTokenRow.user_id == user_id,
             RefreshTokenRow.family_id != current_family,

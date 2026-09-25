@@ -21,6 +21,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.directory_profile import DirectoryProfileRow
 from ase.adapters.persistence.models import UserRow
+from ase.adapters.persistence.session_changes import mark_session_change
 from ase.domain.errors import NotFound
 from ase.domain.teams import MembershipRole, Team, TeamMember, TeamMembership
 from ase.domain.users import Role
@@ -100,6 +101,12 @@ class SqlTeamRepository:
         row = await self._session.get(TeamRow, team.id)
         if row is None:
             raise NotFound()
+        if row.is_active != team.is_active:
+            members = await self._session.scalars(
+                select(TeamMembershipRow.user_id).where(TeamMembershipRow.team_id == team.id)
+            )
+            for member in members:
+                mark_session_change(self._session, member)
         row.name, row.is_active, row.updated_at, row.description = (
             team.name,
             team.is_active,
@@ -243,6 +250,7 @@ class SqlTeamRepository:
     async def put_membership(self, membership: TeamMembership) -> None:
         # Callers hold the team mutation lock, so duplicate requests cannot race the insert.
         row = await self._session.get(TeamMembershipRow, (membership.team_id, membership.user_id))
+        mark_session_change(self._session, membership.user_id)
         if row is None:
             self._session.add(
                 TeamMembershipRow(
@@ -257,6 +265,7 @@ class SqlTeamRepository:
         await self._session.flush()
 
     async def remove_membership(self, team_id: UUID, user_id: UUID) -> None:
+        mark_session_change(self._session, user_id)
         await self._session.execute(
             delete(TeamMembershipRow).where(
                 TeamMembershipRow.team_id == team_id,

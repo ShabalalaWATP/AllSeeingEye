@@ -1,4 +1,4 @@
-"""SessionFence: confirm re-reads the session, assert_live guards expiry, release returns."""
+"""SessionFence: confirm re-reads or safely reuses a session check; release guards expiry."""
 
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -7,7 +7,9 @@ from uuid import uuid4
 
 import pytest
 
+from ase.adapters.security.session_signals import InMemorySessionSignals
 from ase.api.session_fence import SessionFence
+from ase.application.auth.session_freshness import SessionFreshness
 from ase.application.dto import AccessClaims
 from ase.domain.errors import Forbidden, Unauthenticated
 from ase.domain.users import Role
@@ -33,12 +35,15 @@ def fence_with(
     context = AsyncMock()
     fresh = object()
     context.__aenter__.return_value = fresh
+    signals = InMemorySessionSignals(clock)
     container = SimpleNamespace(
         session_factory=lambda: context,
         clock=clock,
         repositories=lambda session: SimpleNamespace(
             users=("users", session), refresh_tokens=("tokens", session)
         ),
+        session_signals=signals,
+        session_freshness=SessionFreshness(clock, signals, timedelta(seconds=15)),
     )
     return SessionFence(container, token or claims()), context
 
@@ -87,3 +92,34 @@ async def test_release_returns_the_value_only_while_the_token_lives(check: Async
         fence.assert_live()
     with pytest.raises(Unauthenticated):
         await fence.release("private")
+
+
+async def test_a_recent_check_is_reused_within_the_window(check: AsyncMock) -> None:
+    clock = FakeClock(START)
+    fence, _ = fence_with(check, clock)
+    await fence.confirm()
+    clock.advance(timedelta(seconds=14))
+    await fence.confirm()
+    assert check.await_count == 1
+    clock.advance(timedelta(seconds=1))
+    await fence.confirm()
+    assert check.await_count == 2
+
+
+async def test_a_signalled_change_forces_a_fresh_read(check: AsyncMock) -> None:
+    clock = FakeClock(START)
+    fence, _ = fence_with(check, clock)
+    await fence.confirm()
+    fence._container.session_signals.publish(fence._claims.user_id)
+    check.side_effect = Unauthenticated("revoked")
+    with pytest.raises(Unauthenticated):
+        await fence.confirm()
+    assert check.await_count == 2
+
+
+async def test_admin_only_still_applies_to_a_reused_check(check: AsyncMock) -> None:
+    fence, _ = fence_with(check, FakeClock(START))
+    await fence.confirm()
+    with pytest.raises(Forbidden):
+        await fence.confirm(admin_only=True)
+    assert check.await_count == 1
