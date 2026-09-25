@@ -5604,3 +5604,27 @@ Focused local verification passed 44 backend/migration tests and 29 frontend
 tests. Independent quality and defensive reviews found no blocking issues.
 The release gate includes the full SQLite/PostgreSQL suites, frontend coverage,
 security checks and a migration-aware rollout.
+
+## 25 September 2026: Delivery, hosting and repository quick wins
+
+A review of the live site found that every visitor, including on the sign-in page,
+downloaded the 941 KB deck.gl chunk: code-split recursion had captured Vite's
+preload helper into it. The helper now has its own higher-priority group, and
+first-paint JavaScript fell from 1.55 MB (446 KB gzip) to 607 KB (187 KB gzip).
+Development preview pages had also shipped to production because their lazy
+imports sat outside the `import.meta.env.DEV` branch; they now live inside it.
+`frontend/scripts/check-bundle.js` runs in CI after the build and fails on a
+lazy-only library at first paint, a preview page in the output or an initial
+payload over its gzip budget.
+
+Caddy now serves Brotli and gzip copies written at image build time, caches
+content-hashed assets as immutable, revalidates `index.html` and fixed-name files,
+and answers 404 for a missing asset instead of the application shell. The CSP
+lacked 35 client-admitted camera hosts in `media-src` and `connect-src`; a
+repository test now compares the policy with `cameraMediaHosts.json`. These
+changes were exercised in the Caddy 2.11.4 image against the production build.
+
+CI now fails when the committed OpenAPI schema or generated types drift from the
+backend. Compose sets memory and process limits from measured production peaks
+and bounds container logs. Dependabot groups minor and patch updates per ecosystem.
+The backend targets Python 3.13, which the container and CI already ran.
