@@ -18,7 +18,7 @@ Keep installation-specific host access and recovery details out of reader docs.
 ## Layout
 
 ```
-backend/    Python 3.12+, FastAPI, SQLAlchemy 2 async, Alembic, uv.  src/ase/{domain,application,adapters,api,infrastructure,container}
+backend/    Python 3.13+, FastAPI, SQLAlchemy 2 async, Alembic, uv.  src/ase/{domain,application,adapters,api,infrastructure,container}
 frontend/   React 19, TypeScript strict, Vite, Tailwind 4, pnpm.     src/{app,features,components,lib,stores}
 infra/      Caddyfile, Dockerfiles.  docker-compose.yml at the root.
 docs/       Design, ADRs, plan, development story, API contracts.
