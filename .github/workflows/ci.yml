@@ -52,7 +52,7 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --frozen
       - run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 8
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: sqlite-coverage-${{ matrix.shard }}
           path: backend/.coverage.*
@@ -94,7 +94,7 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --frozen
       - run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 8
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: postgres-coverage-${{ matrix.shard }}
           path: backend/.coverage.*
@@ -220,7 +220,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The application requires Python >=3.13; Python 3.7 compatibility is inapplicable.
       - run: semgrep scan --config p/default --config p/security-audit --exclude-rule python.lang.compatibility.python37.python37-compatibility-importlib2 --no-rewrite-rule-ids --error --sarif --output semgrep.sarif backend/src frontend/src
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         id: sarif
         if: ${{ !cancelled() && hashFiles('semgrep.sarif') != '' }}
         with:
