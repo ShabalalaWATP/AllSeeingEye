@@ -34,10 +34,53 @@ export function subscriptionHref(question: string, country?: string | null): str
   return `/subscriptions?${params.toString()}`;
 }
 
-export function eventResearchHref(event: LiveEvent): string {
+const HOUR = 3_600_000;
+/** Either side of the event, so the draft reads what came before it as well as after. */
+export const EVENT_CONTEXT_HOURS = 72;
+/** Country centroids and unplaced events have no meaningful position to pass on. */
+const PRECISION: Partial<Record<LiveEvent['geo_confidence'], string>> = {
+  exact: 'exact position',
+  city: 'city-level position',
+  admin1: 'regional position',
+};
+
+const minute = (ms: number) => new Date(Math.floor(ms / 60_000) * 60_000).toISOString();
+const eventTime = (event: LiveEvent) => Date.parse(event.published_at ?? event.observed_at);
+
+/** A research period around the event, never reaching past now; null when the time is unusable. */
+export function eventResearchPeriod(event: LiveEvent, now = Date.now()): ResearchDates | null {
+  const at = eventTime(event);
+  if (!Number.isFinite(at)) return null;
+  const dates = {
+    since: minute(at - EVENT_CONTEXT_HOURS * HOUR),
+    until: minute(Math.min(at + EVENT_CONTEXT_HOURS * HOUR, now)),
+  };
+  return researchDateError(dates, now) ? null : dates;
+}
+
+function eventContext(event: LiveEvent): string {
+  const at = eventTime(event);
+  const details: string[] = [];
+  if (Number.isFinite(at))
+    details.push(`reported at ${new Date(at).toISOString().slice(0, 16).replace('T', ' ')} UTC`);
+  const precision = PRECISION[event.geo_confidence];
+  const { point } = event;
+  if (precision && point && Math.abs(point.lat) <= 90 && Math.abs(point.lon) <= 180)
+    details.push(
+      `mapped near latitude ${point.lat.toFixed(2)}, longitude ${point.lon.toFixed(2)} (${precision})`,
+    );
+  return details.length ? ` It was ${details.join(' and ')}.` : '';
+}
+
+/**
+ * The event's title, time and mapped position go into the question, its country into the
+ * scope and a period around it into the dates. The research form reviews all of it again.
+ */
+export function eventResearchHref(event: LiveEvent, now = Date.now()): string {
   const title = event.title.replace(/\s+/g, ' ').trim().slice(0, 650);
   return researchHref(
-    `What public evidence supports or challenges the report titled "${title}"? Check its timing, location and source provenance, and distinguish claims from established facts.`,
+    `What public evidence supports or challenges the report titled "${title}"?${eventContext(event)} Check its timing, location and source provenance, and distinguish claims from established facts.`,
     event.country_iso,
+    eventResearchPeriod(event, now),
   );
 }
