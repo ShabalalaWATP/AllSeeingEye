@@ -34,6 +34,11 @@ updates:
       npm-minor-and-patch:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # Vitest 5.0.2's jsdom environment reads jsdom's private Blob internals, which
+      # jsdom 30 removed, so every binary upload test fails. Lift once Vitest supports it.
+      - dependency-name: jsdom
+        versions: ['>=30.0.0']
   - package-ecosystem: gomod
     directory: /infra/caddy-build
     schedule:
