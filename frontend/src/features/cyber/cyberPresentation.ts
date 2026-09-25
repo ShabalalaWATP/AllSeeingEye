@@ -1,4 +1,6 @@
+import type { BarRow } from '@/components/charts/BarList';
 import type { CyberItem, CyberTheme } from '@/lib/api/cyber';
+import type { Tally } from '@/lib/api/modules';
 
 const countries = new Intl.DisplayNames(['en-GB'], { type: 'region' });
 export function cyberCountry(code: string | null): string {
@@ -57,4 +59,13 @@ export function filterCyberItems(
 export function cyberResearchLink(subject: string): string {
   const question = `Assess the reported cyber threat activity involving ${subject}. Separate verified observations, source attribution and unconfirmed claims. Explain dates, affected sectors, defensive implications and evidence gaps with citations.`;
   return `/research?${new URLSearchParams({ question })}`;
+}
+
+/** Live-board tallies as bars. Country keys read as names; a blank key is stated plainly. */
+export function liveTallyRows(rows: readonly Tally[], countries: boolean, limit = 8): BarRow[] {
+  return rows.slice(0, limit).map((row) => ({
+    key: row.key || 'unstated',
+    label: countries ? cyberCountry(row.key || null) : row.key || 'Group not stated',
+    value: row.count,
+  }));
 }

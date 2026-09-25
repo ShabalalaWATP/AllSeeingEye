@@ -1,5 +1,8 @@
+import type { ReactNode } from 'react';
+
 export const CYBER_SECTIONS = [
   { id: 'cyber-overview', label: 'Overview' },
+  { id: 'cyber-live', label: 'Live board' },
   { id: 'cyber-assessment', label: 'Assessment' },
   { id: 'cyber-focus', label: 'Focus areas' },
   { id: 'cyber-nation-state', label: 'Nation-state' },
@@ -48,7 +51,7 @@ export function SectionHeading({
   eyebrow: string;
   title: string;
   lede?: string | undefined;
-  aside?: React.ReactNode | undefined;
+  aside?: ReactNode | undefined;
 }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -63,5 +66,29 @@ export function SectionHeading({
       </div>
       {aside}
     </div>
+  );
+}
+
+/** One titled workspace section; the heading doubles as the jump-link target's label. */
+export function Section({
+  id,
+  eyebrow,
+  title,
+  lede,
+  aside,
+  children,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-16 space-y-5">
+      <SectionHeading id={id} eyebrow={eyebrow} title={title} lede={lede} aside={aside} />
+      {children}
+    </section>
   );
 }

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { renderApp } from '@/test/render';
 
-describe('maritime, space and cyber trackers', () => {
+describe('maritime and space trackers', () => {
   it('shows the maritime warnings by area and kind', async () => {
     renderApp('/trackers/maritime', 'user');
     expect(
@@ -31,23 +31,6 @@ describe('maritime, space and cyber trackers', () => {
     const launches = screen.getByRole('region', { name: 'Launches' });
     expect(within(launches).getByText('Launch: Spectrum')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Generate report' })).not.toBeInTheDocument();
-  });
-
-  it('shows outages, ransomware and exploited vulnerabilities', async () => {
-    renderApp('/trackers/cyber', 'user');
-    expect(
-      await screen.findByRole('heading', { name: 'Cyber' }, { timeout: 5000 }),
-    ).toBeInTheDocument();
-    const outages = await screen.findByRole('list', { name: 'Outages by nation' });
-    expect(within(outages).getByText('TN')).toBeInTheDocument();
-    const groups = screen.getByRole('list', { name: 'Ransomware by group' });
-    expect(within(groups).getByText('akira')).toBeInTheDocument();
-    const kev = screen.getByRole('region', { name: 'Known exploited vulnerabilities' });
-    expect(within(kev).getByText(/CVE-2026-0001/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Generate report' })).toHaveAttribute(
-      'href',
-      '/reports?template=cyber_summary',
-    );
   });
 
   it('links to every module from the trackers page', async () => {

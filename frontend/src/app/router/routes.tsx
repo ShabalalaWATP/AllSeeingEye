@@ -55,9 +55,6 @@ const MaritimePage = lazy(() =>
 const SpacePage = lazy(() =>
   import('@/features/trackers/ModulePages').then((m) => ({ default: m.SpacePage })),
 );
-const CyberPage = lazy(() =>
-  import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
-);
 const FiguresPage = lazy(() => import('@/features/trackers/FiguresPage'));
 const UkrainePage = lazy(() => import('@/features/ukraine/UkrainePage'));
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
@@ -144,7 +141,8 @@ export const routes: RouteObject[] = [
           { path: 'trackers/aviation', element: <AviationPage /> },
           { path: 'trackers/maritime', element: <MaritimePage /> },
           { path: 'trackers/space', element: <SpacePage /> },
-          { path: 'trackers/cyber', element: <CyberPage /> },
+          // The tracker board now lives inside the single cyber workspace.
+          { path: 'trackers/cyber', element: <RedirectWithQuery to="/cyber" /> },
           { path: 'trackers/figures', element: <FiguresPage /> },
           { path: 'conflicts/ukraine', element: <UkrainePage /> },
           { path: 'trackers/social', element: <SocialPage /> },
