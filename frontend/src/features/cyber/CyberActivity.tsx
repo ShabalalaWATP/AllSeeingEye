@@ -43,7 +43,7 @@ export function CyberActivity({
                 {formatUtc(item.published_at)}
               </time>
               <p>{cyberCountry(item.country_iso)}</p>
-              <p className="font-mono text-[10px]">Grade {item.grade}</p>
+              <p className="font-mono text-2xs">Grade {item.grade}</p>
             </div>
             <div className="min-w-0 space-y-3">
               <h3 className="text-base leading-7 font-semibold">

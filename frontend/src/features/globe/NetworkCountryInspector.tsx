@@ -33,7 +33,7 @@ export function NetworkCountryInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-amber-300">Network signals</p>
+          <p className="text-2xs uppercase tracking-wider text-amber-300">Network signals</p>
           <h2 className="mt-1 text-sm font-medium">{group.country.name}</h2>
         </div>
         <button
@@ -55,7 +55,7 @@ export function NetworkCountryInspector({
         {group.events.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded border border-line p-3 text-xs">
             <span className="block text-text">{event.title}</span>
-            <span className="mt-1 block text-[10px] text-muted">
+            <span className="mt-1 block text-2xs text-muted">
               Reported {utcDate(event.published_at)}
             </span>
             {isHttpUrl(event.url) && (
@@ -72,7 +72,7 @@ export function NetworkCountryInspector({
         ))}
       </ul>
       {group.events.length > 25 && (
-        <p className="mt-2 text-[10px] text-muted">Showing 25 of {group.events.length} records.</p>
+        <p className="mt-2 text-2xs text-muted">Showing 25 of {group.events.length} records.</p>
       )}
     </aside>
   );

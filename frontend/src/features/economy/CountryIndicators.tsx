@@ -43,7 +43,7 @@ export function CountryIndicators({
         .filter((group) => group.items.length > 0)
         .map((group) => (
           <div key={group.name}>
-            <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+            <h4 className="mb-2 text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
               {group.name}
             </h4>
             <div
@@ -94,14 +94,14 @@ function IndicatorButton({
       >
         {formatEconomicValue(latest?.value ?? null, series.unit)}
       </span>
-      <span className="mt-1 block min-h-4 text-[10px] text-muted">{series.unit}</span>
+      <span className="mt-1 block min-h-4 text-2xs text-muted">{series.unit}</span>
       <IndicatorSparkline series={series} />
-      <span className="mt-2 block text-[10px] leading-4 text-muted">
+      <span className="mt-2 block text-2xs leading-4 text-muted">
         {latest ? `Observation: ${latest.date}` : 'No published observation'}
         {age ? ` · ${age}` : ''}
         {series.status === 'stale' ? ' · cached' : ''}
       </span>
-      <span className="mt-1 block text-[10px] leading-4 text-muted">
+      <span className="mt-1 block text-2xs leading-4 text-muted">
         {change ? formatAnnualChange(change) : 'Annual change unavailable'}
       </span>
     </button>

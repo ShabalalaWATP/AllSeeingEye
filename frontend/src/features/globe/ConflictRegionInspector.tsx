@@ -33,7 +33,7 @@ export function ConflictRegionInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-cyan">{regionLabel(region)}</p>
+          <p className="text-2xs uppercase tracking-wider text-cyan">{regionLabel(region)}</p>
           <h2 className="mt-1 text-sm font-medium">{card.conflict.name}</h2>
         </div>
         <button
@@ -61,13 +61,13 @@ export function ConflictRegionInspector({
           <dd className="mt-1 font-mono text-lg">{card.reporting_7d}</dd>
         </div>
       </dl>
-      <p className="mt-2 text-[10px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Source reports grouped by shared evidence, not independent verification. Zero retained
         reports does not establish an absence of conflict.
       </p>
       {card.latest && (
         <div className="mt-4 border-t border-line pt-3">
-          <p className="text-[10px] text-muted">
+          <p className="text-2xs text-muted">
             Latest retained violence report · {card.latest.source_id.replaceAll('_', ' ')}
           </p>
           <p className="mt-1 text-xs">{card.latest.title}</p>

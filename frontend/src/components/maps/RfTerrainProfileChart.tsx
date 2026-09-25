@@ -189,7 +189,7 @@ export function RfTerrainProfileChart({
           {focused.position[1].toFixed(5)}, {focused.position[0].toFixed(5)}.
         </p>
       )}
-      <figcaption className="text-[10px] leading-relaxed text-muted">
+      <figcaption className="text-2xs leading-relaxed text-muted">
         Grey: sampled terrain plus Earth curvature. Mint: clear direct ray. Amber: clearance or
         power risk, including the interval before a sampled intrusion. Red: obstructed direct ray.
         Dashed amber: lower 60% Fresnel boundary.

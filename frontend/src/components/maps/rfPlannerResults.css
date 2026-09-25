@@ -8,7 +8,7 @@
 .rf-result-kicker {
   color: var(--rf-muted);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }

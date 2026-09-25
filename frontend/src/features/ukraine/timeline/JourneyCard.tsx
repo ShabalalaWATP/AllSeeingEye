@@ -39,7 +39,7 @@ export function EventLinks({
 
 export function ThemeChip({ label }: { label: string }) {
   return (
-    <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-muted">
+    <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs text-muted">
       {label}
     </span>
   );
@@ -63,7 +63,7 @@ export function JourneyCard({
     >
       <article className="card-surface pointer-events-auto flex min-w-0 flex-col gap-2 p-4 sm:max-w-lg">
         <p
-          className="font-mono text-[10px] uppercase tracking-[0.18em]"
+          className="font-mono text-2xs uppercase tracking-[0.18em]"
           style={{ color: phase.colour }}
         >
           {phase.label}

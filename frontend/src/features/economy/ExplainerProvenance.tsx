@@ -11,7 +11,7 @@ export function ExplainerBadge({ status }: { status: ExplainerStatus }) {
   if (status !== 'stale' && status !== 'generating') return null;
   return (
     <span
-      className="rounded-full border border-amber/50 bg-amber/10 px-2 py-0.5 font-mono text-[10px] tracking-wider text-amber uppercase"
+      className="rounded-full border border-amber/50 bg-amber/10 px-2 py-0.5 font-mono text-2xs tracking-wider text-amber uppercase"
       data-testid="explainer-badge"
     >
       {status === 'stale' ? 'Figures moved on' : 'Updating'}

@@ -135,7 +135,7 @@ export function RfAnalysisResults({
               )}
             </div>
           </div>
-          <p className="mt-2 text-[10px] text-muted">
+          <p className="mt-2 text-2xs text-muted">
             Elevations use the source sea-level datum. Antenna heights are above local ground.
             Effective Earth factor k={(terrain.engineering?.earthFactor ?? 4 / 3).toFixed(3)}.
             Assumed obstacle screen: {(terrain.engineering?.obstacleHeightM ?? 0).toFixed(1)} m

@@ -111,7 +111,7 @@
   position: absolute;
   right: 0;
   top: 0;
-  font: 8px monospace;
+  font: 11px/1 monospace;
   padding: 1px 2px;
   background: #11161a;
   border-radius: 3px;
@@ -211,7 +211,7 @@
   gap: 3px;
 }
 .map-style-label {
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.1;
   font-weight: 600;
   white-space: nowrap;

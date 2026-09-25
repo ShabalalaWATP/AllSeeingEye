@@ -34,7 +34,7 @@ export function BasisBadge({ basis }: { basis: Basis }) {
   return (
     <span
       title={title}
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide ${className}`}
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-2xs uppercase tracking-wide ${className}`}
     >
       {label}
     </span>

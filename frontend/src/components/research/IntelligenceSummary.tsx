@@ -147,7 +147,7 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
           href={`#${sourceId}-reference-${number}`}
           onClick={() => setSourcesOpen(true)}
           aria-label={`Daily briefing reference ${number}`}
-          className="ml-1 align-super text-[10px] font-medium text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+          className="ml-1 align-super text-2xs font-medium text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
         >
           [{number}]
         </a>

@@ -115,7 +115,7 @@ export function FigurePanel({
                     <span className="block truncate font-medium text-text">{figure.name}</span>
                     <span className="block truncate text-muted">{figure.office}</span>
                   </span>
-                  <span className="shrink-0 font-mono text-[10px] uppercase text-muted">
+                  <span className="shrink-0 font-mono text-2xs uppercase text-muted">
                     {BASIS_LABELS[figure.placement.basis]}
                   </span>
                 </button>

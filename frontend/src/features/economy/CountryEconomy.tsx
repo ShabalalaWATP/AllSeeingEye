@@ -34,7 +34,7 @@ export function CountryEconomy({
     <section aria-label={`${region.name} economic indicators`} className="space-y-6">
       <header className="flex flex-wrap items-baseline justify-between gap-3">
         <h3 className="text-lg font-semibold">Economic fundamentals</h3>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        <span className="font-mono text-2xs uppercase tracking-wider text-muted">
           Annual official indicators
         </span>
       </header>

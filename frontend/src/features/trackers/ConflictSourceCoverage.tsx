@@ -53,7 +53,7 @@ export function ConflictSourceCoverage() {
                 {source.role} · {source.detail}
               </p>
               {source.id !== 'conflict_screening' && (
-                <p className="font-mono text-[10px] text-muted">
+                <p className="font-mono text-2xs text-muted">
                   {source.dataset_release ? `Dataset ${source.dataset_release} · ` : ''}Last
                   successful collection:{' '}
                   {source.last_success ? formatUtc(source.last_success) : 'Not yet recorded'}

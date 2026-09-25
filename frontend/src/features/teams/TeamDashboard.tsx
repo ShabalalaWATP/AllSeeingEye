@@ -41,9 +41,7 @@ function ResearchWorkspace({ teamId }: { teamId: string }) {
   return (
     <section className="flex flex-col gap-6" aria-labelledby="team-research-heading">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-cyan">
-          Shared analysis
-        </p>
+        <p className="font-mono text-2xs uppercase tracking-[0.22em] text-cyan">Shared analysis</p>
         <h3 id="team-research-heading" className="mt-2 text-xl font-semibold">
           Research for this team
         </h3>
@@ -57,9 +55,7 @@ function ResearchWorkspace({ teamId }: { teamId: string }) {
           href={`/research?team_id=${encodeURIComponent(teamId)}`}
           className="group border border-line bg-surface/60 p-5 transition-colors hover:border-cyan/60 hover:bg-surface"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cyan">
-            Create
-          </span>
+          <span className="font-mono text-2xs uppercase tracking-[0.18em] text-cyan">Create</span>
           <h4 className="mt-2 text-base font-semibold group-hover:text-cyan">
             Start team research
           </h4>
@@ -71,9 +67,7 @@ function ResearchWorkspace({ teamId }: { teamId: string }) {
           href={`/reports?team_id=${encodeURIComponent(teamId)}`}
           className="group border border-line bg-surface/60 p-5 transition-colors hover:border-ember/60 hover:bg-surface"
         >
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ember">
-            Review
-          </span>
+          <span className="font-mono text-2xs uppercase tracking-[0.18em] text-ember">Review</span>
           <h4 className="mt-2 text-base font-semibold group-hover:text-ember">
             Open saved reports
           </h4>
@@ -111,7 +105,7 @@ export function TeamDashboard({
     <div className="flex min-w-0 flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line/70 pb-6">
         <div className="min-w-0">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
+          <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">
             Team workspace
           </p>
           <h2 className="mt-2 break-words text-2xl font-semibold tracking-tight">

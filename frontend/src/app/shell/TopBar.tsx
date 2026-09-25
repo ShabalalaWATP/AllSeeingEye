@@ -47,7 +47,7 @@ function UtcClock() {
       className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums md:inline-flex"
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
-      {UTC_CLOCK.format(now)} <span className="text-muted/70">UTC</span>
+      {UTC_CLOCK.format(now)} <span className="text-muted">UTC</span>
     </time>
   );
 }

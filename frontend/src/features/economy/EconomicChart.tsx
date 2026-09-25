@@ -76,7 +76,7 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
                 x="72"
                 y={y(value) + 4}
                 textAnchor="end"
-                className="fill-muted font-mono text-[10px]"
+                className="fill-muted font-mono text-2xs"
               >
                 {formatEconomicValue(value, series.unit)}
               </text>
@@ -125,7 +125,7 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
               x={x(index)}
               y="276"
               textAnchor="middle"
-              className="fill-muted font-mono text-[10px]"
+              className="fill-muted font-mono text-2xs"
             >
               {points[index]?.date}
             </text>

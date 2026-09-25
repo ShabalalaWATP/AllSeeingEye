@@ -21,7 +21,7 @@ export function CyberAssessment({ state, days }: { state: CyberBriefingState; da
         className="rounded-xl border border-cyan/30 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-cyan)_10%,var(--color-surface)),var(--color-surface))] p-5 sm:p-6"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+          <p className="font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
             {days}-day AI assessment
           </p>
           {briefing && (

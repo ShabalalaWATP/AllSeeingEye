@@ -210,7 +210,7 @@ function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
               className="map-tool-list-button w-full text-left"
             >
               <span className="block text-xs font-medium">{event.title}</span>{' '}
-              <span className="mt-1 block text-[10px] text-muted">
+              <span className="mt-1 block text-2xs text-muted">
                 {CYBER_KIND_LABELS[cyberKind(event)]} · {precisionLabel(event)}
               </span>
             </button>

@@ -90,7 +90,7 @@ export function ReportWorkspaceDrawer({
       >
         <header className="flex items-start justify-between gap-6 border-b border-line px-5 py-4 sm:px-7">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-ember">
+            <p className="text-2xs font-medium uppercase tracking-[0.2em] text-ember">
               Supporting workspace
             </p>
             <h2 id="supporting-workspace-title" className="mt-1 text-lg font-semibold">

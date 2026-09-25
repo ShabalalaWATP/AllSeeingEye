@@ -27,7 +27,7 @@ export function IndicatorMeaning({
           <p>
             <span className="font-medium text-text">In everyday words: </span>
             {plain}
-            <span className="block text-[10px]">Written by the model from these figures.</span>
+            <span className="block text-2xs">Written by the model from these figures.</span>
           </p>
         )}
         <p className="text-[11px]">
