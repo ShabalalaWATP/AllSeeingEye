@@ -5628,3 +5628,38 @@ CI now fails when the committed OpenAPI schema or generated types drift from the
 backend. Compose sets memory and process limits from measured production peaks
 and bounds container logs. Dependabot groups minor and patch updates per ecosystem.
 The backend targets Python 3.13, which the container and CI already ran.
+
+## 25 September 2026: Operations and product improvements
+
+The VPS already ran a nightly `backup.py` from the operator's crontab, outside the
+repository and without encryption, drills or failure alerts. `scheduled_backup.py`
+now codifies it. Each run takes the verified bundle, encrypts it with GnuPG
+AES-256, decrypts it again to prove the bytes match, and prunes only its own
+archives. A weekly drill authenticates the newest archive's manifest. Off-site
+rsync copies and a dead man's switch heartbeat are ready but off until the
+operator chooses a destination and a monitor. An `Uptime` workflow probes the
+site, health, readiness and certificate lifetime every 15 minutes from outside.
+
+Three product lanes were built in parallel worktrees and merged here.
+Navigation now surfaces every standing-watch page, including research progress,
+alerts, plans and annotation monitors. A new `/watches` hub lists subscriptions,
+alert rules, area watches, plans, briefs and monitors from existing endpoints,
+without data changes. `/cyber` absorbed the unique parts of the cyber tracker
+board and `/trackers/cyber` redirects to it. Every route has a document title,
+and in-app navigation moves focus to the page heading and announces it.
+
+A top-bar bell counts unacknowledged alerts and research jobs finished since it
+was last opened; polling pauses in hidden tabs. Single-key shortcuts can be
+turned off, and "?" lists them. Faded muted text and sub-11px sizes were
+replaced; a test recomputes WCAG ratios from the theme tokens.
+
+`/api/capabilities` gained `ai_research`, a boolean computed with the real model
+routing rules for the caller's personal workspace and active teams, leaking no
+provider detail. Research, the Eye assistant and map area research warn before a
+user fills in a form that cannot run, and administrators get a setup checklist.
+Event links carry a period around the event and its position into the question.
+The research form opens in a quick mode, with the existing eight steps under
+Advanced options. Seeding the event itself as evidence remains a follow-up that
+needs backend support.
+
+The integrated frontend suite passed 3,351 tests at 90.74% branch coverage.
