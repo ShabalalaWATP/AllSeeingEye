@@ -62,6 +62,10 @@ export default defineConfig({
         codeSplitting: {
           // Keep dependency recursion enabled to avoid circular runtime initialisation.
           groups: [
+            // Vite's preload helper is shared by every lazy route. Without its own
+            // higher-priority group, recursion captures it into the first vendor group
+            // that uses dynamic imports, and the entry then loads all of deck.gl.
+            { name: 'preload-helper', test: /vite[\\/]preload-helper/, priority: 10 },
             { name: 'maplibre', test: /node_modules[\\/]maplibre-gl[\\/]/ },
             { name: 'deck', test: /node_modules[\\/]@(?:deck|luma|loaders|math)\.gl[\\/]/ },
             // three.js is only ever reached through the lazily imported Ukraine timeline scene.

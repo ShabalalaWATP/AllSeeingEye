@@ -3,7 +3,7 @@
  * The globe is the root route. Admin pages and the globe are code split so the
  * auth pages never load MapLibre.
  */
-import { lazy } from 'react';
+import { lazy, type ComponentType, type ReactElement } from 'react';
 import type { RouteObject } from 'react-router';
 
 import { AdminShell } from '@/app/shell/AdminShell';
@@ -63,27 +63,39 @@ const UkrainePage = lazy(() => import('@/features/ukraine/UkrainePage'));
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
-const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
-const CyberPreviewPage = lazy(() => import('@/app/dev/CyberPreviewPage'));
-const PagesPreviewPage = lazy(() => import('@/app/dev/PagesPreviewPage'));
-const FiguresPreviewPage = lazy(() => import('@/app/dev/FiguresPreviewPage'));
-const UkrainePreviewPage = lazy(() => import('@/app/dev/UkrainePreviewPage'));
-const AdminPreviewPage = lazy(() => import('@/app/dev/AdminPreviewPage'));
-const EconomyPreviewPage = lazy(() => import('@/app/dev/EconomyPreviewPage'));
-const NavigationPreviewPage = lazy(() => import('@/app/dev/NavigationPreviewPage'));
-const ReportPreviewPage = lazy(() => import('@/app/dev/ReportPreviewPage'));
+// Development previews render fixtures only. Each import lives inside the DEV branch,
+// so production builds fold the branch away and never emit the preview chunks.
+function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
+  const Page = lazy(load);
+  return <Page />;
+}
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
-      { path: '/brand/capture', element: <BrandCapturePage /> },
-      { path: '/dev/cyber-preview', element: <CyberPreviewPage /> },
-      { path: '/dev/pages-preview', element: <PagesPreviewPage /> },
-      { path: '/dev/figures-preview', element: <FiguresPreviewPage /> },
-      { path: '/dev/ukraine-preview', element: <UkrainePreviewPage /> },
-      { path: '/dev/admin-preview', element: <AdminPreviewPage /> },
-      { path: '/dev/economy-preview', element: <EconomyPreviewPage /> },
-      { path: '/dev/navigation-preview', element: <NavigationPreviewPage /> },
-      { path: '/dev/report-preview', element: <ReportPreviewPage /> },
+      { path: '/brand/capture', element: devPage(() => import('@/app/dev/BrandCapturePage')) },
+      { path: '/dev/cyber-preview', element: devPage(() => import('@/app/dev/CyberPreviewPage')) },
+      { path: '/dev/pages-preview', element: devPage(() => import('@/app/dev/PagesPreviewPage')) },
+      {
+        path: '/dev/figures-preview',
+        element: devPage(() => import('@/app/dev/FiguresPreviewPage')),
+      },
+      {
+        path: '/dev/ukraine-preview',
+        element: devPage(() => import('@/app/dev/UkrainePreviewPage')),
+      },
+      { path: '/dev/admin-preview', element: devPage(() => import('@/app/dev/AdminPreviewPage')) },
+      {
+        path: '/dev/economy-preview',
+        element: devPage(() => import('@/app/dev/EconomyPreviewPage')),
+      },
+      {
+        path: '/dev/navigation-preview',
+        element: devPage(() => import('@/app/dev/NavigationPreviewPage')),
+      },
+      {
+        path: '/dev/report-preview',
+        element: devPage(() => import('@/app/dev/ReportPreviewPage')),
+      },
     ]
   : [];
 
