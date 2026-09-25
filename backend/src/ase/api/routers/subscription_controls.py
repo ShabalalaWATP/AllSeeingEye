@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_subscription_editions import SubscriptionBaselineOut, SubscriptionEditionOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
-from ase.application.dto import AccessClaims
+from ase.api.session_fence import FenceDep, SessionFence
 from ase.container import Container
 from ase.container.subscription_baseline_control import accept_baseline
 from ase.container.subscription_edition_controls import EditionControl, control_edition
@@ -22,7 +21,7 @@ async def _control(
     edition_id: UUID,
     action: EditionControl,
     user: User,
-    claims: AccessClaims,
+    fence: SessionFence,
     session: AsyncSession,
     container: Container,
     response: Response,
@@ -34,9 +33,9 @@ async def _control(
         schedule_id,
         edition_id,
         action,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SubscriptionEditionOut.from_edition(current)
 
@@ -46,13 +45,13 @@ async def pause_edition(
     schedule_id: UUID,
     edition_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     response: Response,
 ) -> SubscriptionEditionOut:
     return await _control(
-        schedule_id, edition_id, "pause", user, claims, session, container, response
+        schedule_id, edition_id, "pause", user, fence, session, container, response
     )
 
 
@@ -61,13 +60,13 @@ async def resume_edition(
     schedule_id: UUID,
     edition_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     response: Response,
 ) -> SubscriptionEditionOut:
     return await _control(
-        schedule_id, edition_id, "resume", user, claims, session, container, response
+        schedule_id, edition_id, "resume", user, fence, session, container, response
     )
 
 
@@ -76,13 +75,13 @@ async def retry_edition(
     schedule_id: UUID,
     edition_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     response: Response,
 ) -> SubscriptionEditionOut:
     return await _control(
-        schedule_id, edition_id, "retry", user, claims, session, container, response
+        schedule_id, edition_id, "retry", user, fence, session, container, response
     )
 
 
@@ -91,8 +90,8 @@ async def accept_edition_baseline(
     schedule_id: UUID,
     edition_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     response: Response,
@@ -104,8 +103,8 @@ async def accept_edition_baseline(
         schedule_id,
         edition_id,
         context,
-        check_session=lambda: validate_request_session(container, claims, session=session),
+        check_session=lambda: fence.confirm(session=session),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SubscriptionBaselineOut.from_lineage(lineage, edition_id)

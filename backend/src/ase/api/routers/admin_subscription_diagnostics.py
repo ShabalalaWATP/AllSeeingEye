@@ -8,8 +8,8 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel, ConfigDict
 
 from ase.adapters.persistence.subscription_diagnostics import subscription_diagnostics
-from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, SessionDep
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.deps import AdminUser, ContainerDep, SessionDep
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/admin/subscriptions", tags=["admin"])
 
@@ -35,14 +35,14 @@ class SubscriptionDiagnosticsOut(BaseModel):
 @router.get("/diagnostics")
 async def get_subscription_diagnostics(
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SubscriptionDiagnosticsOut:
-    await validate_request_session(container, claims, admin_only=True)
+    await fence.confirm(admin_only=True)
     result = await subscription_diagnostics(session, now=container.clock.now())
-    await validate_request_session(container, claims, admin_only=True)
-    validate_request_expiry(container, claims)
+    await fence.confirm(admin_only=True)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return SubscriptionDiagnosticsOut.model_validate(result)

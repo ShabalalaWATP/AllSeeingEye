@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser
 from ase.api.schemas_footprints import FootprintCollectionOut, FootprintSearchIn
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/research/footprints", tags=["research"])
 
@@ -13,13 +13,13 @@ router = APIRouter(prefix="/research/footprints", tags=["research"])
 async def search_footprints(
     body: FootprintSearchIn,
     actor: CurrentUser,
-    claims: ClaimsDep,
     context: ContextDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> FootprintCollectionOut:
     async def revalidate() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     result = await container.footprints.execute(actor, body.to_query(), context, revalidate)
     response.headers["Cache-Control"] = "no-store"

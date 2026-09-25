@@ -10,7 +10,7 @@ from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.report_reviewed_snapshot import selected_reviewed_snapshot
 from ase.api.schemas_claim_export import ClaimPackageIn
 from ase.api.schemas_report_documents import ReportComparisonOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.reports.document_release import release_document
 from ase.container.source_reviews import source_reviews
 from ase.domain.report_documents import ExportFormat
@@ -36,13 +36,14 @@ async def export_claim_evidence_package(
     report_id: UUID,
     body: ClaimPackageIn,
     claims: ClaimsDep,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
 ) -> Response:
     if body.asset_ids:
         # The asset use case performs the final combined lifecycle/session check.
         # Keep this separate request guard before that final transaction.
-        await validate_request_session(container, claims)
+        await fence.confirm()
     result = await container.export_claim_package(session).execute(
         claims,
         report_id,
@@ -53,7 +54,7 @@ async def export_claim_evidence_package(
         asset_ids=tuple(body.asset_ids),
     )
     if not body.asset_ids:
-        await validate_request_session(container, claims)
+        await fence.confirm()
     return Response(
         result.content,
         media_type=result.media_type,
@@ -69,13 +70,13 @@ async def export_claim_evidence_package(
 async def export_evidence_package(
     report_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
 ) -> Response:
     result = await container.export_evidence_package(session).execute(user, report_id, version)
-    await validate_request_session(container, claims)
+    await fence.confirm()
     return Response(
         result.content,
         media_type=result.media_type,

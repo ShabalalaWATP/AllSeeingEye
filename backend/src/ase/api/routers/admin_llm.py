@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, ContextDep, SessionDep
+from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas_llm import (
     LlmConnectionIn,
     LlmConnectionOut,
@@ -22,7 +22,7 @@ from ase.api.schemas_llm import (
     LlmUsagePageOut,
 )
 from ase.api.schemas_llm_workspace import LlmWorkspaceIn, LlmWorkspaceOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/admin/llm", tags=["admin"])
 
@@ -31,8 +31,8 @@ router = APIRouter(prefix="/admin/llm", tags=["admin"])
 async def update_workspace(
     body: LlmWorkspaceIn,
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> LlmWorkspaceOut:
@@ -40,9 +40,7 @@ async def update_workspace(
         admin,
         [change.to_input() for change in body.changes],
         context,
-        before_save=partial(
-            validate_request_session, container, claims, session=session, admin_only=True
-        ),
+        before_save=partial(fence.confirm, session=session, admin_only=True),
     )
     return LlmWorkspaceOut.from_result(result)
 
@@ -70,13 +68,13 @@ async def create_profile(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> LlmProfileOut:
     profile = await container.create_llm_profile(session).execute(
         admin,
         body.to_input(),
         context,
-        before_save=partial(validate_request_session, container, claims),
+        before_save=fence.confirm,
     )
     return LlmProfileOut.from_profile(profile)
 
@@ -89,14 +87,14 @@ async def update_profile(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> LlmProfileOut:
     profile = await container.update_llm_profile(session).execute(
         admin,
         profile_id,
         body.to_input(),
         context,
-        before_save=partial(validate_request_session, container, claims),
+        before_save=fence.confirm,
     )
     return LlmProfileOut.from_profile(profile)
 
@@ -108,10 +106,10 @@ async def delete_profile(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> Response:
     await container.delete_llm_profile(session).execute(
-        admin, profile_id, context, before_save=partial(validate_request_session, container, claims)
+        admin, profile_id, context, before_save=fence.confirm
     )
     return Response(status_code=204)
 
@@ -123,10 +121,10 @@ async def test_profile(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> LlmTestOut:
     outcome = await container.test_llm_profile(session).execute(
-        admin, profile_id, context, before_save=partial(validate_request_session, container, claims)
+        admin, profile_id, context, before_save=fence.confirm
     )
     return LlmTestOut.from_outcome(outcome)
 
@@ -146,12 +144,12 @@ async def list_usage(
 async def discover_models(
     profile_id: UUID,
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
 ) -> LlmModelsOut:
     models = await container.discover_llm_models(session).execute(
-        admin, profile_id, before_return=partial(validate_request_session, container, claims)
+        admin, profile_id, before_return=fence.confirm
     )
     return LlmModelsOut(models=list(models))
 
@@ -168,8 +166,8 @@ async def list_connections(
 async def activate_connection(
     body: LlmConnectionIn,
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> LlmConnectionOut:
@@ -177,7 +175,7 @@ async def activate_connection(
         admin,
         body.to_input(),
         context,
-        before_save=partial(validate_request_session, container, claims),
+        before_save=fence.confirm,
     )
     return LlmConnectionOut.from_binding(binding)
 
@@ -186,8 +184,8 @@ async def activate_connection(
 async def reset_team_connection(
     team_id: UUID,
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     expected_revision: Annotated[int, Query(ge=1)],
@@ -197,7 +195,7 @@ async def reset_team_connection(
         team_id,
         expected_revision,
         context,
-        before_save=partial(validate_request_session, container, claims),
+        before_save=fence.confirm,
     )
     return Response(status_code=204)
 
@@ -206,8 +204,8 @@ async def reset_team_connection(
 async def reset_user_connection(
     user_id: UUID,
     admin: AdminUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     context: ContextDep,
     expected_revision: Annotated[int, Query(ge=1)],
@@ -217,6 +215,6 @@ async def reset_user_connection(
         user_id,
         expected_revision,
         context,
-        before_save=partial(validate_request_session, container, claims),
+        before_save=fence.confirm,
     )
     return Response(status_code=204)

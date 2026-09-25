@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
-from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, ContextDep, SessionDep
+from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas import (
     AccountRequestOut,
     AccountRequestsOut,
@@ -16,7 +16,7 @@ from ase.api.schemas import (
     RejectIn,
     UserOut,
 )
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.users import RequestStatus
 
 router = APIRouter(prefix="/admin/account-requests", tags=["admin"])
@@ -41,11 +41,11 @@ async def approve_request(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
 ) -> ApproveOut:
     result = await container.approve_request(session).execute(admin, request_id, body.role, context)
     # Approval is already committed; email delivery must not let a revoked caller receive a key.
-    await validate_request_session(container, claims, admin_only=True)
+    await fence.confirm(admin_only=True)
     return ApproveOut(
         user=UserOut.from_user(result.user),
         activation_link=result.activation_link,

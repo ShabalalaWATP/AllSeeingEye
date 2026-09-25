@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Request, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import PayloadTooLarge
 from ase.api.schemas_input_declarations import (
     InputDeclarationsIn,
@@ -16,7 +16,7 @@ from ase.api.schemas_input_declarations import (
 )
 from ase.api.schemas_photo_geolocation import PhotoGeolocationIn, PhotoGeolocationOut
 from ase.api.schemas_research_inputs import ResearchInputOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.ports.research_inputs import MAX_INPUT_BYTES
 from ase.domain.errors import InvalidRequest
 
@@ -28,12 +28,12 @@ BODY_TIMEOUT_SECONDS = 30
 async def discard_input(
     input_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
 ) -> Response:
     async def check_session() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     await container.import_research_input(session).discard(
         user,
@@ -48,14 +48,14 @@ async def geolocate_photo(
     input_id: UUID,
     body: PhotoGeolocationIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     request: Request,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     response: Response,
 ) -> PhotoGeolocationOut:
     async def check_session() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     result = await _complete_connected(
         request,
@@ -71,7 +71,7 @@ async def geolocate_photo(
             check_session=check_session,
         ),
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return PhotoGeolocationOut(
         **result.assessment.model_dump(),
@@ -85,20 +85,20 @@ async def geolocate_photo(
 async def declaration_targets(
     input_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> InputDeclarationTargetsOut:
     async def before_release() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     stored = await container.import_research_input(session).declaration_targets(
         user,
         input_id,
         before_release=before_release,
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return InputDeclarationTargetsOut(
         input_id=input_id,
@@ -124,14 +124,14 @@ async def declare_input(
     input_id: UUID,
     body: InputDeclarationsIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
 ) -> ResearchInputOut:
     service = container.import_research_input(session)
 
     async def before_retain() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     try:
         declarations = tuple(row.to_domain() for row in body.declarations)
@@ -141,7 +141,7 @@ async def declare_input(
         user, input_id, body.sha256, declarations, before_retain=before_retain
     )
     released = await service.declaration_targets(user, receipt.id, before_release=before_retain)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     return ResearchInputOut.from_receipt(released.receipt, released.frames)
 
 
@@ -184,8 +184,8 @@ async def _complete_connected[T](request: Request, operation: Coroutine[Any, Any
 )
 async def import_input(
     user: CurrentUser,
-    claims: ClaimsDep,
     request: Request,
+    fence: FenceDep,
     session: SessionDep,
     container: ContainerDep,
     filename: Annotated[str, Query(min_length=1, max_length=120)],
@@ -197,7 +197,7 @@ async def import_input(
     service = container.import_research_input(session)
 
     async def before_retain() -> None:
-        await validate_request_session(container, claims)
+        await fence.confirm()
 
     reservation = await service.reserve(user, filename)
     body = bytearray()

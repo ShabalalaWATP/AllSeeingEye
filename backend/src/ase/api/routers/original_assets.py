@@ -14,7 +14,7 @@ from ase.api.schemas_original_assets import (
     OriginalAssetOut,
     OriginalAssetReserveIn,
 )
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 from ase.domain.original_assets import MAX_ASSET_BYTES
 
@@ -120,10 +120,11 @@ async def download_asset(
     report_id: UUID,
     asset_id: UUID,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
 ) -> Response:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     found = await container.original_assets(session).download(claims, report_id, asset_id)
     return Response(
         found.content,

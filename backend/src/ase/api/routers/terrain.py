@@ -4,9 +4,9 @@ import asyncio
 
 from fastapi import APIRouter, Request, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.schemas_terrain import TerrainElevationsIn, TerrainElevationsOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Point
 from ase.domain.terrain import terrain_resolution
@@ -25,12 +25,12 @@ MAX_BODY_BYTES = 64 * 1024
 )
 async def elevations(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     request: Request,
     response: Response,
 ) -> TerrainElevationsOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     if request.headers.get("content-type", "").split(";")[0].lower() != "application/json":
         raise InvalidRequest("Send terrain positions as JSON.")
     raw = bytearray()
@@ -48,10 +48,10 @@ async def elevations(
     finally:
         raw.clear()
     positions = tuple(Point(point.lon, point.lat) for point in body.positions)
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = await container.terrain_sampler.sample(user.id, positions)
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return TerrainElevationsOut(
         elevations_m=list(result), resolution_m=terrain_resolution(positions)

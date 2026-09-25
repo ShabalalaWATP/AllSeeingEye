@@ -15,7 +15,7 @@ from ase.api.schemas_directory_profile import (
     DirectoryProfileOut,
     DirectoryProfileUpdateIn,
 )
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.domain.directory_avatar import MAX_AVATAR_UPLOAD_BYTES
 from ase.domain.errors import InvalidRequest
 
@@ -91,6 +91,7 @@ async def update_directory_profile(
 async def upload_directory_avatar(
     request: Request,
     claims: ClaimsDep,
+    fence: FenceDep,
     container: ContainerDep,
     session: SessionDep,
     context: ContextDep,
@@ -103,7 +104,7 @@ async def upload_directory_avatar(
     ):
         raise InvalidRequest("Send unencoded avatar bytes as application/octet-stream.")
     # Authenticate against the current account before accepting any body bytes.
-    await validate_request_session(container, claims)
+    await fence.confirm()
     body = bytearray()
     try:
         try:

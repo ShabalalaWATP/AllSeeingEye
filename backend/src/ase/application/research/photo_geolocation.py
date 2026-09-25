@@ -16,6 +16,7 @@ from ase.application.ports.research_inputs import (
     ResearchInputReceipt,
     ResearchInputStore,
 )
+from ase.application.ports.session import SessionCheck
 from ase.application.research.photo_evidence import LIMITATIONS, photo_events
 from ase.application.research.photo_inputs import (
     image_provenance,
@@ -26,7 +27,6 @@ from ase.application.research.photo_inputs import (
 from ase.application.research.photo_model import (
     SYSTEM_PROMPT,
     PhotoVision,
-    SessionCheck,
     UsageRecorder,
     photo_assessment_schema,
 )

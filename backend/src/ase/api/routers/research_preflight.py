@@ -6,10 +6,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Path, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_research_preflight import ResearchPreflightOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.research.preflight import preview_brief
 from ase.application.research.presets import load_presets
 from ase.application.research.presets_schema import ResearchPreset
@@ -31,8 +31,8 @@ async def research_preflight(
     brief_id: UUID,
     revision: Annotated[int, Path(ge=1)],
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ResearchPreflightOut:
@@ -75,9 +75,9 @@ async def research_preflight(
                 "Review the saved brief before preflight.",
                 fields={exc.field: "Invalid or unsupported choice."},
             ) from exc
-        await validate_request_session(container, claims, session=session)
+        await fence.confirm(session=session)
         current = await container.access_policy(session).context(user)
         current.require_read(brief.identity.owner_id, brief.identity.team_id)
-        validate_request_expiry(container, claims)
+        fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"
         return result

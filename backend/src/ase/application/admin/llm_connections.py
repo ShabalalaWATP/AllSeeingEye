@@ -4,13 +4,13 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from ase.application.access import AccessContext, AccessPolicy
-from ase.application.admin.llm_testing import SessionCheck
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.llm import LlmBindingRepository, LlmProfileRepository
 from ase.application.ports.repositories import UserRepository
+from ase.application.ports.session import SessionCheck
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.llm import TEXT_ROLES, LlmConnectionBinding

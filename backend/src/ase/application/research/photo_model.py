@@ -13,6 +13,7 @@ from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
+from ase.application.ports.session import SessionCheck
 from ase.domain.ai_usage import AiAttribution
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmProfile, LlmRequest, LlmResult, LlmUsage
@@ -43,7 +44,6 @@ length as a multiple of the object's height (1.0 means equal), and say what you 
 Leave shadows empty when no such pair is clearly visible; never guess a ratio."""
 
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
-SessionCheck = Callable[[], Awaitable[None]]
 
 
 def photo_assessment_schema() -> dict[str, Any]:

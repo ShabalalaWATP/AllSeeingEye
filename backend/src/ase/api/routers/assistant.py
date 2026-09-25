@@ -3,9 +3,9 @@
 from fastapi import APIRouter, Request, Response
 
 from ase.api.assistant_run import run_answer
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_assistant import AssistantAnswerIn, AssistantAnswerOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.assistant.report_context import ReportContextReader
 from ase.domain.errors import InvalidRequest
 
@@ -17,8 +17,8 @@ async def answer(
     request: Request,
     body: AssistantAnswerIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> AssistantAnswerOut:
@@ -27,7 +27,7 @@ async def answer(
         lambda: container.map_assistant(session).execute(
             user,
             body.to_question(),
-            check_session=lambda: validate_request_session(container, claims),
+            check_session=fence.confirm,
         ),
     )
     async with container.source_admission.guard():
@@ -47,8 +47,8 @@ async def answer(
             await ReportContextReader(container.get_report(session)).require_current(
                 user, result.context.report
             )
-        await validate_request_session(container, claims)
+        await fence.confirm()
         payload = AssistantAnswerOut.from_answer(result)
-        validate_request_expiry(container, claims)
+        fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"
         return payload

@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Path, Query, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_research_briefs import (
     ResearchBriefDraftIn,
@@ -16,7 +16,7 @@ from ase.api.schemas_research_briefs import (
     ResearchBriefRevisionIn,
     ResearchBriefSummaryOut,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.research.manage_briefs import BriefScopeChange
 from ase.domain.research_brief_values import BriefValidationError
 
@@ -33,8 +33,8 @@ def _invalid(exc: BriefValidationError) -> InvalidQuery:
 @router.get("")
 async def list_briefs(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
@@ -46,8 +46,8 @@ async def list_briefs(
         limit=limit,
         offset=offset,
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -56,22 +56,22 @@ async def list_briefs(
 async def create_brief(
     body: ResearchBriefDraftIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ResearchBriefOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     service = container.research_briefs(session)
     try:
         saved = await service.create(user, body)
     except BriefValidationError as exc:
         raise _invalid(exc) from exc
     result = ResearchBriefOut.from_brief(saved)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     await service.commit()
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -80,16 +80,16 @@ async def create_brief(
 async def get_brief(
     brief_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ResearchBriefOut:
     result = ResearchBriefOut.from_brief(
         await container.research_briefs(session).get(user, brief_id)
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -98,8 +98,8 @@ async def get_brief(
 async def list_brief_revisions(
     brief_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
@@ -111,8 +111,8 @@ async def list_brief_revisions(
         limit=limit,
         offset=offset,
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -122,16 +122,16 @@ async def get_brief_revision(
     brief_id: UUID,
     revision: Annotated[int, Path(ge=1)],
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ResearchBriefOut:
     result = ResearchBriefOut.from_brief(
         await container.research_briefs(session).get(user, brief_id, revision)
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -141,12 +141,12 @@ async def revise_brief(
     brief_id: UUID,
     body: ResearchBriefRevisionIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> ResearchBriefOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     service = container.research_briefs(session)
     try:
         saved = await service.revise(user, brief_id, body.base_revision, body)
@@ -155,9 +155,9 @@ async def revise_brief(
     except BriefValidationError as exc:
         raise _invalid(exc) from exc
     result = ResearchBriefOut.from_brief(saved)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     await service.commit()
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_assistant_history import (
     SavedConversationIn,
     SavedConversationOut,
@@ -13,7 +13,7 @@ from ase.api.schemas_assistant_history import (
     conversation_out,
     report_references,
 )
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/assistant/conversations", tags=["assistant"])
 
@@ -21,13 +21,13 @@ router = APIRouter(prefix="/assistant/conversations", tags=["assistant"])
 @router.get("")
 async def list_conversations(
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SavedConversationPageOut:
     rows = await container.assistant_history(session).list(user)
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = SavedConversationPageOut(
         items=[
             SavedConversationSummaryOut(
@@ -40,7 +40,7 @@ async def list_conversations(
             for row in rows
         ]
     )
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -49,26 +49,26 @@ async def list_conversations(
 async def save_conversation(
     body: SavedConversationIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SavedConversationOut:
     # A separate validation session after an uncommitted write can share the
     # SQLite in-memory connection and roll back that write. Check first, then
     # recheck after commit before releasing the private snapshot.
-    await validate_request_session(container, claims)
+    await fence.confirm()
     service = container.assistant_history(session)
     record = await service.save(
         user, body.title, [turn.safe_dict() for turn in body.turns], report_references(body.turns)
     )
     result = conversation_out(record)
     await service.authorise_reports(user, report_references(result.turns))
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     await service.commit()
     await service.authorise_reports(user, report_references(result.turns))
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -77,17 +77,17 @@ async def save_conversation(
 async def get_conversation(
     conversation_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SavedConversationOut:
     service = container.assistant_history(session)
     record = await service.get(user, conversation_id)
-    await validate_request_session(container, claims)
+    await fence.confirm()
     result = conversation_out(record)
     await service.authorise_reports(user, report_references(result.turns))
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -97,12 +97,12 @@ async def replace_conversation(
     conversation_id: UUID,
     body: SavedConversationIn,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
     response: Response,
 ) -> SavedConversationOut:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     service = container.assistant_history(session)
     record = await service.save(
         user,
@@ -113,11 +113,11 @@ async def replace_conversation(
     )
     result = conversation_out(record)
     await service.authorise_reports(user, report_references(result.turns))
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     await service.commit()
     await service.authorise_reports(user, report_references(result.turns))
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return result
 
@@ -126,15 +126,15 @@ async def replace_conversation(
 async def delete_conversation(
     conversation_id: UUID,
     user: CurrentUser,
-    claims: ClaimsDep,
     session: SessionDep,
+    fence: FenceDep,
     container: ContainerDep,
 ) -> Response:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     service = container.assistant_history(session)
     await service.remove(user, conversation_id)
-    validate_request_expiry(container, claims)
+    fence.assert_live()
     await service.commit()
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     return Response(status_code=204, headers={"Cache-Control": "private, no-store"})

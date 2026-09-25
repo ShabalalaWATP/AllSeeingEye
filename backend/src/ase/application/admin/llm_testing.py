@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, replace
 from datetime import datetime
 from uuid import UUID
@@ -25,6 +24,7 @@ from ase.application.ports.llm import (
     LlmUsageRepository,
     SecretCipher,
 )
+from ase.application.ports.session import SessionCheck
 from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.audit import AuditAction
 from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound
@@ -32,7 +32,6 @@ from ase.domain.llm import LlmMessage, LlmProfile, LlmProvider, LlmRequest, LlmR
 from ase.domain.report_search import checked_vector
 from ase.domain.users import User
 
-SessionCheck = Callable[[], Awaitable[None]]
 TEST_PROMPT = 'Reply with exactly this JSON object and nothing else: {"ok": true}'
 TEST_SCHEMA = {
     "type": "object",

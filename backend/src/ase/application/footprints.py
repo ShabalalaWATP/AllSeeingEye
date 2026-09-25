@@ -1,10 +1,9 @@
 """Explicit personal catalogue queries, reauthorised after external work."""
 
-from collections.abc import Awaitable, Callable
-
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, RateLimiter
 from ase.application.ports.footprints import FootprintProvider
+from ase.application.ports.session import SessionCheck
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.errors import RateLimited, Unauthenticated
 from ase.domain.footprints import FootprintCollection, FootprintQuery
@@ -38,7 +37,7 @@ class FootprintSearchUseCase:
         actor: User,
         query: FootprintQuery,
         context: RequestContext,
-        revalidate: Callable[[], Awaitable[None]],
+        revalidate: SessionCheck,
     ) -> FootprintCollection:
         if not actor.is_active:
             raise Unauthenticated()

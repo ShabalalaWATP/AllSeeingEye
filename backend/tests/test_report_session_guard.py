@@ -11,7 +11,7 @@ import pytest
 from sqlalchemy import func, select
 
 from ase.adapters.persistence.models import LlmUsageRow, ReportRow, ReportVersionRow
-from ase.api.session_guard import validate_request_session
+from ase.api.session_fence import SessionFence
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import Unauthenticated
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
@@ -90,12 +90,12 @@ async def test_original_token_expiry_is_checked_after_fresh_session_closes(
 
     context.__aexit__.side_effect = close
     check = AsyncMock(return_value=user)
-    monkeypatch.setattr("ase.api.session_guard.validate_current_session", check)
+    monkeypatch.setattr("ase.api.session_fence.validate_current_session", check)
     fake = SimpleNamespace(
         session_factory=lambda: context,
         clock=clock,
         repositories=lambda _: SimpleNamespace(users=object(), refresh_tokens=object()),
     )
     with pytest.raises(Unauthenticated):
-        await validate_request_session(fake, claims)
+        await SessionFence(fake, claims).confirm()
     assert context.__aexit__.await_count == check.await_count == 1

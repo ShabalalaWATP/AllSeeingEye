@@ -4,13 +4,13 @@ from dataclasses import dataclass
 
 from ase.application.access import AccessContext, AccessPolicy
 from ase.application.admin.llm_connections import ConnectionInput, LlmConnectionsUseCase
-from ase.application.admin.llm_testing import SessionCheck
 from ase.application.admin.llm_workspace_allowances import WorkspaceAllowances
 from ase.application.admin.llm_workspace_inputs import WorkspaceChange
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
 from ase.application.ports import UnitOfWork
 from ase.application.ports.repositories import UserRepository
+from ase.application.ports.session import SessionCheck
 from ase.domain.ai_usage import AiUsagePolicy
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.llm import LlmConnectionBinding

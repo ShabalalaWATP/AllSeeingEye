@@ -7,10 +7,10 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_events import EventOut, EventsOut, StoreStatsOut
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.session_fence import FenceDep
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import NotFound
@@ -45,7 +45,7 @@ def parse_bbox(value: str | None) -> BoundingBox | None:
 async def list_events(
     user: CurrentUser,
     container: ContainerDep,
-    claims: ClaimsDep,
+    fence: FenceDep,
     categories: Annotated[str | None, Query(max_length=200)] = None,
     bbox: Annotated[str | None, Query(max_length=120)] = None,
     country: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
@@ -89,8 +89,8 @@ async def list_events(
         if isinstance(container.store, CooperativeEventReader)
         else project(container.store.query(query))
     )
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     return result
 
 

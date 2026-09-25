@@ -5,8 +5,8 @@ import asyncio
 from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
-from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 
 router = APIRouter()
@@ -36,12 +36,12 @@ class NavigationPlaceOut(BaseModel):
 )
 async def search_places(
     user: CurrentUser,
-    claims: ClaimsDep,
     container: ContainerDep,
+    fence: FenceDep,
     request: Request,
     response: Response,
 ) -> list[NavigationPlaceOut]:
-    await validate_request_session(container, claims)
+    await fence.confirm()
     if request.headers.get("content-type", "").split(";")[0].lower() != "application/json":
         raise InvalidRequest("Send place searches as JSON.")
     raw = bytearray()
@@ -56,10 +56,10 @@ async def search_places(
         raise InvalidRequest("Enter a place name between 3 and 200 characters.") from None
     finally:
         raw.clear()
-    await validate_request_session(container, claims)
+    await fence.confirm()
     results = await container.place_search.search(user.id, body.query)
-    await validate_request_session(container, claims)
-    validate_request_expiry(container, claims)
+    await fence.confirm()
+    fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
     return [
         NavigationPlaceOut(label=row.label, lat=row.point.lat, lon=row.point.lon) for row in results

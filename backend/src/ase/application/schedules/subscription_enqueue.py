@@ -9,11 +9,11 @@ from uuid import UUID
 from ase.application.dto import RequestContext
 from ase.application.ports.services import Clock
 from ase.application.ports.subscription_admission import (
-    SessionCheck,
     SourceGuard,
     SubscriptionDueQueue,
     SubscriptionTransaction,
     SubscriptionTransactions,
+    TransactionSessionCheck,
 )
 from ase.application.report_jobs.controls import ReportJobCapacity
 from ase.application.schedules.brief_link import standing_request_from_brief
@@ -75,7 +75,7 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
         request_id: UUID,
         actor: User,
         context: RequestContext,
-        check_session: SessionCheck,
+        check_session: TransactionSessionCheck,
     ) -> SubscriptionEdition:
         identity = manual_edition_id(schedule_id, EditionTrigger.RUN_NOW, request_id)
         async with self.transactions() as session:
@@ -136,7 +136,7 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
         schedule: Schedule | None = None,
         edition_id: UUID | None = None,
         requester: User | None = None,
-        check_session: SessionCheck | None = None,
+        check_session: TransactionSessionCheck | None = None,
     ) -> bool:
         if (schedule is None) == (edition_id is None):
             raise ValueError("Choose a due schedule or pending edition.")
@@ -190,7 +190,7 @@ class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
         superseded: UUID | None,
         *,
         requester: User | None = None,
-        check_session: SessionCheck | None = None,
+        check_session: TransactionSessionCheck | None = None,
         audit_context: RequestContext | None = None,
     ) -> bool:
         ledger = session.ledger
