@@ -36,3 +36,5 @@ class CapabilitiesOut(BaseModel):
 
     os_maps: bool
     os_layers: list[str]
+    # Only whether research can reach a model; never a provider, endpoint, model or key.
+    ai_research: bool

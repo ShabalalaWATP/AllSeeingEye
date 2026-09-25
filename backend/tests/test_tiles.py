@@ -186,7 +186,11 @@ async def test_endpoints_without_a_key(client: AsyncClient, user: User) -> None:
     assert (await client.get("/api/capabilities")).status_code == 401
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     caps = await client.get("/api/capabilities", headers=bearer(token))
-    assert caps.status_code == 200 and caps.json() == {"os_maps": False, "os_layers": []}
+    assert caps.status_code == 200 and caps.json() == {
+        "os_maps": False,
+        "os_layers": [],
+        "ai_research": False,
+    }
     tile = await client.get("/api/tiles/os/Road_3857/7/62/40.png", headers=bearer(token))
     assert tile.status_code == 404
     assert tile.json()["error"]["code"] == "not_found"
@@ -201,6 +205,7 @@ async def test_endpoints_with_a_key(client: AsyncClient, container: Container, u
     assert caps.json() == {
         "os_maps": True,
         "os_layers": ["Light_3857", "Outdoor_3857", "Road_3857"],
+        "ai_research": False,
     }
     tile = await client.get("/api/tiles/os/Road_3857/7/62/40.png", headers=bearer(token))
     assert tile.status_code == 200
