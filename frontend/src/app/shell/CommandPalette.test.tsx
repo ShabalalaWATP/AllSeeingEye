@@ -31,7 +31,7 @@ afterEach(() => {
   useShellStore.setState({ paletteOpen: false });
 });
 
-it('opens from the rail, jumps to a tracker and returns focus to its trigger', async () => {
+it('opens from the rail, jumps to a tracker and focuses the new page heading', async () => {
   const { user, router } = renderApp('/research/saved', 'user');
   const trigger = await screen.findByRole('button', { name: /Find anything/ });
   await user.click(trigger);
@@ -45,8 +45,10 @@ it('opens from the rail, jumps to a tracker and returns focus to its trigger', a
     expect(router.state.location.pathname).toBe('/trackers/maritime');
   });
   expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
+  // A jump is a navigation, so focus moves into the new page rather than back to the rail.
+  const heading = await screen.findByRole('heading', { name: 'Maritime', level: 1 });
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: /Find anything/ })).toHaveFocus();
+    expect(heading).toHaveFocus();
   });
 });
 
@@ -78,6 +80,10 @@ it('closes on dismissal without navigating', async () => {
     expect(screen.queryByRole('dialog', { name: 'Find anything' })).not.toBeInTheDocument();
   });
   expect(router.state.location.pathname).toBe('/research/saved');
+  // Dismissing without a jump returns focus to the control that opened the palette.
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: /Find anything/ })).toHaveFocus();
+  });
   await user.click(screen.getByRole('button', { name: /Find anything/ }));
   await user.click(await screen.findByRole('button', { name: 'Close search' }));
   await waitFor(() => {

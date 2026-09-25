@@ -8,11 +8,13 @@ import { PersonalAppearance } from '@/components/account/PersonalAppearance';
 import { AdminHeader } from './AdminHeader';
 import { AdminNavigation } from './AdminNavigation';
 import { useNarrowShell } from './useNarrowShell';
+import { useRouteFocus } from './useRouteFocus';
 
 /** Mounted only inside both authentication and active-administrator guards. */
 export function AdminShell() {
   const narrow = useNarrowShell();
   const mainRef = useRef<HTMLElement>(null);
+  const announcer = useRouteFocus(mainRef);
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-ground text-text">
       <PersonalAppearance />
@@ -23,6 +25,7 @@ export function AdminShell() {
       >
         Skip to main content
       </a>
+      <p ref={announcer} aria-live="polite" aria-atomic="true" className="sr-only" />
       {!narrow && <AdminNavigation />}
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader key={narrow ? 'mobile' : 'desktop'} narrow={narrow} />
