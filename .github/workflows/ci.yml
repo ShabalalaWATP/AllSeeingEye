@@ -31,6 +31,10 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy src
       - run: uv run lint-imports
+      - name: Require the committed OpenAPI schema to match the backend
+        run: |
+          uv run ase export-openapi ../frontend/src/lib/api/openapi.json
+          git diff --exit-code -- ../frontend/src/lib/api/openapi.json
 
   backend-tests:
     runs-on: ubuntu-latest
@@ -166,10 +170,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: Require generated API types to match the committed schema
+        run: |
+          pnpm gen:api
+          git diff --exit-code -- src/lib/api/types.gen.ts
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - run: pnpm check:bundle
 
   security:
     runs-on: ubuntu-latest
@@ -209,7 +218,7 @@ jobs:
       image: semgrep/semgrep@sha256:34ab619bf1391a24bfda3f05debd0d8a6ce3093c2d5f9d39cfc00f83c1397823
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # The application requires Python >=3.12; Python 3.7 compatibility is inapplicable.
+      # The application requires Python >=3.13; Python 3.7 compatibility is inapplicable.
       - run: semgrep scan --config p/default --config p/security-audit --exclude-rule python.lang.compatibility.python37.python37-compatibility-importlib2 --no-rewrite-rule-ids --error --sarif --output semgrep.sarif backend/src frontend/src
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         id: sarif
@@ -254,6 +263,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: docker build -t ase-api:ci ./backend
       - run: docker build -t ase-web:ci -f frontend/Dockerfile .
+      - name: Smoke-test the web image's static serving
+        run: |
+          docker run -d --name ase-web-smoke -p 127.0.0.1:8080:8080 \
+            -e ASE_SITE_ADDRESS=http://localhost:8080 ase-web:ci
+          for attempt in $(seq 1 30); do
+            curl -fsS -o /dev/null http://localhost:8080/ && break
+            sleep 1
+          done
+          python3 scripts/check_web_image.py http://localhost:8080 || {
+            docker logs ase-web-smoke; exit 1; }
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
         with:
           image-ref: ase-api:ci

@@ -6,6 +6,14 @@ dependency audits; Bandit; Gitleaks; Semgrep; and container vulnerability scans.
 GitHub CodeQL uses default setup and must not also be configured in a competing
 advanced workflow. Semgrep publishes SARIF to GitHub code scanning.
 
+Contract and delivery checks fail when the committed `openapi.json` or
+`types.gen.ts` differs from what the backend and `pnpm gen:api` produce. They also
+fail when the production build loads a lazy-only library (deck.gl, MapLibre,
+three.js, hls.js or the globe page) before first paint, ships a development preview
+page, or exceeds the initial JavaScript gzip budget in `frontend/scripts/check-bundle.js`.
+`repo-checks` asserts that the production Caddy policy admits every camera host the
+client allows and that only content-hashed assets are cached as immutable.
+
 Backend tests run in eight deterministic file shards for each database. Every
 PostgreSQL shard has its own service because fixtures recreate database tables.
 The `backend` and `backend-postgres` aggregate jobs explicitly fail if any required
@@ -30,7 +38,7 @@ not silently re-enable it before checks have been observed on GitHub.
 
 ## Scanner exceptions and dependency compatibility
 
-The Python 3.7 importlib compatibility rule is inapplicable to Python >=3.12.
+The Python 3.7 importlib compatibility rule is inapplicable to Python >=3.13.
 Other Semgrep exceptions are local and documented: defusedxml type imports,
 an in-memory repository method, and tests asserting escaped malicious markup.
 Camera catalogue module imports are constrained to the fixed country allowlist.
