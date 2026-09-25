@@ -43,8 +43,15 @@ Other Semgrep exceptions are local and documented: defusedxml type imports,
 an in-memory repository method, and tests asserting escaped malicious markup.
 Camera catalogue module imports are constrained to the fixed country allowlist.
 
-Caddy 2.11.4 cannot build with cel-go 0.29.0. Keep cel-go 0.28.1 until the upstream
-API compatibility is resolved; retain the compatible x/net and gRPC updates.
+Caddy 2.11.4 cannot build with cel-go 0.29.0 or later: its CEL matcher passes
+`[]interpreter.Interpretable` where cel-go now expects `InterpretableV2`, and 0.32
+also moved to the `cel.dev/cel-go` module path (checked 25 September 2026 with
+0.29.2 and 0.32.0). Keep cel-go 0.28.1 until a Caddy release supports the new API;
+Dependabot ignores cel-go 0.29 and later until then. Advisory GHSA-gcjh-h69q-9w9g
+(private JSON fields exposed through `NativeTypes` and `ParseStructTag`) stays open
+as a reminder. It needs operator-written CEL expressions, and this Caddyfile uses no
+`expression` matchers. Retain the compatible x/net, gRPC and OpenTelemetry updates.
+The backend image stays on Python 3.13, the version CI tests, until both move together.
 Container builds apply available operating-system security updates.
 
 Dependabot covers Actions, Python, JavaScript, Go and Docker. Generic Bandit,

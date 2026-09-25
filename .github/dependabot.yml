@@ -38,6 +38,11 @@ updates:
     directory: /infra/caddy-build
     schedule:
       interval: weekly
+    ignore:
+      # Caddy 2.11.4's CEL matcher does not compile against cel-go 0.29 or later
+      # (Interpretable became InterpretableV2). Remove once Caddy supports it.
+      - dependency-name: github.com/google/cel-go
+        versions: ['>=0.29.0']
     groups:
       go-minor-and-patch:
         patterns: ['*']
@@ -46,6 +51,10 @@ updates:
     directory: /backend
     schedule:
       interval: weekly
+    ignore:
+      # CI tests the backend on Python 3.13; move the image and CI together, deliberately.
+      - dependency-name: python
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
     groups:
       backend-images-minor-and-patch:
         patterns: ['*']

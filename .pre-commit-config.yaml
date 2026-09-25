@@ -1,7 +1,7 @@
 # Run with `uvx pre-commit run --all-files` (or install pre-commit and `pre-commit install`).
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.6
+    rev: v0.16.8
     hooks:
       - id: ruff
         args: [--fix]
