@@ -5575,6 +5575,8 @@ export interface components {
             os_maps: boolean;
             /** Os Layers */
             os_layers: string[];
+            /** Ai Research */
+            ai_research: boolean;
         };
         /** CapabilityPrerequisite */
         CapabilityPrerequisite: {

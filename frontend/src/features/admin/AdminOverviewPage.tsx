@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth';
 import { PeopleCard, RequestsCard, SecurityCard } from './overview/AccessCards';
 import { AuditCard } from './overview/AuditCard';
 import { ConnectionsCard, SourcesCard, UsageCard } from './overview/ServiceCards';
+import { SetupChecklistCard } from './overview/SetupChecklistCard';
 
 /** Each tile loads its own bounded data, so one failing service never hides the others. */
 export default function AdminOverviewPage() {
@@ -42,6 +43,7 @@ export default function AdminOverviewPage() {
         key={round}
         className="grid grid-flow-row-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
       >
+        <SetupChecklistCard className="md:col-span-2 xl:col-span-3" />
         <RequestsCard />
         <PeopleCard />
         <SecurityCard />

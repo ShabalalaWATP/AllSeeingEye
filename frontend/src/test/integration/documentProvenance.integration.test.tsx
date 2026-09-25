@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { server } from '@/test/server';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { report } from '@/test/fixtures';
 import { secChoice, secPage, secReceipt } from '@/test/fixtures.secFilings';
 import type { InputDeclarations } from '@/lib/api/inputDeclarations';
@@ -123,6 +124,7 @@ it.each(['sec', 'local'] as const)(
       ),
     );
     renderApp('/research?question=Analyse%20this%20document', 'user');
+    await openAdvancedResearch();
     await screen.findByLabelText('Research focus');
     await userEvent.click(screen.getByText('Scope and sources'));
     await userEvent.selectOptions(screen.getByLabelText('Research focus'), 'document');

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { report } from '@/test/fixtures';
 import { roster, team } from '@/test/fixtures.teams';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { followUpRequest } from '@/lib/followUpScope';
 
@@ -92,6 +93,7 @@ describe('private and follow-up research', () => {
     );
     const { user } = renderApp('/research?country=UA', 'user');
     await user.type(await screen.findByLabelText('Your question'), 'Summarise the attachment.');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.selectOptions(screen.getByLabelText('Research focus'), 'document');
     await user.upload(
@@ -196,6 +198,7 @@ describe('private and follow-up research', () => {
     );
     const { user } = renderApp('/research', 'user');
     await user.type(await screen.findByLabelText('Your question'), 'Summarise this source.');
+    await openAdvancedResearch();
     await user.click(screen.getByText('Scope and sources'));
     await user.selectOptions(screen.getByLabelText('Research focus'), 'media');
     expect(screen.getByLabelText('Document or media')).toBeVisible();

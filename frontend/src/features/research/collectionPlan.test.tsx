@@ -8,6 +8,7 @@ import type { ReportRequest } from '@/lib/api/reports';
 import { useAuthStore } from '@/stores/auth';
 import { plainUser, report, tokenFor } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+import { openAdvancedResearch } from '@/test/researchForm';
 import { server } from '@/test/server';
 import { followUpRequest } from '@/lib/followUpScope';
 
@@ -70,6 +71,7 @@ function mockPreview(bodies: planApi.ResearchPlanInput[]) {
 async function openPlan() {
   const result = renderApp('/research?question=What%20changed%3F&country=UA', 'user');
   await screen.findByLabelText('Your question');
+  await openAdvancedResearch();
   await result.user.click(screen.getByText('Collection plan (optional)'));
   return result;
 }

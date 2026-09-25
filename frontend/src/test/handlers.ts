@@ -390,8 +390,6 @@ export const handlers = [
 
   http.get('/api/economy/explainer', () => HttpResponse.json(economyExplainer)),
 
-  http.get('/api/capabilities', () => HttpResponse.json({ os_maps: false, os_layers: [] })),
-
   // The page tests replace the stream client; anything that still reaches the
   // network gets a clean failure instead of an unhandled request.
   http.get('/api/stream', () => new HttpResponse(null, { status: 503 })),
