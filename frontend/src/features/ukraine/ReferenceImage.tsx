@@ -62,7 +62,7 @@ export function ReferenceImage({
         height={meta.height}
         className={cover ? 'h-36 w-full object-cover' : 'w-full'}
       />
-      <figcaption className="truncate px-2 py-1 text-[10px] text-muted">
+      <figcaption className="truncate px-2 py-1 text-2xs text-muted">
         <a
           href={meta.source_url}
           target="_blank"

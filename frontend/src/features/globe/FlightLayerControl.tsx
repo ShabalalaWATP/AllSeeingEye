@@ -82,7 +82,7 @@ export function FlightLayerControl({
               ? 'Flight filters: military only'
               : 'Flight filters and aircraft list'
         }
-        className={`flex h-6 w-10 items-center justify-center rounded text-[10px] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan ${filter === 'military' ? 'text-cyan' : 'text-muted'}`}
+        className={`flex h-6 w-10 items-center justify-center rounded text-2xs hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan ${filter === 'military' ? 'text-cyan' : 'text-muted'}`}
         onClick={(event) => {
           if (openPanel) {
             openPanel(label, event.currentTarget);

@@ -175,7 +175,7 @@ export function InfrastructurePanel({
             onSelect={onSelect}
           />
           {state.nuclearEnabled && (
-            <p className="mt-3 text-[10px] text-muted">
+            <p className="mt-3 text-2xs text-muted">
               {state.data.nuclear_attribution} · Dataset {state.data.nuclear_dataset_version},
               downloaded {state.data.nuclear_snapshot_date}.{' '}
               <a
@@ -189,7 +189,7 @@ export function InfrastructurePanel({
             </p>
           )}
           {(state.energyEnabled || state.semiconductorEnabled) && (
-            <p className="mt-3 text-[10px] text-muted">
+            <p className="mt-3 text-2xs text-muted">
               {state.data.site_attribution} Snapshot {state.data.site_snapshot_date}.{' '}
               <a
                 href={state.data.site_licence_url}
@@ -202,7 +202,7 @@ export function InfrastructurePanel({
             </p>
           )}
           {state.dataCentresEnabled && (
-            <p className="mt-3 text-[10px] text-muted">
+            <p className="mt-3 text-2xs text-muted">
               {state.data.data_centre_attribution} Snapshot {state.data.data_centre_snapshot_date}.{' '}
               <a
                 href={state.data.data_centre_licence_url}
@@ -214,7 +214,7 @@ export function InfrastructurePanel({
               </a>
             </p>
           )}
-          <p className="mt-3 text-[10px] text-muted">
+          <p className="mt-3 text-2xs text-muted">
             {state.data.cable_attribution} ·{' '}
             <a
               href={state.data.cable_licence_url}

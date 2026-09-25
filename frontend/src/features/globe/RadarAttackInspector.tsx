@@ -35,7 +35,7 @@ export function RadarAttackInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-violet-300">
+          <p className="text-2xs uppercase tracking-wider text-violet-300">
             Cloudflare observed traffic
           </p>
           <h2 className="mt-1 text-sm font-medium">{row.country.name}</h2>
@@ -87,7 +87,7 @@ export function RadarAttackInspector({
           Cloudflare Radar source
         </a>
       )}
-      <p className="mt-1 text-[10px] text-muted">Cloudflare Radar · CC BY-NC 4.0</p>
+      <p className="mt-1 text-2xs text-muted">Cloudflare Radar · CC BY-NC 4.0</p>
     </aside>
   );
 }

@@ -178,7 +178,7 @@ export function MapLayerRail({
               type="button"
               aria-label="Fire filters"
               aria-expanded={activePanel === 'Fires'}
-              className="flex h-6 w-11 items-center justify-center whitespace-nowrap rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
+              className="flex h-6 w-11 items-center justify-center whitespace-nowrap rounded text-2xs text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
               onClick={(event) => openPanel('Fires', event.currentTarget)}
             >
               FILTERS <span aria-hidden="true"> ›</span>
@@ -209,7 +209,7 @@ export function MapLayerRail({
           {openPanel && (
             <button
               type="button"
-              className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
+              className="flex h-6 w-11 items-center justify-center rounded text-2xs text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
               aria-label={
                 category === 'news'
                   ? 'News briefing'

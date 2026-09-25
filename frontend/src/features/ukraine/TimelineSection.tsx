@@ -38,7 +38,7 @@ function PhaseSelector({
             style={activePhase === phase.id ? { borderColor: phase.colour } : undefined}
           >
             <span className="font-medium">{phase.label}</span>
-            <span className="font-mono text-[10px]">
+            <span className="font-mono text-2xs">
               {phase.start.slice(0, 7)} to {phase.end ? phase.end.slice(0, 7) : 'now'}
             </span>
           </button>
@@ -177,7 +177,7 @@ export function TimelineSection({
             </span>
             Read the full timeline as a list
           </span>
-          <span className="font-mono text-[10px] text-muted">
+          <span className="font-mono text-2xs text-muted">
             {count} {count === 1 ? 'event' : 'events'}
           </span>
         </summary>

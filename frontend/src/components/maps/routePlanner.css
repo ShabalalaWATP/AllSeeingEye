@@ -77,13 +77,13 @@
   border-radius: 50%;
   background: var(--color-surface-2);
   color: var(--color-ember);
-  font-size: 10px;
+  font-size: 11px;
   font-family: 'JetBrains Mono', monospace;
 }
 .route-stop-state {
   margin-left: auto;
   color: var(--color-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .route-stop-state[data-ready='true'] {
   color: var(--color-ember);
@@ -152,7 +152,7 @@
 .route-address-match .map-tool-help {
   display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 4px;
 }
 .route-remove-stop {
@@ -220,7 +220,7 @@
 .route-direction-number {
   color: var(--color-muted);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   padding-top: 2px;
   min-width: 15px;
 }

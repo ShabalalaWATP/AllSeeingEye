@@ -33,6 +33,12 @@
   --color-chart-5: #d55181;
   --color-chart-6: #9085e9;
 
+  /*
+   * The smallest size for text that carries information (11px at the default root size).
+   * Use text-2xs rather than smaller arbitrary sizes; it scales with the reader's font size.
+   */
+  --text-2xs: 0.6875rem;
+
   --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
 

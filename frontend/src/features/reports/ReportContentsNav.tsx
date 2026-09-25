@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 
-export interface ContentsEntry { id: string; label: string }
+export interface ContentsEntry {
+  id: string;
+  label: string;
+}
 
 /** A collapsible jump list for narrow screens, closed again after a jump. */
 export function MobileReportContents({ contents }: { contents: readonly ContentsEntry[] }) {
@@ -40,7 +43,7 @@ export function ReportContentsRail({ contents }: { contents: readonly ContentsEn
   return (
     <aside className="report-reader-print-hide hidden lg:block" aria-label="Report contents">
       <nav className="sticky top-6 border-l border-line pl-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">Contents</p>
+        <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-muted">Contents</p>
         <ol className="mt-3 space-y-2 text-xs leading-5 text-muted">
           {contents.map((entry, index) => (
             <li key={entry.id}>
@@ -48,7 +51,7 @@ export function ReportContentsRail({ contents }: { contents: readonly ContentsEn
                 className="flex gap-2 rounded py-0.5 transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-ember motion-reduce:transition-none"
                 href={`#${entry.id}`}
               >
-                <span aria-hidden="true" className="font-mono text-[10px] text-ember">
+                <span aria-hidden="true" className="font-mono text-2xs text-ember">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="min-w-0">{entry.label}</span>

@@ -60,7 +60,7 @@ export default function EconomyPreviewPage() {
       <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
         <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
           <header>
-            <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-ember uppercase">
+            <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-ember uppercase">
               Economic intelligence
             </p>
             <h1 className="text-3xl font-semibold tracking-tight">Economy</h1>

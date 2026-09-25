@@ -106,7 +106,7 @@ function CasualtyDetails({ board }: { board: UkraineBoard }) {
               <BasisBadge basis={BASES[reference.basis] ?? 'reported'} />
             </div>
             <p className="mt-1 text-xs text-muted">{reference.text}</p>
-            <p className="mt-1 font-mono text-[10px] text-muted">as of {reference.as_of}</p>
+            <p className="mt-1 font-mono text-2xs text-muted">as of {reference.as_of}</p>
           </li>
         ))}
       </ul>

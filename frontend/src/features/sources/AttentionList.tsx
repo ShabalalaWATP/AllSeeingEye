@@ -33,7 +33,7 @@ export function AttentionList({ entries }: { entries: readonly CatalogueEntry[] 
               {attentionReason(entry)}
             </span>
             {entry.requirement?.setting && entry.state !== 'blocked_upstream' && (
-              <span className="font-mono text-[10px] text-muted">{entry.requirement.setting}</span>
+              <span className="font-mono text-2xs text-muted">{entry.requirement.setting}</span>
             )}
           </li>
         ))}

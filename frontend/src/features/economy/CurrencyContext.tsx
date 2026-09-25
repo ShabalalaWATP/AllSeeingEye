@@ -31,7 +31,7 @@ export function CurrencyContext({ items }: { items: readonly EconomySeries[] }) 
               >
                 <span>
                   {item.name}
-                  <span className="mt-1 block text-[10px] text-muted">
+                  <span className="mt-1 block text-2xs text-muted">
                     {latest?.date ?? 'Not published by this provider'}
                   </span>
                 </span>

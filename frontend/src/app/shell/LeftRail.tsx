@@ -100,7 +100,7 @@ export function LeftRail({
             Find anything
           </span>
           {!collapsed && (
-            <span aria-hidden="true" className="shrink-0 font-mono text-[10px] text-muted/80">
+            <span aria-hidden="true" className="shrink-0 font-mono text-2xs text-muted">
               Ctrl K
             </span>
           )}
@@ -111,7 +111,7 @@ export function LeftRail({
             {collapsed ? (
               <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
             ) : (
-              <p className="px-3 pb-1 font-mono text-[10px] tracking-[0.18em] text-muted/90 uppercase">
+              <p className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted uppercase">
                 {section.title}
               </p>
             )}

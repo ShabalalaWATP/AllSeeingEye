@@ -192,7 +192,6 @@
   .auth-eyebrow {
     top: 24px;
     left: 32px;
-    font-size: 9px;
   }
   .auth-eye {
     width: min(100%, 440px);
@@ -233,7 +232,6 @@
   .auth-eyebrow {
     left: 24px;
     top: 20px;
-    font-size: 8px;
   }
   .auth-eye {
     width: min(100%, 320px);

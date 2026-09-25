@@ -65,7 +65,7 @@ function SideColumn({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <div className="flex items-center gap-2 font-mono text-[10px] tracking-wide text-muted uppercase">
+      <div className="flex items-center gap-2 font-mono text-2xs tracking-wide text-muted uppercase">
         <span aria-hidden="true" className={`size-2 rounded-full ${SIDE_DOT[side]}`} />
         {SIDE_LABELS[side]}
         <span className="text-text">{entries.length}</span>
@@ -131,9 +131,7 @@ export function EquipmentSection({
     >
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="mb-1 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
-            Reference
-          </p>
+          <p className="mb-1 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">Reference</p>
           <h2 id="ukraine-equipment-heading" className="text-lg font-semibold tracking-tight">
             Equipment catalogue
           </h2>
@@ -179,7 +177,7 @@ export function EquipmentSection({
             className="flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-line px-3 text-xs whitespace-nowrap text-muted transition-colors aria-pressed:border-cyan aria-pressed:bg-cyan/10 aria-pressed:text-cyan hover:border-line/80 hover:text-text motion-reduce:transition-none"
           >
             {item.label}{' '}
-            <span className="rounded-full bg-surface-2 px-1.5 font-mono text-[10px] text-muted">
+            <span className="rounded-full bg-surface-2 px-1.5 font-mono text-2xs text-muted">
               ({counts.get(item.key) ?? 0})
             </span>
           </button>
@@ -239,7 +237,7 @@ export function EquipmentSection({
                         </span>
                         {label}
                       </span>
-                      <span className="font-mono text-[10px] text-muted">
+                      <span className="font-mono text-2xs text-muted">
                         {rows.length} {rows.length === 1 ? 'system' : 'systems'}
                       </span>
                     </summary>

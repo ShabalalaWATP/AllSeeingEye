@@ -58,7 +58,7 @@ export function CountryChips({
           className={chip(selected.has(option.code))}
         >
           {option.code === ORGANISATIONS ? 'Orgs' : option.code}
-          <span className="ml-1 font-mono text-[10px] opacity-70">{option.count}</span>
+          <span className="ml-1 font-mono text-2xs">{option.count}</span>
         </button>
       ))}
     </div>

@@ -115,7 +115,7 @@ export function ObservationControls({
   }
   return (
     <section aria-label="Observation overlays" className="mt-3 border-t border-line pt-3">
-      <h2 className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan">
+      <h2 className="mb-2 font-mono text-2xs uppercase tracking-[0.16em] text-cyan">
         Observation overlays
       </h2>
       {OBSERVATIONS.map(({ kind, label, category }) => (
@@ -132,25 +132,25 @@ export function ObservationControls({
           >
             <span>{label}</span>
             <span
-              className={`font-mono text-[10px] ${isObservationShown(kind, visibility, hidden) ? 'text-cyan' : 'text-muted'}`}
+              className={`font-mono text-2xs ${isObservationShown(kind, visibility, hidden) ? 'text-cyan' : 'text-muted'}`}
             >
               {isObservationShown(kind, visibility, hidden) ? 'ON' : 'OFF'}
             </span>
           </button>
-          <p className="font-mono text-[10px] text-muted">
+          <p className="font-mono text-2xs text-muted">
             {counts[kind]} loaded in this scope
             {hidden.includes(category) ? ' · category hidden' : ''}
           </p>
         </div>
       ))}
-      <p className="mt-2 text-[10px] leading-relaxed text-muted">
+      <p className="mt-2 text-2xs leading-relaxed text-muted">
         Regional ADS-B, Finnish-waterway AIS, optional AISStream and Norwegian/Arctic BarentsWatch
         coverage. Account-based ship providers need administrator configuration; reception varies.
         FIRMS uses the configured API or public NASA feed. Switches control display only; zero
         loaded records does not prove no activity. Vessel symbols expire on the next cleanup after
         15 minutes without a fresh record. A side-view boat means direction is unknown.
       </p>
-      <p className="mt-2 text-[10px] leading-relaxed text-muted">
+      <p className="mt-2 text-2xs leading-relaxed text-muted">
         AIS:{' '}
         <a
           className="underline"
@@ -171,7 +171,7 @@ export function ObservationControls({
         </a>
         {' · '}Normalised and freshness-filtered.
       </p>
-      <p className="mt-2 text-[10px] leading-relaxed text-muted">
+      <p className="mt-2 text-2xs leading-relaxed text-muted">
         At wide zoom, up to 250 traffic records stay outside clusters. Other records remain
         clustered or individually visible. Thermal detections do not establish their cause.
       </p>

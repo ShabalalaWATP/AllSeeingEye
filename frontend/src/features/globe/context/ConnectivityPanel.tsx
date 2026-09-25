@@ -99,7 +99,7 @@ export function ConnectivityPanelView({
           ))}
         </select>
       </label>
-      <p className="text-[10px] text-muted">
+      <p className="text-2xs text-muted">
         {Math.min(25, events.length)} of {events.length} matching collected signals
       </p>
       {!snapshot.loading && events.length === 0 && (
@@ -109,7 +109,7 @@ export function ConnectivityPanelView({
         {events.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
             <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
-            <p className="mt-1 text-[10px] text-muted">Reported: {utcDate(event.published_at)}</p>
+            <p className="mt-1 text-2xs text-muted">Reported: {utcDate(event.published_at)}</p>
             <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px]">
               <dt className="text-muted">Entity</dt>
               <dd className="break-words text-text">

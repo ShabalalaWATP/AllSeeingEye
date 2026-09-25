@@ -106,8 +106,8 @@ export function ConflictOverviewPanel({
                   className="w-full rounded px-2 py-3 text-left hover:bg-white/5 aria-pressed:bg-cyan/10 disabled:opacity-40"
                 >
                   <span className="block font-medium">{region.card.conflict.name}</span>
-                  <span className="mt-1 block text-[10px] text-muted">{regionLabel(region)}</span>
-                  <span className="mt-2 block font-mono text-[10px] text-cyan">
+                  <span className="mt-1 block text-2xs text-muted">{regionLabel(region)}</span>
+                  <span className="mt-2 block font-mono text-2xs text-cyan">
                     {region.card.activity.last_7d} violence groups · {region.card.reporting_7d}{' '}
                     related items / 7 d
                   </span>
@@ -127,7 +127,7 @@ export function ConflictOverviewPanel({
             Refresh region overview
           </button>
           {regions.fetchedAt && (
-            <p className="text-[10px] text-muted">
+            <p className="text-2xs text-muted">
               Snapshot received{' '}
               {new Date(regions.fetchedAt).toLocaleTimeString('en-GB', { hour12: false })}. Region
               summaries use seven days of tracker evidence. Report filters apply to individual

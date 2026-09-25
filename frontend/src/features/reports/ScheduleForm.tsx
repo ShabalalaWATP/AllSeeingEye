@@ -59,7 +59,7 @@ export function ScheduleForm(
     >
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+          <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
             {duplicate ? 'Copy' : initial ? 'Edit' : 'New'}
           </p>
           <h2 tabIndex={-1} className="text-2xl font-semibold tracking-tight">

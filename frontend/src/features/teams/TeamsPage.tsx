@@ -47,9 +47,7 @@ function CreationPanel({
     <div className="border border-ember/50 bg-surface/60 px-5 py-5" id="create-team-panel">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember">
-            New workspace
-          </p>
+          <p className="font-mono text-2xs uppercase tracking-[0.2em] text-ember">New workspace</p>
           <h2 className="mt-1 text-base font-semibold">Name your team</h2>
           <p className="mt-1 text-sm text-muted">
             You will be added as its first team manager when it is created.
@@ -67,9 +65,7 @@ function CreationPanel({
 function EmptyTeams({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="border border-dashed border-line bg-surface/30 px-6 py-10 text-center">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember">
-        No workspaces yet
-      </p>
+      <p className="font-mono text-2xs uppercase tracking-[0.2em] text-ember">No workspaces yet</p>
       <h2 className="mt-2 text-xl font-semibold">Create your first team</h2>
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted">
         Teams are small shared workspaces for research, reports, and short operational context. The
@@ -110,7 +106,7 @@ function TeamsWorkspace({ user }: { user: User }) {
       <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-8">
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line/70 pb-6">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
+            <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">
               Shared workspaces
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Teams</h1>

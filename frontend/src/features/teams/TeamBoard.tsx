@@ -51,7 +51,7 @@ export function TeamBoard({
     <section className="flex flex-col gap-6" aria-labelledby="team-board-heading">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-amber">
+          <p className="font-mono text-2xs uppercase tracking-[0.22em] text-amber">
             Shared context
           </p>
           <h3 id="team-board-heading" className="mt-2 text-xl font-semibold">

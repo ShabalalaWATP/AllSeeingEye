@@ -85,11 +85,11 @@ export function NavigationWarningsPanel({ country, onSelect }: ContextPanelProps
           </select>
         </label>
       </div>
-      <p className="text-[10px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Topics are keyword matches, not official classifications. A GNSS match is a warning report,
         not a measured jamming footprint.
       </p>
-      <p className="text-[10px] text-muted">
+      <p className="text-2xs text-muted">
         {Math.min(25, events.length)} of {events.length} matching collected warnings
       </p>
       {!snapshot.loading && events.length === 0 && (
@@ -99,7 +99,7 @@ export function NavigationWarningsPanel({ country, onSelect }: ContextPanelProps
         {events.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
             <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
-            <p className="mt-1 text-[10px] text-muted">Issued: {utcDate(event.published_at)}</p>
+            <p className="mt-1 text-2xs text-muted">Issued: {utcDate(event.published_at)}</p>
             <p className="mt-2 text-[11px] text-muted">
               Authority: {attribute(event, 'authority')} · Source status:{' '}
               {attribute(event, 'status')}

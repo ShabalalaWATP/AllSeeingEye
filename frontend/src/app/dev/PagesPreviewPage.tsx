@@ -58,7 +58,7 @@ function SourcesPreview() {
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-8 pb-24">
         <header className="rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7">
-          <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+          <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
             Collection directory
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -92,7 +92,7 @@ function SourcesPreview() {
               <span className="min-w-0 flex-1 text-xs text-muted">
                 {keyed.connection.requirement?.note}
               </span>
-              <span className="font-mono text-[10px] text-muted">ASE_AISSTREAM_API_KEY</span>
+              <span className="font-mono text-2xs text-muted">ASE_AISSTREAM_API_KEY</span>
             </li>
           </ul>
         </section>

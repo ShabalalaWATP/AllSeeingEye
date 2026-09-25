@@ -7,7 +7,9 @@ import { useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
 
+import { NotificationBell } from './NotificationBell';
 import { PersonalLinks } from './PersonalLinks';
+import { ShortcutHelp } from './ShortcutHelp';
 
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
@@ -45,7 +47,7 @@ function UtcClock() {
       className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums md:inline-flex"
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
-      {UTC_CLOCK.format(now)} <span className="text-muted/70">UTC</span>
+      {UTC_CLOCK.format(now)} <span className="text-muted">UTC</span>
     </time>
   );
 }
@@ -92,7 +94,9 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
       <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-2">
         <UtcClock />
         <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line/70 md:block" />
+        <NotificationBell />
         <PersonalLinks />
+        <ShortcutHelp />
         <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
           Logout
         </Button>

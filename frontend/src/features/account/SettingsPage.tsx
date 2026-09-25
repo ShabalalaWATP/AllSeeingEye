@@ -4,10 +4,12 @@ import { useAuthStore } from '@/stores/auth';
 
 import { AiUsageSummary } from './AiUsageSummary';
 import { AppearancePreferences } from './AppearancePreferences';
+import { KeyboardPreferences } from './KeyboardPreferences';
 import { ProfilePreferences } from './ProfilePreferences';
 
 const sections = [
   { id: 'appearance', label: 'Appearance' },
+  { id: 'keyboard', label: 'Keyboard' },
   { id: 'region', label: 'Time & region' },
   { id: 'research', label: 'Research defaults' },
   { id: 'reports', label: 'Report preferences' },
@@ -66,6 +68,8 @@ export default function SettingsPage() {
               <AiUsageSummary />
             ) : selected.id === 'appearance' ? (
               <AppearancePreferences />
+            ) : selected.id === 'keyboard' ? (
+              <KeyboardPreferences />
             ) : (
               <ProfilePreferences section={selected.id} />
             )}

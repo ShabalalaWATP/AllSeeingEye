@@ -62,7 +62,7 @@ export function EconomyNewsPanel({
     <section aria-label={title} className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">{title}</h2>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        <span className="font-mono text-2xs uppercase tracking-wider text-muted">
           Past {days} days · UTC
         </span>
       </header>

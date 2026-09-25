@@ -103,7 +103,7 @@ export default function SourcesPage() {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-ember)_12%,transparent),transparent_70%)]"
           />
           <div className="relative">
-            <p className="mb-2 font-mono text-[10px] tracking-[0.22em] text-cyan uppercase">
+            <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
               Collection directory
             </p>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">

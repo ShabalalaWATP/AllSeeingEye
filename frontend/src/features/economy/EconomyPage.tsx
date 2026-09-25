@@ -56,7 +56,7 @@ export default function EconomyPage() {
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
+            <p className="mb-2 font-mono text-2xs uppercase tracking-[0.22em] text-ember">
               Economic intelligence
             </p>
             <h1 className="text-3xl font-semibold tracking-tight">Economy</h1>
