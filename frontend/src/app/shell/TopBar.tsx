@@ -8,6 +8,7 @@ import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
 
 import { PersonalLinks } from './PersonalLinks';
+import { ShortcutHelp } from './ShortcutHelp';
 
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
@@ -93,6 +94,7 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
         <UtcClock />
         <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line/70 md:block" />
         <PersonalLinks />
+        <ShortcutHelp />
         <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
           Logout
         </Button>
