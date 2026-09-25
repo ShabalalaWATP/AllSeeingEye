@@ -13,9 +13,11 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from ase.adapters.research_inputs.memory import MAX_USER_SLOTS
+from ase.adapters.security.session_signals import InMemorySessionSignals
 from ase.api.deps import get_access_claims, get_container, get_current_user, get_session
 from ase.api.errors import register_error_handlers
 from ase.api.routers import research_inputs
+from ase.application.auth.session_freshness import SessionFreshness
 from ase.application.dto import AccessClaims
 from ase.domain.errors import Unauthenticated
 from research_input_helpers import Harness
@@ -55,6 +57,9 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
             users=harness.identity, refresh_tokens=SimpleNamespace(family_is_active=active_family)
         ),
         clock=harness.clock,
+        session_freshness=SessionFreshness(
+            harness.clock, InMemorySessionSignals(harness.clock), timedelta(seconds=15)
+        ),
     )
     return application
 

@@ -5663,3 +5663,28 @@ Advanced options. Seeding the event itself as evidence remains a follow-up that
 needs backend support.
 
 The integrated frontend suite passed 3,351 tests at 90.74% branch coverage.
+
+## 25 September 2026: Release fence and bounded session re-validation
+
+Routes re-validated the session before releasing private material by calling two
+session_guard helpers by hand in about 200 places. A request-scoped `SessionFence`
+(`FenceDep`) now carries the container and token claims, so routes call
+`confirm()`, `assert_live()` or `release()`. The migration kept every call in place;
+behaviour did not change. Four copies of the session-check callback type became
+one port. An architecture test fails when an authenticated route neither takes the
+fence nor appears in a reviewed allowlist, or when a router reads sessions directly.
+
+ADR 0021 then removed repeated database reads. Fences and streams reuse a check of
+the same user, refresh family and security version for `ASE_SESSION_RECHECK_SECONDS`
+(15) unless a committed session or access change was signalled since it began.
+Persistence adapters mark revocations, security version, role, activation and team
+changes; a SQLAlchemy commit hook publishes them only after commit and wakes open
+streams. The start-of-request check still reads the database every time, and
+stream alerts still re-read access. An open stream now reads the session once per
+window instead of before every public message.
+
+The full backend suite passed 9,511 tests at 94% combined coverage in ten parallel
+chunks. Of four failures, one passed alone (a load timeout) and one also fails on
+`main` under Windows (no asyncio Unix sockets). The other two were test fakes
+missing the new freshness component, now fixed. Independent quality and security
+reviews found no blocking issues; their hardening suggestions are included.
