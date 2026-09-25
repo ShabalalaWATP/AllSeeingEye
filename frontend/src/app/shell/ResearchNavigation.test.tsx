@@ -20,28 +20,40 @@ describe('research workspace navigation', () => {
       'aria-current',
     );
   });
-  it('keeps plans reachable by link while the rail names only what is used', async () => {
+  it('lists plans with the other standing watches and drops research tabs from the page', async () => {
     renderApp('/direction', 'user');
-    await screen.findByRole('heading', { name: 'Plans & areas' });
+    await screen.findByRole('heading', { name: 'Plans and areas' });
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    // Retired from the rail: an area is drawn on the map, and Research takes a scope.
-    expect(within(primary).queryByRole('link', { name: 'Plans & areas' })).toBeNull();
-    const tools = screen.getByRole('navigation', { name: 'Research tools' });
-    expect(within(tools).getByRole('link', { name: 'Saved research' })).toHaveAttribute(
-      'href',
-      '/research/saved',
+    expect(within(primary).getByRole('link', { name: 'Plans and areas' })).toHaveAttribute(
+      'aria-current',
+      'page',
     );
-    expect(within(tools).queryByRole('link', { name: /Geolocat/ })).not.toBeInTheDocument();
+    expect(within(primary).getByRole('link', { name: 'Watches' })).not.toHaveAttribute(
+      'aria-current',
+    );
+    // Plans are not research, so New research and Saved research tabs do not appear here.
+    expect(screen.queryByRole('navigation', { name: 'Research tools' })).not.toBeInTheDocument();
     expect(within(primary).getByRole('link', { name: 'Geolocation' })).toHaveAttribute(
       'href',
       '/geolocation',
     );
-    expect(within(tools).queryByRole('link', { name: 'Recurring' })).not.toBeInTheDocument();
     expect(within(primary).getByRole('link', { name: 'Subscriptions' })).toHaveAttribute(
       'href',
       '/subscriptions',
     );
-    expect(within(tools).queryByRole('link', { name: 'Daily briefing' })).not.toBeInTheDocument();
+  });
+
+  it('marks only the most specific rail entry as current', async () => {
+    renderApp('/research/jobs', 'user');
+    await screen.findByRole('heading', { name: 'Research progress', level: 1 });
+    const primary = screen.getByRole('navigation', { name: 'Primary' });
+    expect(within(primary).getByRole('link', { name: 'Research progress' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(primary).getByRole('link', { name: 'Research' })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 
   it('does not load feed boards or create a competing generation form when browsing saved reports', async () => {
@@ -65,10 +77,9 @@ describe('research workspace navigation', () => {
     );
     expect(screen.queryByRole('form', { name: 'Generate a report' })).not.toBeInTheDocument();
     expect(boardRequest).not.toHaveBeenCalled();
-    expect(screen.getByRole('link', { name: 'Research progress' })).toHaveAttribute(
-      'href',
-      '/research/jobs',
-    );
+    expect(
+      within(screen.getByRole('main')).getByRole('link', { name: 'Research progress' }),
+    ).toHaveAttribute('href', '/research/jobs');
   });
 
   it('preserves old subscription links while displaying the shorter destination name', async () => {

@@ -39,17 +39,23 @@ describe('AppShell', () => {
     ).toEqual([
       'Map',
       'Research',
-      'Subscriptions',
+      'Research progress',
       'Geolocation',
+      'Watches',
+      'Subscriptions',
+      'Alerts',
+      'Plans and areas',
+      'Annotation monitors',
       'Live monitor',
       'Ukraine war',
       'Cyber intelligence',
       'Economy',
       'Teams',
     ]);
-    for (const group of ['Standing desks', 'Directory']) {
+    for (const group of ['Standing watches', 'Monitoring', 'Collaboration']) {
       expect(within(nav).getByText(group)).toBeInTheDocument();
     }
+    expect(within(nav).queryByText('Standing desks')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',

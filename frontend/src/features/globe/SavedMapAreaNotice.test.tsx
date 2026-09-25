@@ -37,7 +37,7 @@ describe('SavedMapAreaNotice', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText('Donbas watch')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Plans & areas' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Plans and areas' })).toHaveAttribute(
       'href',
       '/direction',
     );

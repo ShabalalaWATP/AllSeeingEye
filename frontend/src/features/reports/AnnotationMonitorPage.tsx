@@ -59,7 +59,7 @@ function Contents({ id }: { id: string }) {
   const monitor = resource.data;
   const conflict = isApiError(error) && error.status === 409;
   return (
-    <main className="space-y-5 overflow-y-auto p-6">
+    <section className="space-y-5 overflow-y-auto p-6">
       <Link to="/annotation-monitors" className="text-ember underline">
         All annotation monitors
       </Link>
@@ -199,7 +199,7 @@ function Contents({ id }: { id: string }) {
           </>
         </>
       )}
-    </main>
+    </section>
   );
 }
 export default function AnnotationMonitorPage() {

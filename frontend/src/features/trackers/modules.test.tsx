@@ -44,10 +44,9 @@ describe('maritime and space trackers', () => {
       'href',
       '/trackers/space',
     );
-    expect(within(nav).getByRole('link', { name: /Cyber/ })).toHaveAttribute(
-      'href',
-      '/trackers/cyber',
-    );
+    // The cyber board lives in the cyber intelligence workspace, reached from the rail.
+    expect(within(nav).queryByRole('link', { name: /Cyber/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Research tools' })).not.toBeInTheDocument();
     expect(within(nav).getByRole('link', { name: /Aviation/ })).toHaveAttribute(
       'href',
       '/trackers/aviation',

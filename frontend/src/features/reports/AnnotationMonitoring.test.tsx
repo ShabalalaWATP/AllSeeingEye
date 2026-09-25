@@ -163,7 +163,7 @@ it('requires permanent-removal confirmation, allows cancellation and sends the e
   );
   await userEvent.click(screen.getByRole('button', { name: 'Permanently remove monitor' }));
   await waitFor(() => expect(removed).toHaveBeenCalledWith('1'));
-  await screen.findByRole('heading', { name: 'Annotation monitoring' });
+  await screen.findByRole('heading', { name: 'Annotation monitors', level: 1 });
 });
 it('opens the stored transition from paged history rather than fetching current report content', async () => {
   handlers();

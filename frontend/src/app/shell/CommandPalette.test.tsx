@@ -88,13 +88,35 @@ it('closes on dismissal without navigating', async () => {
 it('reaches pages, trackers and map layers, and never administration', () => {
   const targets = commandTargets();
   const routes = targets.map((target) => target.to);
-  // Alerts and rules are reached from Settings now, not from the primary rail.
-  expect(routes).not.toContain('/warning');
+  for (const page of [
+    '/watches',
+    '/warning',
+    '/direction',
+    '/annotation-monitors',
+    '/research/jobs',
+  ]) {
+    expect(routes).toContain(page);
+  }
+  // The cyber board is part of the cyber workspace, so it has one entry, not two.
+  expect(routes).not.toContain('/trackers/cyber');
+  expect(routes).toContain('/cyber');
   expect(routes).toContain('/trackers/space');
   expect(routes).toContain('/?panel=cameras');
   // The catalogue is an administrator's page now, so an analyst cannot jump to it.
   expect(routes.some((route) => route.startsWith('/admin'))).toBe(false);
   expect(new Set(targets.map((target) => target.id)).size).toBe(targets.length);
+});
+
+it('offers Watches first for watch searches and groups pages as the rail does', () => {
+  const targets = commandTargets();
+  expect(matchTargets(targets, 'watches')[0]).toMatchObject({
+    label: 'Watches',
+    to: '/watches',
+    group: 'Standing watches',
+  });
+  expect(matchTargets(targets, 'alerts')[0]).toMatchObject({ to: '/warning', label: 'Alerts' });
+  expect(targets.find((target) => target.to === '/')?.group).toBe('Pages');
+  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Collaboration');
 });
 
 it('offers the source catalogue by family only to an administrator', () => {

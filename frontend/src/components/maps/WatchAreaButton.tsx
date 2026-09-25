@@ -39,7 +39,7 @@ export function WatchAreaButton({
       </button>
       <p className="text-xs leading-relaxed text-muted">
         {hint ??
-          'Review an editable area indicator in Warning. Nothing is created until you choose Add indicator.'}
+          'Review an editable area indicator in Alerts. Nothing is created until you choose Add indicator.'}
       </p>
       {error && (
         <p role="alert" className="text-xs text-critical">

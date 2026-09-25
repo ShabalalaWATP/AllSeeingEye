@@ -60,6 +60,7 @@ const UkrainePage = lazy(() => import('@/features/ukraine/UkrainePage'));
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
+const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -149,6 +150,7 @@ export const routes: RouteObject[] = [
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
+          { path: 'watches', element: <WatchesPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'settings', element: <SettingsPage /> },

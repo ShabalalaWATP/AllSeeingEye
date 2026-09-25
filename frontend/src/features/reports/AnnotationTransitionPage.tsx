@@ -41,7 +41,7 @@ function Contents({ id, transitionId }: { id: string; transitionId: string }) {
     }
   };
   return (
-    <main className="space-y-5 overflow-y-auto p-6">
+    <section className="space-y-5 overflow-y-auto p-6">
       <Link to={annotationMonitorHref(id)} className="text-ember underline">
         Monitor and history
       </Link>
@@ -92,7 +92,7 @@ function Contents({ id, transitionId }: { id: string; transitionId: string }) {
           <AnnotationComparisonResult value={resource.data.comparison} />
         </>
       )}
-    </main>
+    </section>
   );
 }
 export default function AnnotationTransitionPage() {
