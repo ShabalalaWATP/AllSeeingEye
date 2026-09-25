@@ -154,7 +154,8 @@ async def stream(
                     yield {"event": "bye", "data": json.dumps({"reason": "token_expired"})}
                     return
                 # Public deliveries reuse a check until the recheck window passes or a
-                # committed session change is signalled; alerts still re-read below.
+                # committed session change is signalled; alerts still re-read below. An
+                # alert's own re-read does not reset this window, which only costs a read.
                 if container.session_freshness.is_due(claims.user_id, checked_at):
                     checked_at = container.clock.now()
                     access = await _stream_access(claims, container)

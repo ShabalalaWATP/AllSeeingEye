@@ -52,3 +52,6 @@ delivery.
 - Signals are in-process, which is valid because exactly one API process runs. More
   than one process would need a shared signal channel or the window as the only bound.
 - Setting `ASE_SESSION_RECHECK_SECONDS=1` restores near per-release database checks.
+- Report creation and regeneration release their document through
+  `application/reports/document_release.py`, which still reads the session directly
+  under the administration lock. Those two routes keep an uncached final check.

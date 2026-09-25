@@ -15,8 +15,9 @@ API = Path(__file__).resolve().parents[1] / "src" / "ase" / "api"
 ALLOWLIST = Path(__file__).parent / "fixtures" / "routes_without_release_fence.txt"
 AUTHENTICATED = {get_current_user, get_access_claims, get_admin_user}
 # Start-of-request authentication and the fence itself read the session directly; the
-# stream re-validates per delivery with its own transaction.
+# stream re-validates with its own transaction when due and before every alert.
 DIRECT_SESSION_READERS = {"deps.py", "session_fence.py", "stream.py"}
+SESSION_READER = "ase.application.auth.current_session"
 
 
 def _calls(dependant: Any) -> Iterator[Callable[..., Any]]:
@@ -62,6 +63,17 @@ def test_routes_re_validate_only_through_the_fence() -> None:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module == "ase.application.auth.current_session":
+            if isinstance(node, ast.ImportFrom) and node.module == SESSION_READER:
                 offenders.append(f"{path.name}:{node.lineno}")
     assert offenders == []
+
+
+def test_no_websocket_route_escapes_the_fence_check() -> None:
+    # The route check above inspects HTTP routes only; extend it before adding sockets.
+    sockets = [
+        f"{path.name}:{node.lineno}"
+        for path in sorted(API.rglob("*.py"))
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        if isinstance(node, ast.Attribute) and node.attr in {"websocket", "websocket_route"}
+    ]
+    assert sockets == []
