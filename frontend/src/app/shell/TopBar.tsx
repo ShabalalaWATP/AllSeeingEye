@@ -9,26 +9,13 @@ import type { ViewMode } from '@/stores/globe';
 
 import { NotificationBell } from './NotificationBell';
 import { PersonalLinks } from './PersonalLinks';
+import { pageTitle } from './pageTitles';
 import { ShortcutHelp } from './ShortcutHelp';
 
+/** The root route names the current projection; every other route names its page. */
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
-  if (pathname.startsWith('/admin')) return 'Admin';
-  if (pathname.startsWith('/reports')) return 'Saved reports';
-  if (pathname.startsWith('/subscriptions')) return 'Subscriptions';
-  if (pathname.startsWith('/economy')) return 'Economy';
-  if (pathname.startsWith('/cyber')) return 'Cyber intelligence';
-  if (pathname.startsWith('/settings')) return 'Your settings';
-  if (pathname.startsWith('/research')) return 'Research';
-  if (pathname.startsWith('/geolocation')) return 'Geolocation';
-  if (pathname.startsWith('/trackers')) return 'Live monitor';
-  if (pathname.startsWith('/annotation-monitors')) return 'Annotation monitoring';
-  if (pathname.startsWith('/conflicts/ukraine')) return 'Ukraine war';
-  if (pathname.startsWith('/direction')) return 'Plans & areas';
-  if (pathname.startsWith('/warning')) return 'Alerts';
-  if (pathname.startsWith('/teams')) return 'Teams';
-  if (pathname.startsWith('/account')) return 'Account';
-  return 'The All Seeing Eye';
+  return pageTitle(pathname);
 }
 
 const UTC_CLOCK = new Intl.DateTimeFormat('en-GB', {

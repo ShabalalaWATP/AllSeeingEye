@@ -13,6 +13,7 @@ Nothing is hidden behind tabs. A sticky section bar jumps between:
 | Section | Content |
 | --- | --- |
 | Overview | Six stat tiles with daily sparklines, a stacked daily volume chart by record kind (with legend and table view), share by kind, countries in the evidence, NATO member context and source output. |
+| Live board | Fixed-window counts from the live event feed, independent of the chosen period: outage alerts in the last 24 hours by nation, and ransomware claims in the last 7 days by group and by claimed victim nation. This replaces the former `/trackers/cyber` board, which now redirects here with its query string. |
 | Assessment | The executive paragraph and key points of the AI briefing for the period, with progress, pause and error states, plus a short reading guide. |
 | Focus areas | Six lens cards: nation-state activity, NATO members and allies, UK critical national infrastructure, Ukraine, GNSS interference and navigation warfare, critical infrastructure and OT. Each shows its count and trend, the briefing's own passage under that heading when one exists, the latest matched records and a filter action. |
 | Nation-state | Records per state named in mentioned actors' MITRE profiles, and the actors mentioned with their profile association. |

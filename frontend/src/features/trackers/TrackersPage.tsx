@@ -1,50 +1,17 @@
 import { Link } from 'react-router';
 
-import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import { fetchConflictBoard, fetchDisasterBoard } from '@/lib/api/trackers';
 import type { ConflictCard, HazardCard } from '@/lib/api/trackers';
 import { useResource } from '@/lib/hooks/useResource';
+import { trackerModules } from '@/lib/workspaceNavigation';
 
 import { ActivityCells } from './TrackerParts';
 import { ConflictMetrics, ConflictCoverageNote } from './ConflictMetrics';
 import { ConflictSourceCoverage } from './ConflictSourceCoverage';
 import { DailyBriefing } from './DailyBriefing';
-
-const MODULES = [
-  {
-    to: '/trackers/social',
-    title: 'Social',
-    blurb: 'Public posts, hashtags and keyword bursts against hourly activity.',
-  },
-  {
-    to: '/trackers/aviation',
-    title: 'Aviation',
-    blurb: 'Military and unusual flying against baseline, emergencies, GNSS interference.',
-  },
-  {
-    to: '/trackers/maritime',
-    title: 'Maritime',
-    blurb: 'Broadcast warnings: exercises, closures, security incidents, GNSS notices.',
-  },
-  {
-    to: '/trackers/space',
-    title: 'Space',
-    blurb: 'Stations overhead, the launch schedule and the geomagnetic picture.',
-  },
-  {
-    to: '/trackers/cyber',
-    title: 'Cyber',
-    blurb: 'Outage signals, ransomware claims and newly exploited vulnerabilities.',
-  },
-  {
-    to: '/trackers/figures',
-    title: 'Public figures',
-    blurb: 'Heads of state and government, placed by public reporting or at their seat.',
-  },
-];
 
 function ConflictBoard({ items }: { items: readonly ConflictCard[] }) {
   return (
@@ -121,7 +88,6 @@ export default function TrackersPage() {
   const disasters = useResource(fetchDisasterBoard);
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <ResearchNavigation />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">Live monitor</h1>
@@ -172,15 +138,15 @@ export default function TrackersPage() {
       <nav aria-label="Specialist monitoring" className="border-t border-line pt-5">
         <h2 className="mb-3 text-base font-semibold">Explore connected feeds</h2>
         <ul aria-label="Modules" className="grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-          {MODULES.map((module) => (
+          {trackerModules.map((module) => (
             <li key={module.to}>
               <Link
                 to={module.to}
                 className="font-medium text-text hover:text-ember hover:underline"
               >
-                {module.title}
+                {module.label}
               </Link>
-              <p className="mt-1 text-xs leading-5 text-muted">{module.blurb}</p>
+              <p className="mt-1 text-xs leading-5 text-muted">{module.description}</p>
             </li>
           ))}
         </ul>

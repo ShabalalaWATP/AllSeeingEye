@@ -55,14 +55,12 @@ const MaritimePage = lazy(() =>
 const SpacePage = lazy(() =>
   import('@/features/trackers/ModulePages').then((m) => ({ default: m.SpacePage })),
 );
-const CyberPage = lazy(() =>
-  import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
-);
 const FiguresPage = lazy(() => import('@/features/trackers/FiguresPage'));
 const UkrainePage = lazy(() => import('@/features/ukraine/UkrainePage'));
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
+const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -144,13 +142,15 @@ export const routes: RouteObject[] = [
           { path: 'trackers/aviation', element: <AviationPage /> },
           { path: 'trackers/maritime', element: <MaritimePage /> },
           { path: 'trackers/space', element: <SpacePage /> },
-          { path: 'trackers/cyber', element: <CyberPage /> },
+          // The tracker board now lives inside the single cyber workspace.
+          { path: 'trackers/cyber', element: <RedirectWithQuery to="/cyber" /> },
           { path: 'trackers/figures', element: <FiguresPage /> },
           { path: 'conflicts/ukraine', element: <UkrainePage /> },
           { path: 'trackers/social', element: <SocialPage /> },
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
+          { path: 'watches', element: <WatchesPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'settings', element: <SettingsPage /> },

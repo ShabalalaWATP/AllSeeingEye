@@ -220,8 +220,9 @@ establish real-model briefing quality.
 ## Reusing map areas
 
 The research tabs are New research and Saved research. Running,
-failed and paused work remains accessible through Research progress from Saved
-reports. Plans & areas stores reusable geographic definitions. Open on map links
+failed and paused work remains accessible through Research progress, which has its
+own rail entry. Plans and areas, under Standing watches in the rail, stores reusable
+geographic definitions. Open on map links
 use `/?area=<id>` and fetch authorised geometry before focusing and drawing it on
 the globe or flat map. Country areas are approximate extents, not country borders.
 Closing the notice removes the outline; access changes hide private geometry.

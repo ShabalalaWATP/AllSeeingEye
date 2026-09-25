@@ -6,6 +6,9 @@ export type RailIconName = WorkspaceIconName;
 const PATHS: Record<RailIconName, string> = {
   map: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9m0-18c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M3.5 9h17M3.5 15h17',
   research: 'M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm5 11.5L20 20M8 10.5h5M10.5 8v5',
+  progress: 'M12 3.5a8.5 8.5 0 1 0 8.5 8.5M12 7.5V12l3 2M16.5 3.5h4v4',
+  watches:
+    'M3.5 15.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Zm10 0a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0ZM10.5 15h3M5 12.5 7 5h2.5l.5 7M19 12.5 17 5h-2.5l-.5 7',
   reports: 'M6.5 3.5H14l4 4v13H6.5ZM14 3.5V8h4M9.5 12.5h6M9.5 16h4',
   subscriptions: 'M6 17V11a6 6 0 1 1 12 0v6l1.5 2h-15L6 17Zm4 3.5a2 2 0 0 0 4 0M12 3.5V5',
   geolocation:

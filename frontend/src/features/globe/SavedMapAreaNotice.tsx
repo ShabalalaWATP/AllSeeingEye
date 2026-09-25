@@ -12,7 +12,7 @@ export function SavedMapAreaNotice({ area }: { area: ReturnType<typeof useSavedM
         {area.area && <strong className="block">{area.area.name}</strong>}
         <p className="text-muted">{area.message}</p>
         <Link className="text-ember hover:underline" to="/direction">
-          Plans & areas
+          Plans and areas
         </Link>
       </div>
       <button

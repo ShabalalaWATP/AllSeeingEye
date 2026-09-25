@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -18,7 +18,8 @@ import { CyberGnss } from './CyberGnss';
 import { CyberHeader } from './CyberHeader';
 import { CyberKpis } from './CyberKpis';
 import { CyberNationState } from './CyberNationState';
-import { CyberSectionNav, SectionHeading } from './CyberSectionNav';
+import { CyberLiveBoard } from './CyberLiveBoard';
+import { CyberSectionNav, Section } from './CyberSectionNav';
 import { CyberSourceCoverage } from './CyberSourceCoverage';
 import { CyberVulnerabilities } from './CyberVulnerabilities';
 import { cyberCountry, filterCyberItems } from './cyberPresentation';
@@ -26,29 +27,6 @@ import { useCyberWorkspace } from './useCyberWorkspace';
 
 const field =
   'min-h-11 rounded-md border border-line bg-surface px-3 text-sm text-text focus:border-ember focus:outline-none';
-
-function Section({
-  id,
-  eyebrow,
-  title,
-  lede,
-  aside,
-  children,
-}: {
-  id: string;
-  eyebrow: string;
-  title: string;
-  lede?: string;
-  aside?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-16 space-y-5">
-      <SectionHeading id={id} eyebrow={eyebrow} title={title} lede={lede} aside={aside} />
-      {children}
-    </section>
-  );
-}
 
 export default function CyberPage() {
   const [params, setParams] = useSearchParams();
@@ -60,7 +38,7 @@ export default function CyberPage() {
   const [actor, setActor] = useState('');
   const [theme, setTheme] = useState<CyberTheme | ''>('');
   const [selectedActor, setSelectedActor] = useState('');
-  const { snapshot, actors, briefing, gnss } = useCyberWorkspace(days);
+  const { snapshot, actors, briefing, gnss, live } = useCyberWorkspace(days);
   const data = snapshot.data;
   const items = useMemo(
     () => filterCyberItems(data?.items ?? [], query, kind, country, actor, theme),
@@ -141,6 +119,14 @@ export default function CyberPage() {
             <CyberCharts data={data} onCountry={(value) => focusActivity({ country: value })} />
           </Section>
         )}
+        <Section
+          id="cyber-live"
+          eyebrow="Live board"
+          title="Outages and ransomware claims now"
+          lede="Counted from the live event feed, whatever period is chosen above: internet outage alerts from the last 24 hours and ransomware claims from the last 7 days. Claims are criminal statements, graded possibly true."
+        >
+          <CyberLiveBoard state={live} />
+        </Section>
         <Section
           id="cyber-assessment"
           eyebrow="Assessment"

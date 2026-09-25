@@ -1,6 +1,6 @@
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
-import { fetchCyberBoard, fetchMaritimeBoard, fetchSpaceBoard } from '@/lib/api/modules';
+import { fetchMaritimeBoard, fetchSpaceBoard } from '@/lib/api/modules';
 import { useResource } from '@/lib/hooks/useResource';
 
 import { EventList, ModulePage, Stat, TallyChips } from './ModuleParts';
@@ -93,41 +93,6 @@ export function SpacePage() {
             </ul>
           </section>
           <EventList label="Space weather alerts" events={data.latest_alerts} />
-        </>
-      )}
-    </ModulePage>
-  );
-}
-
-export function CyberPage() {
-  const { data, error, loading } = useResource(fetchCyberBoard);
-  return (
-    <ModulePage
-      title="Cyber"
-      blurb="Internet outage signals by nation, ransomware claims by group and nation (criminal statements, graded possibly true), and the week's newly exploited vulnerabilities."
-      template="cyber_summary"
-      loading={loading}
-      error={error === null ? null : describeError(error)}
-    >
-      {data !== null && (
-        <>
-          <div className="grid gap-2 sm:grid-cols-3">
-            <Stat label="Outage alerts, 24 h" value={data.outages_24h} />
-            <Stat label="Ransomware claims, 7 d" value={data.ransomware_7d} />
-            <Stat label="KEV additions, 7 d" value={data.kev_7d} />
-          </div>
-          <section aria-label="Outages by nation" className="flex flex-col gap-2">
-            <h2 className="text-base font-semibold">Outages by nation</h2>
-            <TallyChips label="Outages by nation" rows={data.outages_by_country} />
-          </section>
-          <section aria-label="Ransomware" className="flex flex-col gap-2">
-            <h2 className="text-base font-semibold">Ransomware by group and nation</h2>
-            <TallyChips label="Ransomware by group" rows={data.ransomware_by_group} />
-            <TallyChips label="Ransomware by nation" rows={data.ransomware_by_country} />
-          </section>
-          <EventList label="Latest outage signals" events={data.latest_outages} />
-          <EventList label="Latest claims" events={data.latest_claims} />
-          <EventList label="Known exploited vulnerabilities" events={data.latest_kev} />
         </>
       )}
     </ModulePage>

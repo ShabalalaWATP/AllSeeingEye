@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router';
-import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -17,7 +16,7 @@ import { ResearchAreaButton } from './ResearchAreaButton';
 import { PlanForm } from './PlanForm';
 
 export function describeArea(area: AreaOfInterest): string {
-  if (area.research_area) return `exact shape � ${area.research_area.sha256.slice(0, 12)}`;
+  if (area.research_area) return `exact shape · ${area.research_area.sha256.slice(0, 12)}`;
   if (area.kind === 'bbox' && area.bbox !== null) {
     return `box ${area.bbox.map((n) => n.toFixed(1)).join(', ')}`;
   }
@@ -41,13 +40,19 @@ export default function DirectionPage() {
   );
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Plans & areas</h1>
+      <h1 className="text-xl font-semibold">Plans and areas</h1>
       <p className="text-sm text-muted">
-        Save reusable geographic areas and structured questions for more detailed research. Start a
-        one-off question from New research. Open saved areas on the map, or reuse them in OSINT
-        subscriptions. Save a drawn map area from the Research area tool.
+        Save reusable geographic areas and structured questions for more detailed research. Open
+        saved areas on the map, or reuse them in{' '}
+        <Link to="/subscriptions" className="text-text underline">
+          Subscriptions
+        </Link>
+        . Save a drawn map area from the Research area tool. For a one-off question, use{' '}
+        <Link to="/research" className="text-text underline">
+          Research
+        </Link>
+        .
       </p>
-      <ResearchNavigation />
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Areas of interest</h2>
         {areas.error === null ? null : <Alert tone="error">{describeError(areas.error)}</Alert>}

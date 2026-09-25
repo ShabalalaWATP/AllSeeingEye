@@ -6,9 +6,11 @@
 export type WorkspaceIconName =
   | 'map'
   | 'research'
+  | 'progress'
   | 'reports'
   | 'subscriptions'
   | 'geolocation'
+  | 'watches'
   | 'plans'
   | 'monitor'
   | 'alerts'
@@ -41,6 +43,15 @@ export const workspaceHome: WorkspaceDestination = {
   icon: 'map',
 };
 
+/** The hub for standing watches; each watch page below it keeps its own entry too. */
+export const watchesHub: WorkspaceDestination = {
+  to: '/watches',
+  label: 'Watches',
+  description:
+    'Everything you and your teams watch in one place: subscriptions, alert rules, area watches, plans, briefs and annotation monitors.',
+  icon: 'watches',
+};
+
 export const workspaceSections: readonly WorkspaceSection[] = [
   {
     title: 'Research',
@@ -53,11 +64,11 @@ export const workspaceSections: readonly WorkspaceSection[] = [
         icon: 'research',
       },
       {
-        to: '/subscriptions',
-        label: 'Subscriptions',
+        to: '/research/jobs',
+        label: 'Research progress',
         description:
-          'Follow a topic, conflict, disaster or area on a schedule, and read the saved updates.',
-        icon: 'subscriptions',
+          'Queued, running and finished research, with partial sections and links to completed reports.',
+        icon: 'progress',
       },
       {
         to: '/geolocation',
@@ -69,13 +80,47 @@ export const workspaceSections: readonly WorkspaceSection[] = [
     ],
   },
   {
-    title: 'Standing desks',
+    title: 'Standing watches',
+    items: [
+      watchesHub,
+      {
+        to: '/subscriptions',
+        label: 'Subscriptions',
+        description:
+          'Follow a topic, conflict, disaster or area on a schedule, and read the saved updates.',
+        icon: 'subscriptions',
+      },
+      {
+        to: '/warning',
+        label: 'Alerts',
+        description:
+          'Alerts raised by your rules and monitors, and the alert rules that watch the live feeds and map areas.',
+        icon: 'alerts',
+      },
+      {
+        to: '/direction',
+        label: 'Plans and areas',
+        description:
+          'Collection plans with their intelligence requirements, and saved areas of interest to reuse in research.',
+        icon: 'plans',
+      },
+      {
+        to: '/annotation-monitors',
+        label: 'Annotation monitors',
+        description:
+          'Watch selected claims, identities or relationships in a saved report version for changes.',
+        icon: 'annotations',
+      },
+    ],
+  },
+  {
+    title: 'Monitoring',
     items: [
       {
         to: '/trackers',
         label: 'Live monitor',
         description:
-          'Daily briefing, conflicts, disasters and the aviation, maritime, space, cyber, social and public figure boards.',
+          'Daily briefing, conflicts, disasters and the aviation, maritime, space, social and public figure boards.',
         icon: 'monitor',
       },
       {
@@ -87,7 +132,8 @@ export const workspaceSections: readonly WorkspaceSection[] = [
       {
         to: '/cyber',
         label: 'Cyber intelligence',
-        description: 'Threat actors, exploited vulnerabilities and collected cyber reporting.',
+        description:
+          'Threat actors, exploited vulnerabilities, outages, ransomware claims and collected cyber reporting.',
         icon: 'cyber',
       },
       {
@@ -99,7 +145,7 @@ export const workspaceSections: readonly WorkspaceSection[] = [
     ],
   },
   {
-    title: 'Directory',
+    title: 'Collaboration',
     items: [
       {
         to: '/teams',
@@ -111,7 +157,11 @@ export const workspaceSections: readonly WorkspaceSection[] = [
   },
 ];
 
-/** The specialist monitoring modules listed on the live monitor. */
+/**
+ * The specialist boards listed on the live monitor. This is the only copy of the list:
+ * the live monitor page and the command palette both read it. Cyber is not here; its
+ * board is part of the cyber intelligence workspace.
+ */
 export const trackerModules: readonly WorkspaceDestination[] = [
   {
     to: '/trackers/social',
@@ -138,12 +188,6 @@ export const trackerModules: readonly WorkspaceDestination[] = [
     icon: 'monitor',
   },
   {
-    to: '/trackers/cyber',
-    label: 'Cyber',
-    description: 'Outage signals, ransomware claims and newly exploited vulnerabilities.',
-    icon: 'monitor',
-  },
-  {
     to: '/trackers/figures',
     label: 'Public figures',
     description: 'Heads of state and government, placed by public reporting or at their seat.',
@@ -156,8 +200,26 @@ export function workspaceDestinations(): readonly WorkspaceDestination[] {
   return [workspaceHome, ...workspaceSections.flatMap((section) => section.items)];
 }
 
-/** True when `pathname` is the destination or one of its child routes. */
-export function isWorkspacePath(to: string, pathname: string): boolean {
+function matchesPath(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/';
   return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+/** The most specific rail destination containing `pathname`, if any. */
+export function activeWorkspacePath(pathname: string): string | undefined {
+  let active: string | undefined;
+  for (const destination of workspaceDestinations()) {
+    if (matchesPath(destination.to, pathname) && destination.to.length > (active?.length ?? -1))
+      active = destination.to;
+  }
+  return active;
+}
+
+/**
+ * True when `to` is the current rail destination. A parent and its child (Research and
+ * Research progress) are never both current: the more specific destination wins.
+ */
+export function isWorkspacePath(to: string, pathname: string): boolean {
+  const active = activeWorkspacePath(pathname);
+  return active === undefined ? matchesPath(to, pathname) : active === to;
 }

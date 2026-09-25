@@ -49,12 +49,12 @@ map requests are separate from that job.
 ## Save and reuse an exact boundary
 
 **Save as a reusable area** stores the polygon or multipolygon in personal
-**Plans & areas**. It retains canonical geometry and a server-calculated SHA-256
+**Plans and areas**. It retains canonical geometry and a server-calculated SHA-256
 hash, including holes and split dateline rectangles. It does not replace a shape
 with its enclosing rectangle. Each saved area is an immutable record; saving a
 changed boundary creates another record.
 
-In Plans & areas, **Open on map** displays the saved boundary and **Research area**
+In Plans and areas, **Open on map** displays the saved boundary and **Research area**
 opens a personal research draft using it. Existing rectangular areas can also be
 reused, including rectangles that cross the date line. The current server access
 policy determines which records can be read. Copying a boundary into a research

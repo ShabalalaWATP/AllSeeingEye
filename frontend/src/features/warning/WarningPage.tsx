@@ -28,7 +28,7 @@ import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
   if (indicator.research_area)
-    return `exact shape � ${indicator.research_area.sha256.slice(0, 12)}`;
+    return `exact shape · ${indicator.research_area.sha256.slice(0, 12)}`;
   if (indicator.bbox !== null) return `box ${indicator.bbox.map((n) => n.toFixed(1)).join(', ')}`;
   if (indicator.countries.length > 0) return indicator.countries.join(', ');
   return 'anywhere';
@@ -151,13 +151,13 @@ export default function WarningPage() {
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Alerts</h1>
       <Link to="/annotation-monitors" className="text-sm text-ember underline">
-        Annotation monitors and exact transition history
+        Annotation monitors and their change history
       </Link>
       <p className="text-sm text-muted">
         Review changes that need attention and set rules for activity in connected feeds. For a
-        question answered every week or month, use{' '}
-        <Link to="/research/recurring" className="text-text underline">
-          recurring research
+        question answered every week or month, set up a{' '}
+        <Link to="/subscriptions" className="text-text underline">
+          subscription
         </Link>
         .
       </p>

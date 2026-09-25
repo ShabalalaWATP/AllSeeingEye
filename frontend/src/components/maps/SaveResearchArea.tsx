@@ -34,7 +34,7 @@ export function SaveResearchArea({ area }: { area: LocalCollection }) {
     <details className="mt-3 border-t border-line pt-3">
       <summary className="cursor-pointer text-xs text-ember">Save as a reusable area</summary>
       <p className="map-tool-help">
-        Save this exact boundary to your personal Plans & areas for future research. Its geometry
+        Save this exact boundary to your personal Plans and areas for future research. Its geometry
         and content hash are retained; it is not widened to a rectangle.
       </p>
       <label className="map-tool-field">
@@ -61,11 +61,11 @@ export function SaveResearchArea({ area }: { area: LocalCollection }) {
       )}
       {saved === geometry && (
         <p role="status" className="map-tool-help">
-          Area saved to your personal Plans & areas.
+          Area saved to your personal Plans and areas.
         </p>
       )}
       <Link className="map-tool-text-button mt-2 block" to="/direction">
-        View Plans & areas
+        View Plans and areas
       </Link>
     </details>
   );
