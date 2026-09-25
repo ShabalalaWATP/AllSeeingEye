@@ -4,6 +4,7 @@ import { useProfile } from '@/stores/profile';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
 import { BriefWorkspace } from '@/components/research/BriefWorkspace';
+import { AiResearchNotice } from '@/components/research/AiResearchNotice';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -72,6 +73,8 @@ export default function ResearchPage() {
           </p>
         </header>
         <ResearchNavigation />
+        {/* The map draft panel carries its own copy of this notice. */}
+        {!mapDraftRequested && <AiResearchNotice />}
         <ResearchAllowanceSummary />
         {mapDraftRequested && <MapDraftResearch />}
         {!briefId && !mapDraftRequested && (
@@ -123,7 +126,8 @@ export default function ResearchPage() {
             )}
             {!templates.loading && !templates.error && !template && (
               <Alert tone="warning">
-                Question research is unavailable because the Ask the Eye product is not configured.
+                Question research is not available on this server. Ask an administrator to check
+                that the installation is up to date.
               </Alert>
             )}
             {countries.error && (

@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import type { CSSProperties, SyntheticEvent } from 'react';
 import { Link } from 'react-router';
+import { AiResearchNotice } from '@/components/research/AiResearchNotice';
 import { researchHref, subscriptionHref } from '@/lib/researchNavigation';
 import { EyeAnswer } from './EyeAnswer';
 import { EyeMapControls } from './EyeMapControls';
@@ -167,6 +168,7 @@ export function EyeAssistantPanel({
           }}
         />
       )}
+      <AiResearchNotice className="eye-setup-note" linkClassName="" onNavigate={onClose} />
       {chat.report && <EyeReportContext report={chat.report} onMapChat={chat.clear} />}
       {chat.savedSnapshotNotice && <p className="eye-snapshot-note">{chat.savedSnapshotNotice}</p>}
       <div className="eye-transcript" role="log" aria-live="polite" aria-label="Eye conversation">

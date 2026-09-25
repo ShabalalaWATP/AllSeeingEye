@@ -236,7 +236,8 @@ describe('question-led research', () => {
     expect(screen.getByRole('button', { name: 'Start research' })).toBeDisabled();
     server.use(http.get('/api/reports/templates', () => HttpResponse.json({ items: [] })));
     await user.click(screen.getByRole('button', { name: 'Retry research options' }));
-    expect(await screen.findByText(/Ask the Eye product is not configured/)).toBeVisible();
+    expect(await screen.findByText(/Question research is not available/)).toBeVisible();
+    expect(screen.queryByText(/Ask the Eye product/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start research' })).toBeDisabled();
   });
 

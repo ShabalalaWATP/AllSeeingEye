@@ -7,6 +7,7 @@ import { describeError } from '@/lib/api/errors';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Profile } from '@/lib/api/profile';
+import { AiResearchNotice } from '@/components/research/AiResearchNotice';
 import { RESEARCH_DEPTHS } from '@/components/research/ResearchDepth';
 import { ResearchProgress } from '@/components/research/ResearchProgress';
 import { MapToolIntro } from './MapToolIntro';
@@ -79,6 +80,7 @@ function AreaResearchWorkspace({
         }
         statusActive={!!research.preview || action.busy}
       />
+      <AiResearchNotice className="map-tool-notice" linkClassName="map-tool-text-button" />
       <fieldset disabled={action.busy} className="map-tool-section min-w-0">
         <legend className="map-tool-section-title mb-2">1 · Choose an area</legend>
         {children}
