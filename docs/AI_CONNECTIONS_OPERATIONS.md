@@ -8,6 +8,14 @@ Read [AI in the app](AI.md) for the data sent to providers and the limits of gen
 assessments. You do not need to configure an AI connection to inspect public map data,
 but research generation and other model-backed features need a usable connection.
 
+Until a connection can serve a person's research, the research page, the Eye assistant
+and map area research say that AI research is not set up before anything is filled in.
+Administrators also get a link to this page, and the administration overview opens with
+a setup checklist: connect, test and assign a model, then the optional email relay,
+Ordnance Survey key and feeds contact. The notice is advisory: forms stay usable and a
+failed run still reports its own reason. `/api/capabilities` returns only a yes/no
+`ai_research` value, never the provider, endpoint, model or key.
+
 ## Add and test a model
 
 1. Select **Add model** and give the connection a recognisable name.

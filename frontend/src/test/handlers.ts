@@ -1,7 +1,7 @@
 import { profileHandlers } from './handlers.profile';
 import { economyExplainer } from './fixtures.economyExplainer';
 import { aiDefaults, aiPreview } from './fixtures.aiUsage';
-import { platformConnections, serverCapabilities } from './fixtures.researchMetadata';
+import { platformConnections } from './fixtures.researchMetadata';
 import { figureBoard } from './fixtures.figures';
 import { ukraineHandlers } from './handlers.ukraine';
 import { reportJob } from './reportJobFixture';
@@ -389,8 +389,6 @@ export const handlers = [
   ),
 
   http.get('/api/economy/explainer', () => HttpResponse.json(economyExplainer)),
-
-  http.get('/api/capabilities', () => HttpResponse.json(serverCapabilities)),
 
   // The page tests replace the stream client; anything that still reaches the
   // network gets a clean failure instead of an unhandled request.
