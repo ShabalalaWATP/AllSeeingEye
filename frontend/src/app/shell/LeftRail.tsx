@@ -48,7 +48,7 @@ function RailLink({
         name={item.icon}
         className={active ? 'text-ember' : 'text-muted group-hover:text-text'}
       />
-      <span className={collapsed ? 'sr-only' : 'truncate'}>{item.label}</span>
+      <span className={collapsed ? 'sr-only' : 'min-w-0 leading-tight'}>{item.label}</span>
     </Link>
   );
 }

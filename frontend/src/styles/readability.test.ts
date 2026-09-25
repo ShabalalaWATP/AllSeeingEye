@@ -79,19 +79,6 @@ const stylesheets = Object.fromEntries(
 
 // Muted strokes on SVG diagrams are drawing lines, not text.
 const DECORATIVE_DIMMED = new Set(['components/maps/RfGroundwaveEngineering.tsx']);
-// Still using sub-11px classes; they are being edited by concurrent navigation, research and
-// administration work and move to text-2xs once that lands.
-const PENDING_SMALL_TEXT = new Set([
-  'app/shell/AdminHeader.tsx',
-  'app/shell/AdminNavigation.tsx',
-  'app/shell/CommandPalette.tsx',
-  'components/admin/AdminPage.tsx',
-  'features/admin/AiUsagePolicies.tsx',
-  'features/admin/ModelSetupWizard.tsx',
-  'features/admin/SourceRow.tsx',
-  'features/research/PhotoGeolocationResult.tsx',
-  'features/research/PhotoResearchPage.tsx',
-]);
 // The sign-in brand footer is aria-hidden decoration; the access footer is not rendered.
 const DECORATIVE_SMALL_CSS = new Set(['.auth-brand-footer', '.auth-access-footer']);
 
@@ -122,7 +109,6 @@ describe('readable text', () => {
   it('keeps informational text at 11px or more', () => {
     const small: string[] = [];
     for (const [file, source] of Object.entries(sources)) {
-      if (PENDING_SMALL_TEXT.has(file)) continue;
       for (const match of source.matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)) {
         if (Number(match[1]) < 11) small.push(`${file} ${match[0]}`);
       }

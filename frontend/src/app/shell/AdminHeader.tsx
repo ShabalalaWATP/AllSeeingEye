@@ -62,7 +62,7 @@ function AdminBreadcrumb({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="Breadcrumb" className="min-w-0">
       <ol className="flex min-w-0 items-center gap-1.5 text-sm">
-        <li className="hidden shrink-0 font-mono text-[10px] tracking-[0.2em] text-muted uppercase sm:block">
+        <li className="hidden shrink-0 font-mono text-2xs tracking-[0.2em] text-muted uppercase sm:block">
           {atOverview ? (
             <span aria-current="page">Administration</span>
           ) : (
