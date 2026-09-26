@@ -10,6 +10,14 @@ Every bundle includes the durable database: accounts, configuration, report
 versions, frozen evidence, audit records and the small aggregate tables. The live
 event cache is never copied or persisted by these scripts.
 
+The live-store snapshot file (`ASE_LIVE_SNAPSHOT_PATH`, default
+`data/live-store.jsonl.gz`, see [ADR 0022](adr/0022-live-store-snapshot.md)) is
+deliberately not backed up, by these scripts or by the scheduled wrapper. It is a
+disposable restart aid holding public events only, and the feeds rebuild it. A
+recovered installation does not need it: delete it while the API is stopped, or
+let the first load ignore or expire it. The satellite cache under
+`ASE_SATELLITE_CACHE_DIR` is likewise excluded.
+
 Configuration files are kept separately under `config/`: `.env.example`,
 `docker-compose.yml`, `infra/Caddyfile` and the packaged social, aviation and
 conflict watch files, when present. An explicitly selected Compose file is saved

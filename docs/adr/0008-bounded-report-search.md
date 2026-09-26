@@ -4,6 +4,9 @@ Status: implemented and refined by [ADR 0010](0010-teams-and-access.md),
 6 September 2026. Refines ADR 0002's optional pgvector proposal for the current
 single-API-process application. The team-isolation update replaces the original
 shared-read library and caller-driven retention assumptions below.
+Amended by [ADR 0022](0022-live-store-snapshot.md), 26 September 2026: raw live
+events still never enter the database or this index, but one disposable, size-capped
+snapshot file of the live store now survives restarts.
 
 ## Context
 
