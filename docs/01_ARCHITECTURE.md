@@ -148,7 +148,7 @@ contracts are the source of truth, rather than file size or a SOLID score.
 
 | Data | Lifetime and location |
 | --- | --- |
-| Live public observations | Bounded in-memory retention; rebuilt after restart |
+| Live public observations | Bounded in-memory retention; one disposable, size-capped snapshot file is reloaded through the same retention after a restart ([ADR 0022](adr/0022-live-store-snapshot.md)) |
 | Reports and selected evidence | Durable report versions with frozen provenance and assessments |
 | Research Briefs, subscriptions, jobs and team work | Durable records with current access checks |
 | Accounts, sessions, source and AI configuration | Database; sensitive connection values are encrypted |
