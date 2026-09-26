@@ -267,6 +267,6 @@ async def test_stream_honours_the_token_expiry_and_the_per_user_cap(
         await closer
         assert response.status_code == 200
         first = next(line for line in response.text.splitlines() if line.startswith("data:"))
-        assert json.loads(first.split(":", 1)[1]) == {"expires_in": 300}
+        assert json.loads(first.split(":", 1)[1]) == {"expires_in": 300, "resumed": False}
         assert response.text.rstrip().endswith('{"reason": "token_expired"}')
         assert container.streams.held(user.id) == 0

@@ -36,7 +36,10 @@ async def test_bounded_small_delta_is_preserved() -> None:
     events = [make_event(str(i)) for i in range(100)]
     message = BusMessage("event.upsert", {"events": events})
     await bus.publish(message)
-    assert await anext(subscriber) is message
+    received = await anext(subscriber)
+    # The bus stamps a sequenced copy; the batch itself is delivered untouched.
+    assert received == message and received.payload is message.payload
+    assert received.sequence == bus.last_sequence == 1
     subscriber.close()
 
 

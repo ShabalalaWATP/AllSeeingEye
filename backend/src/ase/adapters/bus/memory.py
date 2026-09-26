@@ -1,11 +1,19 @@
-"""In-process fan-out: each subscriber gets a bounded queue; slow consumers lose old messages."""
+"""In-process fan-out: each subscriber gets a bounded queue; slow consumers lose old messages.
+
+Every published message is stamped with a sequence number within a random process
+epoch, and recent public messages are kept in a bounded replay window so a stream
+that reconnects soon afterwards can resume instead of reloading a snapshot.
+"""
 
 from __future__ import annotations
 
 import asyncio
 import contextlib
+import secrets
 from collections.abc import AsyncIterator
+from dataclasses import replace
 
+from ase.adapters.bus.replay import ReplayBuffer
 from ase.adapters.store.memory import estimate_bytes
 from ase.application.ports.feeds import BusMessage
 from ase.domain.events import Event
@@ -79,7 +87,11 @@ class InMemorySubscription:
                 self.dropped += 1
             else:
                 self._queue.put_nowait(message)
-        return BusMessage("event.resync", {"reason": "stream_gap"})
+        # Every message published so far was delivered, kept or superseded by the
+        # snapshot this barrier requests, so the barrier carries the latest position.
+        return BusMessage(
+            "event.resync", {"reason": "stream_gap"}, sequence=self._bus.last_sequence
+        )
 
     def close(self) -> None:
         if self._closed:
@@ -92,13 +104,38 @@ class InMemorySubscription:
 
 
 class InMemoryEventBus:
-    def __init__(self, max_queue: int = 128) -> None:
+    def __init__(
+        self,
+        max_queue: int = 128,
+        *,
+        replay: ReplayBuffer | None = None,
+        epoch: str | None = None,
+    ) -> None:
         self._max_queue = max_queue
         self._subscriptions: set[InMemorySubscription] = set()
+        self._replay = replay or ReplayBuffer()
+        self._epoch = epoch or secrets.token_hex(6)
+        self._sequence = 0
 
     @property
     def subscriber_count(self) -> int:
         return len(self._subscriptions)
+
+    @property
+    def epoch(self) -> str:
+        """Distinguishes this process's sequence numbers from a previous process's."""
+        return self._epoch
+
+    @property
+    def last_sequence(self) -> int:
+        return self._sequence
+
+    def replay(self, epoch: str, after: int) -> list[BusMessage] | None:
+        """Public messages published after a position, or None when they cannot all be
+        replayed (another epoch, an unknown position or a position outside the window)."""
+        if epoch != self._epoch or not 0 <= after <= self._sequence:
+            return None
+        return self._replay.after(after)
 
     def subscribe(self) -> InMemorySubscription:
         subscription = InMemorySubscription(self, self._max_queue)
@@ -114,6 +151,9 @@ class InMemoryEventBus:
         # retain or serialise that batch per slow browser: reload its bounded snapshot.
         if _oversized_upsert(message):
             message = BusMessage("event.resync", {"reason": "snapshot_required"})
+        self._sequence += 1
+        message = replace(message, sequence=self._sequence)
+        self._replay.record(message)
         for subscription in list(self._subscriptions):
             subscription.push(message)
 

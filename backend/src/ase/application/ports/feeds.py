@@ -91,6 +91,8 @@ class EventStore(Protocol):
 class BusMessage:
     kind: str
     payload: Mapping[str, object] = field(default_factory=dict)
+    # Stamped by the bus on publication (0 beforehand) so live streams can resume.
+    sequence: int = field(default=0, compare=False)
 
 
 class Subscription(Protocol):
@@ -107,3 +109,15 @@ class Grader(Protocol):
 class EventBus(Protocol):
     async def publish(self, message: BusMessage) -> None: ...
     def subscribe(self) -> Subscription: ...
+
+    @property
+    def epoch(self) -> str:
+        """Distinguishes this process's sequence numbers from an earlier process's."""
+        ...
+
+    @property
+    def last_sequence(self) -> int: ...
+
+    def replay(self, epoch: str, after: int) -> list[BusMessage] | None:
+        """Retained public messages published after a position, or None when some are gone."""
+        ...
