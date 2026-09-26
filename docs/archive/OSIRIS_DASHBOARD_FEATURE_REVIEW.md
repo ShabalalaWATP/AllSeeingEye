@@ -1,5 +1,7 @@
 # Dashboard feature and filter review
 
+> Status: archived on 26 September 2026; comparison review from 9 and 10 September 2026. Current behaviour: see [dashboard context and watches](../DASHBOARD_CONTEXT_AND_WATCHES.md) and [map layers and tools](../MAP_TOOLS_AND_LAYERS.md).
+
 Compared 9 September 2026. Delivery status updated 10 September 2026. Checked items
 below identify implemented software, with validation and limits in the delivery note.
 

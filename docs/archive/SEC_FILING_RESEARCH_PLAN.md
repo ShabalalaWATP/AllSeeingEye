@@ -1,5 +1,7 @@
 # SEC filing research
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [sources and evidence](../02_DATA_SOURCES.md) and [source provenance](../SOURCE_PROVENANCE_OPERATIONS.md).
+
 Status: implemented and locally checked in an isolated branch. Independent review
 and integration with the source-provenance branch remain pending.
 

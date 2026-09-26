@@ -1,5 +1,7 @@
 # Source connections and coverage audit
 
+> Status: archived on 26 September 2026; dated audit from 10 and 11 September 2026. Current behaviour: see [sources and connections](../SOURCES_AND_CONNECTIONS.md).
+
 Checked 10 September 2026 against the repository, local configuration, targeted
 provider requests and current official access documentation. Baseline commit:
 `4528ca6`. This document separates implemented connectors, configured access,

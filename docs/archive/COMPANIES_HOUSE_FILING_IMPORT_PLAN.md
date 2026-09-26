@@ -1,5 +1,7 @@
 # Companies House filing discovery and import
 
+> Status: archived on 26 September 2026; proposal, not implemented when archived. Current behaviour: see [sources and evidence](../02_DATA_SOURCES.md).
+
 8 September 2026. Implementation contract for the outstanding E6 selected filing
 requirement. Not implemented or accepted. Build on the combined SEC/provenance
 delivery after preserving its acceptance snapshot. Local fixture acceptance does

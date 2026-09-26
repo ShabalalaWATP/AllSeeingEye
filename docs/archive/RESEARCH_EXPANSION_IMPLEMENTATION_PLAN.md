@@ -1,5 +1,7 @@
 # Research expansion implementation plan
 
+> Status: archived on 26 September 2026; partly implemented plan from 6 September 2026. Current behaviour: see [research expansion operations](../RESEARCH_EXPANSION_OPERATIONS.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Prepared 6 September 2026 against `60f57e4` on `main`.
 Status: partially implemented. The bounded delivery milestone and outstanding
 acceptance are recorded in [research expansion operations](../RESEARCH_EXPANSION_OPERATIONS.md).

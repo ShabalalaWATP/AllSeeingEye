@@ -1,5 +1,7 @@
 # Selected original evidence assets
 
+> Status: archived on 26 September 2026; implementation contract and acceptance record. Current behaviour: see [ADR 0014](../adr/0014-research-evidence-retention.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Implementation contract and acceptance record for E9, 7 September 2026.
 The selected re-upload path is implemented locally. This does not reduce the
 full expansion scope. ADR 0014 remains authoritative.

@@ -1,5 +1,7 @@
 # SEC source provenance integration gate
 
+> Status: archived on 26 September 2026; integration gate record. Current behaviour: see [source provenance](../SOURCE_PROVENANCE_OPERATIONS.md).
+
 Status: implemented in the combined integration checkout, with focused acceptance passed. Required full combined acceptance remains incomplete. Passing checks in either isolated branch do not satisfy this gate. The initial combined baseline reproduced the stale media capture-as-publication assertion (23 passed, one failed); that expectation was corrected and truthful public/private date selection was pinned. The first combined implementation run passed 45 tests, including authenticated SEC import, operator declaration, report generation, reload and ZIP/DOCX export.
 
 ## Integration sequence

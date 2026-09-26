@@ -1,5 +1,7 @@
 # Research from a selected map area
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [area research](../AREA_RESEARCH.md).
+
 Status: area selection, authorised exact-map previews and research launch are
 implemented locally, including bounded native Copernicus catalogue collection and
 historical AidData polygon collection. Broader spatial providers and operational

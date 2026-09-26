@@ -1,5 +1,7 @@
 # Source language and date provenance
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [source provenance](../SOURCE_PROVENANCE_OPERATIONS.md).
+
 Implementation contract, 8 September 2026. Initial work on
 `codex/source-language-date-provenance` is now combined with SEC filing import on
 `codex/source-provenance-sec`, based on integrated main `99e65d5`.

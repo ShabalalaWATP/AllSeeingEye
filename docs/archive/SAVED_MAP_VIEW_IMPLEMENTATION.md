@@ -1,5 +1,7 @@
 # Saved research map views
 
+> Status: archived on 26 September 2026; implementation record. Current behaviour: see the [map workspace](../MAP_WORKSPACE.md) and [saved map image export](../SAVED_MAP_IMAGE_EXPORT.md).
+
 Status: implementation in progress. This refines E5/E9 of the full research
 expansion plan and ADR 0014; it does not mark saved views as delivered.
 

@@ -1,5 +1,7 @@
 # Regional and shared source expansion
 
+> Status: archived on 26 September 2026; source research backlog from 6 September 2026. Current behaviour: see [sources and evidence](../02_DATA_SOURCES.md) and [sources and connections](../SOURCES_AND_CONNECTIONS.md).
+
 Research date: 6 September 2026. Companion to the
 [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md).
 This is a source onboarding backlog, not an enabled-source list. First-party

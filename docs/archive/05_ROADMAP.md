@@ -1,5 +1,7 @@
 # Roadmap
 
+> Status: archived on 26 September 2026; original phased roadmap proposal; Phases 0 to 6 were delivered. Current behaviour: see the [implementation plan](../MASTER_IMPLEMENTATION_PLAN.md).
+
 Status: proposal. Phases are sized for a hobby project with Claude Code doing most of the typing; each phase ends with green CI, coverage at or above 90 percent, updated docs and a tagged release.
 
 ## Phase 0: Foundation (1 to 2 sessions)

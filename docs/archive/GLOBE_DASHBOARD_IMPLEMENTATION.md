@@ -1,5 +1,7 @@
 # Globe dashboard, clocks and observation traffic
 
+> Status: archived on 26 September 2026; implementation record from 7 September 2026. Current behaviour: see [map layers and tools](../MAP_TOOLS_AND_LAYERS.md).
+
 User-requested extension, 7 September 2026. Full scope remains open.
 
 ## Visual direction and current delivery

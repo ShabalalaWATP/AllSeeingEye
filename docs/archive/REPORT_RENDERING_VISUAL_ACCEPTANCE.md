@@ -1,5 +1,7 @@
 # Report rendering visual acceptance
 
+> Status: archived on 26 September 2026; dated acceptance record. Current behaviour: see the [isolated report renderer](../ISOLATED_REPORT_RENDERER.md).
+
 8 September 2026. A local diagnostic projected a complete existing report fixture
 through the application document builder and current HTML/font projection.
 The 87 blocks included Arabic and Persian judgements, eight long assessment

@@ -1,5 +1,7 @@
 # Atomic claims and correction history
 
+> Status: archived on 26 September 2026; implementation contract and progress record. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status: domain, SQL persistence, migration 0025, authorised API, operator editor,
 revision history and request-driven model proposals were committed in e71a93e.
 Automatic report production and selected-revision evidence-package API/UI are now

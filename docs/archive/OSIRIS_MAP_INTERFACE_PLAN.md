@@ -1,5 +1,7 @@
 # Map interface and source improvements
 
+> Status: archived on 26 September 2026; plan and delivery log, 8 to 10 September 2026. Current behaviour: see [map layers and tools](../MAP_TOOLS_AND_LAYERS.md) and [camera feeds](../CAMERA_FEEDS.md).
+
 ## Conflict globe and unrest correction, 9 September 2026
 
 The [frontline and unrest note](../FRONTLINES_AND_UNREST.md) records the regional-icon

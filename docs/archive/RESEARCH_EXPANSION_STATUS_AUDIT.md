@@ -1,5 +1,7 @@
 # Research expansion status audit
 
+> Status: archived on 26 September 2026; dated status audit. Current behaviour: see [research expansion operations](../RESEARCH_EXPANSION_OPERATIONS.md).
+
 7 September 2026. This reconciles the full expansion plan with the current
 worktree. It does not replace or reduce the approved scope. Three focused
 read-only reviews covered E0–E5 and E8–E13; the implementation owner checked

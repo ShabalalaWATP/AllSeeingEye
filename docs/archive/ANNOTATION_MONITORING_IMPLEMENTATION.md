@@ -1,5 +1,7 @@
 # Standalone annotation monitoring
 
+> Status: archived on 26 September 2026; implementation record, integrated on 8 September 2026. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status, 8 September 2026: integrated on main at `0c91741` with registry routing;
 local, PostgreSQL and repository checks passed; combined backend acceptance passed
 3,278 tests, with 55 skips and 95.06% coverage. The integrated frontend passed

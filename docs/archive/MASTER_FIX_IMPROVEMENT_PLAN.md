@@ -1,5 +1,7 @@
 # Master fix and improvement plan
 
+> Status: archived on 26 September 2026; completed plan. Current behaviour: see the [implementation plan](../MASTER_IMPLEMENTATION_PLAN.md).
+
 Status: local implementation complete, 6 September 2026. Baseline: `60dff6b`. This plan implements the
 expanded request to reassess security, SOLID, documentation, maps, identity and
 teams, exports, analytical quality and visual design. The earlier

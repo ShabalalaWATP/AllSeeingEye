@@ -1,5 +1,7 @@
 # Report inventory monitoring
 
+> Status: archived on 26 September 2026; acceptance plan, integrated on 8 September 2026. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status, 8 September 2026: integrated from feature commit `3ef66e9`, based on
 integrated main `0c91741`. The merged backend/frontend runtime tree is identical
 to the accepted feature tree; integration changes only these status documents.

@@ -1,5 +1,7 @@
 # Globe and flat-map research implementation
 
+> Status: archived on 26 September 2026; design plan from 6 September 2026, partly delivered through later map and area research work. Current behaviour: see the [map workspace](../MAP_WORKSPACE.md) and [area research](../AREA_RESEARCH.md).
+
 Prepared 6 September 2026 against `60f57e4`. Proposed work, not delivered layers.
 Companion to [the expansion plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) and
 [regional sources](REGIONAL_SOURCE_EXPANSION.md).

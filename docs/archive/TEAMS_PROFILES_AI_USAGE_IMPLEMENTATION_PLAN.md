@@ -1,5 +1,7 @@
 # Teams, profiles and AI usage: implementation plan
 
+> Status: archived on 26 September 2026; implementation plan and log, merged on 15 September 2026. Current behaviour: see the [Teams API](../api/TEAMS_API.md), [AI cost controls](../AI_COST_CONTROLS.md) and [administration](../ADMINISTRATION.md).
+
 Date: 15 September 2026. Status: implementation in progress on the isolated
 `codex/teams-profiles-ai-usage` branch. The core team-authority, directory-profile,
 Ask Eye allowance and team-board vertical slices are implemented and verified; the

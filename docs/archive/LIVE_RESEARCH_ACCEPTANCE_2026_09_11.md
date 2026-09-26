@@ -1,5 +1,7 @@
 # Live OpenAI and research acceptance, 11 September 2026
 
+> Status: archived on 26 September 2026; dated acceptance record. Current behaviour: see [AI connections](../AI_CONNECTIONS_OPERATIONS.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 The operator supplied an OpenAI credential. Model discovery returned 136 models,
 including `gpt-5.6-luna`. The existing OpenAI Luna profile retains maximum
 reasoning and initially a 16,000-token configured output budget. A normal application

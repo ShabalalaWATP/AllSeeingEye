@@ -1,5 +1,7 @@
 # Dated relationship assertion review
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Implementation contract, 7 September 2026. The relationship-review
 milestone is integrated into main after isolated local acceptance. The combined frontend
 suite passed; combined backend acceptance requires the export-admission fixture repair. It advances the E6/E7

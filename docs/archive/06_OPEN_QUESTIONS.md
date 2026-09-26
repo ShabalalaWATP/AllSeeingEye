@@ -1,5 +1,7 @@
 # Open Questions for Alex
 
+> Status: archived on 26 September 2026; proposal-stage questions whose recommendations became decisions of record on 3 September 2026. Current behaviour: see [architecture](../01_ARCHITECTURE.md) and the [ADRs](../adr/).
+
 Status: on 3 September 2026 Alex accepted the plan and every recommendation below, with two amendments: the 3D globe is the default view, and the logo is specifically the React Bits Evil Eye component (https://reactbits.dev/backgrounds/evil-eye). The recommended answers are therefore the decisions of record. Questions 13, 16, 19 and 20 (hardware, seed content, user count, ops-room screen) are still open and run on the stated defaults until answered.
 
 Each question below keeps its options and recommendation for the record.

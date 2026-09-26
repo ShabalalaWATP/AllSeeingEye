@@ -1,5 +1,7 @@
 # Map interaction corrections
 
+> Status: archived on 26 September 2026; dated correction record. Current behaviour: see [map layers and tools](../MAP_TOOLS_AND_LAYERS.md).
+
 8 September 2026, following operator feedback on labels, styles, grid references
 and event selection.
 

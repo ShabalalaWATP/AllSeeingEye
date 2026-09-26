@@ -1,5 +1,7 @@
 # AidData regional project research implementation contract
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [sources and evidence](../02_DATA_SOURCES.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Implementation status, 7 September 2026: the local catalogue, historical research
 forms, native provider, spatial filtering and frozen report integration are built
 in the working tree. Full regression and targeted fixture repairs are recorded below; operational

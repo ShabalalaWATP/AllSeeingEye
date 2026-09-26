@@ -1,5 +1,7 @@
 # Professional research report product
 
+> Status: archived on 26 September 2026; plan; its milestone was implemented on 12 September 2026. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md).
+
 Status: production-quality milestone implemented and locally verified,
 12 September 2026. Timeline and geographic visual generation, and the remaining
 cross-format visual and language acceptance, are tracked below. No production

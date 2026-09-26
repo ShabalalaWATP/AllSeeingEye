@@ -1,5 +1,7 @@
 # Research workspace overhaul
 
+> Status: archived on 26 September 2026; milestone record from 11 September 2026. Current behaviour: see the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status: software implemented and locally verified, 11 September 2026. This is the
 active research milestone, following the source connection work. Passing unit tests
 does not establish geolocation accuracy or configured-model research quality.

@@ -1,5 +1,7 @@
 # Administrator AI connection setup
 
+> Status: archived on 26 September 2026; implementation and acceptance record. Current behaviour: see [AI connections](../AI_CONNECTIONS_OPERATIONS.md).
+
 Implementation and acceptance record, 7 September 2026. Administrators manage connections in
 the dedicated administration area. Ordinary accounts cannot discover saved keys,
 change connections or assign model providers.

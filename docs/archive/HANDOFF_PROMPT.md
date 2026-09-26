@@ -1,5 +1,7 @@
 # Handoff prompt: continue building The All Seeing Eye
 
+> Status: archived on 26 September 2026; historical agent handoff from 5 September 2026. Current behaviour: see the [implementation plan](../MASTER_IMPLEMENTATION_PLAN.md) and [CLAUDE.md](../../CLAUDE.md).
+
 Historical snapshot from 5 September 2026. The continuation through Phase 6 is now
 implemented. Read [the live plan](../MASTER_IMPLEMENTATION_PLAN.md),
 [operations guide](../PHASE5_PHASE6_OPERATIONS.md) and

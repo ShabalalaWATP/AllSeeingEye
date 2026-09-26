@@ -1,5 +1,7 @@
 # Cross-version monitoring
 
+> Status: archived on 26 September 2026; proposal, not implemented when archived. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status, 8 September 2026: proposed and unimplemented. This document records the
 next complete delivery after pinned selected-root and report-inventory monitoring.
 It does not claim implementation, test acceptance, model validation or deployment.

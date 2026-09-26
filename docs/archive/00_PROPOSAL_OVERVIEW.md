@@ -1,5 +1,7 @@
 # The All Seeing Eye: Proposal Overview
 
+> Status: archived on 26 September 2026; original design proposal, superseded by the delivered application. Current behaviour: see [product direction](../OSINT_PRODUCT_DIRECTION.md) and [using the app](../04_FEATURES_AND_VIEWS.md).
+
 Current direction, 6 September 2026: Alex prioritises automated OSINT research
 for an individual operator, with teams providing basic sharing. The original
 proposal below remains a design record. Current capabilities and future priorities

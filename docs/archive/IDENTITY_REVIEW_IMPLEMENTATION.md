@@ -1,5 +1,7 @@
 # Report-scoped organisation identity review
 
+> Status: archived on 26 September 2026; implementation contract. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Status: domain, storage and SQLite migration foundation, 7 September 2026.
 This is the next E6 slice of the full research expansion plan. Authorised service
 and HTTP endpoints are implemented; the report review interface is present with

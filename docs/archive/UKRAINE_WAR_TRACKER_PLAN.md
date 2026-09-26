@@ -1,5 +1,7 @@
 # Ukraine war tracker: implementation plan
 
+> Status: archived on 26 September 2026; build plan; phases 1 to 4 and 6 were delivered. Current behaviour: see the [Ukraine war tracker](../UKRAINE_WAR_TRACKER.md).
+
 Status: plan for build, written 13 September 2026. Nothing in this document is
 implemented yet. Every external endpoint named below was probed on 13 September
 2026 from the development machine with the project's identifying User-Agent, and

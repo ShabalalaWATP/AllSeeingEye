@@ -1,5 +1,7 @@
 # Reproducible annotation comparisons and meaningful-change monitoring
 
+> Status: archived on 26 September 2026; implementation contract; later cross-version monitoring scope is in [the cross-version proposal](CROSS_VERSION_MONITORING_PLAN.md). Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Implementation contract, 7 September 2026. Comparison preview/export and
 confidence explanations are integrated on main in `d37f723`. Its full backend
 acceptance passed 3,195 tests with 39 skips and 95.20% coverage. Durable

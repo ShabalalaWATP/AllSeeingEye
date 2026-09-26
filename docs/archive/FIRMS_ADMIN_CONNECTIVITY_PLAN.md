@@ -1,5 +1,7 @@
 # FIRMS administrator connectivity implementation
 
+> Status: archived on 26 September 2026; implementation record. Current behaviour: see [NASA FIRMS](../FIRMS_OPERATIONS.md) and [administration](../ADMINISTRATION.md).
+
 This slice adds a global NASA FIRMS credential editor inside Administration >
 Sources. It does not introduce team-specific credentials or a general URL editor.
 The fixed NASA origin, NOAA-20 product, one-day Area API request, protected secret

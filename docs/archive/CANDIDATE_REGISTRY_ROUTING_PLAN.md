@@ -1,5 +1,7 @@
 # Exact candidate registry routing
 
+> Status: archived on 26 September 2026; implementation contract; routing was merged by 8 September 2026. Current behaviour: see [reading reports and evidence](../03_DOCTRINE_AND_REPORTING.md) and the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md).
+
 Implementation contract, 7 September 2026. The backend is implemented on isolated
 `codex/candidate-registry-routing`, with frontend and integration acceptance in
 progress. This is unfinished work in the full expansion. Read-only inspection of

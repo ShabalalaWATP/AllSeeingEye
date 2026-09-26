@@ -1,5 +1,7 @@
 # Research and Subscriptions audit
 
+> Status: archived on 26 September 2026; dated audit that fed the research and subscriptions plan. Current behaviour: see the [research workspace](../RESEARCH_WORKSPACE_OPERATIONS.md) and [subscriptions](../SUBSCRIPTIONS_OPERATIONS.md).
+
 ## Assessment
 
 Research has a substantial foundation for producing analyst-reviewed OSINT reports. It includes public-source collection, private inputs, multilingual query preparation, bounded model planning, preserved evidence, staged report jobs, source grading, probability language, confidence constraints and professional exports. Subscriptions retain useful previous-report context and content fingerprints, and their calendar recurrence handles monthly and annual schedules.
