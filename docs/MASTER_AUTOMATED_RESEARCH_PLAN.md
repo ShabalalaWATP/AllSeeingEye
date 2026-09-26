@@ -301,7 +301,7 @@ Bedrock Converse text connection using a region, Bedrock API key and manual mode
 or inference-profile ID. It follows the existing test and confirmed global/team
 assignment flow. All text stages retain the selected provider, and frozen reports
 record it. Migration `0018` preserves existing OpenAI assignments and test hashes.
-See [connection progress](AI_CONNECTIONS_PLAN.md#native-bedrock-extension) and
+See [connection progress](archive/AI_CONNECTIONS_PLAN.md#native-bedrock-extension) and
 [operator instructions](AI_CONNECTIONS_OPERATIONS.md#amazon-bedrock). Scripted
 provider tests do not close the live account or research-quality gates.
 
@@ -328,7 +328,7 @@ representative human-labelled research-quality gate. See
 
 - The user selected OpenAI `https://api.openai.com/v1`, `gpt-5.6-luna` at Max
   reasoning on 6 September 2026. The administrator connection work is tracked in
-  [AI connections](AI_CONNECTIONS_PLAN.md), with [operator instructions](AI_CONNECTIONS_OPERATIONS.md).
+  [AI connections](archive/AI_CONNECTIONS_PLAN.md), with [operator instructions](AI_CONNECTIONS_OPERATIONS.md).
   Enter the account key through the app, review the included eight synthetic
   evaluation cases and reference judgements, and run the real pipeline against
   that model. Report quality/citation measures separately from software coverage.

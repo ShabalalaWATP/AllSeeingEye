@@ -1031,7 +1031,7 @@ the current local configuration. No cap bypass or destructive migration is used.
   architecture/type checks, a focused 41-test baseline and an offline model
   adapter contract comparison. Record a qualitative overall rating of 7/10.
 - [x] Document evidence, priorities and acceptance criteria in
-  [the SOLID review](SOLID_REVIEW.md). This is an assessment, not completed fixes.
+  [the SOLID review](archive/SOLID_REVIEW.md). This is an assessment, not completed fixes.
 - [x] Normalise explicit model-token exhaustion and add cross-adapter contracts.
 - [x] Make partial-startup and cleanup failure handling reliable, including digest drain.
 - [x] Repair and enforce frontend feature boundaries.
@@ -1098,7 +1098,7 @@ model quality and provider account permissions remain installation-specific.
 - [x] Add focused regressions for authority changes, stale responses, drawing
   edits, imports, boundaries, document conflicts and pagination.
 - [x] Update the [map workspace guide](MAP_WORKSPACE.md) and
-  [implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
+  [implementation checklist](archive/MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
 - [x] Complete independent integration review and local desktop/mobile browser
   verification, including input ownership and authority-boundary corrections.
 - [x] Pass 81 combined new backend regressions, backend lint/format/type/import

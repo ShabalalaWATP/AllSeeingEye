@@ -1,5 +1,7 @@
 # SOLID review and remediation plan
 
+Status: archived on 26 September 2026; review whose remediation slices were implemented. Current architecture: see [architecture](../01_ARCHITECTURE.md).
+
 Reviewed 20 September 2026 against commit
 `6f4d2757f0963af9905ddee4479870fb0ef381da`.
 Status: the seven remediation slices below are implemented on

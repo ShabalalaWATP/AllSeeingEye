@@ -143,9 +143,6 @@ app is built; they do not replace checking the current code and tests.
 - [Product direction](OSINT_PRODUCT_DIRECTION.md): the automated-research product objective from 6 September 2026.
 - [Automated research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md): delivered research milestones and open acceptance items.
 - [Research and subscriptions plan](RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md), with its [task packets and execution log](plans/research-subscriptions/EXECUTION_LOG.md).
-- [AI connections plan](AI_CONNECTIONS_PLAN.md): the administrator-controlled model connection requirements.
-- [Map workspace implementation](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md): the map workspace delivery checklist.
-- [SOLID review](SOLID_REVIEW.md): the 20 September 2026 review and its remediation slices.
 - [Performance repair](PERFORMANCE_REPAIR.md), with the [backend](PERF_BACKEND_AUDIT.md) and [rendering](PERF_RENDERING_AUDIT.md) audits.
 - [Source audit records](source-audit/), including the [deployed source health check](source-audit/deployed-health-2026-09-19.md), and the [military infrastructure source register](research/MILITARY_INFRASTRUCTURE_SOURCE_REGISTER.md).
 

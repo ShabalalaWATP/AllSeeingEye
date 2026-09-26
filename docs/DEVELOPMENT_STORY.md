@@ -472,7 +472,7 @@ preserving those earlier test results as historical evidence.
 - SQLite/PostgreSQL migration checks and 42 PostgreSQL lifecycle/routing tests
   passed on disposable databases. Browser checks used synthetic responses at
   desktop and narrow widths. Broader suite results are recorded in the
-  [connection plan](AI_CONNECTIONS_PLAN.md); scoped review limits are recorded in
+  [connection plan](archive/AI_CONNECTIONS_PLAN.md); scoped review limits are recorded in
   [the security review](security/AI_CONNECTIONS_REVIEW.md).
 - Added operator instructions, ADR 0012 and a credential-free Luna evaluation
   profile. No real provider call, operator migration, deployment or remote push
@@ -5329,7 +5329,7 @@ The review also identified partial-startup cleanup gaps, persistence-heavy route
 subscription execution inside the wiring package, implicit provider capabilities
 and four frontend cross-feature imports. Architecture and type checks passed,
 alongside 41 focused backend tests; these did not establish the missing adapter
-contract. The [review and remediation plan](SOLID_REVIEW.md) records ordered work
+contract. The [review and remediation plan](archive/SOLID_REVIEW.md) records ordered work
 and acceptance criteria. No runtime fixes or deployment were made in this review.
 
 Alex then requested implementation. Cross-provider failure handling and partial
@@ -5397,7 +5397,7 @@ reuse bounded geometry and elevation services.
 The nuclear education entry opens an attributed external reference without
 forwarding workspace data. ITM, higher-resolution terrain and full event replay
 remain separate follow-ups. The [user guide](MAP_WORKSPACE.md) and
-[implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md) distinguish
+[implementation checklist](archive/MAP_WORKSPACE_IMPLEMENTATION_PLAN.md) distinguish
 these limits from the implemented tools.
 
 Independent review corrected measurement input ownership, overlapping mobile

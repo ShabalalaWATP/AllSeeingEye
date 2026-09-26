@@ -326,8 +326,8 @@ The inline repository links identify the current implementation supporting each 
 - [Automatic planning](C:/AlexDev/OSINT/docs/AUTOMATIC_RESEARCH_PLANNING.md).
 - [Evidence assessment policy](C:/AlexDev/OSINT/docs/REPORT_EVIDENCE_SCORING.md).
 - [Durable research jobs](C:/AlexDev/OSINT/docs/DURABLE_RESEARCH_JOBS.md).
-- [Professional report product](C:/AlexDev/OSINT/docs/PROFESSIONAL_REPORT_PRODUCT_PLAN.md).
-- [Historical live-model acceptance](C:/AlexDev/OSINT/docs/LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md), which records earlier failures and repairs and is not substituted for current acceptance.
+- [Professional report product](PROFESSIONAL_REPORT_PRODUCT_PLAN.md).
+- [Historical live-model acceptance](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md), which records earlier failures and repairs and is not substituted for current acceptance.
 - UK PHIA, [Explaining Uncertainty in UK Intelligence Assessment](https://www.gov.uk/government/publications/explaining-uncertainty-in-uk-intelligence-assessment/explaining-uncertainty-in-uk-intelligence-assessment), published 24 March 2025.
 - UK PHIA, [Common Analytical Standards](https://www.gov.uk/government/publications/phia-common-analytical-standards/phia-common-analytical-standards), published 24 March 2025.
 - [ONS developer hub](https://developer.ons.gov.uk/), [ECB data API](https://data.ecb.europa.eu/help/api/data), and [ReliefWeb API parameters](https://apidoc.reliefweb.int/parameters), accessed for proposed data and connection work.

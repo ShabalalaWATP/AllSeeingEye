@@ -1,5 +1,7 @@
 # Map workspace implementation
 
+Status: archived on 26 September 2026; completed plan. Current behaviour: see [map workspace](../MAP_WORKSPACE.md).
+
 Status: implementation, focused regressions, independent review and local browser
 verification are complete on `codex/map-workspace-improvements`,
 [PR #38](https://github.com/ShabalalaWATP/AllSeeingEye/pull/38). SQLite and PostgreSQL
@@ -81,7 +83,7 @@ reference without including workspace coordinates or questions.
   illustrative skywave distances distinct in the explanations.
 
 - [ ] Integrate ITM only after the validation and execution requirements in
-  [radio modelling and terrain evidence](RADIO_MODEL_EVALUATION.md) are met.
+  [radio modelling and terrain evidence](../RADIO_MODEL_EVALUATION.md) are met.
 - [ ] Assess licensed higher-resolution terrain and land-cover/building data.
 - [ ] Evaluate measured antenna-pattern input and independently sourced field validation.
 - [ ] Evaluate persisted historical replay and comparison as a separate storage decision.

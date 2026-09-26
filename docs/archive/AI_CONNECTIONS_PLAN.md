@@ -1,5 +1,7 @@
 # Administrator AI connections
 
+Status: archived on 26 September 2026; completed plan. Current behaviour: see [AI connections operations](../AI_CONNECTIONS_OPERATIONS.md).
+
 Requested 6 September 2026. This extends the automated research plan with
 administrator-controlled provider, model, reasoning and credential selection.
 The user explicitly selected OpenAI GPT-5.6 Luna at Max reasoning, superseding
@@ -38,8 +40,8 @@ Requested 6 September 2026. Administrators can now select **Amazon Bedrock**,
 choose an AWS region and enter a Bedrock API key plus a model or inference-profile
 ID. This uses native Converse structured outputs through an explicit provider
 adapter. OpenAI and custom compatible profiles retain their existing protocol.
-See [ADR 0013](adr/0013-native-bedrock.md) and the
-[operator flow](AI_CONNECTIONS_OPERATIONS.md#amazon-bedrock).
+See [ADR 0013](../adr/0013-native-bedrock.md) and the
+[operator flow](../AI_CONNECTIONS_OPERATIONS.md#amazon-bedrock).
 
 - [x] Native text provider, encrypted keys, canonical regional destination and
   manual model selection, with provider-specific inference validation.
@@ -63,7 +65,7 @@ See [ADR 0013](adr/0013-native-bedrock.md) and the
 - [x] Frontend validation: 504 tests pass, 98.46% line coverage and 91.86% branch
   coverage. Lint, types and build pass. Browser checks at 1440, 390 and 320 pixels
   complete native save/test/apply with no discovery request, overflow or page error.
-- [x] Independent [security review](security/BEDROCK_REVIEW.md) closed the historical
+- [x] Independent [security review](../security/BEDROCK_REVIEW.md) closed the historical
   routing downgrade issue. Its synthetic selection passed 105 tests, with nine
   PostgreSQL variants verified separately by the migration worker. No other
   concrete security vulnerability remained in the reviewed change.
@@ -131,7 +133,7 @@ ordered probe defaults, assignment counters and safe downgrade refusal.
 Browser checks exercised configure, discover, test, keyboard confirmation and
 global/team activation at 1440, 390 and 320 pixels with synthetic API responses,
 no horizontal overflow and no page errors. The focused
-[security review](security/AI_CONNECTIONS_REVIEW.md) records two reproduced and
+[security review](../security/AI_CONNECTIONS_REVIEW.md) records two reproduced and
 fixed findings. No live API account test, operator migration, deployment or remote
 CI run is included in this evidence.
 

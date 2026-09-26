@@ -28,6 +28,8 @@ gives the chronology.
 | [Research expansion plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) | 6 September 2026 | The E0 to E13 research expansion workstreams; partly implemented. |
 | [Globe and flat-map research plan](GEOSPATIAL_RESEARCH_PLAN.md) | 6 September 2026 | Proposed geospatial layers and contracts; partly delivered through later map work. |
 | [Regional source expansion](REGIONAL_SOURCE_EXPANSION.md) | 6 September 2026 | Russia, China and Iran source research and onboarding backlog. |
+| [AI connections plan](AI_CONNECTIONS_PLAN.md) | September 2026 | Administrator-controlled model connection requirements; implemented. |
+| [Map workspace implementation](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md) | 20 September 2026 | Map workspace delivery checklist; complete. |
 | [Saved map views](SAVED_MAP_VIEW_IMPLEMENTATION.md) | 6 to 7 September 2026 | Contract and progress record for immutable saved map view revisions. |
 | [Globe dashboard](GLOBE_DASHBOARD_IMPLEMENTATION.md) | 7 September 2026 | Clock rail, traffic sampling and dashboard delivery record. |
 | [Annotation comparisons](ANNOTATION_COMPARISON_PLAN.md) | 7 September 2026 | Comparison preview, export and confidence explanation contract. |
@@ -55,6 +57,7 @@ gives the chronology.
 
 | Document | Dated | What it was |
 | --- | --- | --- |
+| [SOLID review](SOLID_REVIEW.md) | 20 September 2026 | Design review whose seven remediation slices were implemented. |
 | [Research expansion status audit](RESEARCH_EXPANSION_STATUS_AUDIT.md) | 7 September 2026 | Reconciliation of the expansion plan against the worktree. |
 | [Administrator AI connection journey](ADMIN_AI_CONNECTION_JOURNEY.md) | 7 September 2026 | Implementation and acceptance record for connection setup. |
 | [Map interaction corrections](MAP_INTERACTION_CORRECTIONS.md) | 8 September 2026 | Label, style, grid reference and selection corrections with verification scope. |
