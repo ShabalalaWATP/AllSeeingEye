@@ -8,7 +8,7 @@ export class FakeEventStreamClient {
   static autoConnect = true;
 
   readonly start = vi.fn(() => {
-    if (FakeEventStreamClient.autoConnect) this.options.onStatus('live');
+    if (FakeEventStreamClient.autoConnect) this.connect();
   });
   readonly stop = vi.fn();
 
@@ -22,6 +22,16 @@ export class FakeEventStreamClient {
 
   setStatus(status: StreamStatus): void {
     this.options.onStatus(status);
+  }
+
+  /** Opens like the server does: the stream goes live, then says hello. */
+  connect(resumed = false, id: string | null = null): void {
+    this.options.onStatus('live');
+    this.hello(resumed, id);
+  }
+
+  hello(resumed = false, id: string | null = null): void {
+    this.emit({ event: 'hello', data: JSON.stringify({ expires_in: 900, resumed }), id });
   }
 
   static reset(): void {

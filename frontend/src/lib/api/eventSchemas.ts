@@ -120,6 +120,11 @@ export const streamUpsertSchema = z.object({
   events: z.array(liveEventSchema),
 });
 export const streamExpireSchema = z.object({ ids: z.array(z.string()), count: z.number().int() });
+/** `resumed` is true only when the server replayed every public message this client missed. */
+export const streamHelloSchema = z.object({
+  expires_in: z.number().int().optional(),
+  resumed: z.boolean().optional(),
+});
 export const streamResyncSchema = z.object({
   reason: z.enum(['expiry_overflow', 'stream_gap', 'snapshot_required']),
 });
