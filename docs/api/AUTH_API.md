@@ -151,7 +151,9 @@ An open `/api/stream` rechecks identity and team authority at least every
 membership or team change made through the application, and before every private
 alert. It sends `bye` with `session_revoked` when the session ends, or
 `token_expired` at expiry. Membership/archive changes produce `access.changed` so
-clients can discard stale scoped state. See ADR 0021.
+clients can discard stale scoped state. See ADR 0021. A reconnect may send
+`Last-Event-ID` to resume within a short replay window of public messages; the session
+check runs again before anything is replayed (see LIVE_STREAM_RECOVERY.md).
 
 ## Password policy
 

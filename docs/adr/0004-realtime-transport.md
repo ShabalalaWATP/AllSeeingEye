@@ -20,3 +20,8 @@ Option 1 using `sse-starlette`. Clients subscribe with a filter (categories, bou
 
 - Heavy layers (aircraft, fires) send deltas keyed by event id; the client keeps its own bounded mirror of the live store.
 - If bidirectional needs ever appear (collaborative editing), WebSockets can be added for that feature alone.
+- Since 26 September 2026 frames carry `<epoch>-<sequence>` ids and the server keeps a
+  bounded replay window, so a reconnect after token renewal resumes with
+  `Last-Event-ID` instead of reloading the snapshot. See
+  [LIVE_STREAM_RECOVERY.md](../LIVE_STREAM_RECOVERY.md#resuming-after-a-reconnect).
+
