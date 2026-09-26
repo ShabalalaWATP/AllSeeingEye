@@ -303,7 +303,7 @@ class Container(
         self.grader = GradingService(self.store, self.source_profiles, self.clock)
         self.scheduler = FeedScheduler(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,
-            grader=self.grader,
+            grader=self.grader, fetch_concurrency=settings.feed_fetch_concurrency,
             admission=self.source_admission,
         )  # fmt: skip
         os_key = settings.os_maps_key_value

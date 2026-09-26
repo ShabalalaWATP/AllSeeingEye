@@ -125,6 +125,7 @@ def build_scheduler(
         prune_interval=timedelta(seconds=30),
         jitter=0.0,
         sleep=fake_sleep,
+        first_poll_spread=timedelta(0),
     )
     return scheduler, store, bus, health
 
