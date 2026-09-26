@@ -11,6 +11,7 @@ from fastapi import FastAPI
 
 from ase.container import Container
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
+from ase.container.live_snapshot import build_live_snapshot
 from ase.container.original_asset_expiry import expire_original_assets
 
 
@@ -38,6 +39,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Register first so clients/database remain available until workers stop.
         # AsyncExitStack runs every callback and retains errors through chaining.
         cleanup.push_async_callback(container.dispose)
+        # Restore retained public events before any feed starts. Its final save
+        # runs after every worker below has stopped (ADR 0022).
+        snapshot = build_live_snapshot(container)
+        if snapshot is not None:
+            await _start(cleanup, snapshot)
         if container.settings.feeds_enabled:
             await _start(cleanup, container.scheduler)
             await _start(cleanup, container.aviation_monitor)
