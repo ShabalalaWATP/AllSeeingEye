@@ -119,6 +119,7 @@ async def test_scheduler_sleeps_until_the_upstream_allows_another_request() -> N
         jitter=0.0,
         prune_interval=timedelta(hours=2),
         sleep=fake_sleep,
+        first_poll_spread=timedelta(0),
     )
     outcome = await scheduler.poll_once(connector)
     assert not outcome.ok and "HTTP 429" in (outcome.error or "")

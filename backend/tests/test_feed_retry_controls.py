@@ -28,6 +28,7 @@ def build(connector, sleep, *, jitter=0):
         clock,
         sleep=sleep,
         jitter=jitter,
+        first_poll_spread=timedelta(0),
     )
     return scheduler, clock, health
 
@@ -117,7 +118,7 @@ async def test_retry_after_starts_at_response_and_negative_jitter_cannot_shorten
             scheduler._stopping.set()
 
     scheduler, clock, health = build(connector, sleep, jitter=0.1)
-    with patch("ase.application.feeds.scheduler.random.uniform", side_effect=lambda low, high: low):
+    with patch("ase.application.feeds.cadence.random.uniform", side_effect=lambda low, high: low):
         await scheduler._run_connector(connector)
     assert health.get(connector.spec.id).next_poll_at == NOW + timedelta(seconds=630)
     assert sleeps[1] >= 600

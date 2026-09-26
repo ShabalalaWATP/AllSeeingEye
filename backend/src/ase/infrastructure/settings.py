@@ -72,6 +72,8 @@ class Settings(BaseSettings):
     conflict_screening_enabled: bool = True
     conflict_screening_calls_per_hour: int = Field(default=6, ge=1, le=30)
     feeds_disabled: str = ""
+    # Scheduled feed fetches in flight at once across every source (most capped at 5 MB each).
+    feed_fetch_concurrency: int = Field(default=16, ge=1, le=64)
     satellite_cache_dir: Path = Path("data/celestrak")
     # Fixed monthly baseline. Update only after verifying the next public release.
     ucdp_candidate_version: str = Field(default="26.0.7", pattern=r"^[0-9]{2}\.0\.([1-9]|1[0-2])$")
