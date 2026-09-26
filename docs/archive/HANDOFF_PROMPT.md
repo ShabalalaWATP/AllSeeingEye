@@ -1,9 +1,9 @@
 # Handoff prompt: continue building The All Seeing Eye
 
 Historical snapshot from 5 September 2026. The continuation through Phase 6 is now
-implemented. Read [the live plan](MASTER_IMPLEMENTATION_PLAN.md),
-[operations guide](PHASE5_PHASE6_OPERATIONS.md) and
-[security review](security/PHASE6_ASVS_REVIEW.md) for the current state and remaining
+implemented. Read [the live plan](../MASTER_IMPLEMENTATION_PLAN.md),
+[operations guide](../PHASE5_PHASE6_OPERATIONS.md) and
+[security review](../security/PHASE6_ASVS_REVIEW.md) for the current state and remaining
 verification gates before using the older brief below.
 
 Paste everything below the line into GPT-6 Astra, Codex or any other agent that will
@@ -292,7 +292,7 @@ Reddit is no longer polled at all: `reddit.com/robots.txt` is `Disallow: /` for 
 path, so the three subreddit feeds were retired on 16 September 2026 and the compliant
 OAuth route was not built. YouTube channels are now the keyed Data API v3 route and need
 `ASE_YOUTUBE_API_KEY`; without it no YouTube connector exists. See
-[SOCIAL_SOURCE_COVERAGE.md](SOCIAL_SOURCE_COVERAGE.md).
+[SOCIAL_SOURCE_COVERAGE.md](../SOCIAL_SOURCE_COVERAGE.md).
 
 ## 9. Environment traps that cost real time
 

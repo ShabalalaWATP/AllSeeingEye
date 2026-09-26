@@ -1,7 +1,7 @@
 # Dashboard controls, context and area watches
 
 10 September 2026. Implements the next slice of the
-[OSIRIS comparison](OSIRIS_DASHBOARD_FEATURE_REVIEW.md).
+[OSIRIS comparison](archive/OSIRIS_DASHBOARD_FEATURE_REVIEW.md).
 
 ## Operator flows
 

@@ -113,7 +113,7 @@ report completion and broader quality evaluation. See the complete
 - At the original software milestone, restarted the local API. Health and frontend login returned 200; unauthenticated
   photo analysis and input deletion returned 401. OpenAQ authentication was also
   verified independently. Subsequent AI activation and live results are recorded above.
-- The [manual scoped security review](security/RESEARCH_WORKSPACE_REVIEW.md)
+- The [manual scoped security review](../security/RESEARCH_WORKSPACE_REVIEW.md)
   reported no outstanding confirmed finding after corrections. A scan of proposed
   files found no configured local secret values. Test output, screenshots and
   runtime logs remain local verification artefacts outside the commit.

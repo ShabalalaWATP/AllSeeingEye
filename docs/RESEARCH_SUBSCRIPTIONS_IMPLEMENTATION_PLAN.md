@@ -2,7 +2,7 @@
 
 Date: 14 September 2026. Status: **implementation in progress; see the execution log for verified milestones**.
 
-This is the execution entry point for a smaller coding model. It translates the accepted [Research and Subscriptions audit](RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) into bounded tasks. The audit is the evidence for the defects, while this document specifies the proposed behaviour. Numbers described as initial policy below are design decisions to evaluate, not measured performance or doctrine.
+This is the execution entry point for a smaller coding model. It translates the accepted [Research and Subscriptions audit](archive/RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) into bounded tasks. The audit is the evidence for the defects, while this document specifies the proposed behaviour. Numbers described as initial policy below are design decisions to evaluate, not measured performance or doctrine.
 
 The complete scope includes reliability repairs, shared briefs, topic presets, better acquisition, evidence assessment, professional reports, dependable subscriptions and the additional AI features. Finishing the reliability phase does not finish this plan. Implementation is authorised by the user's acceptance; deployment, purchases and external delivery still follow the session's applicable approval rules.
 
@@ -33,7 +33,7 @@ Existing reference documents:
 - [Durable research jobs](DURABLE_RESEARCH_JOBS.md).
 - [Automatic research planning](AUTOMATIC_RESEARCH_PLANNING.md).
 - [Evidence scoring](REPORT_EVIDENCE_SCORING.md).
-- [Professional report product](PROFESSIONAL_REPORT_PRODUCT_PLAN.md).
+- [Professional report product](archive/PROFESSIONAL_REPORT_PRODUCT_PLAN.md).
 - [Architecture](01_ARCHITECTURE.md) and [doctrine/reporting](03_DOCTRINE_AND_REPORTING.md).
 
 ## 3. Non-negotiable implementation rules

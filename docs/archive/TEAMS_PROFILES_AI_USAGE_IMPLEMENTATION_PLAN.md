@@ -206,7 +206,7 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | T03 | T01 | **Implemented.** Self-leave (API and UI), archive effects, Administrator-only direct add, directory and exact-handle invitations, lapsed-invitation expiry on send, roster cap on acceptance, non-enumerating refusals, and deactivation reconciliation (an administrator cannot deactivate the last active Manager of an active team) are covered by tests. Removed members' scheduled team dispatch stops. |
 | P01 | T00 | **Implemented.** Profile validation, per-field directory visibility (timezone private by default), unique handles, bounded discovery and avatars (JPEG/PNG/WebP up to 2 MB, dimension checks before decode, re-encoded 256x256 WebP without metadata, stored in `directory_avatars`) are implemented. |
 | P02 | T03, P01 | **Implemented.** Profile editor with avatar upload/removal, roster showing handles and never login email, people picker with avatars, exact-username invitations and invitation inbox. |
-| Q01 | T00 | **Implemented.** Every outbound completion, embedding and web search path is inventoried and attributed in [ADR 0019](adr/0019-ai-usage-allowances.md). |
+| Q01 | T00 | **Implemented.** Every outbound completion, embedding and web search path is inventoried and attributed in [ADR 0019](../adr/0019-ai-usage-allowances.md). |
 | Q02 | Q01 | **Implemented.** Durable reserve/dispatch/settle ledger with relative conditional counter updates in a fixed lock order, released/settled/unknown outcomes, bounded opportunistic reconciliation of stale reservations, observation totals without policies and a system budget scope, and bounded hourly pruning of expired reservations, counters and totals (migration `0054`). An administrator review action for unknown calls remains. |
 | Q03 | Q02 | **Implemented.** Ask Eye (team-owned report Q&A charges the team), interactive and queued reports including subscriptions, web search, claims, photo geolocation, semantic search embeddings, administrator connection tests, feed translation and conflict screening reserve and settle through the shared ledger. |
 | Q04 | Q03 | **Implemented.** Administrator policy CRUD, dated temporary overrides (inherit, limit, unlimited, blocked), audit events, effective preview for accounts, teams and system work, personal usage and role-aware team usage views. |
@@ -258,7 +258,7 @@ Release complete means ordinary users can create and manage teams, invite people
 - **Branch and safety:** created `codex/teams-profiles-ai-usage` in
   `C:\AlexDev\OSINT-teams-profiles`, leaving the user's `main` checkout and Claude's
   working tree untouched. No commit or push was made.
-- **T00/T01:** added [ADR 0018](adr/0018-team-self-service-authority.md), migrated
+- **T00/T01:** added [ADR 0018](../adr/0018-team-self-service-authority.md), migrated
   team descriptions and creator memberships, and enforced current membership
   authority, protected Administrators and the final active Manager invariant.
   Focused team/API/race/migration tests passed.

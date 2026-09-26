@@ -177,7 +177,7 @@ or become frozen report evidence. Reloading loses unsaved local overlays. The
 saved-view implementation now uploads canonical overlays only on explicit Save,
 with personal/team scope disclosure. It preserves camera, filters, selection and
 immutable revision links; its final integration acceptance is tracked in
-[saved map views](SAVED_MAP_VIEW_IMPLEMENTATION.md).
+[saved map views](archive/SAVED_MAP_VIEW_IMPLEMENTATION.md).
 Polygon validation also shares a one-million-operation ceiling across an import;
 overly complex files require simplification. Canonical labels survive re-parsing
 and are truncated at Unicode character boundaries.
@@ -289,7 +289,7 @@ type checks and production build passed. The focused final replan backend group
 passed 54 cases; Ruff, mypy, import boundaries and Bandit passed. The earlier full
 backend verification below predates these additions and is not a new full run.
 
-The [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
+The [implementation plan](archive/RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
 full backlog. These features do not establish automated translation quality,
 complete historical datasets, fully accepted reproducible map exports, universal
 original-source capture or unrestricted provider coverage. Selected re-uploaded
@@ -334,5 +334,5 @@ operator migration was performed during implementation. Configure connections in
 Administration > AI connections: enter provider credentials, continue to discover
 models, choose/test a model, then review and confirm the audience. Bedrock model
 IDs remain manual. Personal assignments affect personal research only; team work
-uses its team's assignment or the app default. See ADMIN_AI_CONNECTION_JOURNEY.md
+uses its team's assignment or the app default. See archive/ADMIN_AI_CONNECTION_JOURNEY.md
 for exact routing, test evidence and credential-handling boundaries.

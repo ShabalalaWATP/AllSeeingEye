@@ -31,7 +31,7 @@ blocked-signup notes below:
   4,321 upstream records at 00:26 UTC. This is regional Norwegian/Arctic coverage.
   At 00:33 UTC the production connector accepted 3,407 fresh positions, including
   12 labelled by AIS as military operations. This is not verified naval identity.
-  See [BarentsWatch operations](BARENTSWATCH_AIS.md) for connector verification.
+  See [BarentsWatch operations](../BARENTSWATCH_AIS.md) for connector verification.
   The general `api` client also authenticated successfully at 00:39 UTC; its
   separately stored credentials are reserved for future general API adapters.
   This does not activate additional datasets or replace the working AIS client.
@@ -43,7 +43,7 @@ blocked-signup notes below:
   The new area-research capability accepted six dated readings from two London
   stations through the actual research service at 00:52 UTC, with original units
   and UK OGL attribution. It is a bounded latest-value sample with explicit gaps,
-  not a global live overlay or complete history. See [OpenAQ operations](OPENAQ_RESEARCH.md).
+  not a global live overlay or complete history. See [OpenAQ operations](../OPENAQ_RESEARCH.md).
 - Ordnance Survey: email verified; remaining account steps await the operator.
   The Alberta 511 form was prepared. Companies
   House requires the operator's GOV.UK One Login. Their API access is not verified.
@@ -63,7 +63,7 @@ statement and branch coverage of the new adapter in a separate focused run.
 Inactive entries are excluded. The existing 15-minute catalogue cache, provider
 selection and 5,000-camera cap remain, with no redirect or credential-bearing
 URL exposure. This verifies one regional catalogue and one image, not every
-camera's freshness or worldwide coverage. See [camera operations](CAMERA_AMERICAS.md).
+camera's freshness or worldwide coverage. See [camera operations](../CAMERA_AMERICAS.md).
 
 SSLMate's existing connector passed 28 focused tests. The BarentsWatch acceptance
 group passed 216 targeted tests with 100% statement/branch coverage of its four
@@ -105,8 +105,8 @@ independent coverage and use of existing material in private research.
   identify an incident inside a small polygon.
 
 The full machine-readable baseline is
-[inventory-code.json](source-audit/inventory-code.json); the accompanying
-[code audit](source-audit/inventory-code.md) records exact IDs and adapter paths.
+[inventory-code.json](../source-audit/inventory-code.json); the accompanying
+[code audit](../source-audit/inventory-code.md) records exact IDs and adapter paths.
 
 ## What was connected or repaired in this run
 
@@ -162,7 +162,7 @@ account or production deployment was introduced.
 
 The initial RSS failures were UN News and UN Press (unsupported encoding) and
 three Reddit feeds (HTTP 429, not retried; retired on 16 September 2026 because `robots.txt` disallows every path). Post-repair UN results are recorded
-separately in [RSS health](source-audit/rss-health.md) and its JSON evidence,
+separately in [RSS health](../source-audit/rss-health.md) and its JSON evidence,
 preserving the initial observation.
 
 Six successfully fetched feeds produced 311 items without recognised publication
@@ -170,10 +170,10 @@ timestamps. Private dated research excludes them. Feed modification time or
 collection time must not be substituted for publication time. A future distinct
 "current advisory context" mode could make this material useful honestly.
 
-Evidence: [FIRMS probe](source-audit/firms-health.json),
-[area probes](source-audit/area-hazard-health.json),
-[RSS probe](source-audit/rss-health.json),
-[AI readiness](source-audit/llm-readiness.md). Probe records contain statuses and
+Evidence: [FIRMS probe](../source-audit/firms-health.json),
+[area probes](../source-audit/area-hazard-health.json),
+[RSS probe](../source-audit/rss-health.json),
+[AI readiness](../source-audit/llm-readiness.md). Probe records contain statuses and
 counts, not credentials or downloaded articles. AISStream's key is configured,
 but a new live WebSocket probe was deliberately not run alongside the feed worker.
 
@@ -199,10 +199,10 @@ secret values. All paths below are backend settings, not browser environment val
 | OpenAlex | Optional `ASE_OPENALEX_API_KEY` configured and live metadata query verified on 11 September | Keep bounded opt-in collection; anonymous access remains available when the key is unset |
 | OpenAQ | `ASE_OPENAQ_API_KEY` configured; six dated area observations accepted by the actual research service on 11 September | Select OpenAQ in area research; latest station samples have temporal, spatial and licence gaps |
 | WSDOT | `ASE_WSDOT_ACCESS_CODE` configured; 1,630 active snapshot cameras and one sample image verified on 11 September | Select WSDOT in CCTV providers; normal bounded catalogue refresh applies |
-| BarentsWatch AIS | Separate AIS client configured; production connector accepted 3,407 fresh positions on 11 September | Regional ship overlay; see connector checks in [operations](BARENTSWATCH_AIS.md) |
+| BarentsWatch AIS | Separate AIS client configured; production connector accepted 3,407 fresh positions on 11 September | Regional ship overlay; see connector checks in [operations](../BARENTSWATCH_AIS.md) |
 | AI reports | Disabled, untested saved profile | Use the administrator model-discovery, test and activation journey with usable encryption configuration |
 
-See the [research access audit](source-audit/research-access-gaps.md) for official
+See the [research access audit](../source-audit/research-access-gaps.md) for official
 onboarding references and eligibility details. OpenAlex documents both anonymous
 basic use and a free key with a larger budget; it must not be described as wholly
 unavailable without a key. [Current OpenAlex authentication](https://help.openalex.org/api/authentication/).
@@ -235,7 +235,7 @@ Official access references: [OS Data Hub](https://osdatahub.os.uk/),
 [OpenAQ getting started](https://docs.openaq.org/),
 [Copernicus APIs](https://documentation.dataspace.copernicus.eu/APIs.html).
 Further quotas and source-specific terms are in the
-[transport/environment audit](source-audit/transport-environment-access.md).
+[transport/environment audit](../source-audit/transport-environment-access.md).
 
 OpenSky needs a written agreement for operational REST use. Global Fishing Watch
 requires genuine organisational eligibility and non-commercial use; ASFINAG needs

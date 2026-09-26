@@ -2,11 +2,11 @@
 
 Prepared 6 September 2026 against `60f57e4` on `main`.
 Status: partially implemented. The bounded delivery milestone and outstanding
-acceptance are recorded in [research expansion operations](RESEARCH_EXPANSION_OPERATIONS.md).
+acceptance are recorded in [research expansion operations](../RESEARCH_EXPANSION_OPERATIONS.md).
 The workstreams below retain the full target scope; a delivered subset does not
 mark an entire workstream complete.
 This is the next expansion plan. Earlier delivered work remains in
-[the automated research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md).
+[the automated research plan](../MASTER_AUTOMATED_RESEARCH_PLAN.md).
 
 Companion specifications:
 - [Current implementation and acceptance audit](RESEARCH_EXPANSION_STATUS_AUDIT.md)
@@ -14,11 +14,11 @@ Companion specifications:
 - [Globe and flat-map implementation](GEOSPATIAL_RESEARCH_PLAN.md)
 - [Saved map-view persistence and acceptance contract](SAVED_MAP_VIEW_IMPLEMENTATION.md)
 - [Area-based research collection contract](AOI_RESEARCH_IMPLEMENTATION.md)
-- [Current product direction](OSINT_PRODUCT_DIRECTION.md)
+- [Current product direction](../OSINT_PRODUCT_DIRECTION.md)
 
 ## 1. Outcome and boundaries
 
-Delivered on 9 September: [conflict relevance screening](CONFLICT_RELEVANCE_SCREENING.md),
+Delivered on 9 September: [conflict relevance screening](../CONFLICT_RELEVANCE_SCREENING.md),
 default-hidden unreviewed machine signals, shared tracker admission and bounded
 global-model processing. Live model classification quality and multilingual recall
 remain acceptance gates; no usable global model is currently assigned locally.

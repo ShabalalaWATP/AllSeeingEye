@@ -3,7 +3,7 @@
 Status: local implementation complete, 6 September 2026. Baseline: `60dff6b`. This plan implements the
 expanded request to reassess security, SOLID, documentation, maps, identity and
 teams, exports, analytical quality and visual design. The earlier
-[implementation plan](MASTER_IMPLEMENTATION_PLAN.md) remains the history of
+[implementation plan](../MASTER_IMPLEMENTATION_PLAN.md) remains the history of
 Phases 0 to 6. Completion of those phases does not complete this broader goal.
 
 ## Findings at baseline `60dff6b`
@@ -197,7 +197,7 @@ implementation completion, not approval for public exposure or an operator upgra
   The API has 54 unfixed package findings, including three CRITICAL matches;
   the web has none at those severities, including unfixed findings. Installed
   component/reachability evidence and release actions are in the
-  [base image triage](security/API_BASE_IMAGE_TRIAGE.md). No vulnerability ignores
+  [base image triage](../security/API_BASE_IMAGE_TRIAGE.md). No vulnerability ignores
   or operator risk acceptance were added.
 - The improvement is committed on `codex/app-improvement`; no remote, hosted CI,
   operator migration or deployment is included. Use the operations guide before

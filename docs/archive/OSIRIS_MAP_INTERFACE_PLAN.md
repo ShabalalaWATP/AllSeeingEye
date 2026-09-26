@@ -2,7 +2,7 @@
 
 ## Conflict globe and unrest correction, 9 September 2026
 
-The [frontline and unrest note](FRONTLINES_AND_UNREST.md) records the regional-icon
+The [frontline and unrest note](../FRONTLINES_AND_UNREST.md) records the regional-icon
 projection repair, shared war/tension/event symbols and separate protest, riot and
 unspecified-unrest filters. Existing review exclusions and location precision remain.
 A Frontlines tab lists verified public source/access options. No automatic boundary
@@ -220,7 +220,7 @@ was verified in the browser. See CAMERA_FEEDS.md for limits and regional invento
 The RF planner now groups four Bowman planning scenarios, nine other military
 equipment choices and the retained general examples. Public mode-specific powers
 remain distinct from illustrative settings. Selection preserves the existing
-analysis models and clears stale estimates. See [radio presets](RADIO_PRESETS.md)
+analysis models and clears stale estimates. See [radio presets](../RADIO_PRESETS.md)
 for the catalogue, primary references, checks and outstanding interactive acceptance.
 
 ## Dashboard context and filters delivered, 10 September 2026
@@ -232,5 +232,5 @@ weather, NAVAREA warnings and IODA signals. Completed sketches now lead to a
 reviewable area-count watch through the existing Warning form. The globe remains
 the primary view and only Conflicts starts enabled. No new continuous collection
 or automatic model call was added. Exact behaviour, remaining gaps and validation
-limits are tracked in [dashboard context and watches](DASHBOARD_CONTEXT_AND_WATCHES.md)
+limits are tracked in [dashboard context and watches](../DASHBOARD_CONTEXT_AND_WATCHES.md)
 and the [feature review](OSIRIS_DASHBOARD_FEATURE_REVIEW.md).

@@ -44,7 +44,7 @@ would require v3 and its [API-key workflow](https://docs.openaq.org/using-the-ap
 Its space-weather route also assigns G1 at Kp 4; the
 [official NOAA scales](https://www.spaceweather.gov/noaa-scales-explanation)
 start G1 at Kp 5. Reuse the interaction ideas and verify each data interpretation.
-See the [existing conflict audit](CONFLICT_RELEVANCE_SCREENING.md) for the separate
+See the [existing conflict audit](../CONFLICT_RELEVANCE_SCREENING.md) for the separate
 problem of keyword matching and approximate regional dots.
 
 ## Existing ASE capabilities and actual gaps
@@ -208,7 +208,7 @@ warning thresholds/cooldowns are a foundation, not complete crossing detection.
 - [x] Clearer RF reach display: labelled obstruction and distance boundaries,
   shared map/profile colour key, per-bearing stops and optional illustrative
   360° footprint. Rendering-only shading adds no collection work. See
-  [RF coverage display](RF_COVERAGE_DISPLAY.md); this is not measured reception.
+  [RF coverage display](../RF_COVERAGE_DISPLAY.md); this is not measured reception.
 - [ ] Curated public GIS browser: preview publisher, licence, extent and dataset
   date before adding bounded features. Start with official public port/airport and
   relevant infrastructure datasets; support selected ArcGIS services through the
@@ -254,5 +254,5 @@ bounded cache. New history must not be implemented by quietly removing those lim
 
 The original review was documentation only. The 10 September implementation reuses
 existing providers and introduces no dependencies, credentials, background polling
-or model calls. See [dashboard controls and context](DASHBOARD_CONTEXT_AND_WATCHES.md)
+or model calls. See [dashboard controls and context](../DASHBOARD_CONTEXT_AND_WATCHES.md)
 for the shipped behaviour, remaining work and validation record.

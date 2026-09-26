@@ -29,25 +29,25 @@ cross-version comparison.
 
 The existing implementation provides several reusable boundaries:
 
-- [ReportStatus](../backend/src/ase/domain/reports.py) has `READY`, `NEEDS_REVIEW`
-  and `FAILED`. [compare_reports](../backend/src/ase/domain/research_changes.py)
+- [ReportStatus](../../backend/src/ase/domain/reports.py) has `READY`, `NEEDS_REVIEW`
+  and `FAILED`. [compare_reports](../../backend/src/ase/domain/research_changes.py)
   rejects `FAILED` as a new baseline and retains the preceding baseline ID. Both
   other statuses currently participate in deterministic report comparison.
-- [SaveProduction.save](../backend/src/ase/application/reports/save_production.py)
+- [SaveProduction.save](../../backend/src/ase/application/reports/save_production.py)
   performs the final authorised transaction for the report, automatic claim
   revisions and audit. A publication must be recorded after these claims, before
   that transaction commits.
-- [schedule_report](../backend/src/ase/container/features.py) creates a report for
+- [schedule_report](../../backend/src/ase/container/features.py) creates a report for
   each scheduled execution and returns its report ID. It does not regenerate a
   standing report root.
-- [SqlScheduleStore.mark_run](../backend/src/ase/adapters/persistence/schedules.py)
+- [SqlScheduleStore.mark_run](../../backend/src/ase/adapters/persistence/schedules.py)
   authorises the current schedule and records its result in a later transaction.
-  [record_change](../backend/src/ase/adapters/persistence/schedule_changes.py)
+  [record_change](../../backend/src/ase/adapters/persistence/schedule_changes.py)
   compares exact version one with the preceding successful version and stores
   `last_change`; this is not a durable transition ledger.
-- [annotation_deltas](../backend/src/ase/domain/annotation_deltas.py) supports
+- [annotation_deltas](../../backend/src/ase/domain/annotation_deltas.py) supports
   same-root continuity and explicit one-to-one annotation correspondence.
-  [confidence_deltas](../backend/src/ase/domain/confidence_comparison.py) supports
+  [confidence_deltas](../../backend/src/ase/domain/confidence_comparison.py) supports
   declared judgement pairs and unique identical statements. Reused judgement IDs
   alone do not establish correspondence.
 
