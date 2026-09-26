@@ -74,8 +74,10 @@ def test_health_registry_transitions() -> None:
     assert degraded.next_poll_at == NOW + timedelta(seconds=60)
     disabled = registry.record_failure("s", "boom again", NOW)
     assert disabled.status is SourceStatus.DISABLED
-    assert disabled.next_poll_at is None
+    # The breaker pauses the source until a cool-down probe rather than indefinitely.
+    assert disabled.next_poll_at == NOW + timedelta(hours=6)
     assert registry.reset("s").status is SourceStatus.IDLE
+    assert registry.get("s").next_poll_at is None and registry.get("s").trips == 0
     assert [h.source_id for h in registry.snapshot()] == ["s"]
 
 
@@ -111,6 +113,9 @@ def build_scheduler(
 
     async def fake_sleep(seconds: float) -> None:
         recorded.append(seconds)
+        if seconds >= 3600:
+            # Hold breaker cool-downs until a reset or stop cancels the loop.
+            await asyncio.Event().wait()
         clock.advance(timedelta(seconds=seconds))
         await asyncio.sleep(0)
 
@@ -182,6 +187,7 @@ async def test_run_loop_backs_off_then_disables_and_resumes(clock: FakeClock) ->
     assert health.get("test_source").status is SourceStatus.DISABLED
     assert connector.calls == 2
     assert 5.0 in sleeps  # the first failure waits one base backoff before retrying
+    assert 6 * 3600 in sleeps  # paused until the cool-down probe, not ended
     scheduler.resume("test_source")
     for _ in range(20):
         await asyncio.sleep(0)

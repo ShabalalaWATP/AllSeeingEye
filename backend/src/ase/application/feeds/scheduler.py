@@ -8,7 +8,7 @@ from collections.abc import Awaitable, Callable, Sequence
 from datetime import timedelta
 
 from ase.application.feeds.cadence import first_poll_delay, next_poll_delay
-from ase.application.feeds.health import HealthRegistry, SourceStatus
+from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_outcome import PollOutcome
 from ase.application.feeds.poller import FeedPoller
@@ -98,7 +98,7 @@ class FeedScheduler(FeedPoller):
         self._prune_task = None
 
     def resume(self, source_id: str) -> None:
-        """Re-enable a source an administrator has reset after the breaker disabled it."""
+        """Resume a source an administrator has reset, without waiting for its cool-down."""
         connector = self._connectors.get(source_id)
         if connector is None:
             raise NotFound()
@@ -139,9 +139,8 @@ class FeedScheduler(FeedPoller):
         await self._sleep(first_delay)
         while not self._stopping.is_set():
             await self.poll_once(connector)
+            # A source the breaker paused sleeps until its cool-down probe, not forever.
             entry = self._health.get(spec.id)
-            if entry.status is SourceStatus.DISABLED:
-                return
             await self._sleep(
                 next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
             )
