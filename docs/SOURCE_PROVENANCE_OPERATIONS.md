@@ -2,7 +2,7 @@
 
 Status, 8 September 2026: implemented in the isolated source-provenance checkout;
 full regression acceptance and integration remain pending. The requirements are
-tracked in [the implementation plan](SOURCE_LANGUAGE_DATE_PROVENANCE_PLAN.md).
+tracked in [the implementation plan](archive/SOURCE_LANGUAGE_DATE_PROVENANCE_PLAN.md).
 
 ## Research queries
 

@@ -78,13 +78,13 @@ selected; full report acceptance remains open independently of the chat checks.
 
 ## Source audit and activation, 10 September 2026
 
-The active next milestone is the [research workspace overhaul](RESEARCH_WORKSPACE_OVERHAUL.md):
+The active next milestone is the [research workspace overhaul](archive/RESEARCH_WORKSPACE_OVERHAUL.md):
 multiple countries, historical periods, photo geolocation, native web context,
 monthly recurring research and clearer navigation. Live configured-AI evaluation
 remains open. See [operator flows](RESEARCH_WORKSPACE_OPERATIONS.md).
 
 The current operational findings and ranked onboarding queue are in
-[SOURCE_CONNECTION_AUDIT.md](SOURCE_CONNECTION_AUDIT.md). Configuration presence,
+[SOURCE_CONNECTION_AUDIT.md](archive/SOURCE_CONNECTION_AUDIT.md). Configuration presence,
 current delivery and research capability are separate acceptance criteria.
 
 - [x] Inventory every scheduled source, research capability and camera provider;
@@ -123,7 +123,7 @@ current delivery and research capability are separate acceptance criteria.
   reasoning through the normal audited application connection use cases.
 - [ ] Complete live report acceptance and representative model-quality evaluation.
   Two photo examples passed; long reports and web source quality exposed failures.
-  See [live acceptance](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
+  See [live acceptance](archive/LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
 - [ ] Extend secure administrator credential management beyond FIRMS and AI.
 - [ ] Add approved OS/Companies House credentials, ReliefWeb appname/UCDP
   access, authorised camera keys and validated primary dataset imports.
@@ -381,12 +381,12 @@ pass. No remote push, production migration or live SMTP/model evaluation was per
 
 ## Next expansion plan, 6 September 2026
 
-[Research expansion implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md)
+[Research expansion implementation plan](archive/RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md)
 is the proposed next backlog following `60f57e4`: deeper Russia, China and Iran
 coverage; query planning, claims, entities, history and verification; and shared
 improvements to the existing globe and flat map. Its companion
-[source matrix](REGIONAL_SOURCE_EXPANSION.md) records access/verification limits;
-the [geospatial specification](GEOSPATIAL_RESEARCH_PLAN.md) defines geometry,
+[source matrix](archive/REGIONAL_SOURCE_EXPANSION.md) records access/verification limits;
+the [geospatial specification](archive/GEOSPATIAL_RESEARCH_PLAN.md) defines geometry,
 precision, private overlays, projection parity and acceptance tests.
 
 These documents are plans, not implemented connectors, activated sources or
@@ -435,7 +435,7 @@ generation and recurring schedules keep their earlier pipeline in this milestone
 
 ## Professional report product plan, 12 September 2026
 
-[Professional report product plan](PROFESSIONAL_REPORT_PRODUCT_PLAN.md) records
+[Professional report product plan](archive/PROFESSIONAL_REPORT_PRODUCT_PLAN.md) records
 one coherent reader document with in-text citations and a numbered reference
 list, shared by the browser and Word, PDF and Markdown exports. Supporting
 evidence and operational diagnostics now sit outside the default report. The

@@ -2,7 +2,7 @@
 
 A left-rail workspace at `/conflicts/ukraine` that shows reported territorial control, the
 belligerents' own figures, published assessments and retained reporting on Russia's war in
-Ukraine. Phases 1 to 4 of `docs/UKRAINE_WAR_TRACKER_PLAN.md` are delivered: the map with
+Ukraine. Phases 1 to 4 of `docs/archive/UKRAINE_WAR_TRACKER_PLAN.md` are delivered: the map with
 flagged provider layers, headline figures including visually confirmed losses and documented
 civilian harm, grouped updates, the timeline, force organisation, the equipment catalogue,
 the three news lenses with charts and the sources footer.

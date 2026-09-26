@@ -38,7 +38,7 @@ unauthenticated path that robots permits, so no subreddit was added.
 This applies equally to the three subreddits already in the catalogue
 (`reddit_worldnews`, `reddit_geopolitics`, `reddit_ukrainianconflict`). They were not
 removed here: that is an operator decision, and each has a research provider and a
-reviewed allocation profile behind it. It should be taken. `06_OPEN_QUESTIONS.md`
+reviewed allocation profile behind it. It should be taken. `archive/06_OPEN_QUESTIONS.md`
 already records the OAuth registration (100 requests per minute) as the intended route.
 **That decision was taken later the same day and all three were removed**; see below.
 

@@ -84,7 +84,7 @@ carry the DeepStateMap mark be reused freely. The `api/history/last` endpoint an
 without a key today. The Ukraine war page carries a fixed adapter for it that stays
 off until the operator sets `ASE_UKRAINE_DEEPSTATE_ACCESS=granted`, which is the
 operator's declaration that access was granted through the request form; the plan in
-`docs/UKRAINE_WAR_TRACKER_PLAN.md` section 9 holds a request text.
+`docs/archive/UKRAINE_WAR_TRACKER_PLAN.md` section 9 holds a request text.
 
 The [official licence](https://deepstatemap.live/license.html), revised 3 September
 2025, controls API use and prohibits unauthorised proxying/redistribution.
