@@ -12,6 +12,7 @@ from collections import OrderedDict
 import httpx
 
 from ase.adapters.feeds.secret_urls import protect_http_logs
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports import RateLimiter
 from ase.application.ports.tiles import Tile, TileUpstreamError
 
@@ -67,7 +68,9 @@ class OsMapsTileProvider:
         limiter: RateLimiter | None = None,
     ) -> None:
         self._key = key
-        self._client = client or httpx.AsyncClient(timeout=httpx.Timeout(DEFAULT_TIMEOUT_SECONDS))
+        self._client = client or httpx.AsyncClient(
+            timeout=httpx.Timeout(DEFAULT_TIMEOUT_SECONDS), verify=verified_ssl_context()
+        )
         self._cache = cache or TileCache()
         self._limiter = limiter
         self._admission = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)

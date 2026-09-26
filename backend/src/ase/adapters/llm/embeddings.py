@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports.embeddings import EmbeddingGatewayError
 from ase.domain.llm import normalise_base_url
 from ase.domain.report_search import INDEX_BATCH, MAX_TEXT_CHARS, EmbeddingResult, checked_vector
@@ -51,7 +52,9 @@ class OpenAiEmbeddingGateway:
     def __init__(
         self, *, client: httpx.AsyncClient | None = None, timeout_seconds: float = TIMEOUT_SECONDS
     ) -> None:
-        self._client = client or httpx.AsyncClient(follow_redirects=False)
+        self._client = client or httpx.AsyncClient(
+            follow_redirects=False, verify=verified_ssl_context()
+        )
         self._timeout = timeout_seconds
 
     async def aclose(self) -> None:

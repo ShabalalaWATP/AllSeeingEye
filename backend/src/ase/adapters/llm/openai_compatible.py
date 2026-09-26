@@ -25,6 +25,7 @@ from ase.adapters.llm.openai_responses import (
     parse_response,
     uses_responses,
 )
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
 from ase.domain.ai_usage import token_count
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
@@ -164,7 +165,9 @@ class OpenAiCompatibleGateway:
         self._timeout_override = timeout_seconds
         self._timeout = DEFAULT_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
         self._client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(self._timeout), follow_redirects=False
+            timeout=httpx.Timeout(self._timeout),
+            follow_redirects=False,
+            verify=verified_ssl_context(),
         )
         self._admission = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
 

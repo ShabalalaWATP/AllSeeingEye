@@ -19,6 +19,7 @@ from ase.adapters.feeds.http import (
     assert_public_host,
 )
 from ase.adapters.feeds.secret_urls import protect_http_logs
+from ase.adapters.tls import verified_ssl_context
 
 ORIGIN = "https://acleddata.com"
 TOKEN_URL = f"{ORIGIN}/oauth/token"
@@ -48,7 +49,12 @@ class AcledHttpClient(FeedHttpClient):
             user_agent,
             max_bytes=DATA_MAX_BYTES,
             client=client
-            or httpx.AsyncClient(timeout=READ_SECONDS, follow_redirects=False, trust_env=False),
+            or httpx.AsyncClient(
+                timeout=READ_SECONDS,
+                follow_redirects=False,
+                trust_env=False,
+                verify=verified_ssl_context(trust_env=False),
+            ),
         )
 
     async def refresh(self, refresh_token: SecretStr) -> Any:
