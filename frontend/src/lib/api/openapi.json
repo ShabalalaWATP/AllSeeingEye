@@ -10529,6 +10529,24 @@
               ],
               "title": "Categories"
             }
+          },
+          {
+            "name": "last-event-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last frame id received, to resume within the replay window.",
+              "title": "Last-Event-Id"
+            },
+            "description": "The last frame id received, to resume within the replay window."
           }
         ],
         "responses": {
