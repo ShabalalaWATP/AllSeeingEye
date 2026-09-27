@@ -39,6 +39,7 @@ async def ready(container, actor):
     return result.status
 
 
+@pytest.mark.feed_catalogue
 async def test_api_masked_encrypted_confirm_and_clear(client, container, admin, probe):
     token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     headers = bearer(token)
@@ -123,6 +124,7 @@ async def test_expired_edited_and_other_session_proofs_refused(
         )
 
 
+@pytest.mark.feed_catalogue
 async def test_failed_retest_invalidates_success_without_touching_active(
     client, container, admin, probe
 ):

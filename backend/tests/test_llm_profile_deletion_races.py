@@ -17,6 +17,7 @@ from test_llm import FakeGateway
 from test_llm_connections import ROOT, draft, proof
 
 
+@pytest.mark.postgres
 @pytest.mark.parametrize("first_operation", ["reserve", "delete"])
 async def test_admission_and_removal_serialise_in_both_orders(
     client: AsyncClient, container: Container, admin: User, first_operation: str
@@ -84,6 +85,7 @@ async def test_admission_and_removal_serialise_in_both_orders(
         assert await container.repositories(session).llm_profiles.get(profile_id) is None
 
 
+@pytest.mark.postgres
 async def test_busy_accounting_returns_retryable_conflict_without_partial_removal(
     client: AsyncClient, container: Container, admin: User
 ) -> None:

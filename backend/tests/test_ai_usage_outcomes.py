@@ -170,6 +170,7 @@ async def test_reserve_runs_bounded_reconciliation_opportunistically(container, 
     assert len(batch.reservations) == 1
 
 
+@pytest.mark.race
 async def test_concurrent_reserve_and_settle_never_lose_increments(tmp_path):
     engine = await race_engine(tmp_path, "settle-race.db")
     factory = create_session_factory(engine)

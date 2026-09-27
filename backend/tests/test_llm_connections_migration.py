@@ -182,7 +182,9 @@ def _bind(connection: sa.Connection, original: dict[str, Any]) -> None:
     assert connection.scalar(sa.select(sa.func.count()).select_from(bindings)) == 2
 
 
-@pytest.mark.parametrize("dialect", ["sqlite", "postgresql"])
+@pytest.mark.parametrize(
+    "dialect", ["sqlite", pytest.param("postgresql", marks=pytest.mark.postgres)]
+)
 async def test_connections_migration_preserves_legacy_configuration_and_reports(
     dialect: str, tmp_path: Path
 ) -> None:
@@ -205,7 +207,9 @@ async def test_connections_migration_preserves_legacy_configuration_and_reports(
             await engine.dispose()
 
 
-@pytest.mark.parametrize("dialect", ["sqlite", "postgresql"])
+@pytest.mark.parametrize(
+    "dialect", ["sqlite", pytest.param("postgresql", marks=pytest.mark.postgres)]
+)
 @pytest.mark.parametrize("configuration", ["bindings", "reasoning"])
 async def test_connections_migration_refuses_lossy_downgrade(
     dialect: str, configuration: str, tmp_path: Path

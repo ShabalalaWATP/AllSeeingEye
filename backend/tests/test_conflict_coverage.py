@@ -34,6 +34,7 @@ def test_screening_status_uses_safe_public_descriptions(state, expected):
     assert result.last_success is None
 
 
+@pytest.mark.feed_catalogue
 async def test_coverage_requires_login_and_shows_safe_provider_health(client, container, user):
     assert (await client.get("/api/trackers/conflict-sources")).status_code == 401
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
