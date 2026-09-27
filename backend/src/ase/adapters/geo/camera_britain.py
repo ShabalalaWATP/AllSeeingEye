@@ -17,6 +17,7 @@ import re
 import time
 from collections import OrderedDict
 from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -203,8 +204,13 @@ def curated(provider: str, records: list[dict[str, Any]] | None = None) -> tuple
     return collect(POLICY, provider, rows, approximate=provider != "durham")
 
 
+@cache
+def packaged(provider: str) -> tuple[Camera, ...]:
+    """Parsed once per process: the packaged catalogue is read-only and cameras are frozen."""
+    return curated(provider)
+
+
 def build_sources(http: FeedHttpClient) -> tuple[CameraSource, ...]:
-    records = load_catalogue()
     sources: list[CameraSource] = [TrafficScotlandSource(http)]
-    sources.extend(CuratedBritainSource(name, curated(name, records)) for name in CURATED)
+    sources.extend(CuratedBritainSource(name, packaged(name)) for name in CURATED)
     return tuple(sources)

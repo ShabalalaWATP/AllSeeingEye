@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 
 from ase.adapters.llm.web_search_response import parse_web_response
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports.web_search import (
     MAX_WEB_OUTPUT_TOKENS,
     WebSearchError,
@@ -71,7 +72,9 @@ class OpenAiWebSearchGateway:
         self, *, client: httpx.AsyncClient | None = None, timeout_seconds: float = TIMEOUT_SECONDS
     ) -> None:
         self._client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
+            timeout=httpx.Timeout(timeout_seconds),
+            follow_redirects=False,
+            verify=verified_ssl_context(),
         )
         self._timeout = min(timeout_seconds, TIMEOUT_SECONDS)
         self._admission = asyncio.Semaphore(2)

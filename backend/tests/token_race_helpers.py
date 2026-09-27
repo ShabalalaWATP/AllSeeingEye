@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from ase.adapters.persistence.base import Base
 from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.infrastructure.settings import Settings
 from helpers import FakeClock
+from pytest_support import create_schema, disposable_database, skip_sqlite_fsync
 
 CONTEXT = RequestContext(ip="race-test", user_agent="test")
 
@@ -27,9 +27,8 @@ async def race_container(
     )
     isolated = settings.model_copy(update={"database_url": url})
     container = Container(isolated, clock=clock)
-    async with container.engine.begin() as connection:
-        await connection.run_sync(Base.metadata.drop_all)
-        await connection.run_sync(Base.metadata.create_all)
+    skip_sqlite_fsync(container.engine)
+    await create_schema(container.engine, fresh=disposable_database(url))
     try:
         yield container
     finally:

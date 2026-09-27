@@ -141,6 +141,7 @@ async def test_policy_admin_requires_admin_and_rejects_duplicate(container, user
         await session.commit()
 
 
+@pytest.mark.race
 async def test_file_backed_concurrent_reservations_refuse_the_loser(tmp_path):
     engine = await race_engine(tmp_path, "ai-usage.db")
     factory = create_session_factory(engine)

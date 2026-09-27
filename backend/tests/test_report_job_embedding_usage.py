@@ -107,6 +107,7 @@ async def test_queued_embeddings_use_daily_allowance_and_exact_actor_scope(
         assert totals.used_tokens == 34 + 10 * 15
 
 
+@pytest.mark.feed_catalogue
 async def test_subscription_reranking_is_charged_to_owner_once(client, user, container):
     text_gateway, _headers = await prepared(container, client)
     embeddings, embedding_profile = await configure_embeddings(container)

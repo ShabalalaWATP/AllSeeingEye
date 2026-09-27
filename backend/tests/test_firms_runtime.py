@@ -21,6 +21,9 @@ from test_firms_credentials import KEY, call, ready
 from test_firms_credentials import probe as probe  # noqa: PLC0414
 from test_saved_map_views import claims_for
 
+# The managed FIRMS connectors are part of the real feed catalogue.
+pytestmark = pytest.mark.feed_catalogue
+
 
 def connector(container):
     return next(c for c in container.scheduler.connectors if c.spec.id == SPEC.id)

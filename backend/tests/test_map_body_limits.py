@@ -1,7 +1,5 @@
 """Map JSON allowances remain bounded and cannot widen other endpoint limits."""
 
-from uuid import uuid4
-
 import pytest
 from starlette.types import Message
 
@@ -42,7 +40,8 @@ async def send_body(path, method, chunks, declared=None):
 
 
 @pytest.mark.parametrize(
-    "method,path", [("POST", "/api/map/views"), ("PATCH", f"/api/map/views/{uuid4()}")]
+    "method,path",
+    [("POST", "/api/map/views"), ("PATCH", "/api/map/views/7d3f2a9c-4b1e-4c8d-9a6f-1e2b3c4d5e6f")],
 )
 async def test_saved_map_accepts_bounded_chunked_geometry_above_ordinary_limit(method, path):
     chunks = [b"x" * 40000, b"y" * 40000]
@@ -65,7 +64,7 @@ async def test_map_body_cap_covers_declared_and_chunked_requests(declared):
         ("GET", "/api/map/views"),
         ("POST", "/api/map/views/extra"),
         ("PATCH", "/api/map/views/not-a-uuid"),
-        ("PATCH", f"/api/map/views/{uuid4()}/revisions"),
+        ("PATCH", "/api/map/views/2c8e6f1a-9d4b-4e3c-8f7a-6b5c4d3e2f1a/revisions"),
     ],
 )
 async def test_large_body_allowance_is_limited_to_exact_save_routes(method, path):
