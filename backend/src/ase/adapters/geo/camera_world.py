@@ -8,6 +8,7 @@ import math
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
@@ -241,12 +242,18 @@ def build_sources(http: FeedHttpClient) -> tuple[CameraSource, ...]:
     sources: list[CameraSource] = [
         WorldCameraSource(p, NAMES[p], http, fn) for p, fn in parsers.items()
     ]
-    records = json.loads(Path(__file__).with_name("camera_world_catalogue.json").read_text("utf8"))
     for provider in NAMES.keys() - parsers.keys():
-        rows = [{**row, "approximate": True} for row in records if row["provider"] == provider]
-        # Skyline's poster images can be years old and require hotlink bypass.
-        # Preserve the public operator page, never present those posters as live.
-        if provider.endswith("live") and provider != "taiwan-live":
-            rows = [{**row, "feed_url": None} for row in rows]
-        sources.append(CuratedWorldSource(provider, NAMES[provider], _collect(provider, rows)))
+        sources.append(CuratedWorldSource(provider, NAMES[provider], packaged(provider)))
     return tuple(sources)
+
+
+@cache
+def packaged(provider: str) -> tuple[Camera, ...]:
+    """Parsed once per process: the packaged catalogue is read-only and cameras are frozen."""
+    records = json.loads(Path(__file__).with_name("camera_world_catalogue.json").read_text("utf8"))
+    rows = [{**row, "approximate": True} for row in records if row["provider"] == provider]
+    # Skyline's poster images can be years old and require hotlink bypass.
+    # Preserve the public operator page, never present those posters as live.
+    if provider.endswith("live") and provider != "taiwan-live":
+        rows = [{**row, "feed_url": None} for row in rows]
+    return _collect(provider, rows)
