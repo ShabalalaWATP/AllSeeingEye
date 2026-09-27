@@ -51,7 +51,9 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
       - run: uv python install 3.13
       - run: uv sync --frozen
-      - run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 8
+      # Each xdist worker has a private in-memory SQLite database; pytest-cov combines
+      # the workers' data into the shard's coverage file. PostgreSQL shards stay serial.
+      - run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 8 --workers auto
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: sqlite-coverage-${{ matrix.shard }}

@@ -54,6 +54,78 @@ class ShardTests(unittest.TestCase):
                 kwargs["env"]["COVERAGE_FILE"], str(runner.BACKEND / ".coverage.shard-0")
             )
 
+    def test_recorded_durations_balance_complete_files_deterministically(self):
+        durations = {f"tests/test_{number:03}.py": float(number % 17) for number in range(90)}
+        durations["tests/test_slow.py"] = 40.0
+        files = [*durations, "tests/test_new.py"]
+        shards = [
+            runner.select_shard(list(reversed(files)), index, 4, durations) for index in range(4)
+        ]
+        flattened = [name for shard in shards for name in shard]
+        self.assertEqual(sorted(flattened), sorted(files))
+        self.assertEqual(len(flattened), len(set(flattened)))
+        median = 8.0  # Unrecorded files count as the median recorded file.
+        loads = [sum(durations.get(name, median) for name in shard) for shard in shards]
+        # Longest-first placement leaves shards within one short file of each other.
+        self.assertLess(max(loads) - min(loads), 17.0)
+        for index, shard in enumerate(shards):
+            self.assertEqual(shard, sorted(shard))
+            self.assertEqual(shard, runner.select_shard(files, index, 4, dict(durations)))
+
+    def test_durations_beat_round_robin_when_one_file_dominates(self):
+        files = [f"tests/test_{number:02}.py" for number in range(16)]
+        durations = dict.fromkeys(files, 1.0) | {files[0]: 12.0, files[4]: 12.0}
+        balanced = [runner.select_shard(files, index, 4, durations) for index in range(4)]
+        robin = [runner.select_shard(files, index, 4) for index in range(4)]
+
+        def slowest(shards):
+            return max(sum(durations[name] for name in shard) for shard in shards)
+
+        self.assertEqual(slowest(robin), 26.0)
+        self.assertEqual(slowest(balanced), 12.0)
+
+    def test_missing_durations_fall_back_to_round_robin(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(runner.load_durations(Path(directory) / "absent.json"), {})
+        files = ["tests/test_a.py", "tests/test_b.py", "tests/test_c.py"]
+        self.assertEqual(
+            runner.select_shard(files, 0, 2, {}), ["tests/test_a.py", "tests/test_c.py"]
+        )
+
+    def test_invalid_durations_are_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "durations.json"
+            for content in ["[]", '{"tests/test_a.py": -1}', '{"tests/test_a.py": true}', "{"]:
+                target.write_text(content, encoding="utf-8")
+                with self.subTest(content=content), self.assertRaises(ValueError):
+                    runner.load_durations(target)
+            with (
+                patch.object(runner, "DURATIONS", target),
+                patch.object(runner.subprocess, "run") as run,
+                self.assertRaises(SystemExit) as error,
+            ):
+                runner.main(["0", "1"])
+            self.assertEqual(error.exception.code, 2)
+            run.assert_not_called()
+
+    def test_workers_are_validated_and_passed_to_pytest(self):
+        with (
+            patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
+            patch.object(runner.subprocess, "run") as run,
+        ):
+            run.return_value.returncode = 0
+            self.assertEqual(runner.main(["0", "1", "--workers", "auto"]), 0)
+            self.assertEqual(run.call_args[0][0][-3:], ["-n", "auto", "tests/test_a.py"])
+            self.assertEqual(runner.main(["0", "1"]), 0)
+            self.assertNotIn("-n", run.call_args[0][0])
+            for invalid in ["0", "-1", "all", "2 --pdb"]:
+                with self.subTest(workers=invalid), self.assertRaises(SystemExit):
+                    runner.main(["0", "1", "--workers", invalid])
+
+    def test_committed_durations_are_valid(self):
+        recorded = runner.load_durations(runner.DURATIONS)
+        self.assertTrue(all(name.startswith("tests/test_") for name in recorded))
+
     def test_empty_shard_does_not_accidentally_run_the_full_suite(self):
         with (
             patch.object(runner, "test_files", return_value=[]),

@@ -19,6 +19,11 @@ test: test-api test-web
 test-api:
     cd backend && uv run pytest
 
+# Parallel backend tests without coverage on private in-memory SQLite databases.
+# PostgreSQL-only tests are deselected; a configured shared database is refused.
+test-fast *args:
+    cd backend && uv run pytest -n auto --no-cov -m "not postgres" {{args}}
+
 test-web:
     cd frontend && pnpm test
 
