@@ -128,6 +128,8 @@ class GzipSnapshotFile:
 
     def _decode(self, stream: gzip.GzipFile) -> SnapshotLoad:
         remaining = self._max_decompressed
+        signature = hmac.new(self._key, digestmod=hashlib.sha256)
+        pending: bytes | None = None
 
         def next_record() -> Any:
             nonlocal remaining, pending
@@ -144,8 +146,6 @@ class GzipSnapshotFile:
             pending = line
             return json.loads(line.decode("utf-8"), parse_constant=_reject_constant)
 
-        signature = hmac.new(self._key, digestmod=hashlib.sha256)
-        pending: bytes | None = None
         header = next_record()
         if not isinstance(header, dict) or set(header) != {"format", "version", "saved_at"}:
             raise _Rejected("snapshot header is not recognised")
