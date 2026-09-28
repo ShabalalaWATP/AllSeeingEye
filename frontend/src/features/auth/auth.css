@@ -2,6 +2,7 @@
   --auth-ground: #060606;
   --auth-line: #242424;
   --color-muted: #a2a2a2;
+  --color-control-border: #626262;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
@@ -147,7 +148,7 @@
 .auth-form input,
 .auth-form textarea {
   background: #101010;
-  border-color: #303030;
+  border-color: var(--color-control-border);
   min-height: 48px;
 }
 .auth-form input:focus,

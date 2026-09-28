@@ -14,6 +14,8 @@
   --color-surface: #14141c;
   --color-surface-2: #1c1c26;
   --color-line: #2a2a36;
+  /* Form control outlines: at least 3:1 against ground, surface and surface-2 (WCAG 1.4.11). */
+  --color-control-border: #6b6875;
   --color-text: #e9e4dc;
   --color-muted: #9a95a3;
   --color-ember: #ff6f37;
@@ -57,6 +59,7 @@
     --color-surface: #132131;
     --color-surface-2: #1b2d40;
     --color-line: #3b5065;
+    --color-control-border: #65798b;
     --color-text: #edf5fa;
     --color-muted: #adbfce;
     --color-ember: #72dcec;
@@ -69,6 +72,7 @@
     --color-surface: #ffffff;
     --color-surface-2: #e7ebef;
     --color-line: #788592;
+    --color-control-border: #788592;
     --color-text: #17212d;
     --color-muted: #536171;
     --color-ember: #a63d13;
@@ -91,6 +95,7 @@
     --color-surface: #0b1226;
     --color-surface-2: #121b36;
     --color-line: #24325c;
+    --color-control-border: #5b6891;
     --color-text: #e6ecff;
     --color-muted: #94a0c9;
     --color-ember: #5b93ff;
@@ -106,6 +111,7 @@
     --color-surface: #140f22;
     --color-surface-2: #1d1631;
     --color-line: #36295e;
+    --color-control-border: #6e6193;
     --color-text: #efe9ff;
     --color-muted: #ab9fcd;
     --color-ember: #b48cff;
@@ -121,6 +127,7 @@
     --color-surface: #0a120c;
     --color-surface-2: #101c14;
     --color-line: #1f3a27;
+    --color-control-border: #4d6f56;
     --color-text: #d9f5dc;
     --color-muted: #83ad8e;
     --color-ember: #39ff8a;
@@ -136,6 +143,7 @@
     --color-surface: #17090d;
     --color-surface-2: #221016;
     --color-line: #45202b;
+    --color-control-border: #7f5b65;
     --color-text: #f6e7ea;
     --color-muted: #b6929c;
     --color-ember: #ff3b5c;
@@ -151,6 +159,7 @@
     --color-surface: #18191c;
     --color-surface-2: #212327;
     --color-line: #363940;
+    --color-control-border: #6b6f76;
     --color-text: #f2f2f2;
     --color-muted: #a0a4ab;
     --color-ember: #e8e8ea;
