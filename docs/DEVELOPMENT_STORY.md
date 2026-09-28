@@ -5758,3 +5758,20 @@ on 12 workers. The six local failures were five per-test timeouts under load, wh
 pass in isolation, and the known Windows-only parser case. Independent quality and
 security reviews found no blocking issues. The URL authority check and the cast
 clean-up came from those reviews.
+
+## 28 September 2026: first Codex Jira implementation batch
+
+KAN-146, KAN-148 and KAN-147 are implemented in separate commits in draft PR #81.
+Warnings now count all matching retained events before limiting their evidence,
+and their publication window ends at the evaluation clock. Tracker boards select
+each source/subtype before applying the component cap, preserving maritime report
+background and space/cyber context under unrelated feed volume. The station list
+is limited to the crewed-stations source. Board counts remain bounded samples.
+
+Regressions reproduced the failures before the fixes. A security review identified
+that public read saturation could abort warning evaluation; two bounded admission
+backoffs per cycle now allow recovery without skipping later rules or pruning.
+The full backend suite is running; final validation is recorded in the
+[delivery record](reviews/2026-09-28-alert-selection-fixes.md). Claude's KAN-77 work
+uses a separate checkout and frontend scope. No merge or production deploy has
+been performed for this batch.

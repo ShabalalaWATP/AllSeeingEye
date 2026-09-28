@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### First Codex Jira delivery batch, 28 September 2026
+
+- [x] KAN-146: count every retained warning match before selecting 20 evidence items.
+- [x] KAN-148: enforce closed trailing publication windows and exclude future dates.
+- [x] KAN-147: select tracker source/subtype before each component's result limit.
+- [x] Reproduce failures, add regressions and repair queue saturation found in review.
+- [ ] Complete full backend coverage, final reviews and PR CI.
+- [ ] Obtain release approval before merging or deploying.
+
+The changes are isolated on `codex/KAN-146-alert-evaluation` in
+[draft PR #81](https://github.com/ShabalalaWATP/AllSeeingEye/pull/81).
+See the [delivery record](reviews/2026-09-28-alert-selection-fixes.md) for behaviour,
+limits and validation. The separate Claude KAN-77 frontend PR has no file overlap.
+
 ### Workflow audit repairs, 21 September 2026
 
 - [x] Protect unsaved drawings and make corridor path selection explicit.

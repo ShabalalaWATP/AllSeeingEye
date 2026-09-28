@@ -21,6 +21,14 @@ counts all matches, records every matching country and retains only the newest 2
 events as evidence, ordered by publication time and event ID. Retention remains the
 store's existing memory budget; this does not recover already evicted events.
 
+The independent security review found that a full public read queue could abort a
+warning cycle. A cycle now shares a budget of two one-second admission backoffs.
+If saturation persists, the affected rule is logged as deferred, remaining rules
+are considered and old alerts are still pruned. Deferred rules are reconsidered in
+the next cycle; this provides bounded recovery, not guaranteed alert latency under
+sustained overload. Cancellation continues to propagate. Four real-store queue
+regressions failed before the repair and passed afterwards.
+
 ## Closed warning windows (KAN-148)
 
 Warnings use the closed publication interval `[now - window, now]`. Unknown or
@@ -49,6 +57,10 @@ their existing smaller limits. Launch publication recency and NET scheduling
 remain distinct; this change preserves the existing seven-day publication window
 and the allowance for launches scheduled in the preceding day. The maritime
 report background uses the corrected board selection.
+
+Five saturation, station-scope and report-background regressions reproduced the
+defect. Eight new guard/regression tests and 19 existing module/feed tests passed.
+Two cap tests explicitly preserve the newest 5,000 matching-record semantics.
 
 ## Validation and delivery
 

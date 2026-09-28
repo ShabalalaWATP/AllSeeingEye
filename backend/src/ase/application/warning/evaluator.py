@@ -19,11 +19,14 @@ from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.warning import AlertNotifier, WarningStore
+from ase.domain.errors import RateLimited
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
 log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=60)
+MAX_ADMISSION_RETRIES = 2
+ADMISSION_RETRY_SECONDS = 1.0
 Reporter = Callable[[Indicator, Alert], Awaitable[UUID | None]]
 SleepFn = Callable[[float], Awaitable[None]]
 
@@ -80,12 +83,26 @@ class IndicatorEvaluator:
     async def run_once(self) -> list[Alert]:
         now = self._clock.now()
         fired: list[Alert] = []
+        admission_retries = MAX_ADMISSION_RETRIES
         for indicator in await self._warnings.enabled_indicators():
             if not await self._warnings.can_run(indicator):
                 continue
             latest = await self._warnings.latest_alert(indicator.id)
             last = None if latest is None else latest.fired_at
-            firing = await evaluate_candidates(self._store, indicator, now, last)
+            while True:
+                try:
+                    firing = await evaluate_candidates(self._store, indicator, now, last)
+                    break
+                except RateLimited:
+                    if admission_retries == 0:
+                        log.warning(
+                            "indicator_evaluation_deferred", extra={"indicator": indicator.name}
+                        )
+                        firing = None
+                        break
+                    # A cycle-wide budget prevents saturation multiplying delays by rule count.
+                    admission_retries -= 1
+                    await self._sleep(ADMISSION_RETRY_SECONDS)
             if firing is None:
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
