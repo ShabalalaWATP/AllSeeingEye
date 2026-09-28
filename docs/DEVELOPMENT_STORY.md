@@ -5688,3 +5688,37 @@ chunks. Of four failures, one passed alone (a load timeout) and one also fails o
 `main` under Windows (no asyncio Unix sockets). The other two were test fakes
 missing the new freshness component, now fixed. Independent quality and security
 reviews found no blocking issues; their hardening suggestions are included.
+
+## 27 September 2026: Stream resume, feed reliability, live-store snapshot and faster tests
+
+Five lanes were built in parallel worktrees and merged here.
+
+The live stream now encodes each public message once per category filter and shares
+the text across subscribers; alerts stay per user. Frames carry `<epoch>-<sequence>`
+ids and the bus keeps a bounded replay window (1,000 messages, 120 seconds, about
+8 MiB, public kinds only), so a reconnect after token renewal resumes with
+`Last-Event-ID` instead of reloading about 8,000 records. The session check still
+runs before anything is replayed. The browser abandons a stream that stays silent
+for 45 seconds and jitters its reconnection delay.
+
+Feed processing no longer serialises every source behind one unbounded lock:
+normalisation runs outside it, processing has a 60-second deadline, source enabled
+flags are cached and reloaded after committed changes, fetches share a global cap of
+16 and first polls are spread over up to a minute. A tripped circuit breaker retries
+after 6 hours, doubling to 24, without clearing an administrator's switch-off.
+PostgreSQL connections are pre-pinged and recycled.
+
+ADR 0022 amends ADR 0008 with one narrow exception: a disposable, size-capped gzip
+snapshot of the live store, replaced atomically every five minutes and on shutdown,
+reloaded through normal retention before feeds start and never backed up. After the
+security review it is signed with an HMAC keyed from `ASE_JWT_SECRET`, so a file
+written by anyone else is refused.
+
+Tests share one verified TLS context, build apps without the feed catalogue unless a
+test is marked `feed_catalogue`, create schemas once and run under pytest-xdist. The
+full backend suite ran in 14.5 minutes on 12 workers (about 40 before across ten
+chunks) with 93.7% coverage; CI shards are balanced by recorded file durations to
+19.4 minutes each instead of 13 to 24. Forty finished plans and audits moved to
+`docs/archive/` with an index. Independent quality and security reviews found no
+blocking issues after four catalogue-dependent tests were marked and the snapshot
+was signed.
