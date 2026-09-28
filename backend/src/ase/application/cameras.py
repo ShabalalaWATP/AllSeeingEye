@@ -179,10 +179,9 @@ class CameraCatalogueService:
     async def initial_catalogue(self, actor: User) -> CameraCatalogue:
         keys = [key for key in ("tfl", "hongkong", "fintraffic") if key in self.provider_ids]
         results = await asyncio.gather(*(self.catalogue(actor, key) for key in keys))
-        final = await self.catalogue(actor, keys[-1]) if keys else None
         return CameraCatalogue(
             tuple(c for result in results for c in result.cameras),
-            final.providers if final else (),
+            results[-1].providers if results else (),
             self._clock.now(),
         )
 

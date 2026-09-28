@@ -4,7 +4,7 @@ import asyncio
 import json
 from dataclasses import replace
 from datetime import timedelta
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, call, patch
 
 import pytest
 from httpx import AsyncClient
@@ -161,6 +161,27 @@ async def test_failure_isolated_empty_source_and_inactive_user(
     assert result.providers[1].status == "unavailable"
     with pytest.raises(Unauthenticated):
         await service.catalogue(replace(user, is_active=False))
+
+
+async def test_initial_catalogue_reads_each_provider_once(user: User, clock: FakeClock) -> None:
+    keys = ("tfl", "hongkong", "fintraffic")
+    service = CameraCatalogueService(tuple(source(key) for key in keys), clock)
+
+    with patch.object(service, "catalogue", wraps=service.catalogue) as catalogue:
+        initial = await service.initial_catalogue(user)
+
+    assert catalogue.call_args_list == [call(user, key) for key in keys]
+    assert tuple(camera.provider for camera in initial.cameras) == keys
+    assert initial.providers == service.snapshot(user).providers
+
+
+async def test_initial_catalogue_without_providers(user: User, clock: FakeClock) -> None:
+    service = CameraCatalogueService((), clock)
+
+    result = await service.initial_catalogue(user)
+
+    assert result.cameras == ()
+    assert result.providers == ()
 
 
 @pytest.mark.parametrize(
