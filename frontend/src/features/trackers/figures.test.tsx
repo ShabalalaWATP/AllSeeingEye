@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { figureBoard } from '@/test/fixtures.figures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -41,6 +42,22 @@ describe('public figures tracker', () => {
     await user.click(within(countries).getByRole('button', { name: 'All' }));
     expect(list.children).toHaveLength(3);
     expect(screen.queryByRole('link', { name: 'Generate report' })).not.toBeInTheDocument();
+  });
+
+  it('requests the board once per mount and not again after it renders', async () => {
+    let requests = 0;
+    server.use(
+      http.get('/api/figures', () => {
+        requests += 1;
+        return HttpResponse.json(figureBoard);
+      }),
+    );
+    renderApp('/trackers/figures', 'user');
+    expect(await screen.findByText('Office-holders tracked', {}, { timeout: 5000 })).toBeVisible();
+    // An unstable loader refetched after every render. Wait outside act so a
+    // loop shows up as extra requests rather than an act queue that never drains.
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(requests).toBe(1);
   });
 
   it('shows a readable error when the board cannot load', async () => {
