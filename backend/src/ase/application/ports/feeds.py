@@ -24,12 +24,18 @@ class FeedConnector(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class EventQuery:
+    """Retained-event selection; internal ``limit=None`` returns all matches unordered.
+
+    Complete selections cannot be paged or geographically sampled. Public endpoints
+    keep their bounded integer limits.
+    """
+
     categories: frozenset[Category] = frozenset()
     bbox: BoundingBox | None = None
     country_iso: str | None = None
     since: datetime | None = None
     source_ids: frozenset[str] = frozenset()
-    limit: int = 500
+    limit: int | None = 500
     until: datetime | None = None
     time_basis: EvidenceTimeBasis | MapTimeBasis = EvidenceTimeBasis.PUBLICATION
     include_unknown_dates: bool = False
@@ -37,6 +43,10 @@ class EventQuery:
     offset: int = 0
     sampling: Literal["newest", "geographic"] = "newest"
     research_area: ResearchArea | None = None
+
+    def __post_init__(self) -> None:
+        if self.limit is None and (self.offset != 0 or self.sampling != "newest"):
+            raise ValueError("Complete selections cannot use pagination or sampling")
 
 
 @dataclass(frozen=True, slots=True)

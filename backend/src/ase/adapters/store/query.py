@@ -31,6 +31,8 @@ def select_events(candidates: Sequence[Event], query: EventQuery) -> list[Event]
         if query.research_area is not None and not area_contains_event(query.research_area, event):
             continue
         matched.append(event)
+    if query.limit is None:
+        return matched
     offset = max(0, min(15_000, query.offset))
     if query.sampling == "geographic":
         return geographic_page(matched, query.time_basis, offset, max(1, query.limit))

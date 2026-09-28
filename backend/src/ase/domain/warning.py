@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from heapq import heappush, heapreplace
 from uuid import UUID
 
 from ase.domain.area_membership import area_contains_event
@@ -130,16 +131,26 @@ def evaluate(
     if last_fired is not None and now - last_fired < indicator.cooldown:
         return None
     since = now - indicator.window
-    matched = [
-        e
-        for e in events
-        if e.published_at is not None and e.published_at >= since and indicator.matches(e)
-    ]
-    if len(matched) < indicator.threshold:
+    count = 0
+    evidence: list[tuple[datetime, str, int, Event]] = []
+    country_latest: dict[str, tuple[datetime, str]] = {}
+    for event in events:
+        if event.published_at is None or event.published_at < since or not indicator.matches(event):
+            continue
+        count += 1
+        key = (publication_order(event), event.id)
+        if event.country_iso:
+            country_latest[event.country_iso] = max(country_latest.get(event.country_iso, key), key)
+        entry = (*key, count, event)
+        if len(evidence) < MAX_EVIDENCE:
+            heappush(evidence, entry)
+        elif entry[:3] > evidence[0][:3]:
+            heapreplace(evidence, entry)
+    if count < indicator.threshold:
         return None
-    matched.sort(key=publication_order, reverse=True)
-    countries = tuple(dict.fromkeys(e.country_iso for e in matched if e.country_iso))
-    return Firing(len(matched), tuple(matched[:MAX_EVIDENCE]), countries)
+    countries = tuple(sorted(country_latest, key=lambda code: country_latest[code], reverse=True))
+    newest = tuple(entry[3] for entry in sorted(evidence, reverse=True))
+    return Firing(count, newest, countries)
 
 
 def alert_from(indicator: Indicator, firing: Firing, alert_id: UUID, now: datetime) -> Alert:
