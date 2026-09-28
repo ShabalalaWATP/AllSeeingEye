@@ -81,8 +81,9 @@ The one local failure is
 `test_research_import_worker.py::test_remote_parser_unavailable_fails_closed`:
 `vars(asyncio)["open_unix_connection"]` raises `KeyError` on Windows. The test and
 research-import adapter files are unchanged from base commit `9a01161a`; the same
-lookup is present in that base. This existing platform limitation is outside these
-alert/board tickets. No test was skipped or threshold lowered to hide it. Linux
+lookup is present in that base. This existing platform limitation is already tracked
+as [KAN-29](https://alex-orr.atlassian.net/browse/KAN-29), outside these alert/board
+tickets. No test was skipped or threshold lowered to hide it. Linux
 SQLite/PostgreSQL and frontend CI results remain separate gates, tracked in PR #81.
 
 The three related fixes and the admission follow-up share a query boundary and are

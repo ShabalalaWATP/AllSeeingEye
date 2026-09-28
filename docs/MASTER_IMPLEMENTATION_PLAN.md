@@ -11,7 +11,7 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] KAN-147: select tracker source/subtype before each component's result limit.
 - [x] Reproduce failures, add regressions and repair queue saturation found in review.
 - [x] Run full backend coverage (93.78%) and final code/security/documentation reviews.
-- [ ] Resolve or account for the existing Windows parser-test failure before claiming a clean local suite.
+- [ ] Existing Windows parser-test limitation: [KAN-29](https://alex-orr.atlassian.net/browse/KAN-29), outside this batch.
 - [ ] Complete PR CI.
 - [ ] Obtain release approval before merging or deploying.
 
