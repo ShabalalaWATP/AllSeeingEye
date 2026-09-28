@@ -6,28 +6,15 @@ Only fixed official catalogue URLs are fetched by the server.
 
 import json
 import math
-from importlib import import_module
+from collections.abc import Mapping, Sequence
 from typing import Any
 from urllib.parse import urlsplit
 
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.geo.camera_europe_catalogue import COUNTRIES, curated_rows
 from ase.application.ports.cameras import CameraSource
 from ase.domain.cameras import Camera
 
-COUNTRIES = (
-    "bulgaria",
-    "serbia",
-    "macedonia",
-    "romania",
-    "italy",
-    "czechia",
-    "slovakia",
-    "germany",
-    "france",
-    "spain",
-    "poland",
-    "switzerland",
-)
 ENDPOINTS = {
     "asfinag": "https://odo.asfinag.at/odo/rest/sec/resource/001/json/webcams?language=atDE",
     "netherlands": "https://api.rwsverkeersinfo.nl/api/cameras/",
@@ -86,7 +73,7 @@ def _url(value: Any, hosts: set[str]) -> str | None:
     return None
 
 
-def make_camera(provider: str, row: dict[str, Any], *, approximate: bool) -> Camera | None:
+def make_camera(provider: str, row: Mapping[str, Any], *, approximate: bool) -> Camera | None:
     """Validate even curated records; upstream fields cannot widen media origins."""
     try:
         lat, lon = float(row.get("lat", "nan")), float(row.get("lng", "nan"))
@@ -129,6 +116,7 @@ def make_camera(provider: str, row: dict[str, Any], *, approximate: bool) -> Cam
 
 
 def curated(provider: str) -> tuple[Camera, ...]:
+    rows: Sequence[Mapping[str, Any]]
     if provider == "greece":
         rows = [
             {
@@ -146,12 +134,9 @@ def curated(provider: str) -> tuple[Camera, ...]:
             )
         ]
     else:
-        if provider not in COUNTRIES:
-            raise ValueError("Unknown curated camera provider")
-        # Only fixed bundled catalogue modules in COUNTRIES can be imported.
-        # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
-        rows = json.loads(import_module(f"ase.adapters.geo.camera_europe_{provider}").DATA)
-    cameras = [make_camera(provider, row, approximate=True) for row in rows[:5000]]
+        # Only the fixed packaged country catalogues can be read; others raise ValueError.
+        rows = curated_rows(provider)
+    cameras = [make_camera(provider, row, approximate=True) for row in rows]
     return tuple({cam.id: cam for cam in cameras if cam is not None}.values())
 
 

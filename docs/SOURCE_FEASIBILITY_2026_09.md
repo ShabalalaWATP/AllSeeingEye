@@ -7,7 +7,7 @@ collection, mirrors of blocked pages or anti-bot bypasses were used.
 
 ## Enabled first slice
 
-Eight publisher-discovered feeds have seeds in `rss_seeds_regional.py` and use the
+Eight publisher-discovered feeds have seeds in `resources/feeds/rss_regional.json` and use the
 existing guarded `FeedHttpClient` and `RssConnector`. The application smoke test
 successfully parsed each feed using its normal DNS checks, pinned destination,
 TLS verification, redirect limits and response-size limits. No descriptions or

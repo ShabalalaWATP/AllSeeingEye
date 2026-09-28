@@ -3,11 +3,13 @@
 from itertools import zip_longest
 
 from ase.adapters.feeds.http import FeedHttpClient
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
-from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
-from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import (
+    CYBER_SEEDS,
+    ECONOMY_SEEDS,
+    OFFICIAL_SEEDS,
+    OUTLET_SEEDS,
+    REGIONAL_SEEDS,
+)
 from ase.adapters.research.publisher import PublisherFeedResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.social_bluesky import BlueskyResearchProvider

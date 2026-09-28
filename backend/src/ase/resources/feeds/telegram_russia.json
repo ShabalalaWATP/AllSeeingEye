@@ -1,0 +1,239 @@
+{
+  "about": [
+    "Russian official, state media and independent channels, kept apart on purpose.",
+    "",
+    "Ministries and state agencies are the Russian state speaking for itself; the independent",
+    "and exiled outlets are not a counterweight to them, only a different unverified account,",
+    "and several publish under Russian wartime media law. All are graded at the same floor.",
+    "",
+    "Each entry was loaded and parsed from its public preview page on 16 September 2026 and had",
+    "posted within the preceding week unless noted. Channels dropped during that check are",
+    "recorded in ``docs/TELEGRAM_CHANNEL_COVERAGE.md`` rather than guessed at here."
+  ],
+  "groups": [
+    {
+      "group": "russia_official",
+      "channels": [
+        {
+          "username": "mod_russia",
+          "name": "Russian Ministry of Defence",
+          "operator": "Ministry of Defence of the Russian Federation",
+          "topic": "russia_official",
+          "reason": "The Russian military's own daily briefings and claimed results, issued by a belligerent about its own war.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "mod_russia_en",
+          "name": "Russian Ministry of Defence (English)",
+          "operator": "Ministry of Defence of the Russian Federation",
+          "topic": "russia_official",
+          "reason": "English edition of the Russian MoD briefings, the version aimed at international audiences.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "en",
+          "poll_minutes": 30
+        },
+        {
+          "username": "MID_Russia",
+          "name": "Russian Ministry of Foreign Affairs",
+          "operator": "Ministry of Foreign Affairs of the Russian Federation",
+          "topic": "russia_official",
+          "reason": "Russian diplomatic statements, sanctions responses and briefings in Russian.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 60
+        },
+        {
+          "username": "MFARussia",
+          "name": "Russian MFA (English)",
+          "operator": "Ministry of Foreign Affairs of the Russian Federation",
+          "topic": "russia_official",
+          "reason": "English-language Russian foreign ministry messaging, the text quoted abroad.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "mchs_official",
+          "name": "EMERCOM of Russia",
+          "operator": "Ministry of Emergency Situations of the Russian Federation",
+          "topic": "emergency_response",
+          "reason": "Russian emergency service reporting on fires, floods and incident response, including strikes inside Russia.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "centralbank_russia",
+          "name": "Bank of Russia",
+          "operator": "Central Bank of the Russian Federation",
+          "topic": "finance_sanctions",
+          "reason": "Rate decisions, capital controls and sanctions responses from the institution that issues them.",
+          "viewpoint": "official_issuer",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "russia_state_media",
+      "channels": [
+        {
+          "username": "rian_ru",
+          "name": "RIA Novosti",
+          "operator": "Rossiya Segodnya, a Russian state media group",
+          "topic": "russia_state_media",
+          "reason": "State wire agency; the fastest carrier of Kremlin announcements and their framing.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "tass_agency",
+          "name": "TASS",
+          "operator": "TASS, the Russian state news agency",
+          "topic": "russia_state_media",
+          "reason": "The state news agency of record; official statements in full, with state editorial direction.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "izvestia",
+          "name": "Izvestia",
+          "operator": "Izvestia, part of the National Media Group",
+          "topic": "russia_state_media",
+          "reason": "Kremlin-aligned daily; carries defence and security briefings ahead of the official channels.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "readovkanews",
+          "name": "Readovka",
+          "operator": "Readovka, a pro-Kremlin Russian news outlet",
+          "topic": "russia_state_media",
+          "reason": "High-volume pro-government outlet used to test and spread official narratives.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "russia_independent",
+      "channels": [
+        {
+          "username": "meduzalive",
+          "name": "Meduza",
+          "operator": "Meduza, an exiled Russian newsroom based in Latvia",
+          "topic": "russia_independent",
+          "reason": "Leading independent Russian-language newsroom, designated undesirable in Russia; reports what state media omits.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "mediazzzona",
+          "name": "Mediazona",
+          "operator": "Mediazona, an independent Russian outlet",
+          "topic": "russia_independent",
+          "reason": "Court, prison and casualty-verification reporting, including its named Russian military deaths count.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "agentstvonews",
+          "name": "Agentstvo",
+          "operator": "Agentstvo, an independent Russian investigative outlet",
+          "topic": "russia_independent",
+          "reason": "Investigative reporting on the Russian state and economy, largely from open Russian records.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "astrapress",
+          "name": "ASTRA",
+          "operator": "ASTRA, an independent Russian journalists' collective",
+          "topic": "russia_independent",
+          "reason": "Incident reporting from inside Russia, including drone strikes and refinery fires the authorities do not confirm.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 60
+        },
+        {
+          "username": "ostorozhno_novosti",
+          "name": "Ostorozhno Novosti",
+          "operator": "Ostorozhno Novosti, an independent Russian outlet",
+          "topic": "russia_independent",
+          "reason": "Fast independent Russian breaking news, including incidents inside Russia.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "bazabazon",
+          "name": "Baza",
+          "operator": "Baza, a Russian incident-news outlet",
+          "topic": "russia_independent",
+          "reason": "First Russian source on many domestic incidents; its reported security-services sourcing is a bias as well as an advantage.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "shot_shot",
+          "name": "SHOT",
+          "operator": "SHOT, a Russian incident-news outlet",
+          "topic": "russia_independent",
+          "reason": "High-tempo Russian incident reporting, including drone attacks inside Russia; frequently first and frequently wrong.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "rbc_news",
+          "name": "RBC",
+          "operator": "RBC, a Russian business media group",
+          "topic": "russia_independent",
+          "reason": "Russian business and economic reporting on sanctions, budget and industry, published under Russian wartime media restrictions.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "kommersant",
+          "name": "Kommersant",
+          "operator": "Kommersant, a Russian business daily",
+          "topic": "russia_independent",
+          "reason": "Established Russian business daily; defence-industrial and economic detail, published under Russian wartime media restrictions.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "ru",
+          "poll_minutes": 120
+        }
+      ]
+    }
+  ]
+}

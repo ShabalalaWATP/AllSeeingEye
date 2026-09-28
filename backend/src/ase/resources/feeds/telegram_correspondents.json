@@ -1,0 +1,191 @@
+{
+  "about": [
+    "War correspondents, milbloggers and mapping projects on both sides of the Ukraine war.",
+    "",
+    "These are the fastest channels in the registry and the least checkable. Every one of them",
+    "is a participant: Ukrainian mapping projects and strategic-communications accounts, and",
+    "Russian milbloggers who are decorated, sourced inside their own armed forces, or employed",
+    "by the state broadcaster. They exist here to be read against each other, never alone.",
+    "",
+    "Each entry was loaded and parsed from its public preview page on 16 September 2026 and had",
+    "posted within the preceding week unless noted. Channels dropped during that check are",
+    "recorded in ``docs/TELEGRAM_CHANNEL_COVERAGE.md`` rather than guessed at here."
+  ],
+  "groups": [
+    {
+      "group": "ukraine_aligned",
+      "channels": [
+        {
+          "username": "DeepStateUA",
+          "name": "DeepState",
+          "operator": "DeepState, a Ukrainian volunteer mapping project",
+          "topic": "conflict_monitoring",
+          "reason": "The most-cited Ukrainian front-line mapping project; publishes claimed Russian advances hours before they are reported elsewhere, from the Ukrainian side.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 30
+        },
+        {
+          "username": "Pravda_Gerashchenko",
+          "name": "Anton Gerashchenko",
+          "operator": "Anton Gerashchenko, former adviser to Ukraine's Ministry of Internal Affairs",
+          "topic": "conflict_monitoring",
+          "reason": "High-volume Ukrainian strategic-communications account; fast, widely reposted and explicitly campaigning.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Ukraine",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "Tsaplienko",
+          "name": "Andriy Tsaplienko",
+          "operator": "Andriy Tsaplienko, Ukrainian war correspondent",
+          "topic": "conflict_monitoring",
+          "reason": "Established Ukrainian front-line correspondent; first-hand material from a participant, not an independent observer.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 120
+        },
+        {
+          "username": "operativnoZSU",
+          "name": "Operatyvno ZSU",
+          "operator": "Unattributed Ukrainian military-news aggregator",
+          "topic": "conflict_monitoring",
+          "reason": "Fast Ukrainian war aggregator often mistaken for a General Staff channel; it is not one, and the operator is not established.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "russia_milbloggers",
+      "channels": [
+        {
+          "username": "rybar",
+          "name": "Rybar",
+          "operator": "Rybar, a Russian military analysis project",
+          "topic": "russia_milblogger",
+          "reason": "The most-cited Russian military mapping and analysis channel; well informed, reportedly founded by a former defence-ministry press officer, and an instrument of the Russian war effort.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "boris_rozhin",
+          "name": "Colonelcassad",
+          "operator": "Boris Rozhin, a Russian military commentator",
+          "topic": "russia_milblogger",
+          "reason": "High-volume Russian war commentary and claimed front-line changes; a participant's account of a war he supports.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 30
+        },
+        {
+          "username": "wargonzo",
+          "name": "WarGonzo",
+          "operator": "Semyon Pegov, a Russian war correspondent",
+          "topic": "russia_milblogger",
+          "reason": "Embedded Russian correspondent posting from occupied areas; first-hand, committed and state-decorated.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "epoddubny",
+          "name": "Yevgeny Poddubny",
+          "operator": "Yevgeny Poddubny, war correspondent for the state broadcaster VGTRK",
+          "topic": "russia_milblogger",
+          "reason": "State television's front-line correspondent; his reporting is the state broadcast version of the war.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "sashakots",
+          "name": "Kotsnews",
+          "operator": "Alexander Kots, correspondent for Komsomolskaya Pravda",
+          "topic": "russia_milblogger",
+          "reason": "Long-running Russian war correspondent with access to Russian units.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "dva_majors",
+          "name": "Dva Majora",
+          "operator": "Dva Majora, an anonymous Russian military channel",
+          "topic": "russia_milblogger",
+          "reason": "Widely followed Russian front-line channel; anonymous, well sourced within Russian forces and openly partisan.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "milinfolive",
+          "name": "Voenny Osvedomitel",
+          "operator": "Voenny Osvedomitel, a Russian military-technical channel",
+          "topic": "russia_milblogger",
+          "reason": "Equipment and drone identification from the Russian side; the usual first Russian source on new systems.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "RVvoenkor",
+          "name": "Rusvesna war correspondents",
+          "operator": "Russkaya Vesna, a Russian nationalist outlet",
+          "topic": "russia_milblogger",
+          "reason": "High-tempo Russian claims of strikes and advances; nationalist outlet, frequently unverified.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "voenkorKotenok",
+          "name": "Yuri Kotenok",
+          "operator": "Yuri Kotenok, a Russian war correspondent",
+          "topic": "russia_milblogger",
+          "reason": "Russian correspondent posting claimed strike results and front-line movement.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "SolovievLive",
+          "name": "Vladimir Solovyov",
+          "operator": "Vladimir Solovyov, state television presenter",
+          "topic": "russia_milblogger",
+          "reason": "The clearest statement of Russian state television's line, useful as a narrative indicator rather than as reporting.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "intelslava",
+          "name": "Intel Slava Z",
+          "operator": "Intel Slava Z, an English-language pro-Russian aggregator",
+          "topic": "russia_milblogger",
+          "reason": "The main English-language pipe for Russian war claims; carries state and milblogger material to foreign audiences, often without correction.",
+          "viewpoint": "state_media",
+          "alignment": "Russia",
+          "language": "en",
+          "poll_minutes": 120
+        }
+      ]
+    }
+  ]
+}

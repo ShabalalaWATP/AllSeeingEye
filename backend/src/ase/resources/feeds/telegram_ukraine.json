@@ -1,0 +1,199 @@
+{
+  "about": [
+    "Ukrainian official and media channels. Ukraine is a belligerent, so none of these is an",
+    "observer: an institution's own channel is graded as an interested party speaking for",
+    "itself, and the state agency and public broadcaster are marked state-aligned.",
+    "",
+    "Each entry was loaded and parsed from its public preview page on 16 September 2026 and had",
+    "posted within the preceding week unless noted. Channels dropped during that check are",
+    "recorded in ``docs/TELEGRAM_CHANNEL_COVERAGE.md`` rather than guessed at here."
+  ],
+  "groups": [
+    {
+      "group": "ukraine_official",
+      "channels": [
+        {
+          "username": "V_Zelenskiy_official",
+          "name": "Volodymyr Zelenskyy",
+          "operator": "Office of the President of Ukraine",
+          "topic": "ukraine_official",
+          "reason": "The president's own channel: addresses, decrees and strike reactions, usually ahead of the presidential website.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 30
+        },
+        {
+          "username": "generalstaffZSU",
+          "name": "General Staff of the Armed Forces of Ukraine",
+          "operator": "General Staff of the Armed Forces of Ukraine",
+          "topic": "ukraine_official",
+          "reason": "Daily operational reports and claimed Russian losses, issued by a belligerent about its own war.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 30
+        },
+        {
+          "username": "kpszsu",
+          "name": "Air Force Command of the Armed Forces of Ukraine",
+          "operator": "Air Force Command of the Armed Forces of Ukraine",
+          "topic": "ukraine_official",
+          "reason": "Missile and drone warnings and post-strike interception counts, the fastest official record of a Russian air attack.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 30
+        },
+        {
+          "username": "mvs_ukraine",
+          "name": "Ministry of Internal Affairs of Ukraine",
+          "operator": "Ministry of Internal Affairs of Ukraine",
+          "topic": "ukraine_official",
+          "reason": "Police, border and internal-security statements, including casualty figures after strikes on civilian areas.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "dsns_telegram",
+          "name": "State Emergency Service of Ukraine",
+          "operator": "State Emergency Service of Ukraine (DSNS)",
+          "topic": "emergency_response",
+          "reason": "The rescue service's own record of fires, rubble clearance and casualties after strikes, published before official statistics.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "ukrenergo",
+          "name": "Ukrenergo",
+          "operator": "NPC Ukrenergo, the Ukrainian transmission system operator",
+          "topic": "ukraine_official",
+          "reason": "Grid damage, emergency load shedding and repair status after strikes on the power system, from the operator itself.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "nbu_ua",
+          "name": "National Bank of Ukraine",
+          "operator": "National Bank of Ukraine",
+          "topic": "finance_sanctions",
+          "reason": "Central bank decisions, reserves and wartime currency controls, issued by the authority that sets them.",
+          "viewpoint": "official_issuer",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "ukraine_media",
+      "channels": [
+        {
+          "username": "ukrinform_news",
+          "name": "Ukrinform",
+          "operator": "Ukrinform, the Ukrainian state news agency",
+          "topic": "ukraine_media",
+          "reason": "The state agency's wire, carrying official announcements quickly and reflecting the government's framing of them.",
+          "viewpoint": "state_media",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "suspilnenews",
+          "name": "Suspilne News",
+          "operator": "Suspilne, Ukraine's public service broadcaster",
+          "topic": "ukraine_media",
+          "reason": "Public broadcaster newsroom with regional correspondents; state funded, with editorial independence in statute rather than in evidence.",
+          "viewpoint": "state_media",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "UkraineNow",
+          "name": "Ukraine NOW",
+          "operator": "Unattributed Ukrainian war-news channel",
+          "topic": "ukraine_media",
+          "reason": "One of the largest Ukrainian war-news channels; widely described as a government information project, which its own channel does not confirm.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Ukraine",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "United24media",
+          "name": "UNITED24 Media",
+          "operator": "UNITED24, the Ukrainian government fundraising and media platform",
+          "topic": "ukraine_media",
+          "reason": "English-language output of a Ukrainian state platform whose purpose is raising support; useful and openly advocacy.",
+          "viewpoint": "state_media",
+          "alignment": "Ukraine",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "ukrpravda_news",
+          "name": "Ukrainska Pravda",
+          "operator": "Ukrainska Pravda",
+          "topic": "ukraine_media",
+          "reason": "Long-established independent Ukrainian outlet; breaks political and procurement stories the state channels do not carry.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "uk",
+          "poll_minutes": 60
+        },
+        {
+          "username": "nvua_official",
+          "name": "NV",
+          "operator": "NV (Novoye Vremya)",
+          "topic": "ukraine_media",
+          "reason": "Independent Ukrainian newsroom with fast war coverage in Ukrainian and Russian.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "uk",
+          "poll_minutes": 120
+        },
+        {
+          "username": "kyivindependent_official",
+          "name": "The Kyiv Independent",
+          "operator": "The Kyiv Independent",
+          "topic": "ukraine_media",
+          "reason": "Independent English-language Ukrainian newsroom; the usual English entry point for Ukrainian reporting.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "radiosvoboda",
+          "name": "Radio Svoboda",
+          "operator": "Radio Free Europe/Radio Liberty, funded by the United States Congress",
+          "topic": "ukraine_media",
+          "reason": "RFE/RL Russian-language service covering Ukraine and Russia; independent newsroom under US government funding.",
+          "viewpoint": "state_media",
+          "alignment": "United States",
+          "language": "ru",
+          "poll_minutes": 120
+        },
+        {
+          "username": "nexta_live",
+          "name": "NEXTA",
+          "operator": "NEXTA, a Belarusian opposition outlet based in Poland",
+          "topic": "ukraine_media",
+          "reason": "Belarusian opposition channel covering Belarus, Russia and the war; openly campaigning against both governments.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Belarusian opposition",
+          "language": "ru",
+          "poll_minutes": 120
+        }
+      ]
+    }
+  ]
+}

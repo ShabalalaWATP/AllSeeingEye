@@ -6,7 +6,7 @@ from datetime import timedelta
 import httpx
 import pytest
 
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.regional import REGIONAL_COUNTRIES, RegionalFeedResearchProvider
 from ase.domain.research import CollectionStatus
 from research_feed_helpers import CLOCK, QUERY, PublicFeed, item, rss

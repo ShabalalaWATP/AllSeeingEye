@@ -5,7 +5,7 @@ from dataclasses import replace
 from ase.adapters.feeds.bluesky import SPEC as BLUESKY_SPEC
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.asset_register import AssetRegisterProvider
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS

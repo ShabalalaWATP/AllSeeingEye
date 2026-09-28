@@ -9,8 +9,7 @@ import pytest
 from ase.adapters.feeds import http as feed_http
 from ase.adapters.feeds.http import FeedCredential, FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
-from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
-from ase.adapters.feeds.rss_seeds_uk_news import UK_NEWS_SEEDS
+from ase.adapters.feeds.rss_seeds import OFFICIAL_SEEDS, UK_NEWS_SEEDS
 
 URLS = (
     "https://news.un.org/feed/subscribe/en/news/all/rss.xml",

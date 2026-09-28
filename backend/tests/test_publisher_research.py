@@ -8,7 +8,7 @@ import pytest
 from ase.adapters.feeds import http as feed_http
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.publisher import PUBLISHER_SEEDS, PublisherFeedResearchProvider
 from ase.application.research.collection import ResearchCollector
 from ase.domain.research import CollectionStatus

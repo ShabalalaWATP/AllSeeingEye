@@ -1,0 +1,171 @@
+{
+  "about": [
+    "Channels outside the Ukraine war: Middle East, Iran, Asia, Africa, cyber and markets.",
+    "",
+    "Verified the same way as the war channels, on 16 September 2026. Telegram's coverage is",
+    "very uneven outside the Russian-speaking world: this file is short because most of the",
+    "obvious candidates either publish no public channel preview or had gone silent, and the",
+    "gaps are listed in ``docs/TELEGRAM_CHANNEL_COVERAGE.md`` rather than filled with an",
+    "unattributable aggregator."
+  ],
+  "groups": [
+    {
+      "group": "middle_east",
+      "channels": [
+        {
+          "username": "idfofficial",
+          "name": "Israel Defense Forces",
+          "operator": "Israel Defense Forces",
+          "topic": "middle_east",
+          "reason": "The Israeli military's own statements on strikes, operations and casualties, issued by a belligerent about its own operations.",
+          "viewpoint": "official_issuer",
+          "alignment": "Israel",
+          "language": "en",
+          "poll_minutes": 30
+        },
+        {
+          "username": "IsraelWarRoom",
+          "name": "Israel War Room",
+          "operator": "Israel War Room, an Israeli advocacy media project",
+          "topic": "middle_east",
+          "reason": "Fast pro-Israel aggregation of strike and security claims; openly campaigning rather than reporting.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Israel",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "QudsNen",
+          "name": "Quds News Network",
+          "operator": "Quds News Network, a Palestinian media network",
+          "topic": "middle_east",
+          "reason": "Palestinian coverage of raids, strikes and casualties in Gaza and the West Bank, from the other side of the same events.",
+          "viewpoint": "aligned_commentator",
+          "alignment": "Palestinian",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "PressTV",
+          "name": "Press TV",
+          "operator": "Press TV, the English channel of Iranian state broadcaster IRIB",
+          "topic": "middle_east",
+          "reason": "Iranian state broadcasting in English; the Iranian government's framing of regional strikes, nuclear talks and sanctions.",
+          "viewpoint": "state_media",
+          "alignment": "Iran",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "irna_1313",
+          "name": "IRNA",
+          "operator": "Islamic Republic News Agency, the Iranian state news agency",
+          "topic": "middle_east",
+          "reason": "Iran's state wire in Persian, carrying official announcements before their English translations appear.",
+          "viewpoint": "state_media",
+          "alignment": "Iran",
+          "language": "fa",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "wider_world",
+      "channels": [
+        {
+          "username": "scmpnews",
+          "name": "South China Morning Post",
+          "operator": "South China Morning Post, Hong Kong, owned by Alibaba Group",
+          "topic": "asia_pacific",
+          "reason": "The most consistent English coverage of China, Hong Kong and Taiwan tensions available on Telegram; ownership and jurisdiction are a constraint on it.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "Mali_Actu",
+          "name": "Mali Actu",
+          "operator": "Mali Actu (maliactu.net), a Malian news outlet",
+          "topic": "africa_sahel",
+          "reason": "Malian outlet covering the Sahel insurgency, junta politics and Russian paramilitary activity; posts in bursts rather than daily.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "fr",
+          "poll_minutes": 240
+        },
+        {
+          "username": "OSINTdefender",
+          "name": "OSINTdefender",
+          "operator": "OSINTdefender, an independent conflict-monitoring account",
+          "topic": "conflict_monitoring",
+          "reason": "High-tempo English aggregation of conflict claims worldwide; frequently first, and its early claims are often corrected afterwards.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "bloomberg",
+          "name": "Bloomberg",
+          "operator": "Bloomberg L.P.",
+          "topic": "finance_sanctions",
+          "reason": "Markets, sanctions and energy headlines; the financial read on events the conflict channels cover first.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 120
+        }
+      ]
+    },
+    {
+      "group": "cyber",
+      "channels": [
+        {
+          "username": "vxunderground",
+          "name": "vx-underground",
+          "operator": "vx-underground, a malware research collective",
+          "topic": "cyber_threat",
+          "reason": "Ransomware group activity, leaks and malware research, usually posted here before it reaches vendor blogs.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 60
+        },
+        {
+          "username": "thehackernews",
+          "name": "The Hacker News",
+          "operator": "The Hacker News",
+          "topic": "cyber_threat",
+          "reason": "Established security news outlet; vulnerability and intrusion coverage in step with vendor advisories.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "BleepingComputer",
+          "name": "BleepingComputer",
+          "operator": "BleepingComputer",
+          "topic": "cyber_threat",
+          "reason": "Incident and ransomware reporting with technical detail, and the usual first confirmation of a named victim organisation.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 120
+        },
+        {
+          "username": "RedPacketSecurity",
+          "name": "RedPacket Security",
+          "operator": "RedPacket Security",
+          "topic": "cyber_threat",
+          "reason": "Automated aggregation of advisories, breach claims and leak-site listings; volume rather than judgement.",
+          "viewpoint": "publisher",
+          "alignment": "",
+          "language": "en",
+          "poll_minutes": 240
+        }
+      ]
+    }
+  ]
+}

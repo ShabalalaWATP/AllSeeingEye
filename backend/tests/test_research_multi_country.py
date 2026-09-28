@@ -7,7 +7,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research_records.ooni import OoniAggregateProvider
 from ase.adapters.store.memory import InMemoryEventStore

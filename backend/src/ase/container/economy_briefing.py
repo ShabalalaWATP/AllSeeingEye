@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
+from ase.adapters.feeds.rss_seeds import ECONOMY_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.daily_briefing import DailyBriefingService
 from ase.application.economy_briefing import coverage_note, economy_briefing_request

@@ -1,30 +1,4 @@
-"""Generated public camera catalogue from OSIRIS fac8d1b.
-
-MIT License
-
-Copyright (c) 2026 simplifaisoul
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-# ruff: noqa: E501
-DATA = r"""[
+[
 {"id": "fr-paris-1", "lat": 48.8584, "lng": 2.2945, "name": "Paris - Eiffel Tower Area", "city": "Paris", "country": "France", "stream_url": "https://www.youtube.com/embed/UMuEooW0iAQ?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
 {"id": "fr-paris-2", "lat": 48.86, "lng": 2.33, "name": "Paris - Louvre Area", "city": "Paris", "country": "France", "stream_url": "https://www.youtube.com/embed/OzYp4NRZlwQ?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
 {"id": "fr-nice-1", "lat": 43.6961, "lng": 7.2717, "name": "Nice - Promenade des Anglais", "city": "Nice", "country": "France", "stream_url": "https://www.youtube.com/embed/YAdNYoRY0Cw?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
@@ -65,4 +39,4 @@ DATA = r"""[
 {"id": "aprr-a71-bourges", "lat": 47.0833, "lng": 2.396, "name": "A71 Bourges", "city": "Bourges", "country": "France", "external_url": "https://voyage.aprr.fr/carte-itineraires?type=webcam", "source": "APRR"},
 {"id": "aprr-a71-clermont", "lat": 45.7772, "lng": 3.087, "name": "A71 Clermont-Ferrand Nord", "city": "Clermont-Ferrand", "country": "France", "external_url": "https://voyage.aprr.fr/carte-itineraires?type=webcam", "source": "APRR"},
 {"id": "aprr-a77-nevers", "lat": 46.9896, "lng": 3.159, "name": "A77 Nevers", "city": "Nevers", "country": "France", "external_url": "https://voyage.aprr.fr/carte-itineraires?type=webcam", "source": "APRR"}
-]"""
+]

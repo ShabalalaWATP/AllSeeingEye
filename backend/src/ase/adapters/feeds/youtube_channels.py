@@ -1,17 +1,17 @@
 """What one watched YouTube channel is, how it is graded and how far it may be read.
 
-The reviewed rows themselves are in `youtube_channel_seeds.py`. The channel Atom feeds
-this application used to poll live under `/feeds/videos.xml`, which
-`https://www.youtube.com/robots.txt` disallows for `User-agent: *` (checked 16
-September 2026), so the only compliant route is the official API with an operator key.
-Nothing is collected without one.
+The reviewed rows themselves are in `resources/feeds/youtube_channels.json`, loaded and
+validated by `youtube_channel_seeds.py`. The channel Atom feeds this application used to
+poll live under `/feeds/videos.xml`, which `https://www.youtube.com/robots.txt` disallows
+for `User-agent: *` (checked 16 September 2026), so the only compliant route is the
+official API with an operator key. Nothing is collected without one.
 
 Grades follow the same rule as the RSS catalogue. An outlet's video carries that
 outlet's reliability, because it is the outlet's own report. An independent analysis
 channel sits at doctrine's floor (E, credibility 6) until something corroborates it.
 An official body's channel is graded as its other official publications are (B,
 credibility 2). A state-run broadcaster is tagged `state_controlled` and treated as
-the government's position, exactly as `rss_seeds.STATE_MEDIA` does.
+the government's position, exactly as the RSS outlets' `state_media` option does.
 """
 
 from __future__ import annotations
@@ -107,26 +107,6 @@ class YouTubeChannel:
         if self.kind == "official":
             extra.add("official")
         return frozenset({"youtube", *self.topics, *extra})
-
-
-def channel(
-    source_id: str,
-    name: str,
-    organisation: str,
-    handle: str,
-    topics: str,
-    reliability: Reliability,
-    **extra: object,
-) -> YouTubeChannel:
-    return YouTubeChannel(
-        source_id,
-        name,
-        organisation,
-        handle,
-        tuple(topics.split()),
-        reliability,
-        **extra,  # type: ignore[arg-type]
-    )
 
 
 def channel_host_intervals() -> dict[str, float]:

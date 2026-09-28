@@ -10,7 +10,7 @@ import pytest
 
 from ase.adapters.feeds.cisa_kev import SPEC as KEV
 from ase.adapters.feeds.cyber import IODA, RANSOMWARE
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
+from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application import cyber as cyber_application
 from ase.application.cyber import CyberService

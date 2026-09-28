@@ -12,7 +12,7 @@ from ase.adapters.feeds.cyber import IODA, RANSOMWARE
 from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR, IODA_EVENTS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.radar_attack_trends import RadarAttackTrends
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
+from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.cyber import CyberService
 from ase.application.cyber_briefing import coverage_note, cyber_briefing_request

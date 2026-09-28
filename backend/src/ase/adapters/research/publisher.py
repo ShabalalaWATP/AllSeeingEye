@@ -4,11 +4,13 @@ from dataclasses import replace
 
 from ase.adapters.feeds.cyber_rss import cyber_publication
 from ase.adapters.feeds.http import FeedHttpClient
-from ase.adapters.feeds.rss_seeds import RssSeed
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
-from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
-from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
+from ase.adapters.feeds.rss_seeds import (
+    CYBER_SEEDS,
+    ECONOMY_SEEDS,
+    OFFICIAL_SEEDS,
+    OUTLET_SEEDS,
+    RssSeed,
+)
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
 from ase.application.ports import Clock
 from ase.application.ports.research_capabilities import ProviderCapabilities

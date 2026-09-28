@@ -5,10 +5,7 @@ import pytest
 
 from ase.adapters.feeds.news_rss import NewsRssConnector
 from ase.adapters.feeds.registry import build_connectors
-from ase.adapters.feeds.rss_seeds_gap_news import GAP_NEWS_SEEDS
-from ase.adapters.feeds.rss_seeds_news import NEWS_SEEDS
-from ase.adapters.feeds.rss_seeds_uk_news import UK_NEWS_SEEDS
-from ase.adapters.feeds.rss_seeds_world_news import WORLD_NEWS_SEEDS
+from ase.adapters.feeds.rss_seeds import GAP_NEWS_SEEDS, NEWS_SEEDS, UK_NEWS_SEEDS, WORLD_NEWS_SEEDS
 from ase.adapters.feeds.rss_sources import RSS_SEEDS
 from ase.adapters.research.publisher import PUBLISHER_SEEDS
 from ase.application.feeds.grading import profiles_from_specs

@@ -13,10 +13,10 @@ The source supplies indexing time, not publisher publication time. See
 
 ## Coverage-gap additions, 15 September 2026
 
-Added 15 public feeds in `rss_seeds_gap_news.py` to fill regional gaps: United States
+Added 15 public feeds (now `resources/feeds/rss_gap_news.json`) to fill regional gaps: United States
 desks (2), the Gulf and Arab region (3), Latin America (3), Africa (3), the Caucasus and
 Central Asia (2) and Southeast Asia (2). This takes the headline catalogue from 38 to 53
-feeds and the seeded RSS catalogue from 113 to 128. The same `news_seed` policy applies:
+feeds and the seeded RSS catalogue from 113 to 128. The same publisher headline policy applies:
 F6 grade, unassessed rating, headlines only, 30-minute polling (30 more feed requests per
 hour before backoff) and no inferred geography. These are retained-feed evidence only and
 do not enter the research provider inventory or its 128-provider cap.
