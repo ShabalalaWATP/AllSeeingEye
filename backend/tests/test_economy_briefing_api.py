@@ -149,6 +149,9 @@ def test_expanded_inventory_keeps_economic_selection_and_multilingual_company_pl
 
 
 @pytest.mark.parametrize("days", [2, 14])
+# A full briefing job takes about 37 seconds under coverage on a fast machine, and a
+# contended CI runner can pass the shared 60-second bound. The bounds still catch a hang.
+@pytest.mark.timeout(300)
 async def test_economic_briefing_freezes_dated_context_and_collects_financial_news_in_period(
     client,
     user,
@@ -217,7 +220,7 @@ async def test_economic_briefing_freezes_dated_context_and_collects_financial_ne
     monkeypatch.setattr(container.research, "collect", collect)
     # Durable research jobs acquire sources through the checkpointed path.
     monkeypatch.setattr(container.research, "collect_checkpointed", collect)
-    await work(container)
+    await work(container, deadline=240)
     current = await stored(container, job_id)
     assert current.status in {"completed", "needs_review"}, (current.status, current.error)
     async with container.session_factory() as session:

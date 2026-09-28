@@ -100,7 +100,7 @@ async def submit(client, headers, *, request_id=None, report=None):
     return response
 
 
-async def work(container):
+async def work(container, *, deadline: float = 60):
     worker = container.report_job_worker
     await worker.tick()
     tasks = [task for _, task in worker._running.values()]
@@ -109,7 +109,8 @@ async def work(container):
     # Coverage-instrumented CI exceeds 15 seconds while still making progress
     # through those SQL transactions. Bound the worker below pytest's 120-second
     # test deadline; provider/model results remain deterministic test fixtures.
-    await asyncio.wait_for(asyncio.gather(*tasks), 60)
+    # A test that raises the deadline must raise its own pytest timeout to match.
+    await asyncio.wait_for(asyncio.gather(*tasks), deadline)
     await worker.tick()
 
 
