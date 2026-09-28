@@ -1,4 +1,4 @@
-"""Reviewed allocation hints for explicit E03 structured research bridges."""
+"""Reviewed allocation hints for the explicit structured research bridges."""
 
 from ase.application.research.source_allocation_types import AllocationProfile
 

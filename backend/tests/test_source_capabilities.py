@@ -27,7 +27,7 @@ from ase.infrastructure.settings import Settings
 
 @pytest.fixture
 def contract() -> dict[str, Any]:
-    path = Path(__file__).parent / "fixtures" / "research_capabilities_e00.json"
+    path = Path(__file__).parent / "fixtures" / "research_capabilities_snapshot.json"
     return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
 
 

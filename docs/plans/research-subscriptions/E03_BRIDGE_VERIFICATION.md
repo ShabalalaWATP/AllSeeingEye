@@ -33,7 +33,7 @@ monitoring or permission to reuse IODA data.
   the series dimensions, `TIME_PERIOD`, `OBS_VALUE`, `UNIT`, `UNIT_MULT`, source
   and observation status columns.
 
-Offline contracts: `test_e03_ioda_ecb_bridges.py` passed 22 tests, including
+Offline contracts: `test_ioda_ecb_bridges.py` passed 22 tests, including
 one-request factory integration, opt-in denial, malformed/mismatched responses,
 units, null versus zero, provenance and observation time. A 65-test combined
 source catalogue, capability and E03 composition run passed. Scoped Ruff and

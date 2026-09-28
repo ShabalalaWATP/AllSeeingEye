@@ -29,7 +29,7 @@ NOW = datetime(2026, 9, 14, tzinfo=UTC)
 @pytest.fixture
 def audit():
     return json.loads(
-        (Path(__file__).parent / "fixtures/source_allocator_e01.json").read_text("utf8")
+        (Path(__file__).parent / "fixtures/source_allocator_cases.json").read_text("utf8")
     )
 
 

@@ -1,4 +1,5 @@
-"""E03 factories use real IDs, explicit licence consent and one-request provider contracts."""
+"""Structured research bridge factories use real IDs, explicit licence consent and
+one-request provider contracts."""
 
 from contextlib import asynccontextmanager
 from dataclasses import replace

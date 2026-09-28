@@ -10,7 +10,7 @@ from functools import partial
 from types import MappingProxyType
 
 from ase.application.research.source_allocation_types import AllocationProfile
-from ase.container.research_e03_allocation_profiles import e03_allocation_profiles
+from ase.container.research_bridge_allocation_profiles import e03_allocation_profiles
 
 PROFILE_VERSION = "ase-research-allocation-profiles-v1"
 REVIEW_DATE = "2026-09-14"

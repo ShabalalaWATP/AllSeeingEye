@@ -1,4 +1,4 @@
-"""Offline E03 contracts. Live endpoint smoke is recorded separately."""
+"""Offline IODA and ECB bridge contracts. Live endpoint smoke is recorded separately."""
 
 import asyncio
 import json
