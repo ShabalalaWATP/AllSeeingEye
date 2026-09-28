@@ -14,6 +14,7 @@ from ase.application.model_routing import ModelRouting
 from ase.application.ukraine import UkraineBoardService
 from ase.application.ukraine_digest import UkraineDigestService
 from ase.application.ukraine_digest_writer import DigestWriter
+from ase.container.core import ContainerCore
 from ase.domain.audit import AuditAction
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
@@ -43,7 +44,7 @@ class GlobalDigestModel:
                 return None
 
 
-class UkraineWiring:
+class UkraineWiring(ContainerCore):
     @cached_property
     def ukraine_control(self) -> ControlSnapshot | None:
         return load_control_snapshot()

@@ -17,6 +17,7 @@ from ase.application.source_inventory import (
     SourceInventory,
     SourceRequirement,
 )
+from ase.container.core import ContainerCore
 from ase.container.source_assets import build_source_assets
 from ase.container.source_requirements import (
     FIRMS_SETTING,
@@ -83,7 +84,7 @@ def _toggle(
     )
 
 
-class SourceInventoryWiring:
+class SourceInventoryWiring(ContainerCore):
     """Composes the user-facing inventory. Credential values never leave the server."""
 
     def optional_connector_specs(self) -> tuple[SourceSpec, ...]:

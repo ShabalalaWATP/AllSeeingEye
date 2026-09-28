@@ -6,22 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.map_workspace import SqlMapWorkspaceRepository
 from ase.application.map_workspace import MapWorkspace
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from ase.application.access import AccessPolicy
-    from ase.application.auditing import Auditor
-    from ase.application.ports import Clock
-    from ase.container.repositories import Repositories
+    pass
 
 
-class MapWorkspaceWiring:
-    if TYPE_CHECKING:
-        clock: Clock
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-        def _auditor(self, repos: Repositories) -> Auditor: ...
-
+class MapWorkspaceWiring(ContainerCore):
     def map_workspace(self, session: AsyncSession) -> MapWorkspace:
         repos = self.repositories(session)
         return MapWorkspace(

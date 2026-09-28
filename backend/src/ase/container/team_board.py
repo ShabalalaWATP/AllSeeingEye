@@ -9,12 +9,13 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.application.teams.board import TeamBoardService
 from ase.application.teams.board_moderation import TeamBoardModerationService
 from ase.application.teams.dashboard import TeamDashboardService
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
     from ase.container import Container
 
 
-class TeamBoardWiring:
+class TeamBoardWiring(ContainerCore):
     def team_board(self, session: AsyncSession) -> TeamBoardService:
         container = cast("Container", self)
         repos = container.repositories(session)

@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
-from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.effort import MechanicalEffortGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
@@ -38,48 +37,14 @@ from ase.application.admin.requests import (
 )
 from ase.application.admin.source_controls import AdminSourceControls
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
+from ase.container.core import ContainerCore
 from ase.domain.reasoning import ReasoningEffortPolicy
 
 if TYPE_CHECKING:
-    from ase.application.access import AccessPolicy
-    from ase.application.ai_usage import AiUsageAccounting
-    from ase.application.auditing import Auditor
-    from ase.application.feeds.health import HealthRegistry
-    from ase.application.feeds.scheduler import FeedScheduler
-    from ase.application.ports import Clock, EmailSender
-    from ase.application.ports.embeddings import EmbeddingGateway
-    from ase.application.ports.llm import LlmGateway, LlmModelDiscovery, SecretCipher
-    from ase.application.ports.services import LinkBuilder, RateLimiter, TokenGenerator
-    from ase.application.ports.source_controls import SourceAdmission
-    from ase.container.repositories import Repositories
-    from ase.domain.sources import SourceSpec
-    from ase.infrastructure.settings import Settings
+    pass
 
 
-class AdminWiring:
-    if TYPE_CHECKING:
-        http: FeedHttpClient
-        public_firms_http: FeedHttpClient
-        cipher: SecretCipher
-        clock: Clock
-        llm: LlmGateway
-        model_discovery: LlmModelDiscovery
-        embedding_gateway: EmbeddingGateway
-        ai_usage_accounting: AiUsageAccounting
-        generator: TokenGenerator
-        links: LinkBuilder
-        email_sender: EmailSender
-        limiter: RateLimiter
-        source_admission: SourceAdmission
-        scheduler: FeedScheduler
-        health: HealthRegistry
-        research_sources: tuple[SourceSpec, ...]
-        settings: Settings
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def _auditor(self, repos: Repositories) -> Auditor: ...
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-
+class AdminWiring(ContainerCore):
     def initialise_models(
         self, encryption_key: str | None, effort: ReasoningEffortPolicy | None = None
     ) -> None:

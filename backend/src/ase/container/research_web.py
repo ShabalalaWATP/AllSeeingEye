@@ -5,24 +5,14 @@ from typing import TYPE_CHECKING
 
 from ase.adapters.llm.openai_web_search import OpenAiWebSearchGateway
 from ase.adapters.persistence.web_search_usage import SqlWebSearchUsage
-from ase.application.ai_usage import AiUsageAccounting
 from ase.application.reports.fresh_web_research import FreshWebResearch
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
-    from ase.application.ports.services import Clock, RateLimiter
-    from ase.application.ports.source_controls import SourceAdmission
+    pass
 
 
-class WebResearchWiring:
-    if TYPE_CHECKING:
-        clock: Clock
-        limiter: RateLimiter
-        source_admission: SourceAdmission
-        session_factory: async_sessionmaker[AsyncSession]
-        ai_usage_accounting: AiUsageAccounting
-
+class WebResearchWiring(ContainerCore):
     async def close_web_search(self) -> None:
         if "web_search_gateway" in self.__dict__:
             await self.web_search_gateway.aclose()

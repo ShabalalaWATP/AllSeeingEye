@@ -4,33 +4,17 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.research_records.sec_client import SecClient
 from ase.adapters.research_records.sec_provider import SecDocuments
 from ase.adapters.research_records.sec_selections import BoundedSecSelections
-from ase.application.access import AccessPolicy
-from ase.application.ports import Clock, RateLimiter
-from ase.application.ports.research_inputs import ResearchInputStore
-from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.sec_filings import SecFilings
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from ase.container.repositories import Repositories
+    pass
 
 
-class SecFilingWiring:
-    if TYPE_CHECKING:
-        clock: Clock
-        limiter: RateLimiter
-        sec_client: SecClient
-        sec_selections: BoundedSecSelections
-        research_inputs: ResearchInputStore
-        source_admission: SourceAdmission
-        http: FeedHttpClient
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-
+class SecFilingWiring(ContainerCore):
     def initialise_sec_filings(self) -> None:
         self.sec_client = SecClient(self.http)
         self.sec_selections = BoundedSecSelections(self.clock)

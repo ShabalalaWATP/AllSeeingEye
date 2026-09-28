@@ -20,6 +20,7 @@ from ase.application.daily_briefing import DailyBriefingService
 from ase.application.model_routing import RoleProfiles
 from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
+from ase.container.core import ContainerCore
 from ase.domain.cyber import CyberWindowDays, cyber_window
 from ase.domain.cyber_actors import CyberActorCatalogue
 from ase.domain.daily_briefing import cyber_briefing_key
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
     from ase.container import Container
 
 
-class CyberWiring:
+class CyberWiring(ContainerCore):
     def initialise_cyber(self) -> None:
         container = cast("Container", self)
         # Register reference provenance and administrative controls, never a live

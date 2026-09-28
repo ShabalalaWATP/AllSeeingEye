@@ -62,59 +62,13 @@ from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
-    import asyncio
-    from collections.abc import Mapping
-
-    from sqlalchemy.ext.asyncio import async_sessionmaker
-
-    from ase.adapters.store.memory import InMemoryEventStore
-    from ase.application.auditing import Auditor
-    from ase.application.dto import RateLimits
-    from ase.application.feeds.health import HealthRegistry
-    from ase.application.ports.archive import Archiver
-    from ase.application.ports.embeddings import EmbeddingGateway
-    from ase.application.ports.feeds import EventBus
-    from ase.application.ports.geo import CountryDirectory
-    from ase.application.ports.llm import LlmGateway, SecretCipher
-    from ase.application.ports.services import Clock, RateLimiter
-    from ase.application.ports.trackers import ConflictDirectory
-    from ase.application.ports.warning import AlertNotifier
-    from ase.application.trackers.aviation import WatchedArea
-    from ase.container import Container, Repositories
-    from ase.domain.aviation import JamMap
-    from ase.domain.grading import SourceProfile
-    from ase.infrastructure.settings import Settings
+    from ase.container import Container
 
 log = structlog.get_logger(__name__)
 
 
 class FeatureWiring(ReportWiring):
     """Factories that need the core container's services; typed through the Container."""
-
-    if TYPE_CHECKING:
-        # The core defines these; declaring them here lets the mixin be type-checked alone.
-        settings: Settings
-        clock: Clock
-        limiter: RateLimiter
-        limits: RateLimits
-        session_factory: async_sessionmaker[AsyncSession]
-        store: InMemoryEventStore
-        health: HealthRegistry
-        countries: CountryDirectory
-        conflicts: ConflictDirectory
-        cipher: SecretCipher
-        llm: LlmGateway
-        embedding_gateway: EmbeddingGateway
-        embedding_lock: asyncio.Lock
-        source_profiles: Mapping[str, SourceProfile]
-        archiver: Archiver
-        notifier: AlertNotifier
-        bus: EventBus
-        jam: JamMap
-        watch_areas: tuple[WatchedArea, ...]
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def _auditor(self, repos: Repositories) -> Auditor: ...
 
     def teams(self, session: AsyncSession) -> TeamService:
         repos = self.repositories(session)

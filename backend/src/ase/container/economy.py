@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from ase.adapters.economy.gateway import PublicEconomyGateway
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.application.economy import EconomyService
+from ase.container.core import ContainerCore
 from ase.domain.economy_catalogue import ECB_SOURCE
 from ase.domain.events import Category, Reliability
 from ase.domain.sources import SourceKind, SourceSpec
 
 if TYPE_CHECKING:
-    from ase.application.ports.services import Clock
-    from ase.application.ports.source_controls import SourceAdmission
+    pass
 
 ECB_SPEC = SourceSpec(
     id="economic-ecb",
@@ -29,13 +29,7 @@ ECB_SPEC = SourceSpec(
 )
 
 
-class EconomyWiring:
-    if TYPE_CHECKING:
-        http: FeedHttpClient
-        clock: Clock
-        source_admission: SourceAdmission
-        research_sources: tuple[SourceSpec, ...]
-
+class EconomyWiring(ContainerCore):
     def initialise_economy(self) -> None:
         self.economy_http = FeedHttpClient(
             self.http.user_agent,

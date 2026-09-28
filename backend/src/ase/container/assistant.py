@@ -2,7 +2,7 @@
 
 import asyncio
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,44 +15,15 @@ from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.service import MapAssistant
 from ase.application.model_routing import ModelRouting
+from ase.container.core import ContainerCore
 from ase.domain.ai_usage import AiAttribution
 from ase.domain.llm import LlmUsage
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from sqlalchemy.ext.asyncio import async_sessionmaker
-
-    from ase.adapters.store.memory import InMemoryEventStore
-    from ase.application.access import AccessPolicy
-    from ase.application.cameras import CameraCatalogueService
-    from ase.application.ports import Clock, RateLimiter
-    from ase.application.ports.llm import LlmGateway, SecretCipher
-    from ase.application.ports.source_controls import SourceAdmission
-    from ase.application.reports.access import GetReportUseCase
-    from ase.container.repositories import Repositories
-    from ase.domain.grading import SourceProfile
-    from ase.domain.reasoning import ReasoningEffortPolicy
+    from ase.application.ports.llm import LlmGateway
 
 
-class AssistantWiring:
-    if TYPE_CHECKING:
-        store: InMemoryEventStore
-        cameras: CameraCatalogueService
-        source_admission: SourceAdmission
-        source_profiles: Mapping[str, SourceProfile]
-        clock: Clock
-        limiter: RateLimiter
-        cipher: SecretCipher
-        llm: LlmGateway
-        reasoning_effort: ReasoningEffortPolicy
-        session_factory: async_sessionmaker[AsyncSession]
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def get_report(self, session: AsyncSession) -> GetReportUseCase: ...
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-        def public_infrastructure(self) -> dict[str, Any]: ...
-
+class AssistantWiring(ContainerCore):
     @cached_property
     def assistant_capacity(self) -> AssistantCapacity:
         return AssistantCapacity()

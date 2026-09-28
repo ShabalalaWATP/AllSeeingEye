@@ -14,6 +14,7 @@ from ase.application.economy_explainer import EconomyExplainerService
 from ase.application.economy_explainer_facts import FactPack, build_fact_pack
 from ase.application.economy_explainer_model import ExplainerGenerator
 from ase.application.model_routing import ModelRouting
+from ase.container.core import ContainerCore
 from ase.domain.ai_usage import AiAttribution
 from ase.domain.economy_periods import EconomyWindowDays
 from ase.domain.llm import LlmUsage
@@ -26,7 +27,7 @@ NEWS_LIMIT = 40
 USAGE_TIMEOUT = 2
 
 
-class EconomyExplainerWiring:
+class EconomyExplainerWiring(ContainerCore):
     @cached_property
     def economy_explainer_admission(self) -> asyncio.Lock:
         """One generation at a time; a second request is told a summary is being written."""

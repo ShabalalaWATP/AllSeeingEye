@@ -3,10 +3,11 @@
 from functools import cached_property
 
 from ase.adapters.reference import load_reference
+from ase.container.core import ContainerCore
 from ase.domain.reference import ReferenceCatalogue
 
 
-class ReferenceWiring:
+class ReferenceWiring(ContainerCore):
     @cached_property
     def reference_catalogue(self) -> ReferenceCatalogue:
         return load_reference()

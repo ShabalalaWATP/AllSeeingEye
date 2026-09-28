@@ -11,22 +11,13 @@ from ase.adapters.persistence.original_passages import SqlOriginalPassageReposit
 from ase.application.assistant_history.manage import ManageAssistantHistory
 from ase.application.reports.original_passages import ReadOriginalPassage
 from ase.application.research.manage_briefs import ManageResearchBriefs
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from ase.application.access import AccessPolicy
-    from ase.application.ports.services import Clock
-    from ase.application.ports.source_controls import SourceAdmission
-    from ase.application.reports.access import GetReportUseCase
+    pass
 
 
-class PrivateRecordWiring:
-    if TYPE_CHECKING:
-        clock: Clock
-        source_admission: SourceAdmission
-
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-        def get_report(self, session: AsyncSession) -> GetReportUseCase: ...
-
+class PrivateRecordWiring(ContainerCore):
     def research_briefs(self, session: AsyncSession) -> ManageResearchBriefs:
         return ManageResearchBriefs(
             SqlBriefManagementRepository(session),

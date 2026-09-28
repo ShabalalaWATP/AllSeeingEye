@@ -17,6 +17,7 @@ from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import EvidenceStrategy
+from ase.container.core import ContainerCore
 from ase.container.research import private_research_store
 from ase.domain.daily_briefing import economy_briefing_key
 from ase.domain.economy_periods import EconomyWindowDays, economy_window
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     from ase.container import Container
 
 
-class EconomyBriefingWiring:
+class EconomyBriefingWiring(ContainerCore):
     @cached_property
     def economy_news(self) -> EconomyNewsService:
         container = cast("Container", self)
