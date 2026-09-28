@@ -5,7 +5,6 @@ from __future__ import annotations
 from fastapi import APIRouter
 from sqlalchemy import text
 
-from ase import __version__
 from ase.api.deps import SessionDep
 from ase.api.errors import NotReady
 from ase.api.schemas import HealthOut, ReadyOut
@@ -15,7 +14,7 @@ router = APIRouter(tags=["health"])
 
 @router.get("/health")
 async def health() -> HealthOut:
-    return HealthOut(status="ok", version=__version__)
+    return HealthOut(status="ok")
 
 
 @router.get("/ready")
