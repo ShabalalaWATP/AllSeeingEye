@@ -1,5 +1,6 @@
 """Camera cache state and initial catalogue call-count regressions."""
 
+import asyncio
 from datetime import timedelta
 from unittest.mock import AsyncMock, call, patch
 
@@ -46,6 +47,40 @@ async def test_initial_catalogue_without_providers(user: User, clock: FakeClock)
 
     assert result.cameras == ()
     assert result.providers == ()
+
+
+async def test_initial_catalogue_statuses_include_a_slower_provider(
+    user: User, clock: FakeClock
+) -> None:
+    slow = source("tfl")
+    fast = source("fintraffic")
+    release_slow = asyncio.Event()
+    fast_finished = asyncio.Event()
+    cameras = slow.fetch.return_value
+
+    async def slow_fetch() -> tuple[Camera, ...]:
+        await release_slow.wait()
+        return cameras
+
+    slow.fetch.side_effect = slow_fetch
+    service = CameraCatalogueService((slow, fast), clock)
+    original_catalogue = service.catalogue
+
+    async def tracked_catalogue(actor: User, provider: str) -> object:
+        result = await original_catalogue(actor, provider)
+        if provider == "fintraffic":
+            fast_finished.set()
+        return result
+
+    with patch.object(service, "catalogue", side_effect=tracked_catalogue):
+        pending = asyncio.create_task(service.initial_catalogue(user))
+        try:
+            await asyncio.wait_for(fast_finished.wait(), timeout=5)
+        finally:
+            release_slow.set()
+        result = await pending
+
+    assert tuple(status.status for status in result.providers) == ("available", "available")
 
 
 @pytest.mark.parametrize(
