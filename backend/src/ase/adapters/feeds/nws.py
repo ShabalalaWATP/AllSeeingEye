@@ -6,9 +6,8 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
 from ase.application.feeds.pipeline import strip_html
-from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
     Credibility,
@@ -72,24 +71,17 @@ def _when(value: object, fallback: datetime) -> datetime:
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
 
 
-class NwsAlertsConnector:
+class NwsAlertsConnector(HttpFeed):
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         now = self._clock.now()
-        features = data.get("features", []) if isinstance(data, dict) else []
-        events = [
+        features = json_list(data, "features")
+        return [
             event for feature in features[:MAX_ALERTS] if (event := self._to_event(feature, now))
         ]
-        return events
 
     def _to_event(self, feature: dict[str, Any], now: datetime) -> Event | None:
         props = feature.get("properties") or {}

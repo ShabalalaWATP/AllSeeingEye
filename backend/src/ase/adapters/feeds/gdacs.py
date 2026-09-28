@@ -11,8 +11,8 @@ from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
-from ase.application.ports import Clock
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
+from ase.adapters.feeds.http import FeedFetchError
 from ase.domain.events import (
     Category,
     Credibility,
@@ -74,18 +74,12 @@ def _point(item: Element) -> Point | None:
         return None
 
 
-class GdacsConnector:
+class GdacsConnector(HttpFeed):
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            text = await self._http.get_text(self.spec.url)
-        except NotModified:
-            return []
+        text = await self._http.get_text(self.spec.url)
         try:
             root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
         except ParseError as exc:

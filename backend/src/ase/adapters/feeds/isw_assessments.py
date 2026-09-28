@@ -12,8 +12,9 @@ from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
+from ase.adapters.feeds.base import empty_when_unchanged
 from ase.adapters.feeds.conflict_values import public_link, text, when
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -67,11 +68,9 @@ class IswAssessmentsConnector:
         )
         self._url = f"{self.spec.url}?{query}"
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            payload = await self._http.get_json(self._url)
-        except NotModified:
-            return []
+        payload = await self._http.get_json(self._url)
         if not isinstance(payload, list):
             raise FeedFetchError("ISW returned an invalid posts index.")
         if len(payload) > MAX_POSTS:

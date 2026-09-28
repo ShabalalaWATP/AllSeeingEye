@@ -7,8 +7,9 @@ import csv
 import io
 from dataclasses import replace
 
+from ase.adapters.feeds.base import empty_when_unchanged
 from ase.adapters.feeds.conflict_ucdp import UcdpRecords
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.application.ports import Clock
 from ase.domain.events import Event
 
@@ -28,13 +29,11 @@ class UcdpPublicCandidateConnector(UcdpRecords):
             flags=frozenset({"monthly_release", "provisional", "public_csv"}),
         )
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            # Daily refresh keeps the bounded event store populated without assigning
-            # collection time as an incident date. Monthly inputs are immutable.
-            raw = await self._http.get_text(self.spec.url, conditional=False)
-        except NotModified:
-            return []
+        # Daily refresh keeps the bounded event store populated without assigning
+        # collection time as an incident date. Monthly inputs are immutable.
+        raw = await self._http.get_text(self.spec.url, conditional=False)
         reader = csv.DictReader(io.StringIO(raw.lstrip("\ufeff")))
         if not REQUIRED_COLUMNS.issubset(reader.fieldnames or []):
             raise FeedFetchError("UCDP candidate CSV is missing required columns.")
