@@ -108,6 +108,25 @@
   color: var(--color-ember);
   background: #79d8eb12;
 }
+/* A lit bar marks layers that are on by shape as well as colour (WCAG 1.4.1). */
+.map-icon-button[role='switch'][aria-checked='true']::before,
+.map-icon-button[data-on='true']::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 9px);
+  left: 3px;
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--color-ember);
+}
+@media (forced-colors: active) {
+  .map-icon-button[role='switch'][aria-checked='true']::before,
+  .map-icon-button[data-on='true']::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}
 .map-layer-count {
   position: absolute;
   right: 0;
