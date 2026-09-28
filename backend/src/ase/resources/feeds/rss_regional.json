@@ -1,0 +1,210 @@
+{
+  "about": [
+    "Publisher-discovered regional feeds, smoke-tested 6 and 13 September 2026.",
+    "",
+    "Only titles, dates, attribution and source links enter the event store. Public RSS",
+    "availability is not a full-text republication licence or a credibility assessment.",
+    "Discovery, live probe results and limits: docs/SOURCE_FEASIBILITY_2026_09.md."
+  ],
+  "licences": {
+    "publisher_rss": "Publisher-supplied public RSS; titles, attribution, dates and links only. No article text or imagery retained; broader reuse rights not established."
+  },
+  "options": {
+    "regional_news": {
+      "subtype": "article",
+      "tags": ["headlines_only", "regional_reporting"],
+      "credibility": "cannot_be_judged",
+      "rationale": "Publisher-attributed regional reporting; source and claim not yet assessed.",
+      "headlines_only": true,
+      "newest_first": false
+    },
+    "aggregated": {
+      "subtype": "article",
+      "tags": ["aggregator", "headlines_only", "regional_reporting"],
+      "credibility": "cannot_be_judged",
+      "rationale": "CDT curates and republishes material; original reporting origins need review.",
+      "headlines_only": true,
+      "newest_first": false
+    },
+    "human_rights": {
+      "subtype": "article",
+      "tags": ["headlines_only", "human_rights", "ngo_reporting", "regional_reporting"],
+      "credibility": "cannot_be_judged",
+      "rationale": "Human-rights organisation reporting; claims and upstream sources need review.",
+      "headlines_only": true,
+      "newest_first": false
+    },
+    "newest_first": {
+      "subtype": "article",
+      "tags": ["headlines_only", "regional_reporting"],
+      "credibility": "cannot_be_judged",
+      "rationale": "Publisher-attributed regional reporting; source and claim not yet assessed.",
+      "headlines_only": true,
+      "newest_first": true
+    },
+    "state_agency": {
+      "subtype": "article",
+      "tags": ["headlines_only", "regional_reporting", "state_controlled"],
+      "credibility": "cannot_be_judged",
+      "rationale": "State news agency; treat as the government's position until corroborated.",
+      "headlines_only": true,
+      "newest_first": false
+    }
+  },
+  "seeds": [
+    {
+      "id": "meduza_ru",
+      "name": "Meduza in Russian",
+      "organisation": "Meduza",
+      "category": "news",
+      "url": "https://meduza.io/rss/all",
+      "homepage": "https://meduza.io/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "regional_news",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "mediazona_ru",
+      "name": "Mediazona in Russian",
+      "organisation": "Mediazona",
+      "category": "news",
+      "url": "https://zona.media/rss",
+      "homepage": "https://zona.media/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "regional_news",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "insider_ru",
+      "name": "The Insider in Russian",
+      "organisation": "The Insider",
+      "category": "news",
+      "url": "https://theins.ru/feed",
+      "homepage": "https://theins.ru/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "regional_news",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "cdt_zh",
+      "name": "China Digital Times in Chinese",
+      "organisation": "China Digital Times",
+      "category": "news",
+      "url": "https://feeds.feedburner.com/chinadigitaltimes/IyPt",
+      "homepage": "https://chinadigitaltimes.net/chinese/",
+      "reliability": "F",
+      "poll_minutes": 60,
+      "language": "zh",
+      "options": "aggregated",
+      "licence": "publisher_rss",
+      "flags": ["aggregator"]
+    },
+    {
+      "id": "hrana_fa",
+      "name": "HRANA in Persian",
+      "organisation": "Human Rights Activists in Iran",
+      "category": "humanitarian",
+      "url": "https://www.hra-news.org/feed/",
+      "homepage": "https://www.hra-news.org/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "fa",
+      "options": "human_rights",
+      "licence": "publisher_rss",
+      "flags": ["ngo_reporting"]
+    },
+    {
+      "id": "hrana_en",
+      "name": "HRANA in English",
+      "organisation": "Human Rights Activists in Iran",
+      "category": "humanitarian",
+      "url": "https://www.en-hrana.org/feed/",
+      "homepage": "https://www.en-hrana.org/",
+      "reliability": "F",
+      "poll_minutes": 60,
+      "language": "en",
+      "options": "human_rights",
+      "licence": "publisher_rss",
+      "flags": ["ngo_reporting"]
+    },
+    {
+      "id": "iranwire_fa",
+      "name": "IranWire in Persian",
+      "organisation": "IranWire",
+      "category": "news",
+      "url": "https://iranwire.com/fa/feed/",
+      "homepage": "https://iranwire.com/fa/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "fa",
+      "options": "newest_first",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "iranwire_en",
+      "name": "IranWire in English",
+      "organisation": "IranWire",
+      "category": "news",
+      "url": "https://iranwire.com/en/feed/",
+      "homepage": "https://iranwire.com/en/",
+      "reliability": "F",
+      "poll_minutes": 60,
+      "language": "en",
+      "options": "newest_first",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "belta_ru",
+      "name": "BelTA in Russian",
+      "organisation": "Belarusian Telegraph Agency",
+      "category": "news",
+      "url": "https://belta.by/rss/",
+      "homepage": "https://belta.by/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "state_agency",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "interfax_ru",
+      "name": "Interfax in Russian",
+      "organisation": "Interfax",
+      "category": "news",
+      "url": "https://www.interfax.ru/rss.asp",
+      "homepage": "https://www.interfax.ru/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "regional_news",
+      "licence": "publisher_rss",
+      "flags": []
+    },
+    {
+      "id": "ukrinform_en",
+      "name": "Ukrinform in English",
+      "organisation": "Ukrinform",
+      "category": "news",
+      "url": "https://www.ukrinform.net/rss/block-lastnews",
+      "homepage": "https://www.ukrinform.net/",
+      "reliability": "F",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "state_agency",
+      "licence": "publisher_rss",
+      "flags": []
+    }
+  ]
+}

@@ -1,10 +1,12 @@
 """Compose the E00 inventory from reviewed executable routes without constructing collectors."""
 
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
-from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
-from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import (
+    CYBER_SEEDS,
+    ECONOMY_SEEDS,
+    OFFICIAL_SEEDS,
+    OUTLET_SEEDS,
+    REGIONAL_SEEDS,
+)
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.regional import LANGUAGE_ALIASES, REGIONAL_COUNTRIES
 from ase.application.source_capabilities import SourceCapabilityRegistry

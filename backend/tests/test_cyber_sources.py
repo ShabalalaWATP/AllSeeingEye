@@ -11,7 +11,7 @@ from ase.adapters.feeds.cyber import IodaConnector, RansomwareConnector
 from ase.adapters.feeds.cyber_rss import CyberRssConnector
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.registry import build_connectors
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
+from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.research.publisher import PublisherFeedResearchProvider
 from ase.container.research_feeds import public_research_feeds
 from ase.container.research_sources import research_source_specs
