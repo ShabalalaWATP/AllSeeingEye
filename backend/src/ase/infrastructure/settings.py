@@ -19,6 +19,8 @@ from ase.domain.reasoning import (
 )
 
 MIN_SECRET_LENGTH = 32
+# Relative to the API working directory, like the SQLite database and satellite cache.
+DEFAULT_LIVE_SNAPSHOT_PATH = "data/live-store.jsonl.gz"
 
 
 class Environment(StrEnum):
@@ -70,6 +72,8 @@ class Settings(BaseSettings):
     conflict_screening_enabled: bool = True
     conflict_screening_calls_per_hour: int = Field(default=6, ge=1, le=30)
     feeds_disabled: str = ""
+    # Scheduled feed fetches in flight at once across every source (most capped at 5 MB each).
+    feed_fetch_concurrency: int = Field(default=16, ge=1, le=64)
     satellite_cache_dir: Path = Path("data/celestrak")
     # Fixed monthly baseline. Update only after verifying the next public release.
     ucdp_candidate_version: str = Field(default="26.0.7", pattern=r"^[0-9]{2}\.0\.([1-9]|1[0-2])$")
@@ -94,6 +98,11 @@ class Settings(BaseSettings):
     youtube_api_key: SecretStr | None = None
     firms_area: str = Field(default="world", min_length=1, max_length=100)
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
+    # Disposable restart snapshot of the live store (ADR 0022). Unset means
+    # DEFAULT_LIVE_SNAPSHOT_PATH outside tests; an empty value disables it.
+    live_snapshot_path: str | None = Field(default=None, max_length=4096)
+    live_snapshot_interval_seconds: int = Field(default=300, ge=60, le=3_600)
+    live_snapshot_max_mb: int = Field(default=128, ge=1, le=1_024)
     max_streams_per_user: int = Field(default=4, ge=1, le=64)
     # Wayback Machine snapshots of cited URLs after each report: on by default outside tests.
     archive_enabled: bool | None = None
@@ -153,6 +162,9 @@ class Settings(BaseSettings):
             self.feeds_enabled = self.env is not Environment.TEST
         if self.archive_enabled is None:
             self.archive_enabled = self.env is not Environment.TEST
+        if self.live_snapshot_path is None:
+            testing = self.env is Environment.TEST
+            self.live_snapshot_path = "" if testing else DEFAULT_LIVE_SNAPSHOT_PATH
         url = self.alert_webhook_url
         if url is not None and not url.startswith("https://"):
             raise ValueError("ASE_ALERT_WEBHOOK_URL must be an https URL")
@@ -178,6 +190,11 @@ class Settings(BaseSettings):
     @property
     def feeds_user_agent(self) -> str:
         return f"TheAllSeeingEye/0.1 (+{self.feeds_contact})"
+
+    @property
+    def live_snapshot_file(self) -> Path | None:
+        value = (self.live_snapshot_path or "").strip()
+        return Path(value) if value else None
 
     @property
     def disabled_feed_ids(self) -> list[str]:

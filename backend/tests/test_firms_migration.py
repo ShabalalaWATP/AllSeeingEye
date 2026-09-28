@@ -21,7 +21,7 @@ from test_annotation_monitor_migration_postgres import snapshot
 from test_llm_connections_migration import _seed
 
 
-@pytest.fixture(params=["sqlite", "postgresql"])
+@pytest.fixture(params=["sqlite", pytest.param("postgresql", marks=pytest.mark.postgres)])
 async def migration_url(request, tmp_path):
     if request.param == "sqlite":
         yield f"sqlite+aiosqlite:///{tmp_path / 'firms.db'}"

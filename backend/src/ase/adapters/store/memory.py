@@ -159,6 +159,21 @@ class InMemoryEventStore:
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
 
+    def retained(self) -> list[Event]:
+        """Immutable event references, for snapshot encoding off the event loop."""
+        return list(self._events.values())
+
+    def restore(self, events: Iterable[Event], now: datetime) -> int:
+        """Seed an empty store before feeds start (ADR 0022); retention and budgets apply."""
+        if self._events:
+            return 0
+        for event in events:
+            if event.id not in self._events:
+                self._insert(event)
+        # No reader has seen these events, so the prune notices are not announced.
+        self.prune(now)
+        return len(self._events)
+
     def query(self, query: EventQuery) -> list[Event]:
         return select_events([self._events[i] for i in self._candidates(query)], query)
 

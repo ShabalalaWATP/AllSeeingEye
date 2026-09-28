@@ -101,6 +101,7 @@ async def test_revocation_marker_rollback_and_safe_retention(race_container: Con
         await session.commit()
 
 
+@pytest.mark.postgres
 async def test_postgres_refresh_interleaves_with_family_revocation(
     race_container: Container,
     monkeypatch: pytest.MonkeyPatch,

@@ -5,10 +5,10 @@ from uuid import uuid4
 
 import pytest
 
-from ase.adapters.persistence.base import Base
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.adapters.persistence.session import create_engine, create_session_factory
 from ase.domain.report_jobs import ReportJob
+from pytest_support import create_schema, disposable_database, skip_sqlite_fsync
 
 NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
 
@@ -33,9 +33,10 @@ def job(**changes):
 
 @pytest.fixture(name="job_storage")
 async def job_storage(tmp_path):
-    engine = create_engine(f"sqlite+aiosqlite:///{tmp_path / 'jobs.db'}")
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
+    url = f"sqlite+aiosqlite:///{tmp_path / 'jobs.db'}"
+    engine = create_engine(url)
+    skip_sqlite_fsync(engine)
+    await create_schema(engine, fresh=disposable_database(url))
     factory = create_session_factory(engine)
     yield engine, factory
     await engine.dispose()

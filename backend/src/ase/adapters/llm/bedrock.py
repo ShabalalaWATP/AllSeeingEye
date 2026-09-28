@@ -14,6 +14,7 @@ import httpx
 
 from ase.adapters.llm.bedrock_schema import project_schema
 from ase.adapters.llm.exhaustion import budget_exhausted
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
 from ase.domain.bedrock import normalise_bedrock_base_url
 from ase.domain.llm import MAX_API_KEY_LENGTH, MAX_MODEL_ID_LENGTH, LlmRequest, LlmResult
@@ -165,7 +166,9 @@ class BedrockConverseGateway:
     ) -> None:
         if not isfinite(timeout_seconds) or timeout_seconds <= 0:
             raise ValueError("Provide a positive finite Bedrock timeout.")
-        self._client = client or httpx.AsyncClient(follow_redirects=False)
+        self._client = client or httpx.AsyncClient(
+            follow_redirects=False, verify=verified_ssl_context()
+        )
         self._timeout = min(timeout_seconds, 120)
         self._admission = asyncio.Semaphore(2)
 

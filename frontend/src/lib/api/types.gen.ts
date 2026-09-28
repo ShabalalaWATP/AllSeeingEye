@@ -22261,7 +22261,10 @@ export interface operations {
             query?: {
                 categories?: string | null;
             };
-            header?: never;
+            header?: {
+                /** @description The last frame id received, to resume within the replay window. */
+                "last-event-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };

@@ -28,7 +28,7 @@ AidData stay in the research family, where they were already listed.
 | `idle` | Scheduled feed registered, no collection attempted yet. |
 | `key_unverified` | A credential is configured but no collection has succeeded yet. |
 | `degraded` | Recent attempts failed; the scheduler is retrying with backoff. |
-| `failing` | The circuit breaker paused the feed after repeated failures; an administrator resets it under Admin, Sources. |
+| `failing` | The circuit breaker paused the feed after eight consecutive failures. It retries automatically after 6 hours, doubling to at most 24 hours on repeated trips, and `next_poll_at` shows when. An administrator can reset it sooner under Admin, Sources, which polls at once. An administrator's own switch-off is never cleared automatically. |
 | `key_missing` | A required API key or credential pair is not configured, so the connector is not built. |
 | `not_configured` | A non-key requirement is absent: a local snapshot, catalogue, runtime or acknowledgement. |
 | `on_demand` | A research capability queried only when a run selects it. Optional keys keep this state. |

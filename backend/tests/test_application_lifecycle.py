@@ -15,6 +15,7 @@ from ase.container.economy import EconomyWiring
 from ase.container.lifecycle import dispose_resources
 
 WORKERS = (
+    "live_snapshot",
     "scheduler",
     "aviation_monitor",
     "evaluator",
@@ -38,6 +39,7 @@ def runtime(monkeypatch):
     monkeypatch.setattr(
         "ase.app_lifecycle.build_annotation_monitor_worker", lambda _: SimpleNamespace(run=idle)
     )
+    monkeypatch.setattr("ase.app_lifecycle.build_live_snapshot", lambda c: c.live_snapshot)
     container = SimpleNamespace(
         settings=SimpleNamespace(feeds_enabled=True),
         dispose=AsyncMock(),
@@ -104,7 +106,7 @@ async def test_startup_cancellation_still_disposes_owned_resources(runtime):
     with pytest.raises(asyncio.CancelledError):
         async with lifespan(app):
             pytest.fail("Cancelled startup must not yield")
-    for name in WORKERS[:3]:
+    for name in WORKERS[: WORKERS.index("evaluator") + 1]:
         getattr(container, name).stop.assert_awaited_once()
     container.dispose.assert_awaited_once()
 
@@ -119,7 +121,19 @@ async def test_shutdown_stops_admission_before_consumers_and_clients(runtime):
         pass
     assert order.index("schedule_runner") < order.index("report_job_worker")
     assert order.index("report_job_worker") < order.index("scheduler")
+    # The final live-store snapshot follows every feed writer (ADR 0022).
+    assert order.index("scheduler") < order.index("live_snapshot")
     assert order[-1] == "dispose"
+
+
+async def test_disabled_live_snapshot_is_not_started(runtime, monkeypatch):
+    app, container, _ = runtime
+    monkeypatch.setattr("ase.app_lifecycle.build_live_snapshot", lambda _: None)
+    async with lifespan(app):
+        pass
+    container.live_snapshot.start.assert_not_awaited()
+    container.live_snapshot.stop.assert_not_awaited()
+    container.scheduler.stop.assert_awaited_once()
 
 
 def disposable_container():

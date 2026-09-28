@@ -189,6 +189,7 @@ def test_sqlite_legacy_upgrade_keeps_due_slots_jobs_and_unknown_coverage(tmp_pat
 
 
 # asyncpg is the only shipped PostgreSQL driver; its sync fallback is deprecated upstream.
+@pytest.mark.postgres
 @pytest.mark.filterwarnings("ignore:The async_fallback dialect argument:DeprecationWarning")
 def test_postgres_disposable_upgrade_when_explicitly_configured() -> None:
     async_url = os.environ.get("ASE_TEST_MIGRATION_POSTGRES_URL")

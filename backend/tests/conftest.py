@@ -1,18 +1,26 @@
-"""Fixtures: a fresh in-memory database and app per test, a fake clock and a recording mailer."""
+"""Fixtures: a fresh in-memory database and app per test, a fake clock and a recording mailer.
+
+The app is built without the live feed catalogue; tests that need the real connectors
+carry the ``feed_catalogue`` marker. In-memory and not-yet-created SQLite databases start
+empty, so their schema is created in one transaction without existence checks and is
+discarded with the engine or tmp_path; shared databases such as CI's PostgreSQL are still
+dropped and recreated. Test SQLite files skip fsync, which changes no locking behaviour.
+"""
 
 from __future__ import annotations
 
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
-from ase.adapters.persistence.base import Base
 from ase.app_factory import create_app
+from ase.application.ports.feeds import FeedConnector
 from ase.container import Container
 from ase.domain.users import Role, User
 from ase.infrastructure.settings import Environment, Settings
@@ -26,8 +34,37 @@ from helpers import (
     create_user,
     register_client,
 )
+from pytest_support import (
+    DurationRecorder,
+    apply_markers,
+    create_schema,
+    disposable_database,
+    drop_schema,
+    refuse_shared_databases_in_parallel,
+    skip_sqlite_fsync,
+)
 
 START = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--record-durations",
+        metavar="PATH",
+        help="Merge per-file test durations into this JSON file for balanced CI shards.",
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    refuse_shared_databases_in_parallel(config)
+    target = config.getoption("--record-durations")
+    # Under pytest-xdist the controller receives every worker's reports.
+    if target and not hasattr(config, "workerinput"):
+        config.pluginmanager.register(DurationRecorder(Path(target)), "ase-durations")
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    apply_markers(items)
 
 
 @pytest.fixture
@@ -55,17 +92,28 @@ def settings() -> Settings:
 
 
 @pytest.fixture
+def feed_connectors(request: pytest.FixtureRequest) -> Sequence[FeedConnector] | None:
+    """No feed catalogue unless marked ``feed_catalogue``; ``None`` builds the real one."""
+    return None if request.node.get_closest_marker("feed_catalogue") else ()
+
+
+@pytest.fixture
 async def app(
-    settings: Settings, clock: FakeClock, email_sender: RecordingEmailSender
+    settings: Settings,
+    clock: FakeClock,
+    email_sender: RecordingEmailSender,
+    feed_connectors: Sequence[FeedConnector] | None,
 ) -> AsyncIterator[FastAPI]:
-    application = create_app(settings, clock=clock, email_sender=email_sender)
+    application = create_app(
+        settings, clock=clock, email_sender=email_sender, connectors=feed_connectors
+    )
     container: Container = application.state.container
-    async with container.engine.begin() as connection:
-        await connection.run_sync(Base.metadata.drop_all)
-        await connection.run_sync(Base.metadata.create_all)
+    fresh = disposable_database(settings.database_url)
+    skip_sqlite_fsync(container.engine)
+    await create_schema(container.engine, fresh=fresh)
     yield application
-    async with container.engine.begin() as connection:
-        await connection.run_sync(Base.metadata.drop_all)
+    if not fresh:
+        await drop_schema(container.engine)
     await container.dispose()
 
 

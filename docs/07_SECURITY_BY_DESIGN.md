@@ -63,8 +63,15 @@ makes existing encrypted values unreadable. Database backups can contain private
 research, evidence excerpts and personal information, even when those excerpts
 came from public websites.
 
-Raw live events have bounded in-memory retention. Reports deliberately preserve
-selected evidence. Private supplied inputs and selected original assets have their
+Raw live events have bounded in-memory retention. So that restarts are not blank,
+the same public events are also kept in one disposable snapshot file
+([ADR 0022](adr/0022-live-store-snapshot.md)): size-capped, replaced atomically,
+owner-only where the platform supports it, strictly validated on load, never a
+symbolic link and never backed up. It holds no alerts, sessions, credentials or
+private inputs. Set `ASE_LIVE_SNAPSHOT_PATH` empty to disable it.
+
+Reports deliberately preserve selected evidence. Private supplied inputs and
+selected original assets have their
 own retention rules; inspect the workflow rather than assuming all inputs are
 permanent or all are immediately deleted.
 

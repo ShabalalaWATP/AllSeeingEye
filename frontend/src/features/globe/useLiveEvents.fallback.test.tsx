@@ -43,7 +43,9 @@ it('loads an offline snapshot after setup stalls, then reconciles when the strea
     vi.advanceTimersByTime(1);
   });
   expect(load).toHaveBeenCalledOnce();
-  act(() => FakeEventStreamClient.instances[0]!.setStatus('live'));
+  act(() => {
+    FakeEventStreamClient.instances[0]!.connect();
+  });
   expect(load).toHaveBeenCalledTimes(2);
   unmount();
 });

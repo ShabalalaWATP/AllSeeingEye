@@ -65,6 +65,7 @@ def test_research_tier_migration_and_constraints():
         engine.dispose()
 
 
+@pytest.mark.postgres
 async def test_research_tier_migration_on_postgres():
     source = os.environ.get("ASE_TEST_DATABASE_URL")
     if not source or not source.startswith("postgresql+asyncpg:"):

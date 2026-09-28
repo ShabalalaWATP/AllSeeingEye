@@ -9,6 +9,7 @@ import httpx
 import structlog
 
 from ase.adapters.feeds.http import FeedFetchError, assert_public_host, pin_url
+from ase.adapters.tls import verified_ssl_context
 from ase.domain.warning import Alert, Indicator
 
 log = structlog.get_logger(__name__)
@@ -69,7 +70,10 @@ class WebhookNotifier:
                 }
                 async with (
                     httpx.AsyncClient(
-                        timeout=TIMEOUT_SECONDS, transport=self._transport, headers=headers
+                        timeout=TIMEOUT_SECONDS,
+                        transport=self._transport,
+                        headers=headers,
+                        verify=verified_ssl_context(),
                     ) as client,
                     client.stream(
                         "POST",

@@ -38,6 +38,8 @@ it('cancels an oversized response, releases its lock and backs off before reconn
   const client = new EventStreamClient({
     url: '/api/stream',
     fetchImpl,
+    // The top of the jitter range, so each retry lands just before the full step.
+    random: () => 0.9999,
     getToken: () => Promise.resolve('test'),
     onMessage: vi.fn(),
     onStatus: vi.fn(),

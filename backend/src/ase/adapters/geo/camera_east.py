@@ -10,6 +10,7 @@ stream is not an assertion that its owner is broadcasting now.
 
 import json
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -133,9 +134,14 @@ def curated(provider: str, records: list[dict[str, Any]] | None = None) -> tuple
     return collect(POLICY, provider, rows, approximate=True)
 
 
+@cache
+def packaged(provider: str) -> tuple[Camera, ...]:
+    """Parsed once per process: the packaged catalogue is read-only and cameras are frozen."""
+    return curated(provider)
+
+
 def build_sources(http: FeedHttpClient) -> tuple[CameraSource, ...]:
-    records = load_catalogue()
     sources: list[CameraSource] = [EstoniaCameraSource(http)]
     for provider in CURATED:
-        sources.append(CuratedEastSource(provider, NAMES[provider], curated(provider, records)))
+        sources.append(CuratedEastSource(provider, NAMES[provider], packaged(provider)))
     return tuple(sources)

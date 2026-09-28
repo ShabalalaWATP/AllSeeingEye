@@ -51,6 +51,7 @@ dev = [
     "import-linter>=2.1",
     "types-defusedxml>=0.7.0.20260504",
     "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.8",
     "types-reportlab>=5.0.0.20260911",
     "fonttools==4.65.0",
     "types-shapely>=2.1.0.20260728",
@@ -68,7 +69,15 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 timeout = 120
-addopts = "--cov=ase --cov-report=term-missing --cov-fail-under=90"
+addopts = "--strict-markers --cov=ase --cov-report=term-missing --cov-fail-under=90"
+# File-name rules in tests/pytest_support.py apply the first three; see that module.
+markers = [
+    "postgres: needs a disposable PostgreSQL server; skipped without one, never run in parallel",
+    "migration: runs Alembic revisions against a scratch database",
+    "race: exercises concurrent writers on a real multi-connection database",
+    "slow: takes several seconds on its own; deselect with -m 'not slow'",
+    "feed_catalogue: build the test application with the real feed connector catalogue",
+]
 
 [tool.coverage.run]
 branch = true

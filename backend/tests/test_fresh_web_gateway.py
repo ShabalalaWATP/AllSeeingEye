@@ -197,7 +197,7 @@ async def test_stream_caps_stop_reading_and_cancellation_closes_network(monkeypa
         task = asyncio.create_task(
             OpenAiWebSearchGateway(client=client).search("key", "model", REQUEST)
         )
-        await asyncio.sleep(0.01)
+        await asyncio.wait_for(slow.started.wait(), 5)
         task.cancel()
         with pytest.raises(asyncio.CancelledError):
             await task

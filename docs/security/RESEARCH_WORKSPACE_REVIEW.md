@@ -78,7 +78,7 @@ found wrong-period and claimant-attribution errors. Prompt instructions address
 those failure modes; they do not verify facts. Generated web context remains
 outside original evidence and corroboration scores. The live harness exercises
 application use cases, not HTTP login/MFA. See the
-[live acceptance record](../LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
+[live acceptance record](../archive/LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
 
 An additional independent review passed 72 focused checks for the new-connection
 budget preset and explicit exhaustion handling. Exhaustion carries only a static

@@ -18,6 +18,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 
 from ase.adapters.feeds.http import FeedFetchError, assert_public_host, pin_url
+from ase.adapters.tls import verified_ssl_context
 from ase.application.ports import Clock
 from ase.application.research.original_policy import (
     MEDIA_EXTENSIONS,
@@ -118,6 +119,7 @@ class GuardedOriginalHttp:
                     trust_env=False,
                     follow_redirects=False,
                     timeout=httpx.Timeout(request.timeout_seconds),
+                    verify=verified_ssl_context(trust_env=False),
                 ) as client,
             ):
                 return await self._follow(request, client)

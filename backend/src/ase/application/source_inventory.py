@@ -181,7 +181,9 @@ _DETAILS = {
     ConnectionState.KEY_UNVERIFIED: "Credential present; no successful collection yet.",
     ConnectionState.CONNECTED: "Collecting on schedule.",
     ConnectionState.DEGRADED: "Recent collection attempts failed; retrying with backoff.",
-    ConnectionState.FAILING: "Paused after repeated failures until an administrator resets it.",
+    ConnectionState.FAILING: (
+        "Paused after repeated failures; retries after a cool-down or an administrator reset."
+    ),
     ConnectionState.IDLE: "Waiting for the first collection.",
 }
 

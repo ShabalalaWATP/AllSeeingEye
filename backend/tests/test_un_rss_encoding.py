@@ -101,9 +101,9 @@ async def test_identity_response_keeps_existing_path() -> None:
 @pytest.mark.parametrize(
     "content",
     (
-        gzip.compress(b"x")[:-2],
-        gzip.compress(b"x") + b"trailing",
-        gzip.compress(b"x") + gzip.compress(b"y"),
+        gzip.compress(b"x", mtime=0)[:-2],
+        gzip.compress(b"x", mtime=0) + b"trailing",
+        gzip.compress(b"x", mtime=0) + gzip.compress(b"y", mtime=0),
         b"not gzip",
     ),
 )

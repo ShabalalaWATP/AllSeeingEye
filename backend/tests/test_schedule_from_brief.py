@@ -44,6 +44,7 @@ def _subscription(brief_id: str, revision: int = 1) -> dict[str, object]:
     }
 
 
+@pytest.mark.feed_catalogue
 async def test_due_job_pins_all_requirements_and_original_brief_revision(
     client, container, user
 ) -> None:

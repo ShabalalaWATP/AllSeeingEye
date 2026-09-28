@@ -158,7 +158,7 @@ No new HAPI integration has been claimed on that evidence alone.
 | Social | Fixed RSS/watchlists | Add permitted public search only where current access works. X, private Telegram and restricted platform research interfaces are not solved by indiscriminate free-account creation |
 
 The more detailed candidate backlog is
-[Regional source expansion](../REGIONAL_SOURCE_EXPANSION.md). Its older status
+[Regional source expansion](../archive/REGIONAL_SOURCE_EXPANSION.md). Its older status
 labels must be read alongside the implemented code and this audit, not as current
 operational claims. No newly guessed Russian, Chinese or Iranian feed URL was
 added in this research-only work.

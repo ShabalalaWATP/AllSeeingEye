@@ -87,6 +87,7 @@ def test_unlimited_research_migration_preserves_existing_records():
         engine.dispose()
 
 
+@pytest.mark.postgres
 async def test_unlimited_research_migration_on_postgres():
     source = os.environ.get("ASE_TEST_DATABASE_URL")
     if not source or not source.startswith("postgresql+asyncpg:"):

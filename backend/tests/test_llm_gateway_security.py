@@ -43,8 +43,10 @@ class RecordingStream(httpx.AsyncByteStream):
         self.delay = delay
         self.yielded = 0
         self.closed = False
+        self.started = asyncio.Event()
 
     async def __aiter__(self) -> AsyncIterator[bytes]:
+        self.started.set()
         for chunk in self.chunks:
             if self.delay:
                 await asyncio.sleep(self.delay)

@@ -9,6 +9,7 @@ from pydantic import SecretStr
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, assert_public_host
 from ase.adapters.feeds.secret_urls import protect_http_logs
+from ase.adapters.tls import verified_ssl_context
 
 TOKEN_URL = "https://id.barentswatch.no/connect/token"  # noqa: S105
 LIVE_ORIGIN = "https://live.ais.barentswatch.no"
@@ -25,7 +26,12 @@ class BarentsWatchHttpClient(FeedHttpClient):
             user_agent,
             max_bytes=SNAPSHOT_MAX_BYTES,
             client=client
-            or httpx.AsyncClient(timeout=REQUEST_SECONDS, follow_redirects=False, trust_env=False),
+            or httpx.AsyncClient(
+                timeout=REQUEST_SECONDS,
+                follow_redirects=False,
+                trust_env=False,
+                verify=verified_ssl_context(trust_env=False),
+            ),
         )
 
     async def token(self, client_id: SecretStr, client_secret: SecretStr) -> Any:

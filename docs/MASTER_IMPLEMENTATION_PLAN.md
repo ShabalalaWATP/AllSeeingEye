@@ -1,6 +1,6 @@
 # Master Implementation Plan
 
-Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; decisions of record are in `00_PROPOSAL_OVERVIEW.md` and `adr/`.
+Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.md`; decisions of record are in `archive/00_PROPOSAL_OVERVIEW.md` and `adr/`.
 
 ## Current status
 
@@ -31,7 +31,7 @@ backoff. Production rollout and server verification remain pending. See the
 failures, verification evidence and outstanding operator actions.
 
 15 September team collaboration planning: the
-[Teams, profiles and AI usage plan](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md)
+[Teams, profiles and AI usage plan](archive/TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md)
 specifies user-created teams, membership-based Managers, protected administrators,
 profile discovery and invitations, a simple dashboard/message board, and unified
 individual/team AI allowances. It includes ordered tasks, migration rules and
@@ -46,7 +46,7 @@ Its task packets define contracts, ownership, dependencies, regression cases,
 operational acceptance and handoff instructions. All implementation tasks in that
 plan remain pending; writing the plan did not change application behaviour,
 connect providers, run new model acceptance or migrate a database. See the
-[underlying audit](RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) for observed
+[underlying audit](archive/RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) for observed
 defects and the separate limits of its earlier validation.
 
 8 September FIRMS acceptance: encrypted administrator draft/test/confirm,
@@ -57,7 +57,7 @@ coverage, plus type checking, lint and build. Ten independent PostgreSQL
 concurrency cases and eight SQLite/PostgreSQL migration cases passed separately.
 Final repository hooks and configured Bandit passed. Migration 0032 is accepted
 on disposable databases only; actual NASA connectivity and operator migration
-remain unverified. See [FIRMS_ADMIN_CONNECTIVITY_PLAN.md](FIRMS_ADMIN_CONNECTIVITY_PLAN.md).
+remain unverified. See [FIRMS_ADMIN_CONNECTIVITY_PLAN.md](archive/FIRMS_ADMIN_CONNECTIVITY_PLAN.md).
 The historical entries below preserve earlier implementation status.
 8 September combined acceptance: SEC filing discovery/import and source language/date
 provenance are now integrated together on `codex/source-provenance-sec`, based on
@@ -97,16 +97,16 @@ including both features and the HTTP response-order repair. Its frontend passed
 statements, 90.11% branches, 93.52% functions, 96.43% lines), and its production
 build passed.
 Whole-inventory/new-root monitoring is integrated from `3ef66e9` under
-[its acceptance plan](ANNOTATION_INVENTORY_MONITORING_PLAN.md): 87 local backend,
+[its acceptance plan](archive/ANNOTATION_INVENTORY_MONITORING_PLAN.md): 87 local backend,
 24 PostgreSQL and 1,018 frontend cases passed, together with static checks and
 repository hooks. Full isolated backend acceptance subsequently passed 3,291
 tests, with 70 skips and 95.05% coverage. The merged runtime tree matches the
 accepted feature tree exactly; integration updates documentation only.
 Cross-version
 monitoring remains required after that delivery; its explicit report and scheduled
-research origins are specified in [CROSS_VERSION_MONITORING_PLAN.md](CROSS_VERSION_MONITORING_PLAN.md).
-See [ANNOTATION_MONITORING_IMPLEMENTATION.md](ANNOTATION_MONITORING_IMPLEMENTATION.md)
-and [CANDIDATE_REGISTRY_ROUTING_PLAN.md](CANDIDATE_REGISTRY_ROUTING_PLAN.md).
+research origins are specified in [CROSS_VERSION_MONITORING_PLAN.md](archive/CROSS_VERSION_MONITORING_PLAN.md).
+See [ANNOTATION_MONITORING_IMPLEMENTATION.md](archive/ANNOTATION_MONITORING_IMPLEMENTATION.md)
+and [CANDIDATE_REGISTRY_ROUTING_PLAN.md](archive/CANDIDATE_REGISTRY_ROUTING_PLAN.md).
 
 7 September continuation: exact annotation comparison and frozen confidence
 explanations are integrated at `d37f723`. Historical selections, declared
@@ -116,7 +116,7 @@ The identical frontend tree passed 978 tests and all lint/type/build checks;
 backend acceptance is running. Durable standalone annotation monitoring is now
 in development, with transactional exact revision events, immutable transitions
 and independent checkpoints. See
-[ANNOTATION_COMPARISON_PLAN.md](ANNOTATION_COMPARISON_PLAN.md).
+[ANNOTATION_COMPARISON_PLAN.md](archive/ANNOTATION_COMPARISON_PLAN.md).
 
 7 September continuation: dated relationship review is integrated, with frozen
 GLEIF assertions, separate operator assessments/history and exact revision
@@ -124,8 +124,8 @@ exports. Isolated acceptance passed 133 backend cases, 11 PostgreSQL cases and
 54 frontend cases; integration hooks passed. The combined frontend passed all
 958 tests with 90.27% branch coverage. The pre-comparison backend run finished with 3,146 passes, 35 skips and five
 export-admission fixture failures (95.26% coverage). The fixture repair passed
-all ten affected cases separately; combined acceptance is still required. See [RELATIONSHIP_REVIEW_IMPLEMENTATION.md](RELATIONSHIP_REVIEW_IMPLEMENTATION.md).
-[ANNOTATION_COMPARISON_PLAN.md](ANNOTATION_COMPARISON_PLAN.md) preserves the next
+all ten affected cases separately; combined acceptance is still required. See [RELATIONSHIP_REVIEW_IMPLEMENTATION.md](archive/RELATIONSHIP_REVIEW_IMPLEMENTATION.md).
+[ANNOTATION_COMPARISON_PLAN.md](archive/ANNOTATION_COMPARISON_PLAN.md) preserves the next
 comparison, confidence explanation and monitoring checkpoint requirements.
 
 7 September continuation: one bounded model call now supplements public-source
@@ -143,7 +143,7 @@ prove personal/team quota contention, service and repository CAS, preserved
 history and denial after membership revocation during lock contention. Separate
 backend processes and observed PostgreSQL lock waiting establish real concurrent
 transactions. Disposable databases/container were removed. See
-[IDENTITY_REVIEW_IMPLEMENTATION.md](IDENTITY_REVIEW_IMPLEMENTATION.md).
+[IDENTITY_REVIEW_IMPLEMENTATION.md](archive/IDENTITY_REVIEW_IMPLEMENTATION.md).
 
 
 7 September continuation: administrator AI setup is a progressive provider,
@@ -152,7 +152,7 @@ per-person personal-workspace overrides and safe authority-bound mutations are
 implemented. Team destinations ignore personal overrides. Migration 0028 passed
 SQLite/PostgreSQL acceptance; 222 combined frontend tests and production build
 passed. The operator database and live provider settings remain unchanged.
-See [ADMIN_AI_CONNECTION_JOURNEY.md](ADMIN_AI_CONNECTION_JOURNEY.md).
+See [ADMIN_AI_CONNECTION_JOURNEY.md](archive/ADMIN_AI_CONNECTION_JOURNEY.md).
 
 
 7 September continuation: exact saved-map image packaging now has a dedicated
@@ -170,7 +170,7 @@ and included in selected evidence packages. Migration 0027 adds transactional
 reservations and bounded lifecycle records. PostgreSQL acceptance passed 84 tests;
 final SQLite groups passed 30 and 52 tests; frontend passed 175 tests. Static,
 security, architecture, build and proxy checks passed. No operator migration or
-deployment was performed. See [the contract and acceptance record](SELECTED_ORIGINAL_ASSETS_IMPLEMENTATION.md).
+deployment was performed. See [the contract and acceptance record](archive/SELECTED_ORIGINAL_ASSETS_IMPLEMENTATION.md).
 Retain-at-import, wider source retrieval, backup/recovery acceptance and exact
 saved-map image export remain open in the full expansion audit.
 
@@ -193,11 +193,11 @@ coordinates and a versioned WGS84 method in immutable map revisions. Dashboard
 and report maps share the panel and layers. Legacy revision hashes are preserved.
 116 backend and 234 focused frontend tests passed, with build, type, lint and
 architecture checks. The full expansion scope and remaining acceptance work are
-tracked in [RESEARCH_EXPANSION_STATUS_AUDIT.md](RESEARCH_EXPANSION_STATUS_AUDIT.md).
+tracked in [RESEARCH_EXPANSION_STATUS_AUDIT.md](archive/RESEARCH_EXPANSION_STATUS_AUDIT.md).
 Map-image export and current GPU acceptance remain open.
 
 The expanded app-quality, teams, map and design milestone is completed in
-[MASTER_FIX_IMPROVEMENT_PLAN.md](MASTER_FIX_IMPROVEMENT_PLAN.md), commit `cd8e498`.
+[MASTER_FIX_IMPROVEMENT_PLAN.md](archive/MASTER_FIX_IMPROVEMENT_PLAN.md), commit `cd8e498`.
 Alex has since set an operator-first automated research direction with basic team
 sharing, documented in [OSINT_PRODUCT_DIRECTION.md](OSINT_PRODUCT_DIRECTION.md).
 
@@ -463,7 +463,7 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 - [x] Claim inspection, bounded evidence ZIP exports, Chinese PDF fonts and personal
   report library annotations.
 - [ ] Complete the wider expansion acceptance gates and deferred features listed
-  in RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md. This milestone is partial against
+  in archive/RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md. This milestone is partial against
   that plan, not completion of every E0-E13 workstream.
 
 See RESEARCH_EXPANSION_OPERATIONS.md for behaviour, deployment requirements and
@@ -482,7 +482,7 @@ worker integration, visual/native-speaker and accessibility acceptance remain.
 passed 3,470 tests with 84 skips and 94.94% coverage. Its frontend passed 1,088
 tests and the unchanged coverage gates, types, lint and build. This establishes
 this feature snapshot's local acceptance; later source/retention/version changes
-remain separate. See SEC_SOURCE_PROVENANCE_INTEGRATION.md for evidence and limits.
+remain separate. See archive/SEC_SOURCE_PROVENANCE_INTEGRATION.md for evidence and limits.
 
 8 September isolated renderer candidate: asynchronous export composition and an
 optional bounded Linux Chromium adapter are implemented. Cleanup quarantine,
@@ -490,14 +490,14 @@ typed PDF admission and private tmpfs repairs passed targeted regressions and
 independent review. All configured commit hooks passed. Actual Linux runtime,
 native-speaker, accessibility and faithful extraction acceptance remain open;
 Arabic/Persian PDF capabilities are not enabled. See ISOLATED_REPORT_RENDERER.md
-and REPORT_RENDERING_VISUAL_ACCEPTANCE.md.
+and archive/REPORT_RENDERING_VISUAL_ACCEPTANCE.md.
 
 ## 8 September 2026: OSIRIS-inspired map direction
 
 User requested a quieter map-first interface, exactly four clocks (London, Kyiv,
 Moscow, Beijing), and inspectable data objects on both projections. The source
 comparison and camera/transport follow-up sequence are in
-OSIRIS_MAP_INTERFACE_PLAN.md. Public-camera feeds are planned, not implemented.
+archive/OSIRIS_MAP_INTERFACE_PLAN.md. Public-camera feeds are planned, not implemented.
 Current clock changes passed seasonal-offset checks and isolated desktop/mobile
 visual inspection. Map interactions, overlap selection and report geometry details
 are implemented. Real local GPU checks passed in both projections, including
@@ -511,7 +511,7 @@ with layer/tool icon rails and on-demand panels. Added navigation controls and a
 measurement result that remains visible while picking with the panel closed.
 The actual authenticated mobile layout and interaction checks supplement the
 earlier isolated renderer tests. CCTV remains planned. See
-OSIRIS_MAP_INTERFACE_PLAN.md for verification and remaining source work.
+archive/OSIRIS_MAP_INTERFACE_PLAN.md for verification and remaining source work.
 
 
 8 September map corrections: completed recognisable control icons, visible
@@ -519,7 +519,7 @@ hover/focus labels and explicit style access; unified sidebar Map destination;
 fixed approximate-circle centre picking and selection highlighting; clarified
 Conflict & unrest coding; added bounded BNG grid and approximate coordinates.
 Full frontend regression passed 1,129 tests and unchanged coverage gates.
-See MAP_INTERACTION_CORRECTIONS.md for browser evidence, projection limits and
+See archive/MAP_INTERACTION_CORRECTIONS.md for browser evidence, projection limits and
 verification of the final presentation changes.
 
 8 September map configuration follow-up: completed left-side configuration
@@ -790,7 +790,7 @@ requirements from the earlier milestone remain in force.
   tests, plus scoped Ruff, mypy and Bandit checks.
 - [ ] Interactive browser/GPU acceptance, blocked by the existing browser policy.
 
-Source findings and limits are recorded in [OSIRIS interface plan](OSIRIS_MAP_INTERFACE_PLAN.md)
+Source findings and limits are recorded in [OSIRIS interface plan](archive/OSIRIS_MAP_INTERFACE_PLAN.md)
 and [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
 
 ## 10 September 2026: RF workspace and planning quality
@@ -875,7 +875,7 @@ or a fresh search of every source catalogue entry.
 - [ ] Complete the wider browser, Word and multilingual visual acceptance matrix;
   PDF output and automated DOCX structure have been verified locally.
 
-See [professional research report product](PROFESSIONAL_REPORT_PRODUCT_PLAN.md)
+See [professional research report product](archive/PROFESSIONAL_REPORT_PRODUCT_PLAN.md)
 for the product boundary, report structure, export contract and verification
 record. No production deployment or live model acceptance run is claimed.
 
@@ -944,7 +944,7 @@ the source and conversation boundaries.
   browser acceptance matrix.
 
 The detailed status and evidence log is in
-[TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).
+[TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](archive/TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).
 
 ## 17 September 2026: AI connection setup repair
 
@@ -1031,7 +1031,7 @@ the current local configuration. No cap bypass or destructive migration is used.
   architecture/type checks, a focused 41-test baseline and an offline model
   adapter contract comparison. Record a qualitative overall rating of 7/10.
 - [x] Document evidence, priorities and acceptance criteria in
-  [the SOLID review](SOLID_REVIEW.md). This is an assessment, not completed fixes.
+  [the SOLID review](archive/SOLID_REVIEW.md). This is an assessment, not completed fixes.
 - [x] Normalise explicit model-token exhaustion and add cross-adapter contracts.
 - [x] Make partial-startup and cleanup failure handling reliable, including digest drain.
 - [x] Repair and enforce frontend feature boundaries.
@@ -1048,7 +1048,7 @@ No migration or production deployment is included.
 ## 20 September 2026: application audit remediation
 
 - [x] Reproduce and document ten functional findings in
-  [the application audit](APP_AUDIT_2026-09-20.md).
+  [the application audit](archive/APP_AUDIT_2026-09-20.md).
 - [x] Fence team-board mutations against concurrent revocation and preserve
   archived read tracking, authorship, moderation reasons and revision checks.
 - [x] Preserve unresolved brief-run identity across network retries and replay
@@ -1098,7 +1098,7 @@ model quality and provider account permissions remain installation-specific.
 - [x] Add focused regressions for authority changes, stale responses, drawing
   edits, imports, boundaries, document conflicts and pagination.
 - [x] Update the [map workspace guide](MAP_WORKSPACE.md) and
-  [implementation checklist](MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
+  [implementation checklist](archive/MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
 - [x] Complete independent integration review and local desktop/mobile browser
   verification, including input ownership and authority-boundary corrections.
 - [x] Pass 81 combined new backend regressions, backend lint/format/type/import

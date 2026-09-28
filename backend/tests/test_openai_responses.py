@@ -250,7 +250,7 @@ async def test_native_cancellation_closes_stream_and_processing_counts_towards_d
         task = asyncio.create_task(
             OpenAiCompatibleGateway(client=client).complete(BASE, "key", "model", REQUEST)
         )
-        await asyncio.sleep(0.01)
+        await asyncio.wait_for(stream.started.wait(), 5)
         task.cancel()
         with pytest.raises(asyncio.CancelledError):
             await task

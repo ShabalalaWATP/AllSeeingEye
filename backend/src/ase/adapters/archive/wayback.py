@@ -16,6 +16,8 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 import structlog
 
+from ase.adapters.tls import verified_ssl_context
+
 AVAILABILITY_URL = "https://archive.org/wayback/available"
 SAVE_URL = "https://web.archive.org/save/"
 SNAPSHOT_PREFIXES = ("http://web.archive.org/web/", "https://web.archive.org/web/")
@@ -57,7 +59,9 @@ class WaybackArchiver:
         sleeper: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
         self._client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
+            timeout=httpx.Timeout(timeout_seconds),
+            follow_redirects=False,
+            verify=verified_ssl_context(),
         )
         self._client.headers["User-Agent"] = user_agent
         self._pause = pause_seconds

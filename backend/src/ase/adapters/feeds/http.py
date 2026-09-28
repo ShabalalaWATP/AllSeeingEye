@@ -31,6 +31,7 @@ from ase.adapters.feeds.http_contracts import (
     status_error,
 )
 from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
+from ase.adapters.tls import verified_ssl_context
 from ase.application.feeds.poll_scope import active_poll_scope
 
 __all__ = [
@@ -147,7 +148,7 @@ class FeedHttpClient:
         self._total_timeout_seconds = total_timeout_seconds
         self._validators: OrderedDict[str, FeedValidators] = OrderedDict()
         self._client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
+            timeout=timeout_seconds, follow_redirects=False, verify=verified_ssl_context()
         )
         # Polite identification is required by most upstreams, whichever transport is used.
         self._client.headers["User-Agent"] = user_agent

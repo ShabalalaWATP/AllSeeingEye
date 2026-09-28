@@ -30,20 +30,34 @@ class SourceHealth:
     blocked_reason: str | None = None
     # Current successful poll's coverage/quality caveat, separate from failure history.
     warning: str | None = None
+    # Breaker trips since the last success or reset; each trip doubles the cool-down.
+    trips: int = 0
 
 
 @dataclass(frozen=True, slots=True)
 class CircuitBreaker:
-    """Exponential backoff after failures; the source is disabled after too many in a row."""
+    """Exponential backoff after failures; too many in a row pause the source.
+
+    A paused source is probed again after a cool-down that doubles on each trip
+    without an intervening success. This never touches an administrator's source
+    control switch, which alone keeps a feed off indefinitely.
+    """
 
     disable_after: int = 8
     base_backoff: timedelta = timedelta(seconds=60)
     max_backoff: timedelta = timedelta(hours=1)
+    cooldown: timedelta = timedelta(hours=6)
+    max_cooldown: timedelta = timedelta(hours=24)
 
     def backoff_for(self, consecutive_failures: int) -> timedelta:
         multiplier = int(2 ** min(20, max(0, consecutive_failures - 1)))
         backoff: timedelta = self.base_backoff * multiplier
         return min(backoff, self.max_backoff)
+
+    def cooldown_for(self, trips: int) -> timedelta:
+        multiplier = int(2 ** min(20, max(0, trips - 1)))
+        cooldown: timedelta = self.cooldown * multiplier
+        return min(cooldown, self.max_cooldown)
 
     def should_disable(self, consecutive_failures: int) -> bool:
         return consecutive_failures >= self.disable_after
@@ -79,6 +93,7 @@ class HealthRegistry:
         entry.warning = coverage_warning[:300] if coverage_warning else None
         entry.last_success = now
         entry.consecutive_failures = 0
+        entry.trips = 0
         entry.items_last_poll = items
         entry.last_latency_ms = latency_ms
         entry.polls += 1
@@ -113,8 +128,10 @@ class HealthRegistry:
         entry.last_error_at = now
         entry.polls += 1
         if self.breaker.should_disable(entry.consecutive_failures):
+            # Paused, not switched off: the scheduler probes again at next_poll_at.
+            entry.trips += 1
             entry.status = SourceStatus.DISABLED
-            entry.next_poll_at = None
+            entry.next_poll_at = now + self.breaker.cooldown_for(entry.trips)
         else:
             entry.status = SourceStatus.DEGRADED
             entry.next_poll_at = now + self.breaker.backoff_for(entry.consecutive_failures)
@@ -136,11 +153,12 @@ class HealthRegistry:
         return entry
 
     def reset(self, source_id: str) -> SourceHealth:
-        """An administrator re-enables a disabled source."""
+        """An administrator resumes a paused source without waiting for its cool-down."""
         entry = self.get(source_id)
         entry.warning = None
         entry.blocked_reason = None
         entry.status = SourceStatus.IDLE
         entry.consecutive_failures = 0
+        entry.trips = 0
         entry.next_poll_at = None
         return entry

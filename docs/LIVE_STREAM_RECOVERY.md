@@ -55,3 +55,31 @@ consumer ordering. Browser tests cover preservation of filters, new stream
 deltas, late cancelled responses, reload failure, logout and delivery through a
 mounted globe. Session-revocation tests include resync frames. Browser rendering
 uses the existing mocked map engine; this is not GPU visual acceptance.
+
+## Resuming after a reconnect
+
+Every stream frame carries an SSE `id` of the form `<epoch>-<sequence>`. The epoch
+is 12 random hexadecimal characters chosen when the API process starts, and the
+sequence increases with every bus message. When a stream skips messages because of
+its category filter, it still advances its position, sending an id-only frame at
+most once per 15-second ping.
+
+The browser reconnects with a `Last-Event-ID` header, for example after its access
+token renews every 15 minutes. The server keeps a bounded replay window of recent
+public messages: at most 1,000 messages, 120 seconds and about 8 MiB of estimated
+payload, holding upserts, expiries, resyncs and source health only. If the id
+belongs to this process and is still inside the window, the server re-applies the
+session check, replays the missed public messages through that client's category
+filter and sends `hello` with `resumed: true`; the browser keeps its mirror. Any
+other id (another process, a future or malformed id, or one older than the window)
+gets `hello` with `resumed: false` followed by `event.resync` with
+`snapshot_required`, and the browser reloads its snapshot once.
+
+Alerts are never replayed, because they are authorised per user at delivery; an
+alert published while a browser is disconnected is not re-sent, as before. A tab
+that was hidden still takes a fresh snapshot when it becomes visible. Public
+messages are encoded once per category filter and the same text is shared by
+every open stream. A connection that receives nothing, not even a ping, for 45
+seconds is abandoned and reconnected, and reconnection delays use full jitter
+within the existing 1 to 30 second backoff.
+

@@ -71,6 +71,7 @@ async def test_existing_over_cap_profiles_remain_readable_and_editable(client, c
     ).status_code == 422
 
 
+@pytest.mark.race
 async def test_simultaneous_creates_cannot_overfill_fifth_slot(tmp_path, container, admin):
     engine = await race_engine(tmp_path, "model-cap.db")
     factory = create_session_factory(engine)
@@ -121,6 +122,7 @@ async def test_simultaneous_creates_cannot_overfill_fifth_slot(tmp_path, contain
         await engine.dispose()
 
 
+@pytest.mark.race
 async def test_waiting_create_rechecks_admin_after_guard_acquisition(tmp_path, container, admin):
     engine = await race_engine(tmp_path, "model-cap-actor.db")
     factory = create_session_factory(engine)
