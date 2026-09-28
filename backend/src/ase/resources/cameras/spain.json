@@ -1,30 +1,4 @@
-"""Generated public camera catalogue from OSIRIS fac8d1b.
-
-MIT License
-
-Copyright (c) 2026 simplifaisoul
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-# ruff: noqa: E501
-DATA = r"""[
+[
 {"id": "es-barcelona-2", "lat": 41.38, "lng": 2.18, "name": "Barcelona - Beach Area", "city": "Barcelona", "country": "Spain", "stream_url": "https://www.youtube.com/embed/4DjwrvoTKwk?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
 {"id": "es-madrid-1", "lat": 40.4168, "lng": -3.7038, "name": "Madrid - Puerta del Sol", "city": "Madrid", "country": "Spain", "stream_url": "https://www.youtube.com/embed/4CaHlfpGlAI?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
 {"id": "es-madrid-2", "lat": 40.42, "lng": -3.7, "name": "Madrid - Gran Via", "city": "Madrid", "country": "Spain", "stream_url": "https://www.youtube.com/embed/LSPN10FbR3U?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
@@ -78,4 +52,4 @@ DATA = r"""[
 {"id": "sky-es-suances", "lat": 43.432, "lng": -4.042, "name": "Suances - Playa de la Concha", "city": "Suances", "country": "Spain", "external_url": "https://www.skylinewebcams.com/en/webcam/espana/cantabria/suances/playa-de-la-concha.html", "source": "SkylineWebcams"},
 {"id": "sky-es-pujols", "lat": 38.723, "lng": 1.462, "name": "Formentera - Playa de Es Pujols", "city": "Formentera", "country": "Spain", "external_url": "https://www.skylinewebcams.com/en/webcam/espana/islas-baleares/formentera/playa-es-pujols.html", "source": "SkylineWebcams"},
 {"id": "sky-es-bullas", "lat": 38.0497, "lng": -1.67, "name": "Bullas - Plaza de España", "city": "Bullas", "country": "Spain", "external_url": "https://www.skylinewebcams.com/en/webcam/espana/region-de-murcia/murcia/bullas-plaza-de-espana.html", "source": "SkylineWebcams"}
-]"""
+]

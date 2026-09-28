@@ -1,30 +1,4 @@
-"""Generated public camera catalogue from OSIRIS fac8d1b.
-
-MIT License
-
-Copyright (c) 2026 simplifaisoul
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-# ruff: noqa: E501
-DATA = r"""[
+[
 {"id": "sky-it-trevi", "lat": 41.9009, "lng": 12.4833, "name": "Rome - Trevi Fountain", "city": "Rome", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/lazio/roma/fontana-di-trevi.html", "source": "SkylineWebcams"},
 {"id": "sky-it-pantheon", "lat": 41.8986, "lng": 12.4769, "name": "Rome - Pantheon", "city": "Rome", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/lazio/roma/pantheon.html", "source": "SkylineWebcams"},
 {"id": "sky-it-colosseum", "lat": 41.8902, "lng": 12.4922, "name": "Rome - Colosseum", "city": "Rome", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/lazio/roma/colosseo.html", "source": "SkylineWebcams"},
@@ -41,4 +15,4 @@ DATA = r"""[
 {"id": "sky-it-plebiscito", "lat": 40.8359, "lng": 14.2487, "name": "Naples - Piazza del Plebiscito", "city": "Naples", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/campania/napoli/piazza-del-plebiscito.html", "source": "SkylineWebcams"},
 {"id": "sky-it-amalfi", "lat": 40.6333, "lng": 14.6027, "name": "Amalfi Coast - Positano", "city": "Positano", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/campania/salerno/positano.html", "source": "SkylineWebcams"},
 {"id": "sky-it-etna", "lat": 37.751, "lng": 14.9934, "name": "Mount Etna - Volcano", "city": "Catania", "country": "Italy", "external_url": "https://www.skylinewebcams.com/en/webcam/italia/sicilia/catania/vulcano-etna.html", "source": "SkylineWebcams"}
-]"""
+]

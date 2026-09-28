@@ -1,30 +1,4 @@
-"""Generated public camera catalogue from OSIRIS fac8d1b.
-
-MIT License
-
-Copyright (c) 2026 simplifaisoul
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-# ruff: noqa: E501
-DATA = r"""[
+[
 {"id": "pl-nadm-2", "lat": 54.48052014236284, "lng": 18.564330339431766, "name": "Gdynia - Orłowo", "city": "Gdynia", "country": "Poland", "stream_url": "https://ls.tkchopin.pl/live/gdynia_orlowo_plaza_obrotowa.stream/playlist.m3u8", "stream_type": "hls", "source": "nadmorski24.pl"},
 {"id": "pl-nadm-3", "lat": 54.35191693108313, "lng": 18.658819198608402, "name": "Gdańsk - Stare Miasto, Motława", "city": "Gdańsk", "country": "Poland", "stream_url": "https://ls.tkchopin.pl/live/gdansk_olowianka_widok_motlawa_obrotowa.stream/playlist.m3u8", "stream_type": "hls", "source": "nadmorski24.pl"},
 {"id": "pl-nadm-4", "lat": 54.82870259306066, "lng": 17.94723987579346, "name": "Białogóra - Plaża", "city": "Białogóra", "country": "Poland", "stream_url": "https://ls.tkchopin.pl/live/bialogora_plaza_obrotowa.stream/playlist.m3u8", "stream_type": "hls", "source": "nadmorski24.pl"},
@@ -98,4 +72,4 @@ DATA = r"""[
 {"id": "pl-nadm-10114", "lat": 54.75885708303593, "lng": 18.507906806608744, "name": "Chałupy - Solar EASY/SURF", "city": "Chałupy", "country": "Poland", "stream_url": "https://ls.tkchopin.pl/live/easysurf_1080P.stream/playlist.m3u8", "stream_type": "hls", "source": "nadmorski24.pl"},
 {"id": "pl-gdansk-1", "lat": 54.352, "lng": 18.6466, "name": "Gdansk - City View", "city": "Gdansk", "country": "Poland", "stream_url": "https://www.youtube.com/embed/NZ_ZiHAx8Ic?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0", "stream_type": "iframe", "source": "YouTube Live"},
 {"id": "pl-slupsk-1", "lat": 54.46474539073614, "lng": 17.026874823866272, "name": "Słupsk - Centrum (Ratusz)", "city": "Słupsk", "country": "Poland", "stream_url": "https://www.slupsk.pl/kamera2", "stream_type": "mjpeg", "source": "Urząd Miasta Słupsk"}
-]"""
+]
