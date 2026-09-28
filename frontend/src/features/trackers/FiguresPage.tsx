@@ -165,7 +165,7 @@ export function FiguresBoard({ board }: { board: FigureBoard }) {
 }
 
 export default function FiguresPage() {
-  const { data, error, loading } = useResource(() => fetchFigures());
+  const { data, error, loading } = useResource(fetchFigures);
   return (
     <ModulePage
       title="Public figures"
