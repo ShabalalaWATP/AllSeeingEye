@@ -2,6 +2,7 @@
 
 import hashlib
 import io
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 
@@ -83,13 +84,20 @@ def test_parallel_exports_keep_each_document_text_and_font_subsets() -> None:
             "Fixture",
             (
                 DocumentBlock(BlockKind.TITLE, f"Перевірка {number}"),
-                DocumentBlock(BlockKind.TEXT, CYRILLIC + " " + GREEK),
+                DocumentBlock(BlockKind.TEXT, (CYRILLIC + " " + GREEK + " ") * (1 + number % 3)),
             ),
         )
-        for number in range(4)
+        for number in range(8)
     ]
-    with ThreadPoolExecutor(max_workers=2) as workers:
-        results = list(workers.map(render_pdf, documents))
+    # Font subsetting on save shares one read position per face. Switching threads
+    # constantly makes an unguarded save interleave on every run, not once in a while.
+    interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-6)
+    try:
+        with ThreadPoolExecutor(max_workers=4) as workers:
+            results = list(workers.map(render_pdf, documents))
+    finally:
+        sys.setswitchinterval(interval)
     for number, result in enumerate(results):
         text = "\n".join(page.extract_text() for page in PdfReader(io.BytesIO(result)).pages)
         assert f"Перевірка {number}" in text and CYRILLIC in text and GREEK in text

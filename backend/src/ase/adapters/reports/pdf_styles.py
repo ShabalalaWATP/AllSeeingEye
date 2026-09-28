@@ -13,6 +13,7 @@ from reportlab.platypus import Flowable, SimpleDocTemplate
 
 from ase.adapters.reports.font_support import FONT_BOLD as _FONT_BOLD
 from ase.adapters.reports.font_support import FONT_REGULAR as _FONT_NAME
+from ase.adapters.reports.font_support import SUBSETTING
 from ase.domain.report_documents import BlockKind, ReportDocument
 
 INK = colors.HexColor("#17140F")
@@ -205,4 +206,5 @@ class NumberedCanvas(Canvas):
             )
             self.restoreState()
             super().showPage()
-        super().save()
+        with SUBSETTING:
+            super().save()
