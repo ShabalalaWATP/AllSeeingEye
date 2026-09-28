@@ -14,6 +14,7 @@ from ase.application.economy_explainer import EconomyExplainerService
 from ase.application.economy_explainer_facts import FactPack, build_fact_pack
 from ase.application.economy_explainer_model import ExplainerGenerator
 from ase.application.model_routing import ModelRouting
+from ase.container.core import ContainerCore
 from ase.domain.ai_usage import AiAttribution
 from ase.domain.economy_periods import EconomyWindowDays
 from ase.domain.llm import LlmUsage
@@ -26,17 +27,16 @@ NEWS_LIMIT = 40
 USAGE_TIMEOUT = 2
 
 
-class EconomyExplainerWiring:
+class EconomyExplainerWiring(ContainerCore):
     @cached_property
     def economy_explainer_admission(self) -> asyncio.Lock:
         """One generation at a time; a second request is told a summary is being written."""
         return asyncio.Lock()
 
     def economy_explainer_gateway(self) -> LlmGateway:
-        container = cast("Container", self)
         return AllowanceLlmGateway(
-            container.llm,
-            container.ai_usage_accounting,
+            self.llm,
+            self.ai_usage_accounting,
             attribution=AiAttribution.system_work(),
             profile_id=None,
             # An empty prefix keeps the ledger purpose exactly "economy_explainer".
@@ -55,12 +55,11 @@ class EconomyExplainerWiring:
         return build_fact_pack(visible, released.items)
 
     def economy_explainer(self, session: AsyncSession) -> EconomyExplainerService:
-        container = cast("Container", self)
-        repos = container.repositories(session)
+        repos = self.repositories(session)
 
         async def record_usage(usage: LlmUsage) -> None:
-            async with asyncio.timeout(USAGE_TIMEOUT), container.session_factory() as inner:
-                inner_repos = container.repositories(inner)
+            async with asyncio.timeout(USAGE_TIMEOUT), self.session_factory() as inner:
+                inner_repos = self.repositories(inner)
                 await inner_repos.llm_usage.add(usage)
                 await inner_repos.uow.commit()
 
@@ -70,11 +69,11 @@ class EconomyExplainerWiring:
             ModelRouting(repos.llm_profiles, repos.llm_bindings),
             ExplainerGenerator(
                 self.economy_explainer_gateway(),
-                container.cipher,
-                container.clock,
+                self.cipher,
+                self.clock,
                 record_usage,
             ),
             self.economy_fact_pack,
-            container.clock,
+            self.clock,
             self.economy_explainer_admission,
         )

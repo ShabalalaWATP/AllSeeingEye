@@ -12,7 +12,7 @@ from ase.adapters.feeds.cyber import IODA, RANSOMWARE
 from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR, IODA_EVENTS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.radar_attack_trends import RadarAttackTrends
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
+from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.cyber import CyberService
 from ase.application.cyber_briefing import coverage_note, cyber_briefing_request
@@ -20,6 +20,7 @@ from ase.application.daily_briefing import DailyBriefingService
 from ase.application.model_routing import RoleProfiles
 from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
+from ase.container.core import ContainerCore
 from ase.domain.cyber import CyberWindowDays, cyber_window
 from ase.domain.cyber_actors import CyberActorCatalogue
 from ase.domain.daily_briefing import cyber_briefing_key
@@ -29,22 +30,20 @@ if TYPE_CHECKING:
     from ase.container import Container
 
 
-class CyberWiring:
+class CyberWiring(ContainerCore):
     def initialise_cyber(self) -> None:
-        container = cast("Container", self)
         # Register reference provenance and administrative controls, never a live
         # connector or an unimplemented research provider.
-        if MITRE_ATTACK_SPEC.id not in container.settings.disabled_feed_ids:
-            container.research_sources = (*container.research_sources, MITRE_ATTACK_SPEC)
-        container.research_sources = (*container.research_sources, RADAR_ATTACK_SPEC)
+        if MITRE_ATTACK_SPEC.id not in self.settings.disabled_feed_ids:
+            self.research_sources = (*self.research_sources, MITRE_ATTACK_SPEC)
+        self.research_sources = (*self.research_sources, RADAR_ATTACK_SPEC)
 
     @cached_property
     def radar_attack_trends(self) -> RadarAttackTrends:
-        container = cast("Container", self)
-        token = container.settings.cloudflare_radar_token
+        token = self.settings.cloudflare_radar_token
         return RadarAttackTrends(
-            container.http,
-            container.clock,
+            self.http,
+            self.clock,
             token.get_secret_value() if token else None,
         )
 
@@ -54,10 +53,9 @@ class CyberWiring:
 
     @cached_property
     def cyber(self) -> CyberService:
-        container = cast("Container", self)
         return CyberService(
-            container.store,
-            container.clock,
+            self.store,
+            self.clock,
             {
                 spec.id: spec
                 for spec in (
@@ -69,8 +67,8 @@ class CyberWiring:
                     *(s.spec for s in CYBER_SEEDS),
                 )
             },
-            container.source_admission,
-            container.health,
+            self.source_admission,
+            self.health,
             self.cyber_actors.actors,
         )
 

@@ -9,7 +9,7 @@ from ase.adapters.feeds.mastodon import spec_for
 from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.registry import build_connectors
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.application.feeds.grading import profiles_from_specs
 from ase.domain.events import Category, Reliability
 from ase.domain.grading import SourceProfile, grade_events

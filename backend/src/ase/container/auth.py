@@ -28,42 +28,13 @@ from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
 from ase.application.auth.totp import TotpUseCase
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from datetime import timedelta
-
-    from ase.application.auditing import Auditor
-    from ase.application.dto import RateLimits
-    from ase.application.ports import (
-        AccessTokenIssuer,
-        Clock,
-        EmailSender,
-        LinkBuilder,
-        PasswordHasher,
-        RateLimiter,
-        TokenGenerator,
-    )
-    from ase.application.ports.llm import SecretCipher
     from ase.container.repositories import Repositories
 
 
-class AuthWiring:
-    if TYPE_CHECKING:
-        cipher: SecretCipher
-        clock: Clock
-        hasher: PasswordHasher
-        limiter: RateLimiter
-        limits: RateLimits
-        generator: TokenGenerator
-        issuer: AccessTokenIssuer
-        refresh_ttl: timedelta
-        links: LinkBuilder
-        email_sender: EmailSender
-        _dummy_hash: str
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def _auditor(self, repos: Repositories) -> Auditor: ...
-
+class AuthWiring(ContainerCore):
     def _sessions(self, repos: Repositories) -> SessionFactory:
         return SessionFactory(
             repos.refresh_tokens, self.issuer, self.generator, self.clock, self.refresh_ttl

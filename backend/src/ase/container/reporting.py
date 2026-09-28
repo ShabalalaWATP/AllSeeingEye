@@ -55,68 +55,13 @@ from ase.container.research_web import WebResearchWiring
 from ase.domain.report_records import ReportVersion
 
 if TYPE_CHECKING:
-    import asyncio
-    from collections.abc import Mapping
-
-    from sqlalchemy.ext.asyncio import async_sessionmaker
-
-    from ase.adapters.store.memory import InMemoryEventStore
-    from ase.application.ai_usage import AiUsageAccounting
-    from ase.application.auditing import Auditor
-    from ase.application.dto import RateLimits
-    from ase.application.ports.archive import Archiver
-    from ase.application.ports.embeddings import EmbeddingGateway
-    from ase.application.ports.feeds import EventBus
-    from ase.application.ports.geo import CountryDirectory
-    from ase.application.ports.llm import LlmGateway, SecretCipher
     from ase.application.ports.report_export import AsyncReportRenderer
-    from ase.application.ports.research import ResearchCollection
-    from ase.application.ports.research_inputs import ResearchInputStore
-    from ase.application.ports.services import Clock, RateLimiter
-    from ase.application.ports.trackers import ConflictDirectory
-    from ase.application.ports.warning import AlertNotifier
-    from ase.application.trackers.aviation import WatchedArea
-    from ase.container import Repositories
-    from ase.domain.aviation import JamMap
-    from ase.domain.grading import SourceProfile
-    from ase.infrastructure.settings import Settings
 
 log = structlog.get_logger(__name__)
 
 
 class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring, MapWorkspaceWiring):
     """Session-scoped report production, export and search factories."""
-
-    if TYPE_CHECKING:
-        # The core defines these; declaring them here lets the mixin be type-checked alone.
-        settings: Settings
-        clock: Clock
-        limiter: RateLimiter
-        limits: RateLimits
-        session_factory: async_sessionmaker[AsyncSession]
-        store: InMemoryEventStore
-        countries: CountryDirectory
-        conflicts: ConflictDirectory
-        cipher: SecretCipher
-        llm: LlmGateway
-        embedding_gateway: EmbeddingGateway
-        embedding_lock: asyncio.Lock
-        ai_usage_accounting: AiUsageAccounting
-        source_profiles: Mapping[str, SourceProfile]
-        archiver: Archiver
-        notifier: AlertNotifier
-        bus: EventBus
-        jam: JamMap
-        watch_areas: tuple[WatchedArea, ...]
-        research: ResearchCollection
-        research_inputs: ResearchInputStore
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def _auditor(self, repos: Repositories) -> Auditor: ...
-
-        async def _maritime_background(self) -> str: ...
-        async def _cyber_background(self) -> str: ...
-        async def aviation_background(self, session: AsyncSession) -> str: ...
 
     def access_policy(self, session: AsyncSession) -> AccessPolicy:
         return AccessPolicy(self.repositories(session).users, SqlTeamRepository(session))

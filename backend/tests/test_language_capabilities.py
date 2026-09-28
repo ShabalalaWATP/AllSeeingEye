@@ -7,7 +7,7 @@ import httpx
 import pytest
 from httpx import AsyncClient
 
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.news import EDITIONS, GoogleNewsResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.translate.language import DEFAULT_LANGUAGES

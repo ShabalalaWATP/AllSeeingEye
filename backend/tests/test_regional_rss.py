@@ -7,8 +7,7 @@ import pytest
 
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.rss import MAX_ITEMS, RssConnector, RssOptions
-from ase.adapters.feeds.rss_seeds import RssSeed
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS, RssSeed
 from ase.adapters.feeds.rss_sources import RSS_SEEDS
 from ase.domain.events import Credibility, GeoConfidence, Reliability
 from feeds_helpers import FIXTURES, NOW, FakeClock, FakeHttp, make_spec

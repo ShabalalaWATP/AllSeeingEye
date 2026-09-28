@@ -18,23 +18,13 @@ from ase.application.groundwave import GroundwaveStudy
 from ase.application.navigation import RoutePlanner
 from ase.application.place_search import PlaceSearch
 from ase.application.terrain import TerrainSampler
+from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
-    from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
-    from ase.application.ports import Clock, RateLimiter
-    from ase.application.ports.source_controls import SourceAdmission
-    from ase.infrastructure.settings import Settings
+    pass
 
 
-class MapWiring:
-    if TYPE_CHECKING:
-        settings: Settings
-        http: FeedHttpClient
-        marine_http: DigitrafficHttpClient
-        clock: Clock
-        limiter: RateLimiter
-        source_admission: SourceAdmission
-
+class MapWiring(ContainerCore):
     def _initialise_map_catalogues(self) -> None:
         self.groundwave_study = GroundwaveStudy(NtiaGroundwaveSolver(), self.limiter)
         self.aircraft_interests = AircraftInterestQueue(self.clock)

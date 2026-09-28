@@ -11,7 +11,7 @@ import pytest
 from ase.adapters.cyber_reference import load_actor_catalogue
 from ase.adapters.feeds.cisa_kev import SPEC as KEV
 from ase.adapters.feeds.cyber import IODA, RANSOMWARE
-from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
+from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.cyber import CyberService
 from ase.application.feeds.health import HealthRegistry

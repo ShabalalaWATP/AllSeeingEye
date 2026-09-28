@@ -11,8 +11,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
-from ase.application.ports import Clock
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
 from ase.domain.events import (
     Category,
     Credibility,
@@ -104,20 +103,14 @@ def kind_of(text: str) -> tuple[str, float]:
     return "navigation", 0.3
 
 
-class NavareaConnector:
+class NavareaConnector(HttpFeed):
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         now = self._clock.now()
-        warnings = data.get("broadcast-warn", []) if isinstance(data, dict) else []
+        warnings = json_list(data, "broadcast-warn")
         return [
             event
             for item in warnings[:MAX_WARNINGS]

@@ -12,8 +12,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
-from ase.application.ports import Clock
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
+from ase.adapters.feeds.http import FeedFetchError
 from ase.domain.events import (
     Category,
     Credibility,
@@ -88,18 +88,12 @@ def _claim_reference(value: object) -> str | None:
         return None
 
 
-class RansomwareConnector:
+class RansomwareConnector(HttpFeed):
     spec = RANSOMWARE
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         now = self._clock.now()
         if not isinstance(data, list):
             raise FeedFetchError("Ransomware.live response is not a victim metadata list")
@@ -165,21 +159,15 @@ def _country_of(entity: dict[str, Any]) -> str | None:
     return None
 
 
-class IodaConnector:
+class IodaConnector(HttpFeed):
     spec = IODA
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
         since = int((now - LOOKBACK).timestamp())
         url = f"{self.spec.url}?from={since}&until={int(now.timestamp())}&limit={MAX_ITEMS}"
-        try:
-            data = await self._http.get_json(url, conditional=False)
-        except NotModified:
-            return []
+        data = await self._http.get_json(url, conditional=False)
         if (
             not isinstance(data, dict)
             or data.get("error")

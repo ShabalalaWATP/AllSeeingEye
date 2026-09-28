@@ -8,8 +8,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from ase.adapters.feeds.rss import RssConnector
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
-from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
+from ase.adapters.feeds.rss_seeds import ECONOMY_SEEDS, OUTLET_SEEDS
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.economy_news import EconomyNewsService
 from ase.container.research_feed_specs import additional_feed_specs

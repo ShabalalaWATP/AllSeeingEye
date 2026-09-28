@@ -5722,3 +5722,39 @@ chunks) with 93.7% coverage; CI shards are balanced by recorded file durations t
 `docs/archive/` with an index. Independent quality and security reviews found no
 blocking issues after four catalogue-dependent tests were marked and the snapshot
 was signed.
+
+## 28 September 2026: wave 2 structure, packaged catalogues and a PDF export race
+
+Wave 1 reached `main`, but CI failed on the parallel PDF export test, so the
+automatic deploy did not run. The failure was a real race, not a flaky test.
+ReportLab shares each registered TrueType face across exports and builds the
+embedded subset on save by seeking one shared read position. Two exports saving at
+once on worker threads could fail with `KeyError` or `IndexError`, or embed a damaged
+subset. A module lock now covers only the canvas save; layout still runs in
+parallel. A stress run failed 28 of 160 exports without the lock and none with it.
+The regression test now forces constant thread switching, so an unguarded save
+fails on every run. The fix merged separately as PR #78, and the next deploy of
+`main` releases wave 1 with it.
+
+Wave 2 is structural. `ContainerCore` declares the shared container services once,
+and twenty-one wiring mixins inherit it instead of repeating `TYPE_CHECKING`
+attribute blocks. Fourteen casts to the full container went with them; the fourteen
+that remain reach a member outside the core or pass the container on. Twenty-six
+feed connectors share `HttpFeed`, an `empty_when_unchanged` decorator for
+conditional fetches and a `json_list` helper. The curated European camera lists and
+the RSS, Telegram and YouTube seeds moved from 26 Python modules to packaged JSON.
+Strict loaders reject:
+
+- unknown fields and duplicates;
+- non-HTTPS URLs;
+- credentials in a URL authority.
+
+A before-and-after dump of every catalogue was byte-identical. Modules, tests and
+fixtures named after plan codes (E00, E01, E03, slice C) now carry names that
+describe their content.
+
+The full backend suite passed 9,731 tests with 93.75% coverage in under 12 minutes
+on 12 workers. The six local failures were five per-test timeouts under load, which
+pass in isolation, and the known Windows-only parser case. Independent quality and
+security reviews found no blocking issues. The URL authority check and the cast
+clean-up came from those reviews.

@@ -12,6 +12,7 @@ from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.feeds.rss import child_text, children, link_of, parse_feed_date
 from ase.application.feeds.pipeline import strip_html
@@ -99,11 +100,9 @@ class NhcConnector:
         self._clock = clock
         self.spec = spec
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            text = await self._http.get_text(self.spec.url)
-        except NotModified:
-            return []
+        text = await self._http.get_text(self.spec.url)
         root = _parse_xml(text, "NHC")
         now = self._clock.now()
         events: list[Event] = []
@@ -193,20 +192,14 @@ def _dtg(value: str, now: datetime) -> datetime:
     return when.astimezone(UTC)
 
 
-class JtwcConnector:
+class JtwcConnector(HttpFeed):
     """The RSS lists active systems; each warning text carries the position and winds."""
 
     spec = JTWC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            rss = await self._http.get_text(self.spec.url)
-        except NotModified:
-            return []
+        rss = await self._http.get_text(self.spec.url)
         products = list(dict.fromkeys(PRODUCT.findall(rss)))[:MAX_JTWC_PRODUCTS]
         now = self._clock.now()
         events: list[Event] = []

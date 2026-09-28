@@ -60,7 +60,7 @@ def test_every_executable_e00_provider_has_a_reviewed_profile():
 @pytest.mark.parametrize("index", range(3), ids=["ukraine-drone", "cyber", "economy"])
 def test_production_profiles_preserve_curated_source_choices(index):
     audit = json.loads(
-        (Path(__file__).parent / "fixtures/source_allocator_e01.json").read_text("utf8")
+        (Path(__file__).parent / "fixtures/source_allocator_cases.json").read_text("utf8")
     )
     query, requirements, _, options = scenario(audit, index)
     case = audit["cases"][index]

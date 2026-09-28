@@ -11,8 +11,9 @@ from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
 from ase.adapters.feeds.cyber import IODA, _measurement_time, _when
-from ase.adapters.feeds.http import FeedCredential, FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedCredential, FeedFetchError, FeedHttpClient
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -64,13 +65,10 @@ def _safe_label(value: object, *, limit: int = 120) -> str:
     return " ".join(value.split())[:limit]
 
 
-class IodaEventsConnector:
+class IodaEventsConnector(HttpFeed):
     spec = IODA_EVENTS
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
         since = now - timedelta(days=1)
@@ -82,10 +80,7 @@ class IodaEventsConnector:
                 "limit": _MAX_ITEMS,
             }
         )
-        try:
-            data = await self._http.get_json(f"{self.spec.url}?{query}", conditional=False)
-        except NotModified:
-            return []
+        data = await self._http.get_json(f"{self.spec.url}?{query}", conditional=False)
         if (
             not isinstance(data, dict)
             or data.get("error")
@@ -173,14 +168,12 @@ class CloudflareRadarConnector:
             origin="https://api.cloudflare.com", authorization=f"Bearer {token}"
         )
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
         query = urlencode({"dateRange": "7d", "limit": 100, "offset": 0, "format": "json"})
-        try:
-            data = await self._http.get_json(
-                f"{self.spec.url}?{query}", credential=self._credential, conditional=False
-            )
-        except NotModified:
-            return []
+        data = await self._http.get_json(
+            f"{self.spec.url}?{query}", credential=self._credential, conditional=False
+        )
         if not isinstance(data, dict) or data.get("success") is not True:
             raise FeedFetchError("Cloudflare Radar returned an unsuccessful outage response")
         result = data.get("result")

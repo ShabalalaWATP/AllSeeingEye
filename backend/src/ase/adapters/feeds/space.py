@@ -9,9 +9,8 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
 from ase.adapters.feeds.satellites import SatelliteConnector, subpoint
-from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
     Credibility,
@@ -76,20 +75,14 @@ def _when(value: object, fallback: datetime) -> datetime:
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
 
 
-class LaunchConnector:
+class LaunchConnector(HttpFeed):
     spec = LAUNCHES
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         now = self._clock.now()
-        results = data.get("results", []) if isinstance(data, dict) else []
+        results = json_list(data, "results")
         return [
             event
             for item in results
@@ -148,18 +141,12 @@ class LaunchConnector:
         )
 
 
-class KpConnector:
+class KpConnector(HttpFeed):
     spec = KP
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         rows = [row for row in data if isinstance(row, dict)] if isinstance(data, list) else []
         if not rows:
             return []

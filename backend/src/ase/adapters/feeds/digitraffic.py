@@ -5,9 +5,9 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
+from ase.adapters.feeds.base import HttpFeed
+from ase.adapters.feeds.http import FeedFetchError
 from ase.application.feeds.budgets import VESSEL_POSITION_AGE
-from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
     Event,
@@ -159,11 +159,8 @@ def parse_locations(data: Any, now: datetime) -> list[Event]:
     return list(events.values())
 
 
-class DigitrafficConnector:
+class DigitrafficConnector(HttpFeed):
     spec = SPEC
-
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http, self._clock = http, clock
 
     async def fetch(self) -> list[Event]:
         now = self._clock.now()

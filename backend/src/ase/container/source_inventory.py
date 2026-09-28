@@ -17,6 +17,7 @@ from ase.application.source_inventory import (
     SourceInventory,
     SourceRequirement,
 )
+from ase.container.core import ContainerCore
 from ase.container.source_assets import build_source_assets
 from ase.container.source_requirements import (
     FIRMS_SETTING,
@@ -83,7 +84,7 @@ def _toggle(
     )
 
 
-class SourceInventoryWiring:
+class SourceInventoryWiring(ContainerCore):
     """Composes the user-facing inventory. Credential values never leave the server."""
 
     def optional_connector_specs(self) -> tuple[SourceSpec, ...]:
@@ -91,8 +92,7 @@ class SourceInventoryWiring:
         return OPTIONAL_CONNECTOR_SPECS
 
     def source_inventory(self, session: AsyncSession) -> SourceInventory:
-        container = cast("Container", self)
-        settings = container.settings
+        settings = self.settings
         credentials = SqlFirmsCredentials(session)
 
         async def resolve(source_id: str) -> SourceRequirement | None:
@@ -124,12 +124,12 @@ class SourceInventoryWiring:
             )
 
         return SourceInventory(
-            container.scheduler.connectors,
-            container.research_sources,
+            self.scheduler.connectors,
+            self.research_sources,
             self.optional_connector_specs(),
             source_requirements(settings),
-            container.health,
-            container.source_admission,
+            self.health,
+            self.source_admission,
             tuple(settings.disabled_feed_ids),
             resolve,
             collecting=bool(settings.feeds_enabled),

@@ -1,8 +1,10 @@
 # European public camera integration
 
 Reference: [OSIRIS CCTV modules at fac8d1b](https://github.com/simplifaisoul/osiris/tree/fac8d1b/src/app/api/cctv).
-The country catalogue modules retain the reference MIT copyright and permission
-notice. Camera imagery remains subject to each provider's terms, independently
+The curated country catalogues are packaged as
+`backend/src/ase/resources/cameras/<country>.json`, loaded and validated by
+`camera_europe_catalogue.py`; `NOTICE.md` in that folder retains the reference MIT
+copyright and permission notice. Camera imagery remains subject to each provider's terms, independently
 of the code licence. Catalogue coordinates are preserved, not newly geocoded.
 Curated positions are marked approximate. A listed stream is not an assertion
 that its content is currently broadcasting or that its location is verified.

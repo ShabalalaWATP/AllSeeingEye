@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_SPEC
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.api.schemas_reports import ReportCreateIn
 from ase.container import Container
 from ase.container.research import research_service

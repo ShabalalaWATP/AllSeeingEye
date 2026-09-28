@@ -12,22 +12,18 @@ from ase.adapters.research_imports.runner import DocumentImportRunner
 from ase.adapters.research_inputs.importer import DocumentResearchImporter
 from ase.adapters.research_inputs.memory import BoundedResearchInputStore
 from ase.adapters.research_media.models import MediaTools
-from ase.application.access import AccessPolicy
 from ase.application.model_routing import ModelRouting
-from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.research_inputs import DocumentImportPort, ResearchInputStore
-from ase.application.ports.services import Clock, RateLimiter
+from ase.application.ports.services import Clock
 from ase.application.research.inputs import ImportResearchInput
 from ase.application.research.photo_geolocation import PhotoGeolocation
+from ase.container.core import ContainerCore
 from ase.container.research_sources import research_source_specs
 from ase.domain.llm import LlmUsage
 from ase.infrastructure.settings import Settings
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import async_sessionmaker
-
-    from ase.application.ai_usage import AiUsageAccounting
-    from ase.container.repositories import Repositories
+    pass
 
 
 def media_tools(settings: Settings) -> MediaTools:
@@ -49,20 +45,7 @@ def input_services(
     )
 
 
-class ResearchInputWiring:
-    if TYPE_CHECKING:
-        research_inputs: ResearchInputStore
-        research_importer: DocumentImportPort
-        clock: Clock
-        limiter: RateLimiter
-        cipher: SecretCipher
-        llm: LlmGateway
-        session_factory: async_sessionmaker[AsyncSession]
-        ai_usage_accounting: AiUsageAccounting
-
-        def repositories(self, session: AsyncSession) -> Repositories: ...
-        def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
-
+class ResearchInputWiring(ContainerCore):
     def initialise_research_inputs(self, settings: Settings) -> None:
         self.photo_admission = asyncio.Semaphore(2)
         self.research_runs = ResearchRunStore(self.clock)

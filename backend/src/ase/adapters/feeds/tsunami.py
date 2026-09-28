@@ -11,7 +11,8 @@ from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.base import empty_when_unchanged
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.rss import child_text, children, parse_feed_date, point_of
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -84,11 +85,9 @@ class TsunamiConnector:
         self._clock = clock
         self.spec = spec
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            text = await self._http.get_text(self.spec.url)
-        except NotModified:
-            return []
+        text = await self._http.get_text(self.spec.url)
         try:
             root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
         except ParseError as exc:

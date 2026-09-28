@@ -1,0 +1,261 @@
+{
+  "about": [
+    "Official and institutional feeds, verified live on 5 and 13 September 2026.",
+    "",
+    "The Kremlin, US State Department, Chinese MFA and BelTA English feeds were tried on",
+    "13 September 2026 and left out: the Kremlin feed is served only over plain HTTP",
+    "(its TLS handshake fails), State returns 407, and the others return HTML or 403."
+  ],
+  "licences": {
+    "ogl": "Open Government Licence v3",
+    "us_government_work": "US Government work",
+    "ministry_titles_only": "Ministry terms; titles and links only",
+    "un_terms": "UN terms of use",
+    "reliefweb_site": "Site CC BY 4.0; reports keep source copyright",
+    "outlet": "Outlet terms; headlines and links only, no full text stored"
+  },
+  "options": {
+    "official": {
+      "subtype": "statement",
+      "tags": ["official"],
+      "credibility": "probably_true",
+      "rationale": "Official publication by the issuing body",
+      "headlines_only": false,
+      "newest_first": false
+    },
+    "travel_advice": {
+      "subtype": "travel_advice",
+      "tags": ["official", "travel"],
+      "credibility": "probably_true",
+      "rationale": "Official travel advice from the issuing government",
+      "headlines_only": false,
+      "newest_first": false
+    },
+    "state_official": {
+      "subtype": "statement",
+      "tags": ["official", "state_controlled"],
+      "credibility": "doubtful",
+      "rationale": "Official release of a state with controlled media; treat as its position",
+      "headlines_only": false,
+      "newest_first": false
+    },
+    "us_travel_advisory": {
+      "subtype": "travel_advisory",
+      "tags": ["official", "travel"],
+      "credibility": "probably_true",
+      "rationale": "Official travel advisory from the issuing government",
+      "headlines_only": false,
+      "newest_first": false,
+      "country_category_domain": "Country-Tag"
+    },
+    "un_news": {
+      "subtype": "article",
+      "tags": ["un"],
+      "credibility": "probably_true",
+      "rationale": "UN news service report",
+      "headlines_only": false,
+      "newest_first": false
+    },
+    "reliefweb_report": {
+      "subtype": "report",
+      "tags": ["humanitarian"],
+      "credibility": "probably_true",
+      "rationale": "Humanitarian report republished by ReliefWeb; source named in the item",
+      "headlines_only": false,
+      "newest_first": false
+    },
+    "analysis": {
+      "subtype": "analysis",
+      "tags": ["analysis"],
+      "credibility": "probably_true",
+      "rationale": "Analysis by an established conflict-prevention organisation",
+      "headlines_only": false,
+      "newest_first": false
+    }
+  },
+  "seeds": [
+    {
+      "id": "gov_uk_fcdo_news",
+      "name": "GOV.UK FCDO news",
+      "organisation": "Foreign, Commonwealth and Development Office",
+      "category": "political",
+      "url": "https://www.gov.uk/government/organisations/foreign-commonwealth-development-office.atom",
+      "homepage": "https://www.gov.uk/government/organisations/foreign-commonwealth-development-office",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "ogl",
+      "flags": []
+    },
+    {
+      "id": "gov_uk_travel_advice",
+      "name": "GOV.UK foreign travel advice",
+      "organisation": "Foreign, Commonwealth and Development Office",
+      "category": "political",
+      "url": "https://www.gov.uk/foreign-travel-advice.atom",
+      "homepage": "https://www.gov.uk/foreign-travel-advice",
+      "reliability": "A",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "travel_advice",
+      "licence": "ogl",
+      "flags": []
+    },
+    {
+      "id": "gov_uk_mod_news",
+      "name": "GOV.UK Ministry of Defence news",
+      "organisation": "Ministry of Defence",
+      "category": "political",
+      "url": "https://www.gov.uk/government/organisations/ministry-of-defence.atom",
+      "homepage": "https://www.gov.uk/government/organisations/ministry-of-defence",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "ogl",
+      "flags": []
+    },
+    {
+      "id": "gov_uk_number_10",
+      "name": "GOV.UK Prime Minister's Office news",
+      "organisation": "Prime Minister's Office, 10 Downing Street",
+      "category": "political",
+      "url": "https://www.gov.uk/government/organisations/prime-ministers-office-10-downing-street.atom",
+      "homepage": "https://www.gov.uk/government/organisations/prime-ministers-office-10-downing-street",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "ogl",
+      "flags": []
+    },
+    {
+      "id": "gov_uk_home_office",
+      "name": "GOV.UK Home Office news",
+      "organisation": "Home Office",
+      "category": "political",
+      "url": "https://www.gov.uk/government/organisations/home-office.atom",
+      "homepage": "https://www.gov.uk/government/organisations/home-office",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "ogl",
+      "flags": []
+    },
+    {
+      "id": "whitehouse_news",
+      "name": "White House news",
+      "organisation": "The White House",
+      "category": "political",
+      "url": "https://www.whitehouse.gov/news/feed/",
+      "homepage": "https://www.whitehouse.gov/news/",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "us_government_work",
+      "flags": []
+    },
+    {
+      "id": "us_dod_news",
+      "name": "US Department of Defense news",
+      "organisation": "US Department of Defense",
+      "category": "political",
+      "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10",
+      "homepage": "https://www.defense.gov/News/",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "us_government_work",
+      "flags": []
+    },
+    {
+      "id": "russia_mfa_ru",
+      "name": "Russian MFA news (Russian)",
+      "organisation": "Ministry of Foreign Affairs of the Russian Federation",
+      "category": "political",
+      "url": "https://mid.ru/ru/rss.php",
+      "homepage": "https://mid.ru/ru/",
+      "reliability": "C",
+      "poll_minutes": 30,
+      "language": "ru",
+      "options": "state_official",
+      "licence": "ministry_titles_only",
+      "flags": ["state_controlled"],
+      "note": "The feed's own self link; /ru/rss/ returns a firewall HTML page (15 September 2026)."
+    },
+    {
+      "id": "us_state_travel_advisories",
+      "name": "US State Department travel advisories",
+      "organisation": "US Department of State",
+      "category": "political",
+      "url": "https://travel.state.gov/_res/rss/TAsTWs.xml",
+      "homepage": "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html",
+      "reliability": "A",
+      "poll_minutes": 60,
+      "language": "en",
+      "options": "us_travel_advisory",
+      "licence": "us_government_work",
+      "flags": []
+    },
+    {
+      "id": "un_news",
+      "name": "UN News",
+      "organisation": "United Nations",
+      "category": "news",
+      "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+      "homepage": "https://news.un.org/",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "un_news",
+      "licence": "un_terms",
+      "flags": []
+    },
+    {
+      "id": "un_press",
+      "name": "UN press releases and meetings coverage",
+      "organisation": "United Nations",
+      "category": "political",
+      "url": "https://press.un.org/en/rss.xml",
+      "homepage": "https://press.un.org/",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "official",
+      "licence": "un_terms",
+      "flags": []
+    },
+    {
+      "id": "reliefweb_updates",
+      "name": "ReliefWeb updates",
+      "organisation": "UN OCHA ReliefWeb",
+      "category": "humanitarian",
+      "url": "https://reliefweb.int/updates/rss.xml",
+      "homepage": "https://reliefweb.int/",
+      "reliability": "B",
+      "poll_minutes": 30,
+      "language": "en",
+      "options": "reliefweb_report",
+      "licence": "reliefweb_site",
+      "flags": []
+    },
+    {
+      "id": "crisis_group",
+      "name": "International Crisis Group",
+      "organisation": "International Crisis Group",
+      "category": "political",
+      "url": "https://www.crisisgroup.org/rss",
+      "homepage": "https://www.crisisgroup.org/",
+      "reliability": "B",
+      "poll_minutes": 60,
+      "language": "en",
+      "options": "analysis",
+      "licence": "outlet",
+      "flags": []
+    }
+  ]
+}

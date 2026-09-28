@@ -11,9 +11,9 @@ from types import MappingProxyType
 from typing import Any
 from urllib.parse import urlencode
 
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
 from ase.adapters.feeds.conflict_values import public_link, text
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
-from ase.application.ports import Clock
+from ase.adapters.feeds.http import FeedFetchError
 from ase.domain.events import (
     Category,
     Credibility,
@@ -55,11 +55,8 @@ SPEC = SourceSpec(
 )
 
 
-class GeneralStaffLossesConnector:
+class GeneralStaffLossesConnector(HttpFeed):
     spec = SPEC
-
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http, self._clock = http, clock
 
     def _url(self, today: date, offset: int = 0) -> str:
         start = today - timedelta(days=SERIES_DAYS)
@@ -73,12 +70,10 @@ class GeneralStaffLossesConnector:
         )
         return f"{self.spec.url}?{query}"
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
-        try:
-            records = await self._records(now.date())
-        except NotModified:
-            return []
+        records = await self._records(now.date())
         events: dict[str, Event] = {}
         for row in records:
             claim = parse_claim(row)

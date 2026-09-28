@@ -113,7 +113,7 @@ and all with a post inside the previous 16 days. Grouped by topic:
 | `africa_sahel` | 1 | Mali Actu |
 
 The full list, with the operator and the one-line reason for each entry, is in
-`backend/src/ase/adapters/feeds/telegram_channels_{ukraine,russia,correspondents,world}.py`.
+`backend/src/ase/resources/feeds/telegram_{ukraine,russia,correspondents,world}.json`.
 
 ## What was rejected, and why
 

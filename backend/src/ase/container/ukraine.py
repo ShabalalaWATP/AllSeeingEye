@@ -14,6 +14,7 @@ from ase.application.model_routing import ModelRouting
 from ase.application.ukraine import UkraineBoardService
 from ase.application.ukraine_digest import UkraineDigestService
 from ase.application.ukraine_digest_writer import DigestWriter
+from ase.container.core import ContainerCore
 from ase.domain.audit import AuditAction
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
@@ -43,7 +44,7 @@ class GlobalDigestModel:
                 return None
 
 
-class UkraineWiring:
+class UkraineWiring(ContainerCore):
     @cached_property
     def ukraine_control(self) -> ControlSnapshot | None:
         return load_control_snapshot()
@@ -69,22 +70,20 @@ class UkraineWiring:
 
     @cached_property
     def ukraine_providers(self) -> FrontlineProviders:
-        container = cast("Container", self)
-        settings = container.settings
+        settings = self.settings
         return FrontlineProviders(
-            container.http,
-            container.clock,
+            self.http,
+            self.clock,
             deepstate=settings.ukraine_deepstate_access == "granted",
             ocha=settings.ukraine_ocha_humanitarian,
             spotted=settings.ukraine_warspotting,
         )
 
     def ukraine(self) -> UkraineBoardService:
-        container = cast("Container", self)
         return UkraineBoardService(
-            container.store,
-            container.clock,
-            container.conflicts,
+            self.store,
+            self.clock,
+            self.conflicts,
             self.ukraine_control,
             self.ukraine_confirmed,
             self.ukraine_civilian_harm,

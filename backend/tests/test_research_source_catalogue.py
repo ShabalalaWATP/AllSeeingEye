@@ -7,7 +7,7 @@ from datetime import timedelta
 from httpx import AsyncClient
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds import REGIONAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.publisher import PUBLISHER_SEEDS
 from ase.application.feeds.grading import profiles_from_specs

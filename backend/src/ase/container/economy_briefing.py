@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
+from ase.adapters.feeds.rss_seeds import ECONOMY_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.daily_briefing import DailyBriefingService
 from ase.application.economy_briefing import coverage_note, economy_briefing_request
@@ -17,6 +17,7 @@ from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import EvidenceStrategy
+from ase.container.core import ContainerCore
 from ase.container.research import private_research_store
 from ase.domain.daily_briefing import economy_briefing_key
 from ase.domain.economy_periods import EconomyWindowDays, economy_window
@@ -27,15 +28,14 @@ if TYPE_CHECKING:
     from ase.container import Container
 
 
-class EconomyBriefingWiring:
+class EconomyBriefingWiring(ContainerCore):
     @cached_property
     def economy_news(self) -> EconomyNewsService:
-        container = cast("Container", self)
         return EconomyNewsService(
-            container.store,
-            container.clock,
+            self.store,
+            self.clock,
             {seed.spec.id: seed.spec for seed in ECONOMY_SEEDS},
-            container.source_admission,
+            self.source_admission,
         )
 
     def economy_briefing(

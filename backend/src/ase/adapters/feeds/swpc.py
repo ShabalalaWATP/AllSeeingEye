@@ -5,8 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
-from ase.application.ports import Clock
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
 from ase.domain.events import (
     Category,
     Credibility,
@@ -88,18 +87,12 @@ def _severity_from_text(text: str) -> float:
     return 0.2
 
 
-class SwpcAlertsConnector:
+class SwpcAlertsConnector(HttpFeed):
     spec = ALERTS_SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         now = self._clock.now()
         items = data if isinstance(data, list) else []
         return [event for item in items if (event := self._to_event(item, now))]
@@ -131,18 +124,12 @@ class SwpcAlertsConnector:
         )
 
 
-class SwpcScalesConnector:
+class SwpcScalesConnector(HttpFeed):
     spec = SCALES_SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url)
         current = data.get("0") if isinstance(data, dict) else None
         if not isinstance(current, dict):
             return []
