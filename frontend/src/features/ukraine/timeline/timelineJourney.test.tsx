@@ -63,7 +63,18 @@ const reference: UkraineReference = {
 };
 
 const stage = () => screen.getByTestId('journey-stage');
-const announcement = () => within(stage()).getByText(/^Event \d/);
+/** The stop on the stage: the counter under it, then the date and title on its card. */
+const showing = () => {
+  const card = screen.getByRole('region', { name: 'Current event' });
+  return [
+    screen.getByText(/^\d+ of \d+$/).textContent,
+    card.querySelector('time')?.textContent,
+    within(card).getByRole('heading', { level: 3 }).textContent,
+  ].join(', ');
+};
+const first = '1 of 3, 24 February 2022, The full-scale invasion begins';
+const second = '2 of 3, 25 March 2022, The battle for Kyiv is won';
+const third = '3 of 3, 15 January 2026, Talks without a ceasefire';
 
 describe('the timeline journey without WebGL', () => {
   it('reads the whole timeline as phases and events, and says why the view is static', () => {
@@ -90,27 +101,27 @@ describe('the timeline journey without WebGL', () => {
   it('travels with the buttons, the scrubber, the keyboard and the phase selector', async () => {
     const user = userEvent.setup();
     render(<TimelineSection reference={reference} />);
-    expect(announcement()).toHaveTextContent('Event 1 of 3. 24 February 2022.');
+    expect(showing()).toBe(first);
     await user.click(screen.getByRole('button', { name: 'Next event' }));
-    expect(announcement()).toHaveTextContent('Event 2 of 3. 25 March 2022.');
+    expect(showing()).toBe(second);
     await user.click(screen.getByRole('button', { name: 'Previous event' }));
     expect(screen.getByRole('button', { name: 'Previous event' })).toBeDisabled();
     fireEvent.change(screen.getByRole('slider'), { target: { value: '2' } });
-    expect(announcement()).toHaveTextContent('Event 3 of 3. 15 January 2026.');
+    expect(showing()).toBe(third);
     expect(screen.getByRole('button', { name: 'Next event' })).toBeDisabled();
     fireEvent.keyDown(screen.getByRole('button', { name: 'Previous event' }), { key: 'Home' });
-    expect(announcement()).toHaveTextContent('Event 1 of 3.');
+    expect(showing()).toBe(first);
     fireEvent.keyDown(stage(), { key: 'ArrowRight' });
-    expect(announcement()).toHaveTextContent('Event 2 of 3.');
+    expect(showing()).toBe(second);
     fireEvent.keyDown(stage(), { key: 'End' });
-    expect(announcement()).toHaveTextContent('Event 3 of 3.');
+    expect(showing()).toBe(third);
     fireEvent.keyDown(stage(), { key: 'PageUp' });
-    expect(announcement()).toHaveTextContent('Event 1 of 3.');
+    expect(showing()).toBe(first);
     fireEvent.keyDown(stage(), { key: 'Enter' });
-    expect(announcement()).toHaveTextContent('Event 1 of 3.');
+    expect(showing()).toBe(first);
     const selector = screen.getByRole('list', { name: 'Phases' });
     await user.click(within(selector).getByRole('button', { name: /The fifth year/ }));
-    expect(announcement()).toHaveTextContent('Event 3 of 3.');
+    expect(showing()).toBe(third);
     expect(within(selector).getByRole('button', { name: /The fifth year/ })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -121,7 +132,7 @@ describe('the timeline journey without WebGL', () => {
     const user = userEvent.setup();
     const { container } = render(<TimelineSection reference={reference} />);
     await user.click(screen.getByRole('button', { name: 'The battle for Kyiv is won' }));
-    expect(announcement()).toHaveTextContent('Event 2 of 3.');
+    expect(showing()).toBe(second);
     const current = container.querySelectorAll('[aria-current="true"]');
     expect(current).toHaveLength(1);
     expect(current[0]).toHaveTextContent('The battle for Kyiv is won');
@@ -133,11 +144,11 @@ describe('the timeline journey without WebGL', () => {
     // journey takes the wheel; true means the gesture was left to the page.
     const wheel = (deltaY: number) => !fireEvent.wheel(stage(), { deltaY, cancelable: true });
     expect(wheel(200)).toBe(true);
-    expect(announcement()).toHaveTextContent('Event 3 of 3.');
+    expect(showing()).toBe(third);
     // Nothing further forward: the wheel is left to the page.
     expect(wheel(200)).toBe(false);
     expect(wheel(-95)).toBe(true);
-    expect(announcement()).toHaveTextContent('Event 2 of 3.');
+    expect(showing()).toBe(second);
     expect(wheel(0)).toBe(false);
   });
 
@@ -146,10 +157,10 @@ describe('the timeline journey without WebGL', () => {
     const target = stage();
     fireEvent.pointerDown(target, { clientX: 300 });
     fireEvent.pointerMove(target, { clientX: 200 });
-    expect(announcement()).toHaveTextContent('Event 2 of 3.');
+    expect(showing()).toBe(second);
     fireEvent.pointerUp(target);
     fireEvent.pointerMove(target, { clientX: 100 });
-    expect(announcement()).toHaveTextContent('Event 2 of 3.');
+    expect(showing()).toBe(second);
   });
 
   it('narrows to a theme, restarts the journey and copes with an empty result', async () => {
@@ -157,10 +168,10 @@ describe('the timeline journey without WebGL', () => {
     render(<TimelineSection reference={reference} />);
     fireEvent.keyDown(stage(), { key: 'End' });
     await user.click(screen.getByRole('button', { name: 'Diplomacy and aid' }));
-    expect(announcement()).toHaveTextContent('Event 1 of 1. 15 January 2026.');
+    expect(showing()).toBe('1 of 1, 15 January 2026, Talks without a ceasefire');
     expect(screen.queryByRole('list', { name: 'Events: Full-scale invasion' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Diplomacy and aid' }));
-    expect(announcement()).toHaveTextContent('Event 1 of 3.');
+    expect(showing()).toBe(first);
     await user.click(screen.getByRole('button', { name: 'All themes' }));
     render(<TimelineSection reference={{ ...reference, events: [] }} />);
     expect(screen.getAllByText('No events match this theme.').length).toBeGreaterThan(0);

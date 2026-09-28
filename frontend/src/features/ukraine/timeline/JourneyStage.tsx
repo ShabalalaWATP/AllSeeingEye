@@ -1,7 +1,8 @@
 /**
  * The stage: the WebGL corridor where the browser allows it, a static phase gradient where it
- * does not, with the active event's card legible on its own panel over the top. The reading
- * list underneath carries the same events for assistive technology and for everyone else.
+ * does not, with the active event's card legible on its own panel over the top. The scene, the
+ * shading and the year watermark are decoration and hidden from assistive technology; the card
+ * is the accessible text for the current stop, and a polite live region names each new stop.
  */
 import { useRef } from 'react';
 
@@ -12,6 +13,7 @@ import { JourneyCard, type Fetcher } from './JourneyCard';
 import { JourneyControls } from './JourneyControls';
 import type { Journey } from './journey';
 import { useJourneyTravel } from './useJourneyTravel';
+import { useStopAnnouncement } from './useStopAnnouncement';
 
 /** A quiet gradient of the phase colours, used when the 3D layer is off. */
 function StaticBackdrop({ colours }: { colours: string[] }) {
@@ -53,6 +55,7 @@ export function JourneyStage({
   const stop = stops[index];
   const colours = stops.map((item) => item.phase.colour);
   useJourneyTravel(stageRef, controlsRef, { count: stops.length, index, onIndex });
+  const announcer = useStopAnnouncement(stop?.event.id, stop?.event.title ?? '');
 
   return (
     <div ref={controlsRef} className="overflow-hidden rounded-card border border-line bg-ground">
@@ -85,11 +88,7 @@ export function JourneyStage({
           </p>
         ) : null}
         {stop ? <JourneyCard stop={stop} reference={reference} fetcher={fetcher} /> : null}
-        <p aria-live="polite" className="sr-only">
-          {stop
-            ? `Event ${index + 1} of ${stops.length}. ${stop.date}. ${stop.event.title}. ${stop.phase.label}.`
-            : 'No events match this theme.'}
-        </p>
+        <p ref={announcer} aria-live="polite" aria-atomic="true" className="sr-only" />
       </div>
       <JourneyControls
         stops={stops}

@@ -64,9 +64,10 @@ export function useJourneyTravel(
     };
 
     const onKeyDown = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null;
-      // The range scrubber already moves itself with the arrow keys.
-      if (target?.tagName === 'INPUT') return;
+      const target = event.target;
+      // The range scrubber already moves itself with the arrow keys, and a link on the card
+      // keeps the browser's own keys: travelling from it would replace the card and drop focus.
+      if (target instanceof Element && target.closest('input, a') !== null) return;
       const keys: Record<string, number> = {
         ArrowRight: 1,
         ArrowDown: 1,
