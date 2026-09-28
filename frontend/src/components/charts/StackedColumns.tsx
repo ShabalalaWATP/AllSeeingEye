@@ -126,16 +126,17 @@ export function StackedColumns({
         })}
         <line x1="0" x2={WIDTH} y1={BASE} y2={BASE} className="stroke-line" strokeWidth="1" />
       </svg>
-      {series.length > 1 && (
-        <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
-          {series.map((row) => (
+      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
+        {series.length > 1 &&
+          series.map((row) => (
             <span key={row.key} className="inline-flex items-center gap-1.5">
               <span aria-hidden="true" className={`size-2 rounded-sm ${SLOT_BG[row.slot]}`} />
               {row.label}
             </span>
           ))}
-        </figcaption>
-      )}
+        {/* Some series colours fall below 3:1 on light surfaces, so the numbers carry the reading. */}
+        <span className="basis-full">The table view is the reference reading.</span>
+      </figcaption>
       <details className="text-xs text-muted">
         <summary className="w-fit cursor-pointer hover:text-text">Table view</summary>
         <div className="mt-2 overflow-x-auto">

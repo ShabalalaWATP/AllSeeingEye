@@ -6,10 +6,9 @@ import { formatDate, isStale } from './forceTree';
 import { ReferenceImage } from './ReferenceImage';
 
 const SIDE_ACCENT = { ru: 'border-t-chart-2', ua: 'border-t-chart-1' } as const;
-const SIDE_CHIP = {
-  ru: 'bg-chart-2/15 text-chart-2',
-  ua: 'bg-chart-1/15 text-chart-1',
-} as const;
+// Chart colours are data colours: they tint the chip and mark a dot, never the words.
+const SIDE_CHIP = { ru: 'bg-chart-2/15', ua: 'bg-chart-1/15' } as const;
+const SIDE_DOT = { ru: 'bg-chart-2', ua: 'bg-chart-1' } as const;
 
 /** One system: what it is, who fields it, what public reporting says about numbers. */
 export function EquipmentCard({
@@ -45,8 +44,12 @@ export function EquipmentCard({
           <span className="flex shrink-0 flex-wrap justify-end gap-1">
             {showSide ? (
               <span
-                className={`rounded-full px-2 py-0.5 font-mono text-2xs ${SIDE_CHIP[entry.side]}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-2xs text-text ${SIDE_CHIP[entry.side]}`}
               >
+                <span
+                  aria-hidden="true"
+                  className={`size-1.5 shrink-0 rounded-full ${SIDE_DOT[entry.side]}`}
+                />
                 {SIDE_LABELS[entry.side]}
               </span>
             ) : null}
