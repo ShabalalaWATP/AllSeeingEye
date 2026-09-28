@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import lru_cache
+from types import MappingProxyType
 from typing import Literal
 
 from ase.domain.events import Event, GeoConfidence
@@ -18,6 +20,7 @@ MAX_MENTION_TEXT = 4_000
 MIN_SURNAME_LENGTH = 5
 MIN_ALIAS_LENGTH = 10
 PLACE_CONFIDENCE = frozenset({GeoConfidence.EXACT, GeoConfidence.CITY, GeoConfidence.ADMIN1})
+WORD = re.compile(r"\w+")
 # Title words never identify a person on their own.
 TITLE_WORDS = frozenset(
     {
@@ -138,7 +141,6 @@ def _usable_alias(alias: str) -> bool:
     )
 
 
-@lru_cache(maxsize=4)
 def _person_patterns(
     figures: tuple[PublicFigure, ...],
 ) -> tuple[tuple[str, str, re.Pattern[str]], ...]:
@@ -161,17 +163,56 @@ def _person_patterns(
     )
 
 
-def match_people(text: str, figures: tuple[PublicFigure, ...]) -> dict[str, str]:
-    """Person ids named in a bounded text prefix, with the name that matched.
+@dataclass(frozen=True, slots=True)
+class NameMatcher:
+    """Unambiguous roster names, found only at word boundaries in a bounded folded prefix."""
 
-    Denials and reported plans still count as mentions; the caller labels the basis.
-    """
-    folded = " ".join(text[:MAX_MENTION_TEXT].casefold().split())
-    found: dict[str, str] = {}
-    for person_id, name, pattern in _person_patterns(figures[:MAX_FIGURES]):
-        if person_id not in found and pattern.search(folded):
-            found[person_id] = name
-    return found
+    patterns: tuple[tuple[str, str, re.Pattern[str]], ...]
+    by_first_word: Mapping[str, tuple[int, ...]]
+    unindexed: tuple[int, ...]
+
+    def match(self, text: str) -> dict[str, str]:
+        """Person ids named in the text, with the name that matched.
+
+        Denials and reported plans still count as mentions; the caller labels the basis.
+        A match starts after a non-word character, so a name beginning with a word can
+        only match where that exact word stands whole in the text. Only those patterns
+        are searched, in their original order, so the result is unchanged.
+        """
+        folded = " ".join(text[:MAX_MENTION_TEXT].casefold().split())
+        positions = set(self.unindexed)
+        for word in set(WORD.findall(folded)):
+            positions.update(self.by_first_word.get(word, ()))
+        found: dict[str, str] = {}
+        for index in sorted(positions):
+            person_id, name, pattern = self.patterns[index]
+            if person_id not in found and pattern.search(folded):
+                found[person_id] = name
+        return found
+
+
+@lru_cache(maxsize=4)
+def name_matcher(figures: tuple[PublicFigure, ...]) -> NameMatcher:
+    """Build once per roster; each lookup hashes the whole roster, so reuse the result."""
+    patterns = _person_patterns(figures)
+    by_first_word: dict[str, list[int]] = {}
+    unindexed: list[int] = []
+    for index, (_, name, _) in enumerate(patterns):
+        first = WORD.match(name)
+        if first is None:
+            unindexed.append(index)
+        else:
+            by_first_word.setdefault(first.group(), []).append(index)
+    return NameMatcher(
+        patterns=patterns,
+        by_first_word=MappingProxyType({word: tuple(ids) for word, ids in by_first_word.items()}),
+        unindexed=tuple(unindexed),
+    )
+
+
+def match_people(text: str, figures: tuple[PublicFigure, ...]) -> dict[str, str]:
+    """Person ids named in a bounded text prefix, with the name that matched."""
+    return name_matcher(figures[:MAX_FIGURES]).match(text)
 
 
 def place_figure(figure: PublicFigure, mentions: tuple[Event, ...]) -> FigurePlacement:

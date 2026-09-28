@@ -92,9 +92,14 @@ matcher, tells the reader what the mention establishes.
   five reports per figure and the roster retrieval date. It requires a signed-in
   session, revalidates the session after computing the board and is marked
   `private, no-store`. Portraits travel as base64 in the payload so no separate
-  unauthenticated image route exists.
+  unauthenticated image route exists. It reads the store under the same admission as
+  `GET /api/events` (one store read at a time, at most two waiting per user and eight
+  in total), so a busy store answers 429 `rate_limited` with `Retry-After`.
 - `application/public_figures.py` scans up to 3,000 NEWS, POLITICAL and CONFLICT
   events from the last 72 hours of the bounded in-memory store. Nothing is persisted.
+  Selection and name matching run in a worker thread over the admitted snapshot, never
+  on the event loop. Each name pattern is indexed by its leading word, so only patterns
+  whose first word appears whole in a report are searched; the matches are unchanged.
 - `container/public_figures.py` loads the packaged roster once per process and
   validates every field (bounded lengths, roles, coordinates, base64 alphabet).
 
