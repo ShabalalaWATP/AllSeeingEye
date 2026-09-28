@@ -12,6 +12,9 @@ FONT_REGULAR = "ASEDejaVuLGC"
 FONT_BOLD = "ASEDejaVuLGCBold"
 FONT_DIRECTORY = Path(__file__).with_name("fonts")
 _REGISTRATION = Lock()
+# Registered faces are shared by every export, and ReportLab subsets them on save by
+# seeking one shared read position, so two exports saving at once corrupt each other.
+SUBSETTING = Lock()
 # These controls have blank glyphs in the font. Expose them rather than carrying
 # invisible direction overrides into an export which has no bidirectional layout.
 _BIDI_CONTROLS = frozenset({0x061C, 0x200E, 0x200F, *range(0x202A, 0x202F), *range(0x2066, 0x206A)})
