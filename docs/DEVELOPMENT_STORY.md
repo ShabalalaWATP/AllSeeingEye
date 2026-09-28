@@ -5770,8 +5770,11 @@ is limited to the crewed-stations source. Board counts remain bounded samples.
 
 Regressions reproduced the failures before the fixes. A security review identified
 that public read saturation could abort warning evaluation; two bounded admission
-backoffs per cycle now allow recovery without skipping later rules or pruning.
-The full backend suite is running; final validation is recorded in the
-[delivery record](reviews/2026-09-28-alert-selection-fixes.md). Claude's KAN-77 work
+backoffs per cycle now allow recovery while the cycle continues considering later
+rules and still prunes. Sustained overload can defer rules until a later cycle.
+The full backend run passed 9,817 tests, skipped 93 and failed one unchanged
+Windows parser test; coverage passed at 93.78%. Code, security and documentation
+reviews are complete. Exact validation and the platform limitation are recorded in
+the [delivery record](reviews/2026-09-28-alert-selection-fixes.md). Claude's KAN-77 work
 uses a separate checkout and frontend scope. No merge or production deploy has
 been performed for this batch.

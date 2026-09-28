@@ -64,12 +64,27 @@ Two cap tests explicitly preserve the newest 5,000 matching-record semantics.
 
 ## Validation and delivery
 
-The initial 16 regression cases failed before the change. With the fix, all 54
-selected warning, exact-area and cooperative-reader tests passed. A further focused
-run passed 38 tests covering the volume cases, query contract, country metadata,
-synchronous fallback, worker snapshots and cancellation admission. Ruff, mypy,
-import boundaries and Bandit passed. An independent code review found no blocking
-issue. Full-suite validation and final reviews are pending the remaining fixes.
+- Full backend run on Windows, Python 3.13.3, six workers: **9,817 passed, 93 skipped,
+  one failed**, in 820 seconds. Coverage was **93.78%**, passing the unchanged 90%
+  gate. The suite itself did not pass because of the failure described below.
+- All added warning, query, queue and module regressions passed. Focused runs also
+  covered existing warning routes, exact areas, cooperative cancellation, module
+  APIs, report background and feed normalisation.
+- Ruff lint/format, mypy, import boundaries, Bandit, Gitleaks and file-length checks
+  passed. OpenAPI export left the committed schema unchanged. No HTTP API, database
+  migration, dependency or CI configuration changed.
+- Independent code, security and documentation reviews completed. The admission
+  finding and two documentation wording corrections were addressed; no remaining
+  blocking implementation finding was reported.
 
-The three related fixes share a query boundary and will be separate commits in
-one draft PR. Production release requires review and Alex's approval.
+The one local failure is
+`test_research_import_worker.py::test_remote_parser_unavailable_fails_closed`:
+`vars(asyncio)["open_unix_connection"]` raises `KeyError` on Windows. The test and
+research-import adapter files are unchanged from base commit `9a01161a`; the same
+lookup is present in that base. This existing platform limitation is outside these
+alert/board tickets. No test was skipped or threshold lowered to hide it. Linux
+SQLite/PostgreSQL and frontend CI results remain separate gates, tracked in PR #81.
+
+The three related fixes and the admission follow-up share a query boundary and are
+separate commits in [draft PR #81](https://github.com/ShabalalaWATP/AllSeeingEye/pull/81).
+Production release requires review and Alex's approval.
