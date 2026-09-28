@@ -14,7 +14,7 @@ from uuid import UUID
 
 from ase.domain.area_membership import area_contains_event
 from ase.domain.events import BoundingBox, Category, Event
-from ase.domain.evidence_time import publication_order
+from ase.domain.evidence_time import evidence_time
 from ase.domain.research_area import ResearchArea
 
 MAX_KEYWORDS = 20
@@ -125,7 +125,7 @@ def evaluate(
     now: datetime,
     last_fired: datetime | None,
 ) -> Firing | None:
-    """The firing for this cycle, or None when the rule is quiet or still cooling down."""
+    """Count known publication times in the closed interval [now - window, now]."""
     if not indicator.enabled:
         return None
     if last_fired is not None and now - last_fired < indicator.cooldown:
@@ -135,10 +135,11 @@ def evaluate(
     evidence: list[tuple[datetime, str, int, Event]] = []
     country_latest: dict[str, tuple[datetime, str]] = {}
     for event in events:
-        if event.published_at is None or event.published_at < since or not indicator.matches(event):
+        published = evidence_time(event)
+        if published is None or not since <= published <= now or not indicator.matches(event):
             continue
         count += 1
-        key = (publication_order(event), event.id)
+        key = (published, event.id)
         if event.country_iso:
             country_latest[event.country_iso] = max(country_latest.get(event.country_iso, key), key)
         entry = (*key, count, event)

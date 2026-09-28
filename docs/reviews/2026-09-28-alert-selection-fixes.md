@@ -21,6 +21,20 @@ counts all matches, records every matching country and retains only the newest 2
 events as evidence, ordered by publication time and event ID. Retention remains the
 store's existing memory budget; this does not recover already evicted events.
 
+## Closed warning windows (KAN-148)
+
+Warnings use the closed publication interval `[now - window, now]`. Unknown or
+timezone-naive publication dates are excluded. The store's general half-open time
+contract stays unchanged: warning selection uses the next representable instant
+after `now` as its exclusive upper bound. At the largest representable clock value,
+there is no later instant to exclude. Domain evaluation independently checks both
+bounds. Future scheduling metadata such as launch NET does not change publication
+eligibility.
+
+Thirteen regression failures reproduced future-date admission and naive-date
+comparison errors. After the fix, the 90 selected warning and admission tests
+passed, including exact endpoints, adjacent microseconds and exact-area selection.
+
 ## Validation and delivery
 
 The initial 16 regression cases failed before the change. With the fix, all 54

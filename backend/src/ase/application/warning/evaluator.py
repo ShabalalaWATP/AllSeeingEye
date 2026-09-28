@@ -12,7 +12,7 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from ase.application.ports import Clock
@@ -32,11 +32,15 @@ async def evaluate_candidates(
     store: EventStore, indicator: Indicator, now: datetime, last: datetime | None
 ) -> Firing | None:
     """Count every match on one admitted snapshot; bound only the exported evidence."""
+    # Store intervals are half-open. The next representable instant includes exactly
+    # now, without admitting a future publication. At datetime.max no later instant exists.
+    until = now + datetime.resolution if now < datetime.max.replace(tzinfo=UTC) else None
     query = EventQuery(
         categories=frozenset(indicator.categories),
         research_area=indicator.research_area,
         bbox=indicator.bbox if indicator.research_area is None else None,
         since=now - indicator.window,
+        until=until,
         limit=None,
     )
     # Country unions and remaining predicates are evaluated together on this snapshot.
