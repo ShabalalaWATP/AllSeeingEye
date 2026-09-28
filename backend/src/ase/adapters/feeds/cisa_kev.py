@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
+from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.application.feeds.pipeline import clean_text
-from ase.application.ports import Clock
 from ase.domain.events import (
     MAX_ATTRIBUTE_CHARS,
     Category,
@@ -53,18 +53,12 @@ def _first_url(notes: object) -> str | None:
     return None
 
 
-class CisaKevConnector:
+class CisaKevConnector(HttpFeed):
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._catalogue()
-        except NotModified:
-            return []
+        data = await self._catalogue()
         now = self._clock.now()
         cutoff = now - timedelta(days=RECENT_DAYS)
         if not isinstance(data, dict) or not isinstance(data.get("vulnerabilities"), list):

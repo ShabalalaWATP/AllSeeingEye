@@ -11,10 +11,10 @@ from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
+from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.rss import child_text, link_of, parse_feed_date, point_of
 from ase.application.feeds.pipeline import strip_html
-from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
     Credibility,
@@ -46,18 +46,12 @@ TITLE = re.compile(
 SEVERITY = {"new eruptive activity": 0.6, "ongoing activity": 0.4}
 
 
-class VolcanoReportConnector:
+class VolcanoReportConnector(HttpFeed):
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self._http = http
-        self._clock = clock
-
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            text = await self._http.get_text(self.spec.url)
-        except NotModified:
-            return []
+        text = await self._http.get_text(self.spec.url)
         try:
             root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
         except ParseError as exc:

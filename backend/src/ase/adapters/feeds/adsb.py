@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.base import empty_when_unchanged, json_list
+from ase.adapters.feeds.http import FeedHttpClient
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -217,7 +218,7 @@ def aircraft_event(
 
 
 def records(data: Any) -> list[dict[str, Any]]:
-    aircraft = data.get("ac", []) if isinstance(data, dict) else []
+    aircraft = json_list(data, "ac")
     return (
         [item for item in aircraft[:MAX_AIRCRAFT] if isinstance(item, dict)]
         if isinstance(aircraft, list)
@@ -245,11 +246,9 @@ class AdsbListConnector:
         self._tags = tags
         self._classifications = classifications or AircraftClassificationCache()
 
+    @empty_when_unchanged
     async def fetch(self) -> list[Event]:
-        try:
-            data = await self._http.get_json(self.spec.url, conditional=False)
-        except NotModified:
-            return []
+        data = await self._http.get_json(self.spec.url, conditional=False)
         now = self._clock.now()
         events: list[Event] = []
         for index, item in enumerate(records(data)):
