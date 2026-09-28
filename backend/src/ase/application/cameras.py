@@ -31,6 +31,22 @@ class _CachedSource:
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 
+def _available_cameras(cached: _CachedSource, now: datetime) -> tuple[Camera, ...]:
+    if cached.fetched_at is None or now - cached.fetched_at > MAX_STALE:
+        return ()
+    return cached.cameras
+
+
+def _provider_status(
+    cached: _CachedSource, available: tuple[Camera, ...]
+) -> Literal["available", "stale", "unavailable", "not_loaded"]:
+    if available:
+        return "stale" if cached.failed else "available"
+    if cached.failed or cached.fetched_at is not None:
+        return "unavailable"
+    return "not_loaded"
+
+
 class CameraCatalogueService:
     def __init__(self, sources: tuple[CameraSource, ...], clock: Clock) -> None:
         self._sources = tuple(_CachedSource(source) for source in sources)
@@ -69,17 +85,8 @@ class CameraCatalogueService:
         statuses: list[CameraProviderStatus] = []
         groups = []
         for cached in self._sources:
-            fresh_enough = cached.fetched_at is not None and now - cached.fetched_at <= MAX_STALE
-            available = cached.cameras if fresh_enough else ()
-            status: Literal["available", "stale", "unavailable", "not_loaded"] = (
-                "stale"
-                if cached.failed and available
-                else "available"
-                if available
-                else "not_loaded"
-                if cached.fetched_at is None
-                else "unavailable"
-            )
+            available = _available_cameras(cached, now)
+            status = _provider_status(cached, available)
             statuses.append(
                 CameraProviderStatus(
                     cached.source.id,
@@ -194,18 +201,8 @@ class CameraCatalogueService:
         statuses = []
         cameras: list[Camera] = []
         for cached in self._sources:
-            available = cached.cameras
-            if cached.fetched_at is not None and now - cached.fetched_at > MAX_STALE:
-                available = ()
-            status: Literal["available", "stale", "unavailable", "not_loaded"] = (
-                "stale"
-                if cached.failed and available
-                else "unavailable"
-                if cached.failed
-                else "not_loaded"
-                if cached.fetched_at is None
-                else "available"
-            )
+            available = _available_cameras(cached, now)
+            status = _provider_status(cached, available)
             statuses.append(
                 CameraProviderStatus(
                     cached.source.id,

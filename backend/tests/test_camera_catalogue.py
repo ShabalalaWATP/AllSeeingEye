@@ -163,6 +163,41 @@ async def test_failure_isolated_empty_source_and_inactive_user(
         await service.catalogue(replace(user, is_active=False))
 
 
+@pytest.mark.parametrize(
+    ("failed", "fetched", "has_camera", "expected"),
+    [
+        (False, False, False, "not_loaded"),
+        (False, False, True, "not_loaded"),
+        (True, False, False, "unavailable"),
+        (True, False, True, "unavailable"),
+        (False, True, False, "unavailable"),
+        (True, True, False, "unavailable"),
+        (False, True, True, "available"),
+        (True, True, True, "stale"),
+    ],
+)
+async def test_snapshot_and_catalogue_agree_on_provider_state(
+    user: User,
+    clock: FakeClock,
+    failed: bool,
+    fetched: bool,
+    has_camera: bool,
+    expected: str,
+) -> None:
+    service = CameraCatalogueService((source(),), clock)
+    cached = service._sources[0]
+    cached.failed = failed
+    cached.fetched_at = clock.now() if fetched else None
+    cached.cameras = tuple(cached.source.fetch.return_value) if has_camera else ()
+    cached.retry_at = clock.now() + timedelta(minutes=1)
+
+    snapshot = service.snapshot(user)
+    refreshed = await service.catalogue(user)
+
+    assert snapshot.providers[0].status == refreshed.providers[0].status == expected
+    assert snapshot.cameras == refreshed.cameras
+
+
 async def test_adapter_fixed_endpoint_and_safe_parse_error() -> None:
     http = AsyncMock(get_bytes=AsyncMock(return_value=json.dumps([tfl()]).encode()))
     adapter = OfficialCameraSource("tfl", http)
