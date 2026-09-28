@@ -77,8 +77,33 @@ print(
 
 import asyncio
 import contextlib
+from datetime import timedelta
 
+from ase.adapters.geo.public_figures import load_public_figures
 from ase.api.schemas_events import EventOut
+from ase.application.public_figures import PublicFigureService
+
+
+def figure_news(count=3000):
+    """Retained news of about 450 characters, a few naming office-holders."""
+    names = [f.name for f in load_public_figures().figures]
+    words = ["officials", "said", "talks", "while", "envoys", "met", "near", "the", "border"]
+    news = InMemoryEventStore()
+    news.upsert(
+        [
+            make_event(
+                f"n{i}",
+                category=Category.NEWS,
+                subtype="news_report",
+                title=f"{names[i % len(names)] if i % 10 == 0 else 'Envoys'} {' '.join(words)}",
+                summary=" ".join(words[(i + k) % len(words)] for k in range(70))[:370],
+                published_at=NOW - timedelta(minutes=i),
+                point=None,
+            )
+            for i in range(count)
+        ]
+    )
+    return news
 
 
 async def tracked(label, action):
@@ -129,6 +154,10 @@ async def main():
     )
     fresh = InMemoryEventStore()
     out["cooperative_upsert"] = await tracked("upsert", lambda: fresh.upsert_cooperatively(rows))
+    figures = PublicFigureService(figure_news(), FakeClock(NOW), load_public_figures())
+    out["worker_figures_board_3k"] = await tracked(
+        "figures", lambda: figures.board(admission_key="benchmark")
+    )
     print(json.dumps(out))
 
 

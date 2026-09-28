@@ -16,7 +16,9 @@ async def figures_board(
     container: ContainerDep,
     fence: FenceDep,
 ) -> FigureBoardOut:
-    board = FigureBoardOut.from_board(container.public_figures().board())
+    board = FigureBoardOut.from_board(
+        await container.public_figures().board(admission_key=f"user:{user.id}")
+    )
     await fence.confirm()
     response.headers["Cache-Control"] = "private, no-store"
     return board

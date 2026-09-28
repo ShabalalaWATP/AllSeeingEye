@@ -7,13 +7,15 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from ase.application.ports import Clock
+from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.events import Category, Event
 from ase.domain.public_figures import (
+    MAX_FIGURES,
     FigurePlacement,
     PublicFigure,
     PublicFigureCatalogue,
-    match_people,
+    name_matcher,
     place_figure,
 )
 
@@ -51,27 +53,32 @@ class PublicFigureService:
     def catalogue(self) -> PublicFigureCatalogue:
         return self._catalogue
 
-    def board(self) -> FigureBoard:
+    async def board(self, *, admission_key: str) -> FigureBoard:
+        """Match names off the event loop, under the same read admission as event queries."""
         now = self._clock.now()
+        query = EventQuery(
+            categories=CATEGORIES, since=now - WINDOW, limit=POOL, include_unknown_dates=True
+        )
+        if isinstance(self._store, CooperativeEventReader):
+            return await self._store.read_cooperatively(
+                query, lambda events: self._compose(events, now), admission_key=admission_key
+            )
+        return self._compose(self._store.query(query), now)
+
+    def _compose(self, candidates: list[Event], now: datetime) -> FigureBoard:
         # Official Atom feeds declare modification dates only, so their items have no
         # publication instant; keep them while they were collected inside the window.
         events = [
             event
-            for event in self._store.query(
-                EventQuery(
-                    categories=CATEGORIES,
-                    since=now - WINDOW,
-                    limit=POOL,
-                    include_unknown_dates=True,
-                )
-            )
+            for event in candidates
             if event.published_at is not None or event.observed_at >= now - WINDOW
         ]
         by_person: dict[str, list[Event]] = defaultdict(list)
         figures = self._catalogue.figures
+        matcher = name_matcher(figures[:MAX_FIGURES])
         for event in sorted(events, key=_recency, reverse=True):
             text = " ".join(part for part in (event.title, event.title_en, event.summary) if part)
-            for person_id in match_people(text, figures):
+            for person_id in matcher.match(text):
                 by_person[person_id].append(event)
         cards = tuple(
             FigureCard(
