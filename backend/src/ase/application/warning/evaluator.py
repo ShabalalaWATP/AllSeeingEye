@@ -12,67 +12,48 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.warning import AlertNotifier, WarningStore
-from ase.domain.events import Event
+from ase.domain.errors import RateLimited
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
 log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=60)
-POOL = 2_000
+MAX_ADMISSION_RETRIES = 2
+ADMISSION_RETRY_SECONDS = 1.0
 Reporter = Callable[[Indicator, Alert], Awaitable[UUID | None]]
 SleepFn = Callable[[float], Awaitable[None]]
-
-
-def candidate_events(store: EventStore, indicator: Indicator, since: datetime) -> list[Event]:
-    """Whatever the store can pre-filter for the indicator; matching finishes in the domain."""
-    categories = frozenset(indicator.categories)
-    if indicator.research_area is not None:
-        return list(
-            store.query(
-                EventQuery(
-                    categories=categories,
-                    research_area=indicator.research_area,
-                    since=since,
-                    limit=POOL,
-                )
-            )
-        )
-    if indicator.bbox is not None:
-        query = EventQuery(categories=categories, bbox=indicator.bbox, since=since, limit=POOL)
-        return list(store.query(query))
-    if indicator.countries:
-        pool: list[Event] = []
-        for code in indicator.countries:
-            query = EventQuery(categories=categories, country_iso=code, since=since, limit=POOL)
-            pool.extend(store.query(query))
-        return pool
-    return list(store.query(EventQuery(categories=categories, since=since, limit=POOL)))
 
 
 async def evaluate_candidates(
     store: EventStore, indicator: Indicator, now: datetime, last: datetime | None
 ) -> Firing | None:
-    """Run exact geometry on an admitted immutable snapshot, never live indexes in a thread."""
-    since = now - indicator.window
-    if indicator.research_area is not None and isinstance(store, CooperativeEventReader):
+    """Count every match on one admitted snapshot; bound only the exported evidence."""
+    # Store intervals are half-open. The next representable instant includes exactly
+    # now, without admitting a future publication. At datetime.max no later instant exists.
+    until = now + datetime.resolution if now < datetime.max.replace(tzinfo=UTC) else None
+    query = EventQuery(
+        categories=frozenset(indicator.categories),
+        research_area=indicator.research_area,
+        bbox=indicator.bbox if indicator.research_area is None else None,
+        since=now - indicator.window,
+        until=until,
+        limit=None,
+    )
+    # Country unions and remaining predicates are evaluated together on this snapshot.
+    if isinstance(store, CooperativeEventReader):
         return await store.read_cooperatively(
-            EventQuery(
-                categories=frozenset(indicator.categories),
-                research_area=indicator.research_area,
-                since=since,
-                limit=POOL,
-            ),
+            query,
             lambda events: evaluate(indicator, events, now, last),
             admission_key="internal:exact-indicators",
         )
-    return evaluate(indicator, candidate_events(store, indicator, since), now, last)
+    return evaluate(indicator, store.query(query), now, last)
 
 
 class IndicatorEvaluator:
@@ -102,12 +83,26 @@ class IndicatorEvaluator:
     async def run_once(self) -> list[Alert]:
         now = self._clock.now()
         fired: list[Alert] = []
+        admission_retries = MAX_ADMISSION_RETRIES
         for indicator in await self._warnings.enabled_indicators():
             if not await self._warnings.can_run(indicator):
                 continue
             latest = await self._warnings.latest_alert(indicator.id)
             last = None if latest is None else latest.fired_at
-            firing = await evaluate_candidates(self._store, indicator, now, last)
+            while True:
+                try:
+                    firing = await evaluate_candidates(self._store, indicator, now, last)
+                    break
+                except RateLimited:
+                    if admission_retries == 0:
+                        log.warning(
+                            "indicator_evaluation_deferred", extra={"indicator": indicator.name}
+                        )
+                        firing = None
+                        break
+                    # A cycle-wide budget prevents saturation multiplying delays by rule count.
+                    admission_retries -= 1
+                    await self._sleep(ADMISSION_RETRY_SECONDS)
             if firing is None:
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
