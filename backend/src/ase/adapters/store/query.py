@@ -16,6 +16,8 @@ def select_events(candidates: Sequence[Event], query: EventQuery) -> list[Event]
     for event in candidates:
         if query.source_ids and event.source_id not in query.source_ids:
             continue
+        if query.subtypes and event.subtype not in query.subtypes:
+            continue
         if query.military is not None and is_reported_military(event) is not query.military:
             continue
         if not evidence_matches_time(

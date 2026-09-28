@@ -43,6 +43,7 @@ class EventQuery:
     offset: int = 0
     sampling: Literal["newest", "geographic"] = "newest"
     research_area: ResearchArea | None = None
+    subtypes: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if self.limit is None and (self.offset != 0 or self.sampling != "newest"):

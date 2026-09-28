@@ -35,6 +35,21 @@ Thirteen regression failures reproduced future-date admission and naive-date
 comparison errors. After the fix, the 90 selected warning and admission tests
 passed, including exact endpoints, adjacent microseconds and exact-area selection.
 
+## Independent tracker components (KAN-147)
+
+`EventQuery.subtypes` filters before ranking, alongside the existing source filter.
+Maritime warnings, launches, Kp readings, NOAA bulletins and each cyber component
+now select their own relevant records before their 5,000-event cap. Fresh AIS or
+unrelated satellite/cyber records cannot displace those records. The station list
+uses the CelesTrak stations source, matching the UI's crewed-stations scope.
+
+Board totals and tallies describe the newest **up to 5,000 matching retained
+records per component**, not complete provider totals. Latest/notable lists retain
+their existing smaller limits. Launch publication recency and NET scheduling
+remain distinct; this change preserves the existing seven-day publication window
+and the allowance for launches scheduled in the preceding day. The maritime
+report background uses the corrected board selection.
+
 ## Validation and delivery
 
 The initial 16 regression cases failed before the change. With the fix, all 54
