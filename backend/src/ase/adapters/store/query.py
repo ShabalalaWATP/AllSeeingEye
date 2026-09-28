@@ -16,6 +16,8 @@ def select_events(candidates: Sequence[Event], query: EventQuery) -> list[Event]
     for event in candidates:
         if query.source_ids and event.source_id not in query.source_ids:
             continue
+        if query.subtypes and event.subtype not in query.subtypes:
+            continue
         if query.military is not None and is_reported_military(event) is not query.military:
             continue
         if not evidence_matches_time(
@@ -31,6 +33,8 @@ def select_events(candidates: Sequence[Event], query: EventQuery) -> list[Event]
         if query.research_area is not None and not area_contains_event(query.research_area, event):
             continue
         matched.append(event)
+    if query.limit is None:
+        return matched
     offset = max(0, min(15_000, query.offset))
     if query.sampling == "geographic":
         return geographic_page(matched, query.time_basis, offset, max(1, query.limit))

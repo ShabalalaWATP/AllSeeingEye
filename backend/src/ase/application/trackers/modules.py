@@ -1,4 +1,9 @@
-"""Maritime, space and cyber boards, computed from the live store when asked."""
+"""Maritime, space and cyber boards, computed from the live store when asked.
+
+Each component selects its sources/subtypes before retaining the newest 5,000
+matches. Counts and tallies describe that bounded retained sample, not provider
+totals. Display lists have their own smaller limits.
+"""
 
 from __future__ import annotations
 
@@ -12,7 +17,7 @@ from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
 
-POOL = 5_000
+COMPONENT_LIMIT = 5_000
 FORTNIGHT = timedelta(days=14)
 WEEK = timedelta(days=7)
 DAY = timedelta(days=1)
@@ -84,16 +89,29 @@ class ModuleService:
         self._store = store
         self._clock = clock
 
-    def _events(self, category: Category, since: timedelta) -> list[Event]:
+    def _events(
+        self,
+        category: Category,
+        since: timedelta,
+        *,
+        subtypes: frozenset[str] = frozenset(),
+        source_ids: frozenset[str] = frozenset(),
+    ) -> list[Event]:
         now = self._clock.now()
         return self._store.query(
-            EventQuery(categories=frozenset({category}), since=now - since, limit=POOL)
+            EventQuery(
+                categories=frozenset({category}),
+                since=now - since,
+                subtypes=subtypes,
+                source_ids=source_ids,
+                limit=COMPONENT_LIMIT,
+            )
         )
 
     def maritime_board(self) -> MaritimeBoard:
-        warnings = [
-            e for e in self._events(Category.MARITIME, FORTNIGHT) if e.subtype == "navarea_warning"
-        ]
+        warnings = self._events(
+            Category.MARITIME, FORTNIGHT, subtypes=frozenset({"navarea_warning"})
+        )
         notable = [e for e in warnings if (e.severity or 0) >= 0.6]
         return MaritimeBoard(
             warnings_total=len(warnings),
@@ -106,18 +124,26 @@ class ModuleService:
 
     def space_board(self) -> SpaceBoard:
         now = self._clock.now()
-        events = self._events(Category.SPACE, WEEK)
-        stations = [e for e in events if e.subtype == "satellite"]
-        launches = [e for e in events if e.subtype == "launch" and _upcoming(e, now)]
-        launches.sort(key=lambda e: _net(e) or now)
-        kp_events = [e for e in events if e.subtype == "geomagnetic"]
-        kp_event = max(kp_events, key=publication_order, default=None)
-        alerts = [
+        stations = self._events(
+            Category.SPACE,
+            WEEK,
+            subtypes=frozenset({"satellite"}),
+            source_ids=frozenset({"celestrak_stations"}),
+        )
+        launches = [
             e
-            for e in events
-            if e.source_id in ("noaa_swpc_alerts", "swpc_alerts")
-            and e.subtype in ("space_weather_alert", "space_weather")
+            for e in self._events(Category.SPACE, WEEK, subtypes=frozenset({"launch"}))
+            if _upcoming(e, now)
         ]
+        launches.sort(key=lambda e: _net(e) or now)
+        kp_events = self._events(Category.SPACE, WEEK, subtypes=frozenset({"geomagnetic"}))
+        kp_event = max(kp_events, key=publication_order, default=None)
+        alerts = self._events(
+            Category.SPACE,
+            WEEK,
+            subtypes=frozenset({"space_weather_alert", "space_weather"}),
+            source_ids=frozenset({"noaa_swpc_alerts", "swpc_alerts"}),
+        )
         recent = [e for e in alerts if e.published_at is not None and e.published_at >= now - DAY]
         kp_value = kp_event.attributes.get("kp") if kp_event is not None else None
         return SpaceBoard(
@@ -132,15 +158,9 @@ class ModuleService:
         )
 
     def cyber_board(self) -> CyberBoard:
-        now = self._clock.now()
-        events = self._events(Category.CYBER, WEEK)
-        outages = [
-            e
-            for e in events
-            if e.subtype == "outage" and e.published_at is not None and e.published_at >= now - DAY
-        ]
-        claims = [e for e in events if e.subtype == "ransomware"]
-        kev = [e for e in events if e.source_id == "cisa_kev"]
+        outages = self._events(Category.CYBER, DAY, subtypes=frozenset({"outage"}))
+        claims = self._events(Category.CYBER, WEEK, subtypes=frozenset({"ransomware"}))
+        kev = self._events(Category.CYBER, WEEK, source_ids=frozenset({"cisa_kev"}))
         return CyberBoard(
             outages_24h=len(outages),
             outages_by_country=tally(outages, lambda e: e.country_iso or ""),
