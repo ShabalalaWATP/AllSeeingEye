@@ -14,6 +14,7 @@ import re
 from collections.abc import Collection
 from importlib import resources
 from typing import Any, Final
+from urllib.parse import urlsplit
 
 PACKAGE: Final = "ase.resources"
 MAX_TEXT: Final = 2048
@@ -136,6 +137,14 @@ def https_url(where: str, value: object) -> str:
     url = text(where, value)
     if not url.startswith("https://") or any(char.isspace() for char in url):
         raise CatalogueError(f"{where}: expected an HTTPS URL")
+    try:
+        parts = urlsplit(url)
+        hostname = parts.hostname
+    except ValueError as exc:
+        raise CatalogueError(f"{where}: expected an HTTPS URL") from exc
+    # Credentials in the authority can disguise the real host from a reviewer.
+    if not hostname or "@" in parts.netloc:
+        raise CatalogueError(f"{where}: expected an HTTPS URL with a plain host")
     return url
 
 

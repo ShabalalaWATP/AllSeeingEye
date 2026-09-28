@@ -76,6 +76,7 @@ def test_camera_loader_reads_only_listed_countries(country):
         ({"name": ""}, "non-empty text"),
         ({"stream_type": "rtsp"}, "stream_type"),
         ({"stream_url": "http://ls.tkchopin.pl/a.m3u8"}, "HTTPS URL"),
+        ({"stream_url": "https://ls.tkchopin.pl@evil.example/a.m3u8"}, "plain host"),
     ],
 )
 def test_camera_loader_rejects_unreviewed_shapes(change, message):
@@ -175,6 +176,8 @@ def rss_group(**change):
         ({"category": "gossip"}, "category"),
         ({"reliability": "Z"}, "reliability"),
         ({"url": "http://example.org/feed.xml"}, "HTTPS URL"),
+        ({"url": "https://user:secret@example.org/feed.xml"}, "plain host"),
+        ({"url": "https://[::1/feed.xml"}, "HTTPS URL"),
         ({"poll_minutes": "30"}, "whole number"),
         ({"options": "missing"}, "options"),
         ({"flags": ["Upper"]}, "lower-case name"),
