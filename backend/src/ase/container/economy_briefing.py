@@ -31,12 +31,11 @@ if TYPE_CHECKING:
 class EconomyBriefingWiring(ContainerCore):
     @cached_property
     def economy_news(self) -> EconomyNewsService:
-        container = cast("Container", self)
         return EconomyNewsService(
-            container.store,
-            container.clock,
+            self.store,
+            self.clock,
             {seed.spec.id: seed.spec for seed in ECONOMY_SEEDS},
-            container.source_admission,
+            self.source_admission,
         )
 
     def economy_briefing(

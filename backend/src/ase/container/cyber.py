@@ -32,20 +32,18 @@ if TYPE_CHECKING:
 
 class CyberWiring(ContainerCore):
     def initialise_cyber(self) -> None:
-        container = cast("Container", self)
         # Register reference provenance and administrative controls, never a live
         # connector or an unimplemented research provider.
-        if MITRE_ATTACK_SPEC.id not in container.settings.disabled_feed_ids:
-            container.research_sources = (*container.research_sources, MITRE_ATTACK_SPEC)
-        container.research_sources = (*container.research_sources, RADAR_ATTACK_SPEC)
+        if MITRE_ATTACK_SPEC.id not in self.settings.disabled_feed_ids:
+            self.research_sources = (*self.research_sources, MITRE_ATTACK_SPEC)
+        self.research_sources = (*self.research_sources, RADAR_ATTACK_SPEC)
 
     @cached_property
     def radar_attack_trends(self) -> RadarAttackTrends:
-        container = cast("Container", self)
-        token = container.settings.cloudflare_radar_token
+        token = self.settings.cloudflare_radar_token
         return RadarAttackTrends(
-            container.http,
-            container.clock,
+            self.http,
+            self.clock,
             token.get_secret_value() if token else None,
         )
 
@@ -55,10 +53,9 @@ class CyberWiring(ContainerCore):
 
     @cached_property
     def cyber(self) -> CyberService:
-        container = cast("Container", self)
         return CyberService(
-            container.store,
-            container.clock,
+            self.store,
+            self.clock,
             {
                 spec.id: spec
                 for spec in (
@@ -70,8 +67,8 @@ class CyberWiring(ContainerCore):
                     *(s.spec for s in CYBER_SEEDS),
                 )
             },
-            container.source_admission,
-            container.health,
+            self.source_admission,
+            self.health,
             self.cyber_actors.actors,
         )
 

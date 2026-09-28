@@ -92,8 +92,7 @@ class SourceInventoryWiring(ContainerCore):
         return OPTIONAL_CONNECTOR_SPECS
 
     def source_inventory(self, session: AsyncSession) -> SourceInventory:
-        container = cast("Container", self)
-        settings = container.settings
+        settings = self.settings
         credentials = SqlFirmsCredentials(session)
 
         async def resolve(source_id: str) -> SourceRequirement | None:
@@ -125,12 +124,12 @@ class SourceInventoryWiring(ContainerCore):
             )
 
         return SourceInventory(
-            container.scheduler.connectors,
-            container.research_sources,
+            self.scheduler.connectors,
+            self.research_sources,
             self.optional_connector_specs(),
             source_requirements(settings),
-            container.health,
-            container.source_admission,
+            self.health,
+            self.source_admission,
             tuple(settings.disabled_feed_ids),
             resolve,
             collecting=bool(settings.feeds_enabled),
