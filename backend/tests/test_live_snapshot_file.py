@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
+import hmac
 import json
 import os
+import re
 import secrets
 import stat
 from datetime import timedelta
@@ -29,9 +32,12 @@ KIB = 1024
 SAVED_AT = NOW.isoformat()
 
 
-def snapshot(path: Path, **limits: int) -> GzipSnapshotFile:
+KEY = b"k" * 32
+
+
+def snapshot(path: Path, *, key: bytes = KEY, **limits: int) -> GzipSnapshotFile:
     values = {"max_bytes": 1024 * KIB, "max_decompressed_bytes": 4096 * KIB, "max_events": 1_000}
-    return GzipSnapshotFile(path, **(values | limits))
+    return GzipSnapshotFile(path, key=key, **(values | limits))
 
 
 PROJECT: dict[str, Any] = {
@@ -92,9 +98,17 @@ def rich_event() -> Event:
     )
 
 
-def gzip_lines(*records: Any) -> bytes:
-    text = "".join((item if isinstance(item, str) else json.dumps(item)) + "\n" for item in records)
-    return gzip.compress(text.encode("utf-8"))
+def gzip_lines(*records: Any, sign: bool = True) -> bytes:
+    """Lines as written; the first trailer-shaped record is signed like a real file."""
+    lines = [(item if isinstance(item, str) else json.dumps(item)) + "\n" for item in records]
+    signature = hmac.new(KEY, digestmod=hashlib.sha256)
+    for index, item in enumerate(records):
+        if sign and isinstance(item, dict) and item.get("format") == FORMAT and "events" in item:
+            # A signature the test supplies wins, so forged values can be exercised.
+            lines[index] = json.dumps({"mac": signature.hexdigest()} | item) + "\n"
+            break
+        signature.update(lines[index].encode("utf-8"))
+    return gzip.compress("".join(lines).encode("utf-8"))
 
 
 def header(**changes: Any) -> dict[str, Any]:
@@ -127,7 +141,9 @@ def test_file_is_versioned_gzip_json_lines_with_a_trailer(tmp_path: Path) -> Non
     assert snapshot(path).write([make_event("a"), make_event("b")], NOW)
     lines = gzip.decompress(path.read_bytes()).decode("utf-8").splitlines()
     assert json.loads(lines[0]) == header()
-    assert json.loads(lines[-1]) == trailer(2)
+    last = json.loads(lines[-1])
+    assert re.fullmatch(r"[0-9a-f]{64}", last.pop("mac"))
+    assert last == trailer(2)
     assert len(lines) == 4
     if os.name == "posix":
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
@@ -154,6 +170,9 @@ DAMAGED = {
     "bad json line": gzip_lines(header(), "{not json", trailer(1)),
     "non-finite constant": gzip_lines(header(), '{"severity": NaN}', trailer(1)),
     "concatenated member": gzip_lines(header(), trailer(0)) + gzip_lines(EVENT),
+    "unsigned trailer": gzip_lines(header(), EVENT, trailer(1), sign=False),
+    "wrong signature": gzip_lines(header(), EVENT, trailer(1) | {"mac": "0" * 64}),
+    "non-text signature": gzip_lines(header(), EVENT, trailer(1) | {"mac": 7}),
 }
 
 
@@ -162,6 +181,26 @@ def test_damaged_or_foreign_files_are_ignored(tmp_path: Path, name: str) -> None
     path = tmp_path / "live.jsonl.gz"
     path.write_bytes(DAMAGED[name])
     assert snapshot(path).read().events == ()
+
+
+def test_a_file_signed_with_another_key_is_refused(tmp_path: Path) -> None:
+    path = tmp_path / "live.jsonl.gz"
+    assert snapshot(path, key=b"o" * 32).write([make_event("forged")], NOW)
+    assert snapshot(path).read().events == ()
+
+
+def test_an_edited_event_line_is_refused(tmp_path: Path) -> None:
+    path = tmp_path / "live.jsonl.gz"
+    assert snapshot(path).write([make_event("a"), make_event("b")], NOW)
+    lines = gzip.decompress(path.read_bytes()).decode("utf-8").splitlines(keepends=True)
+    lines[1] = json.dumps(json.loads(lines[1]) | {"title": "Fabricated"}) + "\n"
+    path.write_bytes(gzip.compress("".join(lines).encode("utf-8")))
+    assert snapshot(path).read().events == ()
+
+
+def test_a_short_signing_key_is_refused(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="32 bytes"):
+        snapshot(tmp_path / "live.jsonl.gz", key=b"short")
 
 
 def test_truncated_file_is_ignored(tmp_path: Path) -> None:

@@ -6,6 +6,8 @@ from dataclasses import replace
 from datetime import timedelta
 from unittest.mock import patch
 
+import pytest
+
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.report_jobs.service import ReportJobService
@@ -71,6 +73,7 @@ def _evidence(container, prefix):
     )
 
 
+@pytest.mark.feed_catalogue
 async def test_two_editions_use_frozen_comparison_context_and_one_job_each(container, user):
     await seed_legacy_profile(
         container,

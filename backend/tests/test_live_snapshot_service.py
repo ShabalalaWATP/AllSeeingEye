@@ -79,7 +79,11 @@ async def test_round_trip_restores_retained_events_and_drops_expired(tmp_path: P
     source = InMemoryEventStore()
     source.upsert([fresh, stale, conflict, flight])
     file = GzipSnapshotFile(
-        tmp_path / "live.jsonl.gz", max_bytes=2**20, max_decompressed_bytes=2**22, max_events=100
+        tmp_path / "live.jsonl.gz",
+        key=b"k" * 32,
+        max_bytes=2**20,
+        max_decompressed_bytes=2**22,
+        max_events=100,
     )
     assert await service(source, file).save()
     restored = InMemoryEventStore()

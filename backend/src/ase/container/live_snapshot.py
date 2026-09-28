@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -20,8 +22,14 @@ def build_live_snapshot(container: Container) -> LiveStoreSnapshots | None:
     path = settings.live_snapshot_file
     if path is None:
         return None
+    # A key derived from the API's signing secret under its own label: only this
+    # installation can write a snapshot it will reload, and the secret itself is not reused.
+    key = hmac.new(
+        settings.jwt_secret_value.encode("utf-8"), b"ase-live-store-snapshot-v1", hashlib.sha256
+    ).digest()
     storage = GzipSnapshotFile(
         path,
+        key=key,
         max_bytes=settings.live_snapshot_max_mb * MIB,
         # Encoded records are smaller than the store's conservative memory estimate.
         max_decompressed_bytes=settings.live_store_memory_mb * MIB,

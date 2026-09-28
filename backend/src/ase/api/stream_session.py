@@ -120,7 +120,8 @@ class LiveStream:
 
     async def _recheck(self) -> Literal["revoked", "changed"] | None:
         # Public deliveries reuse a check until the recheck window passes or a
-        # committed session change is signalled; alerts still re-read when encoded.
+        # committed session change is signalled; alerts still re-read access in
+        # _authorised_payload (api/routers/stream.py) before they are encoded.
         # An alert's own re-read does not reset this window, which only costs a read.
         freshness = self._container.session_freshness
         if not freshness.is_due(self._claims.user_id, self._checked_at):

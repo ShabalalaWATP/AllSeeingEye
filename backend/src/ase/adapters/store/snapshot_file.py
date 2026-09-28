@@ -1,10 +1,12 @@
 """Disposable gzip JSON-lines snapshot of the live store (ADR 0022).
 
 The first line is a header, then one public event per line, then a trailer with the
-event count. Writes go to a private temporary sibling that is flushed to disk and
-atomically renamed over the previous file, so a failure leaves that file intact.
-Loading refuses symbolic links, non-regular files, oversized or damaged input and
-unknown versions, ignoring the whole file; invalid event records are skipped.
+event count and an HMAC-SHA256 over every earlier line, keyed by a secret the API
+already holds, so a file written by anyone else is refused as a whole. Writes go to a
+private temporary sibling that is flushed to disk and atomically renamed over the
+previous file, so a failure leaves that file intact. Loading refuses symbolic links,
+non-regular files, oversized, damaged, unsigned or wrongly signed input and unknown
+versions, ignoring the whole file; invalid event records are skipped.
 """
 
 from __future__ import annotations
@@ -12,7 +14,9 @@ from __future__ import annotations
 import contextlib
 import glob
 import gzip
+import hashlib
 import heapq
+import hmac
 import json
 import os
 import stat
@@ -67,9 +71,18 @@ class GzipSnapshotFile:
     """One replace-in-place file for a single API process (ADR 0022)."""
 
     def __init__(
-        self, path: Path, *, max_bytes: int, max_decompressed_bytes: int, max_events: int
+        self,
+        path: Path,
+        *,
+        key: bytes,
+        max_bytes: int,
+        max_decompressed_bytes: int,
+        max_events: int,
     ) -> None:
+        if len(key) < 32:
+            raise ValueError("The snapshot signing key must be at least 32 bytes.")
         self._path = path
+        self._key = key
         self._max_bytes = max_bytes
         self._max_decompressed = max_decompressed_bytes
         self._max_events = max_events
@@ -117,15 +130,22 @@ class GzipSnapshotFile:
         remaining = self._max_decompressed
 
         def next_record() -> Any:
-            nonlocal remaining
+            nonlocal remaining, pending
             line = stream.readline(MAX_LINE_BYTES + 1)
             remaining -= len(line)
             if remaining < 0:
                 raise _Rejected("snapshot exceeds the decompressed size cap")
             if not line.endswith(b"\n"):
                 raise _Rejected("snapshot is truncated or has an oversized line")
+            # Every line except the trailer is signed: sign the previous line once this
+            # one shows it was not the trailer.
+            if pending is not None:
+                signature.update(pending)
+            pending = line
             return json.loads(line.decode("utf-8"), parse_constant=_reject_constant)
 
+        signature = hmac.new(self._key, digestmod=hashlib.sha256)
+        pending: bytes | None = None
         header = next_record()
         if not isinstance(header, dict) or set(header) != {"format", "version", "saved_at"}:
             raise _Rejected("snapshot header is not recognised")
@@ -149,8 +169,11 @@ class GzipSnapshotFile:
             else:
                 events[event.id] = event
         count = record.get("events")
-        if set(record) != {"format", "events"} or record["format"] != FORMAT:
+        if set(record) != {"format", "events", "mac"} or record["format"] != FORMAT:
             raise _Rejected("snapshot trailer is not recognised")
+        mac = record["mac"]
+        if not isinstance(mac, str) or not hmac.compare_digest(mac, signature.hexdigest()):
+            raise _Rejected("snapshot signature does not match")
         if type(count) is not int or count != lines:
             raise _Rejected("snapshot event count does not match")
         # Reading to the end also verifies the gzip checksum and length.
@@ -191,12 +214,15 @@ class GzipSnapshotFile:
         self, stream: gzip.GzipFile, events: Sequence[Event], saved_at: datetime
     ) -> tuple[int, int]:
         size = 0
+        signature = hmac.new(self._key, digestmod=hashlib.sha256)
 
-        def emit(line: bytes) -> None:
+        def emit(line: bytes, *, signed: bool = True) -> None:
             nonlocal size
             size += len(line)
             if size > self._max_decompressed:
                 raise _Rejected("snapshot exceeds the decompressed size cap")
+            if signed:
+                signature.update(line)
             stream.write(line)
 
         emit(_line({"format": FORMAT, "version": VERSION, "saved_at": saved_at.isoformat()}))
@@ -216,7 +242,8 @@ class GzipSnapshotFile:
                 continue
             emit(line)
             written += 1
-        emit(_line({"format": FORMAT, "events": written}))
+        trailer = {"format": FORMAT, "events": written, "mac": signature.hexdigest()}
+        emit(_line(trailer), signed=False)
         return written, skipped + len(events) - len(selected)
 
     def _remove_stale_temporaries(self) -> None:

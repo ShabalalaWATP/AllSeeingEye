@@ -26,7 +26,10 @@ Keep one compressed snapshot file of the shared live store, and nothing else.
   use a snapshot when they opt in.
 - **Format.** Gzip of UTF-8 JSON lines: a header (`format` `ase-live-store`,
   `version` 1, `saved_at`), one record per event holding exactly the public `Event`
-  fields, then a trailer with the event count. Format changes bump the version.
+  fields, then a trailer with the event count and an HMAC-SHA256 over every earlier
+  line. The signing key is derived from `ASE_JWT_SECRET` under its own label, so the
+  secret itself is not reused and a file written by anyone without it is refused.
+  Format changes bump the version.
 - **Saving.** Every `ASE_LIVE_SNAPSHOT_INTERVAL_SECONDS` (default 300, 60 to 3,600)
   and once on graceful shutdown, after every feed and background worker has stopped.
   A lock stops saves overlapping. Event references are captured on the event loop;
@@ -41,7 +44,7 @@ Keep one compressed snapshot file of the shared live store, and nothing else.
 - **Loading.** Once during startup, before any feed worker starts, and only into an
   empty store. Symbolic links (checked before opening, with `O_NOFOLLOW` where the
   platform has it), non-regular files, oversized input, lines over 8 MiB, an unknown
-  format or version, a missing or wrong trailer, trailing data, a failed gzip checksum
+  format or version, a missing or wrong trailer or signature, trailing data, a failed gzip checksum
   and undecodable JSON all cause the whole file to be ignored with a log line. Records
   with unknown fields or invalid values are skipped one by one. Startup never fails
   because of the snapshot. Temporary siblings left by a crash are removed.
@@ -77,7 +80,9 @@ it. It is not a database table, an archive, a search index or a backup.
   sharing a path would each replace the file, never corrupt it.
 - The snapshot is disposable and deliberately excluded from backups
   (`docs/BACKUP_RESTORE.md`). Anyone with host access to the data directory can read
-  it, as with the database; it contains public data only.
+  it, as with the database; it contains public data only. Without the JWT secret they
+  cannot write a snapshot that will be reloaded, so fabricated events cannot be planted
+  as observations. Changing `ASE_JWT_SECRET` makes the next start ignore the old file.
 
 Tests cover the round trip of every event field, retention on load, damaged,
 truncated, foreign, oversized and wrong-version files, skipped invalid records,

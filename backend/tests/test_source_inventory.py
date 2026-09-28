@@ -5,6 +5,8 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import pytest
+
 from ase.adapters.feeds.aisstream import SPEC as AISSTREAM_SPEC
 from ase.adapters.feeds.cisa_kev import SPEC as KEV_SPEC
 from ase.application.feeds.health import HealthRegistry, SourceStatus
@@ -190,6 +192,7 @@ async def test_research_capabilities_report_on_demand_or_missing_requirements():
     assert all(row.collection_mode == "on_demand" for row in rows)
 
 
+@pytest.mark.feed_catalogue
 async def test_catalogue_api_reports_connection_state_for_every_source(client, user):
     headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
     response = await client.get("/api/sources", headers=headers)

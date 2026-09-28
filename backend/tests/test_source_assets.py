@@ -121,6 +121,7 @@ async def test_platform_toggles_report_the_effective_default(
     assert "highway_cameras" not in rows  # the WSDOT key is reported on its camera provider
 
 
+@pytest.mark.feed_catalogue
 async def test_upstream_blocks_surface_their_fixed_reason(
     client: AsyncClient, user: User, container: Container
 ) -> None:

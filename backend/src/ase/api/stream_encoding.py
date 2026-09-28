@@ -87,6 +87,8 @@ class StreamEncoder:
     ) -> None:
         self._max_messages = max_messages
         self._max_chars = max_chars
+        # Keyed by id(message), not sequence: synthetic resync messages all carry sequence
+        # 0. Each entry holds its message, so an id cannot be reused while it is cached.
         self._entries: OrderedDict[int, _Encoded] = OrderedDict()
         self._chars = 0
         self.encoded = 0  # Encodings performed rather than reused, for tests and tuning.
