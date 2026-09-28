@@ -1,6 +1,7 @@
 # Task runner. Install with `uv tool install rust-just` (or your package manager), then `just`.
+# Windows recipes require PowerShell 7 (`pwsh`) for fail-fast `&&` chaining.
 
-set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+set windows-shell := ["pwsh", "-NoLogo", "-NoProfile", "-Command"]
 
 default:
     @just --list
