@@ -5778,3 +5778,23 @@ reviews are complete. Exact validation and the platform limitation are recorded 
 the [delivery record](reviews/2026-09-28-alert-selection-fixes.md). Claude's KAN-77 work
 uses a separate checkout and frontend scope. No merge or production deploy has
 been performed for this batch.
+
+## 29 September 2026: six scoped Jira maintenance fixes
+
+Draft PR #86 groups KAN-15, KAN-29, KAN-30, KAN-40, KAN-145 and KAN-20 in separate
+commits on an isolated Codex worktree. Nested structured logs now redact
+secret-shaped keys with a recursion bound. Document-parser requests fail closed
+on Windows without Unix sockets. Cached and refreshed camera views agree on
+provider status, and the initial catalogue no longer reads the last provider
+twice. The Windows Justfile uses PowerShell 7 for its fail-fast recipes. Public
+health now returns only its status, with regenerated OpenAPI and TypeScript
+contracts. Regressions were reproduced before each fix where practical. The
+camera state and call-count tests moved to a focused file to keep the touched
+test module below the 350-line target. Final review caught and repaired a race
+in the first KAN-40 approach: the last listed provider could finish before a
+slower provider, so its result did not hold the final statuses. Focused checks
+passed. The full Windows backend run passed 9,838 tests, skipped 93 and timed
+out one unrelated report-job pause test under six-worker load; that test passed
+alone in 4.87 seconds. Coverage reached 93.78%, and all CI checks passed on the
+final code commit. See
+[the delivery record](reviews/2026-09-29-maintenance-batch.md).

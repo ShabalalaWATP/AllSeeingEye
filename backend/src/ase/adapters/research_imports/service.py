@@ -71,6 +71,12 @@ async def _client(
 async def start_server(
     socket_path: Path = PARSER_SOCKET, runner: DocumentImportRunner | None = None
 ) -> asyncio.AbstractServer:
+    start_unix = cast(
+        Callable[..., Awaitable[asyncio.AbstractServer]] | None,
+        getattr(asyncio, "start_unix_server", None),
+    )
+    if start_unix is None:
+        raise RuntimeError("Unix sockets are unavailable")
     socket_path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
     with suppress(FileNotFoundError):
         socket_path.unlink()
@@ -80,10 +86,6 @@ async def start_server(
             ffmpeg=shutil.which("ffmpeg"),
             ffprobe=shutil.which("ffprobe"),
         )
-    )
-    start_unix = cast(
-        Callable[..., Awaitable[asyncio.AbstractServer]],
-        vars(asyncio)["start_unix_server"],
     )
     server = await start_unix(
         lambda reader, writer: _client(reader, writer, service_runner),

@@ -140,6 +140,33 @@ def test_redaction_processor() -> None:
     assert redacted["plain"] == "keep"
 
 
+def test_redaction_covers_nested_dicts_lists_and_tuples() -> None:
+    event = {
+        "details": {"request": {"headers": {"Authorization": "Bearer private"}}},
+        "calls": [{"metadata": {"token": "private token", "safe": "keep"}}],
+        "tuple": ({"cookie": "private cookie"},),
+    }
+
+    redacted = redact_sensitive(None, "info", event)
+
+    assert redacted["details"]["request"]["headers"]["Authorization"] == "[redacted]"
+    assert redacted["calls"] == [{"metadata": {"token": "[redacted]", "safe": "keep"}}]
+    assert redacted["tuple"] == ({"cookie": "[redacted]"},)
+
+
+def test_redaction_bounds_deep_and_cyclic_payloads() -> None:
+    deeply_nested: dict[str, object] = {"token": "private deep token"}
+    for _ in range(8):
+        deeply_nested = {"level": deeply_nested}
+    cyclic: dict[str, object] = {}
+    cyclic["loop"] = cyclic
+
+    redacted = redact_sensitive(None, "info", {"deep": deeply_nested, "cyclic": cyclic})
+
+    assert "private deep token" not in repr(redacted)
+    assert "[redacted]" in repr(redacted)
+
+
 def test_utc_datetime_type_rejects_naive_values() -> None:
     column = UTCDateTime()
     with pytest.raises(ValueError, match="Naive"):

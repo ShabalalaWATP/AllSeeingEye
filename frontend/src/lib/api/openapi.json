@@ -27358,16 +27358,11 @@
           "status": {
             "type": "string",
             "title": "Status"
-          },
-          "version": {
-            "type": "string",
-            "title": "Version"
           }
         },
         "type": "object",
         "required": [
-          "status",
-          "version"
+          "status"
         ],
         "title": "HealthOut"
       },

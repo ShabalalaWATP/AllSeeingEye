@@ -61,9 +61,12 @@ class RemoteDocumentImportRunner:
         try:
             async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
                 open_unix = cast(
-                    Callable[[str], Awaitable[tuple[asyncio.StreamReader, asyncio.StreamWriter]]],
-                    vars(asyncio)["open_unix_connection"],
+                    Callable[[str], Awaitable[tuple[asyncio.StreamReader, asyncio.StreamWriter]]]
+                    | None,
+                    getattr(asyncio, "open_unix_connection", None),
                 )
+                if open_unix is None:
+                    raise ImportRejected("Document parser could not run safely.")
                 reader, writer = await open_unix(str(self.socket_path))
                 writer.write(_request(data, filename, media))
                 await writer.drain()

@@ -4,6 +4,23 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### Six-ticket Codex maintenance batch, 29 September 2026
+
+- [x] KAN-15: redact nested structured log secrets with bounded traversal.
+- [x] KAN-29: reject parser requests safely when Unix sockets are unavailable.
+- [x] KAN-30 and KAN-40: unify camera provider states and remove the duplicate initial catalogue read.
+- [x] KAN-145: select PowerShell 7 for Windows Justfile recipes and test fail-fast syntax.
+- [x] KAN-20: omit the version from public health and regenerate the API contract.
+- [x] Run the full Windows backend suite and investigate its single unrelated load-sensitive timeout; 9,838 passed, 93 skipped, 93.78% coverage, and the failing test passed in isolation.
+- [x] Complete code, security and documentation review; all CI checks passed on the final code commit.
+- [ ] Require passing PR CI and Alex's release approval before merging or deploying.
+
+The six fixes are in separate commits on `codex/KAN-15-maintenance-batch` in
+[draft PR #86](https://github.com/ShabalalaWATP/AllSeeingEye/pull/86).
+The new camera regressions have their own test file to keep the touched test
+module below the 350-line target. The branch has no file overlap with Claude's
+open frontend PRs #83, #84 and #85.
+
 ### First Codex Jira delivery batch, 28 September 2026
 
 - [x] KAN-146: count every retained warning match before selecting 20 evidence items.
@@ -11,14 +28,12 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] KAN-147: select tracker source/subtype before each component's result limit.
 - [x] Reproduce failures, add regressions and repair queue saturation found in review.
 - [x] Run full backend coverage (93.78%) and final code/security/documentation reviews.
-- [ ] Existing Windows parser-test limitation: [KAN-29](https://alex-orr.atlassian.net/browse/KAN-29), outside this batch.
-- [ ] Complete PR CI.
-- [ ] Obtain release approval before merging or deploying.
+- [x] Complete PR CI and merge [PR #81](https://github.com/ShabalalaWATP/AllSeeingEye/pull/81).
+- [x] Track the Windows parser-test limitation as [KAN-29](https://alex-orr.atlassian.net/browse/KAN-29); fixed in the next batch.
 
-The changes are isolated on `codex/KAN-146-alert-evaluation` in
-[draft PR #81](https://github.com/ShabalalaWATP/AllSeeingEye/pull/81).
+The changes reached `main` through PR #81.
 See the [delivery record](reviews/2026-09-28-alert-selection-fixes.md) for behaviour,
-limits and validation. The separate Claude KAN-77 frontend PR has no file overlap.
+limits and validation.
 
 ### Workflow audit repairs, 21 September 2026
 
