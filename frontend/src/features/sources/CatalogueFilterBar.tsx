@@ -6,7 +6,7 @@ import { languageName, nationName, type CatalogueFilters } from './catalogueFilt
 import { GROUPS, GROUP_LABELS } from './connectionPresentation';
 
 export const inputClass =
-  'min-h-11 w-full rounded-md border border-line bg-surface px-3 text-sm text-text focus-visible:outline-2 focus-visible:outline-ember';
+  'min-h-11 w-full rounded-md border border-control-border bg-surface px-3 text-sm text-text focus-visible:outline-2 focus-visible:outline-ember';
 
 function Filter({
   label,

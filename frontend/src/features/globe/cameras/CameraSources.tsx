@@ -180,7 +180,7 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           maxLength={100}
-          className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
+          className="mt-2 min-h-11 w-full rounded border border-control-border bg-surface p-2"
         />
       </label>
       <p className="text-muted">

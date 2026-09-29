@@ -1,7 +1,8 @@
 /**
- * The card a reader sees for one event. The same facts appear in the reading list below the
- * stage, so the overlay copy is hidden from assistive technology and its links are skipped in
- * the tab order; the list remains the one navigable source of the timeline.
+ * The card a reader sees for the current event. It is the accessible text for that stop, not
+ * decoration: its phase, date, narrative and links reach assistive technology and the tab
+ * order like any other content. Only the scene behind it is hidden. The reading list repeats
+ * each event because it is the whole timeline; this card is the one event on the stage.
  */
 import type { UkraineReference } from '@/lib/api/ukraine';
 
@@ -10,13 +11,7 @@ import type { JourneyStop } from './journey';
 
 export type Fetcher = ((path: string) => Promise<Blob>) | undefined;
 
-export function EventLinks({
-  links,
-  skipTabStop = false,
-}: {
-  links: JourneyStop['event']['links'];
-  skipTabStop?: boolean;
-}) {
+export function EventLinks({ links }: { links: JourneyStop['event']['links'] }) {
   if (links.length === 0) return null;
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-1">
@@ -26,7 +21,6 @@ export function EventLinks({
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            tabIndex={skipTabStop ? -1 : undefined}
             className="text-xs text-ember hover:underline"
           >
             {link.label}
@@ -57,15 +51,18 @@ export function JourneyCard({
 }) {
   const { event, phase } = stop;
   return (
-    <div
-      aria-hidden="true"
+    <section
+      aria-label="Current event"
       className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 p-3 sm:flex-row sm:items-end sm:p-5"
     >
       <article className="card-surface pointer-events-auto flex min-w-0 flex-col gap-2 p-4 sm:max-w-lg">
-        <p
-          className="font-mono text-2xs uppercase tracking-[0.18em]"
-          style={{ color: phase.colour }}
-        >
+        {/* The phase colour marks the dot; the label stays in theme text so it reads in every theme. */}
+        <p className="flex items-center gap-2 font-mono text-2xs uppercase tracking-[0.18em] text-muted">
+          <span
+            aria-hidden="true"
+            className="size-1.5 shrink-0 rounded-full"
+            style={{ backgroundColor: phase.colour }}
+          />
           {phase.label}
         </p>
         <div className="flex flex-wrap items-baseline gap-2">
@@ -76,7 +73,7 @@ export function JourneyCard({
         </div>
         <h3 className="text-lg leading-snug font-semibold text-text">{event.title}</h3>
         <p className="text-sm leading-relaxed text-muted">{event.text}</p>
-        <EventLinks links={event.links} skipTabStop />
+        <EventLinks links={event.links} />
       </article>
       {event.image_id !== null ? (
         <ReferenceImage
@@ -87,6 +84,6 @@ export function JourneyCard({
           className="pointer-events-auto hidden w-48 shrink-0 lg:block"
         />
       ) : null}
-    </div>
+    </section>
   );
 }

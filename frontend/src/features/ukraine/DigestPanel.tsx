@@ -178,7 +178,7 @@ export function DigestPanel({
           <label className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted">
             <span>Earlier digests</span>
             <select
-              className="min-h-9 min-w-0 max-w-full rounded border border-line bg-surface-2 px-2 py-1 text-xs text-text"
+              className="min-h-9 min-w-0 max-w-full rounded border border-control-border bg-surface-2 px-2 py-1 text-xs text-text"
               value={entry ? entry.generated_at : ''}
               onChange={(event) => setSelected(event.target.value)}
             >

@@ -76,7 +76,7 @@ export function CameraPanel({
                 cameras.setQuery(event.target.value);
               }}
               maxLength={200}
-              className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
+              className="mt-2 min-h-11 w-full rounded border border-control-border bg-surface p-2"
             />
           </label>
           <p role="status" className="text-muted">

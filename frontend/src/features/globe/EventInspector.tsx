@@ -76,8 +76,8 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       <div className="flex items-start justify-between gap-2 border-b border-line p-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider"
-            style={{ color: style.css, backgroundColor: `${style.css}1f` }}
+            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-text"
+            style={{ backgroundColor: `${style.css}1f` }}
           >
             <span
               aria-hidden="true"

@@ -5,12 +5,20 @@ import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 import { CATEGORY_STYLES } from '@/lib/categories';
 
-/** One event as a list row: category chip, grade, time and the title as a link when safe. */
+/**
+ * One event as a list row: category, grade, time and the title as a link when safe.
+ * The category's map colour marks a dot; the label stays in theme text so it reads in every theme.
+ */
 export function EventRow({ event }: { event: LiveEvent }) {
   const style = CATEGORY_STYLES[event.category];
   return (
     <li className="flex flex-wrap items-baseline gap-2 border-t border-line/60 py-2 text-sm">
-      <span className="rounded px-1.5 font-mono text-2xs" style={{ color: style.css }}>
+      <span className="px-1.5 font-mono text-2xs text-text">
+        <span
+          aria-hidden="true"
+          className="mr-1.5 inline-block size-1.5 rounded-full align-middle"
+          style={{ backgroundColor: style.css }}
+        />
         {style.label}
       </span>
       <span className="font-mono text-2xs text-muted" title={event.grade_rationale}>

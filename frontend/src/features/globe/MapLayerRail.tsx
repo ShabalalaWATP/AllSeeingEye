@@ -43,7 +43,7 @@ function LayerButton({
         type="button"
         role="switch"
         aria-checked={active}
-        aria-label={count === undefined ? `${label} ${active ? 'on' : 'off'}` : `${label} ${count}`}
+        aria-label={count === undefined ? label : `${label} ${count}`}
         title={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
         className={`map-icon-button ${caption ? 'map-style-button' : ''}`}
         onClick={onClick}

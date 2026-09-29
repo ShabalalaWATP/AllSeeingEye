@@ -76,7 +76,7 @@ export function PlannedTasksEditor({
               <label className="block text-sm">
                 Search {index + 1} purpose
                 <select
-                  className="mt-1 block w-full rounded border border-line bg-ground p-2"
+                  className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
                   value={task.purpose}
                   onChange={(event) =>
                     value.updateTask(task.id, {
@@ -92,7 +92,7 @@ export function PlannedTasksEditor({
               <label className="block text-sm">
                 Search {index + 1} source
                 <select
-                  className="mt-1 block w-full rounded border border-line bg-ground p-2"
+                  className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
                   value={task.source_id}
                   onChange={(event) => value.updateTask(task.id, { source_id: event.target.value })}
                 >
@@ -116,7 +116,7 @@ export function PlannedTasksEditor({
               <label className="block text-sm">
                 Search {index + 1} candidate
                 <select
-                  className="mt-1 block w-full rounded border border-line bg-ground p-2"
+                  className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
                   value={task.candidate_id ?? ''}
                   onChange={(event) =>
                     value.updateTask(task.id, { candidate_id: event.target.value || null })

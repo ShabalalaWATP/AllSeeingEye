@@ -20,7 +20,7 @@ interface FieldFrameProps {
 }
 
 const controlClass =
-  'w-full rounded-md border border-line bg-ground px-3 py-2 text-sm text-text ' +
+  'w-full rounded-md border border-control-border bg-ground px-3 py-2 text-sm text-text ' +
   'placeholder:text-muted aria-invalid:border-critical disabled:opacity-50';
 
 function useFieldIds(hint: string | undefined, error: string | undefined) {

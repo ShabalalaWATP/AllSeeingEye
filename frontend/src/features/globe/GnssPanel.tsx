@@ -102,7 +102,7 @@ export function GnssPanel({
           <label className="flex items-center justify-between gap-3">
             Minimum observations
             <select
-              className="min-h-9 rounded border border-line bg-surface px-2"
+              className="min-h-9 rounded border border-control-border bg-surface px-2"
               value={filters.minimum}
               onChange={(event) => {
                 filters.setMinimum(Number(event.target.value));

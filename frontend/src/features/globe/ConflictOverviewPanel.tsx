@@ -70,7 +70,7 @@ export function ConflictOverviewPanel({
               value={regions.query}
               onChange={(event) => regions.setQuery(event.target.value)}
               placeholder="Region, country code or party"
-              className="mt-1 min-h-10 w-full rounded border border-line bg-ground px-2 text-text"
+              className="mt-1 min-h-10 w-full rounded border border-control-border bg-ground px-2 text-text"
             />
           </label>
           <label className="block text-muted">
@@ -78,7 +78,7 @@ export function ConflictOverviewPanel({
             <select
               value={regions.status}
               onChange={(event) => regions.setStatus(event.target.value as RegionStatus)}
-              className="mt-1 min-h-10 w-full rounded border border-line bg-ground px-2 text-text"
+              className="mt-1 min-h-10 w-full rounded border border-control-border bg-ground px-2 text-text"
             >
               <option value="all">All research regions</option>
               <option value="war">War regions (curated)</option>

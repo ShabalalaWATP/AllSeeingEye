@@ -1,72 +1,23 @@
 /**
  * Readability guards measured from the real theme tokens: WCAG 2.x contrast for body and
- * muted text in every theme, no opacity-dimmed muted text below AA, and no informational
- * text under 11px. Decorative exceptions are listed with their reason.
+ * muted text in every theme, no opacity-dimmed muted text below AA, no informational
+ * text under 11px, and form control borders at the 3:1 non-text minimum (WCAG 1.4.11).
+ * Decorative exceptions are listed with their reason.
  */
-import { readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
-// Vitest stubs stylesheet imports, so read the files the browser is actually served.
-const SRC = resolve(process.cwd(), 'src');
-const files = readdirSync(SRC, { recursive: true, encoding: 'utf8' }).map((file) =>
-  file.replaceAll('\\', '/'),
-);
-const read = (file: string) => readFileSync(resolve(SRC, file), 'utf8');
-const themeCss = read('styles/theme.css');
-const dashboardCss = read('features/globe/dashboard.css');
-
-const AA = 4.5;
-const THEMES = ['slate', 'light', 'midnight', 'aurora', 'phosphor', 'crimson', 'graphite'];
-const SURFACES = ['ground', 'surface', 'surface-2'] as const;
-
-type Palette = Record<string, string>;
-
-function block(css: string, selector: string): Palette {
-  const start = css.indexOf(selector);
-  if (start < 0) throw new Error(`Missing ${selector}`);
-  const open = css.indexOf('{', start);
-  const body = css.slice(open, css.indexOf('}', open));
-  const palette: Palette = {};
-  for (const match of body.matchAll(/--color-([\w-]+):\s*(#[0-9a-f]{6})\b/gi)) {
-    palette[match[1]!] = match[2]!;
-  }
-  return palette;
-}
-
-const base = block(themeCss, '@theme');
-const palettes: Record<string, Palette> = {
-  obsidian: base,
-  ...Object.fromEntries(
-    THEMES.map((theme) => [
-      theme,
-      { ...base, ...block(themeCss, `html[data-appearance='${theme}'] {`) },
-    ]),
-  ),
-  // The map keeps its own dark instrument palette whatever the theme.
-  'map dashboard': { ...base, ...block(dashboardCss, '.globe-dashboard-controls {') },
-};
-
-function rgb(hex: string): number[] {
-  return [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16));
-}
-
-function luminance(channels: number[]): number {
-  const [r = 0, g = 0, b = 0] = channels.map((value) => {
-    const c = value / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-/** WCAG 2.x contrast of a foreground drawn at `alpha` over an opaque background. */
-function contrast(foreground: string, background: string, alpha = 1): number {
-  const back = rgb(background);
-  const front = rgb(foreground).map((value, index) => value * alpha + back[index]! * (1 - alpha));
-  const [light, dark] = [luminance(front), luminance(back)].sort((a, b) => b - a);
-  return (light! + 0.05) / (dark! + 0.05);
-}
+import {
+  AA,
+  NON_TEXT,
+  SURFACES,
+  block,
+  contrast,
+  dashboardCss,
+  files,
+  palettes,
+  read,
+} from '@/test/themeContrast';
+import type { Palette } from '@/test/themeContrast';
 
 const sources = Object.fromEntries(
   files
@@ -76,6 +27,80 @@ const sources = Object.fromEntries(
 const stylesheets = Object.fromEntries(
   files.filter((file) => file.endsWith('.css')).map((file) => [file, read(file)]),
 );
+
+// Checkboxes, radios, sliders and file pickers are not outlined text fields.
+const NOT_TEXT_CONTROL = /\btype="(?:checkbox|radio|range|file|hidden|color)"/;
+
+/** The opening tag of every `<input>`, `<select>` and `<textarea>` that is a text control. */
+function textControls(source: string): string[] {
+  const tags: string[] = [];
+  for (const match of source.matchAll(/<(?:input|select|textarea)\b/g)) {
+    let index = match.index + match[0].length;
+    let depth = 0;
+    let quote = '';
+    for (; index < source.length; index += 1) {
+      const char = source[index]!;
+      if (quote) {
+        if (char === quote) quote = '';
+      } else if (char === '"' || char === "'" || char === '`') quote = char;
+      else if (char === '{') depth += 1;
+      else if (char === '}') depth -= 1;
+      else if (char === '>' && depth === 0) break;
+    }
+    const tag = source.slice(match.index, index + 1);
+    if (!NOT_TEXT_CONTROL.test(tag)) tags.push(tag);
+  }
+  return tags;
+}
+
+/** A tag's classes, following `className={name}` to a string constant in the same file. */
+function classesOf(tag: string, source: string): string {
+  const name = /className=\{(\w+)\}/.exec(tag)?.[1];
+  if (name === undefined) return tag;
+  for (const declaration of source.matchAll(/\bconst\s+(\w+)\s*=\s*([^;]+);/g)) {
+    if (declaration[1] === name) return declaration[2]!;
+  }
+  return '';
+}
+
+const authCss = read('features/auth/auth.css');
+const mapToolCss = read('components/maps/mapTool.css');
+const mapToolShellCss = read('features/globe/mapToolShell.css');
+
+/** The value of `property` in the first rule whose selector starts with `selector`. */
+function declaration(css: string, selector: string, property: string): string {
+  const start = css.indexOf(selector);
+  if (start < 0) throw new Error(`Missing ${selector}`);
+  const open = css.indexOf('{', start);
+  const body = css.slice(open + 1, css.indexOf('}', open));
+  const entry = body
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${property}:`));
+  if (!entry) throw new Error(`Missing ${property} in ${selector}`);
+  return entry.slice(property.length + 1).trim();
+}
+
+/**
+ * The opaque colour a declaration paints: a `var(--color-*)` token from `palette`, or a hex
+ * value. A translucent `#rrggbbaa` is flattened over white, the lightest backdrop and so the
+ * worst case under a light border on a dark panel.
+ */
+function paint(value: string, palette: Palette): string {
+  const token = /var\(--color-([\w-]+)\)/.exec(value);
+  if (token) {
+    const hex = palette[token[1]!];
+    if (hex === undefined) throw new Error(`Unresolved ${value}`);
+    return hex;
+  }
+  const hex = /#([0-9a-f]{6})([0-9a-f]{2})?\b/i.exec(value);
+  if (!hex) throw new Error(`Unresolved ${value}`);
+  const alpha = hex[2] === undefined ? 1 : parseInt(hex[2], 16) / 255;
+  const channels = [0, 2, 4].map((index) =>
+    Math.round(parseInt(hex[1]!.slice(index, index + 2), 16) * alpha + 255 * (1 - alpha)),
+  );
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+}
 
 // Muted strokes on SVG diagrams are drawing lines, not text.
 const DECORATIVE_DIMMED = new Set(['components/maps/RfGroundwaveEngineering.tsx']);
@@ -133,5 +158,71 @@ describe('readable text', () => {
     expect(contrast('#ffffff', '#000000')).toBeCloseTo(21, 5);
     expect(contrast('#777777', '#ffffff')).toBeCloseTo(4.48, 2);
     expect(contrast('#ffffff', '#000000', 0.5)).toBeCloseTo(contrast('#808080', '#000000'), 1);
+  });
+});
+
+describe('form control borders', () => {
+  it.each(Object.keys(palettes))('reach 3:1 against every surface in the %s palette', (name) => {
+    const palette = palettes[name]!;
+    expect(palette).toHaveProperty('control-border', expect.stringMatching(/^#[0-9a-f]{6}$/i));
+    for (const surface of SURFACES) {
+      const ratio = contrast(palette['control-border']!, palette[surface]!);
+      expect(ratio, surface).toBeGreaterThanOrEqual(NON_TEXT);
+    }
+  });
+
+  it('keeps its own control border on the map whatever the theme', () => {
+    expect(block(dashboardCss, '.globe-dashboard-controls {')['control-border']).toBeDefined();
+  });
+
+  it('draws shared form fields with the control border, not the divider line', () => {
+    const field = read('components/ui/Field.tsx');
+    expect(field).toContain('border border-control-border');
+    expect(field).not.toContain('border-line');
+  });
+
+  it('draws every text control with the control border, not the divider line', () => {
+    const offenders = Object.entries(sources).flatMap(([file, source]) =>
+      textControls(source)
+        .filter((tag) => /\bborder-line\b/.test(classesOf(tag, source)))
+        .map((tag) => `${file}: ${tag.slice(0, 60)}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('keeps sign-in input borders at 3:1 against the field and the panel', () => {
+    // Sign-in renders outside the account shell, so it always uses the base theme.
+    const palette = { ...palettes.obsidian!, ...block(authCss, '.auth-shell {') };
+    const input = '.auth-form input,';
+    const border = paint(declaration(authCss, input, 'border-color'), palette);
+    const backgrounds = [
+      paint(declaration(authCss, input, 'background'), palette),
+      paint(declaration(authCss, '.auth-access {', 'background'), palette),
+    ];
+    for (const background of backgrounds) {
+      expect(contrast(border, background), background).toBeGreaterThanOrEqual(NON_TEXT);
+    }
+  });
+
+  it('keeps map tool input borders at 3:1 against the field and the tool panel', () => {
+    const failures: string[] = [];
+    for (const [name, palette] of Object.entries(palettes)) {
+      const border = paint(declaration(mapToolCss, '.map-tool-input {', 'border'), palette);
+      const backgrounds = [
+        paint(declaration(mapToolCss, '.map-tool-input {', 'background'), palette),
+      ];
+      // Map tool panels float over the map, so only the dashboard palette sits behind them.
+      if (name === 'map dashboard') {
+        backgrounds.push(
+          paint(declaration(mapToolShellCss, '.map-tool-panel {', 'background'), palette),
+        );
+      }
+      for (const background of backgrounds) {
+        const ratio = contrast(border, background);
+        if (ratio < NON_TEXT)
+          failures.push(`${name} ${border} on ${background} ${ratio.toFixed(2)}`);
+      }
+    }
+    expect(failures).toEqual([]);
   });
 });

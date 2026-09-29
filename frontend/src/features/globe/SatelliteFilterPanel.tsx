@@ -61,7 +61,7 @@ export function SatelliteFilterPanel({
           onChange={(event) => setQuery(event.target.value)}
           maxLength={SATELLITE_QUERY_LIMIT}
           placeholder="Name, NORAD number or designator"
-          className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
+          className="mt-2 min-h-11 w-full rounded border border-control-border bg-surface p-2"
         />
       </label>
       <p role="status" className="text-xs text-muted">

@@ -109,7 +109,7 @@ export function ForceSidePanel({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="e.g. 47th or Azov"
-              className="min-h-9 w-44 rounded border border-line bg-ground px-2 text-xs text-text"
+              className="min-h-9 w-44 rounded border border-control-border bg-ground px-2 text-xs text-text"
             />
           </label>
           <button

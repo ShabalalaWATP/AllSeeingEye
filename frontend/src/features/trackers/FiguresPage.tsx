@@ -140,7 +140,7 @@ export function FiguresBoard({ board }: { board: FigureBoard }) {
           value={query}
           onChange={(event) => setQuery(event.target.value.slice(0, 120))}
           maxLength={120}
-          className="mt-1 min-h-11 w-full rounded border border-line bg-surface px-2"
+          className="mt-1 min-h-11 w-full rounded border border-control-border bg-surface px-2"
         />
       </label>
       <CountryChips

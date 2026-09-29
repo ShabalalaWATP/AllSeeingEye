@@ -31,7 +31,7 @@ export function FigureLocationPicker({
         id={id}
         value={figure.id}
         aria-describedby={`${id}-note`}
-        className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2 text-text focus-visible:outline-2 focus-visible:outline-cyan"
+        className="mt-2 min-h-11 w-full rounded border border-control-border bg-surface p-2 text-text focus-visible:outline-2 focus-visible:outline-cyan"
         onChange={(event) => {
           const next = figures.find((item) => item.id === event.target.value);
           if (next) onSelect(next);

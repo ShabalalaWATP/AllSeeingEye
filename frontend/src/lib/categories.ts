@@ -1,4 +1,8 @@
-/** Category labels and colours shared by map layers, legends and event lists. */
+/**
+ * Category labels and colours shared by map layers, legends and event lists.
+ * The colours are data colours tuned for the dark map: use them for dots, fills and layers,
+ * never as text colour, because several fall far below AA on light surfaces.
+ */
 import type { Category } from './api/eventSchemas';
 
 export interface CategoryStyle {

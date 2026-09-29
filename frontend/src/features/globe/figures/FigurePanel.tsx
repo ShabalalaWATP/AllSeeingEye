@@ -91,7 +91,7 @@ export function FigurePanel({
               value={figures.query}
               onChange={(event) => figures.setQuery(event.target.value)}
               maxLength={120}
-              className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
+              className="mt-2 min-h-11 w-full rounded border border-control-border bg-surface p-2"
             />
           </label>
           <CountryChips

@@ -27,7 +27,7 @@ export function CandidateRegistryEditor({
             <label className="block text-sm">
               {prefix} type
               <select
-                className="mt-1 block w-full rounded border border-line bg-ground p-2"
+                className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
                 value={identifier.namespace}
                 onChange={(event) =>
                   update({
