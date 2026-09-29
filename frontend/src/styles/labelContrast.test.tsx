@@ -58,7 +58,9 @@ function over(front: string, back: string, alpha: number): string {
 function utility(element: HTMLElement, prefix: 'text' | 'bg', palette: Palette): Paint | null {
   const found = [...element.classList].flatMap((name) => {
     const match = /^(text|bg)-([a-z0-9-]+)(?:\/(\d+))?$/.exec(name);
-    return match && match[1] === prefix && !NOT_COLOUR.has(match[2]!) ? [match] : [];
+    if (match?.[1] !== prefix) return [];
+    if (NOT_COLOUR.has(match[2]!)) return [];
+    return [match];
   });
   if (found.length > 1) throw new Error(`Several ${prefix} colours on "${element.className}"`);
   const [match] = found;
