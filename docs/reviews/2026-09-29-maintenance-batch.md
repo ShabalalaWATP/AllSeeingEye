@@ -30,7 +30,8 @@ on the final code commit passed, including eight SQLite shards, eight PostgreSQL
 shards, frontend tests/build, CodeQL, Semgrep, dependency review and security.
 Local Bandit and pip-audit passed; pip-audit could not audit the private `ase`
 package against PyPI. The repository script suite passed 70 tests, with three
-platform/tool skips. CI will rerun after this documentation commit.
+platform/tool skips. The PR checks show the current validation state for the
+documentation commits.
 
 Code-quality review: the camera state rule and status derivation have one
 implementation each. A result from the last listed provider can finish before

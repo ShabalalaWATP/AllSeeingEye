@@ -13,8 +13,7 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] KAN-20: omit the version from public health and regenerate the API contract.
 - [x] Run the full Windows backend suite and investigate its single unrelated load-sensitive timeout; 9,838 passed, 93 skipped, 93.78% coverage, and the failing test passed in isolation.
 - [x] Complete code, security and documentation review; all CI checks passed on the final code commit.
-- [ ] Complete CI on the documentation commit.
-- [ ] Obtain release approval before merging or deploying.
+- [ ] Require passing PR CI and Alex's release approval before merging or deploying.
 
 The six fixes are in separate commits on `codex/KAN-15-maintenance-batch` in
 [draft PR #86](https://github.com/ShabalalaWATP/AllSeeingEye/pull/86).
