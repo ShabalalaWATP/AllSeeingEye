@@ -62,6 +62,8 @@ function PhotoGeolocationForm({
   const busy = analysis.busy || report.busy;
   const result = analysis.result;
   const upload = (files: readonly File[]) => {
+    // A locally invalid batch keeps the accepted photos, consent and findings.
+    if (!input.validate(files)) return;
     analysis.clear();
     report.clearError();
     setConsentKey('');
