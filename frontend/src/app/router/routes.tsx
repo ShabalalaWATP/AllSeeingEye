@@ -16,6 +16,7 @@ import { SetPasswordPage } from '@/features/auth/SetPasswordPage';
 
 import AdminSessionGate from './AdminSessionGate';
 import { NotFoundPage } from '../NotFoundPage';
+import { RouteErrorPage, RouteErrorPanel } from '../RouteError';
 import { RedirectWithQuery, RequireAdmin, RequireAuth } from './guards';
 
 const GlobePage = lazy(() => import('@/features/globe/GlobePage'));
@@ -97,15 +98,20 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
     ]
   : [];
 
-export const routes: RouteObject[] = [
+/** Pages under a pathless boundary, so a failure renders inside the layout's outlet. */
+function recoverable(children: RouteObject[]): RouteObject[] {
+  return [{ errorElement: <RouteErrorPanel />, children }];
+}
+
+const pages: RouteObject[] = [
   {
     element: <AuthLayout />,
-    children: [
+    children: recoverable([
       { path: '/login', element: <LoginPage /> },
       { path: '/request-account', element: <RequestAccountPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/set-password', element: <SetPasswordPage /> },
-    ],
+    ]),
   },
   { path: '/sources', element: <RedirectWithQuery to="/admin/catalogue" /> },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
@@ -115,7 +121,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         element: <AppShell />,
-        children: [
+        children: recoverable([
           { index: true, element: <GlobePage /> },
           { path: 'research', element: <ResearchPage /> },
           { path: 'research/jobs', element: <ReportJobsPage /> },
@@ -157,7 +163,7 @@ export const routes: RouteObject[] = [
           { path: 'economy', element: <EconomyPage /> },
           { path: 'cyber', element: <CyberIntelligencePage /> },
           { path: 'account/security', element: <TotpSettingsPage /> },
-        ],
+        ]),
       },
       {
         path: 'admin',
@@ -168,7 +174,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <AdminShell />,
-                children: [
+                children: recoverable([
                   { index: true, element: <AdminOverviewPage /> },
                   { path: 'requests', element: <AdminRequestsPage /> },
                   { path: 'users', element: <AdminUsersPage /> },
@@ -178,7 +184,7 @@ export const routes: RouteObject[] = [
                   { path: 'catalogue', element: <SourcesPage /> },
                   { path: 'llm', element: <AdminLlmPage /> },
                   { path: 'security', element: <TotpSettingsPage /> },
-                ],
+                ]),
               },
             ],
           },
@@ -189,3 +195,6 @@ export const routes: RouteObject[] = [
   ...devRoutes,
   { path: '*', element: <NotFoundPage /> },
 ];
+
+// The root boundary catches failures outside the layouts' own boundaries, such as a guard.
+export const routes: RouteObject[] = [{ errorElement: <RouteErrorPage />, children: pages }];
