@@ -186,10 +186,10 @@ describe('label contrast in every theme', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('never colours text with a category map colour anywhere in the app', () => {
+  it('never colours label text with a category or timeline phase data colour', () => {
     const offenders = files
       .filter((file) => file.endsWith('.tsx') && !file.endsWith('.test.tsx'))
-      .filter((file) => /[{,]\s*color:\s*[\w.[\]]*\.css\b/.test(read(file)));
+      .filter((file) => /[{,]\s*color:\s*[\w.[\]]*\.(?:css|colour)\b/.test(read(file)));
     expect(offenders).toEqual([]);
   });
 

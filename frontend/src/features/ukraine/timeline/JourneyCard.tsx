@@ -56,10 +56,13 @@ export function JourneyCard({
       className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 p-3 sm:flex-row sm:items-end sm:p-5"
     >
       <article className="card-surface pointer-events-auto flex min-w-0 flex-col gap-2 p-4 sm:max-w-lg">
-        <p
-          className="font-mono text-2xs uppercase tracking-[0.18em]"
-          style={{ color: phase.colour }}
-        >
+        {/* The phase colour marks the dot; the label stays in theme text so it reads in every theme. */}
+        <p className="flex items-center gap-2 font-mono text-2xs uppercase tracking-[0.18em] text-muted">
+          <span
+            aria-hidden="true"
+            className="size-1.5 shrink-0 rounded-full"
+            style={{ backgroundColor: phase.colour }}
+          />
           {phase.label}
         </p>
         <div className="flex flex-wrap items-baseline gap-2">

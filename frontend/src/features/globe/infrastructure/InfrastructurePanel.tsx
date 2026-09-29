@@ -166,7 +166,7 @@ export function InfrastructurePanel({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Name, operator or country code"
-              className="my-2 w-full rounded border border-line bg-ground px-2 py-2 text-sm"
+              className="my-2 w-full rounded border border-control-border bg-ground px-2 py-2 text-sm"
             />
           </label>
           <InfrastructureRecordList

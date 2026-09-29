@@ -28,6 +28,38 @@ const stylesheets = Object.fromEntries(
   files.filter((file) => file.endsWith('.css')).map((file) => [file, read(file)]),
 );
 
+// Checkboxes, radios, sliders and file pickers are not outlined text fields.
+const NOT_TEXT_CONTROL = /\btype="(?:checkbox|radio|range|file|hidden|color)"/;
+
+/** The opening tag of every `<input>`, `<select>` and `<textarea>` that is a text control. */
+function textControls(source: string): string[] {
+  const tags: string[] = [];
+  for (const match of source.matchAll(/<(?:input|select|textarea)\b/g)) {
+    let index = match.index + match[0].length;
+    let depth = 0;
+    let quote = '';
+    for (; index < source.length; index += 1) {
+      const char = source[index]!;
+      if (quote) {
+        if (char === quote) quote = '';
+      } else if (char === '"' || char === "'" || char === '`') quote = char;
+      else if (char === '{') depth += 1;
+      else if (char === '}') depth -= 1;
+      else if (char === '>' && depth === 0) break;
+    }
+    const tag = source.slice(match.index, index + 1);
+    if (!NOT_TEXT_CONTROL.test(tag)) tags.push(tag);
+  }
+  return tags;
+}
+
+/** A tag's classes, following `className={name}` to a string constant in the same file. */
+function classesOf(tag: string, source: string): string {
+  const name = /className=\{(\w+)\}/.exec(tag)?.[1];
+  if (name === undefined) return tag;
+  return new RegExp(`const ${name}\\s*=\\s*([^;]+);`).exec(source)?.[1] ?? '';
+}
+
 const authCss = read('features/auth/auth.css');
 const mapToolCss = read('components/maps/mapTool.css');
 const mapToolShellCss = read('features/globe/mapToolShell.css');
@@ -143,13 +175,13 @@ describe('form control borders', () => {
     expect(field).not.toContain('border-line');
   });
 
-  it.each([
-    'features/globe/context/contextPresentation.tsx',
-    'features/admin/ModelAssignmentMatrixRow.tsx',
-    'components/ui/LinkReveal.tsx',
-    'features/globe/ConflictOverviewPanel.tsx',
-  ])('draws the inputs in %s with the control border', (file) => {
-    expect(read(file)).toContain('border border-control-border');
+  it('draws every text control with the control border, not the divider line', () => {
+    const offenders = Object.entries(sources).flatMap(([file, source]) =>
+      textControls(source)
+        .filter((tag) => /\bborder-line\b/.test(classesOf(tag, source)))
+        .map((tag) => `${file}: ${tag.slice(0, 60)}`),
+    );
+    expect(offenders).toEqual([]);
   });
 
   it('keeps sign-in input borders at 3:1 against the field and the panel', () => {

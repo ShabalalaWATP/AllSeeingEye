@@ -46,7 +46,7 @@ export function RegistryTaskEditor({
       <label className="block text-sm">
         Search {index + 1} method
         <select
-          className="mt-1 block w-full rounded border border-line bg-ground p-2"
+          className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
           value={task.route}
           onChange={(event) =>
             update(
@@ -72,7 +72,7 @@ export function RegistryTaskEditor({
           <label className="block text-sm">
             Search {index + 1} registry lookup
             <select
-              className="mt-1 block w-full rounded border border-line bg-ground p-2"
+              className="mt-1 block w-full rounded border border-control-border bg-ground p-2"
               value={selected ? String(choices.indexOf(selected)) : ''}
               onChange={(event) => {
                 const choice =
