@@ -81,10 +81,11 @@
     --color-good: #13734c;
     --color-critical: #bb2638;
     --color-chart-1: #2a78d6;
-    --color-chart-2: #eb6834;
-    --color-chart-3: #1baf7a;
-    --color-chart-4: #eda100;
-    --color-chart-5: #e87ba4;
+    /* Series 2 to 5 darkened just enough to reach 3:1 on every Daylight surface. */
+    --color-chart-2: #e8551a;
+    --color-chart-3: #18996b;
+    --color-chart-4: #b57b00;
+    --color-chart-5: #e15489;
     --color-chart-6: #4a3aa7;
     --shadow-card: 0 14px 36px -20px rgb(20 34 50 / 0.25);
   }

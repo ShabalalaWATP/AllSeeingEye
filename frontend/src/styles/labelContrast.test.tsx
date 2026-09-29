@@ -18,7 +18,16 @@ import { SIDE_LABELS } from '@/lib/api/ukraine';
 import { CATEGORY_STYLES } from '@/lib/categories';
 import { liveEvent } from '@/test/fixtures.events';
 import { ukraineReference } from '@/test/fixtures.ukraineReference';
-import { AA, SURFACES, contrast, files, palettes, read, type Palette } from '@/test/themeContrast';
+import {
+  AA,
+  NON_TEXT,
+  SURFACES,
+  contrast,
+  files,
+  palettes,
+  read,
+  type Palette,
+} from '@/test/themeContrast';
 
 // The eight application themes; the map keeps its own palette and none of these labels sit on it.
 const THEME_PALETTES = Object.entries(palettes).filter(([name]) => name !== 'map dashboard');
@@ -177,6 +186,13 @@ describe('label contrast in every theme', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('never colours text with a category map colour anywhere in the app', () => {
+    const offenders = files
+      .filter((file) => file.endsWith('.tsx') && !file.endsWith('.test.tsx'))
+      .filter((file) => /[{,]\s*color:\s*[\w.[\]]*\.css\b/.test(read(file)));
+    expect(offenders).toEqual([]);
+  });
+
   it('measures blended chip backgrounds the way the browser composites them', () => {
     expect(over('#ffffff', '#000000', 0.5)).toBe('#808080');
     expect(over('#eb6834', '#ffffff', 1)).toBe('#eb6834');
@@ -185,6 +201,16 @@ describe('label contrast in every theme', () => {
 });
 
 describe('chart colour is never the only reading', () => {
+  it('keeps every chart series at 3:1 against each Daylight surface', () => {
+    const light = palettes.light!;
+    const weak = [1, 2, 3, 4, 5, 6].flatMap((slot) =>
+      SURFACES.filter(
+        (surface) => contrast(light[`chart-${slot}`]!, light[surface]!) < NON_TEXT,
+      ).map((surface) => `chart-${slot} on ${surface}`),
+    );
+    expect(weak).toEqual([]);
+  });
+
   it('states that the table view is the reference reading for stacked columns', () => {
     render(
       <StackedColumns

@@ -143,6 +143,15 @@ describe('form control borders', () => {
     expect(field).not.toContain('border-line');
   });
 
+  it.each([
+    'features/globe/context/contextPresentation.tsx',
+    'features/admin/ModelAssignmentMatrixRow.tsx',
+    'components/ui/LinkReveal.tsx',
+    'features/globe/ConflictOverviewPanel.tsx',
+  ])('draws the inputs in %s with the control border', (file) => {
+    expect(read(file)).toContain('border border-control-border');
+  });
+
   it('keeps sign-in input borders at 3:1 against the field and the panel', () => {
     // Sign-in renders outside the account shell, so it always uses the base theme.
     const palette = { ...palettes.obsidian!, ...block(authCss, '.auth-shell {') };

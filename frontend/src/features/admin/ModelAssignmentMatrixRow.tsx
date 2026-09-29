@@ -15,7 +15,7 @@ import {
 } from './modelAllowancePresets';
 
 const selectClass =
-  'w-full min-w-44 rounded-md border border-line bg-ground px-3 py-2 text-sm text-text ' +
+  'w-full min-w-44 rounded-md border border-control-border bg-ground px-3 py-2 text-sm text-text ' +
   'transition-colors hover:border-muted/60 focus-visible:outline-ember disabled:opacity-50';
 const periodLabels = { day: 'Daily', week: 'Weekly', month: 'Monthly' };
 

@@ -24,7 +24,7 @@ export function LinkReveal({ title, link, expiresAt }: LinkRevealProps) {
           readOnly
           aria-label={title}
           value={link}
-          className="w-full rounded-md border border-line bg-ground px-2 py-1 font-mono text-xs text-text"
+          className="w-full rounded-md border border-control-border bg-ground px-2 py-1 font-mono text-xs text-text"
           onFocus={(event) => {
             event.currentTarget.select();
           }}

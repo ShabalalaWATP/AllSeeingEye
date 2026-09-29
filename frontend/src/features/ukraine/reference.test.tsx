@@ -22,9 +22,10 @@ describe('Ukraine reference sections', () => {
     expect(within(list).getByText('The full-scale invasion begins')).toBeInTheDocument();
     expect(within(list).getByText(/the drive on Kyiv failed/)).toBeInTheDocument();
     const stage = screen.getByTestId('journey-stage');
-    expect(within(stage).getByText(/^Event 1 of 2\. 24 February 2022/)).toBeInTheDocument();
+    const card = () => within(stage).getByRole('region', { name: 'Current event' });
+    expect(within(card()).getByText('The full-scale invasion begins')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next event' }));
-    expect(within(stage).getByText(/^Event 2 of 2\. 15 January 2026/)).toBeInTheDocument();
+    expect(within(card()).getByText('Talks without a ceasefire')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Diplomacy and aid' }));
     expect(within(list).queryByText('The full-scale invasion begins')).toBeNull();
     expect(within(list).getByText('Talks without a ceasefire')).toBeInTheDocument();

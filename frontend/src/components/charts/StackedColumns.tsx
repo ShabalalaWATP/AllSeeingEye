@@ -134,7 +134,7 @@ export function StackedColumns({
               {row.label}
             </span>
           ))}
-        {/* Some series colours fall below 3:1 on light surfaces, so the numbers carry the reading. */}
+        {/* Colour identifies each series; the table carries the exact values. */}
         <span className="basis-full">The table view is the reference reading.</span>
       </figcaption>
       <details className="text-xs text-muted">
