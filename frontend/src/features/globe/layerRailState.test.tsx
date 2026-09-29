@@ -19,9 +19,12 @@ function rule(selector: string): string {
 
 /** One declaration's value, with dashboard custom properties resolved to hex. */
 function value(body: string, property: string): string {
-  const match = new RegExp(`(?:^|[;\\s])${property}:\\s*([^;]+);`).exec(body);
-  if (!match) throw new Error(`Missing ${property}`);
-  const raw = match[1]!.trim();
+  const declaration = body
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${property}:`));
+  if (!declaration) throw new Error(`Missing ${property}`);
+  const raw = declaration.slice(property.length + 1).trim();
   const token = /^var\(--color-([\w-]+)\)$/.exec(raw);
   return token ? palettes['map dashboard']![token[1]!]! : raw;
 }

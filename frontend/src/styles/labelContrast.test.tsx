@@ -55,17 +55,17 @@ function over(front: string, back: string, alpha: number): string {
 }
 
 /** The theme colour a utility prefix (`text` or `bg`) sets on the element, if any. */
-function utility(element: HTMLElement, prefix: string, palette: Palette): Paint | null {
+function utility(element: HTMLElement, prefix: 'text' | 'bg', palette: Palette): Paint | null {
   const found = [...element.classList].flatMap((name) => {
-    const match = new RegExp(`^${prefix}-([a-z0-9-]+)(?:/(\\d+))?$`).exec(name);
-    return match && !NOT_COLOUR.has(match[1]!) ? [match] : [];
+    const match = /^(text|bg)-([a-z0-9-]+)(?:\/(\d+))?$/.exec(name);
+    return match && match[1] === prefix && !NOT_COLOUR.has(match[2]!) ? [match] : [];
   });
   if (found.length > 1) throw new Error(`Several ${prefix} colours on "${element.className}"`);
   const [match] = found;
   if (!match) return null;
-  const colour = palette[match[1]!];
+  const colour = palette[match[2]!];
   if (!colour) throw new Error(`${match[0]} is not a theme colour`);
-  return { colour, alpha: match[2] ? Number(match[2]) / 100 : 1 };
+  return { colour, alpha: match[3] ? Number(match[3]) / 100 : 1 };
 }
 
 /** The label's text colour: an inline literal, or the theme token its class names. */

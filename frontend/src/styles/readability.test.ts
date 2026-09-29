@@ -57,7 +57,10 @@ function textControls(source: string): string[] {
 function classesOf(tag: string, source: string): string {
   const name = /className=\{(\w+)\}/.exec(tag)?.[1];
   if (name === undefined) return tag;
-  return new RegExp(`const ${name}\\s*=\\s*([^;]+);`).exec(source)?.[1] ?? '';
+  for (const declaration of source.matchAll(/\bconst\s+(\w+)\s*=\s*([^;]+);/g)) {
+    if (declaration[1] === name) return declaration[2]!;
+  }
+  return '';
 }
 
 const authCss = read('features/auth/auth.css');
@@ -69,10 +72,13 @@ function declaration(css: string, selector: string, property: string): string {
   const start = css.indexOf(selector);
   if (start < 0) throw new Error(`Missing ${selector}`);
   const open = css.indexOf('{', start);
-  const body = css.slice(open, css.indexOf('}', open));
-  const match = new RegExp(`[{;\\s]${property}:\\s*([^;]+);`).exec(body);
-  if (!match) throw new Error(`Missing ${property} in ${selector}`);
-  return match[1]!.trim();
+  const body = css.slice(open + 1, css.indexOf('}', open));
+  const entry = body
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${property}:`));
+  if (!entry) throw new Error(`Missing ${property} in ${selector}`);
+  return entry.slice(property.length + 1).trim();
 }
 
 /**
