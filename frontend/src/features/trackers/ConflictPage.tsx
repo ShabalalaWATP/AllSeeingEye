@@ -5,7 +5,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchConflictDetail } from '@/lib/api/trackers';
 import { researchHref } from '@/lib/researchNavigation';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { BackToTrackers, ShowOnGlobe, Timeline } from './TrackerParts';
 import { ConflictMetrics, ConflictCoverageNote } from './ConflictMetrics';
@@ -16,7 +16,7 @@ import { ConflictSourceCoverage } from './ConflictSourceCoverage';
 export default function ConflictPage() {
   const { id = '' } = useParams();
   const loader = useCallback(() => fetchConflictDetail(id), [id]);
-  const { data, error, loading } = useResource(loader);
+  const { data, error, loading } = useScopedResource(loader);
   if (data === null) {
     return (
       <section className="p-6">

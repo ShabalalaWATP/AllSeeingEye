@@ -5,7 +5,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchDisasterDetail } from '@/lib/api/trackers';
 import { researchHref } from '@/lib/researchNavigation';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { EventRow } from '@/components/events/EventRow';
 import { ActivityCells, BackToTrackers, ShowOnGlobe, Timeline } from './TrackerParts';
@@ -13,7 +13,7 @@ import { ActivityCells, BackToTrackers, ShowOnGlobe, Timeline } from './TrackerP
 export default function HazardPage() {
   const { hazard = '' } = useParams();
   const loader = useCallback(() => fetchDisasterDetail(hazard), [hazard]);
-  const { data, error, loading } = useResource(loader);
+  const { data, error, loading } = useScopedResource(loader);
   if (data === null) {
     return (
       <section className="p-6">
