@@ -8608,8 +8608,6 @@ export interface components {
         HealthOut: {
             /** Status */
             status: string;
-            /** Version */
-            version: string;
         };
         /** IdentityCandidateSnapshot */
         IdentityCandidateSnapshot: {

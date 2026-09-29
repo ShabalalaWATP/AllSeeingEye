@@ -171,7 +171,6 @@ class AuditPageOut(BaseModel):
 
 class HealthOut(BaseModel):
     status: str
-    version: str
 
 
 class ReadyOut(BaseModel):

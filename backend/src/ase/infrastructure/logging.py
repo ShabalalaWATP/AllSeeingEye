@@ -12,18 +12,33 @@ from ase.infrastructure.settings import Settings
 
 SENSITIVE_FRAGMENTS = ("password", "token", "secret", "authorization", "cookie")
 REDACTED = "[redacted]"
+MAX_REDACTION_DEPTH = 6
 
 
 def redact_sensitive(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
-    """Replace the value of any key that looks like a secret, one level deep."""
+    """Redact secret-shaped keys throughout bounded structured log values."""
     for key, value in list(event_dict.items()):
         if _is_sensitive(key):
             event_dict[key] = REDACTED
-        elif isinstance(value, dict):
-            event_dict[key] = {
-                k: REDACTED if _is_sensitive(str(k)) else v for k, v in value.items()
-            }
+        else:
+            event_dict[key] = _redact_value(value, 1)
     return event_dict
+
+
+def _redact_value(value: object, depth: int) -> object:
+    if isinstance(value, dict):
+        if depth > MAX_REDACTION_DEPTH:
+            return REDACTED
+        return {
+            key: REDACTED if _is_sensitive(str(key)) else _redact_value(item, depth + 1)
+            for key, item in value.items()
+        }
+    if isinstance(value, list | tuple):
+        if depth > MAX_REDACTION_DEPTH:
+            return REDACTED
+        items = (_redact_value(item, depth + 1) for item in value)
+        return tuple(items) if isinstance(value, tuple) else list(items)
+    return value
 
 
 def _is_sensitive(key: str) -> bool:

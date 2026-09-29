@@ -9,17 +9,16 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
-from ase import __version__
 from ase.adapters.persistence.session import create_engine, create_session_factory
 from ase.app_factory import create_app
 from ase.container import Container
 from ase.infrastructure.settings import Environment, Settings
 
 
-async def test_health_reports_version(client: AsyncClient) -> None:
+async def test_public_health_exposes_only_status(client: AsyncClient) -> None:
     response = await client.get("/api/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": __version__}
+    assert response.json() == {"status": "ok"}
 
 
 async def test_ready_checks_the_database(client: AsyncClient) -> None:

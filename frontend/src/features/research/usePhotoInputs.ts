@@ -35,6 +35,18 @@ function actorKey() {
   const user = useAuthStore.getState().user;
   return `${user?.id ?? ''}:${user?.role ?? ''}:${user?.is_active ?? false}`;
 }
+/** Why a whole batch cannot be uploaded; checked before anything current is discarded. */
+function batchError(files: readonly File[]): string | null {
+  if (files.length > MAX_PHOTOS) return 'Choose up to six photographs per analysis.';
+  for (const file of files) {
+    const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (!PHOTO_EXTENSIONS.split(',').includes(extension))
+      return 'Choose a PNG, JPEG or WebP photograph.';
+    if (!file.size || file.size > MAX_BYTES)
+      return 'Each photograph must be non-empty and no larger than 8 MiB.';
+  }
+  return null;
+}
 
 export function usePhotoInputs() {
   const user = useAuthStore((state) => state.user);
@@ -77,8 +89,15 @@ export function usePhotoInputs() {
     setSnapshot(empty(key, status));
   };
 
+  // An invalid batch only reports why: accepted receipts, uploads and status stay as they are.
+  const validate = (files: readonly File[]) => {
+    const error = batchError(files);
+    if (error) setSnapshot({ ...state, error });
+    return error === null;
+  };
+
   const change = async (files: readonly File[] = [], removeId?: string) => {
-    if (controller.current) return false;
+    if (controller.current || !validate(files)) return false;
     const abort = new AbortController();
     controller.current = abort;
     const attempt = ++sequence.current;
@@ -97,19 +116,6 @@ export function usePhotoInputs() {
         await discardResearchInput(id, abort.signal);
         if (!current()) return false;
         forgetPhotoReceipt(key, id);
-      }
-      if (files.length > MAX_PHOTOS)
-        throw new ApiError(422, 'invalid_photos', 'Choose up to six photographs per analysis.');
-      for (const file of files) {
-        const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-        if (!PHOTO_EXTENSIONS.split(',').includes(extension))
-          throw new ApiError(422, 'invalid_photo', 'Choose a PNG, JPEG or WebP photograph.');
-        if (!file.size || file.size > MAX_BYTES)
-          throw new ApiError(
-            422,
-            'invalid_photo',
-            'Each photograph must be non-empty and no larger than 8 MiB.',
-          );
       }
       // Upload sequentially to bound decoding pressure and keep partial failures visible.
       const receipts = [...retained];
@@ -163,6 +169,7 @@ export function usePhotoInputs() {
     key,
     busy: state.status === 'loading',
     clear,
+    validate,
     replace: change,
     remove: (id: string) => change([], id),
   };

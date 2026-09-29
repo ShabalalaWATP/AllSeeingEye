@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api/errors';
@@ -44,6 +44,23 @@ async function ready(count = 2) {
   choose(count);
   await screen.findByText(`Photo ready: view-${count}.jpg`);
   await waitFor(() => expect(screen.getByRole('checkbox')).toBeEnabled());
+}
+async function analysed() {
+  render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
+  await ready();
+  fireEvent.click(screen.getByRole('checkbox'));
+  fireEvent.click(screen.getByRole('button', { name: 'Analyse 2 photos together' }));
+  await screen.findByText('Unverified location candidates');
+  upload.mockClear();
+  discard.mockClear();
+}
+const previews = () =>
+  within(screen.getByRole('list', { name: 'Selected photographs' })).getAllByRole('img');
+const blank = (index: number) => new File(['image'], `extra-${index}.jpg`);
+function oversized() {
+  const file = new File(['x'], 'large.jpg');
+  Object.defineProperty(file, 'size', { value: 8 * 1024 * 1024 + 1 });
+  return file;
 }
 
 describe('combined photo geolocation', () => {
@@ -111,11 +128,45 @@ describe('combined photo geolocation', () => {
     choose(7);
     expect(await screen.findByRole('alert')).toHaveTextContent('Choose up to six');
     expect(upload).not.toHaveBeenCalled();
-    const file = new File(['x'], 'large.jpg');
-    Object.defineProperty(file, 'size', { value: 8 * 1024 * 1024 + 1 });
-    fireEvent.change(screen.getByLabelText(/^Photographs?$/), { target: { files: [file] } });
+    fireEvent.change(screen.getByLabelText(/^Photographs?$/), { target: { files: [oversized()] } });
     expect(await screen.findByRole('alert')).toHaveTextContent('no larger than 8 MiB');
     expect(upload).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['seven photos', /Choose up to six/, () => Array.from({ length: 7 }, (_, i) => blank(i))],
+    ['an unsupported type', /Choose a PNG, JPEG/, () => [new File(['image'], 'notes.gif')]],
+    ['an empty file', /must be non-empty/, () => [new File([], 'blank.jpg')]],
+    ['an oversized file', /no larger than 8 MiB/, () => [oversized()]],
+  ])(
+    'keeps the accepted set, consent and findings when a replacement has %s',
+    async (_, error, files) => {
+      await analysed();
+      fireEvent.change(screen.getByLabelText('Photographs'), { target: { files: files() } });
+      expect(await screen.findByText(error)).toBeVisible();
+      expect(previews()).toHaveLength(2);
+      expect(screen.getByText('Photo ready: view-1.jpg')).toBeVisible();
+      expect(screen.getByText('Unverified location candidates')).toBeVisible();
+      expect(screen.getByRole('checkbox')).toBeChecked();
+      expect(upload).not.toHaveBeenCalled();
+      expect(discard).not.toHaveBeenCalled();
+    },
+  );
+
+  it('still replaces the set and clears findings after a valid batch follows an invalid one', async () => {
+    await analysed();
+    fireEvent.change(screen.getByLabelText('Photographs'), { target: { files: [oversized()] } });
+    expect(await screen.findByText(/no larger than 8 MiB/)).toBeVisible();
+    fireEvent.change(screen.getByLabelText('Photographs'), {
+      target: { files: [new File(['image'], 'view-3.jpg')] },
+    });
+    expect(screen.queryByText('Unverified location candidates')).not.toBeInTheDocument();
+    expect(screen.queryByText(/no larger than 8 MiB/)).not.toBeInTheDocument();
+    await screen.findByText('Photo ready: view-3.jpg');
+    expect(previews()).toHaveLength(1);
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(discard.mock.calls.map(([id]) => id).sort()).toEqual([ids[0], ids[1]]);
+    expect(upload).toHaveBeenCalledTimes(1);
   });
 
   it('keeps a successful partial upload visible and releases it before replacing the set', async () => {

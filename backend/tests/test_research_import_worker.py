@@ -292,3 +292,23 @@ async def test_remote_parser_round_trip_uses_bounded_unix_socket(tmp_path: Path)
 async def test_remote_parser_unavailable_fails_closed(tmp_path: Path) -> None:
     with pytest.raises(ImportRejected, match="could not run safely"):
         await RemoteDocumentImportRunner(tmp_path / "missing.sock").run(b"text", "notes.txt")
+
+
+async def test_remote_parser_fails_closed_without_unix_stream_support(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delattr(asyncio, "open_unix_connection", raising=False)
+    with pytest.raises(ImportRejected, match="could not run safely"):
+        await RemoteDocumentImportRunner(tmp_path / "missing.sock").run(b"text", "notes.txt")
+
+
+async def test_parser_server_rejects_missing_unix_support_before_touching_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delattr(asyncio, "start_unix_server", raising=False)
+    socket_path = tmp_path / "untouched" / "parser.sock"
+
+    with pytest.raises(RuntimeError, match="Unix sockets are unavailable"):
+        await start_server(socket_path)
+
+    assert not socket_path.parent.exists()
