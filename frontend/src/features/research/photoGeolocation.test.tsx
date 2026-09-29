@@ -355,13 +355,16 @@ describe('photo geolocation workspace', () => {
     );
   });
 
-  it('cleans up original and derived receipts before an invalid-file retry or workspace switch', async () => {
+  it('keeps receipts through an invalid file, then cleans up on replacement or workspace switch', async () => {
     render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
     await begin();
     await screen.findByText('Unverified location candidates');
     choose('not-a-photo.pdf');
-    await waitFor(() => expect(discard).toHaveBeenCalledWith(photoId, expect.any(AbortSignal)));
+    expect(await screen.findByText('Choose a PNG, JPEG or WebP photograph.')).toBeVisible();
+    expect(screen.getByText('Unverified location candidates')).toBeVisible();
+    expect(discard).not.toHaveBeenCalled();
     await ready();
+    expect(discard).toHaveBeenCalledWith(photoId, expect.any(AbortSignal));
     fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await screen.findByText('Unverified location candidates');
     fireEvent.change(screen.getByLabelText('Workspace'), { target: { value: photoTeamId } });
