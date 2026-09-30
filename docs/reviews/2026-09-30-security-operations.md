@@ -74,5 +74,36 @@ API shell entrypoint prevented SIGTERM reaching Uvicorn. A populated stop took
 30.751 seconds, exited 137 without OOM, and wrote neither shutdown phases nor
 the final snapshot. The repair explicitly assigns distinct API/web proxy
 addresses and uses `exec uvicorn` after migration. Six configuration regressions
-pass. A fresh full Compose retry is required before claiming these behaviours
-verified; individual-container health checks did not expose either issue.
+pass. A fresh full Compose retry at `88664dc5` restored all 100,000 retained
+events. The populated API stopped in 6.878 seconds with exit 0, no OOM, all seven
+shutdown phases complete and a fresh final snapshot. Readiness returned in
+26.761 seconds and a new authenticated stream in 27.892 seconds. Durable user,
+audit and refresh rows remained present. The old stream exposed a separate
+cooperative-close gap in the SSE library's default zero-grace shutdown.
+
+The `5eb6167d` follow-up uses the library's supported shutdown signal and a
+two-second grace period. Idle stream reads wake on that signal, close the
+subscription and release admission, allowing the final ASGI body to complete.
+The regression failed before the change and passed afterwards; 55 stream tests
+and three session-fence architecture checks passed. Coordinator review found
+no access-check or cancellation regression, and nine combined stream/configuration
+checks plus full mypy (1,399 modules) passed after integration.
+
+The final 100,000-event Compose rehearsal ended the old authenticated stream
+normally, with no incomplete-response error. API stop took 3.654 seconds, exited
+0 without OOM, and all seven cleanup phases completed in 1.635 seconds. The final
+snapshot retained all 100,000 events. Readiness returned in 9.717 seconds and a
+new authenticated stream in 10.134 seconds; durable records remained intact.
+The tested API image was `sha256:6e159103d0b9dba68a96a7fe1dfd169bb6312d36dbe118c38e6137d61fdec824`.
+
+The complete disposable proxy test also passed: actual Caddy traffic retained
+the correct client address, while a direct caller on the ordinary application
+network could not forge it. The harness used its own networks, local CA, database
+and loopback ports. Docker Desktop required a separate web-only ingress bridge
+to publish loopback ports while the API/proxy networks remained internal.
+
+The first [SBOM workflow](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36660418423)
+completed successfully. Both downloaded inventories parse as CycloneDX 1.6:
+5,693 components for API and 405 for web. The accompanying image metadata
+records GitHub's tested PR merge revision `4ef60571`, generated from this batch
+at `88664dc5`. No production image or deployment is implied by these inventories.
