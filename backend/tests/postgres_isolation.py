@@ -38,9 +38,11 @@ async def database_command(service_url: str, database_url: str, *, create: bool)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def isolated_postgres_database(request: pytest.FixtureRequest, worker_id: str) -> Iterator[None]:
+def isolated_postgres_database(
+    request: pytest.FixtureRequest, worker_id: str
+) -> Iterator[str | None]:
     if not request.config.getoption("--isolated-postgres"):
-        yield
+        yield None
         return
     service = os.environ["ASE_TEST_DATABASE_URL"]
     private = worker_database_url(service, worker_id, uuid4().hex)
@@ -48,7 +50,7 @@ def isolated_postgres_database(request: pytest.FixtureRequest, worker_id: str) -
     try:
         with pytest.MonkeyPatch.context() as patch:
             patch.setenv("ASE_TEST_DATABASE_URL", private)
-            yield
+            yield private
     finally:
         # Only drop the database this fixture successfully created, never the service.
         asyncio.run(database_command(service, private, create=False))

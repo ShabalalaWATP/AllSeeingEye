@@ -110,7 +110,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("count", type=int)
     parser.add_argument("--workers", type=worker_count, help="pytest-xdist workers per shard")
     parser.add_argument("--postgres-mode", choices=("parallel", "serial"))
+    parser.add_argument(
+        "--template-postgres",
+        action="store_true",
+        help="opt ordinary app fixtures into owned database templates in the parallel lane",
+    )
     args = parser.parse_args(argv)
+    if args.template_postgres and args.postgres_mode != "parallel":
+        parser.error("--template-postgres requires --postgres-mode parallel")
     try:
         all_files = test_files(BACKEND)
         files = select_shard(all_files, args.index, args.count, load_durations(DURATIONS))
@@ -132,6 +139,8 @@ def main(argv: list[str] | None = None) -> int:
     selection: list[str] = []
     if args.postgres_mode == "parallel":
         selection = ["-m", "db and not (postgres or migration or race)", "--isolated-postgres"]
+        if args.template_postgres:
+            selection.append("--template-postgres")
     elif args.postgres_mode == "serial":
         if parallel:
             parser.error("PostgreSQL race and migration tests must run without --workers")
