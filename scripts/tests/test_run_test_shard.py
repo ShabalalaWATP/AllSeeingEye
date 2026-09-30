@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -39,21 +40,40 @@ class ShardTests(unittest.TestCase):
             )
 
     def test_subprocess_propagates_failure_and_preserves_database_environment(self):
+        argument_files = []
+
+        def fail(command, **_kwargs):
+            arguments = Path(command[-1].removeprefix("@"))
+            argument_files.append(arguments)
+            self.assertEqual(arguments.read_text(encoding="utf-8"), "tests\n")
+            return SimpleNamespace(returncode=1)
+
         with (
             patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
             patch.dict(runner.os.environ, {"ASE_TEST_DATABASE_URL": "test-database"}),
-            patch.object(runner.subprocess, "run") as run,
+            patch.object(runner.subprocess, "run", side_effect=fail) as run,
         ):
-            run.return_value.returncode = 1
             self.assertEqual(runner.main(["0", "1"]), 1)
             args, kwargs = run.call_args
             self.assertIn("--cov-fail-under=0", args[0])
             self.assertIn("--durations=20", args[0])
-            self.assertEqual(args[0][-1], "tests/test_a.py")
+            self.assertTrue(args[0][-1].startswith("@"))
+            self.assertFalse(argument_files[0].exists())
             self.assertEqual(kwargs["env"]["ASE_TEST_DATABASE_URL"], "test-database")
             self.assertEqual(
                 kwargs["env"]["COVERAGE_FILE"], str(runner.BACKEND / ".coverage.shard-0")
             )
+
+    def test_single_root_discovery_excludes_exactly_other_partition_files(self):
+        files = ["tests/test_a.py", "tests/nested/test_b.py", "tests/nested/c_test.py"]
+        for index in range(2):
+            selected = runner.select_shard(files, index, 2)
+            arguments = runner.collection_arguments(files, selected)
+            self.assertEqual(arguments[0], "tests")
+            excluded = {argument.removeprefix("--ignore=") for argument in arguments[1:]}
+            self.assertEqual(set(files) - excluded, set(selected))
+        with self.assertRaisesRegex(ValueError, "line separators"):
+            runner.collection_arguments(["tests/test_a\n--pdb.py"], [])
 
     def test_recorded_durations_balance_complete_files_deterministically(self):
         durations = {f"tests/test_{number:03}.py": float(number % 17) for number in range(90)}
@@ -116,7 +136,8 @@ class ShardTests(unittest.TestCase):
         ):
             run.return_value.returncode = 0
             self.assertEqual(runner.main(["0", "1", "--workers", "auto"]), 0)
-            self.assertEqual(run.call_args[0][0][-3:], ["-n", "auto", "tests/test_a.py"])
+            self.assertEqual(run.call_args[0][0][-3:-1], ["-n", "auto"])
+            self.assertTrue(run.call_args[0][0][-1].startswith("@"))
             self.assertEqual(runner.main(["0", "1"]), 0)
             self.assertNotIn("-n", run.call_args[0][0])
             for invalid in ["0", "-1", "all", "2 --pdb"]:
