@@ -13,6 +13,8 @@ from collections.abc import AsyncGenerator, Awaitable, Callable
 from datetime import datetime, timedelta
 from typing import Any, Literal
 
+import anyio
+
 from ase.api.stream_encoding import dumps
 from ase.api.stream_resume import StreamCursor, parse_event_id
 from ase.application.access import AccessContext
@@ -45,6 +47,7 @@ class LiveStream:
         ping_seconds: float,
         read_access: AccessReader,
         encode: MessageEncoder,
+        shutdown_event: anyio.Event,
     ) -> None:
         self._container = container
         self._clock = container.clock
@@ -54,6 +57,7 @@ class LiveStream:
         self._ping_seconds = ping_seconds
         self._read_access = read_access
         self._encode = encode
+        self._shutdown_event = shutdown_event
         self._pending: deque[BusMessage] = deque()
         self._signature: tuple[Any, ...] = ()
         self._checked_at = self._clock.now()
@@ -83,6 +87,8 @@ class LiveStream:
                 resync = dumps({"reason": "snapshot_required"})
                 yield cursor.frame("event.resync", resync, self._clock.now())
             while not self._expired():
+                if self._shutdown_event.is_set():
+                    return
                 replayed = bool(self._pending)
                 if replayed:
                     message: BusMessage | None = self._pending.popleft()
@@ -110,13 +116,27 @@ class LiveStream:
         return self._clock.now() >= self._deadline
 
     async def _receive(self, subscription: Subscription) -> BusMessage | None:
-        # Wake at least every ping so the deadline is honoured on a quiet stream.
+        # A shutdown signal must wake idle streams before the response's short
+        # grace period expires, allowing its terminal ASGI body to be sent.
         remaining = (self._deadline - self._clock.now()).total_seconds()
+        message = asyncio.ensure_future(anext(aiter(subscription)))
+        stopping = asyncio.create_task(self._shutdown_event.wait())
         try:
-            async with asyncio.timeout(min(remaining, self._ping_seconds)):
-                return await anext(aiter(subscription))
-        except TimeoutError:
-            return None
+            finished, _ = await asyncio.wait(
+                (message, stopping),
+                timeout=max(0, min(remaining, self._ping_seconds)),
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if stopping in finished:
+                raise StopAsyncIteration
+            return message.result() if message in finished else None
+        finally:
+            message.cancel()
+            stopping.cancel()
+            # Client disconnect cancels an AnyIO task group. Join both waiters
+            # without swallowing that cancellation or leaving queue readers behind.
+            with anyio.CancelScope(shield=True):
+                await asyncio.gather(message, stopping, return_exceptions=True)
 
     async def _recheck(self) -> Literal["revoked", "changed"] | None:
         # Public deliveries reuse a check until the recheck window passes or a

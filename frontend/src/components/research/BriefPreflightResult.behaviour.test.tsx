@@ -90,9 +90,9 @@ it.each([1, 2])(
     });
     render(<BriefPreflightResult preview={data} />);
     expect(
-      screen.getByText(
-        new RegExp(`Reduce ${excess} required question${excess === 1 ? '' : 's'} in`),
-      ),
+      screen.getByText(`Reduce ${excess} required question${excess === 1 ? '' : 's'} in`, {
+        exact: false,
+      }),
     ).toBeVisible();
     expect(screen.getByText(/No questions are dropped automatically/)).toBeVisible();
     expect(screen.getByText(/Optional background \(optional, priority 4\)/)).toBeVisible();
