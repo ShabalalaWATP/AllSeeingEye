@@ -27,6 +27,7 @@ import os
 import statistics
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
@@ -90,6 +91,19 @@ def worker_count(value: str) -> str:
     raise argparse.ArgumentTypeError("use auto, logical or a positive number")
 
 
+def collection_arguments(all_files: list[str], selected: list[str]) -> list[str]:
+    """Discover once, excluding whole files outside this deterministic partition.
+
+    Passing hundreds of individual paths makes pytest rescan their containing
+    directory for every argument. An argument file keeps the equivalent ignore
+    list below the Windows command-line length limit.
+    """
+    if any("\n" in name or "\r" in name for name in all_files):
+        raise ValueError("Test filenames must not contain line separators")
+    included = set(selected)
+    return ["tests", *(f"--ignore={name}" for name in all_files if name not in included)]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("index", type=int)
@@ -98,7 +112,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--postgres-mode", choices=("parallel", "serial"))
     args = parser.parse_args(argv)
     try:
-        files = select_shard(test_files(BACKEND), args.index, args.count, load_durations(DURATIONS))
+        all_files = test_files(BACKEND)
+        files = select_shard(all_files, args.index, args.count, load_durations(DURATIONS))
+        discovery = collection_arguments(all_files, files)
     except ValueError as exc:
         parser.error(str(exc))
     if not files:
@@ -122,22 +138,25 @@ def main(argv: list[str] | None = None) -> int:
         selection = ["-m", "postgres or migration or race"]
     if args.postgres_mode:
         selection.append(f"--record-nodeids=.test-nodeids.postgres-{args.index}{suffix}.txt")
-    result = subprocess.run(  # noqa: S603
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "--cov-fail-under=0",
-            "--cov-report=",
-            "--durations=20",
-            *selection,
-            *parallel,
-            *files,
-        ],
-        cwd=BACKEND,
-        env=environment,
-        check=False,
-    )
+    with tempfile.TemporaryDirectory(prefix="ase-pytest-shard-") as directory:
+        arguments = Path(directory) / "collection.txt"
+        arguments.write_text("\n".join(discovery) + "\n", encoding="utf-8")
+        result = subprocess.run(  # noqa: S603
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "--cov-fail-under=0",
+                "--cov-report=",
+                "--durations=20",
+                *selection,
+                *parallel,
+                f"@{arguments}",
+            ],
+            cwd=BACKEND,
+            env=environment,
+            check=False,
+        )
     return result.returncode
 
 

@@ -53,6 +53,15 @@ def test_remote_postgres_cannot_be_used_as_a_disposable_service():
         worker_database_url("postgresql+asyncpg://database.example/service", "gw0", "a" * 32)
 
 
+@pytest.mark.parametrize("isolated", [False, True])
+def test_parallel_rotation_cannot_reset_a_shared_database(monkeypatch, isolated):
+    monkeypatch.setenv("ASE_TEST_DATABASE_URL", "postgresql+asyncpg://localhost/service")
+    monkeypatch.setenv("ASE_ROTATION_TEST_URL", "postgresql+asyncpg://localhost/rotation")
+    config = SimpleNamespace(option=SimpleNamespace(numprocesses=2, isolated_postgres=isolated))
+    with pytest.raises(pytest.UsageError, match=r"shared PostgreSQL/race|ASE_ROTATION_TEST_URL"):
+        refuse_shared_databases_in_parallel(config)
+
+
 def test_fixture_closure_and_direct_engine_construction_are_marked():
     def database_test():
         create_engine()  # noqa: F821

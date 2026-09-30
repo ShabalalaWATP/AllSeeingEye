@@ -24,7 +24,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from ase.adapters.persistence.base import Base
 from database_markers import file_constructs_database, uses_database
 
-SHARED_DATABASE_VARIABLES = frozenset({"ASE_TEST_DATABASE_URL", "ASE_TOKEN_RACE_TEST_URL"})
+SHARED_DATABASE_VARIABLES = frozenset(
+    {"ASE_TEST_DATABASE_URL", "ASE_TOKEN_RACE_TEST_URL", "ASE_ROTATION_TEST_URL"}
+)
 
 
 def shared_database_variables(environment: Mapping[str, str]) -> list[str]:
