@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import StrEnum
+
+log = logging.getLogger(__name__)
 
 
 class SourceStatus(StrEnum):
@@ -18,6 +21,7 @@ class SourceStatus(StrEnum):
 class SourceHealth:
     source_id: str
     status: SourceStatus = SourceStatus.IDLE
+    status_reason: str | None = None
     last_success: datetime | None = None
     last_error: str | None = None
     last_error_at: datetime | None = None
@@ -87,7 +91,11 @@ class HealthRegistry:
     ) -> SourceHealth:
         entry = self.get(source_id)
         entry.blocked_reason = None
-        entry.status = SourceStatus.DEGRADED if warning else SourceStatus.HEALTHY
+        self._transition(
+            entry,
+            SourceStatus.DEGRADED if warning else SourceStatus.HEALTHY,
+            "poll_warning" if warning else "poll_succeeded",
+        )
         if warning:
             entry.last_error, entry.last_error_at = warning[:300], now
         entry.warning = coverage_warning[:300] if coverage_warning else None
@@ -113,7 +121,9 @@ class HealthRegistry:
         entry = self.get(source_id)
         entry.blocked_reason = error[:300] if blocked else None
         entry.warning = None
-        entry.status = SourceStatus.DEGRADED
+        self._transition(
+            entry, SourceStatus.DEGRADED, "provider_blocked" if blocked else "deferred"
+        )
         entry.last_error, entry.last_error_at = error[:300], now
         entry.next_poll_at = retry_at
         entry.polls += 1
@@ -130,10 +140,10 @@ class HealthRegistry:
         if self.breaker.should_disable(entry.consecutive_failures):
             # Paused, not switched off: the scheduler probes again at next_poll_at.
             entry.trips += 1
-            entry.status = SourceStatus.DISABLED
+            self._transition(entry, SourceStatus.DISABLED, "circuit_breaker")
             entry.next_poll_at = now + self.breaker.cooldown_for(entry.trips)
         else:
-            entry.status = SourceStatus.DEGRADED
+            self._transition(entry, SourceStatus.DEGRADED, "poll_failed")
             entry.next_poll_at = now + self.breaker.backoff_for(entry.consecutive_failures)
         return entry
 
@@ -147,7 +157,7 @@ class HealthRegistry:
         entry.consecutive_failures += 1
         entry.last_error, entry.last_error_at = error[:300], now
         entry.polls += 1
-        entry.status = SourceStatus.DEGRADED
+        self._transition(entry, SourceStatus.DEGRADED, "rate_limited")
         wait = max(self.breaker.backoff_for(entry.consecutive_failures), retry_after or timedelta())
         entry.next_poll_at = now + min(wait, self.breaker.max_backoff)
         return entry
@@ -157,8 +167,28 @@ class HealthRegistry:
         entry = self.get(source_id)
         entry.warning = None
         entry.blocked_reason = None
-        entry.status = SourceStatus.IDLE
+        self._transition(entry, SourceStatus.IDLE, "administrator_reset")
         entry.consecutive_failures = 0
         entry.trips = 0
         entry.next_poll_at = None
         return entry
+
+    def administratively_disabled(self, source_id: str) -> None:
+        self._transition(self.get(source_id), SourceStatus.DISABLED, "administrator_disabled")
+
+    @staticmethod
+    def _transition(entry: SourceHealth, status: SourceStatus, reason: str) -> None:
+        if entry.status != status or (
+            status is SourceStatus.DISABLED and entry.status_reason != reason
+        ):
+            log.info(
+                "feed.health_transition",
+                extra={
+                    "source_id": entry.source_id,
+                    "previous": entry.status.value,
+                    "status": status.value,
+                    "reason": reason,
+                },
+            )
+        entry.status = status
+        entry.status_reason = reason

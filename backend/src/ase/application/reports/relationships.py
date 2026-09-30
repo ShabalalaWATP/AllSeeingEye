@@ -86,7 +86,7 @@ class ReportRelationships:
             raise NotFound()
         return version
 
-    async def _anchor(
+    async def resolve_anchor(
         self, access: AccessContext, relationship_id: UUID
     ) -> tuple[RelationshipReviewRoot, ReportVersion]:
         root = await self.relationships.get(relationship_id)
@@ -100,7 +100,7 @@ class ReportRelationships:
             raise Conflict("The relationship review evidence has changed.")
         return root, version
 
-    async def _revision(
+    async def resolve_revision(
         self, root: RelationshipReviewRoot, version: ReportVersion, revision_id: UUID
     ) -> RelationshipReviewRevision:
         try:
@@ -150,8 +150,8 @@ class ReportRelationships:
                     continue
                 relationship_id = await self.relationships.assertion_id(version.id, item.label)
                 if relationship_id is not None:
-                    root, anchored = await self._anchor(access, relationship_id)
-                    await self._revision(root, anchored, root.latest_revision_id)
+                    root, anchored = await self.resolve_anchor(access, relationship_id)
+                    await self.resolve_revision(root, anchored, root.latest_revision_id)
                     review_ids[item.label] = relationship_id
         return tuple(values), tuple(unavailable), review_ids
 
@@ -159,8 +159,10 @@ class ReportRelationships:
         self, claims: AccessClaims, relationship_id: UUID, revision_id: UUID | None = None
     ) -> tuple[RelationshipReviewRoot, RelationshipReviewRevision]:
         async with self._transaction(claims) as access:
-            root, version = await self._anchor(access, relationship_id)
-            value = await self._revision(root, version, revision_id or root.latest_revision_id)
+            root, version = await self.resolve_anchor(access, relationship_id)
+            value = await self.resolve_revision(
+                root, version, revision_id or root.latest_revision_id
+            )
         return root, value
 
     async def list(
@@ -186,10 +188,10 @@ class ReportRelationships:
             )
             values = []
             for relationship_id in ids:
-                root, anchored = await self._anchor(access, relationship_id)
+                root, anchored = await self.resolve_anchor(access, relationship_id)
                 if root.report_id != report_id or anchored.id != version.id:
                     raise Conflict("Relationship list contains an inconsistent report anchor.")
-                values.append(await self._revision(root, anchored, root.latest_revision_id))
+                values.append(await self.resolve_revision(root, anchored, root.latest_revision_id))
         return tuple(values), total
 
     def _build(
@@ -262,11 +264,11 @@ class ReportRelationships:
         context: RequestContext,
     ) -> RelationshipReviewRevision:
         async with self._transaction(claims) as access:
-            root, version = await self._anchor(access, relationship_id)
+            root, version = await self.resolve_anchor(access, relationship_id)
             access.require_write(root.created_by, root.team_id)
             if root.latest_revision_id != base_revision_id:
                 raise Conflict("This relationship review has a newer revision. Reload its history.")
-            previous = await self._revision(root, version, base_revision_id)
+            previous = await self.resolve_revision(root, version, base_revision_id)
             report = await self._report(access, root.report_id)
             revision = self._build(report, version, root.id, previous, value, access.actor.id)
             await self._quota(root.created_by, root.team_id, revision, creating=False)

@@ -75,6 +75,7 @@ class CyberWiring(ContainerCore):
     def cyber_briefing(
         self, session: AsyncSession, days: CyberWindowDays = CyberWindowDays.TWO
     ) -> DailyBriefingService:
+        # outside ContainerCore: reaches generate_report and report_jobs.
         container = cast("Container", self)
         days = cyber_window(days)
 

@@ -18,6 +18,7 @@ from ase.application.ports.live_snapshot import (
     RestorableEventStore,
     SnapshotLoad,
 )
+from ase.application.worker_progress import register_worker, run_cycle
 
 log = logging.getLogger(__name__)
 Sleep = Callable[[float], Awaitable[None]]
@@ -53,7 +54,7 @@ class LiveStoreSnapshots:
             # An in-flight save finishes its file work before the task ends.
             await asyncio.gather(task, return_exceptions=True)
         if self._loaded:
-            await self.save()
+            await run_cycle("live_snapshot", self._interval, self.save)
 
     async def load(self) -> int:
         """Restore once; returns the number of snapshot events the store retained."""
@@ -87,6 +88,7 @@ class LiveStoreSnapshots:
                 return False
 
     async def _run(self) -> None:
+        register_worker("live_snapshot", self._interval)
         while True:
             await self._sleep(self._interval)
-            await self.save()
+            await run_cycle("live_snapshot", self._interval, self.save)

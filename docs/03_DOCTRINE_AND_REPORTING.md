@@ -181,6 +181,15 @@ reassessing it against today's catalogue. PDF and Word rendering use the structu
 report projection and do not fetch remote assets during rendering. Exports remain
 subject to the viewer's current access to the report.
 
+The standard PDF renderer uses bundled DejaVu LGC for Latin, Greek and Cyrillic.
+Chinese reports select the bundled Research Sans SC/TC font according to the
+saved language. Unsupported characters and text-direction controls are shown
+as explicit Unicode code points; this is not universal script support.
+DOCX preserves the original supported Unicode text. Optional complex-script
+rendering has a separate [isolated-renderer contract](ISOLATED_REPORT_RENDERER.md).
+Inspect representative exports in the intended viewer; fixture tests do not
+establish native-speaker readability or PDF accessibility.
+
 For example, a thermal detection near a reported strike is evidence of detected heat.
 It does not by itself establish a weapon, perpetrator or cause. A useful assessment
 keeps the observation, attributed claims and unresolved explanations separate, then

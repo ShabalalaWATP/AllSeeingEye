@@ -5,6 +5,8 @@ import logging
 from collections.abc import Awaitable, Callable
 from uuid import UUID
 
+from ase.application.worker_progress import run_cycle
+
 log = logging.getLogger(__name__)
 Due = Callable[[int, UUID | None], Awaitable[list[UUID]]]
 Observe = Callable[[UUID], Awaitable[bool]]
@@ -35,7 +37,7 @@ class AnnotationMonitorWorker:
     async def run(self) -> None:
         while True:
             try:
-                await self.run_once()
+                await run_cycle("annotation_monitor", 5.0, self.run_once)
             except Exception:
                 # No database/source content is included in shared logs.
                 log.warning("annotation_monitor.cycle_failed")

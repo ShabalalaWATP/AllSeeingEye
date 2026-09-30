@@ -7,8 +7,8 @@ from uuid import uuid4
 
 import pytest
 
+from ase.application.schedules.subscription_publication import _advance_lineage
 from ase.container.subscription_baseline_control import _save_analytical_lineage
-from ase.container.subscription_publication import _advance_lineage
 from ase.domain.errors import Conflict
 from ase.domain.research_scope import validate_research_interval
 from ase.domain.subscription_editions import (

@@ -1,6 +1,8 @@
 # CI and test health batch: KAN-69 to KAN-76
 
-Base: `69696286`. Branch: `codex/KAN-69-ci-test-batch`.
+Original base: `69696286`. Branch: `codex/KAN-69-ci-test-batch`.
+Stacked PR base: `codex/KAN-41-runtime-observability` at `20ca4f83`.
+The runtime and architecture dependency branches merged without conflicts.
 This record distinguishes implementation and measured local evidence from acceptance
 criteria that require completed GitHub runs. No production deployment is authorised.
 
@@ -78,8 +80,11 @@ failure remains unresolved until consistent CI provides its failure details.
 ## Security and compatibility
 
 Required `backend`, `backend-postgres` and `frontend` check identities remain.
-All existing global 90% gates remain unchanged. Partial shards do not apply global
-coverage thresholds; their merger does. No changed coverage exclusion hides
+The global SQLite backend and frontend 90% gates remain unchanged. KAN-71
+explicitly removes the duplicate PostgreSQL coverage percentage gate: every
+selected PostgreSQL test must still pass, and combined PostgreSQL coverage is
+published as an artefact. Partial shards do not apply whole-application coverage
+thresholds; the SQLite and frontend mergers enforce them. No changed coverage exclusion hides
 production code. Frontend stricter floors remain report-only while gaps exist.
 Action versions are pinned to verified upstream release commits. Image jobs load
 locally for existing Trivy/smoke checks and do not push images. No deployment or

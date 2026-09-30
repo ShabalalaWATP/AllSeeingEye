@@ -19,6 +19,7 @@ from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.warning import AlertNotifier, WarningStore
+from ase.application.worker_progress import run_cycle
 from ase.domain.errors import RateLimited
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
@@ -154,7 +155,7 @@ class IndicatorEvaluator:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.run_once()
+                await run_cycle("evaluator", self._interval.total_seconds(), self.run_once)
             except Exception:
                 log.exception("evaluator_cycle_failed")
             await self._sleep(self._interval.total_seconds())

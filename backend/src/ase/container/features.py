@@ -288,6 +288,7 @@ class FeatureWiring(ReportWiring):
             self.clock,
         )
         return ScheduleRunner(
+            # passes the container to SubscriptionAdmission, which narrows its dependencies.
             SubscriptionAdmission(cast("Container", self)).tick,
             acquisition_tick=selected_index.tick,
         )
@@ -297,6 +298,7 @@ class FeatureWiring(ReportWiring):
             self._translation_profile,
             self._translation_usage,
             self.cipher,
+            # outside ContainerCore: reaches system_llm_gateway.
             cast("Container", self).system_llm_gateway(),
             self.clock,
         )
