@@ -1,5 +1,6 @@
 """Deployment settings keep proxy trust narrow and inventory jobs advisory."""
 
+from ipaddress import ip_address, ip_network
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,16 @@ def test_compose_trusts_only_reserved_caddy_address_and_reduces_capabilities() -
     compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text())
     api, web, db = (compose["services"][name] for name in ("api", "web", "db"))
     assert api["environment"]["ASE_FORWARDED_ALLOW_IPS"] == web["networks"]["proxy"]["ipv4_address"]
+    # Both addresses must be reserved before either service starts. Otherwise
+    # Docker's dynamic allocator can give the API the web container's address.
+    api_ip, web_ip = (
+        ip_address(service["networks"]["proxy"]["ipv4_address"].split(":-", 1)[1].rstrip("}"))
+        for service in (api, web)
+    )
+    subnet = ip_network(
+        compose["networks"]["proxy"]["ipam"]["config"][0]["subnet"].split(":-", 1)[1].rstrip("}")
+    )
+    assert api_ip != web_ip and api_ip in subnet and web_ip in subnet
     assert api["cap_drop"] == ["ALL"] and "cap_add" not in api
     assert "no-new-privileges:true" in db["security_opt"]
     assert db["cap_drop"] == ["ALL"]
@@ -29,6 +40,7 @@ def test_compose_trusts_only_reserved_caddy_address_and_reduces_capabilities() -
     assert "ASE_FORWARDED_ALLOW_IPS:-127.0.0.1" in dockerfile
     assert "ASE_FORWARDED_ALLOW_IPS:-*" not in dockerfile
     assert "--timeout-graceful-shutdown 10" in dockerfile
+    assert "ase migrate && exec uvicorn" in dockerfile
 
 
 @pytest.mark.parametrize(
