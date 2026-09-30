@@ -69,3 +69,19 @@ outside Git under
 `C:/Users/alexo/.codex/worktrees/kan73-node-expansion/helper-screening/`.
 The owned benchmark container was restored to the frozen baseline, verified and
 stopped after the screen. Earlier benchmark evidence was preserved.
+
+## Fresh full-suite coverage check
+
+The frontend shard/coverage jobs pass in CI run `36712872629` at `83bbc802`.
+Combined branches remain 20,266/21,988 (92.16%); lines are 19,981/20,538,
+statements 22,461/23,357 and functions 7,323/7,765. No file with at least 20
+branches falls below 70%, and the reviewed auth floors pass. Independent LCOV
+totals match JSON across 1,038 modules. The LCOV SHA-256 is
+`98b6f9256153223672dc32b3a931d931073a76b4ff42e8ea182cb0e9168ef397`.
+
+Against the frozen unsharded pair, covered counts and line/statement/branch
+denominators match. The function denominator is one lower, changing its exact
+percentage by +0.012144 points. All four deltas remain within the 0.05-point
+criterion. This establishes fresh aggregate coverage after helper extraction;
+it does not supply a new controlled whole-suite timing pair. The overall CI run
+failed backend fixture cases, so it is not a complete green checkpoint.
