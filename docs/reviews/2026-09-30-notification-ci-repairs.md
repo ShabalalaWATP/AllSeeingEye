@@ -2,9 +2,9 @@
 
 Published source: `67de303932e731ccb3e1aa31d5fe7987c92e9666`.
 [CI run 36703607838](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36703607838)
-checks the combined forecast, source/export and notification tree. The statements
-below record completed checks, not a claim that review, every job or release is
-complete.
+passed the combined forecast, source/export and notification tree. All 32 PR
+checks passed, including the separate image SBOM workflow. These results do not
+complete review, operator acceptance or release approval.
 
 ## Repairs and focused checks
 
@@ -54,7 +54,7 @@ Raw JSON and LCOV remain outside Git in the parent worktree directory
 `pr96-repaired-ci-coverage`. The immutable run and artifact identify provenance.
 
 Backend quality, its combined coverage/security-floor merger, frontend static
-checks and full Semgrep passed at this checkpoint. PostgreSQL jobs were still
-running when these coverage figures were recorded. No coverage floor was reduced,
+checks and full Semgrep passed at this checkpoint. All PostgreSQL shards and
+their merger subsequently passed, completing the CI run. No coverage floor was reduced,
 no production data was touched and no live notification was sent. Review,
 operator transport acceptance and explicit release approval remain separate.

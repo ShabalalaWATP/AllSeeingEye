@@ -21,8 +21,9 @@ source/export behavioural tests passed their focused checks and were published
 in their respective parent PRs. Notification repairs and the reviewed Atom
 annotation passed their focused checks. Fresh combined frontend CI now passes
 the unchanged 92% floor at 20,697/22,470 branches (92.10%), with every qualifying
-file at least 70%. Backend merger/security floors and Semgrep pass. The remaining
-PostgreSQL jobs are still running at this recorded checkpoint.
+file at least 70%. Backend merger/security floors, Semgrep and all PostgreSQL jobs
+pass. Published checkpoint `67de3039` passed all 32 PR checks in run `36703607838`
+and its separate SBOM workflow. CI performance acceptance remains separate.
 
 The combined PostgreSQL migration rehearsal preserves legacy records through the
 single head 0074 and tests refusal before losing protected history. CI enforces

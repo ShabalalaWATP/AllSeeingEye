@@ -5847,3 +5847,11 @@ Backend fixture repairs passed 25 cases. Forecast watch behaviour reached all
 32 branches with 12 focused tests; source/export lifecycle tests passed 23 cases
 and exercised 22 previously uncovered branches. Parent PRs were updated in
 dependency order, with no coverage-floor reductions or main merge.
+
+Forecast PR #94 and source/export PR #95 each passed all 32 checks after their
+coverage repairs. Combined notification checkpoint `67de3039` then passed all
+32 checks, including all PostgreSQL shards and migration/race lanes. Frontend
+coverage is 20,697/22,470 branches (92.10%), with every qualifying file at least
+70%; backend coverage reports 94% and the reviewed security/auth floors pass.
+The CI batch's storage capacity and controlled Node timing trials remain active,
+so these feature checks do not complete the outstanding performance criteria.
