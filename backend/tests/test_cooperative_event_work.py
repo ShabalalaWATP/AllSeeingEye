@@ -146,4 +146,4 @@ async def test_scheduler_does_not_publish_observation_pruned_during_grading():
         FakeClock(NOW),
         grader=PruningGrader(),
     )
-    assert await scheduler._regraded([event]) == []
+    assert await scheduler.poller._regraded([event]) == []

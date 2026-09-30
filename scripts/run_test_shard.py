@@ -4,7 +4,8 @@ Usage (inside backend): uv run python ../scripts/run_test_shard.py INDEX COUNT
 INDEX is zero-based. Each CI shard must have its own disposable database because
 the application fixtures drop and recreate the schema. Do not share one database
 between concurrent shards. Combine coverage separately for each database backend
-and enforce the project's 90% gate after every shard succeeds.
+and enforce the project's 90% SQLite gate after every shard succeeds. PostgreSQL
+coverage is published as diagnostic evidence for its selected persistence suite.
 
 Whole files are balanced by the per-file seconds in test_durations.json next to this
 script; files missing from it count as the median recorded file. Without that file the
@@ -13,7 +14,7 @@ shards fall back to round robin. Refresh it from a SQLite run inside backend wit
 
 ``--workers auto`` runs the shard's files on pytest-xdist workers, each with a private
 in-memory SQLite database. The test suite refuses parallel runs against a configured shared
-database, so PostgreSQL shards stay serial.
+database unless PostgreSQL worker isolation is explicitly enabled.
 """
 
 from __future__ import annotations
@@ -94,6 +95,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("index", type=int)
     parser.add_argument("count", type=int)
     parser.add_argument("--workers", type=worker_count, help="pytest-xdist workers per shard")
+    parser.add_argument("--postgres-mode", choices=("parallel", "serial"))
     args = parser.parse_args(argv)
     try:
         files = select_shard(test_files(BACKEND), args.index, args.count, load_durations(DURATIONS))
@@ -103,15 +105,35 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("Shard has no tests; reduce COUNT or check the test directory")
 
     environment = os.environ.copy()
-    environment["COVERAGE_FILE"] = str(BACKEND / f".coverage.shard-{args.index}")
+    suffix = f"-{args.postgres_mode}" if args.postgres_mode else ""
+    environment["COVERAGE_FILE"] = str(BACKEND / f".coverage.shard-{args.index}{suffix}")
     sys.stdout.write(f"Running shard {args.index + 1}/{args.count}: {len(files)} files\n")
     sys.stdout.flush()
     # The combined CI job enforces coverage. Applying 90% to an individual shard
     # would incorrectly require each subset to exercise the complete application.
     # Fixed Python executable and discovered repository paths, with no shell.
     parallel = ["-n", args.workers] if args.workers else []
+    selection: list[str] = []
+    if args.postgres_mode == "parallel":
+        selection = ["-m", "db and not (postgres or migration or race)", "--isolated-postgres"]
+    elif args.postgres_mode == "serial":
+        if parallel:
+            parser.error("PostgreSQL race and migration tests must run without --workers")
+        selection = ["-m", "postgres or migration or race"]
+    if args.postgres_mode:
+        selection.append(f"--record-nodeids=.test-nodeids.postgres-{args.index}{suffix}.txt")
     result = subprocess.run(  # noqa: S603
-        [sys.executable, "-m", "pytest", "--cov-fail-under=0", "--cov-report=", *parallel, *files],
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--cov-fail-under=0",
+            "--cov-report=",
+            "--durations=20",
+            *selection,
+            *parallel,
+            *files,
+        ],
         cwd=BACKEND,
         env=environment,
         check=False,

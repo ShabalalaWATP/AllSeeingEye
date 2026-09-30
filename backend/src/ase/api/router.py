@@ -13,6 +13,7 @@ from ase.api.routers import (
     admin_llm,
     admin_llm_discovery,
     admin_requests,
+    admin_runtime,
     admin_sources,
     admin_subscription_diagnostics,
     admin_users,
@@ -27,6 +28,7 @@ from ase.api.routers import (
     capabilities,
     claims,
     countries,
+    csp_reports,
     cyber,
     daily_briefing,
     direction,
@@ -90,6 +92,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(csp_reports.router)
 api_router.include_router(cyber.router)
 api_router.include_router(economy.router)
 api_router.include_router(economy_news.router)
@@ -160,6 +163,7 @@ api_router.include_router(alert_routing.router)
 api_router.include_router(schedules.router)
 api_router.include_router(subscription_usage.router)
 api_router.include_router(admin_requests.router)
+api_router.include_router(admin_runtime.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin_sources.router)

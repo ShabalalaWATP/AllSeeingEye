@@ -76,9 +76,7 @@ async def test_pause_wins_after_retry_timer_has_selected_edition(container, user
         await release.wait()
         return identifiers
 
-    with patch(
-        "ase.container.subscription_retry_orchestration.due_retry_ids", selected_before_pause
-    ):
+    with patch("ase.adapters.persistence.subscription_retry.due_retry_ids", selected_before_pause):
         timer = asyncio.create_task(retry.resume_due())
         try:
             await asyncio.wait_for(selected.wait(), timeout=5)

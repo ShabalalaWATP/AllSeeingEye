@@ -45,6 +45,7 @@ class EconomyExplainerWiring(ContainerCore):
         )
 
     async def economy_fact_pack(self) -> FactPack:
+        # outside ContainerCore: reaches economy and economy_news.
         container = cast("Container", self)
         snapshot = await container.economy.snapshot()
         news = await container.economy_news.read("WORLD", NEWS_LIMIT, EconomyWindowDays.TWO)

@@ -8,12 +8,25 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
-      environment: 'jsdom',
-      environmentOptions: {
-        jsdom: { url: 'http://localhost:3000/' },
-      },
-      setupFiles: ['./src/test/setup.ts'],
-      include: ['src/**/*.test.{ts,tsx}'],
+      projects: [
+        {
+          test: {
+            name: 'unit',
+            environment: 'node',
+            include: ['src/**/*.unit.test.ts'],
+          },
+        },
+        {
+          test: {
+            name: 'dom',
+            environment: 'jsdom',
+            environmentOptions: { jsdom: { url: 'http://localhost:3000/' } },
+            setupFiles: ['./src/test/setup.ts'],
+            include: ['src/**/*.test.{ts,tsx}'],
+            exclude: ['src/**/*.unit.test.ts'],
+          },
+        },
+      ],
       restoreMocks: true,
       clearMocks: true,
       // Page tests render lazy routes through MSW round trips; on a busy machine the
@@ -25,7 +38,10 @@ export default mergeConfig(
       maxWorkers: '50%',
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'html', 'lcov'],
+        reportOnFailure: true,
+        reporter: process.env.CI
+          ? ['text-summary', 'lcov', 'json-summary']
+          : ['text-summary', 'html', 'lcov', 'json-summary'],
         reportsDirectory: './coverage',
         include: ['src/**/*.{ts,tsx}'],
         exclude: [

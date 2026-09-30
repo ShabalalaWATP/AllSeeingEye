@@ -161,7 +161,7 @@ async def test_shared_scheduler_admission_blocks_fetch_and_late_publication(
     http = transport(monkeypatch, handle)
     connector = BarentsWatchConnector(http, FakeClock(NOW), CLIENT_ID, CLIENT_SECRET)
     scheduler, store, _, _ = build_scheduler([], FakeClock(NOW))
-    scheduler._admission = admission
+    scheduler.poller._admission = admission
     try:
         outcome = await scheduler.poll_once(connector)
         assert outcome.ok is (disable_when == "enabled")

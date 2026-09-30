@@ -93,7 +93,7 @@ class AnnotationMonitors:
         validate_options(name, categories, watches, mode)
         try:
             access = await self.selector.claims._context(actor)
-            report = await self.selector.claims._report(access, selection.report_id)
+            report = await self.selector.claims.resolve_report(access, selection.report_id)
             access.require_create(report.team_id)
             access.require_same_scope(
                 actor.user_id, report.team_id, report.created_by, report.team_id
@@ -166,7 +166,7 @@ class AnnotationMonitors:
         try:
             access = await self.selector.claims._context(actor)
             if report_id is not None:
-                await self.selector.claims._report(access, report_id)
+                await self.selector.claims.resolve_report(access, report_id)
             result = await self.repository.page(access.visibility, report_id, number, limit, offset)
             await self.selector.uow.commit()
             return result

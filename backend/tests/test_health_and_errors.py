@@ -100,7 +100,11 @@ async def test_unexpected_errors_are_masked(app: FastAPI) -> None:
         response = await client.get("/api/boom")
     assert response.status_code == 500
     assert response.json() == {
-        "error": {"code": "internal_error", "message": "Something went wrong on our side."}
+        "error": {
+            "code": "internal_error",
+            "message": "Something went wrong on our side.",
+            "request_id": response.headers["x-request-id"],
+        }
     }
 
 
