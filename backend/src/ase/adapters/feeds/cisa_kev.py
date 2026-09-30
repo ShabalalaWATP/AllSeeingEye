@@ -5,10 +5,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
-from ase.adapters.feeds.http import FeedFetchError
+from ase.adapters.feeds.base import HttpFeed
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.feeds.http_contracts import FeedHttpStatusError
+from ase.adapters.feeds.kev_scores import KevScoreEnrichment
 from ase.application.feeds.pipeline import clean_text
+from ase.application.ports import Clock
 from ase.domain.events import (
     MAX_ATTRIBUTE_CHARS,
     Category,
@@ -56,9 +58,26 @@ def _first_url(notes: object) -> str | None:
 class CisaKevConnector(HttpFeed):
     spec = SPEC
 
-    @empty_when_unchanged
+    def __init__(
+        self, http: FeedHttpClient, clock: Clock, scores: KevScoreEnrichment | None = None
+    ) -> None:
+        super().__init__(http, clock)
+        self._scores = scores
+        self._recent: list[Event] = []
+
     async def fetch(self) -> list[Event]:
-        data = await self._catalogue()
+        try:
+            data = await self._catalogue()
+        except NotModified:
+            if self._scores is None:
+                return []
+            cutoff = self._clock.now() - timedelta(days=RECENT_DAYS)
+            recent = [
+                event
+                for event in self._recent
+                if event.published_at and event.published_at >= cutoff
+            ]
+            return await self._scores.enrich(recent)
         now = self._clock.now()
         cutoff = now - timedelta(days=RECENT_DAYS)
         if not isinstance(data, dict) or not isinstance(data.get("vulnerabilities"), list):
@@ -73,6 +92,9 @@ class CisaKevConnector(HttpFeed):
                 and cutoff <= event.published_at <= now
             ):
                 events.append(event)
+        if self._scores is not None:
+            self._recent = events[:1000]
+            return await self._scores.enrich(events)
         return events
 
     async def _catalogue(self) -> Any:

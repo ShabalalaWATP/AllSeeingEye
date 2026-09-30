@@ -5,6 +5,7 @@ from datetime import date, datetime
 from enum import IntEnum, StrEnum
 
 from ase.domain.cyber_actors import CyberActorMention
+from ase.domain.cyber_scores import CvssScore, EpssScore
 from ase.domain.cyber_themes import CyberTheme
 
 CYBER_PUBLISHER_IDS = (
@@ -85,6 +86,8 @@ class CyberKev:
     ransomware_use: str
     cwes: str
     required_action: str
+    epss: EpssScore | None = None
+    cvss: CvssScore | None = None
 
 
 @dataclass(frozen=True, slots=True)

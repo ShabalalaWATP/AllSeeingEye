@@ -41,6 +41,7 @@ from ase.adapters.feeds.gdelt_news import GdeltNewsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
 from ase.adapters.feeds.isw_assessments import IswAssessmentsConnector
+from ase.adapters.feeds.kev_scores import KevScoreEnrichment
 from ase.adapters.feeds.mastodon import MastodonConnector
 from ase.adapters.feeds.mastodon_watch import load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
@@ -111,7 +112,7 @@ def build_connectors(
         EonetConnector(http, clock),
         SwpcAlertsConnector(http, clock),
         SwpcScalesConnector(http, clock),
-        CisaKevConnector(http, clock),
+        CisaKevConnector(http, clock, KevScoreEnrichment(http, clock)),
         GdeltEventsConnector(http, clock),
         GdeltNewsConnector(http, clock),
         AdsbMilitaryConnector(http, clock, classifications=classifications),
