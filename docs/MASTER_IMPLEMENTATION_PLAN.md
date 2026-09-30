@@ -19,8 +19,10 @@ tickets, 54 are in review, four in progress and two await operator action.
 Combined PR #96's backend fixture repairs passed 25 focused tests. Forecast and
 source/export behavioural tests passed their focused checks and were published
 in their respective parent PRs. Notification repairs and the reviewed Atom
-annotation are being validated. Combined coverage still needs to exceed the
-unchanged 92% floor. All PostgreSQL shards passed its latest completed run.
+annotation passed their focused checks. Fresh combined frontend CI now passes
+the unchanged 92% floor at 20,697/22,470 branches (92.10%), with every qualifying
+file at least 70%. Backend merger/security floors and Semgrep pass. The remaining
+PostgreSQL jobs are still running at this recorded checkpoint.
 
 The combined PostgreSQL migration rehearsal preserves legacy records through the
 single head 0074 and tests refusal before losing protected history. CI enforces
