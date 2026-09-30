@@ -5798,3 +5798,11 @@ out one unrelated report-job pause test under six-worker load; that test passed
 alone in 4.87 seconds. Coverage reached 93.78%, and all CI checks passed on the
 final code commit. See
 [the delivery record](reviews/2026-09-29-maintenance-batch.md).
+
+## 30 September 2026: Codex backlog delivery
+
+- Reconciled KAN-146/148/147 with merged PR81 and successful final CI; moved the stale review tickets to Done. PR86 is also verified merged with successful final checks. No new deployment is claimed.
+- Opened draft PR88 for shared Jira instructions, the grouped backlog register, current team-role contracts and repaired operations guidance. Prepared primary-checkout edits remain untouched; all new work uses isolated worktrees.
+- Reproduced the retired-manager schema mismatch, corrected inputs while preserving legacy outputs, regenerated contracts and passed 38 focused tests. Independent static review found no actionable role/authority issue. Type, lint and import checks passed.
+- Enabled and verified GitHub private vulnerability reporting. A real report/notification delivery was not sent. Personal-data policy remains an operator decision; a disposable report export/delete/deactivation rehearsal passed while preserving shared work.
+- Started separate architecture, performance, security, CI, source/export, notification, forecast and runtime batches. Their own acceptance and release checks remain required. See docs/delivery/CODEX_BACKLOG_2026_09_30.md and KAN-4-workflow-contracts.md for exact evidence and gaps.

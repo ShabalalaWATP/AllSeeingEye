@@ -75,10 +75,10 @@ and operator credentials are excluded from software verification.
   deterministic tests cannot substitute for this elapsed workload evidence.
 - Local Compose/PostgreSQL, browser, reference-host timing and live provider
   requirements remain per-ticket acceptance until actually exercised.
-- KAN-2's development-panel linkage must be observed, not inferred solely from
-  Jira keys in branch/PR names.
+- KAN-2's Jira Development field now reports one GitHub draft pull request after
+  PR #88 was opened. This was read from Jira's cached integration metadata,
+  beyond merely putting a Jira key in a branch/PR name.
 
 All new implementation tickets remain open until their checks, independent
 reviews, acceptance criteria and authorised merge are complete. Epics remain
 open while their children do. Opening a PR is not production release approval.
-

@@ -142,6 +142,13 @@ Reconcile with Jira before opening the PR. Do not fabricate an issue number.
 
 ## Git and review
 
+When Alex explicitly requests a backlog-wide batch, record the selected items
+and dependency order before implementation. Group related items in a PR at the
+requested approximate size, with one primary key and explicit acceptance
+evidence for each additional key. That request may expand the initial ready
+queue; it does not waive ownership, independent review, isolation or release
+approval. The current delivery register is linked from the documentation index.
+
 For a real item whose key is `KAN-123`, illustrative names are:
 
 ```text
