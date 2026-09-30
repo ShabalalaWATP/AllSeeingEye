@@ -6,6 +6,7 @@ from uuid import UUID, uuid5
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.notification_enqueue import queue_edition_notifications
 from ase.adapters.persistence.operational_models import ReportRow, ReportVersionRow, ScheduleRow
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.schedules import project_edition_outcome
@@ -247,3 +248,12 @@ async def publish_subscription_edition(
         await _advance_lineage(repository, published, now)
     if projected:
         await queue_in_app_change(session, repository, published, now)
+        await queue_edition_notifications(session, published, now, "edition_available")
+        row = await session.get(ScheduleRow, published.subscription_id, populate_existing=True)
+        change = change_from_dict(row.last_change) if row else None
+        if (
+            change is not None
+            and change.status == "changed"
+            and change.version_id == published.version_id
+        ):
+            await queue_edition_notifications(session, published, now, "material_change")

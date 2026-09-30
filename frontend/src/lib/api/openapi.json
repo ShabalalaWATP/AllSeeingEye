@@ -3686,6 +3686,272 @@
         ]
       }
     },
+    "/api/me/notifications/feed": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Feed Status",
+        "operationId": "feed_status_api_me_notifications_feed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Enable Feed",
+        "operationId": "enable_feed_api_me_notifications_feed_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedEnableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedTokenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Revoke Feed",
+        "operationId": "revoke_feed_api_me_notifications_feed_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/notifications/feed.atom": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Read Feed",
+        "operationId": "read_feed_api_notifications_feed_atom_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    },
+    "/api/me/notifications/email": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Email Preferences",
+        "operationId": "email_preferences_api_me_notifications_email_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferencesOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Save Email Preferences",
+        "operationId": "save_email_preferences_api_me_notifications_email_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/{subscription_id}/notifications/email": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Subscription Email Preferences",
+        "operationId": "subscription_email_preferences_api_schedules__subscription_id__notifications_email_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionEmailIn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Save Subscription Email Preferences",
+        "operationId": "save_subscription_email_preferences_api_schedules__subscription_id__notifications_email_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionEmailIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/profile/languages": {
       "get": {
         "tags": [
@@ -24376,6 +24642,15 @@
         ],
         "title": "EditionCoverage"
       },
+      "EditionEmailPolicy": {
+        "type": "string",
+        "enum": [
+          "none",
+          "material_changes",
+          "every_edition"
+        ],
+        "title": "EditionEmailPolicy"
+      },
       "EditionQuality": {
         "type": "string",
         "enum": [
@@ -24411,6 +24686,57 @@
           "skipped"
         ],
         "title": "EditionWorkflow"
+      },
+      "EmailPreferencesIn": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "include_names": {
+            "type": "boolean",
+            "title": "Include Names",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EmailPreferencesIn"
+      },
+      "EmailPreferencesOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "include_names": {
+            "type": "boolean",
+            "title": "Include Names",
+            "default": false
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "available",
+          "confirmed",
+          "destination"
+        ],
+        "title": "EmailPreferencesOut"
       },
       "EquipmentOut": {
         "properties": {
@@ -25530,6 +25856,72 @@
           "docx"
         ],
         "title": "ExportFormat"
+      },
+      "FeedEnableIn": {
+        "properties": {
+          "include_titles": {
+            "type": "boolean",
+            "title": "Include Titles",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FeedEnableIn"
+      },
+      "FeedStatusOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "include_titles": {
+            "type": "boolean",
+            "title": "Include Titles"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "include_titles",
+          "created_at"
+        ],
+        "title": "FeedStatusOut"
+      },
+      "FeedTokenOut": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "feed_url": {
+            "type": "string",
+            "title": "Feed Url"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "feed_url",
+          "username"
+        ],
+        "title": "FeedTokenOut"
       },
       "FigureBoardOut": {
         "properties": {
@@ -45531,6 +45923,22 @@
         ],
         "title": "SubscriptionEditionsOut"
       },
+      "SubscriptionEmailIn": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/EditionEmailPolicy",
+            "default": "none"
+          },
+          "attention": {
+            "type": "boolean",
+            "title": "Attention",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SubscriptionEmailIn"
+      },
       "SubscriptionEventOut": {
         "properties": {
           "id": {
@@ -48260,6 +48668,10 @@
       "HTTPBearer": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "HTTPBasic": {
+        "type": "http",
+        "scheme": "basic"
       }
     }
   }

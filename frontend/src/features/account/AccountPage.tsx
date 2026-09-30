@@ -6,11 +6,14 @@ import { useAuthStore } from '@/stores/auth';
 import { ChangePasswordForm } from './ChangePasswordForm';
 import { DirectoryProfile } from './DirectoryProfile';
 import { ProfilePreferences } from './ProfilePreferences';
+import { PrivateFeedSettings } from './PrivateFeedSettings';
+import { EmailNotificationSettings } from './EmailNotificationSettings';
 
 const sections = [
   { id: 'profile', label: 'Profile', detail: 'Your identity and region' },
   { id: 'directory', label: 'Directory profile', detail: 'Optional team discovery' },
   { id: 'security', label: 'Security', detail: 'Sign-in and active sessions' },
+  { id: 'notifications', label: 'Notifications', detail: 'Private feed access' },
 ] as const;
 export type ProfileSection = (typeof sections)[number]['id'];
 
@@ -86,6 +89,11 @@ export default function AccountPage() {
                 </header>
                 <ProfileSecurity />
                 <ChangePasswordForm key={`${user.id}:${user.role}`} actorId={user.id} />
+              </div>
+            ) : selected.id === 'notifications' ? (
+              <div className="space-y-8">
+                <EmailNotificationSettings key={params.get('subscription') ?? 'account'} />
+                <PrivateFeedSettings />
               </div>
             ) : selected.id === 'directory' ? (
               <DirectoryProfile />

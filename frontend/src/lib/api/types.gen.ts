@@ -1186,6 +1186,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/notifications/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feed Status */
+        get: operations["feed_status_api_me_notifications_feed_get"];
+        put?: never;
+        /** Enable Feed */
+        post: operations["enable_feed_api_me_notifications_feed_post"];
+        /** Revoke Feed */
+        delete: operations["revoke_feed_api_me_notifications_feed_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/feed.atom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Feed */
+        get: operations["read_feed_api_notifications_feed_atom_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/notifications/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Email Preferences */
+        get: operations["email_preferences_api_me_notifications_email_get"];
+        /** Save Email Preferences */
+        put: operations["save_email_preferences_api_me_notifications_email_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{subscription_id}/notifications/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscription Email Preferences */
+        get: operations["subscription_email_preferences_api_schedules__subscription_id__notifications_email_get"];
+        /** Save Subscription Email Preferences */
+        put: operations["save_subscription_email_preferences_api_schedules__subscription_id__notifications_email_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/profile/languages": {
         parameters: {
             query?: never;
@@ -7612,6 +7684,11 @@ export interface components {
          */
         EditionCoverage: "complete_for_plan" | "partial" | "insufficient" | "unknown";
         /**
+         * EditionEmailPolicy
+         * @enum {string}
+         */
+        EditionEmailPolicy: "none" | "material_changes" | "every_edition";
+        /**
          * EditionQuality
          * @enum {string}
          */
@@ -7626,6 +7703,38 @@ export interface components {
          * @enum {string}
          */
         EditionWorkflow: "pending" | "queued" | "running" | "retry_wait" | "paused" | "blocked" | "completed" | "failed" | "cancelled" | "skipped";
+        /** EmailPreferencesIn */
+        EmailPreferencesIn: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Include Names
+             * @default false
+             */
+            include_names: boolean;
+        };
+        /** EmailPreferencesOut */
+        EmailPreferencesOut: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Include Names
+             * @default false
+             */
+            include_names: boolean;
+            /** Available */
+            available: boolean;
+            /** Confirmed */
+            confirmed: boolean;
+            /** Destination */
+            destination: string;
+        };
         /** EquipmentOut */
         EquipmentOut: {
             /** Id */
@@ -7971,6 +8080,32 @@ export interface components {
          * @enum {string}
          */
         ExportFormat: "pdf" | "docx";
+        /** FeedEnableIn */
+        FeedEnableIn: {
+            /**
+             * Include Titles
+             * @default false
+             */
+            include_titles: boolean;
+        };
+        /** FeedStatusOut */
+        FeedStatusOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Include Titles */
+            include_titles: boolean;
+            /** Created At */
+            created_at: string | null;
+        };
+        /** FeedTokenOut */
+        FeedTokenOut: {
+            /** Token */
+            token: string;
+            /** Feed Url */
+            feed_url: string;
+            /** Username */
+            username: string;
+        };
         /** FigureBoardOut */
         FigureBoardOut: {
             /** Figures */
@@ -15033,6 +15168,16 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** SubscriptionEmailIn */
+        SubscriptionEmailIn: {
+            /** @default none */
+            policy: components["schemas"]["EditionEmailPolicy"];
+            /**
+             * Attention
+             * @default false
+             */
+            attention: boolean;
+        };
         /** SubscriptionEventOut */
         SubscriptionEventOut: {
             /**
@@ -18401,6 +18546,210 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ChangePasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feed_status_api_me_notifications_feed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedStatusOut"];
+                };
+            };
+        };
+    };
+    enable_feed_api_me_notifications_feed_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedEnableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedTokenOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_feed_api_me_notifications_feed_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    read_feed_api_notifications_feed_atom_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    email_preferences_api_me_notifications_email_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailPreferencesOut"];
+                };
+            };
+        };
+    };
+    save_email_preferences_api_me_notifications_email_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailPreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    subscription_email_preferences_api_schedules__subscription_id__notifications_email_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEmailIn"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_subscription_email_preferences_api_schedules__subscription_id__notifications_email_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionEmailIn"];
             };
         };
         responses: {

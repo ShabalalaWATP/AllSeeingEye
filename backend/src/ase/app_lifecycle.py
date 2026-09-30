@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from ase.container import Container
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.live_snapshot import build_live_snapshot
+from ase.container.notifications import notification_dispatcher
 from ase.container.original_asset_expiry import expire_original_assets
 
 
@@ -65,5 +66,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             build_annotation_monitor_worker(container).run()
         )
         housekeeping.push_async_callback(_cancel, annotation_monitoring)
+        notifications = asyncio.create_task(notification_dispatcher(container).run())
+        housekeeping.push_async_callback(_cancel, notifications)
         await _start(reporting, container.report_job_worker)
         yield

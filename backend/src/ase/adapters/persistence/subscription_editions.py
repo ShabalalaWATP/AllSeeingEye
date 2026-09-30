@@ -11,6 +11,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.notification_enqueue import queue_attention_transition
 from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.subscription_due_selection import due_edition_rows
 from ase.adapters.persistence.subscription_edition_codec import (
@@ -246,7 +247,10 @@ class SqlSubscriptionEditionRepository:
             .returning(SubscriptionEditionRow.id)
             .execution_options(synchronize_session=False)
         )
-        return await self.get(updated) if updated is not None else None
+        advanced = await self.get(updated) if updated is not None else None
+        if advanced is not None:
+            await queue_attention_transition(self.session, previous, advanced)
+        return advanced
 
     async def get_lineage(self, subscription_id: UUID) -> SubscriptionLineage | None:
         row = await self.session.get(
