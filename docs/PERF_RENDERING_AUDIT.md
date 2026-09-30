@@ -4,7 +4,7 @@
 
 This audit addresses the reported freezes after map-tool additions. It covers camera clustering, layer data reuse and camera-view subscriptions. Event-store/SSE reconciliation and server runtime work are recorded separately. No browser or GPU profiling was performed because browser access was unavailable under the existing policy. Unit tests and CPU timings do not establish end-to-end frame rates or prove all freezes are resolved.
 
-The reproducible CPU benchmark is `frontend/src/features/globe/rendering.benchmark.test.ts`: 5,000 located events and 75,000 deterministic worldwide camera positions, five successive runs, camera zoom 13 and global bounds. Run with `pnpm exec vitest run src/features/globe/rendering.benchmark.test.ts --maxWorkers=1`. It reports timings rather than enforcing machine-dependent timing thresholds.
+The reproducible CPU benchmark is `frontend/src/features/globe/rendering.benchmark.unit.test.ts`: 5,000 located events and 75,000 deterministic worldwide camera positions, five successive runs, camera zoom 13 and global bounds. Run with `pnpm exec vitest run src/features/globe/rendering.benchmark.unit.test.ts --maxWorkers=1`. It reports timings rather than enforcing machine-dependent timing thresholds.
 
 | Camera clustering implementation | Five observed times (ms) | Median (ms) |
 | --- | --- | --- |

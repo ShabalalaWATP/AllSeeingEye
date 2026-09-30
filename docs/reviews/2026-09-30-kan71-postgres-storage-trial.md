@@ -1,11 +1,13 @@
 # KAN-71 PostgreSQL storage trial, 30 September 2026
 
 The proposal mounts only the disposable PostgreSQL CI service's data directory
-on a bounded 1 GiB tmpfs. It retains automatic worker selection, the pinned image,
+on a bounded 2 GiB tmpfs after the initial 1 GiB CI trial exhausted its capacity.
+It retains automatic worker selection, the pinned image,
 real transactions and the serial migration/race lane. A read-only preflight
 requires `fsync`, `synchronous_commit` and `full_page_writes` to remain `on`.
-No production database configuration, hashing implementation, test selection,
-serial database URL, coverage floor or artefact collection changes.
+Production database configuration, hashing implementation, test selection,
+serial database URLs, coverage floors and existing artefact collection remain
+unchanged.
 
 This is a CI trial, not evidence that KAN-71's 30 aggregate runner-minute target
 has been met. Run the trial with `--workers auto`; do not combine it with the
@@ -90,7 +92,7 @@ found no PostgreSQL process/host crash or power-loss test; worker restart tests
 recreate application workers while PostgreSQL continues running. PostgreSQL
 backup subprocesses are mocked. This suite does not establish crash recovery.
 
-The CI mount is bounded to 1 GiB. A capacity failure must fail the run, never
+The revised CI mount is bounded to 2 GiB. A capacity failure must fail the run, never
 switch off durability settings or omit tests. Keep the source/model inventory
 checks and every selected PostgreSQL case. Compare executed node-ID artefacts
 with the reviewed census, require all serial and parallel lanes and their merger
@@ -98,10 +100,56 @@ to pass, then record total test-job plus merger runner-minutes. A successful
 Linux trial is required before claiming a CI improvement. The ticket's repeated
 run acceptance remains outstanding.
 
-The proposed workflow passed Actionlint 1.7.12 and `git diff --check`. A parsed
+The initial proposed workflow passed Actionlint 1.7.12 and `git diff --check`. A parsed
 YAML comparison against the preceding commit confirmed that only the bounded
-tmpfs option and durability assertion step were added. The Linux storage trial
-has not been run at this checkpoint.
+tmpfs option and durability assertion step were added.
+
+## First Linux storage trial and bounded capacity repair
+
+[Run 36703958590](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36703958590)
+used the 1 GiB mount and failed all four PostgreSQL shards through storage
+exhaustion. It is excluded from performance comparisons. The bounded local
+screening did not exercise the sustained WAL volume of hundreds of concurrent
+schema resets and was insufficient to establish the required CI capacity.
+
+| Shard | WAL checkpoint started (UTC) | First logged datafile ENOSPC | WAL ENOSPC panic |
+| --- | --- | --- | --- |
+| 0 | 10:46:51.089 | 10:48:47.844 | 10:48:59.295 |
+| 1 | 10:44:51.460 | 10:45:55.869 | 10:46:00.736 |
+| 2 | 10:46:11.577 | 10:47:54.850 | 10:47:54.850 |
+| 3 | 10:46:04.301 | During recovery at 10:47:24.511 | 10:47:21.108 |
+
+No shard logged a completed runtime checkpoint before its panic. PostgreSQL
+attempted recovery, then failed to extend relation files and stopped. Subsequent
+connection-refused test errors followed this service failure. Init logs identify
+PostgreSQL 16.4, 100 maximum connections and 128 MB shared buffers. No filesystem
+usage or WAL/data byte split was captured, so an exact peak cannot be inferred.
+
+PostgreSQL 16 documents a default `max_wal_size` of 1 GB as a soft limit; WAL may
+exceed it under heavy load. Its defaults include `min_wal_size=80MB`, a five-minute
+checkpoint timeout and completion target 0.9. These are documented defaults,
+not values measured by the failed run. The failure is consistent with inadequate
+combined data/WAL/checkpoint headroom, but does not establish that WAL alone used
+the entire mount. [PostgreSQL WAL settings](https://www.postgresql.org/docs/16/runtime-config-wal.html#GUC-MAX-WAL-SIZE).
+
+The repair doubles only the tmpfs capacity to 2 GiB and adds read-only settings
+and storage diagnostics. Both test lanes sample filesystem space/inodes and
+`base`/`pg_wal` disk usage every 30 seconds. Concurrent deletion during `du` or a
+failed sample is logged and sampling continues. A ten-second per-sample bound
+limits diagnostic delays. EXIT cleanup stops the owned sampler and its sleep,
+while preserving the exact test-command exit status. Separate capacity artefacts
+are uploaded even when a test lane fails; no credential or environment dump is
+included. The existing coverage artefact step is unchanged.
+
+Two GiB is an unproven bounded retry, not a claimed sufficient maximum. The next
+Linux run must pass every selected case and show measured peak headroom before
+any capacity or performance acceptance claim. Database flags, checkpoint/WAL
+settings, workers, selection and coverage requirements are unchanged. No local
+runtime probes or tests were run for this repair during the frontend benchmark.
+Actionlint 1.7.12, Bash syntax parsing and `git diff --check` passed. Parsed YAML
+comparison confirmed that the exact test commands and all other configuration
+remain unchanged after removing the intended capacity/diagnostic additions.
+ShellCheck was not available on PATH; no installation was attempted.
 
 ## Synthetic seeded-password component profile
 
