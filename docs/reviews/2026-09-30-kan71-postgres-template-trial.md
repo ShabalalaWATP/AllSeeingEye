@@ -163,3 +163,25 @@ tmpfs and all three durability settings on:
   private service and volumes were removed. Ruff and whitespace checks passed.
 
 These focused results do not replace full CI, coverage or aggregate timing.
+
+## Repaired full CI checkpoint
+
+Run `36715508656` at `a0e1f6eb919a976e7d29d7988aceedb0a4f191a0`
+passed all 30 jobs. PostgreSQL executed 2,392 unique cases: 2,114 parallel and
+278 serial. All 2,367 baseline cases remain, with 25 additions, no duplicates
+and no lane changes. The template path admitted 1,751 clones, with zero schema
+admission fallbacks and 363 ineligible cases using normal schema creation.
+
+The four PostgreSQL jobs took 631, 621, 630 and 679 seconds; their merger took
+32 seconds. Aggregate cost was 2,593 seconds (43.2167 runner-minutes), so the
+30-minute acceptance target remains unmet. Parallel steps consumed 1,829 seconds,
+serial steps 584 seconds, and other job work 148 seconds. This is a complete
+passing checkpoint, not completion of the performance acceptance criteria.
+
+All 84 capacity samples succeeded. Peak storage was 310.336 MiB of 2 GiB,
+minimum free space was 1,737.664 MiB, and WAL peaked at 80 MiB. All four jobs
+retained the three enabled durability settings. Supplemental PostgreSQL coverage
+was 74.9518 percent; the separate global backend coverage gate passed unchanged.
+Frontend coverage, security checks, Semgrep and image builds also passed.
+Raw logs, executed node lists, settings, capacity and coverage artefacts are
+retained outside Git in the coordinator's `ci-36715508656` evidence directory.
