@@ -41,6 +41,7 @@ class EconomyBriefingWiring(ContainerCore):
     def economy_briefing(
         self, session: AsyncSession, days: EconomyWindowDays = EconomyWindowDays.TWO
     ) -> DailyBriefingService:
+        # outside ContainerCore: reaches generate_report, economy and report_jobs.
         container = cast("Container", self)
         days = economy_window(days)
 

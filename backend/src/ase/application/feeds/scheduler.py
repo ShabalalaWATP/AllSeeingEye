@@ -15,7 +15,7 @@ from ase.application.feeds.poll_outcome import PollOutcome
 from ase.application.feeds.poller import FeedPoller
 from ase.application.ports import Clock
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector
-from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
+from ase.application.ports.feeds import EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.worker_progress import register_worker, run_cycle, worker_heartbeats
 from ase.domain.errors import NotFound
@@ -24,7 +24,7 @@ SleepFn = Callable[[float], Awaitable[None]]
 __all__ = ["FeedScheduler", "PollOutcome"]
 
 
-class FeedScheduler(FeedPoller):
+class FeedScheduler:
     """Owns when each source polls; FeedPoller owns what a single poll does."""
 
     def __init__(
@@ -46,7 +46,7 @@ class FeedScheduler(FeedPoller):
         fetch_concurrency: int = 16,
         first_poll_spread: timedelta = timedelta(seconds=60),
     ) -> None:
-        super().__init__(
+        self.poller = FeedPoller(
             pipeline,
             store,
             bus,
@@ -58,6 +58,7 @@ class FeedScheduler(FeedPoller):
             processing_timeout=processing_timeout,
             fetch_concurrency=fetch_concurrency,
         )
+        self._clock = clock
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._prune_interval = prune_interval
         self._jitter = jitter
@@ -69,6 +70,10 @@ class FeedScheduler(FeedPoller):
         self._stopping = asyncio.Event()
         self._worker_context = copy_context()
         self._restarting: set[str] = set()
+
+    async def poll_once(self, connector: FeedConnector) -> PollOutcome:
+        """Poll a source directly through the same bounded poller used by scheduled work."""
+        return await self.poller.poll_once(connector)
 
     @property
     def connectors(self) -> list[FeedConnector]:
@@ -106,10 +111,7 @@ class FeedScheduler(FeedPoller):
         connector = self._connectors.get(source_id)
         if connector is None:
             raise NotFound()
-        entry = self._health.reset(source_id)
-        deadline = self._retry_not_before.get(source_id)
-        if deadline is not None and deadline > self._clock.now():
-            entry.next_poll_at = deadline
+        self.poller.reset(source_id)
         task = self._tasks.get(source_id)
         if isinstance(connector, DiagnosticFeedConnector):
             connector.request_retry()
@@ -149,7 +151,7 @@ class FeedScheduler(FeedPoller):
         while not self._stopping.is_set():
             await run_cycle(name, allowance, lambda: self.poll_once(connector))
             # A source the breaker paused sleeps until its cool-down probe, not forever.
-            entry = self._health.get(spec.id)
+            entry = self.poller.health_for(spec.id)
             delay = next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
             allowance = max(delay, 180.0)
             if registry := worker_heartbeats.get():
@@ -160,12 +162,6 @@ class FeedScheduler(FeedPoller):
         register_worker("scheduler", self._prune_interval.total_seconds())
         while not self._stopping.is_set():
             await self._sleep(self._prune_interval.total_seconds())
-            result = self._store.prune(self._clock.now())
-            if result.resync_required:
-                await self._bus.publish(BusMessage("event.resync", {"reason": "expiry_overflow"}))
-            elif result.ids:
-                await self._bus.publish(
-                    BusMessage("event.expire", {"ids": result.ids, "count": len(result.ids)})
-                )
+            await self.poller.prune()
             if registry := worker_heartbeats.get():
                 registry.completed("scheduler", self._prune_interval.total_seconds())

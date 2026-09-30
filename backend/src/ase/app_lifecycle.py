@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
+from time import perf_counter
 from typing import Protocol
 
 from fastapi import FastAPI
@@ -16,6 +17,7 @@ from ase.container.live_snapshot import build_live_snapshot
 from ase.container.original_asset_expiry import expire_original_assets
 from ase.container.runtime_health import RuntimeHealth
 from ase.infrastructure.shutdown import ShutdownPhases
+from ase.infrastructure.startup import record_startup_phase
 
 
 class _Worker(Protocol):
@@ -39,6 +41,7 @@ async def _cancel(task: asyncio.Task[None]) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    startup_started = perf_counter()
     container: Container = app.state.container
     runtime: RuntimeHealth = getattr(app.state, "runtime", None) or RuntimeHealth()
     app.state.runtime = runtime
@@ -53,9 +56,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             runtime.start()
             # Restore retained public events before any feed starts. Its final save
             # runs after every worker below has stopped (ADR 0022).
+            snapshot_started = perf_counter()
             snapshot = build_live_snapshot(container)
             if snapshot is not None:
                 await _start(cleanup, snapshot, phases, "live_snapshot")
+            record_startup_phase("snapshot_restore", snapshot_started)
+            workers_started = perf_counter()
             if container.settings.feeds_enabled:
                 await _start(cleanup, container.scheduler, phases, "scheduler")
                 await _start(cleanup, container.aviation_monitor, phases, "aviation_monitor")
@@ -82,6 +88,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 phases.run, "annotation_monitoring", lambda: _cancel(annotation_monitoring)
             )
             await _start(reporting, container.report_job_worker, phases, "report_job_worker")
+            record_startup_phase("workers_started", workers_started)
+            record_startup_phase("ready", startup_started)
             yield
     finally:
         worker_heartbeats.reset(binding)

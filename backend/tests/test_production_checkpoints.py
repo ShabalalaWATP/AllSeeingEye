@@ -67,9 +67,9 @@ async def test_initial_packet_saved_before_draft_and_resume_does_not_recollect(c
         return job.profile
 
     with (
-        patch("ase.application.reports.production.draft_sections", side_effect=drafted),
+        patch("ase.application.reports.production_drafting.draft_sections", side_effect=drafted),
         patch(
-            "ase.application.reports.production.draft_body",
+            "ase.application.reports.production_drafting.draft_body",
             side_effect=AssertionError("whole body called"),
         ),
     ):
@@ -114,7 +114,9 @@ async def test_unanswered_section_requirement_publishes_as_needs_review(containe
     async def profile_for(_role):
         return job.profile
 
-    with patch("ase.application.reports.production.draft_sections", AsyncMock(return_value=draft)):
+    with patch(
+        "ase.application.reports.production_drafting.draft_sections", AsyncMock(return_value=draft)
+    ):
         version = await producer.produce(job, profile_for, checkpoints=checkpoints)
 
     assert version.status is ReportStatus.NEEDS_REVIEW
@@ -145,7 +147,7 @@ async def test_incomplete_section_propagates_with_collection_checkpoint_intact(c
 
     with (
         patch(
-            "ase.application.reports.production.draft_sections",
+            "ase.application.reports.production_drafting.draft_sections",
             side_effect=SectionIncomplete("S1", "token_budget_exhausted", Draft()),
         ),
         pytest.raises(SectionIncomplete),
@@ -178,11 +180,14 @@ async def test_detailed_resume_reviews_frozen_labels_without_new_collection(cont
     )
     review = AsyncMock(return_value=ChallengeModelDraft(reviews=reviews, succeeded=True))
     with (
-        patch("ase.application.reports.production.prepare_collection", prepared),
-        patch("ase.application.reports.production.draft_sections", AsyncMock(return_value=draft)),
+        patch("ase.application.reports.production_preparation.prepare_collection", prepared),
+        patch(
+            "ase.application.reports.production_drafting.draft_sections",
+            AsyncMock(return_value=draft),
+        ),
         patch("ase.application.reports.frozen_challenge.challenge_call", review),
         patch(
-            "ase.application.reports.production.run_challenge",
+            "ase.application.reports.production_review.run_challenge",
             side_effect=AssertionError("recollection called"),
         ),
     ):
