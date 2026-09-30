@@ -66,3 +66,13 @@ class ReportLedgerEntryRow(Base):
     payload: Mapped[str] = mapped_column(Text)
     payload_sha256: Mapped[str] = mapped_column(String(64))
     payload_bytes: Mapped[int] = mapped_column(Integer)
+
+
+class ForecastReminderRow(Base):
+    __tablename__ = "forecast_review_reminders"
+    version_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    review_at: Mapped[datetime] = mapped_column(UTCDateTime, primary_key=True)
+    ledger_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("report_ledger_heads.id", ondelete="CASCADE")
+    )
+    reminded_at: Mapped[datetime] = mapped_column(UTCDateTime)

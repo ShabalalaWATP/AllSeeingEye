@@ -35,6 +35,7 @@ from ase.api.routers import (
     events,
     figures,
     footprints,
+    forecast_watches,
     health,
     identities,
     infrastructure,
@@ -123,6 +124,7 @@ api_router.include_router(annotation_comparisons.router)
 api_router.include_router(annotation_monitors.router)
 api_router.include_router(relationships.router)
 api_router.include_router(report_ledgers.router)
+api_router.include_router(forecast_watches.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)

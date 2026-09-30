@@ -1,3 +1,4 @@
+import { ForecastWatches } from '@/components/reports/ForecastWatches';
 import { useCallback } from 'react';
 import { Link } from 'react-router';
 
@@ -120,6 +121,7 @@ export default function WarningPage() {
         </Link>
         .
       </p>
+      <ForecastWatches workspaces={workspaces} />
       {draft && form}
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Alerts</h2>

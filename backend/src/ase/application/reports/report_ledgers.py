@@ -4,7 +4,8 @@ from dataclasses import replace
 from uuid import UUID, uuid4
 
 from ase.application.dto import AccessClaims, RequestContext
-from ase.application.reports.ledger_access import ReportLedgerAccess
+from ase.application.reports.forecast_lifecycle import ForecastLifecycle
+from ase.application.reports.forecast_views import ForecastViews
 from ase.application.reports.ledger_inputs import (
     ForecastCreate,
     ForecastReview,
@@ -20,7 +21,7 @@ from ase.domain.indicator_ledger import IndicatorLedger, IndicatorReading, Indic
 from ase.domain.report_ledgers import LedgerKind, ReportLedger
 
 
-class ReportLedgers(ReportLedgerAccess):
+class ReportLedgers(ForecastLifecycle, ForecastViews):
     async def create_forecast(
         self,
         claims: AccessClaims,
@@ -150,6 +151,13 @@ class ReportLedgers(ReportLedgerAccess):
         ):
             raise NotFound()
         history = ledger.history
+        # Legacy first-version reviews did not send a version token. Once a
+        # replacement exists, omission must fail rather than review the new version.
+        if (
+            value.expected_version_id is not None
+            and str(value.expected_version_id) != history.current_version.version_id
+        ) or (value.expected_version_id is None and history.current_version.version > 1):
+            raise Conflict("This forecast version changed. Reload it before review.")
         previous = history.latest_decision(history.current_version.version_id)
         if (str(value.previous_decision_id) if value.previous_decision_id else None) != (
             previous.id if previous else None
@@ -157,10 +165,14 @@ class ReportLedgers(ReportLedgerAccess):
             raise Conflict("This forecast has a newer decision. Reload it before review.")
         _, version = await self._report(access, report_id, number)
         try:
-            if value.state is not ForecastState.UNRESOLVED:
-                raise ValueError(
-                    "Outcome resolution needs later, independently frozen observations"
-                )
+            if value.state is ForecastState.RESOLVED:
+                evidence = await self._outcome_references(access, ledger, value.outcome_evidence)
+                if value.evidence:
+                    raise ValueError("Resolution uses only later frozen outcome references")
+            elif value.outcome is not None or value.outcome_evidence:
+                raise ValueError("Only resolved decisions may retain outcome evidence")
+            else:
+                evidence = self._references(version, revision, value.evidence)
             decision = ForecastDecision(
                 str(uuid4()),
                 history.current_version.version_id,
@@ -170,8 +182,8 @@ class ReportLedgers(ReportLedgerAccess):
                 DecisionMethod.REVIEWER,
                 str(access.actor.id),
                 value.reason,
-                self._references(version, revision, value.evidence),
-                None,
+                evidence,
+                value.outcome,
                 None,
                 str(value.corrects_decision_id) if value.corrects_decision_id else None,
             )

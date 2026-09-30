@@ -7335,9 +7335,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response List Ledgers Api Reports  Report Id  Versions  Number  Ledgers Get"
+                  "$ref": "#/components/schemas/ReportLedgerPageOut"
                 }
               }
             }
@@ -7703,6 +7701,332 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/supersessions": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Supersede Forecast",
+        "operationId": "supersede_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__supersessions_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "ledger_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ledger Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastSupersessionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/exports/forecasts": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Export Forecasts",
+        "operationId": "export_forecasts_api_reports__report_id__versions__number__ledgers_exports_forecasts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastExportIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReportLedger"
+                  },
+                  "title": "Response Export Forecasts Api Reports  Report Id  Versions  Number  Ledgers Exports Forecasts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forecasts/watches": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Watches",
+        "operationId": "watches_api_forecasts_watches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastWatchPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forecasts/counts": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Counts",
+        "operationId": "counts_api_forecasts_counts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Since"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Until"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastCounts"
                 }
               }
             }
@@ -26553,6 +26877,96 @@
         ],
         "title": "ForceNodeOut"
       },
+      "ForecastBandCount": {
+        "properties": {
+          "likelihood": {
+            "$ref": "#/components/schemas/Probability"
+          },
+          "resolved_true": {
+            "type": "integer",
+            "title": "Resolved True",
+            "default": 0
+          },
+          "resolved_false": {
+            "type": "integer",
+            "title": "Resolved False",
+            "default": 0
+          },
+          "unresolved": {
+            "type": "integer",
+            "title": "Unresolved",
+            "default": 0
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open",
+            "default": 0
+          },
+          "due": {
+            "type": "integer",
+            "title": "Due",
+            "default": 0
+          },
+          "superseded": {
+            "type": "integer",
+            "title": "Superseded",
+            "default": 0
+          },
+          "resolved_denominator": {
+            "type": "integer",
+            "title": "Resolved Denominator",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "likelihood"
+        ],
+        "title": "ForecastBandCount"
+      },
+      "ForecastCounts": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastBandCount"
+            },
+            "type": "array",
+            "title": "Bands"
+          },
+          "forecast_versions": {
+            "type": "integer",
+            "title": "Forecast Versions"
+          },
+          "counting_unit": {
+            "type": "string",
+            "title": "Counting Unit",
+            "default": "forecast version, by issue time, using its latest decision once"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat",
+            "default": "Related versions may not be independent observations. The cohort can be small or selective. PHIA bands are not calibrated probabilities. Only true plus false form the resolved denominator; no accuracy percentages are calculated."
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "until",
+          "bands",
+          "forecast_versions"
+        ],
+        "title": "ForecastCounts"
+      },
       "ForecastCreateIn": {
         "properties": {
           "claim_id": {
@@ -26722,6 +27136,26 @@
         ],
         "title": "ForecastDecision"
       },
+      "ForecastExportIn": {
+        "properties": {
+          "ledger_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Ledger Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ledger_ids"
+        ],
+        "title": "ForecastExportIn"
+      },
       "ForecastLedger": {
         "properties": {
           "versions": {
@@ -26748,6 +27182,18 @@
       },
       "ForecastReviewIn": {
         "properties": {
+          "expected_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version Id"
+          },
           "previous_decision_id": {
             "anyOf": [
               {
@@ -26762,8 +27208,31 @@
           },
           "state": {
             "type": "string",
-            "const": "unresolved",
+            "enum": [
+              "unresolved",
+              "resolved"
+            ],
             "title": "State"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "outcome_evidence": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeEvidenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Outcome Evidence",
+            "default": []
           },
           "reason": {
             "type": "string",
@@ -26811,6 +27280,44 @@
           "unresolved"
         ],
         "title": "ForecastState"
+      },
+      "ForecastSupersessionIn": {
+        "properties": {
+          "expected_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Expected Version Id"
+          },
+          "previous_decision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Decision Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/ForecastCreateIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version_id",
+          "reason",
+          "replacement"
+        ],
+        "title": "ForecastSupersessionIn"
       },
       "ForecastVersion": {
         "properties": {
@@ -26911,6 +27418,119 @@
           "contrary"
         ],
         "title": "ForecastVersion"
+      },
+      "ForecastWatch": {
+        "properties": {
+          "ledger_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ledger Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version": {
+            "type": "integer",
+            "title": "Report Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version_id": {
+            "type": "string",
+            "title": "Version Id"
+          },
+          "review_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Review At"
+          },
+          "horizon_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Horizon End"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ForecastState"
+          },
+          "review_due": {
+            "type": "boolean",
+            "title": "Review Due"
+          },
+          "reminded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminded At"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ledger_id",
+          "report_id",
+          "report_version",
+          "title",
+          "version_id",
+          "review_at",
+          "horizon_end",
+          "state",
+          "review_due",
+          "reminded_at",
+          "team_id"
+        ],
+        "title": "ForecastWatch"
+      },
+      "ForecastWatchPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastWatch"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ForecastWatchPageOut"
       },
       "ForgotPasswordIn": {
         "properties": {
@@ -33565,6 +34185,44 @@
         ],
         "title": "OriginalPassageOut"
       },
+      "OutcomeEvidenceIn": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Id"
+          },
+          "claim_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Revision Id"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/CitationKeyIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "report_id",
+          "version",
+          "claim_id",
+          "claim_revision_id",
+          "citation"
+        ],
+        "title": "OutcomeEvidenceIn"
+      },
       "OutlineOut": {
         "properties": {
           "name": {
@@ -38284,6 +38942,37 @@
           "latest_ordinal"
         ],
         "title": "ReportLedgerAnchor"
+      },
+      "ReportLedgerPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReportLedger"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ReportLedgerPageOut"
       },
       "ReportMethodologyOut": {
         "properties": {
