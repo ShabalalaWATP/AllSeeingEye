@@ -238,7 +238,8 @@ class InMemoryEventStore:
             self._remove(event_id)
         self._enforce_budget(evicted)
         missing = set(expired + evicted) | self._pending_expiry
-        missing.difference_update(self._events)
+        if missing:
+            missing.difference_update(self._events)
         result = PruneResult(
             expired=len(expired),
             evicted=len(evicted) + self._pending_evictions,
