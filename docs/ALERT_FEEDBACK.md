@@ -75,6 +75,11 @@ their rows; indicator sampling prunes indicator rows beyond the retention bound.
 All-kind baseline retention is supplied by the integrated KAN-28 parent. Its
 activity hour/ID index supports bounded deletion batches across all sample kinds.
 
+Migration `0070` refuses downgrade while a ratio rule remains configured or any
+alert retains a baseline mean or ratio. Fired evidence must remain protected even
+when its original rule has returned to absolute mode or has been deleted. Both
+checks precede schema changes; a refusal preserves the stored data and revision.
+
 ## Validation limits
 
 Tests use synthetic SQLite data, fake live events and fake model replies. They

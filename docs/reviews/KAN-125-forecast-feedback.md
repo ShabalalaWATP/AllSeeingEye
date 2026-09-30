@@ -53,6 +53,21 @@ findings. Gitleaks 8.24.3 scanned all four non-merge feature commits in
 `2290b8c0..HEAD` with redaction enabled and reported no leaks. These targeted
 checks are not an exhaustive repository security scan.
 
+A subsequent independent migration review found that `0070` originally guarded
+only configured ratio rules. Historical snapshots could therefore be discarded
+after the rule changed or disappeared. Six new edited/deleted-rule cases first
+failed against that implementation. The repair also refuses when either alert
+baseline field is non-null, before any DDL. Regression snapshots compare the
+complete SQLite schema, data and revision before and after refusal; configured
+rules and safe empty downgrade remain covered.
+
+Historical `0030`/`0031` migration tests now compare an explicit cloned metadata
+projection excluding only the four alert fields introduced in `0069`/`0070`.
+Live ORM metadata and the existing current migration tests are unchanged.
+The combined ratio, historical SQLite, feedback and reminder migration group
+passed all 23 tests after the repair (89.94 seconds, `--no-cov`); changed-file Ruff
+and formatting passed. Independent read-only review found no further gap.
+
 ## Validation and limits
 
 Local checks use the worktree's private Python environment, node_modules, scratch

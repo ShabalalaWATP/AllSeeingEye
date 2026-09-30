@@ -28,6 +28,20 @@ def downgrade() -> None:
         .first()
     ):
         raise RuntimeError("Remove ratio rules explicitly before downgrade.")
+    # Fired evidence survives changing a rule back to absolute mode or deleting it.
+    alerts = sa.table("alerts", sa.column("baseline_mean"), sa.column("baseline_ratio"))
+    if (
+        op.get_bind()
+        .execute(
+            sa.select(alerts.c.baseline_mean)
+            .where(
+                sa.or_(alerts.c.baseline_mean.is_not(None), alerts.c.baseline_ratio.is_not(None))
+            )
+            .limit(1)
+        )
+        .first()
+    ):
+        raise RuntimeError("Refusing downgrade: retained alert baseline evidence remains.")
     op.drop_column("alerts", "baseline_ratio")
     op.drop_column("alerts", "baseline_mean")
     op.drop_column("indicators", "baseline_days")
