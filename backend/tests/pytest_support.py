@@ -22,6 +22,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from ase.adapters.persistence.base import Base
+from database_markers import uses_database
 
 SHARED_DATABASE_VARIABLES = frozenset({"ASE_TEST_DATABASE_URL", "ASE_TOKEN_RACE_TEST_URL"})
 
@@ -41,13 +42,26 @@ def shared_database_variables(environment: Mapping[str, str]) -> list[str]:
 
 def refuse_shared_databases_in_parallel(config: pytest.Config) -> None:
     """Parallel workers would drop and recreate one shared schema under each other."""
+    isolated = getattr(config.option, "isolated_postgres", False)
+    names = shared_database_variables(os.environ)
+    if isolated and names != ["ASE_TEST_DATABASE_URL"]:
+        raise pytest.UsageError(
+            "--isolated-postgres requires only ASE_TEST_DATABASE_URL; "
+            "unset other shared PostgreSQL/race URLs."
+        )
     if not getattr(config.option, "numprocesses", None):
         return
-    names = shared_database_variables(os.environ)
+    if (
+        isolated
+        and names == ["ASE_TEST_DATABASE_URL"]
+        and make_url(os.environ["ASE_TEST_DATABASE_URL"]).get_backend_name() == "postgresql"
+    ):
+        return
     if names:
         raise pytest.UsageError(
-            "Parallel test runs need each worker's private in-memory SQLite database. "
-            f"Unset {', '.join(names)} or run without -n (CI shards run serially)."
+            "Parallel tests need private databases: unset "
+            f"{', '.join(names)}, run serially, or opt into --isolated-postgres with only "
+            "ASE_TEST_DATABASE_URL set."
         )
 
 
@@ -97,8 +111,25 @@ def apply_markers(items: Iterable[pytest.Item]) -> None:
         if "migration" in name:
             item.add_marker(pytest.mark.migration)
         fixtures = getattr(item, "fixturenames", ())
+        if {"app", "container", "client", "engine", "db_engine"}.intersection(fixtures):
+            item.add_marker(pytest.mark.db)
+        # Pytest expands transitive fixtures. Inspect their factories too, covering
+        # independently named persistence fixtures without a growing name allowlist.
+        factories = getattr(getattr(item, "_fixtureinfo", None), "name2fixturedefs", {})
+        functions = [
+            definition.func for definitions in factories.values() for definition in definitions
+        ]
+        functions.append(getattr(item, "obj", None))
+        if any(uses_database(function) for function in functions):
+            item.add_marker(pytest.mark.db)
         if "_races" in name or "_concurrency" in name or "race_container" in fixtures:
             item.add_marker(pytest.mark.race)
+        # Imported helper identity avoids a growing list of file-specific deadlines.
+        test = getattr(item, "obj", None)
+        helper = getattr(test, "__globals__", {}).get("work")
+        if getattr(helper, "__module__", None) == "report_job_api_helpers":
+            item.add_marker(pytest.mark.slow)
+            item.add_marker(pytest.mark.timeout(660))
 
 
 class DurationRecorder:
