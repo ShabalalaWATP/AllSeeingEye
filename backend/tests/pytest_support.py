@@ -22,7 +22,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from ase.adapters.persistence.base import Base
-from database_markers import uses_database
+from database_markers import file_constructs_database, uses_database
 
 SHARED_DATABASE_VARIABLES = frozenset({"ASE_TEST_DATABASE_URL", "ASE_TOKEN_RACE_TEST_URL"})
 
@@ -120,7 +120,9 @@ def apply_markers(items: Iterable[pytest.Item]) -> None:
             definition.func for definitions in factories.values() for definition in definitions
         ]
         functions.append(getattr(item, "obj", None))
-        if any(uses_database(function) for function in functions):
+        if file_constructs_database(item.path) or any(
+            uses_database(function) for function in functions
+        ):
             item.add_marker(pytest.mark.db)
         if "_races" in name or "_concurrency" in name or "race_container" in fixtures:
             item.add_marker(pytest.mark.race)
