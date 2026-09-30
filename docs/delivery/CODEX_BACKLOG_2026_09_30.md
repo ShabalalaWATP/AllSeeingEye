@@ -22,8 +22,10 @@ substantial related work reviewable. Ticket count is not an effort estimate.
 
 ## Batch register
 
-The following are assigned scopes, not completion claims. Each delivery record
-must map its ticket criteria to actual checks, unresolved acceptance and a PR.
+The register covers 58 implementation and documentation tickets in nine batches,
+plus two operator-only prerequisites. Each delivery record maps ticket criteria
+to actual checks, unresolved acceptance and a PR. Review status does not mean
+acceptance or release is complete.
 
 | Batch | Tickets | Branch |
 | --- | --- | --- |
@@ -47,12 +49,12 @@ generated OpenAPI and client types. Each PR must work against its own base.
 Later PRs require updating from the resulting reviewed main and rerunning
 combined checks. No branch may erase another batch's changes.
 
-Reserved migration identifiers: security 0067, performance 0068, forecasts
-0069/0070 and notifications 0071. Initially independent branches have the
-existing 0066 predecessor; these are not an approved combined migration graph.
-Integrate serially, adjust each later branch's predecessor to the merged head,
-and test upgrade/downgrade and the combined schema before release. Never deploy
-a combined set with accidental multiple heads.
+The integrated migration chain is `0066 -> 0067 -> 0068 -> 0069 -> 0070 -> 0073
+-> 0071 -> 0072 -> 0074`. Forecast reminders precede notification digests even
+though their reserved numbers are not in numerical order. Migration 0067 has an
+intentional privacy downgrade guard; historical roundtrip tests must not bypass
+it. Combined database rehearsal is recorded below when complete. Never deploy a
+combined set with accidental multiple heads.
 
 Keep the required CI check identities. Run focused tests independently and
 coordinate full coverage/performance runs to avoid invalid timing evidence.
@@ -73,8 +75,16 @@ and operator credentials are excluded from software verification.
   operator's choice. Documented limitations must not imply account-wide erasure.
 - KAN-131 requires a real 24-hour translation measurement. Source probes and
   deterministic tests cannot substitute for this elapsed workload evidence.
-- Local Compose/PostgreSQL, browser, reference-host timing and live provider
-  requirements remain per-ticket acceptance until actually exercised.
+- Isolated Compose, PostgreSQL and browser checks now provide local evidence:
+  catalogue gzip/conditional requests were exercised through real Caddy and Edge;
+  100,000 public events survived a clean shutdown and restart; key rotation and
+  publication transactions passed on fresh private PostgreSQL databases. These
+  checks do not establish production readiness or live provider acceptance.
+- KAN-134 needs the installation's HAPI identifier and live response validation.
+  UN/EU import approval and NVD terms review remain explicit source prerequisites.
+- KAN-110/111/113/141 require the chosen real relay, feed reader and browser-push
+  provider checks. Offline transport tests do not prove inbox or device delivery.
+- The four-week dependency-update observation requires elapsed operations.
 - KAN-2's Jira Development field now reports one GitHub draft pull request after
   PR #88 was opened. This was read from Jira's cached integration metadata,
   beyond merely putting a Jira key in a branch/PR name.

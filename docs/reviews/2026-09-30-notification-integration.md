@@ -56,3 +56,26 @@ authority immediately before dispatch.
 These checks establish local transaction and persistence behaviour. Actual
 credential rotation, operator recovery, live relay delivery and browser-provider
 acceptance remain separate operational actions.
+
+## Combined source and forecast integration
+
+Checkpoint `dbdd83a8` integrates the source/export and forecast branches. The
+warning repository retains baseline resets, durable acknowledgement feedback and
+notification enqueue in the authorised alert transaction. The extracted alert
+component retains report/annotation links, and the page exposes notification
+routing alongside forecast watches. Notification migration 0071 now follows
+forecast-reminder migration 0073, giving one chain through 0074.
+
+Independent review found no unresolved notification integration issue. Focused
+combined checks passed 211 backend cases, with three PostgreSQL parameters skipped
+in that SQLite run, and 40 frontend cases across 14 files. Strict mypy passed all
+1,501 source files; TypeScript, focused ESLint/Prettier, repository Ruff and all
+three import contracts passed. The three PostgreSQL notification/push race cases
+then passed separately in 7.54 seconds against a newly created private database.
+Fixture teardown left no public tables, the exact database was removed and the
+server's pre/post database inventory was unchanged. Complete migration evidence
+is recorded separately from these concurrency checks.
+
+The serial CI lane now supplies the notification concurrency and migration test
+URLs only to its disposable PostgreSQL service. These settings do not enable
+notifications or configure any external relay or push provider.
