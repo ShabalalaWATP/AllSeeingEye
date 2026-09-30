@@ -1,10 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { fetchEconomy, fetchEconomyNews } from '@/lib/api/economy';
 import { describeError } from '@/lib/api/errors';
-import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useAuthStore } from '@/stores/auth';
 import { REGIONS } from './economyPresentation';
 import { EconomyNewsPanel } from './EconomyNewsPanel';
@@ -18,6 +15,7 @@ import { parseEconomyDays } from '@/lib/api/economyBriefing';
 import { EconomyPeriodPicker } from './EconomyPeriodPicker';
 import { useEconomyBriefing } from './useEconomyBriefing';
 import { useEconomyExplainer } from './useEconomyExplainer';
+import { useEconomyFeeds } from './useEconomyFeeds';
 import { WorldExplainer } from './WorldExplainer';
 import { regionExplainer } from './explainerModel';
 
@@ -25,32 +23,12 @@ export default function EconomyPage() {
   const [params, setParams] = useSearchParams();
   const days = parseEconomyDays(params.get('days'));
   const focus = REGIONS.find((item) => item.id === params.get('region')) ?? REGIONS[0];
-  const data = useScopedResource(fetchEconomy);
-  const loadNews = useCallback(() => fetchEconomyNews(days), [days]);
-  const news = useScopedResource(loadNews);
-  const currentNews = news.data?.window_hours === days * 24 ? news.data : null;
+  const { data, news, currentNews, refreshing, refresh } = useEconomyFeeds(days);
   const briefingState = useEconomyBriefing(days);
   const explainerState = useEconomyExplainer();
   const worldExplainer = regionExplainer(explainerState.data, 'WORLD');
   const focusExplainer = regionExplainer(explainerState.data, focus.id);
-  const [refreshing, setRefreshing] = useState(false);
   const owner = useAuthStore((state) => state.user?.id);
-  const refreshData = data.refresh;
-  const refreshNews = news.refresh;
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') void Promise.all([refreshData(), refreshNews()]);
-    }, 300_000);
-    return () => clearInterval(timer);
-  }, [refreshData, refreshNews]);
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([data.reload(), news.reload()]);
-    } finally {
-      setRefreshing(false);
-    }
-  };
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
