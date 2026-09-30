@@ -10,20 +10,39 @@ criteria that require completed GitHub runs. No production deployment is authori
 
 | Ticket | Implemented | Evidence still required |
 | --- | --- | --- |
-| KAN-69 | Four Vitest blob shards, merged coverage, separate lint/type/build checks, reusable workflow and preserved required `frontend` check. Failure reports are retained. The first complete Linux frontend run passed. | Final combined-tree run, shard timing review and five comparable before/after runs. |
+| KAN-69 | Four Vitest blob shards, merged coverage, separate lint/type/build checks, reusable workflow and preserved required `frontend` check. Failure reports are retained. Two complete Linux frontend runs passed, with every shard below six minutes including setup. | Final combined-tree run and five comparable before/after runs. |
 | KAN-70 | Per-job idle progress budgets observe committed stage/status/payload changes, ignore heartbeat-only changes, cancel and join unfinished tasks, and keep an overall cap. Shared report workers receive the slow marker. Backend shards print the 20 slowest tests. | Twenty consecutive main CI runs without the reported timeout. |
 | KAN-71 | Four PostgreSQL shards select persistence fixtures/helpers and explicit PostgreSQL, migration and race tests. Ordinary database tests use private worker databases; special database tests run serially. Selected node IDs and diagnostic coverage are retained. SQLite keeps the sole global 90% backend gate. | Complete Linux PostgreSQL regression run, node-ID census and five-run runner-minute comparison. |
-| KAN-72 | Reviewed backend security and frontend auth modules have 95% line and branch gates. Added 84 backend boundary tests, MFA/session lifecycle tests and login feedback cases. Missing reviewed modules fail the checker. The 67-test frontend auth suite passes every reviewed floor. | Fresh full SQLite shard run and merged Linux confirmation of the frontend auth gate. |
+| KAN-72 | Reviewed backend security and frontend auth modules have 95% line and branch gates. Added 84 backend boundary tests, MFA/session lifecycle tests and login feedback cases. Missing reviewed modules fail the checker. Fresh merged Linux backend and frontend reports pass all reviewed floors. | Final combined-tree confirmation. |
 | KAN-73 | 88 existing pure test files moved into the Node project, including one already-skipped benchmark; DOM tests retain jsdom and MSW. | Same-machine before/after timing, at least 70 seconds saved and full coverage difference within 0.05 percentage points. |
-| KAN-74 | Seven map-layer boundary tests, three terrain chart cases, and 16 saved-chat error/cancellation tests. The chart narrows validated heights once and removes unreachable fallbacks. The merged CI report prints ten worst files and remaining floor gaps. | Global branches at least 92%, and every file with at least 20 branches reaching 70%. This ticket is not complete. |
-| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. Pinned Buildx actions load test images with separate GHA caches. Security uses the pnpm cache. Dependabot major holds include review dates. Undici updated within the existing jsdom range. | Clean and cached image builds and live CI timing evidence. |
+| KAN-74 | Behavioural coverage across maps, research, auth, assistant and report controls. Narrow chart validation and map seam continuity fixes retain edge-case behaviour. Fresh merged Linux coverage reaches 92.16% branches with every file of at least 20 branches at 70% or above. The checker enforces these floors and prints the ten worst files. | Final workflow-only enforcement confirmation. |
+| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. API/web images build and scan in parallel with separate GHA caches and a fail-closed `images` aggregator. Security uses the pnpm cache. Dependabot major holds include review dates. Undici updated within the existing jsdom range. | Matrix image timing below 90 seconds and four weekly Dependabot observations. |
 | KAN-76 | MSW handlers split into focused admin/response modules. Photo-geolocation lifecycle tests split from the interaction suite. All touched split files stay below 350 lines. Full Linux frontend CI passed after extraction. | Final combined-tree confirmation. |
 
 ## Measured checks
 
+- GitHub run `36662274115` on `ff3fb53d` passed all frontend shards, static/build
+  checks and merged coverage. It covered 20,266/21,988 branches (92.1684%, displayed
+  as 92.16%), 97.28% lines, 96.16% statements and 94.30% functions. No file with at
+  least 20 branches is below 70%; the auth 95% floors also pass. An independent
+  LCOV scan matches the branch numerator and denominator exactly. The workflow
+  now enforces the measured 92% global and 70% per-file floors without changing
+  the original four Vitest thresholds or excluding production code.
 - GitHub run `36659162698` completed all four frontend shards, static/build checks
   and the merged 90% coverage gate. Merged branches were 20,016/21,988 (91.03%).
   This establishes a consistent Linux baseline for the remaining 92% target.
+- GitHub run `36661309612` completed all eight SQLite shards and their merger:
+  combined coverage was 94%, and every reviewed backend security floor passed.
+  Its frontend also passed all four shards, checks and merger, with 20,111/21,988
+  branches (91.46%). The frontend auth checker passes this fresh merged report.
+- Frontend shard durations including setup were 148, 263, 205 and 237 seconds in
+  run `36659162698`, then 215, 234, 175 and 182 seconds in `36661309612`.
+  An independent LCOV branch scan agrees exactly with both JSON summary totals.
+- The first image job completed in 518 seconds; the next completed in 155 seconds.
+  In the second, API/web build steps took 38/47 seconds, with both smoke and Trivy
+  checks passing. The 85-second sum of build steps is not the whole-job target.
+  The subsequent two-image matrix removes sequential builds/scans while preserving
+  the required `images` result and every scan. Its timing remains to be measured.
 - Frontend authentication: 67 tests across 12 files passed in 53.53 seconds.
   Every reviewed auth module passes 95% lines and branches. Direct routed feedback
   tests exercise rejected sign-in and rate limiting without booting the full shell;
@@ -45,6 +64,12 @@ criteria that require completed GitHub runs. No production deployment is authori
   original-asset boundaries: 181 focused tests, 467/475 target branches. Radar
   and Ukraine headline figures: 12 focused tests, 51/51 target branches. These
   focused reports supplement the baseline; they are not a new full-suite result.
+- Map/input lifecycle tests passed 82 cases, covering 305/311 target branches.
+  An LCOV key comparison found 60 newly covered branches and no lost covered
+  branches. Geometry tests passed 54 cases, covering all 129 topology/local-GeoJSON
+  branches. They reproduced an existing 355-degree rendered segment after an
+  equivalent +180/-180 endpoint. Continuing from the displayed endpoint fixes
+  both seam directions without mutating the original coordinates.
 - Script unit suite: 77 tests, 74 passed and three existing platform skips.
   The coverage-checker suite subsequently passed all seven tests after adding
   an omitted-module regression case, including diagnostic mode.
@@ -118,8 +143,8 @@ explicitly removes the duplicate PostgreSQL coverage percentage gate: every
 selected PostgreSQL test must still pass, and combined PostgreSQL coverage is
 published as an artefact. Partial shards do not apply whole-application coverage
 thresholds; the SQLite and frontend mergers enforce them. No changed coverage exclusion hides
-production code. Frontend auth now enforces its measured 95% floor; the 92% global
-branch and 70% per-file branch floors remain report-only while gaps exist.
+production code. Frontend auth enforces its measured 95% floor; the measured
+92% global branch and 70% per-file branch floors are also enforced.
 Action versions are pinned to verified upstream release commits. Image jobs load
 locally for existing Trivy/smoke checks and do not push images. No deployment or
 SBOM workflow is changed in this batch.

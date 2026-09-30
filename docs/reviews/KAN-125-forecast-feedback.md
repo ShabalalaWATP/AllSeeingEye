@@ -1,7 +1,7 @@
 # Forecast and alert feedback: KAN-125 to KAN-129
 
 Recorded 30 September 2026. Branch: `codex/KAN-125-forecast-feedback`.
-Integrated parent: `2290b8c0b819a9ddc8d4a20da359e2b5baead3e8`, performance PR #93.
+Integrated parent: `447227b4f701068c1ddfaa3a834accacfd2593c4`, performance PR #93.
 This batch is a draft for review;
 release, email delivery and research accuracy require their own evidence.
 
@@ -49,9 +49,24 @@ Acknowledgements retain the existing active team-member write contract. Archived
 team writes remain restricted, with the existing administrator manual override
 preserved where applicable. Neither aggregate counts nor exports widen scope.
 Targeted Bandit inspection of nine affected modules reported no medium/high
-findings. Gitleaks 8.24.3 scanned all four non-merge feature commits in
-`2290b8c0..HEAD` with redaction enabled and reported no leaks. These targeted
+findings. Gitleaks 8.24.3 scanned all six non-merge feature commits in
+`447227b4..HEAD` with redaction enabled and reported no leaks. These targeted
 checks are not an exhaustive repository security scan.
+
+A subsequent independent migration review found that `0070` originally guarded
+only configured ratio rules. Historical snapshots could therefore be discarded
+after the rule changed or disappeared. Six new edited/deleted-rule cases first
+failed against that implementation. The repair also refuses when either alert
+baseline field is non-null, before any DDL. Regression snapshots compare the
+complete SQLite schema, data and revision before and after refusal; configured
+rules and safe empty downgrade remain covered.
+
+Historical `0030`/`0031` migration tests now compare an explicit cloned metadata
+projection excluding only the four alert fields introduced in `0069`/`0070`.
+Live ORM metadata and the existing current migration tests are unchanged.
+The combined ratio, historical SQLite, feedback and reminder migration group
+passed all 23 tests after the repair (89.94 seconds, `--no-cov`); changed-file Ruff
+and formatting passed. Independent read-only review found no further gap.
 
 ## Validation and limits
 
@@ -73,7 +88,9 @@ session-fence architecture and warning admission/backpressure/background access.
 The parent CI repairs and refreshed session-fence exemptions are included.
 After merging final parent `2290b8c0`, 18 stream-shutdown, alert-context and
 session-fence regressions passed; full mypy and TypeScript checks passed again.
-The final parent adds no API schema changes.
+After the repaired parent `447227b4`, a further 23 focused stream-pool/shutdown,
+alert-context, release-fence and performance-storage tests passed in 13.28 seconds.
+That parent adds no API schema changes.
 
 Coverage was not measured in these focused checks. Full CI/coverage, a live
 PostgreSQL run of the forecast migrations, browser acceptance and notification

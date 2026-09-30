@@ -50,11 +50,20 @@ def prepared(tmp_path):
     return config, database, owner
 
 
-def metadata_0030():
-    # Compare the historical0030 contract, before inventory mode and creation events.
+def metadata_0031():
+    # Alert dispositions and fired ratios arrive later, in 0069 and 0070.
     metadata = sa.MetaData()
     for table in Base.metadata.sorted_tables:
         table.to_metadata(metadata)
+    alerts = metadata.tables["alerts"]
+    for name in ("disposition", "disposition_note", "baseline_mean", "baseline_ratio"):
+        alerts._columns.remove(alerts.c[name])
+    return metadata
+
+
+def metadata_0030():
+    # Compare the historical0030 contract, before inventory mode and creation events.
+    metadata = metadata_0031()
     monitors = metadata.tables["annotation_monitors"]
     for name in ("mode", "inventory_overflow"):
         monitors._columns.remove(monitors.c[name])
