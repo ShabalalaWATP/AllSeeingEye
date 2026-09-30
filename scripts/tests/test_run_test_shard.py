@@ -177,6 +177,27 @@ class ShardTests(unittest.TestCase):
         self.assertEqual(error.exception.code, 2)
         run.assert_not_called()
 
+    def test_template_fixture_opt_in_is_limited_to_parallel_postgres(self):
+        with (
+            patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
+            patch.object(runner.subprocess, "run") as run,
+        ):
+            run.return_value.returncode = 0
+            self.assertEqual(
+                runner.main(["0", "1", "--postgres-mode", "parallel", "--template-postgres"]),
+                0,
+            )
+            self.assertIn("--template-postgres", run.call_args[0][0])
+            self.assertIn("--isolated-postgres", run.call_args[0][0])
+            runner.main(["0", "1", "--postgres-mode", "parallel"])
+            self.assertNotIn("--template-postgres", run.call_args[0][0])
+            run.reset_mock()
+            for mode in [[], ["--postgres-mode", "serial"]]:
+                with self.subTest(mode=mode), self.assertRaises(SystemExit) as error:
+                    runner.main(["0", "1", *mode, "--template-postgres"])
+                self.assertEqual(error.exception.code, 2)
+            run.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

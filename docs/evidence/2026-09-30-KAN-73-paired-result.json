@@ -1,0 +1,157 @@
+{
+  "source": {
+    "commit": "ff3fb53d40165bafd3e649286450e7b7b5be5dba",
+    "node": "v24.21.0",
+    "pnpm": "11.25.0",
+    "workers": 2,
+    "originalConfigSha256": "da2e4e22c29437c97ea8009f9abc82a67f5590476765400aac22845a7da04b39",
+    "lockfileSha256": "b98d6a6279dd758400c2c7292c23e60a860911041b4019a23120612dc75b13d6",
+    "change": "Only the unit project environment and setup match the former DOM defaults.",
+    "completeArchiveSha256": "0e86e9c90bfebe01e5b01bb0336ca886c2ab60232b9d97baf11d751813b6a806",
+    "firstAttempt": {
+      "acceptance": false,
+      "reason": "Frontend-only archive omitted a backend resource required by infrastructure.unit.test.ts",
+      "result": {
+        "configuration": "dom-baseline",
+        "startedUtc": "2026-09-30T03:01:04.4075653Z",
+        "exitCode": 1,
+        "elapsedSeconds": 954.2589832
+      }
+    },
+    "fixtureRepair": "Complete tracked repository from the same commit; affected five tests pass.",
+    "standaloneDomRun": {
+      "warmup": "infrastructure.unit.test.ts then 10-second cooldown",
+      "exitCode": 0,
+      "startedUtc": "2026-09-30T09:27:58.9517183Z",
+      "configuration": "dom-baseline-valid",
+      "elapsedSeconds": 942.3500155
+    },
+    "cacheAudit": {
+      "initialDomCacheArchived": false,
+      "fsModuleCacheEnabled": false,
+      "resultCache": "node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+      "savedCacheSha256": "fcaca9ae0a57ca38291e23d30fdd5b92fa172ab06a0244115ea6a741bdd0f17a",
+      "standaloneDomIsControlledPair": false
+    },
+    "controlledComparison": {
+      "order": [
+        "node-matched",
+        "dom-matched"
+      ],
+      "fixedCacheSha256": "fcaca9ae0a57ca38291e23d30fdd5b92fa172ab06a0244115ea6a741bdd0f17a",
+      "fsModuleCache": false,
+      "cacheRestoration": "Identical fixed result cache restored after each five-case infrastructure warm-up, before ten-second cooldown and timing",
+      "domConfigSha256": "b2f31cf0facce0babaf5b348c942208aca8e2820ec3ddbf6c65eb01ec8c351ac",
+      "nodeConfigSha256": "da2e4e22c29437c97ea8009f9abc82a67f5590476765400aac22845a7da04b39",
+      "unitFiles": 93
+    }
+  },
+  "phases": {
+    "dom-matched": {
+      "timing": {
+        "exitCode": 0,
+        "warmup": "infrastructure.unit.test.ts then fixed cache restoration then 10-second cooldown",
+        "cacheSha256": "fcaca9ae0a57ca38291e23d30fdd5b92fa172ab06a0244115ea6a741bdd0f17a",
+        "elapsedSeconds": 912.7195997,
+        "configuration": "dom-matched",
+        "startedUtc": "2026-09-30T10:02:14.2443285Z"
+      },
+      "summary": {
+        "Test Files": "662 passed | 1 skipped (663)",
+        "Tests": "3644 passed | 1 skipped (3645)",
+        "Duration": "911.19s (tests 42%, environment 30%, setup 18%, import 7%, worker 2%, transform 1%)"
+      },
+      "coverage": {
+        "lines": {
+          "total": 20538,
+          "covered": 19981,
+          "skipped": 0,
+          "pct": 97.28
+        },
+        "statements": {
+          "total": 23357,
+          "covered": 22461,
+          "skipped": 0,
+          "pct": 96.16
+        },
+        "functions": {
+          "total": 7766,
+          "covered": 7323,
+          "skipped": 0,
+          "pct": 94.29
+        },
+        "branches": {
+          "total": 21988,
+          "covered": 20266,
+          "skipped": 0,
+          "pct": 92.16
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      }
+    },
+    "node-matched": {
+      "timing": {
+        "configuration": "node-matched",
+        "warmup": "infrastructure.unit.test.ts then fixed cache restoration then 10-second cooldown",
+        "cacheSha256": "fcaca9ae0a57ca38291e23d30fdd5b92fa172ab06a0244115ea6a741bdd0f17a",
+        "elapsedSeconds": 853.6096593,
+        "startedUtc": "2026-09-30T09:46:42.3631835Z",
+        "exitCode": 0
+      },
+      "summary": {
+        "Test Files": "662 passed | 1 skipped (663)",
+        "Tests": "3644 passed | 1 skipped (3645)",
+        "Duration": "852.08s (tests 45%, environment 28%, setup 17%, import 8%, transform 2%, worker 1%)"
+      },
+      "coverage": {
+        "lines": {
+          "total": 20538,
+          "covered": 19981,
+          "skipped": 0,
+          "pct": 97.28
+        },
+        "statements": {
+          "total": 23357,
+          "covered": 22461,
+          "skipped": 0,
+          "pct": 96.16
+        },
+        "functions": {
+          "total": 7766,
+          "covered": 7323,
+          "skipped": 0,
+          "pct": 94.29
+        },
+        "branches": {
+          "total": 21988,
+          "covered": 20266,
+          "skipped": 0,
+          "pct": 92.16
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      }
+    }
+  },
+  "secondsSaved": 59.10994040000003,
+  "coveragePercentagePointChanges": {
+    "lines": 0.0,
+    "statements": 0.0,
+    "functions": 0.0,
+    "branches": 0.0
+  },
+  "bothPhasesPassed": true,
+  "identicalStartingResultCache": true,
+  "identicalTestCounts": true,
+  "atLeast70SecondsSaved": false,
+  "coverageWithin005PercentagePoints": true
+}

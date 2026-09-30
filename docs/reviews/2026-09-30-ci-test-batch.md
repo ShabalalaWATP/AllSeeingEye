@@ -16,10 +16,24 @@ criteria that require completed GitHub runs. No production deployment is authori
 | KAN-72 | Reviewed backend security and frontend auth modules have 95% line and branch gates. Added 84 backend boundary tests, MFA/session lifecycle tests and login feedback cases. Missing reviewed modules fail the checker. Fresh merged Linux backend and frontend reports pass all reviewed floors. | Final combined-tree confirmation. |
 | KAN-73 | 88 existing pure test files moved into the Node project, including one already-skipped benchmark; DOM tests retain jsdom and MSW. | Same-machine before/after timing, at least 70 seconds saved and full coverage difference within 0.05 percentage points. |
 | KAN-74 | Behavioural coverage across maps, research, auth, assistant and report controls. Narrow chart validation and map seam continuity fixes retain edge-case behaviour. Fresh merged Linux coverage reaches 92.16% branches with every file of at least 20 branches at 70% or above. The checker enforces these floors and prints the ten worst files. The subsequent Linux run passed the strict gates. | Final combined-tree confirmation. |
-| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. API/web images build and scan in parallel with separate GHA caches and a fail-closed `images` aggregator. Security uses the pnpm cache. Dependabot major holds include review dates. Undici and brace-expansion updated within existing dependency ranges. Cached image jobs measured 69/44 seconds. | End-to-end image completion below 90 seconds, including aggregator scheduling, and four weekly Dependabot observations. |
+| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. API/web images build and scan in parallel with separate GHA caches and a fail-closed `images` aggregator. Security uses the pnpm cache. Dependabot major holds include review dates. Undici and brace-expansion updated within existing dependency ranges. Cached image jobs measured 69/44 seconds. | One unchanged-lockfile image path completed in 69 seconds including its aggregator. Repeatability and four weekly Dependabot observations remain outstanding. |
 | KAN-76 | MSW handlers split into focused admin/response modules. Photo-geolocation lifecycle tests split from the interaction suite. All touched split files stay below 350 lines. Full Linux frontend CI passed after extraction. | Final combined-tree confirmation. |
 
 ## Measured checks
+
+- Complete run `36696097087` passed at `cccfa79f`, including all 2,363 selected
+  PostgreSQL cases and the strict coverage/security floors. PostgreSQL jobs used
+  53.75 runner-minutes (excluding the merger), compared with 62.10 in the earlier
+  successful run. The 13.4% reduction does not meet KAN-71's 30-minute target.
+  Parallel test steps used 41.73 minutes, serial steps 9.40 and other job steps
+  2.62. Collection improvements preserve the selected cases and all isolation.
+- The [CI timing census](../evidence/2026-09-30-KAN-69-75-ci-timings.md) records
+  five operational frontend observations before and after sharding. All twenty
+  after shards finished within six minutes, at a maximum of 263 seconds.
+  Different source, workflow and dependency snapshots prevent interpreting these
+  observations as same-source controlled pairs. The latest cached image path
+  completed in 69 seconds including its aggregator, with unchanged lockfiles;
+  elapsed Dependabot observations remain separate acceptance.
 
 - GitHub run `36662274115` on `ff3fb53d` passed all frontend shards, static/build
   checks and merged coverage. It covered 20,266/21,988 branches (92.1684%, displayed

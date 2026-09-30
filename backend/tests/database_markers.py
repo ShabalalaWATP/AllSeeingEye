@@ -45,7 +45,10 @@ def _code_uses_database(code: CodeType, namespace: dict, visited: set[int]) -> b
         factory_name = getattr(candidate, "__name__", name)
         module = getattr(candidate, "__module__", "")
         if name in DATABASE_FACTORIES or (
-            factory_name in DATABASE_FACTORIES and module.startswith(("ase.", "sqlalchemy."))
+            isinstance(factory_name, str)
+            and factory_name in DATABASE_FACTORIES
+            and isinstance(module, str)
+            and module.startswith(("ase.", "sqlalchemy."))
         ):
             return True
         candidate_code = getattr(candidate, "__code__", None)
