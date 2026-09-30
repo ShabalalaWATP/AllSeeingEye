@@ -11,8 +11,7 @@ from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 
-from ase.adapters.persistence.base import Base
-from test_annotation_monitor_migration import TABLES, prepared
+from test_annotation_monitor_migration import TABLES, metadata_0031, prepared
 
 
 def database_0030(tmp_path):
@@ -98,7 +97,7 @@ def test_sqlite0031_preserves_selected_state_and_roundtrip(tmp_path):
                         )
                     },
                 )
-                assert compare_metadata(context, Base.metadata) == []
+                assert compare_metadata(context, metadata_0031()) == []
         finally:
             engine.dispose()
         command.downgrade(config, "0030")
