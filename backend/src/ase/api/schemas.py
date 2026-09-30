@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field
 
 from ase.application.dto import AuthSession
 from ase.domain.audit import AuditEntry
@@ -33,18 +33,13 @@ class SetPasswordIn(BaseModel):
     new_password: str = Field(min_length=1, max_length=128)
 
 
-def _reject_retired_manager(role: Role | None) -> Role | None:
-    # The global Manager role is retired; team leadership is a team membership.
-    # The enum value remains readable for legacy rows but cannot be assigned.
-    if role is Role.MANAGER:
-        raise ValueError("The global manager role is retired. Use team Manager membership.")
-    return role
+# Keep legacy manager readable in outputs while accurately describing assignable
+# roles in validation and OpenAPI. Team leadership is a separate membership.
+AssignableRole = Literal[Role.USER, Role.ADMIN]
 
 
 class ApproveIn(BaseModel):
-    role: Role = Role.USER
-
-    _no_manager = field_validator("role")(_reject_retired_manager)
+    role: AssignableRole = Role.USER
 
 
 class RejectIn(BaseModel):
@@ -52,10 +47,8 @@ class RejectIn(BaseModel):
 
 
 class UpdateUserIn(BaseModel):
-    role: Role | None = None
+    role: AssignableRole | None = None
     is_active: bool | None = None
-
-    _no_manager = field_validator("role")(_reject_retired_manager)
 
 
 class UserOut(BaseModel):

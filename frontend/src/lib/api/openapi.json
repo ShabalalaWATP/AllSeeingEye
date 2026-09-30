@@ -16833,7 +16833,12 @@
       "ApproveIn": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/Role",
+            "type": "string",
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "title": "Role",
             "default": "user"
           }
         },
@@ -47705,12 +47710,17 @@
           "role": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Role"
+                "type": "string",
+                "enum": [
+                  "user",
+                  "admin"
+                ]
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Role"
           },
           "is_active": {
             "anyOf": [
