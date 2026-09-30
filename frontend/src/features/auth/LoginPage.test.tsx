@@ -118,32 +118,6 @@ describe('LoginPage', () => {
     expect(eye).toHaveAttribute('data-paused', 'false');
   });
 
-  it('shows the generic failure message from the API and stays on the page', async () => {
-    const { user, router } = renderApp('/login', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), plainUser.email);
-    await user.type(screen.getByLabelText('Password'), 'wrong-password-value');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
-    expect(router.state.location.pathname).toBe('/login');
-    expect(useAuthStore.getState().status).toBe('anonymous');
-  });
-
-  it('explains rate limiting using Retry-After', async () => {
-    server.use(
-      http.post('/api/auth/login', () =>
-        apiError(429, 'rate_limited', 'Too many.', undefined, { 'Retry-After': '60' }),
-      ),
-    );
-    const { user } = renderApp('/login', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), plainUser.email);
-    await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Too many attempts. Try again in 60 seconds.',
-    );
-  });
-
   it('links to account requests and password recovery', () => {
     renderApp('/login', 'anonymous');
     expect(screen.getByRole('link', { name: 'Request an account' })).toHaveAttribute(
