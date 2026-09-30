@@ -91,7 +91,13 @@ function xml(value: unknown): string {
   return Array.from(plain)
     .filter((char) => {
       const code = char.codePointAt(0) ?? 0;
-      return code >= 32 || [9, 10, 13].includes(code);
+      // XML 1.0 Char excludes lone surrogates and U+FFFE/U+FFFF.
+      return (
+        [9, 10, 13].includes(code) ||
+        (code >= 0x20 && code <= 0xd7ff) ||
+        (code >= 0xe000 && code <= 0xfffd) ||
+        (code >= 0x10000 && code <= 0x10ffff)
+      );
     })
     .join('')
     .replace(

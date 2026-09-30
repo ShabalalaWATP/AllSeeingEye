@@ -62,3 +62,14 @@ it('escapes KML data without introducing markup or losing attribution and exclus
   expect(text).toContain('Geological Survey');
   expect(text).toContain('restricted');
 });
+
+it('removes invalid XML characters while preserving supplementary-plane text', () => {
+  const title = 'Data\uFFFE\uFFFF\uD800-\uDC00: \u{1F30D} \u{10437}';
+  const text = exportLivePicture([liveEvent({ source_id: 'usgs_earthquakes', title })], 'kml');
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  expect(doc.querySelector('parsererror')).toBeNull();
+  expect(doc.querySelector('Placemark name')?.textContent).toBe('Data-: \u{1F30D} \u{10437}');
+  expect(doc.querySelector('Data[name="title"] value')?.textContent).toBe(
+    'Data-: \u{1F30D} \u{10437}',
+  );
+});
