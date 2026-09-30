@@ -181,7 +181,7 @@ class ReportJobWorker:
         try:
             while True:
                 await asyncio.sleep(10)
-                await checkpoints.mutate(lambda payload: None)
+                await checkpoints.renew_lease()
         except asyncio.CancelledError:
             raise
         except Exception:

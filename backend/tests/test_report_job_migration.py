@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import column, create_engine, inspect, table
 
 from ase.adapters.persistence.report_job_codec import payload_columns
 from ase.adapters.persistence.report_job_models import ReportJobRow
@@ -36,8 +36,15 @@ def test_migration_creates_constraints_and_refuses_to_drop_retained_jobs():
             }
             assert ("owner_id", "request_key") in unique and ("version_id",) in unique
             value = job()
+            names = {item["name"] for item in inspector.get_columns("report_jobs")}
+            historical = table(
+                "report_jobs",
+                *(column(c.name, c.type) for c in ReportJobRow.__table__.c if c.name in names),
+            )
+            columns = payload_columns(value.payload)
+            columns.pop("summary")
             connection.execute(
-                ReportJobRow.__table__.insert().values(
+                historical.insert().values(
                     id=value.id,
                     request_key=value.request_key,
                     owner_id=value.owner_id,
@@ -53,7 +60,7 @@ def test_migration_creates_constraints_and_refuses_to_drop_retained_jobs():
                     report_id=value.report_id,
                     version_id=value.version_id,
                     error=None,
-                    **payload_columns(value.payload),
+                    **columns,
                 )
             )
             with pytest.raises(RuntimeError, match="retained report jobs"):

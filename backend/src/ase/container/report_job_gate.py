@@ -9,21 +9,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.model_routing import ModelRouting, RoleProfiles
-from ase.application.report_jobs.collection_records import evidence_from_json
 from ase.application.report_jobs.snapshots import restore_job
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.map_origin import ReportMapOrigin
-from ase.application.reports.production_checkpoint import collection_from_dict
 from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ParentReference, require_parent
 from ase.application.reports.templates import template_for
+from ase.container.report_job_cache import attempt_cache
+from ase.container.report_job_sources import ReportJobSourceDisabled, check_sources
 from ase.domain.errors import InvalidRequest
 from ase.domain.model_routing_records import routing_to_dict
 from ase.domain.report_jobs import ReportJob
 from ase.domain.report_records import ReportVersion
 from ase.domain.users import User
-from ase.domain.web_research import WEB_SOURCE_ID
+
+__all__ = ["ReportJobSourceDisabled", "check_job", "check_sources", "release_job"]
 
 if TYPE_CHECKING:
     from ase.container import Container
@@ -32,34 +33,6 @@ if TYPE_CHECKING:
 class ReportJobChanged(InvalidRequest):
     code = "report_job_configuration_changed"
     default_message = "The model configuration changed. Start a new report with the new settings."
-
-
-class ReportJobSourceDisabled(InvalidRequest):
-    code = "report_job_source_disabled"
-    default_message = "A source in this report is disabled. Its saved content cannot be used."
-
-
-async def check_sources(
-    container: "Container", stored: ReportJob, baseline: ReportVersion | None = None
-) -> None:
-    frozen = stored.payload.get("input")
-    if frozen is None:
-        return  # List projections release metadata only.
-    evidence = evidence_from_json(frozen["evidence"])
-    collection = stored.payload.get("collection")
-    identifiers = {item.source_id for item in evidence}
-    if baseline is not None:
-        identifiers.update(item.source_id for item in baseline.evidence)
-    if collection is not None:
-        snapshot = collection_from_dict(collection)
-        identifiers.update(item.source_id for item in snapshot.selection.items)
-        web = snapshot.receipt.web_research if snapshot.receipt else None
-        if web is not None and (web.synthesis or web.citations or web.consulted_urls):
-            identifiers.add(WEB_SOURCE_ID)
-    if identifiers and not all(
-        (await container.source_admission.enabled_many(tuple(identifiers))).values()
-    ):
-        raise ReportJobSourceDisabled()
 
 
 async def check_job(
@@ -86,7 +59,12 @@ async def check_job(
     )
     if routing_to_dict(routing.provenance) != frozen["routing"]:
         raise ReportJobChanged()
-    job = restore_job(frozen, owner, routing.required(template.role))
+    cache = attempt_cache.get()
+    job = (
+        cache.restore(frozen, owner, routing.required(template.role))
+        if cache is not None
+        else restore_job(frozen, owner, routing.required(template.role))
+    )
     await check_links(container, session, stored, job)
     baseline = await _subscription_baseline(container, session, stored, owner, job.request)
     await check_sources(container, stored, baseline)

@@ -162,3 +162,8 @@ async def main():
 
 
 asyncio.run(main())
+
+# KAN-35 uses a separate 60k fixture for boards and maintenance.
+from benchmark_boards import run as board_benchmark
+
+asyncio.run(board_benchmark())

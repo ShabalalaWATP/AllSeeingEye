@@ -8,6 +8,7 @@ from fastapi import Request
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from ase.api.catalogue_responses import CATALOGUE_PATHS
 from ase.api.errors import PayloadTooLarge, handle_app_error
 
 NO_STORE_PREFIXES = (
@@ -24,7 +25,7 @@ NO_STORE_PREFIXES = (
     "/api/report-search",
     "/api/warning",
     "/api/schedules",
-    "/api/trackers/social",
+    "/api/trackers",
 )
 DOCS_PREFIXES = ("/api/docs", "/api/openapi.json")
 API_CSP = "default-src 'none'; frame-ancestors 'none'"
@@ -67,8 +68,16 @@ class SecurityHeadersMiddleware:
                 headers["X-Frame-Options"] = "DENY"
                 if not path.startswith(DOCS_PREFIXES):
                     headers["Content-Security-Policy"] = API_CSP
-                if path.startswith(NO_STORE_PREFIXES) and "no-store" not in headers.get(
-                    "Cache-Control", ""
+                catalogue = (
+                    path in CATALOGUE_PATHS
+                    and scope.get("method") == "GET"
+                    and message["status"] in (200, 304)
+                    and headers.get("Cache-Control") == "private, no-cache"
+                )
+                if (
+                    (path.startswith(NO_STORE_PREFIXES) or path in CATALOGUE_PATHS)
+                    and not catalogue
+                    and "no-store" not in headers.get("Cache-Control", "")
                 ):
                     headers["Cache-Control"] = "no-store"
             await send(message)

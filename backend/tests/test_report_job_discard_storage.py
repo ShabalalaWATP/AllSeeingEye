@@ -36,7 +36,10 @@ async def test_discard_is_revision_fenced_and_caller_committed(job_storage, stat
             assert not await repository.discard(stored.id, expected_revision=1)
         deletions = [statement for statement in statements if statement.startswith("DELETE")]
         assert deletions and all(
-            statement.startswith("DELETE FROM report_jobs ") for statement in deletions
+            statement.startswith(
+                ("DELETE FROM report_jobs ", "DELETE FROM report_job_monthly_usage ")
+            )
+            for statement in deletions
         )
     finally:
         event.remove(engine.sync_engine, "before_cursor_execute", capture)

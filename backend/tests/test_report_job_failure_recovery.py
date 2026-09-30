@@ -7,7 +7,10 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import update
 
+from ase.adapters.persistence.report_job_codec import payload_columns
+from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.report_jobs.recovery import expired_failure
 from ase.application.reports.drafting import Draft
@@ -24,7 +27,9 @@ def known_failure_payload():
         "schema_version": 1,
         "current_packet": DIGEST,
         "stage": "drafting",
-        "calls": [{"status": "completed", "error": None}],
+        "calls": [
+            {"status": "completed", "error": None, "reserved_output": 100, "completion_tokens": 10}
+        ],
         "sections": {
             f"{DIGEST}:S2": {
                 "packet_digest": DIGEST,
@@ -140,8 +145,6 @@ async def test_expired_recovery_preserves_only_proven_current_failure(job_storag
         payload["sections"][f"{DIGEST}:S3"] = other
     elif uncertainty == "mismatched_identity":
         section["section_id"] = "different"
-    elif uncertainty == "malformed_calls":
-        payload["calls"] = [None]
     original = await saved(
         factory,
         job(
@@ -152,6 +155,16 @@ async def test_expired_recovery_preserves_only_proven_current_failure(job_storag
         ),
     )
     async with factory() as session:
+        if uncertainty == "malformed_calls":
+            payload["calls"] = [None]
+            # Corrupt persisted data directly: ordinary writes now maintain and
+            # validate the usage projection in the same transaction.
+            await session.execute(
+                update(ReportJobRow)
+                .where(ReportJobRow.id == original.id)
+                .values(**payload_columns(payload))
+            )
+            await session.commit()
         repo = SqlReportJobRepository(session)
         assert await repo.recover_expired(NOW + timedelta(seconds=2)) == 1
         recovered = await repo.get(original.id)

@@ -95,6 +95,7 @@ class ActivitySampleRow(Base):
     __table_args__ = (
         UniqueConstraint("kind", "key", "hour", name="uq_activity_samples_kind_key_hour"),
         Index("ix_activity_samples_kind_hour", "kind", "hour"),
+        Index("ix_activity_samples_hour", "hour", "id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -1,7 +1,8 @@
 """Authenticated immutable public infrastructure catalogue."""
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Request, Response
 
+from ase.api.catalogue_responses import catalogue_responses
 from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.schemas_infrastructure import InfrastructureOut
 from ase.api.session_fence import FenceDep
@@ -9,14 +10,16 @@ from ase.api.session_fence import FenceDep
 router = APIRouter(prefix="/map-infrastructure", tags=["map"])
 
 
-@router.get("")
+@router.get("", response_model=InfrastructureOut)
 async def infrastructure(
     user: CurrentUser,
-    response: Response,
+    request: Request,
     container: ContainerDep,
     fence: FenceDep,
-) -> InfrastructureOut:
-    result = InfrastructureOut.model_validate(container.public_infrastructure())
+) -> Response:
+    snapshot = container.public_infrastructure()
+    result = catalogue_responses.get(
+        "/api/map-infrastructure", snapshot, lambda: InfrastructureOut.model_validate(snapshot)
+    )
     await fence.confirm()
-    response.headers["Cache-Control"] = "private, no-store"
-    return result
+    return result.response(request.headers.get("if-none-match"))

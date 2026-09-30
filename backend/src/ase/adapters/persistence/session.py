@@ -50,7 +50,9 @@ def ensure_sqlite_directory(url: str) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def engine_options(url: str) -> dict[str, Any]:
+def engine_options(
+    url: str, *, pool_size: int = 10, max_overflow: int = 10, pool_timeout: int = 10
+) -> dict[str, Any]:
     kwargs: dict[str, Any] = {}
     if is_sqlite(url):
         kwargs["connect_args"] = {"check_same_thread": False}
@@ -59,11 +61,19 @@ def engine_options(url: str) -> dict[str, Any]:
             kwargs["poolclass"] = StaticPool
     elif url.startswith(POSTGRES_PREFIX):
         kwargs.update(POSTGRES_POOL_OPTIONS)
+        kwargs.update(pool_size=pool_size, max_overflow=max_overflow, pool_timeout=pool_timeout)
     return kwargs
 
 
-def create_engine(url: str) -> AsyncEngine:
-    return create_async_engine(url, **engine_options(url))
+def create_engine(
+    url: str, *, pool_size: int = 10, max_overflow: int = 10, pool_timeout: int = 10
+) -> AsyncEngine:
+    return create_async_engine(
+        url,
+        **engine_options(
+            url, pool_size=pool_size, max_overflow=max_overflow, pool_timeout=pool_timeout
+        ),
+    )
 
 
 def create_session_factory(
