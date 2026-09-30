@@ -224,6 +224,9 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
         )
 
     monkeypatch.setattr("ase.app_lifecycle.expire_original_assets", AsyncMock())
+    for name in ("alert_dispatcher", "notification_dispatcher", "digest_worker"):
+        monkeypatch.setattr(f"ase.app_lifecycle.{name}", lambda _: SimpleNamespace(run=AsyncMock()))
+    monkeypatch.setattr("ase.app_lifecycle.run_web_push", AsyncMock())
     monkeypatch.setattr(
         "ase.app_lifecycle.build_annotation_monitor_worker",
         lambda _: SimpleNamespace(run=AsyncMock()),

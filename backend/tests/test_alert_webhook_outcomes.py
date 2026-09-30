@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from ase.adapters.feeds.http import FeedFetchError
+from ase.adapters.feeds.secret_urls import HTTP_LOGGERS
 from ase.adapters.notify.webhook import WebhookNotifier
 from ase.domain.notification_delivery import DeliveryOutcome
 from ase.domain.warning import alert_from, evaluate
@@ -94,13 +95,16 @@ async def test_lost_response_is_uncertain_and_does_not_log_credentials(monkeypat
 @pytest.mark.parametrize("fails", [False, True])
 async def test_transport_diagnostics_redact_only_protected_request(monkeypatch, caplog, fails):
     caplog.set_level(logging.DEBUG)
+    # Application logging sets explicit HTTP logger levels independently of root.
+    for name in HTTP_LOGGERS:
+        caplog.set_level(logging.DEBUG, logger=name)
     entered, release = asyncio.Event(), asyncio.Event()
 
     async def public(_url):
         return "8.8.8.8"
 
     async def protected(request):
-        for name in ("httpcore.connection", "httpcore.http11", "httpcore.http2", "httpcore.proxy"):
+        for name in HTTP_LOGGERS:
             logging.getLogger(name).debug("diagnostic %s", request.url)
         entered.set()
         await release.wait()
