@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { aiPolicy, teamId } from '@/test/fixtures.aiUsage';
 import { adminUser } from '@/test/fixtures';
-import { team } from '@/test/fixtures.teams';
+import { team } from '@/test/fixtures.teamData';
 
 import { describeOverrideLimit, parseLimit, policyLabel } from './aiUsagePresentation';
 

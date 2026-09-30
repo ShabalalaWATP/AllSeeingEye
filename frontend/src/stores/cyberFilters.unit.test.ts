@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { applySession } from '@/test/render';
+import { applySession } from '@/test/session';
 import { liveEvent } from '@/test/fixtures';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { prepareCyberMap, useCyberFiltersStore } from './cyberFilters';

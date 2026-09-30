@@ -3,18 +3,10 @@ import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { routes } from '@/app/router/routes';
-import { useAuthStore } from '@/stores/auth';
 
-import { adminUser, plainUser, tokenFor } from './fixtures';
+import { applySession, type Session } from './session';
 
-export type Session = 'unknown' | 'anonymous' | 'user' | 'admin';
-
-export function applySession(session: Session): void {
-  const store = useAuthStore.getState();
-  if (session === 'admin') store.setSession(tokenFor(adminUser));
-  else if (session === 'user') store.setSession(tokenFor(plainUser));
-  else if (session === 'anonymous') store.clearSession();
-}
+export { applySession, type Session } from './session';
 
 /** Renders the real route table in a memory router at `path` with the given session. */
 export function renderApp(path: string, session: Session = 'unknown') {
