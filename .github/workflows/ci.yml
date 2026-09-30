@@ -78,6 +78,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
+          --tmpfs /var/lib/postgresql/data:rw,size=1073741824
           --health-cmd "pg_isready -U ase -d ase"
           --health-interval 10s
           --health-timeout 5s
@@ -94,6 +95,14 @@ jobs:
           enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --frozen
+      - name: Require PostgreSQL transaction durability settings
+        env:
+          PGPASSWORD: ase
+        run: |
+          durability=$(psql --host localhost --username ase --dbname ase \
+            --set ON_ERROR_STOP=1 --tuples-only --no-align \
+            --command "SELECT current_setting('fsync') = 'on' AND current_setting('synchronous_commit') = 'on' AND current_setting('full_page_writes') = 'on'")
+          test "$durability" = t
       - name: Database tests in private worker databases
         # Each Argon2 operation uses four threads; bound process/import overhead.
         run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers 2
