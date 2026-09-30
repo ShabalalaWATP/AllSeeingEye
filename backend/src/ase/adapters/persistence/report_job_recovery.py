@@ -42,4 +42,5 @@ async def recover_expired(session: AsyncSession, now: datetime, limit: int) -> i
         .returning(Row.id)
         .execution_options(synchronize_session=False)
     )
-    return len(recovered.all())
+    # Count actual compare-and-set successes without materialising another list.
+    return sum(1 for _ in recovered)

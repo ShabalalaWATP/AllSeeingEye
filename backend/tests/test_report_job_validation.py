@@ -215,10 +215,13 @@ async def test_resume_atomically_replaces_only_expected_paused_revision(job_stor
     original = {
         "schema_version": 1,
         "sections": {"done": "Frozen"},
-        "calls": [{"status": "in_flight"}],
+        "calls": [{"status": "in_flight", "reserved_output": 100}],
     }
     value = await saved(factory, job(status="paused", payload=original))
-    resumed_payload = {**original, "calls": [{"status": "uncertain"}]}
+    resumed_payload = {
+        **original,
+        "calls": [{**original["calls"][0], "status": "uncertain"}],
+    }
     async with factory() as session:
         repository = SqlReportJobRepository(session)
         assert (

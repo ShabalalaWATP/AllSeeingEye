@@ -1,7 +1,7 @@
 # Forecast and alert feedback: KAN-125 to KAN-129
 
 Recorded 30 September 2026. Branch: `codex/KAN-125-forecast-feedback`.
-Integrated parent: `2290b8c0b819a9ddc8d4a20da359e2b5baead3e8`, performance PR #93.
+Integrated parent: `447227b4f701068c1ddfaa3a834accacfd2593c4`, performance PR #93.
 This batch is a draft for review;
 release, email delivery and research accuracy require their own evidence.
 
@@ -49,8 +49,8 @@ Acknowledgements retain the existing active team-member write contract. Archived
 team writes remain restricted, with the existing administrator manual override
 preserved where applicable. Neither aggregate counts nor exports widen scope.
 Targeted Bandit inspection of nine affected modules reported no medium/high
-findings. Gitleaks 8.24.3 scanned all four non-merge feature commits in
-`2290b8c0..HEAD` with redaction enabled and reported no leaks. These targeted
+findings. Gitleaks 8.24.3 scanned all six non-merge feature commits in
+`447227b4..HEAD` with redaction enabled and reported no leaks. These targeted
 checks are not an exhaustive repository security scan.
 
 A subsequent independent migration review found that `0070` originally guarded
@@ -88,7 +88,9 @@ session-fence architecture and warning admission/backpressure/background access.
 The parent CI repairs and refreshed session-fence exemptions are included.
 After merging final parent `2290b8c0`, 18 stream-shutdown, alert-context and
 session-fence regressions passed; full mypy and TypeScript checks passed again.
-The final parent adds no API schema changes.
+After the repaired parent `447227b4`, a further 23 focused stream-pool/shutdown,
+alert-context, release-fence and performance-storage tests passed in 13.28 seconds.
+That parent adds no API schema changes.
 
 Coverage was not measured in these focused checks. Full CI/coverage, a live
 PostgreSQL run of the forecast migrations, browser acceptance and notification

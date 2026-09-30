@@ -63,7 +63,8 @@ class SqlBaselineSink:
                     .where(ActivitySampleRow.id.in_(stale))
                     .returning(ActivitySampleRow.id)
                 )
-                if len(removed.all()) < 1000:
+                # Count the rows this bounded DELETE actually changed.
+                if sum(1 for _ in removed) < 1000:
                     break
             repository = SqlBaselineRepository(session)
             for kind, key, value in samples:
