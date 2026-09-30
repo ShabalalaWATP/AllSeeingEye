@@ -1,20 +1,28 @@
 """The real persistence schema keeps MFA and provider selection metadata intact."""
 
+import hashlib
+import json
 from datetime import timedelta
 from uuid import uuid4
 
+import pytest
 from sqlalchemy import select
 
 from ase.adapters.persistence.acled_credentials import AcledCredentialRow
+from ase.adapters.persistence.alert_routing_models import AlertWebhookDestinationRow
 from ase.adapters.persistence.encryption_rotation import ENCRYPTED_COLUMNS, rotate_encryption_key
 from ase.adapters.persistence.firms_credentials import FirmsCredentialRow
 from ase.adapters.persistence.mfa_models import MfaChallengeRow
 from ase.adapters.persistence.models import LlmProfileRow
 from ase.adapters.persistence.totp import AdminTotpRow
-from ase.adapters.security.cipher import FernetCipher
+from ase.adapters.persistence.web_push_devices import decrypt_subscription
+from ase.adapters.persistence.web_push_models import PushDeviceRow
+from ase.adapters.security.cipher import CipherUnavailable, FernetCipher
 from ase.container import Container
 from ase.domain.users import User
+from ase.domain.web_push import PushSubscription
 from test_encryption_rotation import NEW, OLD
+from test_web_push import subscription
 
 
 async def test_actual_consumers_preserve_enrolment_and_provider_state(
@@ -22,6 +30,8 @@ async def test_actual_consumers_preserve_enrolment_and_provider_state(
 ) -> None:
     cipher = FernetCipher(OLD)
     now = container.clock.now()
+    push = subscription()
+    device_id = uuid4()
     async with container.session_factory() as session:
         session.add_all(
             [
@@ -78,6 +88,25 @@ async def test_actual_consumers_preserve_enrolment_and_provider_state(
                     environment_fingerprint="f" * 64,
                     updated_at=now,
                 ),
+                AlertWebhookDestinationRow(
+                    id=uuid4(),
+                    name="Operations",
+                    created_by=user.id,
+                    team_id=None,
+                    url_encrypted=cipher.encrypt("https://hooks.example.test/private-token"),
+                    enabled=True,
+                    created_at=now,
+                ),
+                PushDeviceRow(
+                    id=device_id,
+                    user_id=user.id,
+                    family_id=uuid4(),
+                    security_version=2,
+                    endpoint_hash=hashlib.sha256(push["endpoint"].encode()).hexdigest(),
+                    encrypted_subscription=cipher.encrypt(json.dumps(push)),
+                    created_at=now,
+                    next_check_at=now + timedelta(seconds=30),
+                ),
             ]
         )
         await session.commit()
@@ -89,6 +118,8 @@ async def test_actual_consumers_preserve_enrolment_and_provider_state(
             MfaChallengeRow,
             FirmsCredentialRow,
             AcledCredentialRow,
+            AlertWebhookDestinationRow,
+            PushDeviceRow,
         )
     ]
     async with container.engine.connect() as connection:
@@ -96,12 +127,19 @@ async def test_actual_consumers_preserve_enrolment_and_provider_state(
             table.name: dict((await connection.execute(select(table))).mappings().one())
             for table in tables
         }
-    assert await rotate_encryption_key(container.engine, OLD, NEW) == 7
+    assert await rotate_encryption_key(container.engine, OLD, NEW) == 9
     async with container.engine.connect() as connection:
         for table in tables:
             after = dict((await connection.execute(select(table))).mappings().one())
             for column in ENCRYPTED_COLUMNS[table.name]:
-                assert FernetCipher(NEW).decrypt(after.pop(column)) == cipher.decrypt(
+                replacement = after.pop(column)
+                assert FernetCipher(NEW).decrypt(replacement) == cipher.decrypt(
                     before[table.name].pop(column)
                 )
+                with pytest.raises(CipherUnavailable):
+                    cipher.decrypt(replacement)
             assert after == before[table.name]
+    async with container.session_factory() as session:
+        device = await session.get(PushDeviceRow, device_id)
+        assert device is not None
+        assert decrypt_subscription(FernetCipher(NEW), device) == PushSubscription(**push)

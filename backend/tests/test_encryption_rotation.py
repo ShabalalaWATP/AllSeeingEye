@@ -79,7 +79,7 @@ async def test_rotation_preserves_plaintext_nulls_and_all_other_metadata(
     rotation_engine: AsyncEngine,
 ) -> None:
     before = await snapshot(rotation_engine)
-    assert await rotate_encryption_key(rotation_engine, OLD, NEW) == 7
+    assert await rotate_encryption_key(rotation_engine, OLD, NEW) == 9
     after = await snapshot(rotation_engine)
     for name, rows in after.items():
         for index, row in enumerate(rows):
@@ -163,6 +163,6 @@ async def test_inventory_covers_every_registered_encrypted_column(container) -> 
         (table.name, column.name)
         for table in Base.metadata.tables.values()
         for column in table.columns
-        if column.name.endswith("_encrypted")
+        if column.name.endswith("_encrypted") or column.name.startswith("encrypted_")
     }
     assert actual == inventory
