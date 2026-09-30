@@ -1,66 +1,88 @@
 # Team management API
 
-Status: implemented, 6 September 2026. All routes use `/api`, bearer
-authentication and the [common authentication contract](AUTH_API.md).
+Current authority follows [ADR 0018](../adr/0018-team-self-service-authority.md).
+Paths below have the /api prefix and require bearer authentication under the
+[common authentication contract](AUTH_API.md).
 
-## Authority
+## Authority and privacy
 
-Account roles are `user`, `manager` and `admin`. Membership designations are
-`member` and `manager`. A non-administrator needs both global manager capability
-and a manager designation in the target team to manage its ordinary members.
-Administrators create teams and assign leadership. Team membership never changes
-the global account role.
+Any active authenticated account can create a team. Creation atomically gives
+the creator a manager membership. Current manager membership authorises that
+team's management; the retired global manager account role is not required.
+Team membership never grants global administrator authority.
 
-Users can read their own teams and rosters, including archived teams.
-Administrators can read all teams. Managers may add/remove only ordinary user
-accounts in teams they lead. They cannot promote leaders, manipulate manager or
-administrator memberships, approve accounts, issue reset links or list all users.
-Adding a member uses the known email of an active existing account; it sends no
-invitation or external message.
+Members can read their team's roster and saved work, including archived work.
+Administrators can inspect all teams. Managers can invite eligible accounts,
+promote, demote and remove non-administrator members, and rename or archive
+their team. They cannot alter administrator memberships or use global account
+administration. An administrator needs another administrator to change their
+own administrator membership.
 
-## Routes
+Every active team must retain an active manager. Demotion, removal, self-leave
+and account deactivation cannot remove its final active manager. Appoint a
+replacement first, or archive the team where appropriate. Inactive managers do
+not satisfy the invariant.
+
+Rosters expose user ID, display name, directory username, account role, active
+status, membership role and joined_at. They do not expose login email, password
+hashes, tokens or security versions. Directory discovery and consent invitations
+are separate from authority over existing members.
+
+## Team and membership routes
 
 | Method and path | Request | Success and policy |
-|---|---|---|
-| `GET /api/teams` | None | 200 `{items: Team[]}` for current memberships; administrators see all |
-| `POST /api/teams` | `{name}` | 201 `Team`; administrator only |
-| `GET /api/teams/{id}` | None | 200 `{team: Team, members: Member[]}`; own team or administrator |
-| `PATCH /api/teams/{id}` | `{name?, is_active?}` | 200 `Team`; administrator only, at least one value required |
-| `PUT /api/teams/{id}/members` | `{email, role?: "member" | "manager"}` | 200 `Membership`; adds/updates an eligible account, subject to authority above |
-| `DELETE /api/teams/{id}/members/{user_id}` | None | 204; removes an existing membership, subject to authority above |
+| --- | --- | --- |
+| GET /teams | None | 200 items; own memberships or all teams for administrators |
+| POST /teams | name, optional description | 201 team; active authenticated account |
+| GET /teams/{id} | None | 200 team and members; member or administrator |
+| PATCH /teams/{id} | name, description, is_active, optional reactivation_manager_id | 200 team; manager/administrator; restoration is administrator-only |
+| PUT /teams/{id}/members | email, optional role | 200 membership; administrator-only direct add; other callers refused before email lookup |
+| PATCH /teams/{id}/members/{user_id} | role: member or manager | 200 membership; manager/administrator, with target and last-manager safeguards |
+| DELETE /teams/{id}/members/{user_id} | None | 204; target and last-manager safeguards |
+| POST /teams/{id}/leave | None | 204; cannot leave as final active manager or self-remove administrator membership |
+| GET /teams/{id}/ai-usage | None | Members see own usage, managers see aggregates/member totals, administrators may inspect any team |
 
-Names contain 1 to 120 printable characters after trimming. Email is validated
-and bounded to 320 characters. Membership inputs reject extra fields. Repeating
-an existing membership assignment preserves its original `joined_at` and never
-creates a duplicate row. Manager designations require an account with global
-manager or administrator capability.
+Names are trimmed printable text of 1 to 120 characters. Descriptions have a
+500-character limit; null clears them. Empty updates and extra membership input
+fields are rejected. Reassigning membership preserves joined_at. Global role
+changes do not create or remove memberships.
 
-`Team` contains `id`, `name`, `is_active`, `created_by`, `created_at` and
-`updated_at`. `Member` contains `user_id`, `email`, `display_name`, `account_role`,
-`is_active`, membership `role` and `joined_at`. `Membership` contains `team_id`,
-`user_id`, `role` and `joined_at`. Password hashes, tokens and security versions
-are not roster fields.
+## Consent invitations
 
-Missing or invisible teams return 404. Insufficient authority within a visible
-team returns 403. Invalid names, missing/inactive target accounts, unsupported
-leadership assignments and empty updates return 422. Authentication failures
-return 401. Membership uniqueness and role constraints also exist in the database.
+| Method and path | Purpose |
+| --- | --- |
+| POST /teams/{id}/invitations | Invite eligible directory recipient_id, with optional note |
+| POST /teams/{id}/invitations/by-username | Submit exact username and optional note; generic 202 response |
+| GET /teams/{id}/invitations | Manager/administrator sender list |
+| DELETE /teams/{id}/invitations/{invitation_id} | Withdraw, optionally checking expected_revision |
+| GET /me/team-invitations | Recipient inbox |
+| POST /me/team-invitations/{invitation_id}/accept | Consent, optionally checking expected_revision |
+| POST /me/team-invitations/{invitation_id}/decline | Refusal, optionally checking expected_revision |
 
-## Archiving and revocation
+List filters include status, limit (1 to 20) and offset (0 to 1,000). Acceptance
+rechecks the current team, recipient and inviter authority before adding a member.
+An invitation does not itself grant access. Direct email-based membership writes
+are reserved for administrators, not a replacement for manager invitations.
 
-Archiving preserves the team, its memberships and historical work. Ordinary
-operational writes and all team background jobs stop; read access remains for
-current members and administrators. Membership edits require reactivation even
-for administrators. Administrators retain a manual override for operational
-records, separately from roster management.
+The baseline sender list can expose hidden recipients after exact-handle
+submission despite the generic POST response. This gap is tracked in
+[KAN-155](https://alex-orr.atlassian.net/browse/KAN-155). This documentation change
+does not claim it is repaired. The security batch must replace this paragraph
+with the verified opaque-receipt contract when its implementation is integrated.
 
-Mutations acquire the shared administration guard and reload the actor before
-checking membership. Team updates use a no-op update lock that works on SQLite
-and PostgreSQL. Removed users lose team work even when they originally authored
-it. They retain their personal work. Scope is enforced by the server, not a
-selected workspace in the browser.
+## Archiving, errors and revocation
 
-Audit actions are `team_created`, `team_updated`, `team_member_set` and
-`team_member_removed`. Migration `0013` creates empty team/membership tables;
-it does not enrol existing accounts automatically. See
-[ADR 0010](../adr/0010-teams-and-access.md) for scope migration and trade-offs.
+Archiving preserves memberships and historical reads. Ordinary operational
+writes and background team work stop. Roster mutations and self-leave require
+reactivation. Only administrators can restore an archived team, with an active
+manager or explicit eligible recovery-manager selection. Administrator manual
+oversight of operational records is separate from roster management.
+
+Missing or invisible teams return 404; insufficient authority in a visible team
+returns 403; invalid changes return 422; authentication failures return 401.
+Mutations take the shared administration guard and team lock, then reload
+authority. Removed members lose team access even to earlier contributions,
+while keeping personal work. Server-side scope filtering precedes limits/counts.
+
+See OpenAPI for exact response fields and
+[scoped operational work](SCOPED_WORK_API.md) for saved-record access.

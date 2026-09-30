@@ -5055,8 +5055,12 @@ export interface components {
         };
         /** ApproveIn */
         ApproveIn: {
-            /** @default user */
-            role: components["schemas"]["Role"];
+            /**
+             * Role
+             * @default user
+             * @enum {string}
+             */
+            role: "user" | "admin";
         };
         /** ApproveOut */
         ApproveOut: {
@@ -15840,7 +15844,8 @@ export interface components {
         };
         /** UpdateUserIn */
         UpdateUserIn: {
-            role?: components["schemas"]["Role"] | null;
+            /** Role */
+            role?: ("user" | "admin") | null;
             /** Is Active */
             is_active?: boolean | null;
         };
