@@ -20,6 +20,8 @@ criteria that require completed GitHub runs. No production deployment is authori
 ## Measured checks
 
 - Script unit suite: 77 tests, 74 passed and three existing platform skips.
+  The coverage-checker suite subsequently passed all seven tests after adding
+  an omitted-module regression case, including diagnostic mode.
 - Backend progress, isolation and shard-helper focused checks: passed. The progress
   helper covers idle starvation, continuing checkpoints, overall expiry, worker
   failure and a stalled initial snapshot.
@@ -42,6 +44,9 @@ criteria that require completed GitHub runs. No production deployment is authori
   run `36508802767`, combined with measured new-test arcs, pass every reviewed
   module at 95% lines and branches. Source paths were remapped between worktrees;
   production auth/validation source was unchanged. This is not a fresh full run.
+  Removing the new auth-test measurements by checking the prior CI/validation
+  report returns exit 1 and names report authorisation (85.42% lines, 68.18%
+  branches), demonstrating that the higher gate rejects the earlier gap.
 - Lockfile audit after updating Undici 7.29.0 to 7.30.0: zero vulnerabilities.
   Before the update, the audit reported two high, five moderate and three low.
   The package source and integrity were verified against npm metadata and the

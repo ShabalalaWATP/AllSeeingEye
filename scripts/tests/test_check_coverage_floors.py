@@ -2,7 +2,9 @@
 
 import contextlib
 import io
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -68,6 +70,21 @@ class CoverageFloorTests(unittest.TestCase):
         failures = checker.frontend_failures(report, auth=True)
         self.assertEqual(len(failures), 2)
         self.assertTrue(all("Login.tsx" in failure for failure in failures))
+
+    def test_missing_reviewed_module_fails_even_in_diagnostic_mode(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "coverage.json"
+            report.write_text(json.dumps({"files": {"src/ase/domain/access.py": {}}}))
+            expected = {"domain/access.py", "application/reports/authorisation.py"}
+            for mode in ([], ["--report-only"]):
+                with (
+                    self.subTest(mode=mode),
+                    patch.object(checker, "expected_modules", return_value=expected),
+                    contextlib.redirect_stderr(io.StringIO()) as output,
+                ):
+                    result = checker.main([str(report), "--policy", "backend-security", *mode])
+                self.assertEqual(result, 2)
+                self.assertIn("application/reports/authorisation.py", output.getvalue())
 
     def test_windows_and_linux_paths_are_normalised(self):
         for path in [
