@@ -197,7 +197,7 @@ async def test_stale_failure_and_timeout_do_not_poison_new_connection(
         raise RuntimeError(KEY)
 
     monkeypatch.setattr(FirmsConnector, "fetch", fetch)
-    container.scheduler._fetch_timeout = timedelta(seconds=0.25)
+    container.scheduler.poller._fetch_timeout = timedelta(seconds=0.25)
     outcome = await container.scheduler.poll_once(connector(container))
     assert not outcome.ok and KEY not in repr(outcome)
     assert container.health.get(SPEC.id).polls == 0

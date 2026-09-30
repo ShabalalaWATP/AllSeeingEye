@@ -246,8 +246,12 @@ def test_cli_commands_report_success_and_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     runner = CliRunner()
-    monkeypatch.setattr("ase.cli_ukraine.import_ukraine_control", lambda d, contact: 7)
-    monkeypatch.setattr("ase.cli_ukraine.import_ukraine_oblasts", lambda d, contact: 27)
+    monkeypatch.setattr(
+        "ase.adapters.geo.ukraine_control_import.import_ukraine_control", lambda d, contact: 7
+    )
+    monkeypatch.setattr(
+        "ase.adapters.geo.ukraine_oblasts_import.import_ukraine_oblasts", lambda d, contact: 27
+    )
     result = runner.invoke(
         app, ["import-ukraine-control", "--destination", str(tmp_path / "c.json")]
     )
@@ -260,8 +264,8 @@ def test_cli_commands_report_success_and_failure(
     def explode(d: str, contact: str) -> int:
         raise httpx.ConnectError("offline")
 
-    monkeypatch.setattr("ase.cli_ukraine.import_ukraine_control", explode)
-    monkeypatch.setattr("ase.cli_ukraine.import_ukraine_oblasts", explode)
+    monkeypatch.setattr("ase.adapters.geo.ukraine_control_import.import_ukraine_control", explode)
+    monkeypatch.setattr("ase.adapters.geo.ukraine_oblasts_import.import_ukraine_oblasts", explode)
     for command in ("import-ukraine-control", "import-ukraine-oblasts"):
         result = runner.invoke(app, [command, "--destination", str(tmp_path / "x.json")])
         assert result.exit_code == 1 and "ConnectError" in result.output

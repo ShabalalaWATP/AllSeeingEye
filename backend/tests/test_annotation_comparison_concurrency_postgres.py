@@ -108,7 +108,7 @@ async def test_authorised_first_parent_deletion_waits_through_both_final_checks(
     async with container.session_factory() as session:
         service = container.annotation_comparisons(session)
         preview = await service.execute(actor, request)
-        original_report = service.selector.claims._report
+        original_report = service.selector.claims.resolve_report
 
         async def report(access, report_id):
             record = await original_report(access, report_id)
@@ -123,7 +123,7 @@ async def test_authorised_first_parent_deletion_waits_through_both_final_checks(
 
         monkeypatch.setattr(annotation_comparisons, "recheck_comparison", guarded_release)
         monkeypatch.setattr(SqlUserRepository, "lock_administration", lock)
-        monkeypatch.setattr(service.selector.claims, "_report", report)
+        monkeypatch.setattr(service.selector.claims, "resolve_report", report)
         comparison = asyncio.create_task(
             service.execute(actor, request, preview.comparison_sha256 if export else None)
         )

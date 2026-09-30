@@ -86,7 +86,7 @@ async def test_hung_processing_fails_that_source_while_others_keep_publishing() 
     assert published.ok and store.get(event_id("fast", "fast")) is not None
     assert not timed_out.ok
     assert timed_out.error == "Processing exceeded its 0.5-second deadline."
-    entry = scheduler._health.get("slow")
+    entry = scheduler.poller.health_for("slow")
     assert entry.status is SourceStatus.DEGRADED and entry.consecutive_failures == 1
     assert store.get(event_id("slow", "slow")) is None
     # The guard was released, so the same source recovers on its next poll.
@@ -114,7 +114,7 @@ async def test_guarded_failure_verification_is_bounded_too() -> None:
     )
     outcome = await asyncio.wait_for(scheduler.poll_once(hanging), 2)
     assert outcome.error == "Connection verification unavailable."
-    assert scheduler._health.get("guarded").polls == 0
+    assert scheduler.poller.health_for("guarded").polls == 0
     assert not admission.lock.locked()
 
 

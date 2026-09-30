@@ -137,11 +137,13 @@ class SourceInventoryWiring(ContainerCore):
 
     def source_assets(self, user: User) -> list[SourceAsset]:
         """Camera, map, Ukraine and reference data, from cached metadata only."""
+        # passes the container to build_source_assets, which reads feature catalogues.
         return build_source_assets(cast("Container", self), user)
 
     async def platform_connections(
         self, session: AsyncSession, user: User
     ) -> list[PlatformConnection]:
+        # outside ContainerCore: reaches tiles.
         container = cast("Container", self)
         settings = container.settings
         repos = container.repositories(session)

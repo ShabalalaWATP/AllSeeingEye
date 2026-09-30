@@ -4,7 +4,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from ase.container.subscription_publication import _advance_lineage
+from ase.application.schedules.subscription_publication import _advance_lineage
 from ase.domain.subscription_editions import (
     EditionCoverage,
     EditionQuality,
