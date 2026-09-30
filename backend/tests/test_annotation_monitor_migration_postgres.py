@@ -12,9 +12,8 @@ from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from ase.adapters.persistence.base import Base
 from ase.infrastructure.migrations import alembic_config
-from test_annotation_monitor_migration import TABLES
+from test_annotation_monitor_migration import TABLES, metadata_0030
 from test_llm_connections_migration import _seed
 
 
@@ -95,15 +94,7 @@ def schema_parity(connection):
             )
         },
     )
-    # Historical0030 must be compared with its own schema, before inventory0031.
-    historical = sa.MetaData()
-    for table in Base.metadata.sorted_tables:
-        table.to_metadata(historical)
-    monitors = historical.tables["annotation_monitors"]
-    for name in ("mode", "inventory_overflow"):
-        monitors._columns.remove(monitors.c[name])
-    historical.tables["annotation_revision_outbox"].c.previous_revision_id.nullable = False
-    assert compare_metadata(context, historical) == []
+    assert compare_metadata(context, metadata_0030()) == []
     inspector = sa.inspect(connection)
     assert "ck_alerts_one_origin" in {
         row["name"] for row in inspector.get_check_constraints("alerts")
