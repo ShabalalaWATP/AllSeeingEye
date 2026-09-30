@@ -256,6 +256,8 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
     for authority, setting, path in (
         ("uksl", "ASE_UKSL_SNAPSHOT_PATH", settings.uksl_snapshot_path),
         ("ofac_sdn", "ASE_OFAC_SDN_SNAPSHOT_PATH", settings.ofac_sdn_snapshot_path),
+        ("un_sc", "ASE_UN_SC_SNAPSHOT_PATH", settings.un_sc_snapshot_path),
+        ("eu_fsf", "ASE_EU_FSF_SNAPSHOT_PATH", settings.eu_fsf_snapshot_path),
     ):
         requirements[f"research-designations-{authority}"] = _configured(
             "snapshot",
@@ -263,5 +265,9 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
             bool(path),
             "A validated designation snapshot is configured.",
             f"Import a snapshot with ase import-designations and set {setting}.",
+        )
+    for topic in ("idps", "food-security", "operational-presence"):
+        requirements[f"research-hapi-{topic}"] = _key(
+            "ASE_HAPI_APP_IDENTIFIER", bool(settings.hapi_app_identifier), "HDX HAPI research"
         )
     return requirements

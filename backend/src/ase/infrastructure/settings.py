@@ -118,6 +118,9 @@ class Settings(BaseSettings):
     ioda_public_data_use_acknowledged: bool = False
     uksl_snapshot_path: str | None = None
     ofac_sdn_snapshot_path: str | None = None
+    un_sc_snapshot_path: str | None = None
+    eu_fsf_snapshot_path: str | None = None
+    hapi_app_identifier: SecretStr | None = None
     aiddata_catalogue_path: str | None = None
     research_tesseract_path: str | None = None
     research_ffmpeg_path: str | None = None

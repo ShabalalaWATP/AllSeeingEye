@@ -203,6 +203,13 @@ class Container(
             ),
             uksl_snapshot_path=settings.uksl_snapshot_path,
             ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,
+            un_sc_snapshot_path=settings.un_sc_snapshot_path,
+            eu_fsf_snapshot_path=settings.eu_fsf_snapshot_path,
+            hapi_app_identifier=(
+                settings.hapi_app_identifier.get_secret_value()
+                if settings.hapi_app_identifier
+                else None
+            ),
             aiddata_catalogue_path=settings.aiddata_catalogue_path,
             countries=self.countries,
             companies_house_key=(
