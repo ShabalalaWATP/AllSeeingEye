@@ -90,6 +90,7 @@ class FeedPoller:
         batch: FetchedBatch | None = None
         try:
             if self._admission is not None and not await self._admission.enabled(source_id):
+                self._health.administratively_disabled(source_id)
                 raise FeedUnavailable("Disabled by administrator.")
             # Waiting for a fetch slot does not count against the upstream's deadline.
             async with self._fetch_slots:
@@ -131,6 +132,7 @@ class FeedPoller:
         guard = self._admission.guard() if self._admission else contextlib.nullcontext()
         async with guard:
             if self._admission is not None and not await self._admission.enabled(source_id):
+                self._health.administratively_disabled(source_id)
                 return PollOutcome(
                     source_id, ok=False, error="Disabled before results were admitted."
                 )

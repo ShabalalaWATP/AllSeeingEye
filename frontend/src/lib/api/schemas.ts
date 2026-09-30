@@ -53,6 +53,10 @@ export const errorEnvelopeSchema = z.object({
   error: z.object({
     code: z.string(),
     message: z.string(),
+    request_id: z
+      .string()
+      .regex(/^[A-Za-z0-9-]{8,64}$/)
+      .optional(),
     fields: z.record(z.string(), z.string()).optional(),
   }),
 });

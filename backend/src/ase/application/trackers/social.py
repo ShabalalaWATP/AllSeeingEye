@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.social import SocialActivityStore, SocialTermsSource
+from ase.application.worker_progress import run_cycle
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
 from ase.domain.social import (
@@ -159,7 +160,7 @@ class SocialMonitor:
     async def _run(self) -> None:
         while True:
             try:
-                await self.sample()
+                await run_cycle("social", SAMPLE_INTERVAL.total_seconds(), self.sample)
             except Exception:
                 log.warning("Social activity sampling failed")
             await self._sleep(SAMPLE_INTERVAL.total_seconds())

@@ -50,6 +50,7 @@ class InMemoryEventStore:
         self._by_country: dict[str, set[str]] = {}
         self._by_source: dict[str, set[str]] = {}
         self._estimated_bytes = 0
+        self.read_rejections = 0
         # Evicted between prunes to hold the memory budget; announced at the next prune.
         self._pending_expiry: set[str] = set()
         self._pending_evictions = 0
@@ -186,6 +187,7 @@ class InMemoryEventStore:
     ) -> T:
         actor_reads = self._waiting_reads_by_key.get(admission_key, 0)
         if self._waiting_reads >= 8 or actor_reads >= 2:
+            self.read_rejections += 1
             raise RateLimited(1)
         self._waiting_reads += 1
         self._waiting_reads_by_key[admission_key] = actor_reads + 1
@@ -244,6 +246,10 @@ class InMemoryEventStore:
         self._pending_evictions = 0
         self._pending_overflow = False
         return result
+
+    def runtime_stats(self) -> tuple[int, int, int]:
+        """Constant-time operational totals, without category scans."""
+        return len(self._events), self._estimated_bytes, self._memory_budget
 
     def stats(self) -> StoreStats:
         if self._stats_cache is not None:

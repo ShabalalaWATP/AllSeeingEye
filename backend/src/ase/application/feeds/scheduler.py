@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from collections.abc import Awaitable, Callable, Sequence
+from contextvars import copy_context
 from datetime import timedelta
 
 from ase.application.feeds.cadence import first_poll_delay, next_poll_delay
@@ -16,6 +17,7 @@ from ase.application.ports import Clock
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.worker_progress import register_worker, run_cycle, worker_heartbeats
 from ase.domain.errors import NotFound
 
 SleepFn = Callable[[float], Awaitable[None]]
@@ -65,6 +67,7 @@ class FeedScheduler(FeedPoller):
         self._retiring_tasks: set[asyncio.Task[None]] = set()
         self._prune_task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
+        self._worker_context = copy_context()
         self._restarting: set[str] = set()
 
     @property
@@ -76,6 +79,7 @@ class FeedScheduler(FeedPoller):
         return self._prune_task is not None
 
     async def start(self) -> None:
+        self._worker_context = copy_context()
         self._stopping.clear()
         for source_id, connector in self._connectors.items():
             self._tasks[source_id] = asyncio.create_task(self._run_connector(connector))
@@ -115,7 +119,9 @@ class FeedScheduler(FeedPoller):
                 self._retiring_tasks.add(task)
                 task.add_done_callback(self._retiring_tasks.discard)
             self._restarting.add(source_id)
-            self._tasks[source_id] = asyncio.create_task(self._restart(connector, task))
+            self._tasks[source_id] = asyncio.create_task(
+                self._restart(connector, task), context=self._worker_context.copy()
+            )
 
     async def _restart(self, connector: FeedConnector, previous: asyncio.Task[None] | None) -> None:
         # Await cancellation cleanup before another request can use the same connector.
@@ -136,16 +142,22 @@ class FeedScheduler(FeedPoller):
         # Spread the first polls so a restart does not hit every upstream at once.
         if first_delay is None:
             first_delay = first_poll_delay(spec, self._first_poll_spread)
+        name = f"feed:{spec.id}"
+        allowance = max(spec.poll_interval.total_seconds(), first_delay, 180.0)
+        register_worker(name, allowance)
         await self._sleep(first_delay)
         while not self._stopping.is_set():
-            await self.poll_once(connector)
+            await run_cycle(name, allowance, lambda: self.poll_once(connector))
             # A source the breaker paused sleeps until its cool-down probe, not forever.
             entry = self._health.get(spec.id)
-            await self._sleep(
-                next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
-            )
+            delay = next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
+            allowance = max(delay, 180.0)
+            if registry := worker_heartbeats.get():
+                registry.completed(name, allowance)
+            await self._sleep(delay)
 
     async def _prune_loop(self) -> None:
+        register_worker("scheduler", self._prune_interval.total_seconds())
         while not self._stopping.is_set():
             await self._sleep(self._prune_interval.total_seconds())
             result = self._store.prune(self._clock.now())
@@ -155,3 +167,5 @@ class FeedScheduler(FeedPoller):
                 await self._bus.publish(
                     BusMessage("event.expire", {"ids": result.ids, "count": len(result.ids)})
                 )
+            if registry := worker_heartbeats.get():
+                registry.completed("scheduler", self._prune_interval.total_seconds())

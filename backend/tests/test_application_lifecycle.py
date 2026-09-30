@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import FastAPI
+from structlog.testing import capture_logs
 
 from ase.app_lifecycle import lifespan
 from ase.application.ukraine_digest import UkraineDigestService
@@ -134,6 +135,27 @@ async def test_disabled_live_snapshot_is_not_started(runtime, monkeypatch):
     container.live_snapshot.start.assert_not_awaited()
     container.live_snapshot.stop.assert_not_awaited()
     container.scheduler.stop.assert_awaited_once()
+
+
+async def test_lifespan_logs_slow_cleanup_in_dependency_order(runtime):
+    app, container, _ = runtime
+
+    async def slow():
+        await asyncio.sleep(0.001)
+
+    container.schedule_runner.stop.side_effect = slow
+    with capture_logs() as logs:
+        async with lifespan(app):
+            pass
+    phases = [item for item in logs if item["event"] == "shutdown.phase"]
+    names = [item["phase"] for item in phases]
+    assert names.index("schedule_runner") < names.index("report_job_worker")
+    assert names.index("report_job_worker") < names.index("scheduler")
+    assert names.index("scheduler") < names.index("live_snapshot")
+    assert names[-1] == "dispose"
+    assert phases[0]["duration_ms"] > 0
+    assert logs[-1]["event"] == "shutdown.complete"
+    assert logs[-1]["outcome"] == "completed"
 
 
 def disposable_container():

@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from ase.domain.errors import AppError, RateLimited
+from ase.infrastructure.request_context import request_id
 
 log = structlog.get_logger(__name__)
 
@@ -69,6 +70,8 @@ class UpstreamUnavailable(AppError):
 
 def envelope(code: str, message: str, fields: dict[str, str] | None = None) -> dict[str, Any]:
     error: dict[str, Any] = {"code": code, "message": message}
+    if identifier := request_id():
+        error["request_id"] = identifier
     if fields:
         error["fields"] = fields
     return {"error": error}
@@ -107,7 +110,7 @@ async def handle_http_exception(_: Request, exc: Exception) -> JSONResponse:
 
 
 async def handle_unexpected(_: Request, exc: Exception) -> JSONResponse:
-    log.exception("unhandled_error", error_type=type(exc).__name__)
+    log.error("unhandled_error", error_type=type(exc).__name__)
     return JSONResponse(
         status_code=500,
         content=envelope("internal_error", "Something went wrong on our side."),

@@ -9,11 +9,14 @@ from fastapi import FastAPI
 from ase import __version__
 from ase.api.errors import register_error_handlers
 from ase.api.middleware import BodySizeLimitMiddleware, SecurityHeadersMiddleware
+from ase.api.request_logging import RequestLoggingMiddleware
 from ase.api.router import api_router
+from ase.api.schemas_errors import ErrorEnvelope
 from ase.app_lifecycle import lifespan
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.feeds import FeedConnector
 from ase.container import Container
+from ase.container.runtime_health import RuntimeHealth
 from ase.infrastructure.logging import configure_logging
 from ase.infrastructure.settings import Settings
 
@@ -42,10 +45,13 @@ def create_app(
         redoc_url=None,
         openapi_url="/api/openapi.json" if settings.is_dev else None,
         lifespan=lifespan,
+        responses={422: {"model": ErrorEnvelope}, "default": {"model": ErrorEnvelope}},
     )
     app.state.container = container
+    app.state.runtime = RuntimeHealth()
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
+    app.add_middleware(RequestLoggingMiddleware)
     register_error_handlers(app)
     app.include_router(api_router, prefix="/api")
     return app
