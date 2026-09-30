@@ -1,6 +1,6 @@
 # Source and export delivery: KAN-130, KAN-131, KAN-132, KAN-133, KAN-134, KAN-139, KAN-140
 
-Branch: `codex/KAN-130-sources-exports`, originally based on `69696286` and integrated with forecast prerequisite `f669cd9a` by a normal merge.
+Branch: `codex/KAN-130-sources-exports`, originally based on `69696286` and integrated with final forecast prerequisite `1e190d92` by normal merges. The final prerequisite includes the SSE shutdown repair and repaired CI parent.
 KAN-131 is integrated from the independently implemented publisher-roster branch and retains its genuine 24-hour measurement acceptance.
 
 ## Delivered behaviour

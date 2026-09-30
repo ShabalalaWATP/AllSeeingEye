@@ -1,7 +1,7 @@
 # Forecast and alert feedback: KAN-125 to KAN-129
 
 Recorded 30 September 2026. Branch: `codex/KAN-125-forecast-feedback`.
-Integrated parent: `909eabab165907b0489daa6eaa28d5ec5f470868`, performance PR #93.
+Integrated parent: `2290b8c0b819a9ddc8d4a20da359e2b5baead3e8`, performance PR #93.
 This batch is a draft for review;
 release, email delivery and research accuracy require their own evidence.
 
@@ -49,7 +49,9 @@ Acknowledgements retain the existing active team-member write contract. Archived
 team writes remain restricted, with the existing administrator manual override
 preserved where applicable. Neither aggregate counts nor exports widen scope.
 Targeted Bandit inspection of nine affected modules reported no medium/high
-findings. This is not an exhaustive repository security scan.
+findings. Gitleaks 8.24.3 scanned all four non-merge feature commits in
+`2290b8c0..HEAD` with redaction enabled and reported no leaks. These targeted
+checks are not an exhaustive repository security scan.
 
 ## Validation and limits
 
@@ -63,12 +65,15 @@ Full mypy passed for 1,425 source files; full TypeScript checking, Ruff, all thr
 import contracts, changed frontend ESLint checks and the file-length gate passed.
 Eight frontend test files passed all 31 tests. The production build and bundle
 gate passed with seven initial JavaScript chunks totalling 196,659 gzip bytes.
-The final combined backend regression run passed all 188 tests in 82.57 seconds
-with `--no-cov`. It covers forecast lifecycle/counts/scope/exports, retained ledger
+The combined backend regression run passed all 188 tests in 82.57 seconds
+with `--no-cov` against parent `909eabab`. It covers forecast lifecycle/counts/scope/exports, retained ledger
 validation, alert feedback and ratios, all three new migrations, parent performance
 storage/migrations, runtime health, assistant application/API/report/alert context,
 session-fence architecture and warning admission/backpressure/background access.
 The parent CI repairs and refreshed session-fence exemptions are included.
+After merging final parent `2290b8c0`, 18 stream-shutdown, alert-context and
+session-fence regressions passed; full mypy and TypeScript checks passed again.
+The final parent adds no API schema changes.
 
 Coverage was not measured in these focused checks. Full CI/coverage, a live
 PostgreSQL run of the forecast migrations, browser acceptance and notification

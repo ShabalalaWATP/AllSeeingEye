@@ -184,10 +184,10 @@ downgrade to 0067 and re-upgrade. Alembic reports one head, 0068. Migration pref
 invalid job IDs and fails closed before DDL; repair those audit rows before retry.
 
 Release gates remain: complete combined CI/coverage and independent code review;
-verify compression and conditional headers through the deployment's actual Caddy
-proxy; verify browser layer re-enabling; measure production baseline row counts
-before/after the first sampler cycle. The local 35 ms steady-prune target remains
-unmet. No production requests, row counts, deploys or merges were performed.
+measure production baseline row counts before/after the first sampler cycle.
+The original checkpoint missed the 35 ms steady-prune target; the controlled
+follow-up below meets it on the documented repeated-prune workload.
+No production requests, row counts, deploys or merges were performed.
 
 Integration boundaries: architecture moves pool arguments into
 `Container._initialise_database`; runtime adds read counters and worker-cycle
@@ -212,10 +212,39 @@ passes on 1,411 modules; OpenAPI/types were regenerated and TypeScript passes.
 The post-extraction benchmark ran under shared load: it preserved 60,000 records
 and all board gaps were below 50 ms, but its 73.926 ms prune timing is not a
 controlled comparison. It does not replace the controlled table or establish
-the 35 ms target. Full stack CI and proxy/browser acceptance remain pending.
+the 35 ms target. Full stack CI remains pending.
 
 CI's Gitleaks 8.24.3 scan reported two false positives in the historical KAN-31
 test commit. Both matches contain adjacent Python keyword arguments with a
 runtime-generated UUID, not a literal credential. The current calls are split
 over lines, and `.gitleaksignore` records only those two exact historical
 fingerprints. All other files, rules and commits remain scanned.
+
+## Proxy and browser acceptance
+
+At frozen `1f99af37`, the actual Caddy image served byte-identical identity and
+gzip catalogue bodies: infrastructure shrank from 5,021,324 decoded bytes to
+608,312 bytes on the wire, and countries from 21,000 to 7,326 bytes. Both retained
+the same weak ETag across encodings, `private, no-cache`, `Vary: Accept-Encoding`
+and empty 304 responses. Invalid or non-matching validators returned 200;
+unauthenticated and logged-out matching validators returned 401 with `no-store`.
+
+Real Edge navigation, normal login and switching the nuclear layer off/on
+produced a first 200 then 304 while restoring all 195 displayed records. The
+browser used a leaf-certificate SPKI exception for the disposable local CA,
+without changing operating-system trust or overriding requests or fetch.
+
+The subsequent KAN-35 follow-up hoists satellite time boundaries once per
+category, avoids allocating survivors when a category cannot exceed its cap,
+and skips the full-store difference pass when no IDs were removed. Sixteen
+event-store, satellite-expiry and FIRMS retention regressions and the three
+affected modules' type checks pass. Independent review found no expiry, survivor
+ordering or pending-removal regression.
+
+A short controlled comparison used the tracked 60,000-event fixture,
+`PYTHONHASHSEED=0`, three warm-ups and 20 steady-prune cycles, with other local
+test workers paused. At `1f99af37`, median time was 31.361 ms (28.117-38.171 ms);
+at `b7fb0d1b`, it was 20.844 ms (19.707-23.844 ms), a 33.5% improvement. All 20
+follow-up cycles were below 35 ms and retained all 60,000 records. This repeated
+prune-only protocol differs from the earlier board/heartbeat single-run
+measurement; the two timings must not be presented as one direct comparison.
