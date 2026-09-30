@@ -187,10 +187,10 @@ async def test_teams_and_usage_migrations_round_trip_on_postgres(database_url):
     try:
         async with engine.connect() as connection:
             ids = await _run(connection, _seed_legacy_authority)
-        await _migrate(command.upgrade, config, "head")
+        # This historical roundtrip ends before the irreversible privacy migration.
+        await _migrate(command.upgrade, config, "0066")
         async with engine.connect() as connection:
             await _run(connection, _authority_after_upgrade, ids)
-            await _run(connection, _models_match)
             await _run(connection, _partial_unique_indexes_hold, ids)
             assert await _run(connection, _retained_counts) == {
                 "team_invitations": 2,
