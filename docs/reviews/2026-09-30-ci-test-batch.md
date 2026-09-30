@@ -21,6 +21,20 @@ criteria that require completed GitHub runs. No production deployment is authori
 
 ## Measured checks
 
+- Complete run `36696097087` passed at `cccfa79f`, including all 2,363 selected
+  PostgreSQL cases and the strict coverage/security floors. PostgreSQL jobs used
+  53.75 runner-minutes (excluding the merger), compared with 62.10 in the earlier
+  successful run. The 13.4% reduction does not meet KAN-71's 30-minute target.
+  Parallel test steps used 41.73 minutes, serial steps 9.40 and other job steps
+  2.62. Collection improvements preserve the selected cases and all isolation.
+- The [CI timing census](../evidence/2026-09-30-KAN-69-75-ci-timings.md) records
+  five operational frontend observations before and after sharding. All twenty
+  after shards finished within six minutes, at a maximum of 263 seconds.
+  Different source, workflow and dependency snapshots prevent interpreting these
+  observations as same-source controlled pairs. The latest cached image path
+  completed in 69 seconds including its aggregator, with unchanged lockfiles;
+  elapsed Dependabot observations remain separate acceptance.
+
 - GitHub run `36662274115` on `ff3fb53d` passed all frontend shards, static/build
   checks and merged coverage. It covered 20,266/21,988 branches (92.1684%, displayed
   as 92.16%), 97.28% lines, 96.16% statements and 94.30% functions. No file with at

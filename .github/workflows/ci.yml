@@ -95,7 +95,8 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --frozen
       - name: Database tests in private worker databases
-        run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto
+        # Each Argon2 operation uses four threads; bound process/import overhead.
+        run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers 2
       - name: Provision disposable legacy migration database
         env:
           PGPASSWORD: ase
