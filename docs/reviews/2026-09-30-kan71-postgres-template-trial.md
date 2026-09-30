@@ -95,3 +95,13 @@ custom database fixtures, arbitrary SQLAlchemy extensions, runtime coverage and
 full parallel-suite equivalence remain outside the local timing claim. Failure
 of the service itself can prevent cleanup; errors are reported and never trigger
 broader destructive cleanup.
+
+## CI integration checkpoint
+
+The shard runner exposes the explicit option only with `--postgres-mode parallel`;
+normal and serial invocations reject it before starting pytest. All 14 runner
+regressions pass. Ruff and formatting pass for all 11 changed Python files, and
+Actionlint 1.7.12 validates the workflow. The parallel PostgreSQL command enables
+the option for one bounded CI trial. Workers, selection, coverage, storage,
+durability settings and the serial command remain unchanged. Full Linux CI,
+multi-worker eligibility counts and aggregate cost are pending at this checkpoint.

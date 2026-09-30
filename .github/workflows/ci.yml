@@ -141,7 +141,7 @@ jobs:
             exit "$test_status"
           }
           trap finish EXIT
-          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto
+          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto --template-postgres
       - name: Provision disposable legacy migration database
         env:
           PGPASSWORD: ase
