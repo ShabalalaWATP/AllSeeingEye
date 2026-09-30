@@ -289,28 +289,34 @@ jobs:
         with:
           fail-on-severity: moderate
 
-  images:
+  image-builds:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            context: ./backend
+            dockerfile: backend/Dockerfile
+            build_args: ''
+          - image: web
+            context: .
+            dockerfile: frontend/Dockerfile
+            build_args: BUILD_COMMAND=build:ci
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
       - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
-          context: ./backend
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build_args }}
           load: true
-          tags: ase-api:ci
-          cache-from: type=gha,scope=ci-api
-          cache-to: type=gha,mode=max,scope=ci-api
-      - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
-        with:
-          context: .
-          file: frontend/Dockerfile
-          build-args: BUILD_COMMAND=build:ci
-          load: true
-          tags: ase-web:ci
-          cache-from: type=gha,scope=ci-web
-          cache-to: type=gha,mode=max,scope=ci-web
+          tags: ase-${{ matrix.image }}:ci
+          cache-from: type=gha,scope=ci-${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=ci-${{ matrix.image }}
       - name: Smoke-test the web image's static serving
+        if: matrix.image == 'web'
         run: |
           docker run -d --name ase-web-smoke -p 127.0.0.1:8080:8080 \
             -e ASE_SITE_ADDRESS=http://localhost:8080 ase-web:ci
@@ -322,16 +328,20 @@ jobs:
             docker logs ase-web-smoke; exit 1; }
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
         with:
-          image-ref: ase-api:ci
+          image-ref: ase-${{ matrix.image }}:ci
           severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
-      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
-        with:
-          image-ref: ase-web:ci
-          severity: HIGH,CRITICAL
-          exit-code: "1"
-          ignore-unfixed: true
+
+  images:
+    needs: [image-builds]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both image builds and security scans
+        env:
+          IMAGE_RESULT: ${{ needs.image-builds.result }}
+        run: test "$IMAGE_RESULT" = success
 
   repo-checks:
     runs-on: ubuntu-latest

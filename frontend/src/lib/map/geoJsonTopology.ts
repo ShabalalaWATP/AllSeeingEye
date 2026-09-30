@@ -110,7 +110,8 @@ export function splitLine(line: Position[]): Position[][] {
   const result: Position[][] = [];
   let part: Position[] = [at(line, 0)];
   for (let i = 1; i < line.length; i++) {
-    const a = at(line, i - 1),
+    // Continue from the displayed endpoint after a seam longitude was normalised.
+    const a = at(part, part.length - 1),
       b = at(line, i);
     if (Math.abs(b[0] - a[0]) <= 180) {
       part.push(b);

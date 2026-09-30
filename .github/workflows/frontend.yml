@@ -88,11 +88,11 @@ jobs:
       - name: Require all four blob reports
         run: for shard in {1..4}; do test -f ".vitest/blob/blob-$shard-4.json" || exit 1; done
       - run: pnpm exec vitest --merge-reports=.vitest/blob --coverage
-      - name: Report remaining frontend coverage floors
+      - name: Enforce frontend auth and branch coverage floors
         if: ${{ always() && hashFiles('frontend/coverage/coverage-summary.json') != '' }}
         run: |
           python ../scripts/check_coverage_floors.py coverage/coverage-summary.json --policy frontend-auth
-          python ../scripts/check_coverage_floors.py coverage/coverage-summary.json --policy frontend-branches --report-only
+          python ../scripts/check_coverage_floors.py coverage/coverage-summary.json --policy frontend-branches
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: ${{ always() }}
         with:
