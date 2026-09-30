@@ -90,6 +90,8 @@ describe('Ukraine reference sections', () => {
     expect(within(recon).getByText('Orlan-10')).not.toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Expand all' }));
     expect(within(recon).getByText('Orlan-10')).toBeVisible();
+    // The search keeps the global focus-visible outline rather than a 1px border change.
+    expect(screen.getByRole('searchbox', { name: 'Search' }).className).not.toMatch(/outline-none/);
     await user.click(within(specialities).getByRole('button', { name: 'Tanks (1)' }));
     expect(screen.getByText('T-90M Proryv')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Compare as a table' }));

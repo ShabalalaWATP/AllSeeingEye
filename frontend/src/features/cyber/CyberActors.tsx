@@ -68,7 +68,7 @@ export function CyberActors({
               setLimit(24);
             }}
             placeholder="APT29, Midnight Blizzard, Lazarus…"
-            className="mt-2 min-h-11 w-full rounded-md border border-control-border bg-surface px-3 text-sm focus:border-ember focus:outline-none"
+            className="mt-2 min-h-11 w-full rounded-md border border-control-border bg-surface px-3 text-sm focus:border-ember"
           />
           <p className="mt-3 text-xs text-muted">
             {filtered.length} matching profiles · MITRE ATT&CK {catalogue.version}

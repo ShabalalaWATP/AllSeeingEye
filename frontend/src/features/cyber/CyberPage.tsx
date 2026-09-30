@@ -26,7 +26,7 @@ import { cyberCountry, filterCyberItems } from './cyberPresentation';
 import { useCyberWorkspace } from './useCyberWorkspace';
 
 const field =
-  'min-h-11 rounded-md border border-control-border bg-surface px-3 text-sm text-text focus:border-ember focus:outline-none';
+  'min-h-11 rounded-md border border-control-border bg-surface px-3 text-sm text-text focus:border-ember';
 
 export default function CyberPage() {
   const [params, setParams] = useSearchParams();

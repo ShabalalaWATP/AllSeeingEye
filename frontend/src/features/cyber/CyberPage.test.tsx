@@ -91,6 +91,13 @@ it('filters returned activity by kind, country, lens and keyword and restores it
   ).toHaveLength(1);
   await user.click(screen.getByRole('button', { name: 'Clear filters' }));
   await user.type(screen.getByRole('searchbox', { name: 'Search returned reports' }), 'APT29');
+  // Filters keep the global focus-visible outline rather than a 1px border change.
+  for (const name of ['Evidence type', 'Country context', 'Lens']) {
+    expect(screen.getByRole('combobox', { name }).className).not.toMatch(/outline-none/);
+  }
+  expect(screen.getByRole('searchbox', { name: 'Search returned reports' }).className).not.toMatch(
+    /outline-none/,
+  );
   expect(
     within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
   ).toHaveLength(1);
