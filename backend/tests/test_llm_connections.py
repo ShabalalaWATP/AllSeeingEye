@@ -225,13 +225,23 @@ async def test_discovery_saved_secret_safe_errors_and_non_admin_denial(
     result = await client.get(path, headers=headers)
     assert result.json() == {"models": ["a", "z"]}
     discovery.malformed = True
-    malformed = await client.get(path, headers=headers)
+    # Correlation metadata may contain "bad" without exposing a malformed model.
+    identifier = "model-bad-catalogue"
+    malformed = await client.get(path, headers={**headers, "X-Request-ID": identifier})
     assert malformed.status_code == 422
-    assert "bad" not in malformed.text and DRAFT["api_key"] not in malformed.text
+    assert malformed.json() == {
+        "error": {
+            "code": "invalid_request",
+            "message": "The model endpoint returned an invalid model catalogue.",
+            "request_id": identifier,
+        }
+    }
+    assert DRAFT["api_key"] not in malformed.text
     discovery.malformed = False
     discovery.fail = True
     failed = await client.get(path, headers=headers)
     assert failed.status_code == 422 and "DO NOT EXPOSE" not in failed.text
+    assert DRAFT["api_key"] not in failed.text
     other_headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
     assert (await client.get(path, headers=other_headers)).status_code == 403
     assert (await client.get(f"{ROOT}/connections", headers=other_headers)).status_code == 403
