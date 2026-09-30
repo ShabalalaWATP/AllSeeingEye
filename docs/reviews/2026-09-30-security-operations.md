@@ -52,3 +52,18 @@ stack and a throwaway-container audit-IP check, the first downloadable GitHub
 SBOM artefacts, deployment secret provisioning and the next successful deploy.
 The capability checks used disposable individual containers, not a complete
 production-equivalent stack. No live infrastructure settings were changed.
+
+## Coordinator integration
+
+The batch now includes the architecture/runtime stack and CI/test PR #91.
+The integrated invitation privacy/migration, CSP, startup imports, runtime
+health, shutdown and lifecycle suite passed 64 tests. The OpenAPI document
+and frontend types were regenerated and unchanged, and TypeScript passed.
+Full mypy passed on 1,399 source files, full-source Ruff passed and all three
+import contracts were kept. The stack also includes the verified CI assertion
+and test-container repairs from PRs #89 and #90.
+
+GitHub CI and the first advisory SBOM workflow remain pending on publication.
+The new CI preserves the SQLite 90% global coverage gate and adds reviewed
+95% security-module floors. KAN-71 explicitly removes only the duplicate
+PostgreSQL percentage gate while retaining persistence tests and their report.
