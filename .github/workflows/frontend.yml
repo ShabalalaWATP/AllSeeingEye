@@ -1,0 +1,109 @@
+name: Frontend CI
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 11
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Require generated API types to match the committed schema
+        run: |
+          pnpm gen:api
+          git diff --exit-code -- src/lib/api/types.gen.ts
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build:ci
+      - run: pnpm check:bundle
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 11
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      # Only the merged suite can meaningfully enforce whole-application coverage.
+      - run: pnpm exec vitest run --coverage --shard=${{ matrix.shard }}/4 --reporter=blob --coverage.thresholds.lines=0 --coverage.thresholds.statements=0 --coverage.thresholds.functions=0 --coverage.thresholds.branches=0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: frontend-blob-${{ matrix.shard }}
+          path: frontend/.vitest/blob/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  frontend-coverage:
+    needs: [frontend-checks, frontend-tests]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 11
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: frontend-blob-*
+          path: frontend/.vitest/blob
+          merge-multiple: true
+      - name: Require all four blob reports
+        run: for shard in {1..4}; do test -f ".vitest/blob/blob-$shard-4.json" || exit 1; done
+      - run: pnpm exec vitest --merge-reports=.vitest/blob --coverage
+      - name: Report remaining frontend coverage floors
+        if: ${{ always() && hashFiles('frontend/coverage/coverage-summary.json') != '' }}
+        run: |
+          python ../scripts/check_coverage_floors.py coverage/coverage-summary.json --policy frontend-auth --report-only
+          python ../scripts/check_coverage_floors.py coverage/coverage-summary.json --policy frontend-branches --report-only
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+          if-no-files-found: error
+
+      - name: Require frontend checks and every test shard
+        if: ${{ always() }}
+        env:
+          CHECKS_RESULT: ${{ needs.frontend-checks.result }}
+          TEST_RESULT: ${{ needs.frontend-tests.result }}
+        run: test "$CHECKS_RESULT" = success && test "$TEST_RESULT" = success
+        working-directory: .

@@ -1,6 +1,5 @@
 """Real-container durable workflow fixtures with a deterministic, network-free model."""
 
-import asyncio
 import json
 from uuid import UUID, uuid4
 
@@ -12,6 +11,7 @@ from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
 from post_draft_stage_helpers import POST_DRAFT_STAGES
+from report_job_wait import job_progress, wait_for_progress
 from section_model_helpers import synthesis_body, topic_body
 
 
@@ -19,6 +19,8 @@ from section_model_helpers import synthesis_body, topic_body
 def job_settings(settings, tmp_path):
     # A worker opens independent transactions. StaticPool's single in-memory
     # connection cannot represent their commit/rollback boundaries correctly.
+    if settings.database_url.startswith("postgresql"):
+        return settings
     return settings.model_copy(
         update={"database_url": f"sqlite+aiosqlite:///{(tmp_path / 'jobs.sqlite').as_posix()}"}
     )
@@ -100,17 +102,12 @@ async def submit(client, headers, *, request_id=None, report=None):
     return response
 
 
-async def work(container, *, deadline: float = 60):
+async def work(container):
     worker = container.report_job_worker
     await worker.tick()
-    tasks = [task for _, task in worker._running.values()]
+    tasks = {key: task for key, (_, task) in worker._running.items()}
     assert tasks
-    # Detailed/advanced jobs execute many real, separately committed checkpoints.
-    # Coverage-instrumented CI exceeds 15 seconds while still making progress
-    # through those SQL transactions. Bound the worker below pytest's 120-second
-    # test deadline; provider/model results remain deterministic test fixtures.
-    # A test that raises the deadline must raise its own pytest timeout to match.
-    await asyncio.wait_for(asyncio.gather(*tasks), deadline)
+    await wait_for_progress(tasks, lambda: job_progress(container, tuple(tasks)))
     await worker.tick()
 
 

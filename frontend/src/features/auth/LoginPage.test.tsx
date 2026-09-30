@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -84,14 +84,19 @@ describe('LoginPage', () => {
     await user.type(screen.getByLabelText('Email'), plainUser.email);
     await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeDisabled();
-    expect(screen.getByLabelText('Email')).toBeDisabled();
-    expect(screen.getByLabelText('Password')).toBeDisabled();
-    const form = screen.getByLabelText('Email').closest('form');
-    if (form === null) throw new Error('Expected the login form');
-    fireEvent.submit(form);
-    expect(requests).toBe(1);
-    release?.();
+    try {
+      expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeDisabled();
+      expect(screen.getByLabelText('Email')).toBeDisabled();
+      expect(screen.getByLabelText('Password')).toBeDisabled();
+      // The pending UI renders before MSW necessarily receives the first request.
+      await waitFor(() => expect(requests).toBe(1));
+      const form = screen.getByLabelText('Email').closest('form');
+      if (form === null) throw new Error('Expected the login form');
+      fireEvent.submit(form);
+      expect(requests).toBe(1);
+    } finally {
+      release?.();
+    }
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
     expect(screen.getByLabelText('Password')).toBeEnabled();
   });
