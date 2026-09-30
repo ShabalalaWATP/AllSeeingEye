@@ -75,6 +75,11 @@ selected original assets have their
 own retention rules; inspect the workflow rather than assuming all inputs are
 permanent or all are immediately deleted.
 
+The [personal-data operations inventory](PERSONAL_DATA_OPERATIONS.md) distinguishes
+supported record exports/deletion from account deactivation and the remaining
+account-wide gaps. Its proposed operator-assisted policy requires installation
+approval; deactivation must never be described as erasure.
+
 ## What may leave the installation
 
 | Feature | Outbound information |
