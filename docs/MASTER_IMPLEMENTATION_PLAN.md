@@ -14,6 +14,12 @@ and documentation tickets in dependency order. Code, independent review and
 focused integration checks are recorded per batch. Full combined CI and the
 remaining measured acceptance checks are active; publication is not completion.
 
+The current Jira count is 60 open tickets plus 12 coordinating epics. Of the
+tickets, 54 are in review, four in progress and two await operator action.
+Combined PR #96 still needs backend fixture repairs, frontend behavioural
+coverage above the unchanged 92% floor and the narrowly reviewed Atom scanner
+annotation. All PostgreSQL shards passed its latest completed run.
+
 The combined PostgreSQL migration rehearsal preserves legacy records through the
 single head 0074 and tests refusal before losing protected history. CI enforces
 the measured 92% frontend branch floor and reviewed 95% security/auth floors.

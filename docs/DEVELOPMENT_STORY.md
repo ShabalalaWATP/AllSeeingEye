@@ -5829,3 +5829,13 @@ runner-time target; profiling identified repeated pytest directory discovery.
 An incomplete local timing archive is excluded from performance acceptance.
 Operator approvals, live transport/provider evidence and elapsed observation
 criteria remain explicit. None of these drafts has been merged to main.
+
+The next live Jira check returned 60 open tickets (54 in review, four in progress
+and two to do), plus 12 coordinating epics. The CI batch passed its complete run
+at `57d202a5`. Single-root pytest discovery then retained the same 572 cases while
+reducing measured collection from 70.44 to 11.72 seconds; two new guards reject
+shared key-rotation databases during parallel tests. The combined notification
+run passed all PostgreSQL shards but exposed stale backend fixtures, notification
+control-border assertions and a 91.75% frontend branch result. Focused repairs
+retain the 92% requirement. A corrected full DOM/Node benchmark is running against
+one frozen source and dependency installation with competing heavy work paused.

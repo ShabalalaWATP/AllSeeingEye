@@ -42,6 +42,10 @@ acceptance or release is complete.
 
 ## Published review stack
 
+The live Jira recheck on 30 September returns 60 open non-epic tickets:
+54 in review, four in progress and two to do. Twelve coordinating epics also
+remain open. These counts include published work awaiting acceptance and release.
+
 All nine PRs are published as drafts. Their bases follow this order; an approved
 merge must be followed by updating and checking the next affected branch against
 the resulting main. The primary checkout's prepared edits remain untouched.
@@ -70,6 +74,20 @@ no omission from the reviewed 2,360-case census. Its 62.1 runner-minutes exceede
 KAN-71's 30-minute target, so timing optimisation and measurement remain active.
 The first local DOM timing attempt omitted a repository fixture and is excluded
 from acceptance; a corrected paired run is still required for KAN-73.
+
+The complete CI run `36664614145` passed at the CI batch's `57d202a5` checkpoint.
+Subsequent shard discovery at `cccfa79f` uses one test root and an explicit ignore
+list, retaining the exact selected cases. Its local collection comparison fell
+from 70.44 to 11.72 seconds for the same 572 cases. All eight PostgreSQL collection
+partitions contain 2,363 unique cases with no omissions, including two additional
+rotation-isolation guards. Root verification passed 13 runner tests and ten
+isolation tests. This is collection evidence, not the runner-minute acceptance.
+
+Combined PR #96 run `36665421330` passed every PostgreSQL shard, image builds and
+security audits. It failed three backend fixture groups, frontend control-border
+assertions, merged frontend branch coverage (91.75%) and a construction-only Atom
+XML import finding. Those failures remain active repairs; the 92% global and 70%
+per-file coverage requirements remain unchanged.
 
 The complete notification integration passed 211 SQLite backend cases and 40
 frontend cases. Three PostgreSQL concurrency cases passed separately. The
