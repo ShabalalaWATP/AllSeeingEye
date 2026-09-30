@@ -102,3 +102,32 @@ it('links pointer hover and clicks to nearest bounded samples and ignores unmeas
   fireEvent(svg, new MouseEvent('pointerdown', { bubbles: true, clientX: -100 }));
   expect(inspect).toHaveBeenLastCalledWith([0, 0]);
 });
+
+it('supports inspection without a map callback and describes unknown clearance', () => {
+  const source = profile([0, 0, 0, 0]);
+  source.points[1]!.fresnelClearanceM = null;
+  render(<RfTerrainProfileChart profile={source} />);
+  fireEvent.change(screen.getByRole('slider', { name: 'Inspect profile sample' }), {
+    target: { value: '1' },
+  });
+  expect(screen.getByText(/Fresnel clearance unknown/)).toBeVisible();
+});
+
+it('refuses a missing ray height even when every ground sample is known', () => {
+  const source = profile([0, 0, 0, 0]);
+  source.points[1]!.rayHeightM = null;
+  render(<RfTerrainProfileChart profile={source} />);
+  expect(screen.getByText(/missing elevations/)).toBeVisible();
+  expect(screen.queryByRole('img')).not.toBeInTheDocument();
+});
+
+it('clears details for a selected sample removed by a shorter replacement profile', () => {
+  const source = profile([0, 0, 0, 0]);
+  const { rerender } = render(<RfTerrainProfileChart profile={source} />);
+  fireEvent.change(screen.getByRole('slider', { name: 'Inspect profile sample' }), {
+    target: { value: '3' },
+  });
+  expect(screen.getByText(/1.50 km from TX/)).toBeVisible();
+  rerender(<RfTerrainProfileChart profile={{ ...source, points: source.points.slice(0, 2) }} />);
+  expect(screen.queryByText(/Position/)).not.toBeInTheDocument();
+});

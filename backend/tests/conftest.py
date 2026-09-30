@@ -42,12 +42,21 @@ from pytest_support import (
     drop_schema,
     refuse_shared_databases_in_parallel,
     skip_sqlite_fsync,
+    uses_report_job_worker,
 )
+
+pytest_plugins = ["postgres_isolation"]
 
 START = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--isolated-postgres",
+        action="store_true",
+        help="Create one disposable PostgreSQL database per worker from ASE_TEST_DATABASE_URL.",
+    )
+    parser.addoption("--record-nodeids", metavar="PATH", help="Write selected test node IDs.")
     parser.addoption(
         "--record-durations",
         metavar="PATH",
@@ -63,8 +72,23 @@ def pytest_configure(config: pytest.Config) -> None:
         config.pluginmanager.register(DurationRecorder(Path(target)), "ase-durations")
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     apply_markers(items)
+
+
+def pytest_collection_finish(session: pytest.Session) -> None:
+    target = session.config.getoption("--record-nodeids")
+    if target and not hasattr(session.config, "workerinput"):
+        Path(target).write_text(
+            "".join(f"{item.nodeid}\n" for item in session.items), encoding="utf-8"
+        )
+
+
+def pytest_xdist_node_collection_finished(node, ids: list[str]) -> None:
+    target = node.config.getoption("--record-nodeids")
+    if target:
+        Path(target).write_text("".join(f"{nodeid}\n" for nodeid in ids), encoding="utf-8")
 
 
 @pytest.fixture
@@ -78,12 +102,18 @@ def email_sender() -> RecordingEmailSender:
 
 
 @pytest.fixture
-def settings() -> Settings:
-    # CI runs the same suite against PostgreSQL by setting ASE_TEST_DATABASE_URL.
+def settings(request: pytest.FixtureRequest) -> Settings:
+    # CI's isolated workers supply their own PostgreSQL URL. Report worker tests
+    # need independent SQLite connections: a checkpoint reader closing a session
+    # on StaticPool's single connection otherwise rolls back the worker's writes.
+    database_url = os.environ.get("ASE_TEST_DATABASE_URL", "sqlite+aiosqlite://")
+    if "ASE_TEST_DATABASE_URL" not in os.environ and uses_report_job_worker(request.node):
+        directory = request.getfixturevalue("tmp_path")
+        database_url = f"sqlite+aiosqlite:///{(directory / 'jobs.sqlite').as_posix()}"
     return Settings(
         _env_file=None,
         env=Environment.TEST,
-        database_url=os.environ.get("ASE_TEST_DATABASE_URL", "sqlite+aiosqlite://"),
+        database_url=database_url,
         jwt_secret=SecretStr("t" * 40),
         encryption_key=SecretStr("e" * 40),
         public_base_url="http://app.test",

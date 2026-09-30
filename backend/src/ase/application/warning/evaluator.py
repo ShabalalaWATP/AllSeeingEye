@@ -12,13 +12,15 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Awaitable, Callable
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
-from ase.application.ports.warning import AlertNotifier, WarningStore
+from ase.application.ports.warning import AlertNotifier, IndicatorBaselineStore, WarningStore
+from ase.application.worker_progress import run_cycle
 from ase.domain.errors import RateLimited
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
@@ -66,6 +68,7 @@ class IndicatorEvaluator:
         clock: Clock,
         *,
         reporter: Reporter | None = None,
+        baselines: IndicatorBaselineStore | None = None,
         interval: timedelta = INTERVAL,
         sleep: SleepFn = asyncio.sleep,
     ) -> None:
@@ -75,6 +78,7 @@ class IndicatorEvaluator:
         self._notifier = notifier
         self._clock = clock
         self._reporter = reporter
+        self._baselines = baselines
         self._interval = interval
         self._sleep = sleep
         self._task: asyncio.Task[None] | None = None
@@ -91,7 +95,7 @@ class IndicatorEvaluator:
             last = None if latest is None else latest.fired_at
             while True:
                 try:
-                    firing = await evaluate_candidates(self._store, indicator, now, last)
+                    firing = await self._evaluate(indicator, now, last)
                     break
                 except RateLimited:
                     if admission_retries == 0:
@@ -106,6 +110,13 @@ class IndicatorEvaluator:
             if firing is None:
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
+            if indicator.baseline_ratio is not None and self._baselines is not None:
+                baseline = await self._baselines.summary(indicator, now)
+                if not baseline.ready or baseline.mean is None:
+                    continue
+                alert = replace(
+                    alert, baseline_mean=baseline.mean, baseline_ratio=firing.count / baseline.mean
+                )
             if not await self._warnings.add_alert(alert, indicator):
                 continue
             log.info("alert_fired", extra={"indicator": indicator.name, "count": alert.count})
@@ -115,6 +126,39 @@ class IndicatorEvaluator:
         if pruned:
             log.info("alerts_pruned", extra={"count": pruned})
         return fired
+
+    async def _evaluate(
+        self, rule: Indicator, now: datetime, last: datetime | None
+    ) -> Firing | None:
+        if self._baselines is None:
+            return (
+                None
+                if rule.baseline_ratio is not None
+                else await evaluate_candidates(self._store, rule, now, last)
+            )
+        hourly = await evaluate_candidates(
+            self._store,
+            replace(rule, threshold=0, window_minutes=60),
+            now,
+            None,
+        )
+        if hourly is not None:
+            await self._baselines.record(
+                rule, now.replace(minute=0, second=0, microsecond=0), hourly.count
+            )
+        if rule.baseline_ratio is None:
+            return await evaluate_candidates(self._store, rule, now, last)
+        baseline = await self._baselines.summary(rule, now)
+        if not baseline.ready or baseline.mean is None or hourly is None:
+            return None
+        if last is not None and now - last < rule.cooldown:
+            return None
+        return (
+            hourly
+            if hourly.count >= rule.threshold
+            and hourly.count / baseline.mean >= rule.baseline_ratio
+            else None
+        )
 
     async def _route(self, alert: Alert, indicator: Indicator) -> None:
         if not await self._warnings.can_run(indicator):
@@ -154,7 +198,7 @@ class IndicatorEvaluator:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.run_once()
+                await run_cycle("evaluator", self._interval.total_seconds(), self.run_once)
             except Exception:
                 log.exception("evaluator_cycle_failed")
             await self._sleep(self._interval.total_seconds())

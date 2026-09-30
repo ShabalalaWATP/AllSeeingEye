@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     report_pdf_runtime: str | None = Field(default=None, max_length=4096)
     env: Environment = Environment.DEV
     database_url: str = "sqlite+aiosqlite:///./data/ase.db"
+    database_pool_size: int = Field(default=10, ge=1, le=100)
+    database_max_overflow: int = Field(default=10, ge=0, le=100)
+    database_pool_timeout: int = Field(default=10, ge=1, le=60)
     jwt_secret: SecretStr | None = None
     access_token_minutes: int = Field(default=15, ge=1, le=120)
     # How long a release fence or stream may trust a recent session check when no

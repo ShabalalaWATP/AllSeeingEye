@@ -11,8 +11,9 @@ from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.warning import AlertRepository
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.audit import AuditAction
-from ase.domain.errors import NotFound
+from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.users import User
 from ase.domain.warning import Alert
 
@@ -51,7 +52,17 @@ class AcknowledgeAlertUseCase:
         self._uow = uow
         self._access = access
 
-    async def execute(self, actor: User, alert_id: UUID, context: RequestContext) -> Alert:
+    async def execute(
+        self,
+        actor: User,
+        alert_id: UUID,
+        context: RequestContext,
+        *,
+        disposition: AlertDisposition | None = None,
+        note: str | None = None,
+    ) -> Alert:
+        if note is not None and (len(note) > 200 or any(ord(char) < 32 for char in note)):
+            raise InvalidRequest("Use at most 200 plain-text characters for the note.")
         access = await self._access.context(actor, for_update=True)
         alert = await self._alerts.get(alert_id)
         if alert is None:
@@ -60,8 +71,15 @@ class AcknowledgeAlertUseCase:
         access.require_create(alert.team_id)
         if alert.acknowledged_at is not None:
             return alert
-        acknowledged = replace(alert, acknowledged_at=self._clock.now(), acknowledged_by=actor.id)
-        await self._alerts.save(acknowledged)
+        acknowledged = replace(
+            alert,
+            acknowledged_at=self._clock.now(),
+            acknowledged_by=actor.id,
+            disposition=disposition,
+            disposition_note=note,
+        )
+        if not await self._alerts.acknowledge(acknowledged):
+            raise Conflict("This alert was acknowledged concurrently. Reload its shared decision.")
         await self._auditor.record(
             AuditAction.ALERT_ACKNOWLEDGED, actor=actor.id, subject=str(alert.id), ip=context.ip,
             details={"title": alert.title},

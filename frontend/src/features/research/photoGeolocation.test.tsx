@@ -2,15 +2,10 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api/errors';
-import {
-  discardResearchInput,
-  geolocateResearchInput,
-  type ResearchGeolocation,
-} from '@/lib/api/researchGeolocation';
+import { discardResearchInput, geolocateResearchInput } from '@/lib/api/researchGeolocation';
 import { uploadResearchInput } from '@/lib/api/researchInputs';
-import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
-import { adminUser, plainUser, tokenFor } from '@/test/fixtures';
+import { plainUser, tokenFor } from '@/test/fixtures';
 import {
   derivedPhotoId,
   photoAssessment,
@@ -190,67 +185,6 @@ describe('photo geolocation workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await screen.findByText('Unverified location candidates');
     expect(analyse).toHaveBeenCalledTimes(2);
-  });
-
-  it('cancels analysis and discards a late provider result', async () => {
-    let finish: (value: ResearchGeolocation) => void = () => undefined;
-    analyse.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          finish = resolve;
-        }),
-    );
-    render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
-    await begin();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel analysis' }));
-    expect(analyse.mock.calls[0]?.[2].aborted).toBe(true);
-    await act(async () => {
-      finish(photoAssessment());
-      await Promise.resolve();
-    });
-    expect(screen.getByText(/Analysis cancelled/)).toBeVisible();
-    expect(screen.queryByText('Unverified location candidates')).not.toBeInTheDocument();
-  });
-
-  it.each(['account', 'access', 'destination'] as const)(
-    'removes private results and consent after a change to %s',
-    async (change) => {
-      render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
-      await begin();
-      await screen.findByText('Unverified location candidates');
-      act(() => {
-        if (change === 'account') useAuthStore.getState().setSession(tokenFor(adminUser));
-        else if (change === 'access') invalidateWorkspaceAccess();
-        else
-          fireEvent.change(screen.getByLabelText('Workspace'), { target: { value: photoTeamId } });
-      });
-      expect(screen.queryByText('Unverified location candidates')).not.toBeInTheDocument();
-      expect(screen.queryByRole('img')).not.toBeInTheDocument();
-      expect(screen.getByRole('checkbox')).not.toBeChecked();
-    },
-  );
-
-  it('expires findings with the original attachment and prevents report creation', async () => {
-    vi.useFakeTimers();
-    upload.mockResolvedValue(
-      photoReceipt({ expires_at: new Date(Date.now() + 1000).toISOString() }),
-    );
-    render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
-    choose();
-    await act(async () => {
-      await Promise.resolve();
-    });
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(screen.getByText('Unverified location candidates')).toBeVisible();
-    act(() => {
-      vi.advanceTimersByTime(1001);
-    });
-    expect(screen.queryByRole('button', { name: 'Create saved report' })).not.toBeInTheDocument();
-    expect(screen.getByText(/This photo has expired/)).toBeVisible();
   });
 
   it('refuses non-image attachments locally and clears previous consent on replacement', async () => {

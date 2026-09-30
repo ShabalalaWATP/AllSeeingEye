@@ -57,19 +57,24 @@ jobs:
           DEPLOY_SHA: ${{ needs.revision.outputs.sha }}
           SSH_PRIVATE_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
           SSH_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.VPS_HOST }}
+          SSH_PORT: ${{ secrets.VPS_PORT }}
         run: |
           set -euo pipefail
           umask 077
           [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
           test -n "$SSH_PRIVATE_KEY"
           test -n "$SSH_KNOWN_HOSTS"
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]]
+          (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 ))
           key_dir=$(mktemp -d)
           trap 'rm -rf -- "$key_dir"' EXIT
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$key_dir/key"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$key_dir/known_hosts"
-          ssh -T -p 2222 -i "$key_dir/key" \
+          ssh -T -p "$SSH_PORT" -i "$key_dir/key" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$key_dir/known_hosts" \
             -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
-            ase@89.167.102.143 "deploy $DEPLOY_SHA"
+            "ase@$SSH_HOST" "deploy $DEPLOY_SHA"
           echo "Deployed and verified commit $DEPLOY_SHA on the VPS." >> "$GITHUB_STEP_SUMMARY"

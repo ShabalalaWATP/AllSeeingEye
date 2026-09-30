@@ -8,18 +8,23 @@ from datetime import datetime
 
 from ase.adapters.store.firms_retention import firms_evictions
 from ase.adapters.store.query import select_events
-from ase.adapters.store.sizing import EVENT_OVERHEAD_BYTES, estimate_bytes
+from ase.adapters.store.retention import category_removals
+from ase.adapters.store.sizing import (
+    EVENT_OVERHEAD_BYTES,
+    estimate_bytes,
+    oldest_first,
+    store_stats,
+)
+from ase.adapters.store.snapshot import SnapshotReader
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
-    VESSEL_POSITION_AGE,
     RetentionBudget,
     budget_for,
 )
 from ase.application.feeds.cooperative_work import joined_thread_call
-from ase.application.feeds.position_freshness import satellite_position_expired
 from ase.application.ports.feeds import (
-    CategoryStats,
     EventQuery,
+    EventQueryReader,
     PruneResult,
     StoreStats,
     UpsertResult,
@@ -50,6 +55,7 @@ class InMemoryEventStore:
         self._by_country: dict[str, set[str]] = {}
         self._by_source: dict[str, set[str]] = {}
         self._estimated_bytes = 0
+        self.read_rejections = 0
         # Evicted between prunes to hold the memory budget; announced at the next prune.
         self._pending_expiry: set[str] = set()
         self._pending_evictions = 0
@@ -177,6 +183,15 @@ class InMemoryEventStore:
     def query(self, query: EventQuery) -> list[Event]:
         return select_events([self._events[i] for i in self._candidates(query)], query)
 
+    async def read_snapshot_cooperatively[T](
+        self, project: Callable[[EventQueryReader], T], *, admission_key: str
+    ) -> T:
+        return await self._read(
+            EventQuery(limit=None, include_unknown_dates=True),
+            lambda events: project(SnapshotReader(events)),
+            admission_key=admission_key,
+        )
+
     async def read_cooperatively[T](
         self,
         query: EventQuery,
@@ -184,8 +199,16 @@ class InMemoryEventStore:
         *,
         admission_key: str = "internal:legacy",
     ) -> T:
+        return await self._read(
+            query, lambda rows: project(select_events(rows, query)), admission_key=admission_key
+        )
+
+    async def _read[T](
+        self, query: EventQuery, project: Callable[[list[Event]], T], *, admission_key: str
+    ) -> T:
         actor_reads = self._waiting_reads_by_key.get(admission_key, 0)
         if self._waiting_reads >= 8 or actor_reads >= 2:
+            self.read_rejections += 1
             raise RateLimited(1)
         self._waiting_reads += 1
         self._waiting_reads_by_key[admission_key] = actor_reads + 1
@@ -193,7 +216,7 @@ class InMemoryEventStore:
             async with self._read_slot:
                 # Capture references only after admission, never iterate live indexes in a thread.
                 snapshot = [self._events[i] for i in self._candidates(query)]
-                return await joined_thread_call(lambda: project(select_events(snapshot, query)))
+                return await joined_thread_call(lambda: project(snapshot))
         finally:
             self._waiting_reads -= 1
             remaining = self._waiting_reads_by_key[admission_key] - 1
@@ -206,34 +229,17 @@ class InMemoryEventStore:
         expired: list[str] = []
         evicted: list[str] = []
         for category, ids in list(self._by_category.items()):
-            budget = budget_for(category, self._budgets)
-            cutoff = now - budget.window
-            ordered = sorted(ids, key=lambda i: self._events[i].observed_at)
-            for event_id in ordered:
-                event = self._events[event_id]
-                stale_position = (
-                    event.category is Category.MARITIME
-                    and event.subtype == "vessel_position"
-                    and (
-                        event.published_at is None or event.published_at < now - VESSEL_POSITION_AGE
-                    )
-                )
-                if (
-                    event.observed_at < cutoff
-                    or stale_position
-                    or satellite_position_expired(event, now)
-                ):
-                    expired.append(event_id)
-            expired_ids = set(expired)
-            remaining = [i for i in ordered if i not in expired_ids]
-            overflow = len(remaining) - budget.max_items
-            if overflow > 0:
-                evicted.extend(remaining[:overflow])
+            category_expired, category_evicted = category_removals(
+                self._events, ids, category, budget_for(category, self._budgets), now
+            )
+            expired.extend(category_expired)
+            evicted.extend(category_evicted)
         for event_id in expired + evicted:
             self._remove(event_id)
         self._enforce_budget(evicted)
         missing = set(expired + evicted) | self._pending_expiry
-        missing.difference_update(self._events)
+        if missing:
+            missing.difference_update(self._events)
         result = PruneResult(
             expired=len(expired),
             evicted=len(evicted) + self._pending_evictions,
@@ -245,22 +251,16 @@ class InMemoryEventStore:
         self._pending_overflow = False
         return result
 
+    def runtime_stats(self) -> tuple[int, int, int]:
+        """Constant-time operational totals, without category scans."""
+        return len(self._events), self._estimated_bytes, self._memory_budget
+
     def stats(self) -> StoreStats:
         if self._stats_cache is not None:
             return self._stats_cache
-        per_category = []
-        for category, ids in sorted(self._by_category.items(), key=lambda kv: kv[0].value):
-            if not ids:
-                continue
-            times = [self._events[i].observed_at for i in ids]
-            per_category.append(CategoryStats(category, len(ids), min(times), max(times)))
-        self._stats_cache = StoreStats(
-            total=len(self._events),
-            estimated_bytes=self._estimated_bytes,
-            budget_bytes=self._memory_budget,
-            per_category=tuple(per_category),
+        self._stats_cache = store_stats(
+            self._events, self._by_category, self._estimated_bytes, self._memory_budget
         )
-
         return self._stats_cache
 
     def _candidates(self, query: EventQuery) -> Iterable[str]:
@@ -290,15 +290,15 @@ class InMemoryEventStore:
         return list(self._events)
 
     def _enforce_budget(self, evicted: list[str]) -> None:
-        """Drops the oldest observed events until the memory estimate fits the budget."""
+        """Evict oldest observations, breaking equal-time ties by ascending event ID."""
         for identifier in firms_evictions(self._events, self._by_source):
             self._remove(identifier)
             evicted.append(identifier)
         if self._estimated_bytes <= self._memory_budget:
             return
-        for event_id in sorted(self._events, key=lambda i: self._events[i].observed_at):
+        for event_id in oldest_first(self._events):
             if self._estimated_bytes <= self._memory_budget:
-                break
+                return
             self._remove(event_id)
             evicted.append(event_id)
 

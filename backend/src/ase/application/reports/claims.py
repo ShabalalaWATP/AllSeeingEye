@@ -67,14 +67,14 @@ class ReportClaims:
         actor = await validate_current_session(claims, self.users, self.refresh, self.clock)
         return await self.access.context(actor)
 
-    async def _report(self, access: AccessContext, report_id: UUID) -> ReportRecord:
+    async def resolve_report(self, access: AccessContext, report_id: UUID) -> ReportRecord:
         record = await self.reports.get(report_id)
         if record is None:
             raise NotFound()
         access.require_read(record.created_by, record.team_id)
         return record
 
-    async def _version(self, report_id: UUID, number: int) -> ReportVersion:
+    async def resolve_version(self, report_id: UUID, number: int) -> ReportVersion:
         if type(number) is not int or not 1 <= number <= 2_147_483_647:
             raise InvalidRequest("Choose a positive report version.")
         version = await self.reports.get_version(report_id, number)
@@ -82,21 +82,21 @@ class ReportClaims:
             raise NotFound()
         return version
 
-    async def _anchor(
+    async def resolve_anchor(
         self, access: AccessContext, claim_id: UUID
     ) -> tuple[ClaimRoot, ReportVersion]:
         root = await self.claims.get(claim_id)
         if root is None:
             raise NotFound()
         access.require_read(root.created_by, root.team_id)
-        report = await self._report(access, root.report_id)
+        report = await self.resolve_report(access, root.report_id)
         access.require_same_scope(root.created_by, root.team_id, report.created_by, report.team_id)
-        version = await self._version(root.report_id, root.report_version_number)
+        version = await self.resolve_version(root.report_id, root.report_version_number)
         if version.id != root.report_version_id or evidence_digest(version) != root.evidence_sha256:
             raise Conflict("The frozen evidence anchor has changed.")
         return root, version
 
-    async def _revision(
+    async def resolve_revision(
         self, root: ClaimRoot, version: ReportVersion, revision_id: UUID
     ) -> ClaimRevision:
         value = await self.claims.revision(root.id, revision_id)
@@ -138,8 +138,8 @@ class ReportClaims:
         ):
             raise InvalidRequest("Invalid claim page bounds.")
         access = await self._context(claims)
-        report = await self._report(access, report_id)
-        version = await self._version(report_id, version_number)
+        report = await self.resolve_report(access, report_id)
+        version = await self.resolve_version(report_id, version_number)
         digest = evidence_digest(version)
         ids, total = await self.claims.list_ids(
             access.visibility, report_id, version.id, limit, offset
@@ -160,7 +160,7 @@ class ReportClaims:
                 or root.evidence_sha256 != digest
             ):
                 raise Conflict("The frozen evidence anchor has changed.")
-            values.append(await self._revision(root, version, root.latest_revision_id))
+            values.append(await self.resolve_revision(root, version, root.latest_revision_id))
         await self.uow.commit()
         return tuple(values), total
 
@@ -168,8 +168,8 @@ class ReportClaims:
         self, claims: AccessClaims, claim_id: UUID, revision_id: UUID | None = None
     ) -> tuple[ClaimRoot, ClaimRevision]:
         access = await self._context(claims)
-        root, version = await self._anchor(access, claim_id)
-        value = await self._revision(root, version, revision_id or root.latest_revision_id)
+        root, version = await self.resolve_anchor(access, claim_id)
+        value = await self.resolve_revision(root, version, revision_id or root.latest_revision_id)
         await self.uow.commit()
         return root, value
 
@@ -219,9 +219,9 @@ class ReportClaims:
         context: RequestContext,
     ) -> ClaimRevision:
         access = await self._context(claims)
-        report = await self._report(access, report_id)
+        report = await self.resolve_report(access, report_id)
         access.require_create(report.team_id)
-        version = await self._version(report.id, version_number)
+        version = await self.resolve_version(report.id, version_number)
         revision = self._build(version, uuid4(), None, value, access.actor.id)
         owner = report.created_by if report.team_id is None else access.actor.id
         await self._quota(owner, report.team_id, revision, creating=True)
@@ -235,9 +235,9 @@ class ReportClaims:
     ) -> ClaimBatchAnchor:
         """Check write admission, then release database guards before external work."""
         access = await self._context(claims)
-        report = await self._report(access, report_id)
+        report = await self.resolve_report(access, report_id)
         access.require_create(report.team_id)
-        version = await self._version(report.id, version_number)
+        version = await self.resolve_version(report.id, version_number)
         owner = report.created_by if report.team_id is None else access.actor.id
         count, size = await self.claims.scope_usage(owner, report.team_id)
         if count >= MAX_SCOPE_CLAIMS or size >= MAX_SCOPE_BYTES:
@@ -266,9 +266,9 @@ class ReportClaims:
     ) -> tuple[ClaimRevision, ...]:
         """Revalidate current authority and reserve capacity for the entire batch."""
         access = await self._context(claims)
-        report = await self._report(access, anchor.report_id)
+        report = await self.resolve_report(access, anchor.report_id)
         access.require_create(report.team_id)
-        version = await self._version(report.id, anchor.version_number)
+        version = await self.resolve_version(report.id, anchor.version_number)
         if (
             access.actor.id != anchor.actor_id
             or report.created_by != anchor.owner_id
@@ -314,11 +314,11 @@ class ReportClaims:
         context: RequestContext,
     ) -> ClaimRevision:
         access = await self._context(claims)
-        root, version = await self._anchor(access, claim_id)
+        root, version = await self.resolve_anchor(access, claim_id)
         access.require_write(root.created_by, root.team_id)
         if root.latest_revision_id != base_revision_id:
             raise Conflict("This claim has a newer revision. Reload its history.")
-        previous = await self._revision(root, version, base_revision_id)
+        previous = await self.resolve_revision(root, version, base_revision_id)
         revision = self._build(version, root.id, previous, value, access.actor.id)
         await self._quota(root.created_by, root.team_id, revision, creating=False)
         if not await self.claims.append(revision, base_revision_id):

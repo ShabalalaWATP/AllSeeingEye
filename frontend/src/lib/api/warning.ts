@@ -19,6 +19,8 @@ export const indicatorSchema = z.object({
   categories: z.array(z.string()),
   keywords: z.array(z.string()),
   threshold: z.number().int(),
+  baseline_ratio: z.number().nullable().optional(),
+  baseline_days: z.number().int().optional(),
   window_minutes: z.number().int(),
   cooldown_minutes: z.number().int(),
   severity_floor: z.number(),
@@ -46,6 +48,10 @@ export const alertSchema = z.object({
   countries: z.array(z.string()),
   acknowledged_at: z.string().nullable(),
   acknowledged_by: z.string().nullable(),
+  disposition: z.enum(['useful', 'noise', 'duplicate']).nullable().optional(),
+  disposition_note: z.string().nullable().optional(),
+  baseline_mean: z.number().nullable().optional(),
+  baseline_ratio: z.number().nullable().optional(),
   report_id: z.string().nullable(),
 });
 export type Alert = z.infer<typeof alertSchema>;
@@ -96,11 +102,44 @@ export function fetchAlerts(hours?: number): Promise<AlertsPage> {
   return apiCall(`/api/warning/alerts${query}`, { schema: alertsPageSchema });
 }
 
-export function acknowledgeAlert(id: string): Promise<Alert> {
+export type AlertAcknowledgementRequest = components['schemas']['AlertAcknowledgementIn'];
+
+export function acknowledgeAlert(
+  id: string,
+  feedback?: AlertAcknowledgementRequest,
+): Promise<Alert> {
   return scopedMutation(() =>
     apiCall(`/api/warning/alerts/${encodeURIComponent(id)}/ack`, {
       method: 'POST',
+      body: feedback,
       schema: alertSchema,
     }),
   );
+}
+
+export function fetchAlertFeedback(id: string) {
+  return apiCall(`/api/warning/indicators/${encodeURIComponent(id)}/feedback`, {
+    schema: z.object({
+      indicator_id: z.uuid(),
+      since: z.string(),
+      until: z.string(),
+      useful: z.number().int().nonnegative(),
+      noise: z.number().int().nonnegative(),
+      duplicate: z.number().int().nonnegative(),
+      time_basis: z.string(),
+    }),
+  });
+}
+
+export function fetchIndicatorBaseline(id: string) {
+  return apiCall(`/api/warning/indicators/${encodeURIComponent(id)}/baseline`, {
+    schema: z.object({
+      sample_hours: z.number().int().nonnegative(),
+      mean: z.number().nullable(),
+      earliest: z.string().nullable(),
+      as_of: z.string(),
+      ready: z.boolean(),
+      reason: z.string(),
+    }),
+  });
 }

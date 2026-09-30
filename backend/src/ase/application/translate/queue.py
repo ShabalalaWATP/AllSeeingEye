@@ -26,6 +26,7 @@ from ase.application.ports.translate import (
     TranslatorUnavailable,
 )
 from ase.application.translate.provenance import translated_event
+from ase.application.worker_progress import run_cycle
 from ase.domain.events import Event
 
 log = logging.getLogger(__name__)
@@ -191,7 +192,7 @@ class TranslationQueue:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.run_once()
+                await run_cycle("translation", self._interval.total_seconds(), self.run_once)
             except Exception:
                 log.exception("translation_cycle_failed")
             await self._sleep(self._interval.total_seconds())

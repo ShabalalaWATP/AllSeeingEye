@@ -55,6 +55,26 @@ class ForecastReview:
     reason: str
     evidence: tuple[CitationKey, ...]
     corrects_decision_id: UUID | None = None
+    outcome: bool | None = None
+    outcome_evidence: tuple["OutcomeEvidence", ...] = ()
+    expected_version_id: UUID | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class OutcomeEvidence:
+    report_id: UUID
+    version: int
+    claim_id: UUID
+    claim_revision_id: UUID
+    citation: CitationKey
+
+
+@dataclass(frozen=True, slots=True)
+class ForecastSupersession:
+    expected_version_id: UUID
+    previous_decision_id: UUID | None
+    reason: str
+    replacement: ForecastCreate
 
 
 @dataclass(frozen=True, slots=True)

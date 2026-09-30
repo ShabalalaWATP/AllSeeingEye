@@ -8,7 +8,7 @@ from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
 
 from ase.application.cyber_scores import cvss_score, epss_score
-from ase.application.feeds.cooperative_work import joined_thread_call
+from ase.application.feeds.board_reads import read_events
 from ase.application.feeds.health import HealthRegistry
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
@@ -80,27 +80,28 @@ class CyberService:
         enabled = await self._admission.enabled_many((*self._sources, ACTOR_REFERENCE_SOURCE_ID))
         source_ids = tuple(key for key in self._sources if enabled.get(key, False))
         now = self._clock.now().astimezone(UTC)
-        events = (
-            self._store.query(
-                EventQuery(
-                    categories=frozenset({Category.CYBER}),
-                    source_ids=frozenset(source_ids),
-                    since=now - timedelta(days=days),
-                    until=now,
-                    limit=MAX_POOL,
-                )
-            )
-            if source_ids
-            else []
-        )
-        # Pure matching may inspect thousands of titles. It runs outside the event
-        # loop and source guard, with one bounded worker and no waiting work queue.
         if self._preparation.locked():
             raise RateLimited(1)
         actors = self._actors if enabled.get(ACTOR_REFERENCE_SOURCE_ID, False) else ()
         async with self._preparation:
-            items = await joined_thread_call(
-                lambda: self._items(events, now - timedelta(days=days), now, actors)
+            events, items = (
+                await read_events(
+                    self._store,
+                    EventQuery(
+                        categories=frozenset({Category.CYBER}),
+                        source_ids=frozenset(source_ids),
+                        since=now - timedelta(days=days),
+                        until=now,
+                        limit=MAX_POOL,
+                    ),
+                    lambda events: (
+                        events,
+                        self._items(events, now - timedelta(days=days), now, actors),
+                    ),
+                    admission_key="internal:cyber-board",
+                )
+                if source_ids
+                else ([], ())
             )
         return CyberSelection(tuple(events), items, source_ids, now, days)
 

@@ -6,8 +6,6 @@ from typing import Annotated
 
 import typer
 
-from ase.adapters.research_records.aiddata_catalogue import import_project_directory
-
 
 def import_aiddata(
     source: Annotated[
@@ -18,6 +16,10 @@ def import_aiddata(
     ],
 ) -> None:
     """Build a bounded GeoGCDF v3.0.1 catalogue from selected local project files."""
+    from ase.adapters.research_records.aiddata_catalogue import (  # noqa: PLC0415
+        import_project_directory,
+    )
+
     try:
         target = import_project_directory(source, cache_dir)
     except (ValueError, OSError, sqlite3.Error) as exc:

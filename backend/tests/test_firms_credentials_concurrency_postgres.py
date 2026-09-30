@@ -23,6 +23,9 @@ from test_firms_credentials import probe as probe  # noqa: PLC0414
 from test_firms_runtime import active, connector
 from test_saved_map_views import claims_for
 
+# Confirmation and polling exercise managed connectors from the real catalogue.
+pytestmark = pytest.mark.feed_catalogue
+
 
 @pytest.mark.parametrize("competitor", ["confirm", "clear"])
 async def test_stale_confirmation_or_clear_waits_then_fails_current_revision_cas(
@@ -197,7 +200,7 @@ async def test_old_batch_release_and_key_change_have_one_guarded_order(
     entered, release, waiting = asyncio.Event(), asyncio.Event(), asyncio.Event()
     pids = {}
     scheduler = container.scheduler
-    publish = scheduler._publish
+    publish = scheduler.poller._publish
 
     async def fetch(_connector):
         if first == "mutation":
@@ -214,7 +217,7 @@ async def test_old_batch_release_and_key_change_have_one_guarded_order(
 
     monkeypatch.setattr(FirmsConnector, "fetch", fetch)
     if first == "publication":
-        monkeypatch.setattr(scheduler, "_publish", held_publish)
+        monkeypatch.setattr(scheduler.poller, "_publish", held_publish)
         watch_lock(monkeypatch, "key-change", pids, waiting)
         watch_lock(monkeypatch, "firms-poll", pids, asyncio.Event())
     method, args = (

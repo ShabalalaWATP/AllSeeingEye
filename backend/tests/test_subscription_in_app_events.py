@@ -5,8 +5,9 @@ from datetime import timedelta
 from uuid import uuid4
 
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
+from ase.adapters.persistence.subscription_publication import SqlSubscriptionPublication
 from ase.application.schedules.revision_snapshot import revision_from_schedule
-from ase.container.subscription_publication import queue_in_app_change
+from ase.application.schedules.subscription_publication import queue_in_app_change
 from ase.domain.subscription_editions import (
     EditionCoverage,
     EditionQuality,
@@ -65,8 +66,8 @@ async def test_change_event_is_once_and_only_visible_in_current_schedule_scope(
             version_id=version.id,
             revision=2,
         )
-        await queue_in_app_change(session, ledger, published, now)
-        await queue_in_app_change(session, ledger, published, now)
+        await queue_in_app_change(SqlSubscriptionPublication(session), published, now)
+        await queue_in_app_change(SqlSubscriptionPublication(session), published, now)
         assert len(await ledger.deliveries(pending.id)) == 1
         await session.commit()
 

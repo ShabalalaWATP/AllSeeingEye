@@ -73,6 +73,7 @@ timeout = 120
 addopts = "--strict-markers --cov=ase --cov-report=term-missing --cov-fail-under=90"
 # File-name rules in tests/pytest_support.py apply the first three; see that module.
 markers = [
+    "db: requests a database fixture or directly constructs a persistence engine",
     "postgres: needs a disposable PostgreSQL server; skipped without one, never run in parallel",
     "migration: runs Alembic revisions against a scratch database",
     "race: exercises concurrent writers on a real multi-connection database",

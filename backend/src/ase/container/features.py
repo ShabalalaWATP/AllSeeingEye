@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.feeds.mastodon_watch import watch_terms
 from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
+from ase.adapters.persistence.indicator_baselines import SqlIndicatorBaselines
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
 from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
 from ase.adapters.persistence.teams import SqlTeamRepository
@@ -48,7 +49,9 @@ from ase.application.trackers.modules import ModuleService, cyber_summary, marit
 from ase.application.trackers.social import SocialMonitor, SocialService
 from ase.application.translate.queue import TranslationQueue
 from ase.application.warning.alerts import AcknowledgeAlertUseCase, ListAlertsUseCase
+from ase.application.warning.baselines import IndicatorBaselineView
 from ase.application.warning.evaluator import IndicatorEvaluator
+from ase.application.warning.feedback import AlertFeedbackView
 from ase.application.warning.indicators import (
     CreateIndicatorUseCase,
     DeleteIndicatorUseCase,
@@ -124,10 +127,18 @@ class FeatureWiring(ReportWiring):
         return AviationService(self.store, self.jam, self.clock, self.watch_areas)
 
     async def _maritime_background(self) -> str:
-        return maritime_summary(self.modules().maritime_board())
+        return maritime_summary(
+            await self.modules().read(
+                lambda service: service.maritime_board(), admission_key="internal:report"
+            )
+        )
 
     async def _cyber_background(self) -> str:
-        return cyber_summary(self.modules().cyber_board())
+        return cyber_summary(
+            await self.modules().read(
+                lambda service: service.cyber_board(), admission_key="internal:report"
+            )
+        )
 
     async def aviation_background(self, session: AsyncSession) -> str:
         """The aviation board as a paragraph for the aviation report's background."""
@@ -223,6 +234,18 @@ class FeatureWiring(ReportWiring):
             r.alerts, self.clock, self._auditor(r), r.uow, self.access_policy(session)
         )
 
+    def alert_feedback(self, session: AsyncSession) -> AlertFeedbackView:
+        r = self.repositories(session)
+        return AlertFeedbackView(r.alerts, r.indicators, self.access_policy(session), self.clock)
+
+    def indicator_baseline(self, session: AsyncSession) -> IndicatorBaselineView:
+        return IndicatorBaselineView(
+            self.repositories(session).indicators,
+            SqlIndicatorBaselines(self.session_factory, self.access_policy),
+            self.access_policy(session),
+            self.clock,
+        )
+
     def build_evaluator(self) -> IndicatorEvaluator:
         return IndicatorEvaluator(
             self.store,
@@ -231,6 +254,7 @@ class FeatureWiring(ReportWiring):
             self.notifier,
             self.clock,
             reporter=self.alert_report,
+            baselines=SqlIndicatorBaselines(self.session_factory, self.access_policy),
         )
 
     async def alert_report(self, indicator: Indicator, alert: Alert) -> UUID | None:
@@ -288,6 +312,7 @@ class FeatureWiring(ReportWiring):
             self.clock,
         )
         return ScheduleRunner(
+            # passes the container to SubscriptionAdmission, which narrows its dependencies.
             SubscriptionAdmission(cast("Container", self)).tick,
             acquisition_tick=selected_index.tick,
         )
@@ -297,6 +322,7 @@ class FeatureWiring(ReportWiring):
             self._translation_profile,
             self._translation_usage,
             self.cipher,
+            # outside ContainerCore: reaches system_llm_gateway.
             cast("Container", self).system_llm_gateway(),
             self.clock,
         )

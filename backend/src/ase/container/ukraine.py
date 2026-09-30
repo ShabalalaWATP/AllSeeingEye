@@ -92,6 +92,7 @@ class UkraineWiring(ContainerCore):
     @cached_property
     def ukraine_digest(self) -> UkraineDigestService:
         """One shared fortnightly digest; the service holds the cadence and the guard."""
+        # outside ContainerCore: reaches system_llm_gateway and GlobalDigestModel wiring.
         container = cast("Container", self)
 
         async def record_usage(usage: LlmUsage) -> None:

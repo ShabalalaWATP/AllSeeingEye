@@ -19,13 +19,9 @@ from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.adsb_watch import load_watch_areas
 from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
 from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
-from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
-from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
-from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.host_pacing import DEFAULT_HOST_INTERVALS, HostPacer
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.mastodon_watch import watch_host_intervals
-from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.satellite_http import SatelliteHttpClient
 from ase.adapters.feeds.youtube_channels import channel_host_intervals
 from ase.adapters.geo.conflicts import ConflictIndex
@@ -36,7 +32,6 @@ from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
 from ase.adapters.persistence.baselines import SqlBaselineSink
 from ase.adapters.persistence.session import create_engine, ensure_sqlite_directory
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
-from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
@@ -71,6 +66,7 @@ from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
+from ase.container.feed_services import build_feed_connectors, build_research_service
 from ase.container.lifecycle import dispose_resources
 from ase.container.map_services import MapWiring
 from ase.container.private_records import PrivateRecordWiring
@@ -78,13 +74,11 @@ from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
-from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
 from ase.container.research_usage import ResearchUsageWiring
 from ase.container.sec_filings import SecFilingWiring
 from ase.container.session_freshness import build_sessions
 from ase.container.source_inventory import SourceInventoryWiring
-from ase.container.source_requirements import source_requirements
 from ase.container.team_board import TeamBoardWiring
 from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
@@ -128,12 +122,31 @@ class Container(
         self.clock: Clock = clock or SystemClock()
         self.limiter: RateLimiter = limiter or InMemorySlidingWindowLimiter(self.clock)
         self.email_sender: EmailSender = email_sender or build_email_sender(settings)
+        self._initialise_database()
+        self._initialise_authentication()
+        self._initialise_live_store()
+        self._initialise_language()
+        self._initialise_http()
+        self._initialise_source_services()
+        self._initialise_feeds(connectors)
+        self._initialise_operational_services()
+
+    def _initialise_database(self) -> None:
+        settings = self.settings
         ensure_sqlite_directory(settings.database_url)
-        self.engine = create_engine(settings.database_url)
+        self.engine = create_engine(
+            settings.database_url,
+            pool_size=settings.database_pool_size,
+            max_overflow=settings.database_max_overflow,
+            pool_timeout=settings.database_pool_timeout,
+        )
         self.bus, self.health = InMemoryEventBus(), HealthRegistry()
         self.session_signals, self.session_freshness, self.session_factory = build_sessions(
             settings, self.clock, self.bus, self.engine
         )
+
+    def _initialise_authentication(self) -> None:
+        settings = self.settings
         self.hasher = Argon2PasswordHasher()
         self.issuer = JwtAccessTokenIssuer(
             settings.jwt_secret_value, timedelta(minutes=settings.access_token_minutes), self.clock
@@ -146,6 +159,9 @@ class Container(
         self.refresh_ttl = timedelta(days=settings.refresh_token_days)
         # Verified against on unknown emails so login timing does not reveal existence.
         self._dummy_hash = self.hasher.hash(secrets.token_urlsafe(16))
+
+    def _initialise_live_store(self) -> None:
+        settings = self.settings
         # The fusion core: bounded live store, in-process bus, connectors and their scheduler.
         self.store = InMemoryEventStore(
             memory_budget_bytes=settings.live_store_memory_mb * 1024 * 1024
@@ -157,12 +173,18 @@ class Container(
         self.embedding_gateway = OpenAiEmbeddingGateway()
         self._embedding_gateway = self.embedding_gateway
         self.embedding_lock = asyncio.Lock()
+
+    def _initialise_language(self) -> None:
+        settings = self.settings
         detector: LanguageDetector = (
             NullDetector() if settings.env is Environment.TEST else LangidDetector()
         )
         self.pipeline = Pipeline(
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
+
+    def _initialise_http(self) -> None:
+        settings = self.settings
         self.http, self.marine_http, self.satellite_http = (
             FeedHttpClient(
                 settings.feeds_user_agent,
@@ -177,6 +199,9 @@ class Container(
             DigitrafficHttpClient("TheAllSeeingEye/0.1"),
             SatelliteHttpClient(settings.feeds_user_agent),
         )
+
+    def _initialise_source_services(self) -> None:
+        settings = self.settings
         self.initialise_sec_filings()
         self.barentswatch_http, self.acled_tokens = (
             BarentsWatchHttpClient(settings.feeds_user_agent),
@@ -187,123 +212,11 @@ class Container(
         )
         self.initialise_economy()
         self._initialise_map_catalogues()
-        self.research = research_service(
-            self.http,
-            self.clock,
-            tuple(settings.disabled_feed_ids),
-            admission=self.source_admission,
-            requirements=source_requirements(settings),
-            retained_store=self.store,
-            sec_client=self.sec_client,
-            ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
-            ioda_public_data_use_acknowledged=settings.ioda_public_data_use_acknowledged,
-            radar_reader=self.radar_attack_trends,
-            radar_noncommercial_use_acknowledged=(
-                settings.cloudflare_radar_noncommercial_use_acknowledged
-            ),
-            uksl_snapshot_path=settings.uksl_snapshot_path,
-            ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,
-            un_sc_snapshot_path=settings.un_sc_snapshot_path,
-            eu_fsf_snapshot_path=settings.eu_fsf_snapshot_path,
-            hapi_app_identifier=(
-                settings.hapi_app_identifier.get_secret_value()
-                if settings.hapi_app_identifier
-                else None
-            ),
-            aiddata_catalogue_path=settings.aiddata_catalogue_path,
-            countries=self.countries,
-            companies_house_key=(
-                settings.companies_house_key.get_secret_value()
-                if settings.companies_house_key
-                else None
-            ),
-            certificate_transparency_key=(
-                settings.certificate_transparency_key.get_secret_value()
-                if settings.certificate_transparency_key
-                else None
-            ),
-            openalex_api_key=(
-                settings.openalex_api_key.get_secret_value() if settings.openalex_api_key else None
-            ),
-            openaq_api_key=(
-                settings.openaq_api_key.get_secret_value() if settings.openaq_api_key else None
-            ),
-            youtube_api_key=(
-                settings.youtube_api_key.get_secret_value() if settings.youtube_api_key else None
-            ),
-        )
-        self.connectors: list[FeedConnector] = (
-            list(connectors)
-            if connectors is not None
-            else [
-                *build_connectors(
-                    self.http,
-                    self.clock,
-                    settings.disabled_feed_ids,
-                    digitraffic_http=self.marine_http,
-                    barentswatch_http=self.barentswatch_http,
-                    barentswatch_client_id=settings.barentswatch_client_id,
-                    barentswatch_client_secret=settings.barentswatch_client_secret,
-                    aircraft_interests=self.aircraft_interests,
-                    public_firms_http=self.public_firms_http,
-                    satellite_http=self.satellite_http,
-                    satellite_cache_dir=(
-                        settings.satellite_cache_dir
-                        if settings.env is not Environment.TEST
-                        else None
-                    ),
-                    include_public_firms=not bool(settings.firms_map_key),
-                    ucdp_candidate_version=settings.ucdp_candidate_version,
-                    ucdp_access_token=(
-                        settings.ucdp_access_token.get_secret_value()
-                        if settings.ucdp_access_token
-                        else None
-                    ),
-                    acled_access_token=(
-                        settings.acled_access_token.get_secret_value()
-                        if settings.acled_access_token
-                        else None
-                    ),
-                    acled_tokens=self.acled_tokens,
-                    reliefweb_appname=settings.reliefweb_appname,
-                    cloudflare_radar_token=(
-                        settings.cloudflare_radar_token.get_secret_value()
-                        if settings.cloudflare_radar_token
-                        else None
-                    ),
-                    iso3_to_iso2={
-                        country.iso3: country.iso2 for country in self.countries.countries()
-                    },
-                    aisstream_key=settings.aisstream_api_key.get_secret_value()
-                    if settings.aisstream_api_key
-                    else None,
-                    youtube_api_key=settings.youtube_api_key.get_secret_value()
-                    if settings.youtube_api_key
-                    else None,
-                ),
-                *[
-                    ManagedFirmsConnector(
-                        self.session_factory,
-                        self.public_firms_http,
-                        self.clock,
-                        self.cipher,
-                        environment_key=settings.firms_map_key.get_secret_value()
-                        if settings.firms_map_key
-                        else None,
-                        area=settings.firms_area,
-                        disabled="firms_viirs_noaa20" in settings.disabled_feed_ids
-                        or f"firms_viirs_{sensor.suffix}" in settings.disabled_feed_ids,
-                        sensor=sensor,
-                    )
-                    for sensor in FIRMS_SENSORS
-                ],
-            ]
-        )
-        watchlists = GoogleNewsWatchlistConnector(
-            self.http, self.clock, SqlWatchlistPlanStore(self.session_factory)
-        )
-        if connectors is None and watchlists.spec.id not in settings.disabled_feed_ids:
-            self.connectors.append(watchlists)
+
+    def _initialise_feeds(self, connectors: Sequence[FeedConnector] | None) -> None:
+        settings = self.settings
+        self.research = build_research_service(self)
+        self.connectors = build_feed_connectors(self, connectors)
         self.source_profiles = profiles_from_specs(
             [*(c.spec for c in self.connectors), *self.research_sources]
         )
@@ -313,6 +226,9 @@ class Container(
             grader=self.grader, fetch_concurrency=settings.feed_fetch_concurrency,
             admission=self.source_admission,
         )  # fmt: skip
+
+    def _initialise_operational_services(self) -> None:
+        settings = self.settings
         os_key = settings.os_maps_key_value
         self.tiles: TileProvider = (
             OsMapsTileProvider(os_key, limiter=self.limiter)

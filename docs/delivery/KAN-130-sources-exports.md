@@ -1,6 +1,6 @@
 # Source and export delivery: KAN-130, KAN-131, KAN-132, KAN-133, KAN-134, KAN-139, KAN-140
 
-Branch: `codex/KAN-130-sources-exports`, based on `69696286`.
+Branch: `codex/KAN-130-sources-exports`, originally based on `69696286` and integrated with forecast prerequisite `f669cd9a` by a normal merge.
 KAN-131 is integrated from the independently implemented publisher-roster branch and retains its genuine 24-hour measurement acceptance.
 
 ## Delivered behaviour
@@ -56,7 +56,9 @@ The map eligibility review uses [USGS data licensing](https://www.usgs.gov/data-
 - Backend Ruff source checks, full mypy (1,389 source files) and all three import-layer contracts pass. Generated OpenAPI and TypeScript bindings are updated. Full coverage was not measured in this concurrent worktree.
 - OASIS STIX schemas are vendored unchanged at commit `c4f8d589acf2bdb3783655c89e0ffb6e150006ae`, with original licence, provenance and only the recursive schema closure needed by this writer. Dev-only `jsonschema` validates offline; no production dependency was added.
 - STIX limits: at most 1,000 frozen evidence records, 3,000 derived evidence objects and 8 MiB output. It rejects an oversized export rather than silently truncating it. All actor objects are reference identities, not incident attribution.
-- KAN-44 overlap: `cli_designations.py` imports dataset adapters lazily. Three narrow research-service configuration additions in `container/__init__.py` must move with the architecture branch's `feed_services.py` extraction. Source/allocation metadata was split to keep edited handwritten files below the normal size target.
+- Final prerequisite integration: 416 combined backend tests pass across source imports, roster/catalogue composition, translation, credentials, report authorisation, cooperative board reads, source admission, forecast lifecycle/counts/scope, feedback, startup imports, session fences and scheduler reliability. Full mypy passes for 1,448 source files; full backend Ruff, source formatting, all three import-layer contracts and the file-length hard gate pass. Frozen backend and frontend dependency installation succeeds, and both API artefacts were regenerated using `ase export-openapi` and `pnpm gen:api`.
+- Combined frontend integration: all 22 tests in nine source/export and forecast component files pass with at most two workers. Type checking passes for both application and Node configurations. Coverage was not measured for this integration run.
+- KAN-44 overlap resolved: `cli_designations.py` imports dataset adapters lazily. The three source settings now enter through `container/feed_services.py`; `Container.__init__` is identical to the forecast prerequisite. Independent narrow review confirmed matching parameter types and preserved source-admission wiring. Source/allocation metadata was split to keep edited handwritten files below the normal size target. The existing HTTP adapter remains 354 lines because the scoped HAPI credential was added to its shared-header rejection list; the file-length hard gate accepts this narrow change.
 - Frontend tools warn that the installed Node 22.20.0 is older than the repository's required 22.22.0. CI or release validation should use the declared runtime.
 
-No branch was pushed or merged by this worker. KAN-130 source-specific licence/access enabling, KAN-131 the genuine 24-hour measurement, KAN-133 current NVD terms/rate verification and KAN-134 live data-row validation are explicit outstanding external acceptance, not fixture-test successes.
+No branch was pushed or merged into `main` by this worker. Publication remains subject to the orchestrator's repaired-parent clearance. KAN-130 source-specific licence/access enabling, KAN-131 the genuine 24-hour measurement, KAN-133 current NVD terms/rate verification and KAN-134 live data-row validation are explicit outstanding external acceptance, not fixture-test successes.
