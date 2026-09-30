@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.alert_notification_cancellation import cancel_alert_email
 from ase.adapters.persistence.mfa_models import EmailMfaRow
 from ase.adapters.persistence.notification_cancel import cancel_subscription_email
 from ase.adapters.persistence.notification_digest_models import DigestPreferenceRow
@@ -33,6 +34,7 @@ class SqlNotificationPreferences:
         if not settings.enabled:
             await cancel_subscription_email(self._session, user_id)
             await cancel_pending_digests(self._session, user_id)
+            await cancel_alert_email(self._session, user_id)
             await self._session.execute(
                 update(DigestPreferenceRow)
                 .where(

@@ -19,6 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence import ai_usage_models as _ai_usage_models  # noqa: F401
+from ase.adapters.persistence import alert_routing_models as _alert_routing_models  # noqa: F401
 from ase.adapters.persistence import (
     annotation_monitor_models as _annotation_monitor_models,  # noqa: F401
 )

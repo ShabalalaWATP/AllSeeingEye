@@ -3302,6 +3302,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/warning/notification-capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notification Capabilities */
+        get: operations["notification_capabilities_api_warning_notification_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/indicators/{indicator_id}/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Alert Route */
+        get: operations["get_alert_route_api_warning_indicators__indicator_id__notifications_get"];
+        /** Save Alert Route */
+        put: operations["save_alert_route_api_warning_indicators__indicator_id__notifications_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/webhook-destinations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Webhook Destinations */
+        get: operations["list_webhook_destinations_api_warning_webhook_destinations_get"];
+        put?: never;
+        /** Register Webhook Destination */
+        post: operations["register_webhook_destination_api_warning_webhook_destinations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/webhook-destinations/{destination_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Webhook Destination */
+        delete: operations["remove_webhook_destination_api_warning_webhook_destinations__destination_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schedules/{schedule_id}/editions/{edition_id}/pause": {
         parameters: {
             query?: never;
@@ -4780,6 +4850,47 @@ export interface components {
              */
             estimated_cost: string | null;
         };
+        /** AlertDestinationIn */
+        AlertDestinationIn: {
+            /** Name */
+            name: string;
+            /**
+             * Url
+             * Format: password
+             */
+            url: string;
+            /** Team Id */
+            team_id?: string | null;
+        };
+        /** AlertDestinationOut */
+        AlertDestinationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AlertDestinationsOut */
+        AlertDestinationsOut: {
+            /** Items */
+            items: components["schemas"]["AlertDestinationOut"][];
+        };
         /** AlertOut */
         AlertOut: {
             /**
@@ -4822,6 +4933,54 @@ export interface components {
             created_by: string | null;
             /** Team Id */
             team_id: string | null;
+        };
+        /** AlertRoutingCapabilitiesOut */
+        AlertRoutingCapabilitiesOut: {
+            /** Installation Copy Enabled */
+            installation_copy_enabled: boolean;
+            /**
+             * In App Required
+             * @default true
+             */
+            in_app_required: boolean;
+            /**
+             * Installation Copy Notice
+             * @default An administrator-controlled installation webhook receives a separate copy of all alerts, including personal and team alerts, with rule name, title, summary, countries and event IDs. Rule choices do not disable this copy.
+             */
+            installation_copy_notice: string;
+        };
+        /** AlertRoutingIn */
+        AlertRoutingIn: {
+            /**
+             * Email Enabled
+             * @default false
+             */
+            email_enabled: boolean;
+            /** Webhook Id */
+            webhook_id?: string | null;
+            /** Expected Revision */
+            expected_revision: number;
+        };
+        /** AlertRoutingOut */
+        AlertRoutingOut: {
+            /**
+             * Indicator Id
+             * Format: uuid
+             */
+            indicator_id: string;
+            /**
+             * Configured By
+             * Format: uuid
+             */
+            configured_by: string;
+            /** Email Enabled */
+            email_enabled: boolean;
+            /** Webhook Id */
+            webhook_id: string | null;
+            /** Revision */
+            revision: number;
+            /** Can Manage */
+            can_manage: boolean;
         };
         /** AlertsOut */
         AlertsOut: {
@@ -23542,6 +23701,185 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AlertOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    notification_capabilities_api_warning_notification_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertRoutingCapabilitiesOut"];
+                };
+            };
+        };
+    };
+    get_alert_route_api_warning_indicators__indicator_id__notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertRoutingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_alert_route_api_warning_indicators__indicator_id__notifications_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertRoutingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertRoutingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_webhook_destinations_api_warning_webhook_destinations_get: {
+        parameters: {
+            query?: {
+                team_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDestinationsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_webhook_destination_api_warning_webhook_destinations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertDestinationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDestinationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_webhook_destination_api_warning_webhook_destinations__destination_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                destination_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

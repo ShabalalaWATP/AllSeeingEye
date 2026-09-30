@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Alert as Notice, LoadingNote } from '@/components/ui/Alert';
@@ -25,6 +25,7 @@ import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 
 import { AlertDestination } from './AlertDestination';
 import { NotificationAlert } from './NotificationAlert';
+import { AlertRoutingPanel } from './AlertRoutingPanel';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
@@ -89,6 +90,7 @@ function AlertItem({
 }
 
 export default function WarningPage() {
+  const [routing, setRouting] = useState<Indicator | null>(null);
   const draft = useAreaWatchDraft();
   const draftId = draft?.id;
   const workspaces = useWorkspaces();
@@ -224,6 +226,9 @@ export default function WarningPage() {
                   <Td className="text-xs">{describeRule(item)}</Td>
                   <Td className="font-mono text-xs text-muted">{item.report_template ?? 'none'}</Td>
                   <Td>
+                    <Button variant="secondary" onClick={() => setRouting(item)}>
+                      Notifications
+                    </Button>
                     <Button
                       disabled={!workspaces.canManage(item)}
                       variant="danger"
@@ -238,6 +243,7 @@ export default function WarningPage() {
             </tbody>
           </Table>
         )}
+        {routing && <AlertRoutingPanel key={routing.id} indicator={routing} />}
         {!draft && form}
       </div>
     </section>

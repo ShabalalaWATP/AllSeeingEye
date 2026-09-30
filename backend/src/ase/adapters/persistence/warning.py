@@ -10,6 +10,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
 from ase.adapters.persistence.models import AlertRow, CollectionPlanRow, IndicatorRow, ReportRow
 from ase.adapters.persistence.warning_mapping import (
     _alert_from_row,
@@ -94,9 +95,12 @@ class SqlWarningStore:
         self,
         session_factory: Callable[[], AsyncSession],
         policy_factory: Callable[[AsyncSession], AccessPolicy],
+        *,
+        installation_copy: bool = False,
     ) -> None:
         self._session_factory = session_factory
         self._policy_factory = policy_factory
+        self._installation_copy = installation_copy
 
     async def _authorise(
         self, session: AsyncSession, row: IndicatorRow, *, for_update: bool = False
@@ -168,6 +172,10 @@ class SqlWarningStore:
             if latest is not None and alert.fired_at - latest.fired_at < indicator.cooldown:
                 return False
             session.add(_alert_row(alert))
+            await session.flush()
+            await enqueue_alert_notifications(
+                session, alert, installation_copy=self._installation_copy
+            )
             await session.commit()
             return True
 

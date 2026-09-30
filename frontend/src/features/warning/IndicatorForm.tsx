@@ -15,6 +15,7 @@ import { parseCategories, parseCommaList, parseCountries } from '@/lib/text';
 import { clearAreaWatchDraft } from '@/lib/areaWatchDraft';
 import type { AreaWatchDraft } from '@/lib/areaWatchDraft';
 import { IndicatorAreaFields, useIndicatorArea } from './IndicatorAreaFields';
+import { InstallationCopyNotice } from './InstallationCopyNotice';
 
 export const WINDOWS = [
   { value: '60', label: '1 hour' },
@@ -118,6 +119,10 @@ export function IndicatorForm({
           </button>
         </div>
       )}
+      <InstallationCopyNotice />
+      <p className="text-xs text-muted">
+        Save the rule, then open Notifications to choose email and a registered webhook.
+      </p>
       {invalidPlan && (
         <Alert tone="error">
           The linked plan is no longer available. Choose a plan in this workspace or select No plan.

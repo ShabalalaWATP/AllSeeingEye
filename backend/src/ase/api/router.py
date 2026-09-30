@@ -17,6 +17,7 @@ from ase.api.routers import (
     admin_subscription_diagnostics,
     admin_users,
     ai_usage,
+    alert_routing,
     annotation_comparisons,
     annotation_monitors,
     assistant,
@@ -155,6 +156,7 @@ api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
 api_router.include_router(warning.router)
+api_router.include_router(alert_routing.router)
 api_router.include_router(schedules.router)
 api_router.include_router(subscription_usage.router)
 api_router.include_router(admin_requests.router)

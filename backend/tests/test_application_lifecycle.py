@@ -36,6 +36,7 @@ def runtime(monkeypatch):
         await asyncio.Event().wait()
 
     monkeypatch.setattr("ase.app_lifecycle.expire_original_assets", idle)
+    monkeypatch.setattr("ase.app_lifecycle.alert_dispatcher", lambda _: SimpleNamespace(run=idle))
     monkeypatch.setattr(
         "ase.app_lifecycle.notification_dispatcher", lambda _: SimpleNamespace(run=idle)
     )

@@ -10,6 +10,7 @@ from typing import Protocol
 from fastapi import FastAPI
 
 from ase.container import Container
+from ase.container.alert_routing import alert_dispatcher
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.live_snapshot import build_live_snapshot
 from ase.container.notifications import digest_worker, notification_dispatcher
@@ -67,6 +68,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             build_annotation_monitor_worker(container).run()
         )
         housekeeping.push_async_callback(_cancel, annotation_monitoring)
+        routed_alerts = asyncio.create_task(alert_dispatcher(container).run())
+        housekeeping.push_async_callback(_cancel, routed_alerts)
         notifications = asyncio.create_task(notification_dispatcher(container).run())
         housekeeping.push_async_callback(_cancel, notifications)
         digests = asyncio.create_task(digest_worker(container).run())

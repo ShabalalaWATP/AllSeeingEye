@@ -20,6 +20,13 @@ const notFound = (what: string) =>
   );
 
 export const warningHandlers = [
+  http.get('/api/warning/notification-capabilities', () =>
+    HttpResponse.json({
+      installation_copy_enabled: false,
+      in_app_required: true,
+      installation_copy_notice: '',
+    }),
+  ),
   http.get('/api/warning/indicators', () => HttpResponse.json({ items: [indicator] })),
 
   http.post('/api/warning/indicators', async ({ request }) => {
