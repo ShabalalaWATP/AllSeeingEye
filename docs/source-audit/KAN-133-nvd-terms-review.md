@@ -52,13 +52,28 @@ The implementation's bounded partial-enrichment behaviour remains unchanged.
 ## Acceptance and follow-up
 
 The published NVD terms and numeric public rate policy have now been directly
-verified. At the reviewed commit, the Cyber workspace names NVD and preserves
-score provenance, but it does not display the requested non-endorsement notice.
-That presentation follow-up is required before considering this release review
-complete. This document alone does not add the application notice.
+verified. The initial review at `04d00368` found that the Cyber workspace named
+NVD and preserved score provenance but lacked the requested non-endorsement
+notice. The subsequent presentation change adds the exact Terms of Use wording
+once above the vulnerability catalogue, with a link to those terms. It remains
+visible when results are empty or scores are unavailable. Score and request logic
+are unchanged. This completes the identified terms-verification and notice work;
+the shared-egress operating constraints above still apply.
+
+All 17 existing tests in `CyberVulnerabilities.test.tsx`, `CyberDetails.test.tsx`
+and `CyberPage.test.tsx` pass. Both TypeScript configurations, changed-file ESLint,
+Prettier and whitespace checks pass. A private loopback fixture preview rendered
+the actual component and theme: the notice was visibly readable above sorting
+and data for scored, missing-score and empty states. The preview made no provider
+requests and was stopped after inspection. No new test merely repeating the
+notice was added; no coverage percentage was measured for this small change.
+An independent static review found no actionable issue in the exact wording,
+unconditional placement, existing safe external-link handling or unchanged score
+logic. It did not repeat the runtime tests or primary-source browser capture.
 
 No API key, registration, policy-acceptance form, external message, production
 setting or new data request was used for this review. The earlier successful
 bounded CVSS response remains the live data-shape evidence in the
 [source delivery record](../delivery/KAN-130-sources-exports.md). No application
-tests were rerun for this documentation-only review.
+tests were needed for the initial documentation-only commit; the checks above
+cover the separate application-notice change.
