@@ -20,6 +20,7 @@ from ase.container.research_allocation_model import (
     add_profile,
 )
 from ase.container.research_bridge_allocation_profiles import e03_allocation_profiles
+from ase.container.research_native_allocation_profiles import native_allocation_profiles
 from ase.container.research_record_allocation_profiles import record_allocation_profiles
 
 __all__ = ["PROFILE_VERSION", "REVIEW_DATE", "research_allocation_profiles"]
@@ -229,4 +230,5 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
 
     result.update(record_allocation_profiles())
     result.update(e03_allocation_profiles(REVIEW_DATE))
+    result.update(native_allocation_profiles())
     return MappingProxyType(dict(sorted(result.items())))

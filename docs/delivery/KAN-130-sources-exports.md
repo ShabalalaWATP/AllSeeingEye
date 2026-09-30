@@ -1,11 +1,12 @@
-# Source and export delivery: KAN-130, KAN-132, KAN-133, KAN-134, KAN-139, KAN-140
+# Source and export delivery: KAN-130, KAN-131, KAN-132, KAN-133, KAN-134, KAN-139, KAN-140
 
 Branch: `codex/KAN-130-sources-exports`, based on `69696286`.
-KAN-131 is being delivered separately and retains its genuine 24-hour measurement acceptance.
+KAN-131 is integrated from the independently implemented publisher-roster branch and retains its genuine 24-hour measurement acceptance.
 
 ## Delivered behaviour
 
 - **KAN-130:** native UN consolidated XML and EU FSF 1.1 XML imports use the existing atomic, immutable snapshot command. XML input and normalised output are each capped at 32 MiB, with at most 100,000 named records. DTDs, entities and external references are forbidden. Separate authorities retain source digest, list version, publication date and declared reuse terms. Missing configuration produces an authority-specific unavailable receipt. Names and aliases are candidate matches, not identity verification or a clearance verdict.
+- **KAN-131:** fifteen verified native publisher feeds preserve publisher ownership, language and reviewed regional routing. They retain headline metadata, carry translation-on-demand flags and consume no automatic translation calls or cache hits. The combined inventory contains 154 executable research providers, below the existing 160-provider cap. The [roster record](../NATIVE_PUBLISHER_ROSTER.md) preserves source-specific decisions, live probe evidence and the reproducible 24-hour measurement command.
 - **KAN-132:** an authenticated, rate-limited GLEIF name lookup performs one request and returns at most ten candidates. The editor discloses transmission of the typed name and requires separate confirmation of a candidate. It does not fetch while typing or automatically select a result. Existing exact-LEI research continues unchanged.
 - **KAN-133:** daily, in-process EPSS and NVD enrichment is independent of the CISA known-exploited fact. FIRST supplies probability, percentile and score date. NVD supplies CVSS version, base score, vector, scoring source and NVD record modification date when present. The UI sorts by EPSS with missing values last and labels both scores separately. Missing or failed enrichment is absent, never a synthetic zero.
 - **KAN-134:** three research-only HAPI v2 providers return up to twenty dated rows each for one selected country: IDPs, food security and operational presence. Each retains quantities, units, administrative identifiers, reference periods and the underlying HDX resource UUID in frozen evidence. No conflict-event endpoint is queried. HDX is labelled a distributor, not independent corroboration. Empty, unavailable, failed and timed-out attempts are distinct.
@@ -50,6 +51,7 @@ The map eligibility review uses [USGS data licensing](https://www.usgs.gov/data-
 
 - Focused backend suite: 163 passing tests covering imports, candidates, source admission/catalogue, enrichment, credential isolation, STIX schemas and release checks. Additional malformed-NVD/STIX bound checks: 11 passing tests in the two focused files.
 - KEV deadline follow-up: all 16 tests in `test_kev_scores.py` and `test_cyber_kev_collection.py` pass. They cover stalled scoring, completed partial scores, exhausted catalogue allowance, daily request reservation and outer cancellation. Both changed source modules pass mypy and Ruff.
+- Integrated KAN-131 verification: 221 tests pass across the native roster/audit, packaged catalogues, regional collection, allocation, source capabilities, RSS parsing and translation. Mypy passes for all ten integrated source modules; all source Ruff checks and three import-layer contracts pass. The resolved allocation profile file remains below 350 lines, and a composition assertion verifies all 154 providers fit the unchanged cap.
 - Frontend: 12 tests passing across GLEIF confirmation, existing registry routing, KEV sorting/partial availability, STIX marking selection, existing Markdown export and live-map serialisation.
 - Backend Ruff source checks, full mypy (1,389 source files) and all three import-layer contracts pass. Generated OpenAPI and TypeScript bindings are updated. Full coverage was not measured in this concurrent worktree.
 - OASIS STIX schemas are vendored unchanged at commit `c4f8d589acf2bdb3783655c89e0ffb6e150006ae`, with original licence, provenance and only the recursive schema closure needed by this writer. Dev-only `jsonschema` validates offline; no production dependency was added.
@@ -57,4 +59,4 @@ The map eligibility review uses [USGS data licensing](https://www.usgs.gov/data-
 - KAN-44 overlap: `cli_designations.py` imports dataset adapters lazily. Three narrow research-service configuration additions in `container/__init__.py` must move with the architecture branch's `feed_services.py` extraction. Source/allocation metadata was split to keep edited handwritten files below the normal size target.
 - Frontend tools warn that the installed Node 22.20.0 is older than the repository's required 22.22.0. CI or release validation should use the declared runtime.
 
-No branch was pushed or merged by this worker. KAN-130 source-specific licence/access enabling, KAN-133 current NVD terms/rate verification and KAN-134 live data-row validation are explicit outstanding external acceptance, not fixture-test successes.
+No branch was pushed or merged by this worker. KAN-130 source-specific licence/access enabling, KAN-131 the genuine 24-hour measurement, KAN-133 current NVD terms/rate verification and KAN-134 live data-row validation are explicit outstanding external acceptance, not fixture-test successes.

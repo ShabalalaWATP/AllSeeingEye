@@ -16,8 +16,13 @@ from ase.container.research import research_service
 from ase.container.research_allocation import compose_research_allocation, load_research_allocation
 from ase.container.research_allocation_profiles import REVIEW_DATE, research_allocation_profiles
 from ase.container.research_capabilities import research_capability_registry
+from ase.container.research_native_allocation_profiles import (
+    NATIVE_REVIEW_DATE,
+    native_allocation_profiles,
+)
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_area import direct_area_from_geometry
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS
 from ase.domain.source_capabilities import ContentCapability
 from test_source_allocator import scenario
 
@@ -36,13 +41,16 @@ def test_every_executable_e00_provider_has_a_reviewed_profile():
     ids = tuple(key for key, cap in registry.capabilities.items() if cap.provider_id is not None)
     result = compose_research_allocation(ids, enabled=dict.fromkeys(ids, True))
     assert set(profiles) == set(ids) == {row.capability.id for row in result.resolved}
-    # 139: UN/EU snapshots and three HAPI aggregates extend the roster.
-    # Previously 134: the nine Reddit and YouTube feed routes whose robots.txt disallows them are
-    # gone; one aggregated route each for Telegram, Bluesky and the keyed YouTube API,
-    # the local packaged-register route, and the OpenStreetMap feature search.
-    assert len(ids) == 139
+    # 154: the reviewed 134-provider baseline, UN/EU snapshots, three HAPI
+    # aggregates and fifteen native publisher feeds fit within the 160-provider cap.
+    assert len(ids) == 154
+    assert len(ids) <= MAX_COLLECTION_PROVIDERS
     assert result.profile_review_date == REVIEW_DATE
-    assert all(row.review_note.startswith(REVIEW_DATE) for row in profiles.values())
+    native = native_allocation_profiles()
+    assert all(
+        row.review_note.startswith(NATIVE_REVIEW_DATE if key in native else REVIEW_DATE)
+        for key, row in profiles.items()
+    )
     assert not {"research_import", "research_media", "research-web-search"} & set(profiles)
     for key, profile in profiles.items():
         cap = registry.capabilities[key]

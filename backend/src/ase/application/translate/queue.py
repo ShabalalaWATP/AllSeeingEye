@@ -1,7 +1,8 @@
 """The translation queue: every half minute, give a batch of foreign titles an English one.
 
-Only events whose language is known and not English, and which have no English title yet,
-are candidates. Each is tried once; a small cache keyed by language and title means a
+Only events whose language is known and not English, which have no English title yet,
+and which are not marked translate-on-demand are candidates. Each is tried once;
+a small cache keyed by language and title means a
 story seen through several feeds costs one translation. An hourly call budget bounds what
 a runaway feed can spend on the model.
 """
@@ -40,7 +41,11 @@ SleepFn = Callable[[float], Awaitable[None]]
 
 
 def needs_translation(event: Event) -> bool:
-    return event.language.lower() not in SKIP_LANGUAGES and event.title_en is None
+    return (
+        event.language.lower() not in SKIP_LANGUAGES
+        and event.title_en is None
+        and "translate_on_demand" not in event.tags
+    )
 
 
 class TranslationQueue:
