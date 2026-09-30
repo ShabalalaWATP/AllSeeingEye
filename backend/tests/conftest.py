@@ -42,6 +42,7 @@ from pytest_support import (
     drop_schema,
     refuse_shared_databases_in_parallel,
     skip_sqlite_fsync,
+    uses_report_job_worker,
 )
 
 pytest_plugins = ["postgres_isolation"]
@@ -101,12 +102,18 @@ def email_sender() -> RecordingEmailSender:
 
 
 @pytest.fixture
-def settings() -> Settings:
-    # CI runs the same suite against PostgreSQL by setting ASE_TEST_DATABASE_URL.
+def settings(request: pytest.FixtureRequest) -> Settings:
+    # CI's isolated workers supply their own PostgreSQL URL. Report worker tests
+    # need independent SQLite connections: a checkpoint reader closing a session
+    # on StaticPool's single connection otherwise rolls back the worker's writes.
+    database_url = os.environ.get("ASE_TEST_DATABASE_URL", "sqlite+aiosqlite://")
+    if "ASE_TEST_DATABASE_URL" not in os.environ and uses_report_job_worker(request.node):
+        directory = request.getfixturevalue("tmp_path")
+        database_url = f"sqlite+aiosqlite:///{(directory / 'jobs.sqlite').as_posix()}"
     return Settings(
         _env_file=None,
         env=Environment.TEST,
-        database_url=os.environ.get("ASE_TEST_DATABASE_URL", "sqlite+aiosqlite://"),
+        database_url=database_url,
         jwt_secret=SecretStr("t" * 40),
         encryption_key=SecretStr("e" * 40),
         public_base_url="http://app.test",
