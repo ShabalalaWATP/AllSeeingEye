@@ -2,29 +2,36 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Literal, cast
+from typing import Annotated, cast
 
 import typer
 
-from ase.adapters.research_records.designation_import import import_designation_csv
-
 
 def import_designations(
-    source: Annotated[Path, typer.Argument(help="Native UKSL or OFAC SDN CSV file")],
+    source: Annotated[Path, typer.Argument(help="Native UKSL/OFAC CSV or UN/EU XML file")],
     cache_dir: Annotated[Path, typer.Option(help="Directory for a new immutable snapshot")],
-    authority: Annotated[str, typer.Option(help="uksl or ofac_sdn")],
+    authority: Annotated[str, typer.Option(help="uksl, ofac_sdn, un_sc or eu_fsf")],
     version: Annotated[str, typer.Option(help="Unique snapshot version, never overwritten")],
     published_at: Annotated[str, typer.Option(help="ISO publisher date/time with UTC offset")],
     licence: Annotated[str, typer.Option(help="Applicable source licence or reuse restriction")],
 ) -> None:
-    """Validate a selected CSV and create a bounded, immutable local snapshot."""
-    if authority not in {"uksl", "ofac_sdn"}:
-        raise typer.BadParameter("Choose uksl or ofac_sdn.")
+    """Validate a selected native list and create a bounded, immutable local snapshot."""
+    # Dataset adapters must not load on the migration-only command path.
+    from ase.adapters.research_records.designation_import import (  # noqa: PLC0415
+        import_designation_csv,
+    )
+    from ase.adapters.research_records.designation_snapshot import (  # noqa: PLC0415
+        SOURCE_URLS,
+        Authority,
+    )
+
+    if authority not in SOURCE_URLS:
+        raise typer.BadParameter("Choose uksl, ofac_sdn, un_sc or eu_fsf.")
     try:
         path = import_designation_csv(
             source,
             cache_dir,
-            cast(Literal["uksl", "ofac_sdn"], authority),
+            cast(Authority, authority),
             version,
             datetime.fromisoformat(published_at.replace("Z", "+00:00")),
             licence,
