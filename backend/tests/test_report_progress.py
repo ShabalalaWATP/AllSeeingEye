@@ -256,14 +256,24 @@ async def test_real_asgi_disconnect_cancels_model_and_leaves_no_report_or_usage(
         "server": ("test", 80),
     }
     running = asyncio.create_task(app(scope, messages.get, send))
-    await asyncio.wait_for(entered.wait(), timeout=2)
-    messages.put_nowait({"type": "http.disconnect"})
-    await asyncio.wait_for(running, timeout=2)
-    assert cleaned.is_set()
-    assert container.research_runs.read(user, run_id).stage is ResearchStage.CANCELLED
-    async with container.session_factory() as session:
-        assert await session.scalar(select(func.count()).select_from(ReportRow)) == 0
-        assert await session.scalar(select(func.count()).select_from(LlmUsageRow)) == 0
+    model_started = asyncio.create_task(entered.wait())
+    try:
+        # Synchronise model entry, not setup speed; pytest's timeout bounds this wait.
+        done, _ = await asyncio.wait((model_started, running), return_when=asyncio.FIRST_COMPLETED)
+        if running in done:
+            await running  # Surface an ASGI exception before diagnosing an early response.
+            pytest.fail(f"ASGI request ended before the model was cancelled: {sent!r}")
+        messages.put_nowait({"type": "http.disconnect"})
+        await asyncio.wait_for(running, timeout=2)
+        assert cleaned.is_set()
+        assert container.research_runs.read(user, run_id).stage is ResearchStage.CANCELLED
+        async with container.session_factory() as session:
+            assert await session.scalar(select(func.count()).select_from(ReportRow)) == 0
+            assert await session.scalar(select(func.count()).select_from(LlmUsageRow)) == 0
+    finally:
+        model_started.cancel()
+        running.cancel()
+        await asyncio.gather(model_started, running, return_exceptions=True)
 
 
 async def test_deadline_during_uncommitted_writes_rolls_back_with_request_session(

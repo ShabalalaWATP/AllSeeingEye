@@ -78,6 +78,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
+          --tmpfs /var/lib/postgresql/data:rw,size=2147483648
           --health-cmd "pg_isready -U ase -d ase"
           --health-interval 10s
           --health-timeout 5s
@@ -94,14 +95,60 @@ jobs:
           enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --frozen
+      - name: Require PostgreSQL transaction durability settings
+        env:
+          PGPASSWORD: ase
+        run: |
+          durability=$(psql --host localhost --username ase --dbname ase \
+            --set ON_ERROR_STOP=1 --tuples-only --no-align \
+            --command "SELECT current_setting('fsync') = 'on' AND current_setting('synchronous_commit') = 'on' AND current_setting('full_page_writes') = 'on'")
+          test "$durability" = t
+          psql --host localhost --username ase --dbname ase --set ON_ERROR_STOP=1 \
+            --command "SELECT name, setting, unit FROM pg_settings WHERE name IN ('fsync', 'synchronous_commit', 'full_page_writes', 'max_wal_size', 'min_wal_size', 'checkpoint_timeout', 'checkpoint_completion_target', 'wal_level', 'wal_segment_size', 'shared_buffers') ORDER BY name"
       - name: Database tests in private worker databases
-        run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto
+        # The two-worker trial was slower; retain automatic worker selection.
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: |
+          sample_storage() {
+            local sleeper=
+            stop_sample() {
+              if [ -n "$sleeper" ]; then
+                kill "$sleeper" 2>/dev/null || true
+                wait "$sleeper" 2>/dev/null || true
+              fi
+              exit 0
+            }
+            trap stop_sample TERM INT
+            while true; do
+              date --utc --iso-8601=seconds
+              timeout 10s docker exec "$POSTGRES_CONTAINER_ID" sh -c \
+                'df -k "$PGDATA"; df -i "$PGDATA"; du -sk "$PGDATA/base" "$PGDATA/pg_wal"' \
+                || printf '%s\n' 'Storage sample unavailable or changed during scan; retrying.'
+              sleep 30 &
+              sleeper=$!
+              wait "$sleeper" || true
+              sleeper=
+            done
+          }
+          sample_storage >postgres-capacity-parallel.log 2>&1 &
+          sampler_pid=$!
+          finish() {
+            test_status=$?
+            trap - EXIT
+            kill "$sampler_pid" 2>/dev/null || true
+            wait "$sampler_pid" 2>/dev/null || true
+            exit "$test_status"
+          }
+          trap finish EXIT
+          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto --template-postgres
       - name: Provision disposable legacy migration database
         env:
           PGPASSWORD: ase
         run: psql --host localhost --username ase --dbname ase --command 'CREATE DATABASE ase_s01_disposable_ci'
       - name: Serial PostgreSQL, race and migration tests
         env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
           ASE_TOKEN_RACE_TEST_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_COMPARISON_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_MONITOR_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
@@ -115,7 +162,46 @@ jobs:
           ASE_SCOPE_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_TEAMS_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_TEST_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase_s01_disposable_ci
-        run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode serial
+        run: |
+          sample_storage() {
+            local sleeper=
+            stop_sample() {
+              if [ -n "$sleeper" ]; then
+                kill "$sleeper" 2>/dev/null || true
+                wait "$sleeper" 2>/dev/null || true
+              fi
+              exit 0
+            }
+            trap stop_sample TERM INT
+            while true; do
+              date --utc --iso-8601=seconds
+              timeout 10s docker exec "$POSTGRES_CONTAINER_ID" sh -c \
+                'df -k "$PGDATA"; df -i "$PGDATA"; du -sk "$PGDATA/base" "$PGDATA/pg_wal"' \
+                || printf '%s\n' 'Storage sample unavailable or changed during scan; retrying.'
+              sleep 30 &
+              sleeper=$!
+              wait "$sleeper" || true
+              sleeper=
+            done
+          }
+          sample_storage >postgres-capacity-serial.log 2>&1 &
+          sampler_pid=$!
+          finish() {
+            test_status=$?
+            trap - EXIT
+            kill "$sampler_pid" 2>/dev/null || true
+            wait "$sampler_pid" 2>/dev/null || true
+            exit "$test_status"
+          }
+          trap finish EXIT
+          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode serial
+      - name: Retain PostgreSQL capacity samples
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: postgres-capacity-${{ matrix.shard }}
+          path: backend/postgres-capacity-*.log
+          if-no-files-found: warn
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: postgres-coverage-${{ matrix.shard }}
