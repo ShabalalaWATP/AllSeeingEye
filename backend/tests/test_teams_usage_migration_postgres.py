@@ -148,8 +148,12 @@ def _partial_unique_indexes_hold(connection: sa.Connection, ids: dict[str, str])
         "created_at": NOW,
         "updated_at": NOW,
     }
-    with connection.begin_nested():
-        connection.execute(policies.insert().values(id=uuid4(), **site))
+    # Migration 0061 already seeds these enabled allowances on an empty database.
+    assert set(connection.execute(sa.select(policies.c.scope, policies.c.period))) == {
+        ("global", "day"),
+        ("global", "month"),
+        ("system", "day"),
+    }
     with pytest.raises(sa.exc.IntegrityError), connection.begin_nested():
         connection.execute(policies.insert().values(id=uuid4(), **site))
     with connection.begin_nested():
@@ -190,7 +194,7 @@ async def test_teams_and_usage_migrations_round_trip_on_postgres(database_url):
             await _run(connection, _partial_unique_indexes_hold, ids)
             assert await _run(connection, _retained_counts) == {
                 "team_invitations": 2,
-                "ai_usage_policies": 2,
+                "ai_usage_policies": 4,
             }
         # Guards refuse to discard retained invitations or allowance records.
         with pytest.raises(RuntimeError, match="records remain"):
