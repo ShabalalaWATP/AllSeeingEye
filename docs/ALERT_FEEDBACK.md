@@ -86,6 +86,7 @@ Tests use synthetic SQLite data, fake live events and fake model replies. They
 cover access revocation, source changes, sample gaps, allowance refusal, invalid
 citations, idempotence, shared acknowledgement, raw-alert pruning, counter expiry,
 warm-up, cooldown and semantic resets. SQLite migrations are exercised and
-PostgreSQL upgrade SQL is rendered. A live PostgreSQL migration and browser
-acceptance have not been performed. No live model quality or production
+PostgreSQL upgrade SQL is rendered. Independent private PostgreSQL rehearsals
+also exercise the combined migrations, preservation and downgrade guards. Browser
+acceptance has not been performed. No live model quality or production
 performance claim follows from these checks.
