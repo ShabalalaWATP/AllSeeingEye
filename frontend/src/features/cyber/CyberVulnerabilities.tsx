@@ -17,6 +17,11 @@ export function CyberVulnerabilities({ items }: { items: readonly CyberItem[] })
   const ransomware = rows.filter((row) => row.kev.ransomware_use.toLowerCase() === 'known').length;
   return (
     <div className="space-y-5">
+      <p className="rounded-xl border border-line/60 bg-surface/50 px-4 py-3 text-sm leading-6 text-text/90">
+        This product uses the{' '}
+        <SourceLink url="https://nvd.nist.gov/developers/terms-of-use">NVD API</SourceLink> but is
+        not endorsed or certified by the NVD.
+      </p>
       <label className="text-sm">
         Sort vulnerabilities
         <select
