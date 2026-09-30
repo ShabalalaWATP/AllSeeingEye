@@ -49,7 +49,9 @@ Acknowledgements retain the existing active team-member write contract. Archived
 team writes remain restricted, with the existing administrator manual override
 preserved where applicable. Neither aggregate counts nor exports widen scope.
 Targeted Bandit inspection of nine affected modules reported no medium/high
-findings. This is not an exhaustive repository security scan.
+findings. Gitleaks 8.24.3 scanned all four non-merge feature commits in
+`2290b8c0..HEAD` with redaction enabled and reported no leaks. These targeted
+checks are not an exhaustive repository security scan.
 
 ## Validation and limits
 
