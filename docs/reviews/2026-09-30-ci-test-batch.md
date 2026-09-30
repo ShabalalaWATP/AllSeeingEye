@@ -1,7 +1,7 @@
 # CI and test health batch: KAN-69 to KAN-76
 
 Original base: `69696286`. Branch: `codex/KAN-69-ci-test-batch`.
-Stacked PR base: `codex/KAN-41-runtime-observability` at `20ca4f83`.
+Stacked PR base: `codex/KAN-41-runtime-observability` at `3e874208`.
 The runtime and architecture dependency branches merged without conflicts.
 This record distinguishes implementation and measured local evidence from acceptance
 criteria that require completed GitHub runs. No production deployment is authorised.
@@ -58,9 +58,17 @@ criteria that require completed GitHub runs. No production deployment is authori
   Whitespace and file-length checks passed. Actionlint with ShellCheck passed for
   both changed workflows. The installed Vitest 5 reporter source confirms the
   `.vitest/blob` directory and shard filenames used by the merger.
-- Changed-file ESLint found an unnecessary optional chain after narrowing and an
-  async test callback without an await. Both were corrected; the final lint run
-  is deferred to the consistent CI checkpoint while another batch benchmarks.
+- Changed-file ESLint passed after correcting an unnecessary optional chain
+  after narrowing and explicitly awaiting the cancelled test response.
+- Selection review added nested-code and captured-factory traversal, plus a
+  conservative file fallback for actual database constructor calls. All 18
+  progress/isolation/selection tests passed. The census selected 2,360 of 10,086
+  cases across 438 files. No file containing a direct, nested or method database
+  constructor was absent from the selection. This is selection evidence, not
+  evidence that all selected PostgreSQL tests have executed.
+- Installed Vitest 5.0.1 project resolution explicitly inherits the declaring
+  config for inline projects by default. Root mock-reset and timeout settings
+  therefore remain applied to both projects.
 
 ## Interrupted frontend diagnostic run
 
