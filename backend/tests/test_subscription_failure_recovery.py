@@ -88,11 +88,11 @@ async def test_reconciliation_does_not_overwrite_controls_after_candidate_select
     session.scalars.return_value = [edition.id]
     with (
         patch(
-            "ase.container.subscription_retry_orchestration.SqlSubscriptionEditionRepository",
+            "ase.adapters.persistence.subscription_retry.SqlSubscriptionEditionRepository",
             return_value=editions,
         ),
         patch(
-            "ase.container.subscription_retry_orchestration.SqlReportJobRepository",
+            "ase.adapters.persistence.subscription_retry.SqlReportJobRepository",
             return_value=jobs,
         ),
     ):

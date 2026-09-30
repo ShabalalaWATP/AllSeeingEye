@@ -42,7 +42,9 @@ async def test_normal_bodies_still_pass(client: AsyncClient, user: User) -> None
     assert (await client.get("/api/me", headers=bearer(token))).status_code == 200
 
 
-def test_prod_logging_renders_tracebacks_as_json(capsys: pytest.CaptureFixture[str]) -> None:
+def test_prod_logging_renders_safe_exception_class_as_json(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     configure_logging(
         Settings(_env_file=None, env=Environment.PROD, jwt_secret=SecretStr("p" * 32))
     )
@@ -61,8 +63,10 @@ def test_prod_logging_renders_tracebacks_as_json(capsys: pytest.CaptureFixture[s
     record = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
     assert record["event"] == "failed"
     assert record["password"] == "[redacted]"
-    rendered = json.dumps(record["exception"])
-    assert "boom" in rendered
+    rendered = json.dumps(record)
+    assert record["error_type"] == "ValueError"
+    assert "boom" not in rendered
+    assert "exception" not in record
     assert "synthetic-password-marker" not in rendered
     assert "synthetic-code-marker" not in rendered
     assert "synthetic-challenge-marker" not in rendered

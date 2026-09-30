@@ -127,10 +127,18 @@ class FeatureWiring(ReportWiring):
         return AviationService(self.store, self.jam, self.clock, self.watch_areas)
 
     async def _maritime_background(self) -> str:
-        return maritime_summary(self.modules().maritime_board())
+        return maritime_summary(
+            await self.modules().read(
+                lambda service: service.maritime_board(), admission_key="internal:report"
+            )
+        )
 
     async def _cyber_background(self) -> str:
-        return cyber_summary(self.modules().cyber_board())
+        return cyber_summary(
+            await self.modules().read(
+                lambda service: service.cyber_board(), admission_key="internal:report"
+            )
+        )
 
     async def aviation_background(self, session: AsyncSession) -> str:
         """The aviation board as a paragraph for the aviation report's background."""
@@ -304,6 +312,7 @@ class FeatureWiring(ReportWiring):
             self.clock,
         )
         return ScheduleRunner(
+            # passes the container to SubscriptionAdmission, which narrows its dependencies.
             SubscriptionAdmission(cast("Container", self)).tick,
             acquisition_tick=selected_index.tick,
         )
@@ -313,6 +322,7 @@ class FeatureWiring(ReportWiring):
             self._translation_profile,
             self._translation_usage,
             self.cipher,
+            # outside ContainerCore: reaches system_llm_gateway.
             cast("Container", self).system_llm_gateway(),
             self.clock,
         )

@@ -243,3 +243,5 @@ user database or user `.env` was read or changed. Local evidence is retained in
 the ignored `data/phase6-backup-qa/run-20260906-15440/results.json`. This verifies
 a disposable PostgreSQL 17 recovery, not the deployed PostgreSQL 16/PostGIS stack,
 its storage permissions, the later manifest-HMAC requirement or an observed CI run.
+
+For a planned application-key change, follow [encryption-key rotation](ENCRYPTION_KEY_ROTATION.md). Keep each database backup with its matching recoverable key version.

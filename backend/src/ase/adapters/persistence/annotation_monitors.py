@@ -61,6 +61,30 @@ def _transition(row: TransitionRow) -> AnnotationTransition:
     )
 
 
+def _monitor(row: MonitorRow, watches: list[WatchRow]) -> AnnotationMonitor:
+    return AnnotationMonitor(
+        row.id,
+        row.created_by,
+        row.team_id,
+        row.report_id,
+        row.version_number,
+        row.name,
+        tuple(cast(AnnotationKind, value) for value in row.categories),
+        row.notify_on_change,
+        cast(MonitorStatus, row.status),
+        row.unavailable_reason,
+        row.revision,
+        row.checkpoint_id,
+        row.checkpoint_number,
+        tuple(
+            WatchedRevision(cast(AnnotationKind, w.kind), w.root_id, w.revision_id) for w in watches
+        ),
+        row.created_at,
+        row.updated_at,
+        cast(MonitorMode, row.mode),
+    )
+
+
 class SqlAnnotationMonitorRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -83,28 +107,7 @@ class SqlAnnotationMonitorRepository:
             .order_by(WatchRow.kind, WatchRow.root_id)
             .execution_options(populate_existing=True)
         )
-        return AnnotationMonitor(
-            row.id,
-            row.created_by,
-            row.team_id,
-            row.report_id,
-            row.version_number,
-            row.name,
-            tuple(cast(AnnotationKind, value) for value in row.categories),
-            row.notify_on_change,
-            cast(MonitorStatus, row.status),
-            row.unavailable_reason,
-            row.revision,
-            row.checkpoint_id,
-            row.checkpoint_number,
-            tuple(
-                WatchedRevision(cast(AnnotationKind, w.kind), w.root_id, w.revision_id)
-                for w in watches
-            ),
-            row.created_at,
-            row.updated_at,
-            cast(MonitorMode, row.mode),
-        )
+        return _monitor(row, list(watches))
 
     async def page(
         self,
@@ -122,14 +125,27 @@ class SqlAnnotationMonitorRepository:
         total = await self.session.scalar(
             select(func.count()).select_from(MonitorRow).where(*criteria)
         )
-        ids = await self.session.scalars(
-            select(MonitorRow.id)
-            .where(*criteria)
-            .order_by(MonitorRow.created_at.desc(), MonitorRow.id)
-            .limit(limit)
-            .offset(offset)
+        rows = list(
+            await self.session.scalars(
+                select(MonitorRow)
+                .where(*criteria)
+                .order_by(MonitorRow.created_at.desc(), MonitorRow.id)
+                .limit(limit)
+                .offset(offset)
+                .execution_options(populate_existing=True)
+            )
         )
-        return [value for key in ids if (value := await self.get(key)) is not None], int(total or 0)
+        grouped: dict[UUID, list[WatchRow]] = {row.id: [] for row in rows}
+        if rows:
+            watches = await self.session.scalars(
+                select(WatchRow)
+                .where(WatchRow.monitor_id.in_(grouped))
+                .order_by(WatchRow.kind, WatchRow.root_id)
+                .execution_options(populate_existing=True)
+            )
+            for watch in watches:
+                grouped[watch.monitor_id].append(watch)
+        return [_monitor(row, grouped[row.id]) for row in rows], int(total or 0)
 
     async def usage(self, owner: UUID, team: UUID | None) -> tuple[int, int, int, int]:
         scope = (

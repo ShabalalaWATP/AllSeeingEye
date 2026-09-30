@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Literal
 
+from ase.application.feeds.board_reads import read_board
 from ase.application.ports import Clock
-from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.feeds import EventQuery, EventQueryReader
 from ase.application.ports.trackers import ConflictDirectory
 from ase.domain.events import Category, Event
 from ase.domain.ukraine.confirmed import CivilianHarm, ConfirmedLosses
@@ -80,7 +81,7 @@ class UkraineBoard:
 class UkraineBoardService:
     def __init__(
         self,
-        store: EventStore,
+        store: EventQueryReader,
         clock: Clock,
         conflicts: ConflictDirectory,
         control: ControlSnapshot | None,
@@ -89,6 +90,24 @@ class UkraineBoardService:
     ) -> None:
         self._store, self._clock, self._conflicts, self._control = store, clock, conflicts, control
         self._confirmed, self._civilian_harm = confirmed, civilian_harm
+
+    async def read[T](
+        self, project: Callable[[UkraineBoardService], T], *, admission_key: str
+    ) -> T:
+        return await read_board(
+            self._store,
+            lambda reader: project(
+                UkraineBoardService(
+                    reader,
+                    self._clock,
+                    self._conflicts,
+                    self._control,
+                    self._confirmed,
+                    self._civilian_harm,
+                )
+            ),
+            admission_key=admission_key,
+        )
 
     @property
     def control(self) -> ControlSnapshot | None:

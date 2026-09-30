@@ -63,8 +63,11 @@ async def test_hidden_and_unknown_handles_receive_identical_responses(
 
     pending = await client.get(f"/api/teams/{team_id}/invitations", headers=manager_headers)
     items = pending.json()["items"]
-    # One invitation was delivered, and the duplicate submission did not create another.
-    assert [item["recipient_id"] for item in items] == [str(hidden.id)]
+    # Every submission has an opaque receipt, independent of delivery.
+    assert len(items) == 5
+    assert all(item["recipient_id"] is None for item in items)
+    assert all(item["recipient_display_name"] is None for item in items)
+    assert all(item["recipient_username"] is None for item in items)
 
     inbox = await client.get(
         "/api/me/team-invitations",
@@ -99,7 +102,7 @@ async def test_self_and_administrator_handles_are_not_revealed(
     assert as_admin.status_code == as_self.status_code == unknown.status_code == 202
     assert as_admin.json() == as_self.json() == unknown.json()
     pending = await client.get(f"/api/teams/{team_id}/invitations", headers=manager_headers)
-    assert pending.json()["total"] == 0
+    assert pending.json()["total"] == 3
 
 
 async def test_handle_invitations_enforce_sender_authority_first(

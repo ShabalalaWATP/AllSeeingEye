@@ -1,5 +1,6 @@
 """Known drafting failures survive lease expiry without weakening ownership fences."""
 
+import asyncio
 from copy import deepcopy
 from datetime import timedelta
 from types import SimpleNamespace
@@ -7,12 +8,16 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import update
 
+from ase.adapters.persistence.report_job_codec import payload_columns
+from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.report_jobs.recovery import expired_failure
 from ase.application.reports.drafting import Draft
 from ase.application.reports.sections import SectionIncomplete
 from ase.container.report_job_worker import ReportJobWorker
+from ase.domain.subscription_monthly_budget import MonthlyBudgetPolicy
 from report_job_helpers import NOW, job, saved
 from report_job_helpers import job_storage as _job_storage  # noqa: F401
 
@@ -24,7 +29,9 @@ def known_failure_payload():
         "schema_version": 1,
         "current_packet": DIGEST,
         "stage": "drafting",
-        "calls": [{"status": "completed", "error": None}],
+        "calls": [
+            {"status": "completed", "error": None, "reserved_output": 100, "completion_tokens": 10}
+        ],
         "sections": {
             f"{DIGEST}:S2": {
                 "packet_digest": DIGEST,
@@ -49,7 +56,10 @@ async def test_known_worker_failure_can_pause_its_own_expired_lease(job_storage,
         ),
     )
     container = SimpleNamespace(
-        session_factory=factory, clock=SimpleNamespace(now=lambda: NOW + timedelta(seconds=46))
+        session_factory=factory,
+        clock=SimpleNamespace(now=lambda: NOW + timedelta(seconds=46)),
+        monthly_budget_policy=MonthlyBudgetPolicy(),
+        source_admission=SimpleNamespace(guard=asyncio.Lock),
     )
     monkeypatch.setattr(
         "ase.container.report_job_worker.execute_job",
@@ -140,8 +150,6 @@ async def test_expired_recovery_preserves_only_proven_current_failure(job_storag
         payload["sections"][f"{DIGEST}:S3"] = other
     elif uncertainty == "mismatched_identity":
         section["section_id"] = "different"
-    elif uncertainty == "malformed_calls":
-        payload["calls"] = [None]
     original = await saved(
         factory,
         job(
@@ -152,6 +160,16 @@ async def test_expired_recovery_preserves_only_proven_current_failure(job_storag
         ),
     )
     async with factory() as session:
+        if uncertainty == "malformed_calls":
+            payload["calls"] = [None]
+            # Corrupt persisted data directly: ordinary writes now maintain and
+            # validate the usage projection in the same transaction.
+            await session.execute(
+                update(ReportJobRow)
+                .where(ReportJobRow.id == original.id)
+                .values(**payload_columns(payload))
+            )
+            await session.commit()
         repo = SqlReportJobRepository(session)
         assert await repo.recover_expired(NOW + timedelta(seconds=2)) == 1
         recovered = await repo.get(original.id)

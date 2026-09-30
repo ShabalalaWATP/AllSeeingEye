@@ -73,6 +73,10 @@ class SqlSourceAdmission:
         self._monotonic = monotonic
         self._overrides: _Overrides | None = None
 
+    @property
+    def generation(self) -> int:
+        return source_control_version()
+
     @asynccontextmanager
     async def guard(self) -> AsyncIterator[None]:
         """The configured deployment is one API process; share this instance across consumers."""

@@ -175,6 +175,13 @@ class SubscriptionAttemptRow(Base):
             name="ck_subscription_attempt_usage",
         ),
         Index("ix_subscription_attempt_history", "edition_id", "number"),
+        Index(
+            "ix_subscription_attempt_open",
+            "started_at",
+            "id",
+            sqlite_where=text("ended_at IS NULL"),
+            postgresql_where=text("ended_at IS NULL"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)

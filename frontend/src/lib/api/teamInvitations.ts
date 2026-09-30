@@ -7,7 +7,7 @@ import type { components } from './types.gen';
 const invitationSchema = z.object({
   id: z.uuid(),
   team_id: z.uuid(),
-  recipient_id: z.uuid(),
+  recipient_id: z.uuid().nullable(),
   inviter_id: z.uuid(),
   role: z.enum(['member', 'manager']),
   note: z.string().nullable(),

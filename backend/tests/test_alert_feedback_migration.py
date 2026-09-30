@@ -60,7 +60,8 @@ def test_postgresql_upgrade_ddl_is_renderable_without_a_live_database():
     config = alembic_config("postgresql+asyncpg://fixture:fixture@localhost/unused")
     output = StringIO()
     config.output_buffer = output
-    command.upgrade(config, "0066:0070", sql=True)
+    # The parent data migration reads retained jobs; render only this batch's DDL.
+    command.upgrade(config, "0068:0070", sql=True)
     sql = output.getvalue()
     assert "CREATE TABLE alert_feedback_days" in sql
     assert "ADD COLUMN baseline_ratio" in sql

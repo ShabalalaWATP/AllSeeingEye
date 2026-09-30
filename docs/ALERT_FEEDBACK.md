@@ -72,8 +72,8 @@ old semantics cannot reappear after reset. Renaming a rule preserves its cohort.
 For 200 continuously enabled rules, 30 days require about 144,000 sample rows
 (200 × 24 × 30), plus up to 200 for the current cutoff hour. Matching edits reset
 their rows; indicator sampling prunes indicator rows beyond the retention bound.
-All-kind baseline retention is coordinated with KAN-28; that prerequisite must
-be integrated before this batch is released.
+All-kind baseline retention is supplied by the integrated KAN-28 parent. Its
+activity hour/ID index supports bounded deletion batches across all sample kinds.
 
 ## Validation limits
 

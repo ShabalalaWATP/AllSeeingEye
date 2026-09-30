@@ -19,8 +19,10 @@ async def recheck_comparison(
     try:
         access = await selector.claims._context(actor)
         for snapshot in snapshots:
-            record = await selector.claims._report(access, snapshot.report_id)
-            version = await selector.claims._version(snapshot.report_id, snapshot.version_number)
+            record = await selector.claims.resolve_report(access, snapshot.report_id)
+            version = await selector.claims.resolve_version(
+                snapshot.report_id, snapshot.version_number
+            )
             if (
                 actor.user_id != snapshot.actor_id
                 or record.created_by != snapshot.owner_id
@@ -41,8 +43,8 @@ async def _revisions(
     selector: SelectClaimExport, access: AccessContext, snapshot: SelectedClaimExport
 ) -> None:
     for reference, expected in zip(snapshot.references, snapshot.revisions, strict=True):
-        root, anchor = await selector.claims._anchor(access, reference.claim_id)
-        actual = await selector.claims._revision(root, anchor, reference.revision_id)
+        root, anchor = await selector.claims.resolve_anchor(access, reference.claim_id)
+        actual = await selector.claims.resolve_revision(root, anchor, reference.revision_id)
         if actual != expected:
             raise Conflict("A selected claim revision changed while rendering.")
     if snapshot.identity_references:
@@ -51,10 +53,10 @@ async def _revisions(
         for identity_reference, identity_expected in zip(
             snapshot.identity_references, snapshot.identity_revisions, strict=True
         ):
-            identity_root, anchor = await selector.identities._anchor(
+            identity_root, anchor = await selector.identities.resolve_anchor(
                 access, identity_reference.decision_id
             )
-            identity_actual = await selector.identities._revision(
+            identity_actual = await selector.identities.resolve_revision(
                 identity_root, anchor, identity_reference.revision_id
             )
             if identity_actual != identity_expected:
@@ -65,10 +67,10 @@ async def _revisions(
         for relationship_reference, relationship_expected in zip(
             snapshot.relationship_references, snapshot.relationship_revisions, strict=True
         ):
-            relationship_root, anchor = await selector.relationships._anchor(
+            relationship_root, anchor = await selector.relationships.resolve_anchor(
                 access, relationship_reference.relationship_id
             )
-            relationship_actual = await selector.relationships._revision(
+            relationship_actual = await selector.relationships.resolve_revision(
                 relationship_root, anchor, relationship_reference.revision_id
             )
             if relationship_actual != relationship_expected:

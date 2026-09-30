@@ -11,9 +11,9 @@ from uuid import uuid4
 import typer
 
 from ase.adapters.persistence.session import ensure_sqlite_directory
-from ase.app_factory import create_app
 from ase.cli_aiddata import import_aiddata
 from ase.cli_designations import import_designations
+from ase.cli_encryption import rotate_key
 from ase.cli_infrastructure import (
     import_centres,
     import_energy,
@@ -30,7 +30,6 @@ from ase.cli_ukraine import (
     import_oblasts,
     import_reference,
 )
-from ase.container import Container
 from ase.domain.errors import AppError, InvalidCredentials, WeakPassword
 from ase.domain.password_policy import validate_password
 from ase.domain.users import Role, User, normalise_email
@@ -38,6 +37,7 @@ from ase.infrastructure.migrations import upgrade_to_head
 from ase.infrastructure.settings import Environment, Settings
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
+app.command("rotate-encryption-key")(rotate_key)
 app.command("import-designations")(import_designations)
 app.command("import-aiddata")(import_aiddata)
 app.command("import-public-figures")(import_figures)
@@ -70,6 +70,8 @@ def recover_admin_mfa(
 
 
 async def _recover_admin_mfa(settings: Settings, email: str, password: str) -> None:
+    from ase.container import Container  # noqa: PLC0415 - keep migrations independent of app wiring
+
     container = Container(settings)
     try:
         async with container.session_factory() as session:
@@ -99,6 +101,8 @@ def recover_admin_totp(
 
 
 async def _recover_admin_totp(settings: Settings, email: str, password: str) -> None:
+    from ase.container import Container  # noqa: PLC0415 - keep migrations independent of app wiring
+
     container = Container(settings)
     try:
         async with container.session_factory() as session:
@@ -135,6 +139,8 @@ def create_admin(
 
 
 async def _create_admin(settings: Settings, email: str, display_name: str, password: str) -> bool:
+    from ase.container import Container  # noqa: PLC0415 - keep migrations independent of app wiring
+
     container = Container(settings)
     try:
         async with container.session_factory() as session:
@@ -168,6 +174,8 @@ def export_openapi(
     path: Annotated[Path, typer.Argument(help="Where to write the OpenAPI JSON")],
 ) -> None:
     """Write the OpenAPI schema so the frontend can generate its API types."""
+    from ase.app_factory import create_app  # noqa: PLC0415 - schema export alone needs the app
+
     settings = Settings(_env_file=None, env=Environment.TEST, database_url="sqlite+aiosqlite://")
     schema = create_app(settings).openapi()
     path.parent.mkdir(parents=True, exist_ok=True)

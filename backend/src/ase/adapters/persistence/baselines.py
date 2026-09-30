@@ -1,11 +1,11 @@
-"""Hourly activity samples: the one durable table that grows with time, a few rows an hour."""
+"""Hourly operational samples, retained only for the rolling baseline window."""
 
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import ActivitySampleRow
@@ -48,6 +48,23 @@ class SqlBaselineSink:
 
     async def record_many(self, hour: datetime, samples: Sequence[tuple[str, str, int]]) -> None:
         async with self._session_factory() as session:
+            # Include every sample kind, including kinds no longer being sampled.
+            # Bound each statement so an existing backlog does not require one
+            # unbounded delete. The cycle finishes the backlog before recording.
+            while True:
+                stale = (
+                    select(ActivitySampleRow.id)
+                    .where(ActivitySampleRow.hour < hour - timedelta(days=30))
+                    .order_by(ActivitySampleRow.hour, ActivitySampleRow.id)
+                    .limit(1000)
+                )
+                removed = await session.scalars(
+                    delete(ActivitySampleRow)
+                    .where(ActivitySampleRow.id.in_(stale))
+                    .returning(ActivitySampleRow.id)
+                )
+                if len(removed.all()) < 1000:
+                    break
             repository = SqlBaselineRepository(session)
             for kind, key, value in samples:
                 await repository.record(kind, key, hour, value)

@@ -34,7 +34,7 @@ async def test_snapshot_requires_login(client: AsyncClient, user: User) -> None:
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     response = await client.get("/api/map-infrastructure", headers=bearer(token))
     assert response.status_code == 200
-    assert response.headers["cache-control"] == "private, no-store"
+    assert response.headers["cache-control"] == "private, no-cache"
     payload = response.json()
     assert len(payload["cables"]) >= 1000
     assert payload["ground_stations"]
