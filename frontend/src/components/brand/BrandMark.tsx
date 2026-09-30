@@ -1,11 +1,12 @@
 /**
  * The small live brand mark: the React Bits Evil Eye at about 40 px with a
- * fixed pupil, capped at 24 frames per second, paused while the tab is hidden,
- * and effectively static (flames stopped, one frame per second) when the user
- * prefers reduced motion.
+ * fixed pupil, capped at 24 frames per second, paused while the tab is hidden
+ * or when the viewer pauses the animation, and effectively static (flames stopped,
+ * one frame per second) when the user prefers reduced motion.
  */
 import EvilEye from './EvilEye';
 import { BRAND_GROUND, BRAND_NAME } from './tokens';
+import { useMotionPause } from './useMotionPause';
 import { usePageVisible, useReducedMotion } from './useMotionPreferences';
 
 export interface BrandMarkProps {
@@ -19,6 +20,7 @@ export interface BrandMarkProps {
 export function BrandMark({ size = 40, decorative = false, still = false }: BrandMarkProps) {
   const reducedMotion = useReducedMotion() || still;
   const visible = usePageVisible();
+  const { chosenPause } = useMotionPause();
 
   return (
     <div
@@ -35,7 +37,7 @@ export function BrandMark({ size = 40, decorative = false, still = false }: Bran
         backgroundColor={BRAND_GROUND}
         maxFps={reducedMotion ? 1 : 24}
         flameSpeed={reducedMotion ? 0 : 1}
-        paused={!visible}
+        paused={!visible || chosenPause}
       />
     </div>
   );
