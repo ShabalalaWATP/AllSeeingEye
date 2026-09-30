@@ -22,7 +22,9 @@ COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml 
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 # Caddy serves the .br and .gz siblings directly (file_server precompressed).
-RUN pnpm build && node scripts/precompress.js dist
+# CI has a separate required typecheck; standalone image builds keep it by default.
+ARG BUILD_COMMAND=build
+RUN pnpm "$BUILD_COMMAND" && node scripts/precompress.js dist
 
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.

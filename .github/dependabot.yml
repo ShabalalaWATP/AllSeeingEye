@@ -37,6 +37,7 @@ updates:
     ignore:
       # Vitest 5.0.2's jsdom environment reads jsdom's private Blob internals, which
       # jsdom 30 removed, so every binary upload test fails. Lift once Vitest supports it.
+      # Review by 2026-11.
       - dependency-name: jsdom
         versions: ['>=30.0.0']
   - package-ecosystem: gomod
@@ -46,6 +47,7 @@ updates:
     ignore:
       # Caddy 2.11.4's CEL matcher does not compile against cel-go 0.29 or later
       # (Interpretable became InterpretableV2). Remove once Caddy supports it.
+      # Review by 2026-11.
       - dependency-name: github.com/google/cel-go
         versions: ['>=0.29.0']
     groups:
@@ -58,6 +60,7 @@ updates:
       interval: weekly
     ignore:
       # CI tests the backend on Python 3.13; move the image and CI together, deliberately.
+      # Review by 2026-11.
       - dependency-name: python
         update-types: ['version-update:semver-minor', 'version-update:semver-major']
     groups:
@@ -68,6 +71,13 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      # Move Node with CI's node-version, LTS releases only. Review by 2026-11.
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+      # Review the Caddy toolchain before a Go major upgrade. Review by 2026-11.
+      - dependency-name: golang
+        update-types: ['version-update:semver-major']
     groups:
       frontend-images-minor-and-patch:
         patterns: ['*']
