@@ -1,5 +1,6 @@
 """Known drafting failures survive lease expiry without weakening ownership fences."""
 
+import asyncio
 from copy import deepcopy
 from datetime import timedelta
 from types import SimpleNamespace
@@ -13,6 +14,7 @@ from ase.application.report_jobs.recovery import expired_failure
 from ase.application.reports.drafting import Draft
 from ase.application.reports.sections import SectionIncomplete
 from ase.container.report_job_worker import ReportJobWorker
+from ase.domain.subscription_monthly_budget import MonthlyBudgetPolicy
 from report_job_helpers import NOW, job, saved
 from report_job_helpers import job_storage as _job_storage  # noqa: F401
 
@@ -49,7 +51,10 @@ async def test_known_worker_failure_can_pause_its_own_expired_lease(job_storage,
         ),
     )
     container = SimpleNamespace(
-        session_factory=factory, clock=SimpleNamespace(now=lambda: NOW + timedelta(seconds=46))
+        session_factory=factory,
+        clock=SimpleNamespace(now=lambda: NOW + timedelta(seconds=46)),
+        monthly_budget_policy=MonthlyBudgetPolicy(),
+        source_admission=SimpleNamespace(guard=asyncio.Lock),
     )
     monkeypatch.setattr(
         "ase.container.report_job_worker.execute_job",

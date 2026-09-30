@@ -87,3 +87,13 @@ Concurrent branches need deliberate integration at these boundaries:
 No push, pull request, merge, deployment or Jira transition was performed by
 this implementation worker. Publication, independent review and release approval
 remain with the coordinating task.
+
+## Coordinator integration
+
+Published as draft PR #89 on top of the workflow/contracts PR #88. The first
+SQLite and PostgreSQL CI runs exposed an incomplete test container in the
+expired-lease recovery regression. It now provides the retry service's real
+default monthly policy and an isolated source guard. All 22 tests in that
+regression module pass locally; Ruff, formatting and whitespace checks pass.
+The updated PostgreSQL CI run remains required. This fixture repair does not
+relax the application's retry or lease fences.

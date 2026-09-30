@@ -48,8 +48,12 @@ async def test_failures_are_indistinguishable(client: AsyncClient, user: User) -
     wrong = await login(client, USER_EMAIL, "not-the-password-at-all")
     unknown = await login(client, "nobody@example.com", USER_PASSWORD)
     assert wrong.status_code == unknown.status_code == 401
-    assert wrong.json() == unknown.json()
-    assert wrong.json()["error"]["code"] == "invalid_credentials"
+    wrong_error, unknown_error = wrong.json()["error"], unknown.json()["error"]
+    # Correlation IDs identify requests, never account existence or failure reasons.
+    assert wrong_error.pop("request_id") == wrong.headers["X-Request-ID"]
+    assert unknown_error.pop("request_id") == unknown.headers["X-Request-ID"]
+    assert wrong_error == unknown_error
+    assert wrong_error["code"] == "invalid_credentials"
     assert not set_cookie_headers(wrong)
 
 
