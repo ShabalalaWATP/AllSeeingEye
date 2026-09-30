@@ -12,11 +12,11 @@ criteria that require completed GitHub runs. No production deployment is authori
 | --- | --- | --- |
 | KAN-69 | Four Vitest blob shards, merged coverage, separate lint/type/build checks, reusable workflow and preserved required `frontend` check. Failure reports are retained. Two complete Linux frontend runs passed, with every shard below six minutes including setup. | Final combined-tree run and five comparable before/after runs. |
 | KAN-70 | Per-job idle progress budgets observe committed stage/status/payload changes, ignore heartbeat-only changes, cancel and join unfinished tasks, and keep an overall cap. Shared report workers receive the slow marker. Backend shards print the 20 slowest tests. | Twenty consecutive main CI runs without the reported timeout. |
-| KAN-71 | Four PostgreSQL shards select persistence fixtures/helpers and explicit PostgreSQL, migration and race tests. Ordinary database tests use private worker databases; special database tests run serially. Selected node IDs and diagnostic coverage are retained. SQLite keeps the sole global 90% backend gate. | Complete Linux PostgreSQL regression run, node-ID census and five-run runner-minute comparison. |
+| KAN-71 | Four PostgreSQL shards select persistence fixtures/helpers and explicit PostgreSQL, migration and race tests. Ordinary database tests use private worker databases; special database tests run serially. All four Linux shards and their merger passed. The 2,361 executed node IDs omit none of the 2,360 reviewed persistence cases. SQLite keeps the sole global 90% backend gate. | Five-run runner-minute comparison. |
 | KAN-72 | Reviewed backend security and frontend auth modules have 95% line and branch gates. Added 84 backend boundary tests, MFA/session lifecycle tests and login feedback cases. Missing reviewed modules fail the checker. Fresh merged Linux backend and frontend reports pass all reviewed floors. | Final combined-tree confirmation. |
 | KAN-73 | 88 existing pure test files moved into the Node project, including one already-skipped benchmark; DOM tests retain jsdom and MSW. | Same-machine before/after timing, at least 70 seconds saved and full coverage difference within 0.05 percentage points. |
-| KAN-74 | Behavioural coverage across maps, research, auth, assistant and report controls. Narrow chart validation and map seam continuity fixes retain edge-case behaviour. Fresh merged Linux coverage reaches 92.16% branches with every file of at least 20 branches at 70% or above. The checker enforces these floors and prints the ten worst files. | Final workflow-only enforcement confirmation. |
-| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. API/web images build and scan in parallel with separate GHA caches and a fail-closed `images` aggregator. Security uses the pnpm cache. Dependabot major holds include review dates. Undici updated within the existing jsdom range. | Matrix image timing below 90 seconds and four weekly Dependabot observations. |
+| KAN-74 | Behavioural coverage across maps, research, auth, assistant and report controls. Narrow chart validation and map seam continuity fixes retain edge-case behaviour. Fresh merged Linux coverage reaches 92.16% branches with every file of at least 20 branches at 70% or above. The checker enforces these floors and prints the ten worst files. The subsequent Linux run passed the strict gates. | Final combined-tree confirmation. |
+| KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. API/web images build and scan in parallel with separate GHA caches and a fail-closed `images` aggregator. Security uses the pnpm cache. Dependabot major holds include review dates. Undici and brace-expansion updated within existing dependency ranges. Cached image jobs measured 69/44 seconds. | End-to-end image completion below 90 seconds, including aggregator scheduling, and four weekly Dependabot observations. |
 | KAN-76 | MSW handlers split into focused admin/response modules. Photo-geolocation lifecycle tests split from the interaction suite. All touched split files stay below 350 lines. Full Linux frontend CI passed after extraction. | Final combined-tree confirmation. |
 
 ## Measured checks
@@ -28,6 +28,11 @@ criteria that require completed GitHub runs. No production deployment is authori
   LCOV scan matches the branch numerator and denominator exactly. The workflow
   now enforces the measured 92% global and 70% per-file floors without changing
   the original four Vitest thresholds or excluding production code.
+- The same run passed all eight SQLite shards, all four PostgreSQL shards and both
+  backend mergers. Its PostgreSQL artefacts contain 2,361 unique node IDs: none of
+  the 2,360 reviewed cases is omitted, and the additional case is the new SQLite
+  checkpoint-isolation regression. Run `36663903807` subsequently passed all
+  frontend checks including the enabled 92%/70% branch and 95% auth gates.
 - GitHub run `36659162698` completed all four frontend shards, static/build checks
   and the merged 90% coverage gate. Merged branches were 20,016/21,988 (91.03%).
   This establishes a consistent Linux baseline for the remaining 92% target.
@@ -42,7 +47,11 @@ criteria that require completed GitHub runs. No production deployment is authori
   In the second, API/web build steps took 38/47 seconds, with both smoke and Trivy
   checks passing. The 85-second sum of build steps is not the whole-job target.
   The subsequent two-image matrix removes sequential builds/scans while preserving
-  the required `images` result and every scan. Its timing remains to be measured.
+  the required `images` result and every scan. Its first API/web jobs took 89/69
+  seconds, with 93 seconds from their first start to the aggregator finishing.
+  The next cached jobs took 69/44 seconds, but the aggregator waited 55 seconds
+  to start, making end-to-end elapsed time 128 seconds. Individual execution times
+  meet the 90-second target; overall completion including scheduling does not yet.
 - Frontend authentication: 67 tests across 12 files passed in 53.53 seconds.
   Every reviewed auth module passes 95% lines and branches. Direct routed feedback
   tests exercise rejected sign-in and rate limiting without booting the full shell;
@@ -102,6 +111,15 @@ criteria that require completed GitHub runs. No production deployment is authori
   Before the update, the audit reported two high, five moderate and three low.
   The package source and integrity were verified against npm metadata and the
   [official signed release](https://github.com/nodejs/undici/releases/tag/v7.30.0).
+- A later advisory update made run `36663903807` fail its frontend audit, with six
+  high and three moderate brace-expansion findings. Updating only its existing
+  transitive resolutions to 1.1.21, 2.1.7 and 5.0.12 restores zero known audit
+  vulnerabilities. Package repositories and integrity hashes match official npm
+  metadata. These versions fix the upstream
+  [nested expansion](https://github.com/advisories/GHSA-qhr7-859c-m2p7) and
+  [comma parsing](https://github.com/advisories/GHSA-6j4f-fj2g-mc7p) recursion
+  advisories. Frozen installation, unchanged generated API types, five focused
+  Vitest cases, targeted ESLint, production build and bundle budget checks passed.
 - Frontend TypeScript and changed-file Prettier checks passed. Backend Ruff lint
   and formatting passed across all 25 changed or newly added test/helper files.
   Whitespace and file-length checks passed. Actionlint with ShellCheck passed for
@@ -114,7 +132,7 @@ criteria that require completed GitHub runs. No production deployment is authori
   progress/isolation/selection tests passed. The census selected 2,360 of 10,086
   cases across 438 files. No file containing a direct, nested or method database
   constructor was absent from the selection. This is selection evidence, not
-  evidence that all selected PostgreSQL tests have executed.
+  the execution evidence; the later Linux run and artefact census above provide it.
 - Installed Vitest 5.0.1 project resolution explicitly inherits the declaring
   config for inline projects by default. Root mock-reset and timeout settings
   therefore remain applied to both projects.

@@ -1,7 +1,7 @@
 # Forecast and alert feedback: KAN-125 to KAN-129
 
 Recorded 30 September 2026. Branch: `codex/KAN-125-forecast-feedback`.
-Integrated parent: `447227b4f701068c1ddfaa3a834accacfd2593c4`, performance PR #93.
+Integrated parent: `d72c9237b644fbb6d3276c6eb890d08989ffa8fd`, performance PR #93.
 This batch is a draft for review;
 release, email delivery and research accuracy require their own evidence.
 
@@ -49,8 +49,8 @@ Acknowledgements retain the existing active team-member write contract. Archived
 team writes remain restricted, with the existing administrator manual override
 preserved where applicable. Neither aggregate counts nor exports widen scope.
 Targeted Bandit inspection of nine affected modules reported no medium/high
-findings. Gitleaks 8.24.3 scanned all six non-merge feature commits in
-`447227b4..HEAD` with redaction enabled and reported no leaks. These targeted
+findings. Gitleaks 8.24.3 scanned all seven non-merge feature commits in
+`d72c9237..HEAD` with redaction enabled and reported no leaks. These targeted
 checks are not an exhaustive repository security scan.
 
 A subsequent independent migration review found that `0070` originally guarded
@@ -67,6 +67,14 @@ Live ORM metadata and the existing current migration tests are unchanged.
 The combined ratio, historical SQLite, feedback and reminder migration group
 passed all 23 tests after the repair (89.94 seconds, `--no-cov`); changed-file Ruff
 and formatting passed. Independent read-only review found no further gap.
+
+An independent private PostgreSQL rehearsal passed all six combined upgrade,
+preservation, constraints and downgrade-guard tests plus all five historical
+inventory tests. The expanded run initially found one remaining duplicate `0030`
+metadata projection in the PostgreSQL monitor test. That test now reuses
+`metadata_0030()`; its targeted real PostgreSQL rerun passed (one test, 4.49 seconds),
+joining the 16 other passing cases. The reviewer verified disposal of all generated
+databases and its labelled container. No production database was involved.
 
 ## Validation and limits
 
@@ -92,9 +100,10 @@ After the repaired parent `447227b4`, a further 23 focused stream-pool/shutdown,
 alert-context, release-fence and performance-storage tests passed in 13.28 seconds.
 That parent adds no API schema changes.
 
-Coverage was not measured in these focused checks. Full CI/coverage, a live
-PostgreSQL run of the forecast migrations, browser acceptance and notification
-pipeline integration remain separate release evidence. Deterministic tests do
+Coverage was not measured in these focused checks. Full CI/coverage, browser acceptance and notification pipeline integration remain
+separate release evidence. The later dependency parent changes only the audited
+lockfile and CI evidence document; its owner validated frozen installation, zero
+audit vulnerabilities, API generation, focused tests, lint, build and bundle checks. Deterministic tests do
 not establish model quality, production latency or forecast calibration.
 
 Feature guides: [Forecast reviews](../FORECAST_REVIEWS.md) and
