@@ -10,6 +10,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ai_usage_views import AiUsageViews
+from ase.application.assistant.alert_context import AlertContextReader
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
@@ -87,4 +88,7 @@ class AssistantWiring(ContainerCore):
             record_usage,
             self.ai_usage_accounting,
             ReportContextReader(self.get_report(session)),
+            AlertContextReader(
+                repos.alerts, self.access_policy(session), self.store, self.source_admission
+            ),
         )

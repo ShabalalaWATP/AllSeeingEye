@@ -147,6 +147,8 @@ class IndicatorRow(Base):
     north: Mapped[float | None] = mapped_column(Float, nullable=True)
     categories: Mapped[list[Any]] = mapped_column(JSON, default=list)
     keywords: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    baseline_ratio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    baseline_days: Mapped[int] = mapped_column(Integer, default=30, server_default="30")
     threshold: Mapped[int] = mapped_column(Integer, default=1)
     window_minutes: Mapped[int] = mapped_column(Integer, default=60)
     cooldown_minutes: Mapped[int] = mapped_column(Integer, default=60)
@@ -193,6 +195,10 @@ class AlertRow(Base):
     countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
     acknowledged_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     acknowledged_by: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    disposition: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    disposition_note: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    baseline_mean: Mapped[float | None] = mapped_column(Float, nullable=True)
+    baseline_ratio: Mapped[float | None] = mapped_column(Float, nullable=True)
     report_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
 
 

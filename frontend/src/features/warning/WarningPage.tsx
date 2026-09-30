@@ -13,17 +13,17 @@ import {
   fetchAlerts,
   fetchIndicators,
 } from '@/lib/api/warning';
-import type { Alert, Indicator, IndicatorRequest } from '@/lib/api/warning';
-import { formatAgo } from '@/lib/format';
+import type { AlertAcknowledgementRequest, Indicator, IndicatorRequest } from '@/lib/api/warning';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { useNow } from '@/lib/hooks/useNow';
 import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { fetchPlans } from '@/lib/api/direction';
 import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 
-import { AlertDestination } from './AlertDestination';
+import { AlertItem } from './AlertItem';
+import { RuleBaseline } from './RuleBaseline';
+import { RuleFeedback } from './RuleFeedback';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
@@ -41,50 +41,9 @@ function describeRule(indicator: Indicator): string {
   ]
     .filter((part) => part !== '')
     .join(' ');
+  if (indicator.baseline_ratio)
+    return `${indicator.baseline_ratio} times the ${indicator.baseline_days ?? 30}-day hourly mean, at least ${indicator.threshold} items`;
   return `${String(indicator.threshold)} or more ${what} in ${describeWindow(indicator.window_minutes)}`;
-}
-
-function AlertItem({
-  alert,
-  onAcknowledge,
-  workspace,
-  canAcknowledge,
-}: {
-  alert: Alert;
-  onAcknowledge: () => void;
-  workspace: string;
-  canAcknowledge: boolean;
-}) {
-  const now = useNow();
-  return (
-    <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">
-          {alert.title}
-          <span className="ml-2 text-xs text-muted">{workspace}</span>
-        </span>
-        <span className="font-mono text-xs text-muted">{formatAgo(alert.fired_at, now)}</span>
-      </div>
-      {alert.summary !== '' && <p className="text-xs text-muted">{alert.summary}</p>}
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        {alert.countries.length > 0 && (
-          <span className="font-mono text-muted">{alert.countries.join(', ')}</span>
-        )}
-        <AlertDestination
-          monitorId={alert.annotation_monitor_id}
-          transitionId={alert.annotation_transition_id}
-          reportId={alert.report_id}
-        />
-        {alert.acknowledged_at === null ? (
-          <Button variant="secondary" disabled={!canAcknowledge} onClick={onAcknowledge}>
-            Acknowledge
-          </Button>
-        ) : (
-          <span className="text-muted">acknowledged</span>
-        )}
-      </div>
-    </li>
-  );
 }
 
 export default function WarningPage() {
@@ -119,8 +78,8 @@ export default function WarningPage() {
   );
   const acknowledge = useAsyncAction(
     useCallback(
-      async (id: string) => {
-        const updated = await acknowledgeAlert(id);
+      async (id: string, feedback: AlertAcknowledgementRequest) => {
+        const updated = await acknowledgeAlert(id, feedback);
         setAlerts((page) =>
           page === null
             ? page
@@ -182,7 +141,7 @@ export default function WarningPage() {
                 alert={item}
                 workspace={workspaces.label(item.team_id)}
                 canAcknowledge={workspaces.canAcknowledge(item.team_id)}
-                onAcknowledge={() => void acknowledge.run(item.id)}
+                onAcknowledge={(feedback) => void acknowledge.run(item.id, feedback)}
               />
             ))}
           </ul>
@@ -219,7 +178,11 @@ export default function WarningPage() {
                     <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
                   </Td>
                   <Td className="font-mono text-xs text-muted">{describeScope(item)}</Td>
-                  <Td className="text-xs">{describeRule(item)}</Td>
+                  <Td className="text-xs">
+                    {describeRule(item)}
+                    <RuleFeedback ruleId={item.id} />
+                    {item.baseline_ratio && <RuleBaseline ruleId={item.id} />}
+                  </Td>
                   <Td className="font-mono text-xs text-muted">{item.report_template ?? 'none'}</Td>
                   <Td>
                     <Button

@@ -56,9 +56,11 @@ export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: Assistant
     source_categories: [],
   };
   const matched = answer.coverage.matched_count;
-  const matchSummary = Number.isFinite(matched)
-    ? `${matched.toLocaleString('en-GB')} matched the question.`
-    : 'Matched count unavailable.';
+  const matchSummary = answer.alert
+    ? `${answer.alert.matched_count} matched at firing; ${answer.alert.stored_sample_size} stored references; ${answer.alert.available_evidence_count} available records included.`
+    : Number.isFinite(matched)
+      ? `${matched.toLocaleString('en-GB')} matched the question.`
+      : 'Matched count unavailable.';
   const showEvidence = (id: string) => {
     setEvidenceOpen(true);
     setFocusedSource(id);
@@ -82,13 +84,15 @@ export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: Assistant
       <h3>Answer</h3>
       <div className="eye-answer-scope" aria-label="Search interpretation">
         <span>
-          {answer.scope.mode === 'report'
-            ? `Report: ${answer.report?.title ?? 'selected edition'} · Version ${answer.report?.version ?? 'unknown'}`
-            : answer.scope.mode === 'viewport'
-              ? 'Area: map view'
-              : answer.scope.mode === 'selected'
-                ? 'Area: selected item'
-                : 'Area: all available'}
+          {answer.scope.mode === 'alert'
+            ? 'Alert: currently retained referenced evidence'
+            : answer.scope.mode === 'report'
+              ? `Report: ${answer.report?.title ?? 'selected edition'} · Version ${answer.report?.version ?? 'unknown'}`
+              : answer.scope.mode === 'viewport'
+                ? 'Area: map view'
+                : answer.scope.mode === 'selected'
+                  ? 'Area: selected item'
+                  : 'Area: all available'}
         </span>
         {answer.scope.mode === 'report' && (
           <span>

@@ -11455,6 +11455,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AlertAcknowledgementIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11462,6 +11479,102 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AlertOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/feedback": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Feedback",
+        "operationId": "indicator_feedback_api_warning_indicators__indicator_id__feedback_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertFeedback"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/baseline": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Baseline",
+        "operationId": "indicator_baseline_api_warning_indicators__indicator_id__baseline_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorBaselineOut"
                 }
               }
             }
@@ -15677,6 +15790,90 @@
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
+      "AlertAcknowledgementIn": {
+        "properties": {
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AlertAcknowledgementIn"
+      },
+      "AlertDisposition": {
+        "type": "string",
+        "enum": [
+          "useful",
+          "noise",
+          "duplicate"
+        ],
+        "title": "AlertDisposition"
+      },
+      "AlertFeedback": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "useful": {
+            "type": "integer",
+            "title": "Useful",
+            "default": 0
+          },
+          "noise": {
+            "type": "integer",
+            "title": "Noise",
+            "default": 0
+          },
+          "duplicate": {
+            "type": "integer",
+            "title": "Duplicate",
+            "default": 0
+          },
+          "time_basis": {
+            "type": "string",
+            "title": "Time Basis",
+            "default": "UTC acknowledgement day; today and the previous 29 days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "since",
+          "until"
+        ],
+        "title": "AlertFeedback"
+      },
       "AlertOut": {
         "properties": {
           "id": {
@@ -15790,6 +15987,49 @@
               }
             ],
             "title": "Acknowledged By"
+          },
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disposition_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Note"
+          },
+          "baseline_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Mean"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
           },
           "report_id": {
             "anyOf": [
@@ -17166,6 +17406,35 @@
         ],
         "title": "Assessor"
       },
+      "AssistantAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "stored_sample_size": {
+            "type": "integer",
+            "title": "Stored Sample Size"
+          },
+          "available_evidence_count": {
+            "type": "integer",
+            "title": "Available Evidence Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "matched_count",
+          "stored_sample_size",
+          "available_evidence_count"
+        ],
+        "title": "AssistantAlertOut"
+      },
       "AssistantAnswerIn": {
         "properties": {
           "question": {
@@ -17188,7 +17457,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Scope",
             "default": "global"
@@ -17273,6 +17543,18 @@
                 "type": "null"
               }
             ]
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
           }
         },
         "additionalProperties": false,
@@ -17337,6 +17619,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AssistantReportOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alert": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantAlertOut"
               },
               {
                 "type": "null"
@@ -17654,7 +17946,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Mode"
           },
@@ -27761,6 +28054,60 @@
         ],
         "title": "IdentityUpdateIn"
       },
+      "IndicatorBaselineOut": {
+        "properties": {
+          "sample_hours": {
+            "type": "integer",
+            "title": "Sample Hours"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "earliest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earliest"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_hours",
+          "mean",
+          "earliest",
+          "as_of",
+          "ready",
+          "reason"
+        ],
+        "title": "IndicatorBaselineOut"
+      },
       "IndicatorCreateIn": {
         "properties": {
           "claim_id": {
@@ -27947,6 +28294,26 @@
             "title": "Threshold",
             "default": 1
           },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 7.0,
+            "title": "Baseline Days",
+            "default": 30
+          },
           "window_minutes": {
             "type": "integer",
             "maximum": 10080.0,
@@ -28104,6 +28471,22 @@
           "threshold": {
             "type": "integer",
             "title": "Threshold"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "title": "Baseline Days",
+            "default": 30
           },
           "window_minutes": {
             "type": "integer",

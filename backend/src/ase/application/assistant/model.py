@@ -85,6 +85,15 @@ a separate explicit research action. The report data cutoff is not a currentness
 """
 
 
+ALERT_PROMPT = """
+This is currently retained evidence referenced by one authorised alert. The alert stores
+only a sample of matching event IDs. Distinguish matched count, stored sample size and
+available included evidence. Live records may have been corrected since firing; they
+are not a frozen historical snapshot. Unavailable evidence may be disabled or otherwise
+unavailable, not necessarily expired. Explain only supplied cited E references and gaps.
+"""
+
+
 class _Paragraph(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     kind: Literal["finding", "inference", "gap"]
@@ -216,6 +225,14 @@ def _context_payload(question: AssistantQuestion, context: AssistantContext) -> 
             }
             if context.report
             else None,
+            "alert": {
+                "id": str(context.alert.id),
+                "matched_count": context.alert.matched_count,
+                "stored_sample_size": context.alert.stored_sample_size,
+                "available_evidence_count": context.alert.available_evidence_count,
+            }
+            if context.alert
+            else None,
             "context": {
                 "sources": sources,
                 "candidate_count": context.candidate_count,
@@ -261,7 +278,12 @@ async def answer_question(
         raise InvalidRequest("The assistant context has invalid source references.")
     request = LlmRequest(
         messages=(
-            LlmMessage("system", SYSTEM_PROMPT + (REPORT_PROMPT if context.report else "")),
+            LlmMessage(
+                "system",
+                SYSTEM_PROMPT
+                + (REPORT_PROMPT if context.report else "")
+                + (ALERT_PROMPT if context.alert else ""),
+            ),
             LlmMessage("user", _context_payload(question, context)),
         ),
         max_output_tokens=profile.max_output_tokens,

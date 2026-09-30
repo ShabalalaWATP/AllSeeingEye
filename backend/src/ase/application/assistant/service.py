@@ -9,8 +9,9 @@ from dataclasses import replace
 from ase.application.access import AccessPolicy
 from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceLlmGateway
+from ase.application.assistant.alert_context import AlertContextReader
 from ase.application.assistant.continuation import AssistantCapacity
-from ase.application.assistant.intent import interpret_question
+from ase.application.assistant.followup import followup_context
 from ase.application.assistant.model import AssistantAnswerInvalid, answer_question
 from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
@@ -27,16 +28,15 @@ from ase.application.ports.session import SessionCheck
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.assistant import (
+    AssistantAlertContext,
     AssistantAnswer,
     AssistantContext,
-    AssistantInterpretation,
     AssistantModel,
     AssistantParagraph,
     AssistantQuestion,
     AssistantReportContext,
 )
 from ase.domain.errors import InvalidRequest, RateLimited
-from ase.domain.events import Category
 from ase.domain.llm import LlmProfile, LlmResult, LlmRole, LlmUsage
 from ase.domain.users import User
 
@@ -61,6 +61,7 @@ class MapAssistant:
         record_usage: UsageRecorder,
         ai_usage: AiUsageAccounting | None = None,
         report_reader: ReportContextReader | None = None,
+        alert_reader: AlertContextReader | None = None,
     ) -> None:
         self.access, self.routing, self.retrieval = access, routing, retrieval
         self.admission, self.gateway, self.cipher = admission, gateway, cipher
@@ -68,6 +69,7 @@ class MapAssistant:
         self.capacity, self.record_usage = capacity, record_usage
         self.ai_usage = ai_usage
         self.report_reader = report_reader
+        self.alert_reader = alert_reader
 
     async def _authorise(
         self,
@@ -75,6 +77,7 @@ class MapAssistant:
         check_session: SessionCheck,
         *,
         report: AssistantReportContext | None = None,
+        alert: AssistantAlertContext | None = None,
         final: bool = False,
     ) -> None:
         try:
@@ -84,6 +87,10 @@ class MapAssistant:
                 if self.report_reader is None:
                     raise InvalidRequest("Report Q&A is unavailable.")
                 await self.report_reader.require_current(actor, report)
+            if alert is not None:
+                if self.alert_reader is None:
+                    raise InvalidRequest("Alert explanations are unavailable.")
+                await self.alert_reader.require_current(actor, alert)
             await check_session()
         finally:
             # No identity-map snapshot or account lock crosses a provider request.
@@ -132,15 +139,23 @@ class MapAssistant:
                     if self.report_reader is None:
                         raise InvalidRequest("Report Q&A is unavailable.")
                     context = await self.report_reader.collect(actor, question)
+                elif question.scope == "alert":
+                    if self.alert_reader is None:
+                        raise InvalidRequest("Alert explanations are unavailable.")
+                    context = await self.alert_reader.collect(actor, question)
                 elif previous and FOLLOWUP_REFERENCE.search(question.question):
-                    context = self._followup_context(previous, question)
+                    context = followup_context(previous, question, self.clock.now())
                 else:
                     context = await self.retrieval.collect(actor, question, as_of=self.clock.now())
                 context = replace(context, as_of=self.clock.now())
                 if not context.sources:
                     async with self.admission.guard():
                         await self._authorise(
-                            actor, check_session, report=context.report, final=True
+                            actor,
+                            check_session,
+                            report=context.report,
+                            alert=context.alert,
+                            final=True,
                         )
                     return AssistantAnswer(
                         (
@@ -157,85 +172,14 @@ class MapAssistant:
                         self.clock.now(),
                     )
                 try:
-                    routing = await self.routing.snapshot(personal_owner_id=actor.id)
+                    routing = await self.routing.snapshot(
+                        team_id=context.alert.team_id if context.alert else None,
+                        personal_owner_id=(context.alert.created_by if context.alert else actor.id),
+                    )
                     profile = routing.required(LlmRole.ASSESSMENT)
                 finally:
                     await self.uow.rollback()
                 return await self._answer(actor, question, context, profile, check_session)
-
-    def _followup_context(
-        self, previous: AssistantContext, question: AssistantQuestion
-    ) -> AssistantContext:
-        intent = interpret_question(question.question, now=self.clock.now())
-        period = question.time_range or intent.time_range
-        effective_categories = question.source_categories or (
-            *(category.value for category in Category),
-            "camera",
-            "infrastructure",
-            "doctrine",
-        )
-        interpretation = AssistantInterpretation(
-            intent.topics,
-            intent.countries,
-            period.since if period else None,
-            period.until if period else None,
-            notes=("Reusing evidence from this user's earlier Ask Eye answer.",),
-            source_categories=effective_categories,
-        )
-        if intent.clarification:
-            return AssistantContext(
-                (),
-                0,
-                0,
-                False,
-                ("No previous sources searched because the follow-up needs clarification.",),
-                clarification=intent.clarification,
-                interpretation=interpretation,
-            )
-        # Pronouns refer to the frozen evidence set. Analytical wording such as
-        # "independently confirmed" is not a new entity that each title must contain.
-        filter_intent = replace(
-            intent,
-            terms=tuple(term for term in intent.terms if term != "military"),
-            anchors=(),
-            residual=(),
-        )
-        rows = [
-            source
-            for source in previous.sources
-            if _source_category(source) in effective_categories
-            and filter_intent.accepts(_source_category(source), source)
-            and (
-                period is None
-                or (
-                    source.published_at is not None
-                    and period.since <= source.published_at < period.until
-                )
-            )
-            and (
-                question.bbox is None
-                or (source.point is not None and question.bbox.contains(source.point))
-            )
-            and (
-                question.selected is None
-                or (
-                    source.kind == question.selected.kind
-                    and source.record_id == question.selected.id
-                )
-            )
-        ]
-        return AssistantContext(
-            tuple(replace(row, id=f"E{index + 1}") for index, row in enumerate(rows)),
-            len(previous.sources),
-            len({row.source_id for row in rows}),
-            previous.capped,
-            (
-                *previous.notes,
-                "Follow-up uses a frozen evidence packet; source status is rechecked.",
-            ),
-            matched_count=len(rows),
-            interpretation=interpretation,
-        )
 
     async def _answer(
         self,
@@ -254,8 +198,14 @@ class MapAssistant:
         gateway: LlmGateway = self.gateway
         metered: AllowanceLlmGateway | None = None
         if self.ai_usage is not None:
-            # Report Q&A on a team edition is team work; everything else is personal.
-            team_id = context.report.team_id if context.report else None
+            # Scope is taken only from an authorised saved record.
+            team_id = (
+                context.alert.team_id
+                if context.alert
+                else context.report.team_id
+                if context.report
+                else None
+            )
             gateway = metered = AllowanceLlmGateway(
                 self.gateway,
                 self.ai_usage,
@@ -267,7 +217,9 @@ class MapAssistant:
         try:
             async with self.admission.guard():
                 await self._sources_enabled(context)
-                await self._authorise(actor, check_session, report=context.report)
+                await self._authorise(
+                    actor, check_session, report=context.report, alert=context.alert
+                )
             sent = True
             paragraphs, result = await answer_question(
                 gateway,
@@ -346,11 +298,15 @@ class MapAssistant:
         # Accounting can await storage. Nothing protected is released until all
         # permissions have been rechecked after that final asynchronous side effect.
         async with self.admission.guard():
-            await self._authorise(actor, check_session, report=context.report, final=True)
+            await self._authorise(
+                actor, check_session, report=context.report, alert=context.alert, final=True
+            )
             await self._sources_enabled(context)
             await check_session()
             continuation_id = (
-                None if context.report else self.capacity.remember(actor, context, self.clock.now())
+                None
+                if context.report or context.alert
+                else self.capacity.remember(actor, context, self.clock.now())
             )
             return AssistantAnswer(
                 paragraphs,
@@ -367,14 +323,3 @@ class MapAssistant:
 
 def _tokens(value: int | None) -> int | None:
     return value if type(value) is int and 0 <= value <= 2**31 - 1 else None
-
-
-def _source_category(source: object) -> str:
-    kind = getattr(source, "kind", "")
-    if kind != "event":
-        return str(kind)
-    for detail in getattr(source, "details", ()):
-        match = re.match(r"Category: ([a-z_]+);", detail)
-        if match:
-            return match.group(1)
-    return "event"

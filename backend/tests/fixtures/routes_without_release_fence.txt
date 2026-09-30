@@ -161,7 +161,6 @@ POST /api/teams/{team_id}/board/read
 POST /api/teams/{team_id}/invitations
 POST /api/teams/{team_id}/invitations/by-username
 POST /api/teams/{team_id}/leave
-POST /api/warning/alerts/{alert_id}/ack
 POST /api/warning/indicators
 PUT /api/admin/sources/firms_viirs_noaa20/connection/draft
 PUT /api/direction/plans/{plan_id}

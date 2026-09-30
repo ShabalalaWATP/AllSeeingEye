@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
 
@@ -25,6 +26,8 @@ class IndicatorIn(BaseModel):
     categories: list[Category] = Field(default_factory=list, max_length=20)
     keywords: list[str] = Field(default_factory=list, max_length=20)
     threshold: int = Field(default=1, ge=1, le=10_000)
+    baseline_ratio: float | None = Field(default=None, gt=1, le=100)
+    baseline_days: int = Field(default=30, ge=7, le=30)
     window_minutes: int = Field(default=60, ge=5, le=10_080)
     cooldown_minutes: int = Field(default=60, ge=1, le=1_440)
     severity_floor: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -43,6 +46,8 @@ class IndicatorIn(BaseModel):
             categories=self.categories,
             keywords=[word[:60] for word in self.keywords],
             threshold=self.threshold,
+            baseline_ratio=self.baseline_ratio,
+            baseline_days=self.baseline_days,
             window_minutes=self.window_minutes,
             cooldown_minutes=self.cooldown_minutes,
             severity_floor=self.severity_floor,
@@ -63,6 +68,8 @@ class IndicatorOut(BaseModel):
     categories: list[Category]
     keywords: list[str]
     threshold: int
+    baseline_ratio: float | None = None
+    baseline_days: int = 30
     window_minutes: int
     cooldown_minutes: int
     severity_floor: float
@@ -89,6 +96,8 @@ class IndicatorOut(BaseModel):
             categories=list(indicator.categories),
             keywords=list(indicator.keywords),
             threshold=indicator.threshold,
+            baseline_ratio=indicator.baseline_ratio,
+            baseline_days=indicator.baseline_days,
             window_minutes=indicator.window_minutes,
             cooldown_minutes=indicator.cooldown_minutes,
             severity_floor=indicator.severity_floor,
@@ -103,6 +112,12 @@ class IndicatorOut(BaseModel):
 
 class IndicatorsOut(BaseModel):
     items: list[IndicatorOut]
+
+
+class AlertAcknowledgementIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    disposition: AlertDisposition | None = None
+    note: str | None = Field(default=None, max_length=200)
 
 
 class AlertOut(BaseModel):
@@ -120,6 +135,10 @@ class AlertOut(BaseModel):
     countries: list[str]
     acknowledged_at: datetime | None
     acknowledged_by: UUID | None
+    disposition: AlertDisposition | None = None
+    disposition_note: str | None = None
+    baseline_mean: float | None = None
+    baseline_ratio: float | None = None
     report_id: UUID | None
     created_by: UUID | None
     team_id: UUID | None
@@ -141,6 +160,10 @@ class AlertOut(BaseModel):
             countries=list(alert.countries),
             acknowledged_at=alert.acknowledged_at,
             acknowledged_by=alert.acknowledged_by,
+            disposition=alert.disposition,
+            disposition_note=alert.disposition_note,
+            baseline_mean=alert.baseline_mean,
+            baseline_ratio=alert.baseline_ratio,
             report_id=alert.report_id,
             created_by=alert.created_by,
             team_id=alert.team_id,
@@ -150,3 +173,12 @@ class AlertOut(BaseModel):
 class AlertsOut(BaseModel):
     items: list[AlertOut]
     unacknowledged: int
+
+
+class IndicatorBaselineOut(BaseModel):
+    sample_hours: int
+    mean: float | None
+    earliest: datetime | None
+    as_of: datetime
+    ready: bool
+    reason: str
