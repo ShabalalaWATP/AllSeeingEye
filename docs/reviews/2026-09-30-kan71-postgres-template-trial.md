@@ -119,3 +119,47 @@ owned PostgreSQL service in 2.03 seconds. That run cloned both cases, retained a
 three durability flags and left zero owned databases. Ruff/format and whitespace
 checks pass. The running PostgreSQL CI jobs were retained for honest timing and
 census evidence; a new complete CI run is required after publishing this repair.
+
+## First CI trial and focused repairs
+
+Run 36712872629 at `83bbc802569c982a71bd5c17aae2afb03463de18` failed:
+SQLite encountered eager session-fixture setup in the two opt-in tests, and one
+PostgreSQL shard encountered an unhashable mock attribute during classification
+and a non-zero template activity snapshot. The failed shard skipped its serial
+lane and coverage upload. Its four PostgreSQL jobs plus failed merger consumed
+39.6167 runner-minutes; this incomplete run is excluded from performance acceptance.
+The complete target and census still require a successful subsequent CI run.
+
+The opt-in tests now retrieve the worker only after their option gate and app
+setup. Classification constrains dynamic `__name__` and `__module__` attributes
+to strings while retaining literal factory names and alias/closure traversal.
+Focused regressions reproduced the invalid mock attributes before this repair.
+
+The redundant `pg_stat_activity` precheck was removed. PostgreSQL 16.4's
+[database-copy implementation](https://github.com/postgres/postgres/blob/REL_16_4/src/backend/commands/dbcommands.c#L1225-L1238)
+uses its locked source check, and
+[CountOtherDBBackends](https://github.com/postgres/postgres/blob/REL_16_4/src/backend/storage/ipc/procarray.c#L3440-L3523)
+waits up to five seconds for ordinary backends to exit. PostgreSQL itself also
+handles conflicting autovacuum workers. The fixture retains its ten-second
+command timeout, exact owned source validation and sealed template. It issues
+no termination, FORCE or unseal command. The original CI log cannot identify
+which backend produced its non-zero activity observation.
+
+Follow-up validation on the same pinned private PostgreSQL 16 service, 2 GiB
+tmpfs and all three durability settings on:
+
+- 48 classification, lifecycle, ownership and existing isolation/helper tests
+  passed. Native CREATE refusal preserves ownership and closes the service
+  connection; the existing cancellation acknowledgement test still passes.
+- Seven real PostgreSQL cases passed, including eight consecutive empty clones
+  and native transient/persistent client tests. Those tests retain a client
+  before sealing, observe CREATE running, then either release it or verify
+  native refusal while the original client remains usable.
+- 23 cases passed with two xdist workers across camera catalogue, password change
+  and opt-in fixture tests: 22 clones, zero admission fallback, one ineligible.
+  Both actual PostgreSQL CI error paths ran successfully.
+- The default opt-in-test invocation without service URLs reports two skips.
+  Owned database census was zero after each PostgreSQL subprocess, and the
+  private service and volumes were removed. Ruff and whitespace checks passed.
+
+These focused results do not replace full CI, coverage or aggregate timing.

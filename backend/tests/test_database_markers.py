@@ -1,7 +1,10 @@
 """Nested and dynamically selected constructors cannot disappear from the DB lane."""
 
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import call
 
+import pytest
 from sqlalchemy.ext.asyncio import create_async_engine as engine_factory
 
 from database_markers import file_constructs_database, uses_database
@@ -51,3 +54,25 @@ def test_persistence_types_without_database_calls_remain_pure(tmp_path: Path):
     module.write_text("from ase.adapters.persistence.session import sqlite_path\n")
     assert not file_constructs_database(module)
     assert not uses_database(lambda: 1)
+
+
+@pytest.mark.parametrize(
+    ("factory_name", "module"),
+    [(call, "unittest.mock"), ([], "ase.mock"), ("create_engine", []), ("create_engine", call)],
+)
+def test_dynamic_mock_attributes_cannot_break_database_classification(factory_name, module):
+    candidate = SimpleNamespace(__name__=factory_name, __module__=module)
+
+    def ordinary():
+        return candidate
+
+    assert not uses_database(ordinary)
+
+
+def test_literal_factory_name_still_requires_database_with_dynamic_attributes():
+    create_engine = SimpleNamespace(__name__=call, __module__=call)
+
+    def constructor():
+        return create_engine
+
+    assert uses_database(constructor)

@@ -99,12 +99,9 @@ class TemplateWorker:
                 if self.template is None or self.template not in self._created:
                     raise ValueError("No owned template is available")
                 self._validate(self.template)
-                # No force-disconnect: a live template connection is an isolation bug.
-                active = await connection.fetchval(
-                    "SELECT count(*) FROM pg_stat_activity WHERE datname=$1", self.template
-                )
-                if active:
-                    raise RuntimeError("Template still has database connections")
+                # PostgreSQL's locked CREATE guard waits for exiting source backends.
+                # A separate activity snapshot can reject harmless shutdown in progress.
+                # Keep native persistent-use refusal and the command timeout, never FORCE.
                 suffix = f' TEMPLATE "{self.template}"'
             await connection.execute(f'{verb} DATABASE "{name}"{suffix}')
             if drop:

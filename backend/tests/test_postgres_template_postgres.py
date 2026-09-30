@@ -1,5 +1,6 @@
 """Real owned PostgreSQL template copies, transaction isolation and cleanup failures."""
 
+import asyncio
 import os
 from types import SimpleNamespace
 from uuid import uuid4
@@ -15,7 +16,7 @@ from ase.adapters.persistence.session import create_engine
 from postgres_isolation import database_command, worker_database_url
 from postgres_template_guard import schema_fingerprint
 from postgres_template_store import TemplateWorker
-from pytest_support import drop_schema
+from pytest_support import create_schema, drop_schema
 
 
 @pytest.fixture
@@ -169,3 +170,91 @@ async def test_app_schema_setup_failure_still_disposes_its_clone_engine(worker, 
         await anext(fixture)
     assert disposed == [True]
     await worker.release(database)
+
+
+async def test_repeated_clones_remain_empty_and_sealed_after_disposal(worker):
+    names = set()
+    for _ in range(8):
+        database = await worker.acquire()
+        assert database and database.name not in names
+        names.add(database.name)
+        engine = create_engine(database.url)
+        try:
+            async with engine.begin() as connection:
+                assert (
+                    await connection.scalar(text("SELECT count(*) FROM administration_lock")) == 0
+                )
+                assert (
+                    await connection.scalar(
+                        text("INSERT INTO administration_lock DEFAULT VALUES RETURNING id")
+                    )
+                    == 1
+                )
+                assert (
+                    await connection.scalar(
+                        text("SELECT datallowconn FROM pg_database WHERE datname=:name"),
+                        {"name": worker.template},
+                    )
+                    is False
+                )
+        finally:
+            await engine.dispose()
+            await worker.release(database)
+        assert worker._created == {worker.template}
+        assert not worker._leases
+
+
+@pytest.mark.parametrize("transient", [True, False])
+async def test_native_clone_waits_for_transient_clients_and_refuses_persistent_clients(
+    worker, transient
+):
+    # Retain a client before sealing, without ever unsealing the owned template.
+    template = worker._allocate()
+    await worker._command(template)
+    engine = create_engine(worker._url(template))
+    try:
+        await create_schema(engine, fresh=True)
+    finally:
+        await engine.dispose()
+    client = await asyncpg.connect(worker._url(template).replace("+asyncpg", ""))
+    observer, pending = None, None
+    try:
+        await worker._command(template, seal=True)
+        worker.template = template
+        observer = await asyncpg.connect(worker._service.render_as_string(hide_password=False))
+        pending = asyncio.create_task(worker.acquire())
+        # Observe the real native CREATE in progress before allowing the client to exit.
+        async with asyncio.timeout(3):
+            while not await observer.fetchval(
+                "SELECT EXISTS (SELECT 1 FROM pg_stat_activity "
+                "WHERE datname=$1 AND pid<>pg_backend_pid() AND state='active' "
+                "AND query LIKE 'CREATE DATABASE %' AND position($2 IN query)>0)",
+                worker._service.database,
+                template,
+            ):
+                assert not pending.done()
+                await asyncio.sleep(0.01)
+        assert (
+            await observer.fetchval(
+                "SELECT datallowconn FROM pg_database WHERE datname=$1", template
+            )
+            is False
+        )
+        async with asyncio.timeout(12):
+            if transient:
+                await client.close()
+                database = await pending
+                assert database and database.name in worker._created
+                await worker.release(database)
+            else:
+                with pytest.raises(asyncpg.ObjectInUseError):
+                    await pending
+                assert await client.fetchval("SELECT 1") == 1
+        assert worker._created == {template}
+        assert not worker._leases
+    finally:
+        await client.close()
+        if pending is not None:
+            await asyncio.gather(pending, return_exceptions=True)
+        if observer is not None:
+            await observer.close()

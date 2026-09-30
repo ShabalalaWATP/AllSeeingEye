@@ -5,6 +5,7 @@ import os
 from collections import Counter
 from types import SimpleNamespace
 
+import asyncpg
 import pytest
 
 import postgres_templates
@@ -140,3 +141,30 @@ def test_template_options_fail_before_service_ddl(monkeypatch, isolated):
     )
     with pytest.raises(pytest.UsageError, match=r"requires|without query"):
         postgres_templates.pytest_configure(config)
+
+
+async def test_native_clone_refusal_preserves_ownership_and_closes_service(worker, monkeypatch):
+    template, clone = worker._allocate(), worker._allocate()
+    worker.template = template
+    worker._created.add(template)
+    statements, closed = [], []
+
+    class Connection:
+        async def execute(self, statement):
+            statements.append(statement)
+            raise asyncpg.ObjectInUseError("Synthetic native source-in-use refusal")
+
+        async def close(self):
+            closed.append(True)
+
+    async def connect(*_args, **kwargs):
+        assert kwargs["command_timeout"] == 10
+        return Connection()
+
+    monkeypatch.setattr("postgres_template_store.asyncpg.connect", connect)
+    with pytest.raises(asyncpg.ObjectInUseError, match="source-in-use refusal"):
+        await worker._command(clone, clone=True)
+    assert statements == [f'CREATE DATABASE "{clone}" TEMPLATE "{template}"']
+    assert worker._created == {template}
+    assert not worker._leases
+    assert closed == [True]
