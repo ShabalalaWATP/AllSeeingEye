@@ -41,7 +41,6 @@ GET /api/capabilities
 GET /api/claims
 GET /api/claims/{claim_id}
 GET /api/claims/{claim_id}/revisions/{revision_id}
-GET /api/countries
 GET /api/direction/aois
 GET /api/direction/plans
 GET /api/direction/plans/{plan_id}
@@ -96,14 +95,7 @@ GET /api/tiles/os/{layer}/{z}/{x}/{y}.png
 GET /api/trackers/aviation
 GET /api/trackers/aviation/jamming
 GET /api/trackers/conflict-sources
-GET /api/trackers/conflicts
-GET /api/trackers/conflicts/{conflict_id}
-GET /api/trackers/cyber
-GET /api/trackers/disasters
-GET /api/trackers/disasters/{hazard}
-GET /api/trackers/maritime
 GET /api/trackers/social
-GET /api/trackers/space
 GET /api/warning/alerts
 GET /api/warning/indicators
 PATCH /api/admin/sources/{source_id}/activation

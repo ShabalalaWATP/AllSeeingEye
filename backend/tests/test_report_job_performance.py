@@ -119,7 +119,12 @@ async def test_heartbeat_only_updates_lease_and_checks_authority_each_time(job_s
     engine, factory = job_storage
     token = uuid4()
     stored = await saved(
-        factory, job(status="running", lease_token=token, lease_until=NOW + timedelta(seconds=20))
+        factory,
+        job(
+            status="running",
+            lease_token=token,
+            lease_until=NOW + timedelta(seconds=20),
+        ),
     )
 
     class Guard:
@@ -173,7 +178,12 @@ async def test_lease_only_renewal_cannot_extend_a_changed_attempt(job_storage, c
     _, factory = job_storage
     token = uuid4()
     stored = await saved(
-        factory, job(status="running", lease_token=token, lease_until=NOW + timedelta(seconds=20))
+        factory,
+        job(
+            status="running",
+            lease_token=token,
+            lease_until=NOW + timedelta(seconds=20),
+        ),
     )
 
     class Guard:

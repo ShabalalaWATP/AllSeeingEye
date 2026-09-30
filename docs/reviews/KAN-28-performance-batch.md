@@ -213,3 +213,9 @@ The post-extraction benchmark ran under shared load: it preserved 60,000 records
 and all board gaps were below 50 ms, but its 73.926 ms prune timing is not a
 controlled comparison. It does not replace the controlled table or establish
 the 35 ms target. Full stack CI and proxy/browser acceptance remain pending.
+
+CI's Gitleaks 8.24.3 scan reported two false positives in the historical KAN-31
+test commit. Both matches contain adjacent Python keyword arguments with a
+runtime-generated UUID, not a literal credential. The current calls are split
+over lines, and `.gitleaksignore` records only those two exact historical
+fingerprints. All other files, rules and commits remain scanned.
