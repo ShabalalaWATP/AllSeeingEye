@@ -5,7 +5,10 @@ other unnecessary personal fields are not imported. Source URLs are never fetche
 """
 
 from datetime import datetime
-from xml.etree.ElementTree import Element, ParseError
+
+# Types/exceptions only; parsing uses defusedxml with DTDs and entities forbidden.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
+from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring
