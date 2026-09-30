@@ -120,7 +120,7 @@ export function EmailNotificationSettings() {
               <label className="block text-sm">
                 Edition emails
                 <select
-                  className="mt-1 block rounded border border-line bg-surface-2 p-2"
+                  className="mt-1 block rounded border border-control-border bg-surface-2 p-2"
                   value={policy.policy}
                   onChange={(event) => {
                     setSaved(false);

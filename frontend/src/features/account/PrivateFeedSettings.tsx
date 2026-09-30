@@ -91,7 +91,7 @@ export function PrivateFeedSettings() {
           <label className="block text-sm">
             Feed URL
             <input
-              className="mt-1 block w-full rounded border border-line bg-surface-2 p-2"
+              className="mt-1 block w-full rounded border border-control-border bg-surface-2 p-2"
               value={token.feed_url}
               readOnly
             />
@@ -99,7 +99,7 @@ export function PrivateFeedSettings() {
           <label className="block text-sm">
             Username
             <input
-              className="mt-1 block w-full rounded border border-line bg-surface-2 p-2"
+              className="mt-1 block w-full rounded border border-control-border bg-surface-2 p-2"
               value={token.username}
               readOnly
             />
@@ -107,7 +107,7 @@ export function PrivateFeedSettings() {
           <label className="block text-sm">
             Feed password
             <input
-              className="mt-1 block w-full rounded border border-line bg-surface-2 p-2"
+              className="mt-1 block w-full rounded border border-control-border bg-surface-2 p-2"
               value={token.token}
               readOnly
               autoComplete="off"

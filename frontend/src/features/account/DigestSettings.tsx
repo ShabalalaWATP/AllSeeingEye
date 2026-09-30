@@ -70,7 +70,7 @@ export function DigestSettings() {
               value={preferences.timezone}
               disabled={busy}
               maxLength={100}
-              className="mt-1 block rounded border border-line bg-surface px-3 py-2"
+              className="mt-1 block rounded border border-control-border bg-surface px-3 py-2"
               onChange={(event) => setPreferences({ ...preferences, timezone: event.target.value })}
             />
           </label>
@@ -82,7 +82,7 @@ export function DigestSettings() {
               max={23}
               value={preferences.hour}
               disabled={busy}
-              className="mt-1 block rounded border border-line bg-surface px-3 py-2"
+              className="mt-1 block rounded border border-control-border bg-surface px-3 py-2"
               onChange={(event) =>
                 setPreferences({ ...preferences, hour: Number(event.target.value) })
               }
