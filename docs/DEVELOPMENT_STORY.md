@@ -5837,5 +5837,13 @@ reducing measured collection from 70.44 to 11.72 seconds; two new guards reject
 shared key-rotation databases during parallel tests. The combined notification
 run passed all PostgreSQL shards but exposed stale backend fixtures, notification
 control-border assertions and a 91.75% frontend branch result. Focused repairs
-retain the 92% requirement. A corrected full DOM/Node benchmark is running against
-one frozen source and dependency installation with competing heavy work paused.
+retain the 92% requirement. The corrected full DOM/Node comparison passed the
+same 3,644 cases with identical coverage and saved 59.11 seconds, below the
+70-second target. Twenty additional isolated files passed Node compatibility
+checks, with the SVG tests retained in DOM. The PostgreSQL two-worker trial passed
+all shards but increased runner time, so the prior worker count will be retained.
+
+Backend fixture repairs passed 25 cases. Forecast watch behaviour reached all
+32 branches with 12 focused tests; source/export lifecycle tests passed 23 cases
+and exercised 22 previously uncovered branches. Parent PRs were updated in
+dependency order, with no coverage-floor reductions or main merge.

@@ -16,15 +16,19 @@ remaining measured acceptance checks are active; publication is not completion.
 
 The current Jira count is 60 open tickets plus 12 coordinating epics. Of the
 tickets, 54 are in review, four in progress and two await operator action.
-Combined PR #96 still needs backend fixture repairs, frontend behavioural
-coverage above the unchanged 92% floor and the narrowly reviewed Atom scanner
-annotation. All PostgreSQL shards passed its latest completed run.
+Combined PR #96's backend fixture repairs passed 25 focused tests. Forecast and
+source/export behavioural tests passed their focused checks and were published
+in their respective parent PRs. Notification repairs and the reviewed Atom
+annotation are being validated. Combined coverage still needs to exceed the
+unchanged 92% floor. All PostgreSQL shards passed its latest completed run.
 
 The combined PostgreSQL migration rehearsal preserves legacy records through the
 single head 0074 and tests refusal before losing protected history. CI enforces
 the measured 92% frontend branch floor and reviewed 95% security/auth floors.
-KAN-71's PostgreSQL runner-time target and KAN-73's paired frontend timing still
-need qualifying measurements. Operator-only KAN-45/46 and explicit live/provider
+KAN-71's PostgreSQL runner-time target still needs a qualifying measurement.
+KAN-73's controlled pair saved 59.11 seconds with identical coverage, below its
+70-second requirement; a further 20 isolated files passed Node compatibility
+checks. Operator-only KAN-45/46 and explicit live/provider
 acceptance remain outstanding. No new main merge or production deploy is claimed.
 
 KAN-146/148/147 were reconciled to Done after checking merged PR #81 and all

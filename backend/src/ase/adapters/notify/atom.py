@@ -5,6 +5,7 @@ Construction/serialisation only. No untrusted XML is parsed by this module.
 
 import re
 from typing import cast
+
 # Construction/serialisation only; untrusted XML is never parsed here.
 # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec B405

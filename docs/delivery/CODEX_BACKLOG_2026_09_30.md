@@ -72,8 +72,11 @@ subsequent feature branch has completed its own checks.
 The first successful selected PostgreSQL CI run executed 2,361 unique cases with
 no omission from the reviewed 2,360-case census. Its 62.1 runner-minutes exceeded
 KAN-71's 30-minute target, so timing optimisation and measurement remain active.
-The first local DOM timing attempt omitted a repository fixture and is excluded
-from acceptance; a corrected paired run is still required for KAN-73.
+The corrected controlled DOM/Node comparison passed the same 3,644 cases with
+identical coverage, saving 59.11 seconds against KAN-73's 70-second requirement.
+Twenty more isolated files passed focused Node checks; a new controlled pair
+remains necessary. The incomplete archive and unmatched-cache observations are
+excluded from acceptance.
 
 The complete CI run `36664614145` passed at the CI batch's `57d202a5` checkpoint.
 Subsequent shard discovery at `cccfa79f` uses one test root and an explicit ignore
