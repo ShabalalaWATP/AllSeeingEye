@@ -31,10 +31,12 @@ class AlertContextReader:
         self.alerts, self.access = alerts, access
         self.store, self.admission = store, admission
 
-    async def _read(self, actor: User, question: AssistantQuestion) -> Alert:
+    async def _read(
+        self, actor: User, question: AssistantQuestion, *, for_update: bool = False
+    ) -> Alert:
         if question.scope != "alert" or question.alert_id is None:
             raise InvalidRequest("Select an alert for its retained evidence.")
-        access = await self.access.context(actor)
+        access = await self.access.context(actor, for_update=for_update)
         alert = await self.alerts.get(question.alert_id)
         if alert is None:
             raise NotFound()
@@ -85,9 +87,13 @@ class AlertContextReader:
             ),
         )
 
-    async def require_current(self, actor: User, anchor: AssistantAlertContext) -> None:
+    async def require_current(
+        self, actor: User, anchor: AssistantAlertContext, *, for_update: bool = False
+    ) -> None:
         current = await self._read(
-            actor, AssistantQuestion("Check alert access", scope="alert", alert_id=anchor.id)
+            actor,
+            AssistantQuestion("Check alert access", scope="alert", alert_id=anchor.id),
+            for_update=for_update,
         )
         if (current.created_by, current.team_id) != (anchor.created_by, anchor.team_id):
             raise NotFound()

@@ -23,6 +23,12 @@ session validity and alert access are checked again before release. Citations
 must reference records actually included in the bounded packet. Explanations
 do not create a global-map continuation that could bypass alert access.
 
+The final source-admission read precedes the application access check. The HTTP
+release boundary also rechecks the alert under the administration lock after its
+own source read, retaining that lock through the final session confirmation and
+response construction. Regression tests revoke team membership during each of
+those final source reads and require refusal of the completed private answer.
+
 ## Shared dispositions
 
 The first acknowledgement may include `useful`, `noise` or `duplicate`, plus an

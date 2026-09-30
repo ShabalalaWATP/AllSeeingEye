@@ -298,11 +298,10 @@ class MapAssistant:
         # Accounting can await storage. Nothing protected is released until all
         # permissions have been rechecked after that final asynchronous side effect.
         async with self.admission.guard():
+            await self._sources_enabled(context)
             await self._authorise(
                 actor, check_session, report=context.report, alert=context.alert, final=True
             )
-            await self._sources_enabled(context)
-            await check_session()
             continuation_id = (
                 None
                 if context.report or context.alert

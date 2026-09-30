@@ -88,7 +88,13 @@ class AssistantWiring(ContainerCore):
             record_usage,
             self.ai_usage_accounting,
             ReportContextReader(self.get_report(session)),
-            AlertContextReader(
-                repos.alerts, self.access_policy(session), self.store, self.source_admission
-            ),
+            self.alert_context_reader(session),
+        )
+
+    def alert_context_reader(self, session: AsyncSession) -> AlertContextReader:
+        return AlertContextReader(
+            self.repositories(session).alerts,
+            self.access_policy(session),
+            self.store,
+            self.source_admission,
         )

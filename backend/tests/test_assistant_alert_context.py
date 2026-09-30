@@ -14,7 +14,7 @@ from ase.domain.assistant import AssistantQuestion
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.warning import Alert
 from assistant_helpers import Admission, Gateway, event, nothing, profile
-from helpers import USER_PASSWORD, create_user
+from helpers import USER_PASSWORD, bearer, create_user, login_token
 from team_helpers import CONTEXT, team_service
 from warning_scope_helpers import create_indicator
 from warning_scope_helpers import warning_actors as warning_actors  # noqa: PLC0414
@@ -170,3 +170,38 @@ def test_alert_scope_rejects_ambiguous_context():
     question = AssistantQuestion("Explain", scope="alert", alert_id=uuid4())
     with pytest.raises(ValueError):
         replace(question, scope="global")
+
+
+@pytest.mark.parametrize("phase", ["application", "transport"])
+async def test_membership_revoked_during_final_source_check_is_not_released(
+    client, container, admin, warning_actors, phase
+):
+    actors = warning_actors
+    alert = await seed(container, actors.owner, team_id=actors.team.id)
+    await profile(container)
+    container.store.upsert((event(),))
+    original = container.source_admission.enabled_many
+    calls = 0
+
+    async def revoke_at_release(identifiers):
+        nonlocal calls
+        calls += 1
+        if calls == (3 if phase == "application" else 4):
+            async with team_service(container) as service:
+                await service.remove_member(admin, actors.team.id, actors.peer.id, CONTEXT)
+        return await original(identifiers)
+
+    container.source_admission.enabled_many = revoke_at_release
+    if phase == "application":
+        with pytest.raises(NotFound):
+            await ask(container, actors.peer, alert)
+    else:
+        headers = bearer(await login_token(client, actors.peer.email, USER_PASSWORD))
+        response = await client.post(
+            "/api/assistant/answer",
+            headers=headers,
+            json={"question": "Explain this alert", "scope": "alert", "alert_id": str(alert.id)},
+        )
+        assert response.status_code == 404, response.text
+        assert "earthquake" not in response.text
+    assert calls == (3 if phase == "application" else 4)
