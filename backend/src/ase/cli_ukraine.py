@@ -6,11 +6,6 @@ from typing import Annotated
 import typer
 
 from ase.adapters.geo.bounded_download import DEFAULT_CONTACT
-from ase.adapters.geo.ukraine_casualties_import import import_ukraine_casualties
-from ase.adapters.geo.ukraine_control_import import import_ukraine_control
-from ase.adapters.geo.ukraine_losses_import import import_ukraine_losses
-from ase.adapters.geo.ukraine_oblasts_import import import_ukraine_oblasts
-from ase.adapters.geo.ukraine_reference_import import import_ukraine_reference
 
 RESOURCES = Path(__file__).parent / "resources"
 Contact = Annotated[str, typer.Option(help="Contact URL or address sent in the User-Agent.")]
@@ -23,6 +18,10 @@ def import_control(
 ) -> None:
     """Download VIINA's daily territorial control release and write the bounded snapshot."""
     try:
+        from ase.adapters.geo.ukraine_control_import import (  # noqa: PLC0415 - load only the selected command
+            import_ukraine_control,
+        )
+
         count = import_ukraine_control(str(destination), contact=contact)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
@@ -37,6 +36,10 @@ def import_oblasts(
 ) -> None:
     """Download geoBoundaries oblast outlines and write a simplified attributed file."""
     try:
+        from ase.adapters.geo.ukraine_oblasts_import import (  # noqa: PLC0415 - load only the selected command
+            import_ukraine_oblasts,
+        )
+
         count = import_ukraine_oblasts(str(destination), contact=contact)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
@@ -55,6 +58,10 @@ def import_reference(
 ) -> None:
     """Resolve the equipment, forces and timeline seeds through Wikidata and cache images."""
     try:
+        from ase.adapters.geo.ukraine_reference_import import (  # noqa: PLC0415 - load only the selected command
+            import_ukraine_reference,
+        )
+
         count = import_ukraine_reference(str(destination), contact=contact, reuse=reuse)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
@@ -70,6 +77,10 @@ def import_losses(
 ) -> None:
     """Fetch the newest Oryx daily file and a month of totals from the mirror."""
     try:
+        from ase.adapters.geo.ukraine_losses_import import (  # noqa: PLC0415 - load only the selected command
+            import_ukraine_losses,
+        )
+
         count = import_ukraine_losses(str(destination), contact=contact)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
@@ -84,6 +95,10 @@ def import_casualties(
 ) -> None:
     """Read the HRMMU monthly civilian harm pages and the curated casualty references."""
     try:
+        from ase.adapters.geo.ukraine_casualties_import import (  # noqa: PLC0415 - load only the selected command
+            import_ukraine_casualties,
+        )
+
         count = import_ukraine_casualties(str(destination), contact=contact)
     except Exception as exc:
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")

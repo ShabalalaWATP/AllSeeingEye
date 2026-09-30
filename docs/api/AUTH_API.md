@@ -41,7 +41,7 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 | `GET /api/me` | bearer | | 200 `User` | 401 |
 | `POST /api/me/password` | bearer | `{current_password, new_password, totp_code?, mfa_challenge_token?, mfa_code?}`; extra fields forbidden | 204; changes only the authenticated account's password, ends all its sessions and outstanding password links, clears cookies | 401 for an ended/inactive session; 422 `invalid_request` for incorrect current password or required authenticator proof; 422 `weak_password`; 429 |
 | `GET /api/admin/account-requests?status=pending` | admin | | 200 `{"items": [AccountRequest]}` | 401, 403 |
-| `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "manager" | "admin"}` | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided`; 409 `email_taken` when a user with that address already exists |
+| `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "admin"}` (defaults to user) | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided`; 409 `email_taken` when a user with that address already exists |
 | `POST /api/admin/account-requests/{id}/reject` | admin | `{reason?}` | 204 | 404; 409 |
 | `GET /api/admin/users` | admin | | 200 `{"items": [User]}` | 401, 403 |
 | `PATCH /api/admin/users/{id}` | admin | `{role?, is_active?}` | 200 `User`. A role/status change increments the security version and ends the user's sessions; deactivation also voids outstanding activation/reset links | 404; 409 `self_modification`; 403 if the actor loses administrator authority while waiting |
@@ -52,9 +52,13 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 
 Interactive docs (`/api/docs`, `/api/openapi.json`) are served only when `ASE_ENV=dev`; the schema is also exported to a file by `uv run ase export-openapi <path>`.
 
-Managers cannot call the administrator routes above. Assigning global `manager`
-capability does not enrol the account into a team or grant access to another
-team's work. There is no manager-accessible global user directory.
+Only global administrators may call the administrator routes above. Approval and
+account updates accept `user` or `admin`; the retired global `manager` value
+remains readable in account outputs for legacy records, but cannot be assigned.
+An omitted or null update role leaves it unchanged. Current team `manager`
+membership grants authority only within that team, not administrator access or
+access to another team's work. Any active account can create a team. See
+[team authority](TEAMS_API.md) for invitations, promotions and last-manager rules.
 
 ## Multi-factor authentication
 

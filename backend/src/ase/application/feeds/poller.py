@@ -6,7 +6,7 @@ import asyncio
 import contextlib
 from datetime import datetime, timedelta
 
-from ase.application.feeds.health import HealthRegistry
+from ase.application.feeds.health import HealthRegistry, SourceHealth
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_outcome import PollOutcome
 from ase.application.feeds.poll_scope import poll_scope
@@ -55,6 +55,27 @@ class FeedPoller:
         self._fetch_slots = asyncio.Semaphore(fetch_concurrency)
         self._retry_not_before: dict[str, datetime] = {}
 
+    def health_for(self, source_id: str) -> SourceHealth:
+        """Return scheduling health without exposing the poller's registry."""
+        return self._health.get(source_id)
+
+    def reset(self, source_id: str) -> None:
+        """Reset the breaker while preserving a mandatory upstream retry deadline."""
+        entry = self._health.reset(source_id)
+        deadline = self._retry_not_before.get(source_id)
+        if deadline is not None and deadline > self._clock.now():
+            entry.next_poll_at = deadline
+
+    async def prune(self) -> None:
+        """Expire retained events and publish the corresponding invalidation."""
+        result = self._store.prune(self._clock.now())
+        if result.resync_required:
+            await self._bus.publish(BusMessage("event.resync", {"reason": "expiry_overflow"}))
+        elif result.ids:
+            await self._bus.publish(
+                BusMessage("event.expire", {"ids": result.ids, "count": len(result.ids)})
+            )
+
     async def poll_once(self, connector: FeedConnector) -> PollOutcome:
         """Per-poll side effects, such as conditional validators, land only after publication."""
         source_id = connector.spec.id
@@ -90,6 +111,7 @@ class FeedPoller:
         batch: FetchedBatch | None = None
         try:
             if self._admission is not None and not await self._admission.enabled(source_id):
+                self._health.administratively_disabled(source_id)
                 raise FeedUnavailable("Disabled by administrator.")
             # Waiting for a fetch slot does not count against the upstream's deadline.
             async with self._fetch_slots:
@@ -131,6 +153,7 @@ class FeedPoller:
         guard = self._admission.guard() if self._admission else contextlib.nullcontext()
         async with guard:
             if self._admission is not None and not await self._admission.enabled(source_id):
+                self._health.administratively_disabled(source_id)
                 return PollOutcome(
                     source_id, ok=False, error="Disabled before results were admitted."
                 )

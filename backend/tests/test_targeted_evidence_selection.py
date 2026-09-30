@@ -231,10 +231,13 @@ async def test_paused_targeted_job_reuses_its_frozen_packet_without_reselection(
 
     with (
         patch(
-            "ase.application.reports.production.select_for_job",
+            "ase.application.reports.production_preparation.select_for_job",
             side_effect=AssertionError("Resumption must not reselect evidence"),
         ),
-        patch("ase.application.reports.production.draft_sections", side_effect=reached_drafting),
+        patch(
+            "ase.application.reports.production_drafting.draft_sections",
+            side_effect=reached_drafting,
+        ),
         pytest.raises(RuntimeError, match="Frozen packet reached drafting"),
     ):
         await producer.produce(job, AsyncMock(return_value=job.profile), checkpoints=checkpoints)
