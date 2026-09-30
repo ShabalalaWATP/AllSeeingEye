@@ -130,7 +130,8 @@ async def test_pending_send_rechecks_current_access_and_preferences(container, u
             row.archived_at = container.clock.now()
         await session.commit()
     assert await store.prepare(claim, container.clock.now()) is None
-    assert (await _rows(container))[0].state == "cancelled"
+    expected = "uncertain" if revocation.endswith("optout") else "cancelled"
+    assert (await _rows(container))[0].state == expected
 
 
 async def test_disabled_failed_uncertain_and_recorded_success(

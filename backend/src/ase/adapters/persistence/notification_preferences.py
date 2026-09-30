@@ -6,6 +6,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.mfa_models import EmailMfaRow
+from ase.adapters.persistence.notification_cancel import cancel_subscription_email
 from ase.adapters.persistence.notification_digest_models import DigestPreferenceRow
 from ase.adapters.persistence.notification_digest_preferences import cancel_pending_digests
 from ase.adapters.persistence.notification_models import (
@@ -30,6 +31,7 @@ class SqlNotificationPreferences:
 
     async def save_email(self, user_id: UUID, settings: EmailPreferences) -> None:
         if not settings.enabled:
+            await cancel_subscription_email(self._session, user_id)
             await cancel_pending_digests(self._session, user_id)
             await self._session.execute(
                 update(DigestPreferenceRow)
@@ -78,6 +80,7 @@ class SqlNotificationPreferences:
         subscription_id: UUID,
         settings: SubscriptionEmailPreferences,
     ) -> None:
+        await cancel_subscription_email(self._session, user_id, subscription_id, settings)
         existing = await self._session.get(SubscriptionNotificationRow, (user_id, subscription_id))
         if existing is None:
             count = await self._session.scalar(

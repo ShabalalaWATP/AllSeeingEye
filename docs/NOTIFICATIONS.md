@@ -25,6 +25,11 @@ An account opt-out stops all pending subscription email; a per-subscription
 opt-out affects that subscription. A message already accepted by a relay cannot
 be recalled.
 
+An opt-out permanently cancels matching pending or unavailable intents. Claims
+already marked sending become uncertain because acceptance may have happened.
+Re-enabling a channel never revives those earlier intents, even when no worker
+ran between the preference changes.
+
 Configure the existing `ASE_SMTP_*` settings described in [email setup](EMAIL_SETUP.md)
 and [MFA operations](MFA_OPERATIONS.md). TLS certificate verification is mandatory.
 When email is unconfigured, the UI says so and intents remain unavailable. The
