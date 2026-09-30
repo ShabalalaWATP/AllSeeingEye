@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
-import { fetchReportFile } from '@/lib/api/reportDocuments';
+import { fetchReportFile, fetchReportStix, type StixTlp } from '@/lib/api/reportDocuments';
 import { fetchReportMarkdown } from '@/lib/api/reports';
 import type { ReportStatus } from '@/lib/api/reports';
 import { fileNameFor, saveTextFile } from '@/lib/download';
@@ -42,6 +42,7 @@ export function ReportExports({
   status?: ReportStatus | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  const [tlp, setTlp] = useState<StixTlp | ''>('');
   const menuId = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -56,7 +57,11 @@ export function ReportExports({
     if (restoreFocus) trigger.current?.focus();
   };
   const download = useAsyncAction(async (format: ExportChoice) => {
-    if (format === 'md') {
+    if (format === 'stix') {
+      if (!tlp) return;
+      const blob = await fetchReportStix(id, version, tlp);
+      saveBinaryFile(fileNameFor(`${title}-v${String(version)}`, 'stix.json'), blob);
+    } else if (format === 'md') {
       const file = await fetchReportMarkdown(id, version);
       const fallback = fileNameFor(
         `${title}-v${String(version)}`,
@@ -96,7 +101,7 @@ export function ReportExports({
 
   const formats: ExportChoice[] = [
     preferred,
-    ...(['pdf', 'docx', 'md'] as const).filter((format) => format !== preferred),
+    ...(['pdf', 'docx', 'md', 'stix'] as const).filter((format) => format !== preferred),
   ];
   return (
     <div ref={root} className="relative" aria-label="Document exports">
@@ -151,13 +156,27 @@ export function ReportExports({
             </p>
           </div>
           <div className="divide-y divide-line border-t border-line">
+            <label className="block p-2 text-xs">
+              STIX sharing marking
+              <select
+                aria-label="STIX sharing marking"
+                value={tlp}
+                onKeyDown={(event) => event.stopPropagation()}
+                onChange={(event) => setTlp(event.target.value as StixTlp | '')}
+              >
+                <option value="">Choose a marking</option>
+                <option value="green">TLP:GREEN</option>
+                <option value="amber">TLP:AMBER</option>
+                <option value="red">TLP:RED</option>
+              </select>
+            </label>
             {formats.map((format) => (
               <ExportMenuItem
                 key={format}
                 format={format}
                 description={EXPORT_FORMATS[format]}
                 preferred={format === preferred}
-                busy={download.busy}
+                busy={download.busy || (format === 'stix' && !tlp)}
                 caveat={exportCaveat(format, { pdfLanguageUnsupported, languageLabel })}
                 onSelect={() => void download.run(format)}
               />
