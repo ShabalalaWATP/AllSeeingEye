@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import replace
 from typing import Any
@@ -30,12 +31,12 @@ from ase.domain.research import CollectionAttempt, ResearchMode
 from ase.domain.research_records import ResearchReceipt
 
 
-class ChallengeExpansionMixin:
-    async def _read(self) -> dict[str, Any]:
-        raise NotImplementedError
+class ChallengeExpansionMixin(ABC):
+    @abstractmethod
+    async def _read(self) -> dict[str, Any]: ...
 
-    async def mutate(self, callback: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
-        raise NotImplementedError
+    @abstractmethod
+    async def mutate(self, callback: Callable[[dict[str, Any]], None]) -> dict[str, Any]: ...
 
     async def load_expansion_plan(self) -> ExpansionPlan | None:
         value = (await self._read()).get("challenge_expansion_plan")

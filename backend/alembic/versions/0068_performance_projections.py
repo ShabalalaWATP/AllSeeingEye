@@ -15,7 +15,7 @@ from ase.domain.report_jobs import canonical_job_payload
 from ase.domain.report_search import checked_vector
 
 revision = "0068"
-down_revision = "0066"
+down_revision = "0067"
 branch_labels = None
 depends_on = None
 log = logging.getLogger("alembic.runtime.migration")

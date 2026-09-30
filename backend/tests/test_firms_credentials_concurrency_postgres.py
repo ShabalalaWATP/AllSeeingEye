@@ -197,7 +197,7 @@ async def test_old_batch_release_and_key_change_have_one_guarded_order(
     entered, release, waiting = asyncio.Event(), asyncio.Event(), asyncio.Event()
     pids = {}
     scheduler = container.scheduler
-    publish = scheduler._publish
+    publish = scheduler.poller._publish
 
     async def fetch(_connector):
         if first == "mutation":

@@ -17,6 +17,7 @@ from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.worker_progress import run_cycle
 from ase.domain.conflict_evidence import canonical_report_url
 from ase.domain.events import Category, Event, freeze_attributes
 from ase.domain.llm import LlmProfile
@@ -242,7 +243,7 @@ class ConflictScreeningQueue:
     async def _run(self) -> None:
         while True:
             try:
-                await self.run_once()
+                await run_cycle("conflict_screening", float(INTERVAL), self.run_once)
             except Exception:
                 # Do not log source text, prompts, provider responses or credentials.
                 self.state = "unavailable"

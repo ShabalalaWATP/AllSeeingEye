@@ -116,10 +116,19 @@ class InMemoryEventBus:
         self._replay = replay or ReplayBuffer()
         self._epoch = epoch or secrets.token_hex(6)
         self._sequence = 0
+        self._closed_drops = 0
 
     @property
     def subscriber_count(self) -> int:
         return len(self._subscriptions)
+
+    @property
+    def dropped_count(self) -> int:
+        return self._closed_drops + sum(item.dropped for item in self._subscriptions)
+
+    @property
+    def queue_depth(self) -> int:
+        return sum(item._queue.qsize() for item in self._subscriptions)
 
     @property
     def epoch(self) -> str:
@@ -158,4 +167,6 @@ class InMemoryEventBus:
             subscription.push(message)
 
     def unsubscribe(self, subscription: InMemorySubscription) -> None:
-        self._subscriptions.discard(subscription)
+        if subscription in self._subscriptions:
+            self._closed_drops += subscription.dropped
+            self._subscriptions.discard(subscription)

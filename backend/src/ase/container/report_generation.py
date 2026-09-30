@@ -36,6 +36,7 @@ class ReportGenerationWiring:
         web_research: FreshWebResearch | None = None,
         original_followthrough: OriginalFollowThrough | None = None,
     ) -> GenerateReportUseCase:
+        # outside ContainerCore: reaches fresh_web_research and internal_report_projector.
         container = cast("Container", self)
         r = container.repositories(session)
         access = container.access_policy(session)

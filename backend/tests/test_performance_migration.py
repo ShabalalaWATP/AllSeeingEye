@@ -14,7 +14,7 @@ from test_mfa_migration import prepare
 
 def seeded_checkpoint(tmp_path):
     config, database, owner = prepare(tmp_path)
-    command.upgrade(config, "0066")
+    command.upgrade(config, "0067")
     job_id = uuid4().hex
     payload = json.dumps(
         {
@@ -65,7 +65,7 @@ def test_upgrade_backfills_usage_summary_and_downgrade_keeps_audit(tmp_path):
         assert "ix_activity_samples_hour" in {
             row[1] for row in connection.execute("PRAGMA index_list(activity_samples)")
         }
-    command.downgrade(config, "0066")
+    command.downgrade(config, "0067")
     with closing(sqlite3.connect(database)) as connection:
         assert connection.execute("SELECT payload FROM report_jobs").fetchone() == (payload,)
     command.upgrade(config, "0068")
@@ -90,7 +90,7 @@ def test_bad_checkpoint_stops_migration_before_sqlite_schema_changes(tmp_path, c
     with pytest.raises(RuntimeError, match="Repair the reported checkpoint"):
         command.upgrade(config, "0068")
     with closing(sqlite3.connect(database)) as connection, connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0066",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0067",)
         assert "summary" not in {
             row[1] for row in connection.execute("PRAGMA table_info(report_jobs)")
         }

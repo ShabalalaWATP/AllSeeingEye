@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### Codex backlog delivery, 30 September 2026
+
+The [delivery register](delivery/CODEX_BACKLOG_2026_09_30.md) maps every remaining
+Codex-owned non-epic item to a bounded batch or explicit operator prerequisite.
+[Draft PR #88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) publishes the
+shared workflow and reconciles contract/documentation drift. Parallel batch
+implementation is underway; assigned scope is not a completion claim.
+
+KAN-146/148/147 were reconciled to Done after checking merged PR #81 and all
+final CI results. New tickets require their own acceptance, checks, independent
+review and authorised merge. Source/model/browser/backup evidence is separate.
+Historical dated entries below are retained as development evidence; do not
+interpret an old pending statement as proof that current code lacks the feature.
+
 ### Six-ticket Codex maintenance batch, 29 September 2026
 
 - [x] KAN-15: redact nested structured log secrets with bounded traversal.
@@ -13,13 +27,14 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] KAN-20: omit the version from public health and regenerate the API contract.
 - [x] Run the full Windows backend suite and investigate its single unrelated load-sensitive timeout; 9,838 passed, 93 skipped, 93.78% coverage, and the failing test passed in isolation.
 - [x] Complete code, security and documentation review; all CI checks passed on the final code commit.
-- [ ] Require passing PR CI and Alex's release approval before merging or deploying.
+- [x] PR #86 merged on 29 September after successful final CI, as `171d3e0d`.
+- [ ] Record installation-specific deployment verification separately.
 
 The six fixes are in separate commits on `codex/KAN-15-maintenance-batch` in
-[draft PR #86](https://github.com/ShabalalaWATP/AllSeeingEye/pull/86).
+[merged PR #86](https://github.com/ShabalalaWATP/AllSeeingEye/pull/86).
 The new camera regressions have their own test file to keep the touched test
 module below the 350-line target. The branch has no file overlap with Claude's
-open frontend PRs #83, #84 and #85.
+then-open frontend PRs #83, #84 and #85, which have since merged.
 
 ### First Codex Jira delivery batch, 28 September 2026
 
@@ -66,7 +81,11 @@ failures, verification evidence and outstanding operator actions.
 specifies user-created teams, membership-based Managers, protected administrators,
 profile discovery and invitations, a simple dashboard/message board, and unified
 individual/team AI allowances. It includes ordered tasks, migration rules and
-acceptance gates. This is a planning deliverable; its implementation tasks are pending.
+acceptance gates. That planning-only status is superseded: self-service teams,
+consent invitations, profiles, the team board and allowances are present in
+current code, with focused team/admin regressions passing on 30 September.
+See ADR 0018 and the current team API; KAN-143 corrects the stale authority docs
+and KAN-155 tracks the remaining exact-handle sender-list privacy gap.
 
 14 September Research and Subscriptions planning: Alex accepted the deep audit's
 recommended changes. The [approved execution plan](RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md)
@@ -74,9 +93,12 @@ now specifies ordered, bounded tasks for a smaller model, including correctness
 repairs, durable subscription editions, shared briefs, twenty topic presets,
 source acquisition, claim assessment, professional reports and additional AI tools.
 Its task packets define contracts, ownership, dependencies, regression cases,
-operational acceptance and handoff instructions. All implementation tasks in that
-plan remain pending; writing the plan did not change application behaviour,
-connect providers, run new model acceptance or migrate a database. See the
+operational acceptance and handoff instructions. The original all-pending
+statement is superseded by the [execution log](plans/research-subscriptions/EXECUTION_LOG.md):
+durable editions, exact-version evidence, ledgers and report Q&A are implemented
+in current code. Human-labelled quality, provider and operational acceptance
+must still be read from their individual records. Forecast and notification
+gaps are tracked by KAN-110/111/112/113/125/126/127/128/129/141. See the
 [underlying audit](archive/RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) for observed
 defects and the separate limits of its earlier validation.
 

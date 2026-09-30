@@ -17,6 +17,7 @@ from ase.adapters.persistence.subscription_retry_attempts import (
 )
 from ase.application.report_jobs.budget import JobBudgetExhausted, JobInterrupted
 from ase.application.reports.sections import SectionIncomplete
+from ase.application.worker_progress import run_cycle
 from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_execution import already_published, execute_job
 from ase.container.report_job_gate import ReportJobChanged, ReportJobSourceDisabled
@@ -81,7 +82,7 @@ class ReportJobWorker:
     async def run(self) -> None:
         while True:
             try:
-                await self.tick()
+                await run_cycle("report_jobs", 12.0, self.tick)
             except asyncio.CancelledError:
                 raise
             except Exception:

@@ -37,7 +37,7 @@ class TeamHandleInvitationSubmittedOut(BaseModel):
     status: Literal["submitted"] = "submitted"
     message: str = (
         "If that username can receive an invitation, it has been sent. "
-        "Pending invitations appear in the team's invitation list."
+        "A submission receipt appears in the team's list; delivery and declines stay private."
     )
 
 
@@ -50,7 +50,7 @@ class TeamInvitationActionIn(BaseModel):
 class TeamInvitationOut(BaseModel):
     id: UUID
     team_id: UUID
-    recipient_id: UUID
+    recipient_id: UUID | None
     inviter_id: UUID
     role: MembershipRole
     note: str | None

@@ -48,6 +48,7 @@ class ShardTests(unittest.TestCase):
             self.assertEqual(runner.main(["0", "1"]), 1)
             args, kwargs = run.call_args
             self.assertIn("--cov-fail-under=0", args[0])
+            self.assertIn("--durations=20", args[0])
             self.assertEqual(args[0][-1], "tests/test_a.py")
             self.assertEqual(kwargs["env"]["ASE_TEST_DATABASE_URL"], "test-database")
             self.assertEqual(
@@ -125,6 +126,25 @@ class ShardTests(unittest.TestCase):
     def test_committed_durations_are_valid(self):
         recorded = runner.load_durations(runner.DURATIONS)
         self.assertTrue(all(name.startswith("tests/test_") for name in recorded))
+
+    def test_postgres_parallel_and_serial_phases_are_disjoint(self):
+        with (
+            patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
+            patch.object(runner.subprocess, "run") as run,
+        ):
+            run.return_value.returncode = 0
+            runner.main(["0", "1", "--postgres-mode", "parallel", "--workers", "2"])
+            parallel = run.call_args[0][0]
+            self.assertIn("db and not (postgres or migration or race)", parallel)
+            self.assertIn("--isolated-postgres", parallel)
+            self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-parallel"))
+            runner.main(["0", "1", "--postgres-mode", "serial"])
+            serial = run.call_args[0][0]
+            self.assertIn("postgres or migration or race", serial)
+            self.assertNotIn("-n", serial)
+            self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-serial"))
+            with self.assertRaises(SystemExit):
+                runner.main(["0", "1", "--postgres-mode", "serial", "--workers", "2"])
 
     def test_empty_shard_does_not_accidentally_run_the_full_suite(self):
         with (

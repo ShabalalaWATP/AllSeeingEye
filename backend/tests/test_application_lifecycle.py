@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import FastAPI
+from structlog.testing import capture_logs
 
 from ase.app_lifecycle import lifespan
 from ase.application.ukraine_digest import UkraineDigestService
@@ -136,6 +137,27 @@ async def test_disabled_live_snapshot_is_not_started(runtime, monkeypatch):
     container.scheduler.stop.assert_awaited_once()
 
 
+async def test_lifespan_logs_slow_cleanup_in_dependency_order(runtime):
+    app, container, _ = runtime
+
+    async def slow():
+        await asyncio.sleep(0.001)
+
+    container.schedule_runner.stop.side_effect = slow
+    with capture_logs() as logs:
+        async with lifespan(app):
+            pass
+    phases = [item for item in logs if item["event"] == "shutdown.phase"]
+    names = [item["phase"] for item in phases]
+    assert names.index("schedule_runner") < names.index("report_job_worker")
+    assert names.index("report_job_worker") < names.index("scheduler")
+    assert names.index("scheduler") < names.index("live_snapshot")
+    assert names[-1] == "dispose"
+    assert phases[0]["duration_ms"] > 0
+    assert logs[-1]["event"] == "shutdown.complete"
+    assert logs[-1]["outcome"] == "completed"
+
+
 def disposable_container():
     clients = (
         "http",
@@ -231,3 +253,13 @@ def test_importing_factory_does_not_construct_application():
         text=True,
     )
     assert result.returncode == 0, result.stderr
+
+
+async def test_startup_phase_logs_cover_snapshot_workers_and_readiness(runtime):
+    app, _, _ = runtime
+    with capture_logs() as rows:
+        async with lifespan(app):
+            pass
+    phases = [row for row in rows if row.get("event") == "startup.phase"]
+    assert [row["phase"] for row in phases] == ["snapshot_restore", "workers_started", "ready"]
+    assert all(isinstance(row["duration_ms"], float) and row["duration_ms"] >= 0 for row in phases)

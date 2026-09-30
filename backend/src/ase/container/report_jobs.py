@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 class ReportJobWiring:
     @cached_property
     def monthly_budget_policy(self) -> MonthlyBudgetPolicy:
+        # outside ContainerCore: this report-only mixin does not inherit ContainerCore.
         settings = cast("Container", self).settings
         return MonthlyBudgetPolicy(
             owner=MonthlyLimit(
@@ -47,6 +48,7 @@ class ReportJobWiring:
         return asyncio.Lock()
 
     def daily_briefing(self, session: AsyncSession) -> DailyBriefingService:
+        # outside ContainerCore: reaches report_jobs and daily briefing services.
         container = cast("Container", self)
         return DailyBriefingService(
             container.report_jobs(session, charge_research=False),
@@ -58,11 +60,13 @@ class ReportJobWiring:
 
     @cached_property
     def report_job_worker(self) -> ReportJobWorker:
+        # passes the container to ReportJobWorker, which wires job lifecycle collaborators.
         return ReportJobWorker(cast("Container", self))
 
     async def report_job_gate(
         self, session: AsyncSession, stored: ReportJob
     ) -> tuple[Job, RoleProfiles]:
+        # passes the container to check_job, which resolves fresh job authority.
         return await check_job(cast("Container", self), session, stored)
 
     def report_jobs(
@@ -73,6 +77,7 @@ class ReportJobWiring:
         charge_research: bool = True,
     ) -> ReportJobService:
         """Only fixed dashboard factories opt out; no request value selects this policy."""
+        # outside ContainerCore: reaches generate_report, report_job_worker and research_usage.
         container = cast("Container", self)
         repos = container.repositories(session)
 

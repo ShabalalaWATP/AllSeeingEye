@@ -16,7 +16,12 @@ TARGET = SecretFeedUrl("https://example.test", f"https://example.test/{KEY}")
 
 
 @pytest.fixture(autouse=True)
-def public_host(monkeypatch):
+def public_host(monkeypatch, caplog):
+    # Exercise suppression with every transport logger enabled, regardless of a
+    # preceding application's production logging configuration in this worker.
+    for name in HTTP_LOGGERS:
+        caplog.set_level(logging.DEBUG, logger=name)
+
     async def resolve(url):
         return None
 

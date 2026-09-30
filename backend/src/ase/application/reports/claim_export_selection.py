@@ -6,6 +6,7 @@ from uuid import UUID
 from ase.application.dto import AccessClaims
 from ase.application.ports import UnitOfWork
 from ase.application.ports.reports import ReportRepository
+from ase.application.reports.annotation_resolution import annotation_resolvers
 from ase.application.reports.claim_export_integrity import export_content_digest
 from ase.application.reports.claims import ReportClaims
 from ase.application.reports.identities import ReportIdentities
@@ -68,6 +69,7 @@ class SelectClaimExport:
         self.claims, self.reports, self.uow = claims, reports, uow
         self.identities = identities
         self.relationships = relationships
+        self.annotation_resolvers = annotation_resolvers(claims, identities, relationships)
 
     async def resolve(
         self,
@@ -123,8 +125,8 @@ class SelectClaimExport:
         anchors.update(relationship_anchors)
         if not references and not identity_references and not relationship_references:
             access = await self.claims._context(actor)
-            await self.claims._report(access, report_id)
-            await self.claims._version(report_id, number)
+            await self.claims.resolve_report(access, report_id)
+            await self.claims.resolve_version(report_id, number)
         record = await self.reports.get(report_id)
         version = await self.reports.get_version(report_id, number)
         if record is None or version is None:

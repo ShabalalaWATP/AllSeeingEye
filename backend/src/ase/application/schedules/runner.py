@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from uuid import UUID
 
+from ase.application.worker_progress import run_cycle
+
 log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=60)
@@ -79,7 +81,7 @@ class ScheduleRunner:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.run_once()
+                await run_cycle("schedule_runner", self._interval.total_seconds(), self.run_once)
             except Exception:
                 log.warning("subscription_enqueue_cycle_failed")
             await self._sleep(self._interval.total_seconds())
@@ -87,7 +89,11 @@ class ScheduleRunner:
     async def _run_acquisition(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.acquire_once()
+                await run_cycle(
+                    "schedule_acquisition",
+                    self._acquisition_interval.total_seconds(),
+                    self.acquire_once,
+                )
             except Exception:
                 log.warning("subscription_selected_index_cycle_failed")
             await self._sleep(self._acquisition_interval.total_seconds())

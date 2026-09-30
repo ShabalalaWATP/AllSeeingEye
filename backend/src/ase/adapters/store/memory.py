@@ -8,6 +8,7 @@ from datetime import datetime
 
 from ase.adapters.store.firms_retention import firms_evictions
 from ase.adapters.store.query import select_events
+from ase.adapters.store.retention import category_removals
 from ase.adapters.store.sizing import (
     EVENT_OVERHEAD_BYTES,
     estimate_bytes,
@@ -17,12 +18,10 @@ from ase.adapters.store.sizing import (
 from ase.adapters.store.snapshot import SnapshotReader
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
-    VESSEL_POSITION_AGE,
     RetentionBudget,
     budget_for,
 )
 from ase.application.feeds.cooperative_work import joined_thread_call
-from ase.application.feeds.position_freshness import satellite_position_expired
 from ase.application.ports.feeds import (
     EventQuery,
     EventQueryReader,
@@ -56,6 +55,7 @@ class InMemoryEventStore:
         self._by_country: dict[str, set[str]] = {}
         self._by_source: dict[str, set[str]] = {}
         self._estimated_bytes = 0
+        self.read_rejections = 0
         # Evicted between prunes to hold the memory budget; announced at the next prune.
         self._pending_expiry: set[str] = set()
         self._pending_evictions = 0
@@ -208,6 +208,7 @@ class InMemoryEventStore:
     ) -> T:
         actor_reads = self._waiting_reads_by_key.get(admission_key, 0)
         if self._waiting_reads >= 8 or actor_reads >= 2:
+            self.read_rejections += 1
             raise RateLimited(1)
         self._waiting_reads += 1
         self._waiting_reads_by_key[admission_key] = actor_reads + 1
@@ -228,30 +229,11 @@ class InMemoryEventStore:
         expired: list[str] = []
         evicted: list[str] = []
         for category, ids in list(self._by_category.items()):
-            budget = budget_for(category, self._budgets)
-            cutoff = now - budget.window
-            remaining = []
-            for event_id in ids:
-                event = self._events[event_id]
-                stale_position = (
-                    event.category is Category.MARITIME
-                    and event.subtype == "vessel_position"
-                    and (
-                        event.published_at is None or event.published_at < now - VESSEL_POSITION_AGE
-                    )
-                )
-                if (
-                    event.observed_at < cutoff
-                    or stale_position
-                    or satellite_position_expired(event, now)
-                ):
-                    expired.append(event_id)
-                else:
-                    remaining.append(event_id)
-            overflow = len(remaining) - budget.max_items
-            if overflow > 0:
-                remaining.sort(key=lambda i: (self._events[i].observed_at, i))
-                evicted.extend(remaining[:overflow])
+            category_expired, category_evicted = category_removals(
+                self._events, ids, category, budget_for(category, self._budgets), now
+            )
+            expired.extend(category_expired)
+            evicted.extend(category_evicted)
         for event_id in expired + evicted:
             self._remove(event_id)
         self._enforce_budget(evicted)
@@ -267,6 +249,10 @@ class InMemoryEventStore:
         self._pending_evictions = 0
         self._pending_overflow = False
         return result
+
+    def runtime_stats(self) -> tuple[int, int, int]:
+        """Constant-time operational totals, without category scans."""
+        return len(self._events), self._estimated_bytes, self._memory_budget
 
     def stats(self) -> StoreStats:
         if self._stats_cache is not None:

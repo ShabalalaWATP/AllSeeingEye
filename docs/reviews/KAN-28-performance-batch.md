@@ -177,10 +177,10 @@ Only use an owned disposable database: the app fixture recreates its schema.
 These runs overlap and must not be added as a unique test count. The final narrow
 set protects the review repairs; the wider runs protect the surrounding behaviour.
 
-Migration **0068 currently follows 0066** so this branch is independently runnable.
-Security owns 0067. Before combining releases, integrate security first and update
-0068's predecessor to 0067, then run the combined upgrade/round-trip checks. Do not
-ship the two branches as competing migration heads. Migration preflight identifies
+Migration **0068 now follows security revision 0067** in the integrated stack.
+The earlier standalone measurements used predecessor 0066. The combined SQLite
+tests and a fresh private PostgreSQL database both passed upgrade to 0068,
+downgrade to 0067 and re-upgrade. Alembic reports one head, 0068. Migration preflight identifies
 invalid job IDs and fails closed before DDL; repair those audit rows before retry.
 
 Release gates remain: complete combined CI/coverage and independent code review;
@@ -193,3 +193,23 @@ Integration boundaries: architecture moves pool arguments into
 `Container._initialise_database`; runtime adds read counters and worker-cycle
 progress around `tick`, not heartbeat-based liveness. Preserve those changes when
 stacking. Source-export changes to `_kev` do not overlap this branch's read path.
+
+## Coordinator integration
+
+Integrated security PR #92 at `744443bc`, including architecture/runtime and
+the CI/test foundations. Pool options remain in `_initialise_database`, and
+runtime read-rejection counters and worker progress are preserved.
+
+To keep the store below the source-file target, pure per-category retention
+decisions now live in `adapters/store/retention.py`. Category flags and the vessel
+cutoff are computed once; non-space events avoid satellite-expiry checks. The
+store still owns every index mutation and stream invalidation. Independent
+review found no parity issue, and 21 satellite/vessel/FIRMS tests passed.
+
+Integration validation passed 38 store/migration/runtime/cooperative/scheduler
+tests and 57 board/catalogue/checkpoint/source/lease regressions. Full mypy
+passes on 1,411 modules; OpenAPI/types were regenerated and TypeScript passes.
+The post-extraction benchmark ran under shared load: it preserved 60,000 records
+and all board gaps were below 50 ms, but its 73.926 ms prune timing is not a
+controlled comparison. It does not replace the controlled table or establish
+the 35 ms target. Full stack CI and proxy/browser acceptance remain pending.

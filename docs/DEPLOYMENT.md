@@ -83,3 +83,22 @@ The scripts do not install a backup schedule or delete old backups. Choose those
 | Reports or updates are slow | Memory pressure, disk capacity and provider response times |
 
 Do not publish environment files, detailed recovery records or unredacted logs when asking for help.
+
+## Container privilege and proxy boundary
+
+Compose reserves Caddy's address on a dedicated proxy network and gives Uvicorn
+only that address as `ASE_FORWARDED_ALLOW_IPS`. Other peers' forwarded headers are
+ignored. The standalone API image trusts loopback only. If the default subnet
+conflicts with an existing network, set `ASE_PROXY_SUBNET` and `ASE_PROXY_WEB_IP`
+together; the latter must be a free usable address in that subnet. Recreate the
+network through the reviewed manual rollout and verify client IPs and rate limits.
+Do not override trust with `*`.
+
+API runs with all Linux capabilities dropped. PostgreSQL drops all capabilities
+and adds only CHOWN, DAC_OVERRIDE, FOWNER, SETGID and SETUID for its root entrypoint
+to prepare volume ownership and become postgres. Removing those too requires
+pre-provisioned volume ownership and a separately tested entrypoint. Both containers
+set no-new-privileges. Validate a new empty database volume and an existing volume
+before an authorised release; no production volume is changed by development tests.
+
+For a planned application-key change, follow [encryption-key rotation](ENCRYPTION_KEY_ROTATION.md). Keep each database backup with its matching recoverable key version.
