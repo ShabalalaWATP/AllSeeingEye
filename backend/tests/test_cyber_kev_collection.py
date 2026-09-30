@@ -1,11 +1,13 @@
 """CISA remediation guidance survives collection, store updates and Cyber snapshots."""
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
 
 from ase.adapters.feeds.cisa_kev import SPEC, CisaKevConnector
+from ase.adapters.feeds.kev_scores import KevScoreEnrichment
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.cyber import CyberService
 from ase.application.feeds.health import HealthRegistry
@@ -57,3 +59,35 @@ async def test_action_is_bounded_but_changes_beyond_retained_excerpt_refresh_has
 async def test_missing_or_nontext_required_action_stays_unknown(action) -> None:
     event = await collect(action)
     assert event.attributes["required_action"] == ""
+
+
+async def test_stalled_enrichment_does_not_discard_authoritative_cisa_records():
+    catalogue = load_fixture("cisa_kev.json")
+    http = AsyncMock()
+
+    async def fetch(url, **kwargs):
+        if "cisa.gov" in url:
+            return catalogue
+        await asyncio.Event().wait()
+
+    http.get_json.side_effect = fetch
+    clock = FakeClock(NOW)
+    scores = KevScoreEnrichment(http, clock, timeout_seconds=0.02)
+    events = await CisaKevConnector(http, clock, scores).fetch()
+    assert events
+    assert all(event.source_id == SPEC.id for event in events)
+    assert all("cve" in event.attributes for event in events)
+    assert all("epss_probability" not in event.attributes for event in events)
+    assert http.get_json.await_count == 2
+
+
+async def test_late_catalogue_returns_records_without_optional_network(monkeypatch):
+    times = iter((0.0, 56.0))
+    monkeypatch.setattr("ase.adapters.feeds.cisa_kev.monotonic", lambda: next(times))
+    http = AsyncMock()
+    http.get_json.return_value = load_fixture("cisa_kev.json")
+    clock = FakeClock(NOW)
+    events = await CisaKevConnector(http, clock, KevScoreEnrichment(http, clock)).fetch()
+    assert events
+    assert all(event.source_id == SPEC.id for event in events)
+    http.get_json.assert_awaited_once_with(SPEC.url)

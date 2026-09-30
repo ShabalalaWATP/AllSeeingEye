@@ -1,8 +1,11 @@
 """Provider independence, unknown scores, daily budgets and public rate backoff."""
 
+import asyncio
 from dataclasses import replace
 from datetime import timedelta
 from unittest.mock import AsyncMock
+
+import pytest
 
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.kev_scores import EPSS_BATCH, KevScoreEnrichment
@@ -112,3 +115,46 @@ async def test_malformed_nvd_metrics_preserve_valid_epss():
     result = (await KevScoreEnrichment(http, FakeClock(NOW)).enrich([kev()]))[0]
     assert result.attributes["epss_probability"] == 0.4
     assert "cvss_score" not in result.attributes
+
+
+async def test_enrichment_deadline_returns_partial_scores_without_repeating_the_burst():
+    entered = asyncio.Event()
+    http = AsyncMock()
+
+    async def fetch(url, **kwargs):
+        if "first.org" in url:
+            return epss()
+        entered.set()
+        await asyncio.Event().wait()
+
+    http.get_json.side_effect = fetch
+    scores = KevScoreEnrichment(http, FakeClock(NOW), timeout_seconds=0.02)
+    [event] = await scores.enrich([kev()])
+    assert entered.is_set()
+    assert event.attributes["epss_probability"] == 0.4
+    assert "cvss_score" not in event.attributes
+    await scores.enrich([kev()])
+    assert http.get_json.await_count == 2
+
+
+async def test_outer_cancellation_propagates_instead_of_publishing_partial_scores():
+    entered = asyncio.Event()
+    http = AsyncMock()
+
+    async def fetch(*args, **kwargs):
+        entered.set()
+        await asyncio.Event().wait()
+
+    http.get_json.side_effect = fetch
+    task = asyncio.create_task(KevScoreEnrichment(http, FakeClock(NOW)).enrich([kev()]))
+    await entered.wait()
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+
+async def test_exhausted_catalogue_budget_never_starts_enrichment_requests():
+    http = AsyncMock()
+    [event] = await KevScoreEnrichment(http, FakeClock(NOW)).enrich([kev()], available_seconds=0)
+    assert event.attributes["cve"] == CVE
+    http.get_json.assert_not_awaited()

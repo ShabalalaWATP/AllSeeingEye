@@ -111,38 +111,58 @@ def _cvss(payload: Any, requested: set[str]) -> dict[str, dict[str, JsonScalar]]
 
 
 class KevScoreEnrichment:
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
+    def __init__(self, http: FeedHttpClient, clock: Clock, *, timeout_seconds: float = 10) -> None:
+        if timeout_seconds <= 0:
+            raise ValueError("The enrichment deadline must be positive.")
         self.http, self.clock = http, clock
+        self._timeout_seconds = timeout_seconds
         self._next_run: datetime | None = None
         self._scores: dict[str, dict[str, JsonScalar]] = {}
         self._lock = asyncio.Lock()
 
-    async def enrich(self, events: list[Event]) -> list[Event]:
-        async with self._lock:
-            now = self.clock.now()
-            if self._next_run is None or now >= self._next_run:
-                # Reserve the whole allowance before any await. Cancellation or a
-                # provider error cannot trigger another burst in this process.
-                self._next_run = now + timedelta(days=1)
-                self._scores = {}
-                await self._refresh(events, now)
-            output = []
-            for event in events:
-                attributes = {
-                    key: value for key, value in event.attributes.items() if key not in SCORE_KEYS
-                }
-                scores = self._scores.get(str(attributes.get("cve")), {})
-                attributes.update(scores)
-                output.append(
-                    replace(
-                        event,
-                        attributes=freeze_attributes(attributes),
-                        content_hash=content_hash(
-                            event.content_hash, json.dumps(scores, sort_keys=True)
-                        ),
-                    )
+    async def enrich(
+        self, events: list[Event], *, available_seconds: float | None = None
+    ) -> list[Event]:
+        budget = self._timeout_seconds
+        if available_seconds is not None:
+            budget = min(budget, max(0, available_seconds))
+        if budget > 0:
+            deadline = asyncio.timeout(budget)
+            try:
+                # The deadline includes waiting for another caller's refresh lock.
+                async with deadline, self._lock:
+                    now = self.clock.now()
+                    if self._next_run is None or now >= self._next_run:
+                        # Reserve before I/O. A timeout cannot repeat today's burst.
+                        self._next_run = now + timedelta(days=1)
+                        self._scores = {}
+                        await self._refresh(events, now)
+            except TimeoutError:
+                if not deadline.expired():
+                    raise
+                log.info("kev_score_deadline", seconds=budget)
+        # Only our internal deadline is converted to partial scores. Explicit caller
+        # cancellation propagates, and never publishes a cancelled source poll.
+        return self._apply(events)
+
+    def _apply(self, events: list[Event]) -> list[Event]:
+        output = []
+        for event in events:
+            attributes = {
+                key: value for key, value in event.attributes.items() if key not in SCORE_KEYS
+            }
+            scores = self._scores.get(str(attributes.get("cve")), {})
+            attributes.update(scores)
+            output.append(
+                replace(
+                    event,
+                    attributes=freeze_attributes(attributes),
+                    content_hash=content_hash(
+                        event.content_hash, json.dumps(scores, sort_keys=True)
+                    ),
                 )
-            return output
+            )
+        return output
 
     async def _refresh(self, events: list[Event], now: datetime) -> None:
         cves = sorted(

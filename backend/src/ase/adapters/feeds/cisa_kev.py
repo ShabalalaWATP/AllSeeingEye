@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from time import monotonic
 from typing import Any
 
 from ase.adapters.feeds.base import HttpFeed
@@ -66,6 +67,7 @@ class CisaKevConnector(HttpFeed):
         self._recent: list[Event] = []
 
     async def fetch(self) -> list[Event]:
+        started = monotonic()
         try:
             data = await self._catalogue()
         except NotModified:
@@ -77,7 +79,7 @@ class CisaKevConnector(HttpFeed):
                 for event in self._recent
                 if event.published_at and event.published_at >= cutoff
             ]
-            return await self._scores.enrich(recent)
+            return await self._enrich(recent, started)
         now = self._clock.now()
         cutoff = now - timedelta(days=RECENT_DAYS)
         if not isinstance(data, dict) or not isinstance(data.get("vulnerabilities"), list):
@@ -94,8 +96,16 @@ class CisaKevConnector(HttpFeed):
                 events.append(event)
         if self._scores is not None:
             self._recent = events[:1000]
-            return await self._scores.enrich(events)
+            return await self._enrich(events, started)
         return events
+
+    async def _enrich(self, events: list[Event], started: float) -> list[Event]:
+        if self._scores is None:
+            return events
+        # The scheduler's normal KEV fetch allowance is 60 seconds. Leave five
+        # seconds for release after a slow catalogue, and never extend that budget.
+        remaining = max(0.0, 55 - (monotonic() - started))
+        return await self._scores.enrich(events, available_seconds=remaining)
 
     async def _catalogue(self) -> Any:
         try:
