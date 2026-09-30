@@ -103,6 +103,16 @@ async def drop_schema(engine: AsyncEngine) -> None:
         await connection.run_sync(Base.metadata.drop_all)
 
 
+def uses_report_job_worker(item: pytest.Item) -> bool:
+    """Identify report-worker helpers, including imports renamed by a test module."""
+    namespace = getattr(getattr(item, "obj", None), "__globals__", {})
+    return any(
+        getattr(value, "__module__", None) == "report_job_api_helpers"
+        and getattr(value, "__name__", None) == "work"
+        for value in namespace.values()
+    )
+
+
 def apply_markers(items: Iterable[pytest.Item]) -> None:
     for item in items:
         name = item.path.stem
@@ -127,9 +137,7 @@ def apply_markers(items: Iterable[pytest.Item]) -> None:
         if "_races" in name or "_concurrency" in name or "race_container" in fixtures:
             item.add_marker(pytest.mark.race)
         # Imported helper identity avoids a growing list of file-specific deadlines.
-        test = getattr(item, "obj", None)
-        helper = getattr(test, "__globals__", {}).get("work")
-        if getattr(helper, "__module__", None) == "report_job_api_helpers":
+        if uses_report_job_worker(item):
             item.add_marker(pytest.mark.slow)
             item.add_marker(pytest.mark.timeout(660))
 
