@@ -31,7 +31,7 @@ it.each([
   ['unavailable', 'attack trends are unavailable'],
 ] as const)('explains %s without displaying retained distributions', (status, explanation) => {
   render(<RadarAttackResults data={{ ...snapshot, status }} />);
-  expect(screen.getByText(new RegExp(explanation))).toBeVisible();
+  expect(screen.getByText(explanation, { exact: false })).toBeVisible();
   expect(screen.queryByRole('list')).not.toBeInTheDocument();
 });
 
