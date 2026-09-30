@@ -55,6 +55,7 @@ dev = [
     "types-reportlab>=5.0.0.20260911",
     "fonttools==4.65.0",
     "types-shapely>=2.1.0.20260728",
+    "jsonschema>=4.23,<5",
 ]
 
 [build-system]
