@@ -34,7 +34,7 @@ class SubscriptionEmailPreferences:
 @dataclass(frozen=True, slots=True)
 class ClaimedDelivery:
     id: UUID
-    edition_id: UUID
+    resource_id: UUID
     recipient_id: UUID
     event_kind: str
     lease_token: UUID

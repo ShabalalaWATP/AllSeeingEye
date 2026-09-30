@@ -44,6 +44,7 @@ from ase.api.routers import (
     me,
     mfa,
     navigation,
+    notification_digest,
     notification_preferences,
     original_assets,
     original_passages,
@@ -110,6 +111,7 @@ api_router.include_router(me.router)
 api_router.include_router(account.router)
 api_router.include_router(private_feed.router)
 api_router.include_router(notification_preferences.router)
+api_router.include_router(notification_digest.router)
 api_router.include_router(profile.router)
 api_router.include_router(directory.router)
 api_router.include_router(account_sessions.router)

@@ -1258,6 +1258,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/notifications/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Digest */
+        get: operations["get_digest_api_me_notifications_digest_get"];
+        /** Save Digest */
+        put: operations["save_digest_api_me_notifications_digest_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/profile/languages": {
         parameters: {
             query?: never;
@@ -7241,6 +7259,24 @@ export interface components {
             caveats: string[];
             /** Citations */
             citations: components["schemas"]["DigestCitationOut"][];
+        };
+        /** DigestPreferencesIn */
+        DigestPreferencesIn: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+            /**
+             * Hour
+             * @default 8
+             */
+            hour: number;
         };
         /**
          * DigestStatus
@@ -18750,6 +18786,57 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SubscriptionEmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_digest_api_me_notifications_digest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestPreferencesIn"];
+                };
+            };
+        };
+    };
+    save_digest_api_me_notifications_digest_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DigestPreferencesIn"];
             };
         };
         responses: {

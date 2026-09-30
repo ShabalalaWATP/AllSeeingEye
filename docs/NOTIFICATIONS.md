@@ -1,4 +1,4 @@
-# Subscription email and private feeds
+# Email notifications and private feeds
 
 These channels are off until you enable them. Existing in-app subscription events
 continue independently of SMTP. No migration adds recipients.
@@ -70,6 +70,41 @@ and enqueue query have matching bounds. Intents retain IDs and outcome metadata,
 not addresses or report content. Errors use fixed reason codes and never record
 SMTP exception text.
 
+## Daily digest
+
+Under **Account, Notifications**, enable account email first, then **Send a daily
+digest**. Choose an IANA time zone (for example `Europe/London`) and an hour from
+0 to 23. Defaults do not enrol anyone. Disabling account email also disables the
+digest, so enabling account email again requires a fresh digest opt-in.
+
+The digest contains counts and authenticated app links, never titles, source
+material or report text. It counts alerts and currently completed, needs-review
+or failed research jobs in a saved half-open interval: the start is included and
+the end excluded. The first interval starts at opt-in; subsequent intervals start
+where the last scheduled interval ended. Job counts use their terminal status
+and update time when the digest is prepared. Administrator inspection access
+never expands the recipient's personal and active-team scope. Counts are read
+again immediately before delivery, so revoked access cannot survive in a stored
+message body. Deleted or expired records cannot contribute to historical counts.
+
+Forecast counts use only each forecast's current version and its explicit review
+date in the interval, excluding resolved or superseded work. A forecast horizon
+does not replace a review date. At most 1,000 accessible forecasts are inspected;
+larger sets disclose that the count is partial. Alert and job counts are SQL
+aggregates without a notification-bell display limit.
+
+Each recipient has one durable intent per actual local calendar day, including
+empty periods. Empty periods send no email. A repeated DST hour uses its first
+occurrence; a missing hour uses the first valid local time after the gap. An
+outage creates one current digest covering the saved gap instead of backfilling
+one email for every missed day. Intent creation and cursor advancement commit
+together. A time-zone change cannot produce a second intent for a local date
+already recorded. SMTP retry and uncertainty rules above apply to digests too.
+
+Opt-out permanently cancels pending windows and fences an in-progress attempt
+as uncertain because a relay might already have accepted it. Re-enabling starts
+a new interval at that opt-in and never revives the cancelled windows.
+
 ## Private Atom feed
 
 Open **Account, Notifications** and select **Enable feed**. Copy the URL, username
@@ -109,5 +144,7 @@ only to an isolated disposable database; they are skipped without one.
 
 Before release, verify an operator-configured relay with synthetic content and a
 chosen real feed reader over HTTPS. These operational checks are not proved by
-the offline suite. Daily digests, per-rule registered destinations and Web Push
+the offline suite. Daily digest checks include DST boundaries, complete SQL
+counts, membership revocation, opt-out/re-enable, empty intervals and competing
+SQLite schedulers and senders. Per-rule registered destinations and Web Push
 remain separate delivery work and are not included by these controls.

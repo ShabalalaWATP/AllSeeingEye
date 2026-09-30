@@ -2,10 +2,12 @@
 
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.mfa_models import EmailMfaRow
+from ase.adapters.persistence.notification_digest_models import DigestPreferenceRow
+from ase.adapters.persistence.notification_digest_preferences import cancel_pending_digests
 from ase.adapters.persistence.notification_models import (
     NotificationPreferenceRow,
     SubscriptionNotificationRow,
@@ -27,6 +29,15 @@ class SqlNotificationPreferences:
         return EmailPreferences(row.email_enabled, row.include_names) if row else EmailPreferences()
 
     async def save_email(self, user_id: UUID, settings: EmailPreferences) -> None:
+        if not settings.enabled:
+            await cancel_pending_digests(self._session, user_id)
+            await self._session.execute(
+                update(DigestPreferenceRow)
+                .where(
+                    DigestPreferenceRow.user_id == user_id,
+                )
+                .values(enabled=False)
+            )
         await self._session.merge(
             NotificationPreferenceRow(
                 user_id=user_id,

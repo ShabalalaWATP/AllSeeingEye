@@ -10,9 +10,14 @@ from ase.adapters.notify.notification_email import (
     NullNotificationEmailSender,
     SmtpNotificationEmailSender,
 )
+from ase.adapters.persistence.forecast_digest import due_review_count
 from ase.adapters.persistence.notification_delivery import SqlEditionDeliveryStore
+from ase.adapters.persistence.notification_digest_delivery import SqlDigestDeliveryStore
+from ase.adapters.persistence.notification_digest_preferences import SqlDigestPreferences
+from ase.adapters.persistence.notification_digest_schedule import SqlDigestScheduler
 from ase.adapters.persistence.notification_feed import SqlPrivateFeedRepository
 from ase.adapters.persistence.notification_preferences import SqlNotificationPreferences
+from ase.application.account.notification_digest import DigestPreferenceService, DigestWorker
 from ase.application.account.notification_dispatch import NotificationDispatcher
 from ase.application.account.notification_preferences import NotificationPreferences
 from ase.application.account.private_feed import PrivateFeedService
@@ -69,5 +74,32 @@ def notification_dispatcher(container: Container) -> NotificationDispatcher:
             container.session_factory, container.access_policy, container.settings.public_base_url
         ),
         notification_sender(container),
+        container.clock,
+    )
+
+
+def digest_preferences(container: Container, session: AsyncSession) -> DigestPreferenceService:
+    return DigestPreferenceService(
+        SqlDigestPreferences(session),
+        SqlNotificationPreferences(session),
+        container.access_policy(session),
+        container.clock,
+        container.repositories(session).uow,
+    )
+
+
+def digest_worker(container: Container) -> DigestWorker:
+    return DigestWorker(
+        SqlDigestScheduler(container.session_factory, container.access_policy),
+        NotificationDispatcher(
+            SqlDigestDeliveryStore(
+                container.session_factory,
+                container.access_policy,
+                container.settings.public_base_url,
+                due_review_count,
+            ),
+            notification_sender(container),
+            container.clock,
+        ),
         container.clock,
     )

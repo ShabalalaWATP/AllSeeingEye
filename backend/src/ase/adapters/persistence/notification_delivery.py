@@ -105,7 +105,7 @@ class SqlEditionDeliveryStore:
                 or outbox.state != "sending"
             ):
                 return None
-            edition = await session.get(SubscriptionEditionRow, claim.edition_id)
+            edition = await session.get(SubscriptionEditionRow, claim.resource_id)
             schedule = await session.get(ScheduleRow, edition.subscription_id) if edition else None
             reason = None
             message = None
@@ -156,7 +156,7 @@ class SqlEditionDeliveryStore:
                         name = f"\nSubscription: {schedule.name}\n" if account.include_names else ""
                         link = (
                             f"{self._base_url}/subscriptions?subscription={schedule.id}"
-                            f"&edition={claim.edition_id}"
+                            f"&edition={claim.resource_id}"
                         )
                         message = NotificationEmail(
                             access.actor.email,
