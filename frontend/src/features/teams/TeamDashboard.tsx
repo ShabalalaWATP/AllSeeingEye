@@ -4,18 +4,20 @@ import type { User } from '@/lib/api/schemas';
 import type { TeamDetail } from '@/lib/api/teams';
 
 import { TeamBoard } from './TeamBoard';
+import { TeamDashboardTabs } from './TeamDashboardTabs';
 import { TeamOverview } from './TeamOverview';
 import type { TeamCapabilities } from './teamCapabilities';
+import { panelId, tabId, type DashboardTab } from './teamTabs';
 
 export type TeamDashboardTab = 'overview' | 'research' | 'board' | 'members';
 
-const TABS: readonly { id: TeamDashboardTab; label: string; detail: string }[] = [
+const TABS: readonly DashboardTab<TeamDashboardTab>[] = [
   { id: 'overview', label: 'Overview', detail: 'Team pulse and quick actions' },
   { id: 'research', label: 'Research', detail: 'Shared analysis workspace' },
   { id: 'board', label: 'Board', detail: 'Short team updates' },
   { id: 'members', label: 'Members', detail: 'People and access' },
 ];
-const DEFAULT_TAB: (typeof TABS)[number] = {
+const DEFAULT_TAB: DashboardTab<TeamDashboardTab> = {
   id: 'overview',
   label: 'Overview',
   detail: 'Team pulse and quick actions',
@@ -121,37 +123,16 @@ export function TeamDashboard({
           {actions}
         </div>
       </header>
-      <nav
-        aria-label="Team workspace sections"
-        className="-mb-px flex gap-1 overflow-x-auto border-b border-line/70"
-      >
-        {TABS.map((tab) => {
-          const selected = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              id={`team-${tab.id}-tab`}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              aria-controls={`team-panel-${tab.id}`}
-              onClick={() => onTabChange(tab.id)}
-              className={`min-h-12 shrink-0 border-b-2 px-3 text-left text-sm transition-colors ${
-                selected
-                  ? 'border-ember text-text'
-                  : 'border-transparent text-muted hover:border-line hover:text-text'
-              }`}
-            >
-              <span className="block font-medium">{tab.label}</span>
-              <span className="mt-0.5 hidden text-[11px] text-muted lg:block">{tab.detail}</span>
-            </button>
-          );
-        })}
-      </nav>
+      <TeamDashboardTabs
+        label="Team workspace sections"
+        tabs={TABS}
+        activeTab={selectedTab.id}
+        onTabChange={onTabChange}
+      />
       <div
-        id={`team-panel-${selectedTab.id}`}
+        id={panelId(selectedTab.id)}
         role="tabpanel"
-        aria-labelledby={`team-${selectedTab.id}-tab`}
+        aria-labelledby={tabId(selectedTab.id)}
         className="min-w-0 pb-8"
       >
         {activeTab === 'overview' ? (
