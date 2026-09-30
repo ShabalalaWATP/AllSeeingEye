@@ -105,3 +105,17 @@ Actionlint 1.7.12 validates the workflow. The parallel PostgreSQL command enable
 the option for one bounded CI trial. Workers, selection, coverage, storage,
 durability settings and the serial command remain unchanged. Full Linux CI,
 multi-worker eligibility counts and aggregate cost are pending at this checkpoint.
+
+### First CI SQLite compatibility repair
+
+Run `36712872629` at `83bbc802` exposed two setup errors in SQLite shard 5:
+the new opt-in tests requested the session-scoped template worker before their
+function-scoped option gate could skip. The shard otherwise passed 1,251 cases
+and skipped one. The test signatures now retrieve the existing worker inside
+the test, after the option gate and app setup. No application fixture, selection
+or deadline changes. Before the repair, both errors reproduced locally; after it,
+both tests skip in 0.18 seconds without service URLs and pass against a fresh
+owned PostgreSQL service in 2.03 seconds. That run cloned both cases, retained all
+three durability flags and left zero owned databases. Ruff/format and whitespace
+checks pass. The running PostgreSQL CI jobs were retained for honest timing and
+census evidence; a new complete CI run is required after publishing this repair.
