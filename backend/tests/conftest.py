@@ -34,6 +34,8 @@ from helpers import (
     create_user,
     register_client,
 )
+from postgres_template_guard import template_default
+from postgres_template_store import TemplateDatabase
 from pytest_support import (
     DurationRecorder,
     apply_markers,
@@ -45,7 +47,7 @@ from pytest_support import (
     uses_report_job_worker,
 )
 
-pytest_plugins = ["postgres_isolation"]
+pytest_plugins = ["postgres_isolation", "postgres_templates"]
 
 START = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
 
@@ -55,6 +57,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--isolated-postgres",
         action="store_true",
         help="Create one disposable PostgreSQL database per worker from ASE_TEST_DATABASE_URL.",
+    )
+    parser.addoption(
+        "--template-postgres",
+        action="store_true",
+        help="Clone a private schema for eligible ordinary apps; requires --isolated-postgres.",
     )
     parser.addoption("--record-nodeids", metavar="PATH", help="Write selected test node IDs.")
     parser.addoption(
@@ -102,7 +109,10 @@ def email_sender() -> RecordingEmailSender:
 
 
 @pytest.fixture
-def settings(request: pytest.FixtureRequest) -> Settings:
+@template_default
+def settings(
+    request: pytest.FixtureRequest, template_database: TemplateDatabase | None
+) -> Settings:
     # CI's isolated workers supply their own PostgreSQL URL. Report worker tests
     # need independent SQLite connections: a checkpoint reader closing a session
     # on StaticPool's single connection otherwise rolls back the worker's writes.
@@ -128,11 +138,13 @@ def feed_connectors(request: pytest.FixtureRequest) -> Sequence[FeedConnector] |
 
 
 @pytest.fixture
+@template_default
 async def app(
     settings: Settings,
     clock: FakeClock,
     email_sender: RecordingEmailSender,
     feed_connectors: Sequence[FeedConnector] | None,
+    template_database: TemplateDatabase | None,
 ) -> AsyncIterator[FastAPI]:
     application = create_app(
         settings, clock=clock, email_sender=email_sender, connectors=feed_connectors
@@ -140,11 +152,20 @@ async def app(
     container: Container = application.state.container
     fresh = disposable_database(settings.database_url)
     skip_sqlite_fsync(container.engine)
-    await create_schema(container.engine, fresh=fresh)
-    yield application
-    if not fresh:
-        await drop_schema(container.engine)
-    await container.dispose()
+    try:
+        if template_database is None:
+            await create_schema(container.engine, fresh=fresh)
+        else:
+            await template_database.prepare(container.engine)
+        yield application
+    finally:
+        try:
+            if not fresh and (
+                template_database is None or template_database.requires_drop(container.engine)
+            ):
+                await drop_schema(container.engine)
+        finally:
+            await container.dispose()
 
 
 @pytest.fixture

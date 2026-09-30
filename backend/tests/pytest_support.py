@@ -97,7 +97,9 @@ async def create_schema(engine: AsyncEngine, *, fresh: bool) -> None:
             # pysqlite autocommits each DDL statement unless a transaction is open, which
             # costs a journal file and a sync per table on file-backed databases.
             await connection.exec_driver_sql("BEGIN")
-        await connection.run_sync(Base.metadata.create_all, checkfirst=not fresh)
+        # Fresh databases have no managed tables; otherwise drop_all just removed
+        # them. Keep SQLAlchemy's DDL path without repeating existence queries.
+        await connection.run_sync(Base.metadata.create_all, checkfirst=False)
 
 
 async def drop_schema(engine: AsyncEngine) -> None:
