@@ -137,6 +137,15 @@ for how shared limits and temporary overrides interact.
 
 ## Troubleshooting
 
+OpenAI-compatible requests have a 120-second default total budget. Supported
+reasoning-enabled report stages (and conflict screening) receive 300 seconds;
+an explicit transport override wins. Admission, HTTP and parsing share this
+deadline. Embeddings have a separate 30-second transport deadline. These are
+application limits, not provider latency guarantees. The transport requests
+identity encoding, rejects compressed responses and does not follow redirects.
+See the source contract in
+[openai_compatible.py](../backend/src/ase/adapters/llm/openai_compatible.py).
+
 | Symptom | Check |
 | --- | --- |
 | No model available | Global assignment, destination override and whether the assigned configuration is still tested and enabled |

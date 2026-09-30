@@ -57,7 +57,7 @@ explain what is and is not represented.
 - [Regional vessel positions](VESSEL_TRAFFIC_OPERATIONS.md): the Fintraffic AIS connector and vessel display.
 - [Network connectivity sources](NETWORK_CONNECTIVITY_SOURCES.md): IODA and Cloudflare Radar outage feeds.
 - [OpenAQ air-quality research](OPENAQ_RESEARCH.md): key placement and area collection.
-- [Phase 5 and 6 operations](PHASE5_PHASE6_OPERATIONS.md): translation, social sampling, watchlists and their fixed budgets.
+- [Translation, social monitoring and semantic search](PHASE5_PHASE6_OPERATIONS.md): the maintained capability guide, including fixed budgets and successor links for former phase guidance.
 - [Research expansion operations](RESEARCH_EXPANSION_OPERATIONS.md): collection-plan preview, continuation review, evidence packages and remaining acceptance.
 
 ## Reference
@@ -134,6 +134,11 @@ The dated reviews below record the scope and findings at the time:
 - [Research and subscriptions review](security/RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_REVIEW.md), 14 September 2026.
 
 ## Engineering records
+
+[Development workflow](DEVELOPMENT_WORKFLOW.md) defines Jira acceptance and
+GitHub handoffs. [Parallel development](PARALLEL_DEVELOPMENT.md) defines checkout
+and runtime isolation. The [Codex backlog register](delivery/CODEX_BACKLOG_2026_09_30.md)
+records the current grouped delivery scope and outstanding operational acceptance.
 
 [CLAUDE.md](../CLAUDE.md) records contributor rules. These documents track how the
 app is built; they do not replace checking the current code and tests.
