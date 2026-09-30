@@ -120,3 +120,20 @@ it('allows multiple separate holes without changing or reordering the saved ring
   expect(() => validatePolygon(rings)).not.toThrow();
   expect(rings).toEqual(original);
 });
+
+it.each([180, -180])(
+  'keeps the following segment beside a normalised %s seam endpoint',
+  (longitude) => {
+    const end: Position = [-longitude + (longitude > 0 ? 5 : -5), 30];
+    const line: Position[] = [[longitude, 10], [-longitude, 20], end];
+    const original = structuredClone(line);
+    const parts = splitLine(line);
+    for (const part of parts) {
+      for (let index = 1; index < part.length; index++) {
+        expect(Math.abs(part[index]![0] - part[index - 1]![0])).toBeLessThanOrEqual(180);
+      }
+    }
+    expect(parts.at(-1)?.at(-1)).toEqual(end);
+    expect(line).toEqual(original);
+  },
+);
