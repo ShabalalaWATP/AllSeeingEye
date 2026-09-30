@@ -151,5 +151,6 @@ Before release, verify an operator-configured relay with synthetic content and a
 chosen real feed reader over HTTPS. These operational checks are not proved by
 the offline suite. Daily digest checks include DST boundaries, complete SQL
 counts, membership revocation, opt-out/re-enable, empty intervals and competing
-SQLite schedulers and senders. Per-rule registered destinations and Web Push
-remain separate delivery work and are not included by these controls.
+SQLite schedulers and senders. Per-rule registered destinations remain separate
+delivery work. [Browser push](WEB_PUSH.md) has separate per-device controls and
+does not depend on the email preference.

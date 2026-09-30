@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     smtp_username: str | None = Field(default=None, min_length=1, max_length=320)
     smtp_password: SecretStr | None = None
     smtp_timeout_seconds: int = Field(default=10, ge=1, le=30)
+    web_push_vapid_private_key: SecretStr | None = None
+    web_push_vapid_subject: str | None = Field(
+        default=None, max_length=320, pattern=r"^mailto:[^\s@]+@[^\s@]+$"
+    )
     max_request_bytes: int = Field(default=65_536, ge=1_024, le=10_485_760)
     admin_password: SecretStr | None = None
     rate_limit_login_per_ip: int = Field(default=10, ge=1)
@@ -136,6 +140,12 @@ class Settings(BaseSettings):
     ai_price_currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
 
     _generated_secret: bool = PrivateAttr(default=False)
+
+    @model_validator(mode="after")
+    def _validate_web_push(self) -> Self:
+        if bool(self.web_push_vapid_private_key) != bool(self.web_push_vapid_subject):
+            raise ValueError("Browser push requires both a VAPID private key and contact subject.")
+        return self
 
     @model_validator(mode="after")
     def _finalise(self) -> Self:

@@ -40,6 +40,7 @@ def runtime(monkeypatch):
         "ase.app_lifecycle.notification_dispatcher", lambda _: SimpleNamespace(run=idle)
     )
     monkeypatch.setattr("ase.app_lifecycle.digest_worker", lambda _: SimpleNamespace(run=idle))
+    monkeypatch.setattr("ase.app_lifecycle.run_web_push", idle)
     monkeypatch.setattr(
         "ase.app_lifecycle.build_annotation_monitor_worker", lambda _: SimpleNamespace(run=idle)
     )

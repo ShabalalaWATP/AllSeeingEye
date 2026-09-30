@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import AccountRequestRow, AdministrationLockRow, UserRow
 from ase.adapters.persistence.session_changes import mark_session_change
+from ase.adapters.persistence.web_push_devices import remove_push_user
 from ase.domain.errors import NotFound
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
@@ -100,6 +101,7 @@ class SqlUserRepository:
         before = (row.is_active, row.role, row.security_version)
         _apply_user(row, user)
         if before != (row.is_active, row.role, row.security_version):
+            await remove_push_user(self._session, user.id)
             mark_session_change(self._session, user.id)
         await self._session.flush()
 

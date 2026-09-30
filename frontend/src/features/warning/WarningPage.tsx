@@ -24,6 +24,7 @@ import { fetchPlans } from '@/lib/api/direction';
 import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 
 import { AlertDestination } from './AlertDestination';
+import { NotificationAlert } from './NotificationAlert';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
@@ -150,6 +151,7 @@ export default function WarningPage() {
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Alerts</h1>
+      <NotificationAlert />
       <Link to="/annotation-monitors" className="text-sm text-ember underline">
         Annotation monitors and their change history
       </Link>

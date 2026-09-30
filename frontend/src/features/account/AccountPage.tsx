@@ -9,6 +9,7 @@ import { ProfilePreferences } from './ProfilePreferences';
 import { PrivateFeedSettings } from './PrivateFeedSettings';
 import { EmailNotificationSettings } from './EmailNotificationSettings';
 import { DigestSettings } from './DigestSettings';
+import { PushSettings } from './PushSettings';
 
 const sections = [
   { id: 'profile', label: 'Profile', detail: 'Your identity and region' },
@@ -95,6 +96,7 @@ export default function AccountPage() {
               <div className="space-y-8">
                 <EmailNotificationSettings key={params.get('subscription') ?? 'account'} />
                 <DigestSettings />
+                <PushSettings />
                 <PrivateFeedSettings />
               </div>
             ) : selected.id === 'directory' ? (

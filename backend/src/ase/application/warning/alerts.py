@@ -26,6 +26,14 @@ class ListAlertsUseCase:
         self._clock = clock
         self._access = access
 
+    async def get(self, actor: User, alert_id: UUID) -> Alert:
+        access = await self._access.context(actor, for_update=True)
+        alert = await self._alerts.get(alert_id)
+        if alert is None:
+            raise NotFound("Alert not found.")
+        access.require_read(alert.created_by, alert.team_id)
+        return alert
+
     async def execute(
         self, actor: User, *, hours: int | None = None, limit: int = 50
     ) -> list[Alert]:

@@ -44,6 +44,7 @@ from ase.api.routers import (
     me,
     mfa,
     navigation,
+    notification_alert,
     notification_digest,
     notification_preferences,
     original_assets,
@@ -84,6 +85,7 @@ from ase.api.routers import (
     trackers,
     ukraine,
     warning,
+    web_push,
 )
 
 api_router = APIRouter()
@@ -111,6 +113,8 @@ api_router.include_router(me.router)
 api_router.include_router(account.router)
 api_router.include_router(private_feed.router)
 api_router.include_router(notification_preferences.router)
+api_router.include_router(web_push.router)
+api_router.include_router(notification_alert.router)
 api_router.include_router(notification_digest.router)
 api_router.include_router(profile.router)
 api_router.include_router(directory.router)
