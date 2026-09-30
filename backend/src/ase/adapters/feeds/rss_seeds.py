@@ -43,6 +43,7 @@ GROUPS: Final = (
     "official",
     "outlets",
     "regional",
+    "native",
     "economy",
     "cyber",
     "uk_news",
@@ -102,7 +103,7 @@ def _publisher_rating(name: str, scope: str) -> SourceRating:
 
 
 def _options(where: str, value: object) -> RssOptions:
-    row = fields(where, value, _OPTION_KEYS, ("country_category_domain",))
+    row = fields(where, value, _OPTION_KEYS, ("country_category_domain", "translate_on_demand"))
     domain = row.get("country_category_domain")
     return RssOptions(
         subtype=name(f"{where}.subtype", row["subtype"]),
@@ -114,6 +115,9 @@ def _options(where: str, value: object) -> RssOptions:
         else text(f"{where}.country_category_domain", domain),
         headlines_only=flag(f"{where}.headlines_only", row["headlines_only"]),
         newest_first=flag(f"{where}.newest_first", row["newest_first"]),
+        translate_on_demand=flag(
+            f"{where}.translate_on_demand", row.get("translate_on_demand", False)
+        ),
     )
 
 
@@ -195,7 +199,8 @@ def _catalogue() -> dict[str, tuple[tuple[RssSeed, ...], Mapping[str, RssOptions
 _LOADED: Final = _catalogue()
 OFFICIAL_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["official"][0]
 OUTLET_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["outlets"][0]
-REGIONAL_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["regional"][0]
+NATIVE_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["native"][0]
+REGIONAL_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["regional"][0] + NATIVE_SEEDS
 ECONOMY_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["economy"][0]
 CYBER_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["cyber"][0]
 UK_NEWS_SEEDS: Final[tuple[RssSeed, ...]] = _LOADED["uk_news"][0]

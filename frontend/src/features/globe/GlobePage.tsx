@@ -192,6 +192,7 @@ export default function GlobePage() {
             mapPlanningPanels(tools, {
               open: openPanel,
               events: data.list,
+              exportEvents: quality.filtered,
               onHighlight: focus,
               onNavigate: (center) => engine.flyTo({ center, zoom: 12 }),
             }),

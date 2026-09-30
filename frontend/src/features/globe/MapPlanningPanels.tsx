@@ -1,3 +1,4 @@
+import { LivePictureExport } from './LivePictureExport';
 import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
 import { MapAreaResearchPanel } from '@/components/maps/MapAreaResearchPanel';
 import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
@@ -22,11 +23,13 @@ export function mapPlanningPanels(
   {
     open = () => undefined,
     events = [],
+    exportEvents = [],
     onHighlight = () => undefined,
     onNavigate = () => undefined,
   }: {
     open?: OpenPanel;
     events?: readonly LiveEvent[];
+    exportEvents?: readonly LiveEvent[];
     onHighlight?: (event: LiveEvent) => void;
     onNavigate?: (position: Position) => void;
   } = {},
@@ -56,6 +59,7 @@ export function mapPlanningPanels(
   return [
     <ControlPanel key="workspace" label="On this map" icon="layers" size="medium">
       <MapWorkspacePanel tools={tools} open={open} />
+      <LivePictureExport events={exportEvents} area={tools.research.area} />
     </ControlPanel>,
     <ControlPanel key="research" side="right" label="Research area" icon="research" size="medium">
       <MapAreaResearchPanel

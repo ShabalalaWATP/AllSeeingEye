@@ -63,6 +63,7 @@ export function IndicatorForm({
   const [keywords, setKeywords] = useState('');
   const [categories, setCategories] = useState('');
   const [threshold, setThreshold] = useState('1');
+  const [ratio, setRatio] = useState('');
   const [window, setWindow] = useState('360');
   const [template, setTemplate] = useState('');
 
@@ -85,7 +86,9 @@ export function IndicatorForm({
       keywords: parseCommaList(keywords),
       categories: parseCategories(categories),
       threshold: Math.max(1, Number(threshold) || 1),
-      window_minutes: Number(window),
+      window_minutes: ratio ? 60 : Number(window),
+      baseline_days: 30,
+      ...(ratio ? { baseline_ratio: Number(ratio) } : {}),
       report_template: area.mode === 'shape' || template === '' ? null : template,
     });
   };
@@ -184,9 +187,20 @@ export function IndicatorForm({
             setThreshold(event.target.value);
           }}
         />
+        <TextField
+          label="Ratio to hourly mean (optional)"
+          type="number"
+          min={1.01}
+          max={100}
+          step={0.01}
+          value={ratio}
+          onChange={(event) => setRatio(event.target.value)}
+          hint="Uses a 30-day sampled hourly mean. Requires at least seven days and 168 hours of samples; threshold remains the minimum count. Zero means cannot trigger ratios."
+        />
         <SelectField
           label="Window"
-          value={window}
+          disabled={ratio !== ''}
+          value={ratio ? '60' : window}
           onChange={(event) => {
             setWindow(event.target.value);
           }}

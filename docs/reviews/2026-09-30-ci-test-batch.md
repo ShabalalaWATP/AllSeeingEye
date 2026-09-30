@@ -10,17 +10,41 @@ criteria that require completed GitHub runs. No production deployment is authori
 
 | Ticket | Implemented | Evidence still required |
 | --- | --- | --- |
-| KAN-69 | Four Vitest blob shards, merged coverage, separate lint/type/build checks, reusable workflow and preserved required `frontend` check. Failure reports are retained. | A consistent complete Linux run, shard timings below six minutes and five comparable before/after runs. |
+| KAN-69 | Four Vitest blob shards, merged coverage, separate lint/type/build checks, reusable workflow and preserved required `frontend` check. Failure reports are retained. The first complete Linux frontend run passed. | Final combined-tree run, shard timing review and five comparable before/after runs. |
 | KAN-70 | Per-job idle progress budgets observe committed stage/status/payload changes, ignore heartbeat-only changes, cancel and join unfinished tasks, and keep an overall cap. Shared report workers receive the slow marker. Backend shards print the 20 slowest tests. | Twenty consecutive main CI runs without the reported timeout. |
 | KAN-71 | Four PostgreSQL shards select persistence fixtures/helpers and explicit PostgreSQL, migration and race tests. Ordinary database tests use private worker databases; special database tests run serially. Selected node IDs and diagnostic coverage are retained. SQLite keeps the sole global 90% backend gate. | Complete Linux PostgreSQL regression run, node-ID census and five-run runner-minute comparison. |
-| KAN-72 | Reviewed backend security modules have a 95% line and branch gate. Added 84 validation, authentication, token and report-authority boundary tests. Missing reviewed modules fail the checker. Frontend auth floors are reported diagnostically until measured green. | Fresh full SQLite shard run and frontend auth paths reaching 95% before enabling that frontend gate. |
+| KAN-72 | Reviewed backend security and frontend auth modules have 95% line and branch gates. Added 84 backend boundary tests, MFA/session lifecycle tests and login feedback cases. Missing reviewed modules fail the checker. The 67-test frontend auth suite passes every reviewed floor. | Fresh full SQLite shard run and merged Linux confirmation of the frontend auth gate. |
 | KAN-73 | 88 existing pure test files moved into the Node project, including one already-skipped benchmark; DOM tests retain jsdom and MSW. | Same-machine before/after timing, at least 70 seconds saved and full coverage difference within 0.05 percentage points. |
 | KAN-74 | Seven map-layer boundary tests, three terrain chart cases, and 16 saved-chat error/cancellation tests. The chart narrows validated heights once and removes unreachable fallbacks. The merged CI report prints ten worst files and remaining floor gaps. | Global branches at least 92%, and every file with at least 20 branches reaching 70%. This ticket is not complete. |
 | KAN-75 | `build:ci` avoids duplicate TypeScript work after the explicit typecheck. Docker defaults retain the full build; CI opts into the lighter command. Pinned Buildx actions load test images with separate GHA caches. Security uses the pnpm cache. Dependabot major holds include review dates. Undici updated within the existing jsdom range. | Clean and cached image builds and live CI timing evidence. |
-| KAN-76 | MSW handlers split into focused admin/response modules. Photo-geolocation lifecycle tests split from the interaction suite. All touched split files stay below 350 lines. | Full frontend CI after extraction. |
+| KAN-76 | MSW handlers split into focused admin/response modules. Photo-geolocation lifecycle tests split from the interaction suite. All touched split files stay below 350 lines. Full Linux frontend CI passed after extraction. | Final combined-tree confirmation. |
 
 ## Measured checks
 
+- GitHub run `36659162698` completed all four frontend shards, static/build checks
+  and the merged 90% coverage gate. Merged branches were 20,016/21,988 (91.03%).
+  This establishes a consistent Linux baseline for the remaining 92% target.
+- Frontend authentication: 67 tests across 12 files passed in 53.53 seconds.
+  Every reviewed auth module passes 95% lines and branches. Direct routed feedback
+  tests exercise rejected sign-in and rate limiting without booting the full shell;
+  full-page successful sign-in and keyboard interaction tests remain.
+- The SQLite schedule-edition CI failure was reproduced as a dirty checkpoint read
+  and lost worker write: the old single-connection fixture returned `(1, 0)` instead
+  of `(0, 1)`. Report-worker modules now use private file-backed SQLite unless an
+  explicit PostgreSQL URL is supplied. The regression, schedule and wait tests
+  passed (seven cases), followed by 43 fixture/marker/report API cases.
+- The newly enabled PostgreSQL serial lane exposed stale fixtures. The teams
+  migration test now verifies the three seeded allowances before testing uniqueness;
+  FIRMS races request their real feed catalogue and hook the extracted poller;
+  the legacy subscription migration gets a database satisfying its existing
+  disposable-name guard. Both migration modules passed (three cases), followed by
+  all ten real PostgreSQL FIRMS concurrency cases. Ruff and Actionlint passed.
+- Added research control/declaration coverage: 46 focused tests, all four target
+  modules at 100% branches (136/136). Report controls and assistant positioning:
+  62 focused tests, 121/122 target branches. Research/assistant lifecycle and
+  original-asset boundaries: 181 focused tests, 467/475 target branches. Radar
+  and Ukraine headline figures: 12 focused tests, 51/51 target branches. These
+  focused reports supplement the baseline; they are not a new full-suite result.
 - Script unit suite: 77 tests, 74 passed and three existing platform skips.
   The coverage-checker suite subsequently passed all seven tests after adding
   an omitted-module regression case, including diagnostic mode.
@@ -82,8 +106,9 @@ The exact-base successful GitHub run has no frontend coverage artefact.
 The pending-login test had asserted the HTTP handler count immediately after the
 busy UI appeared. It now waits for the first request to reach MSW and releases its
 pending response in a finally block, avoiding leakage if an assertion fails.
-The focused BriefWorkspace test passed earlier, but the interrupted full-run
-failure remains unresolved until consistent CI provides its failure details.
+The consistent Linux frontend run subsequently passed BriefWorkspace and all
+LoginPage cases. The interrupted Windows result is retained only as diagnostic
+history, not evidence of a current Linux regression.
 
 ## Security and compatibility
 
@@ -93,7 +118,8 @@ explicitly removes the duplicate PostgreSQL coverage percentage gate: every
 selected PostgreSQL test must still pass, and combined PostgreSQL coverage is
 published as an artefact. Partial shards do not apply whole-application coverage
 thresholds; the SQLite and frontend mergers enforce them. No changed coverage exclusion hides
-production code. Frontend stricter floors remain report-only while gaps exist.
+production code. Frontend auth now enforces its measured 95% floor; the 92% global
+branch and 70% per-file branch floors remain report-only while gaps exist.
 Action versions are pinned to verified upstream release commits. Image jobs load
 locally for existing Trivy/smoke checks and do not push images. No deployment or
 SBOM workflow is changed in this batch.

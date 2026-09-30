@@ -12,13 +12,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-Authority = Literal["uksl", "ofac_sdn"]
+Authority = Literal["uksl", "ofac_sdn", "un_sc", "eu_fsf"]
 MAX_BYTES = 32 * 1024 * 1024
 # The native UK list carries full statements of reasons and exceeded 32 MiB in 2026;
 # only the bounded normalised snapshot must stay within MAX_BYTES.
 MAX_SOURCE_BYTES = 128 * 1024 * 1024
 MAX_ROWS = 100_000
+AUTHORITY_NAMES = {
+    "uksl": "UK Sanctions List",
+    "ofac_sdn": "OFAC SDN",
+    "un_sc": "UN Security Council Consolidated List",
+    "eu_fsf": "EU consolidated financial sanctions",
+}
+AUTHORITY_PREFIXES = {"uksl": "UKSL:", "ofac_sdn": "OFAC:", "un_sc": "UNSC:", "eu_fsf": "EUFSF:"}
 SOURCE_URLS = {
+    "un_sc": "https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list",
+    "eu_fsf": "https://webgate.ec.europa.eu/fsd/fsf/#!/files",
     "uksl": "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv",
     "ofac_sdn": "https://sanctionslistservice.ofac.treas.gov/api/download/sdn.csv",
 }

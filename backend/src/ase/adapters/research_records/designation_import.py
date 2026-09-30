@@ -16,6 +16,7 @@ from ase.adapters.research_records.designation_snapshot import (
     DesignationSnapshot,
     parse_csv,
 )
+from ase.adapters.research_records.designation_xml import parse_xml
 
 
 def import_designation_csv(
@@ -27,14 +28,18 @@ def import_designation_csv(
     licence: str,
 ) -> Path:
     with source_path.open("rb") as source:
-        data = source.read(MAX_SOURCE_BYTES + 1)
+        data = source.read(
+            (MAX_BYTES if authority in {"un_sc", "eu_fsf"} else MAX_SOURCE_BYTES) + 1
+        )
     snapshot = DesignationSnapshot(
         authority,
         version,
         published_at,
         licence,
         hashlib.sha256(data).hexdigest(),
-        parse_csv(data, authority, published_at),
+        parse_xml(data, authority, published_at)
+        if authority in {"un_sc", "eu_fsf"}
+        else parse_csv(data, authority, published_at),
     )
     payload = asdict(snapshot)
     payload["published_at"] = snapshot.published_at.isoformat()

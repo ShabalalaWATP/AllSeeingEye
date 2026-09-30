@@ -13,6 +13,7 @@ from contextlib import aclosing
 from datetime import timedelta
 from typing import Annotated, Any
 
+import anyio
 from fastapi import APIRouter, Header, Query
 from sse_starlette.sse import EventSourceResponse
 
@@ -91,6 +92,7 @@ async def stream(
     ] = None,
 ) -> EventSourceResponse:
     wanted = parse_categories(categories)
+    shutdown_event = anyio.Event()
     now = container.clock.now()
     # The stream ends when the presented token does, never later than a full lifetime.
     lifetime = timedelta(minutes=container.settings.access_token_minutes)
@@ -112,6 +114,7 @@ async def stream(
         ping_seconds=PING_SECONDS,
         read_access=read_access,
         encode=encode,
+        shutdown_event=shutdown_event,
     )
 
     async def generate() -> AsyncIterator[dict[str, str]]:
@@ -122,4 +125,9 @@ async def stream(
         finally:
             container.streams.release(user.id)
 
-    return EventSourceResponse(generate(), ping=PING_SECONDS)
+    return EventSourceResponse(
+        generate(),
+        ping=PING_SECONDS,
+        shutdown_event=shutdown_event,
+        shutdown_grace_period=2,
+    )

@@ -5,12 +5,13 @@ from dataclasses import replace
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss_seeds import RssSeed
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
+from ase.adapters.research.native_regions import NATIVE_COUNTRIES
 from ase.application.ports import Clock
 from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.domain.events import Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
-REGIONAL_COUNTRIES = {
+_LEGACY_COUNTRIES = {
     "meduza_ru": "RU",
     "mediazona_ru": "RU",
     "insider_ru": "RU",
@@ -23,10 +24,14 @@ REGIONAL_COUNTRIES = {
     "interfax_ru": "RU",
     "ukrinform_en": "UA",
 }
+REGIONAL_COUNTRIES = {
+    **{source_id: (country,) for source_id, country in _LEGACY_COUNTRIES.items()},
+    **NATIVE_COUNTRIES,
+}
 LANGUAGE_ALIASES = {"zh": frozenset({"zh", "zh-cn", "zh-hans"})}
 LIMITATIONS = (
     "Publisher-supplied public feed, not a full historical or regional search. "
-    "At most 200 feed items are checked; IranWire selects the newest 200. "
+    "At most 200 feed items are checked; IranWire and native feeds select the newest 200. "
     "Only headline, date, attribution and source link are retained. "
     "Explicit phrases must match a headline and publication date must fall in the "
     "requested interval; undated items are excluded. The regional preset routes feeds "
@@ -70,8 +75,8 @@ class RegionalFeedResearchProvider:
             self._seed.spec.language, frozenset({self._seed.spec.language})
         )
         explicit = query.source_ids is not None and self.id in query.source_ids
-        region = (
-            not query.country_isos or REGIONAL_COUNTRIES[self._seed.spec.id] in query.country_isos
+        region = not query.country_isos or bool(
+            set(REGIONAL_COUNTRIES[self._seed.spec.id]).intersection(query.country_isos)
         )
         return (
             bool(search_terms(query))

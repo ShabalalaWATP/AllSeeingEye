@@ -1,9 +1,11 @@
 """Bounded durable report checkpoints and fenced worker leases."""
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     ForeignKey,
     ForeignKeyConstraint,
@@ -71,6 +73,7 @@ class ReportJobRow(Base):
     revision: Mapped[int] = mapped_column(Integer)
     lease_token: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     lease_until: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    summary: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, server_default="{}")
     payload: Mapped[str] = mapped_column(Text)
     payload_sha256: Mapped[str] = mapped_column(String(64))
     payload_bytes: Mapped[int] = mapped_column(Integer)

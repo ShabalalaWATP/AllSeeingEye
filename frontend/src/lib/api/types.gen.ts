@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/reports/{report_id}/stix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Stix */
+        get: operations["export_stix_api_reports__report_id__stix_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cyber/radar-attacks": {
         parameters: {
             query?: never;
@@ -2215,6 +2232,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/supersessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Supersede Forecast */
+        post: operations["supersede_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__supersessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/exports/forecasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Forecasts */
+        post: operations["export_forecasts_api_reports__report_id__versions__number__ledgers_exports_forecasts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/forecasts/watches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Watches */
+        get: operations["watches_api_forecasts_watches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/forecasts/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Counts */
+        get: operations["counts_api_forecasts_counts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/library": {
         parameters: {
             query?: never;
@@ -2677,6 +2762,23 @@ export interface paths {
         get: operations["original_filing_api_research_sec_filings__selection_id__original_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/lei-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Find Lei Candidates */
+        post: operations["find_lei_candidates_api_research_lei_candidates_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3296,6 +3398,40 @@ export interface paths {
         put?: never;
         /** Acknowledge Alert */
         post: operations["acknowledge_alert_api_warning_alerts__alert_id__ack_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/indicators/{indicator_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Indicator Feedback */
+        get: operations["indicator_feedback_api_warning_indicators__indicator_id__feedback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/indicators/{indicator_id}/baseline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Indicator Baseline */
+        get: operations["indicator_baseline_api_warning_indicators__indicator_id__baseline_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4867,6 +5003,12 @@ export interface components {
              */
             estimated_cost: string | null;
         };
+        /** AlertAcknowledgementIn */
+        AlertAcknowledgementIn: {
+            disposition?: components["schemas"]["AlertDisposition"] | null;
+            /** Note */
+            note?: string | null;
+        };
         /** AlertDestinationIn */
         AlertDestinationIn: {
             /** Name */
@@ -4908,6 +5050,49 @@ export interface components {
             /** Items */
             items: components["schemas"]["AlertDestinationOut"][];
         };
+        /**
+         * AlertDisposition
+         * @enum {string}
+         */
+        AlertDisposition: "useful" | "noise" | "duplicate";
+        /** AlertFeedback */
+        AlertFeedback: {
+            /**
+             * Indicator Id
+             * Format: uuid
+             */
+            indicator_id: string;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /**
+             * Useful
+             * @default 0
+             */
+            useful: number;
+            /**
+             * Noise
+             * @default 0
+             */
+            noise: number;
+            /**
+             * Duplicate
+             * @default 0
+             */
+            duplicate: number;
+            /**
+             * Time Basis
+             * @default UTC acknowledgement day; today and the previous 29 days
+             */
+            time_basis: string;
+        };
         /** AlertOut */
         AlertOut: {
             /**
@@ -4944,6 +5129,13 @@ export interface components {
             acknowledged_at: string | null;
             /** Acknowledged By */
             acknowledged_by: string | null;
+            disposition?: components["schemas"]["AlertDisposition"] | null;
+            /** Disposition Note */
+            disposition_note?: string | null;
+            /** Baseline Mean */
+            baseline_mean?: number | null;
+            /** Baseline Ratio */
+            baseline_ratio?: number | null;
             /** Report Id */
             report_id: string | null;
             /** Created By */
@@ -5498,6 +5690,20 @@ export interface components {
          * @enum {string}
          */
         Assessor: "reviewer" | "policy" | "model" | "third_party" | "legacy";
+        /** AssistantAlertOut */
+        AssistantAlertOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Matched Count */
+            matched_count: number;
+            /** Stored Sample Size */
+            stored_sample_size: number;
+            /** Available Evidence Count */
+            available_evidence_count: number;
+        };
         /** AssistantAnswerIn */
         AssistantAnswerIn: {
             /** Question */
@@ -5509,7 +5715,7 @@ export interface components {
              * @default global
              * @enum {string}
              */
-            scope: "global" | "viewport" | "selected" | "report";
+            scope: "global" | "viewport" | "selected" | "report" | "alert";
             bbox?: components["schemas"]["AssistantBoundsIn"] | null;
             selected?: components["schemas"]["AssistantSelectionIn"] | null;
             time_range?: components["schemas"]["AssistantTimeRangeIn"] | null;
@@ -5518,6 +5724,8 @@ export interface components {
             /** Source Categories */
             source_categories?: (components["schemas"]["Category"] | ("camera" | "infrastructure" | "doctrine"))[] | null;
             report?: components["schemas"]["AssistantReportIn"] | null;
+            /** Alert Id */
+            alert_id?: string | null;
         };
         /** AssistantAnswerOut */
         AssistantAnswerOut: {
@@ -5537,6 +5745,7 @@ export interface components {
             generated_at: string;
             model: components["schemas"]["AssistantModelOut"] | null;
             report?: components["schemas"]["AssistantReportOut"] | null;
+            alert?: components["schemas"]["AssistantAlertOut"] | null;
         };
         /** AssistantBoundsIn */
         AssistantBoundsIn: {
@@ -5645,7 +5854,7 @@ export interface components {
              * Mode
              * @enum {string}
              */
-            mode: "global" | "viewport" | "selected" | "report";
+            mode: "global" | "viewport" | "selected" | "report" | "alert";
             bbox: components["schemas"]["AssistantBoundsIn"] | null;
             selected: components["schemas"]["AssistantSelectionIn"] | null;
         };
@@ -7060,6 +7269,19 @@ export interface components {
             direction?: components["schemas"]["ThresholdDirection"] | null;
             aggregate?: components["schemas"]["WindowAggregate"] | null;
         };
+        /** CvssScoreOut */
+        CvssScoreOut: {
+            /** Base Score */
+            base_score: number;
+            /** Version */
+            version: string;
+            /** Vector */
+            vector: string;
+            /** Source */
+            source: string;
+            /** Updated At */
+            updated_at: string;
+        };
         /** CyberActorCatalogueOut */
         CyberActorCatalogueOut: {
             /** Source Id */
@@ -7250,6 +7472,8 @@ export interface components {
             cwes: string;
             /** Required Action */
             required_action: string;
+            epss?: components["schemas"]["EpssScoreOut"] | null;
+            cvss?: components["schemas"]["CvssScoreOut"] | null;
         };
         /**
          * CyberKind
@@ -8003,6 +8227,15 @@ export interface components {
             /** Destination */
             destination: string;
         };
+        /** EpssScoreOut */
+        EpssScoreOut: {
+            /** Probability */
+            probability: number;
+            /** Percentile */
+            percentile: number;
+            /** Date */
+            date: string;
+        };
         /** EquipmentOut */
         EquipmentOut: {
             /** Id */
@@ -8653,6 +8886,72 @@ export interface components {
             /** Links */
             links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
         };
+        /** ForecastBandCount */
+        ForecastBandCount: {
+            likelihood: components["schemas"]["Probability"];
+            /**
+             * Resolved True
+             * @default 0
+             */
+            resolved_true: number;
+            /**
+             * Resolved False
+             * @default 0
+             */
+            resolved_false: number;
+            /**
+             * Unresolved
+             * @default 0
+             */
+            unresolved: number;
+            /**
+             * Open
+             * @default 0
+             */
+            open: number;
+            /**
+             * Due
+             * @default 0
+             */
+            due: number;
+            /**
+             * Superseded
+             * @default 0
+             */
+            superseded: number;
+            /**
+             * Resolved Denominator
+             * @default 0
+             */
+            resolved_denominator: number;
+        };
+        /** ForecastCounts */
+        ForecastCounts: {
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Bands */
+            bands: components["schemas"]["ForecastBandCount"][];
+            /** Forecast Versions */
+            forecast_versions: number;
+            /**
+             * Counting Unit
+             * @default forecast version, by issue time, using its latest decision once
+             */
+            counting_unit: string;
+            /**
+             * Caveat
+             * @default Related versions may not be independent observations. The cohort can be small or selective. PHIA bands are not calibrated probabilities. Only true plus false form the resolved denominator; no accuracy percentages are calculated.
+             */
+            caveat: string;
+        };
         /** ForecastCreateIn */
         ForecastCreateIn: {
             /**
@@ -8718,6 +9017,11 @@ export interface components {
             /** Superseding Version Id */
             superseding_version_id?: string | null;
         };
+        /** ForecastExportIn */
+        ForecastExportIn: {
+            /** Ledger Ids */
+            ledger_ids: string[];
+        };
         /** ForecastLedger */
         ForecastLedger: {
             /** Versions */
@@ -8730,13 +9034,22 @@ export interface components {
         };
         /** ForecastReviewIn */
         ForecastReviewIn: {
+            /** Expected Version Id */
+            expected_version_id?: string | null;
             /** Previous Decision Id */
             previous_decision_id?: string | null;
             /**
              * State
-             * @constant
+             * @enum {string}
              */
-            state: "unresolved";
+            state: "unresolved" | "resolved";
+            /** Outcome */
+            outcome?: boolean | null;
+            /**
+             * Outcome Evidence
+             * @default []
+             */
+            outcome_evidence: components["schemas"]["OutcomeEvidenceIn"][];
             /** Reason */
             reason: string;
             /**
@@ -8752,6 +9065,19 @@ export interface components {
          * @enum {string}
          */
         ForecastState: "open" | "due" | "resolved" | "superseded" | "unresolved";
+        /** ForecastSupersessionIn */
+        ForecastSupersessionIn: {
+            /**
+             * Expected Version Id
+             * Format: uuid
+             */
+            expected_version_id: string;
+            /** Previous Decision Id */
+            previous_decision_id?: string | null;
+            /** Reason */
+            reason: string;
+            replacement: components["schemas"]["ForecastCreateIn"];
+        };
         /** ForecastVersion */
         ForecastVersion: {
             /** Forecast Id */
@@ -8795,6 +9121,53 @@ export interface components {
              * @default ase-forecast-ledger-v1
              */
             policy_version: string;
+        };
+        /** ForecastWatch */
+        ForecastWatch: {
+            /**
+             * Ledger Id
+             * Format: uuid
+             */
+            ledger_id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Report Version */
+            report_version: number;
+            /** Title */
+            title: string;
+            /** Version Id */
+            version_id: string;
+            /**
+             * Review At
+             * Format: date-time
+             */
+            review_at: string;
+            /**
+             * Horizon End
+             * Format: date-time
+             */
+            horizon_end: string;
+            state: components["schemas"]["ForecastState"];
+            /** Review Due */
+            review_due: boolean;
+            /** Reminded At */
+            reminded_at: string | null;
+            /** Team Id */
+            team_id: string | null;
+        };
+        /** ForecastWatchPageOut */
+        ForecastWatchPageOut: {
+            /** Items */
+            items: components["schemas"]["ForecastWatch"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
@@ -9196,6 +9569,24 @@ export interface components {
              */
             base_revision_id: string;
         };
+        /** IndicatorBaselineOut */
+        IndicatorBaselineOut: {
+            /** Sample Hours */
+            sample_hours: number;
+            /** Mean */
+            mean: number | null;
+            /** Earliest */
+            earliest: string | null;
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Ready */
+            ready: boolean;
+            /** Reason */
+            reason: string;
+        };
         /** IndicatorCreateIn */
         IndicatorCreateIn: {
             /**
@@ -9255,6 +9646,13 @@ export interface components {
              * @default 1
              */
             threshold: number;
+            /** Baseline Ratio */
+            baseline_ratio?: number | null;
+            /**
+             * Baseline Days
+             * @default 30
+             */
+            baseline_days: number;
             /**
              * Window Minutes
              * @default 60
@@ -9314,6 +9712,13 @@ export interface components {
             keywords: string[];
             /** Threshold */
             threshold: number;
+            /** Baseline Ratio */
+            baseline_ratio?: number | null;
+            /**
+             * Baseline Days
+             * @default 30
+             */
+            baseline_days: number;
             /** Window Minutes */
             window_minutes: number;
             /** Cooldown Minutes */
@@ -9818,6 +10223,29 @@ export interface components {
          * @enum {string}
          */
         LedgerKind: "forecast" | "indicator";
+        /** LeiCandidateOut */
+        LeiCandidateOut: {
+            /** Lei */
+            lei: string;
+            /** Name */
+            name: string;
+            /** Jurisdiction */
+            jurisdiction: string;
+            /** Status */
+            status: string;
+        };
+        /** LeiCandidatesIn */
+        LeiCandidatesIn: {
+            /** Name */
+            name: string;
+            /** Country */
+            country?: string | null;
+        };
+        /** LeiCandidatesOut */
+        LeiCandidatesOut: {
+            /** Items */
+            items: components["schemas"]["LeiCandidateOut"][];
+        };
         /**
          * Lens
          * @enum {string}
@@ -11194,6 +11622,27 @@ export interface components {
             original_language: string;
             /** Permitted Use */
             permitted_use: string;
+        };
+        /** OutcomeEvidenceIn */
+        OutcomeEvidenceIn: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version */
+            version: number;
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Claim Revision Id
+             * Format: uuid
+             */
+            claim_revision_id: string;
+            citation: components["schemas"]["CitationKeyIn"];
         };
         /** OutlineOut */
         OutlineOut: {
@@ -12793,6 +13242,17 @@ export interface components {
             /** Latest Ordinal */
             latest_ordinal: number;
             source_reference?: components["schemas"]["PassageReference"] | null;
+        };
+        /** ReportLedgerPageOut */
+        ReportLedgerPageOut: {
+            /** Items */
+            items: components["schemas"]["ReportLedger"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
@@ -15383,6 +15843,11 @@ export interface components {
             /** Losses */
             losses: components["schemas"]["SpottedLossOut"][];
         };
+        /**
+         * StixTlp
+         * @enum {string}
+         */
+        StixTlp: "green" | "amber" | "red";
         /** StoreStatsOut */
         StoreStatsOut: {
             /** Total */
@@ -16528,6 +16993,47 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    export_stix_api_reports__report_id__stix_get: {
+        parameters: {
+            query: {
+                version: number;
+                tlp: components["schemas"]["StixTlp"];
+            };
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     radar_attack_trends_api_cyber_radar_attacks_get: {
         parameters: {
             query?: never;
@@ -23107,9 +23613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ReportLedgerPageOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -23334,6 +23838,183 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    supersede_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__supersessions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+                ledger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastSupersessionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_forecasts_api_reports__report_id__versions__number__ledgers_exports_forecasts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastExportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    watches_api_forecasts_watches_get: {
+        parameters: {
+            query?: {
+                team_id?: string | null;
+                personal?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForecastWatchPageOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    counts_api_forecasts_counts_get: {
+        parameters: {
+            query: {
+                since: string;
+                until: string;
+                team_id?: string | null;
+                personal?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForecastCounts"];
                 };
             };
             /** @description Unprocessable Content */
@@ -24697,6 +25378,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    find_lei_candidates_api_research_lei_candidates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeiCandidatesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeiCandidatesOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -26424,7 +27147,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AlertAcknowledgementIn"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -26433,6 +27160,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AlertOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    indicator_feedback_api_warning_indicators__indicator_id__feedback_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertFeedback"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    indicator_baseline_api_warning_indicators__indicator_id__baseline_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndicatorBaselineOut"];
                 };
             };
             /** @description Unprocessable Content */

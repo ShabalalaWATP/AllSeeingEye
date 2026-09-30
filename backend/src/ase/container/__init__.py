@@ -134,7 +134,12 @@ class Container(
     def _initialise_database(self) -> None:
         settings = self.settings
         ensure_sqlite_directory(settings.database_url)
-        self.engine = create_engine(settings.database_url)
+        self.engine = create_engine(
+            settings.database_url,
+            pool_size=settings.database_pool_size,
+            max_overflow=settings.database_max_overflow,
+            pool_timeout=settings.database_pool_timeout,
+        )
         self.bus, self.health = InMemoryEventBus(), HealthRegistry()
         self.session_signals, self.session_freshness, self.session_factory = build_sessions(
             settings, self.clock, self.bus, self.engine

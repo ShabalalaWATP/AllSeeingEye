@@ -3,7 +3,6 @@
 from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
-from typing import Literal
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
@@ -36,10 +35,13 @@ from ase.adapters.research_records.contracts_finder import ContractsFinderProvid
 from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
 from ase.adapters.research_records.copernicus_research import CopernicusResearchProvider
 from ase.adapters.research_records.designation_import import load_designation_snapshot
+from ase.adapters.research_records.designation_snapshot import Authority
 from ase.adapters.research_records.designations import DesignationProvider
 from ase.adapters.research_records.domains import DnsResearchProvider, RdapResearchProvider
 from ase.adapters.research_records.ecb_reference_rate import EcbReferenceRateProvider
 from ase.adapters.research_records.gleif import GleifParentProvider, GleifProfileProvider
+from ase.adapters.research_records.hapi import TOPICS as HAPI_TOPICS
+from ase.adapters.research_records.hapi import HapiProvider
 from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchProvider
 from ase.adapters.research_records.ons_cpih import OnsCpihProvider
 from ase.adapters.research_records.ooni import OoniAggregateProvider
@@ -73,6 +75,9 @@ def research_service(
     ooni_noncommercial_use_acknowledged: bool = False,
     uksl_snapshot_path: str | None = None,
     ofac_sdn_snapshot_path: str | None = None,
+    un_sc_snapshot_path: str | None = None,
+    eu_fsf_snapshot_path: str | None = None,
+    hapi_app_identifier: str | None = None,
     aiddata_catalogue_path: str | None = None,
     countries: CountryDirectory | None = None,
     companies_house_key: str | None = None,
@@ -113,9 +118,21 @@ def research_service(
         clock,
         {country.iso3: country.iso2 for country in countries.countries()} if countries else {},
     )
-    snapshots: tuple[tuple[Literal["uksl", "ofac_sdn"], str | None], ...] = (
+    hapi = tuple(
+        HapiProvider(
+            http,
+            clock,
+            topic,
+            {country.iso2: country.iso3 for country in countries.countries()} if countries else {},
+            hapi_app_identifier,
+        )
+        for topic in HAPI_TOPICS
+    )
+    snapshots: tuple[tuple[Authority, str | None], ...] = (
         ("uksl", uksl_snapshot_path),
         ("ofac_sdn", ofac_sdn_snapshot_path),
+        ("un_sc", un_sc_snapshot_path),
+        ("eu_fsf", eu_fsf_snapshot_path),
     )
     designations = tuple(
         DesignationProvider(
@@ -172,6 +189,7 @@ def research_service(
                 aiddata,
                 CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
                 *designations,
+                *hapi,
                 OpenAlexProvider(http, clock, api_key=openalex_api_key),
                 CrossrefProvider(http, clock),
                 WorldBankProvider(http, clock),
@@ -218,6 +236,7 @@ def research_service(
                 EcbReferenceRateProvider.id,
                 IodaOutageResearchProvider.id,
                 *RADAR_PROVIDER_IDS.values(),
+                *(provider.id for provider in hapi),
             }
         ]
 

@@ -5,6 +5,75 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/reports/{report_id}/stix": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Stix",
+        "operationId": "export_stix_api_reports__report_id__stix_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Version"
+            }
+          },
+          {
+            "name": "tlp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StixTlp"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/cyber/radar-attacks": {
       "get": {
         "tags": [
@@ -9783,9 +9852,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response List Ledgers Api Reports  Report Id  Versions  Number  Ledgers Get"
+                  "$ref": "#/components/schemas/ReportLedgerPageOut"
                 }
               }
             }
@@ -10201,6 +10268,372 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/supersessions": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Supersede Forecast",
+        "operationId": "supersede_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__supersessions_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "ledger_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ledger Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastSupersessionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/exports/forecasts": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Export Forecasts",
+        "operationId": "export_forecasts_api_reports__report_id__versions__number__ledgers_exports_forecasts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastExportIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReportLedger"
+                  },
+                  "title": "Response Export Forecasts Api Reports  Report Id  Versions  Number  Ledgers Exports Forecasts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/forecasts/watches": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Watches",
+        "operationId": "watches_api_forecasts_watches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastWatchPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/forecasts/counts": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Counts",
+        "operationId": "counts_api_forecasts_counts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Since"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Until"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastCounts"
                 }
               }
             }
@@ -12420,6 +12853,62 @@
             "description": "Default Response"
           }
         }
+      }
+    },
+    "/api/research/lei-candidates": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Find Lei Candidates",
+        "operationId": "find_lei_candidates_api_research_lei_candidates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeiCandidatesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeiCandidatesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/research/runs/plan": {
@@ -14913,6 +15402,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AlertAcknowledgementIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -14920,6 +15426,122 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AlertOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/feedback": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Feedback",
+        "operationId": "indicator_feedback_api_warning_indicators__indicator_id__feedback_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertFeedback"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/baseline": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Baseline",
+        "operationId": "indicator_baseline_api_warning_indicators__indicator_id__baseline_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorBaselineOut"
                 }
               }
             }
@@ -20421,6 +21043,35 @@
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
+      "AlertAcknowledgementIn": {
+        "properties": {
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AlertAcknowledgementIn"
+      },
       "AlertDestinationIn": {
         "properties": {
           "name": {
@@ -20522,6 +21173,61 @@
           "items"
         ],
         "title": "AlertDestinationsOut"
+      },
+      "AlertDisposition": {
+        "type": "string",
+        "enum": [
+          "useful",
+          "noise",
+          "duplicate"
+        ],
+        "title": "AlertDisposition"
+      },
+      "AlertFeedback": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "useful": {
+            "type": "integer",
+            "title": "Useful",
+            "default": 0
+          },
+          "noise": {
+            "type": "integer",
+            "title": "Noise",
+            "default": 0
+          },
+          "duplicate": {
+            "type": "integer",
+            "title": "Duplicate",
+            "default": 0
+          },
+          "time_basis": {
+            "type": "string",
+            "title": "Time Basis",
+            "default": "UTC acknowledgement day; today and the previous 29 days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "since",
+          "until"
+        ],
+        "title": "AlertFeedback"
       },
       "AlertOut": {
         "properties": {
@@ -20636,6 +21342,49 @@
               }
             ],
             "title": "Acknowledged By"
+          },
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disposition_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Note"
+          },
+          "baseline_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Mean"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
           },
           "report_id": {
             "anyOf": [
@@ -22120,6 +22869,35 @@
         ],
         "title": "Assessor"
       },
+      "AssistantAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "stored_sample_size": {
+            "type": "integer",
+            "title": "Stored Sample Size"
+          },
+          "available_evidence_count": {
+            "type": "integer",
+            "title": "Available Evidence Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "matched_count",
+          "stored_sample_size",
+          "available_evidence_count"
+        ],
+        "title": "AssistantAlertOut"
+      },
       "AssistantAnswerIn": {
         "properties": {
           "question": {
@@ -22142,7 +22920,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Scope",
             "default": "global"
@@ -22227,6 +23006,18 @@
                 "type": "null"
               }
             ]
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
           }
         },
         "additionalProperties": false,
@@ -22291,6 +23082,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AssistantReportOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alert": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantAlertOut"
               },
               {
                 "type": "null"
@@ -22608,7 +23409,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Mode"
           },
@@ -26719,6 +27521,39 @@
         ],
         "title": "CriterionIn"
       },
+      "CvssScoreOut": {
+        "properties": {
+          "base_score": {
+            "type": "number",
+            "title": "Base Score"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "vector": {
+            "type": "string",
+            "title": "Vector"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_score",
+          "version",
+          "vector",
+          "source",
+          "updated_at"
+        ],
+        "title": "CvssScoreOut"
+      },
       "CyberActorCatalogueOut": {
         "properties": {
           "source_id": {
@@ -27200,6 +28035,26 @@
           "required_action": {
             "type": "string",
             "title": "Required Action"
+          },
+          "epss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EpssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cvss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -29452,6 +30307,29 @@
         ],
         "title": "EmailPreferencesOut"
       },
+      "EpssScoreOut": {
+        "properties": {
+          "probability": {
+            "type": "number",
+            "title": "Probability"
+          },
+          "percentile": {
+            "type": "number",
+            "title": "Percentile"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "probability",
+          "percentile",
+          "date"
+        ],
+        "title": "EpssScoreOut"
+      },
       "EquipmentOut": {
         "properties": {
           "id": {
@@ -31422,6 +32300,96 @@
         ],
         "title": "ForceNodeOut"
       },
+      "ForecastBandCount": {
+        "properties": {
+          "likelihood": {
+            "$ref": "#/components/schemas/Probability"
+          },
+          "resolved_true": {
+            "type": "integer",
+            "title": "Resolved True",
+            "default": 0
+          },
+          "resolved_false": {
+            "type": "integer",
+            "title": "Resolved False",
+            "default": 0
+          },
+          "unresolved": {
+            "type": "integer",
+            "title": "Unresolved",
+            "default": 0
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open",
+            "default": 0
+          },
+          "due": {
+            "type": "integer",
+            "title": "Due",
+            "default": 0
+          },
+          "superseded": {
+            "type": "integer",
+            "title": "Superseded",
+            "default": 0
+          },
+          "resolved_denominator": {
+            "type": "integer",
+            "title": "Resolved Denominator",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "likelihood"
+        ],
+        "title": "ForecastBandCount"
+      },
+      "ForecastCounts": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastBandCount"
+            },
+            "type": "array",
+            "title": "Bands"
+          },
+          "forecast_versions": {
+            "type": "integer",
+            "title": "Forecast Versions"
+          },
+          "counting_unit": {
+            "type": "string",
+            "title": "Counting Unit",
+            "default": "forecast version, by issue time, using its latest decision once"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat",
+            "default": "Related versions may not be independent observations. The cohort can be small or selective. PHIA bands are not calibrated probabilities. Only true plus false form the resolved denominator; no accuracy percentages are calculated."
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "until",
+          "bands",
+          "forecast_versions"
+        ],
+        "title": "ForecastCounts"
+      },
       "ForecastCreateIn": {
         "properties": {
           "claim_id": {
@@ -31591,6 +32559,26 @@
         ],
         "title": "ForecastDecision"
       },
+      "ForecastExportIn": {
+        "properties": {
+          "ledger_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Ledger Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ledger_ids"
+        ],
+        "title": "ForecastExportIn"
+      },
       "ForecastLedger": {
         "properties": {
           "versions": {
@@ -31617,6 +32605,18 @@
       },
       "ForecastReviewIn": {
         "properties": {
+          "expected_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version Id"
+          },
           "previous_decision_id": {
             "anyOf": [
               {
@@ -31631,8 +32631,31 @@
           },
           "state": {
             "type": "string",
-            "const": "unresolved",
+            "enum": [
+              "unresolved",
+              "resolved"
+            ],
             "title": "State"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "outcome_evidence": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeEvidenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Outcome Evidence",
+            "default": []
           },
           "reason": {
             "type": "string",
@@ -31680,6 +32703,44 @@
           "unresolved"
         ],
         "title": "ForecastState"
+      },
+      "ForecastSupersessionIn": {
+        "properties": {
+          "expected_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Expected Version Id"
+          },
+          "previous_decision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Decision Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/ForecastCreateIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version_id",
+          "reason",
+          "replacement"
+        ],
+        "title": "ForecastSupersessionIn"
       },
       "ForecastVersion": {
         "properties": {
@@ -31780,6 +32841,119 @@
           "contrary"
         ],
         "title": "ForecastVersion"
+      },
+      "ForecastWatch": {
+        "properties": {
+          "ledger_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ledger Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version": {
+            "type": "integer",
+            "title": "Report Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version_id": {
+            "type": "string",
+            "title": "Version Id"
+          },
+          "review_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Review At"
+          },
+          "horizon_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Horizon End"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ForecastState"
+          },
+          "review_due": {
+            "type": "boolean",
+            "title": "Review Due"
+          },
+          "reminded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminded At"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ledger_id",
+          "report_id",
+          "report_version",
+          "title",
+          "version_id",
+          "review_at",
+          "horizon_end",
+          "state",
+          "review_due",
+          "reminded_at",
+          "team_id"
+        ],
+        "title": "ForecastWatch"
+      },
+      "ForecastWatchPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastWatch"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ForecastWatchPageOut"
       },
       "ForgotPasswordIn": {
         "properties": {
@@ -32910,6 +34084,60 @@
         ],
         "title": "IdentityUpdateIn"
       },
+      "IndicatorBaselineOut": {
+        "properties": {
+          "sample_hours": {
+            "type": "integer",
+            "title": "Sample Hours"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "earliest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earliest"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_hours",
+          "mean",
+          "earliest",
+          "as_of",
+          "ready",
+          "reason"
+        ],
+        "title": "IndicatorBaselineOut"
+      },
       "IndicatorCreateIn": {
         "properties": {
           "claim_id": {
@@ -33096,6 +34324,26 @@
             "title": "Threshold",
             "default": 1
           },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 7.0,
+            "title": "Baseline Days",
+            "default": 30
+          },
           "window_minutes": {
             "type": "integer",
             "maximum": 10080.0,
@@ -33253,6 +34501,22 @@
           "threshold": {
             "type": "integer",
             "title": "Threshold"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "title": "Baseline Days",
+            "default": 30
           },
           "window_minutes": {
             "type": "integer",
@@ -34689,6 +35953,78 @@
           "indicator"
         ],
         "title": "LedgerKind"
+      },
+      "LeiCandidateOut": {
+        "properties": {
+          "lei": {
+            "type": "string",
+            "title": "Lei"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "title": "Jurisdiction"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lei",
+          "name",
+          "jurisdiction",
+          "status"
+        ],
+        "title": "LeiCandidateOut"
+      },
+      "LeiCandidatesIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "LeiCandidatesIn"
+      },
+      "LeiCandidatesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LeiCandidateOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "LeiCandidatesOut"
       },
       "Lens": {
         "type": "string",
@@ -38330,6 +39666,44 @@
           "permitted_use"
         ],
         "title": "OriginalPassageOut"
+      },
+      "OutcomeEvidenceIn": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Id"
+          },
+          "claim_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Revision Id"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/CitationKeyIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "report_id",
+          "version",
+          "claim_id",
+          "claim_revision_id",
+          "citation"
+        ],
+        "title": "OutcomeEvidenceIn"
       },
       "OutlineOut": {
         "properties": {
@@ -43138,6 +44512,37 @@
           "latest_ordinal"
         ],
         "title": "ReportLedgerAnchor"
+      },
+      "ReportLedgerPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReportLedger"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ReportLedgerPageOut"
       },
       "ReportMethodologyOut": {
         "properties": {
@@ -50478,6 +51883,15 @@
           "losses"
         ],
         "title": "SpottedOut"
+      },
+      "StixTlp": {
+        "type": "string",
+        "enum": [
+          "green",
+          "amber",
+          "red"
+        ],
+        "title": "StixTlp"
       },
       "StoreStatsOut": {
         "properties": {

@@ -45,6 +45,8 @@ class IndicatorInput:
     enabled: bool = True
     team_id: UUID | None = None
     research_area: ResearchArea | None = None
+    baseline_ratio: float | None = None
+    baseline_days: int = 30
 
 
 def _validate_area(data: IndicatorInput) -> None:
@@ -77,6 +79,14 @@ def build_indicator(
     if not name:
         raise InvalidRequest("An indicator needs a name.")
     _validate_area(data)
+    if not 7 <= data.baseline_days <= 30:
+        raise InvalidRequest("The baseline window must be between 7 and 30 days.")
+    if data.baseline_ratio is not None and (
+        not 1 < data.baseline_ratio <= 100 or data.window_minutes != 60
+    ):
+        raise InvalidRequest(
+            "Ratio rules require a one-hour window and a ratio above 1, up to 100."
+        )
     bbox: BoundingBox | None = None
     if data.bbox is not None:
         west, south, east, north = data.bbox
@@ -107,6 +117,8 @@ def build_indicator(
         categories=tuple(dict.fromkeys(data.categories)),
         keywords=keywords,
         threshold=data.threshold,
+        baseline_ratio=data.baseline_ratio,
+        baseline_days=data.baseline_days,
         window_minutes=data.window_minutes,
         cooldown_minutes=data.cooldown_minutes,
         severity_floor=data.severity_floor,

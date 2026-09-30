@@ -11,6 +11,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -38,6 +39,9 @@ from ase.adapters.persistence import (
     original_passage_models as _original_passage_models,  # noqa: F401
 )
 from ase.adapters.persistence import report_job_models as _report_job_models  # noqa: F401
+from ase.adapters.persistence import (
+    report_job_usage_models as _report_job_usage_models,  # noqa: F401
+)
 from ase.adapters.persistence import research_brief_models as _research_brief_models  # noqa: F401
 from ase.adapters.persistence import research_usage_models as _research_usage_models  # noqa: F401
 from ase.adapters.persistence import selected_index_models as _selected_index_models  # noqa: F401
@@ -189,6 +193,7 @@ class LlmProfileRow(Base):
 
 class LlmUsageRow(Base):
     __tablename__ = "llm_usage"
+    __table_args__ = (Index("ix_llm_usage_user_at", "user_id", "at"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)

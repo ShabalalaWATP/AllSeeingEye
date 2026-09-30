@@ -12,7 +12,6 @@ from ase.adapters.feeds.cisa_kev import SPEC as KEV
 from ase.adapters.feeds.cyber import IODA, RANSOMWARE
 from ase.adapters.feeds.rss_seeds import CYBER_SEEDS
 from ase.adapters.store.memory import InMemoryEventStore
-from ase.application import cyber as cyber_application
 from ase.application.cyber import CyberService
 from ase.application.feeds.health import HealthRegistry
 from ase.domain.cyber import CyberKind, CyberWindowDays, cyber_kind, cyber_window
@@ -194,7 +193,7 @@ async def test_expensive_preparation_has_one_bounded_slot_and_no_waiting_queue(m
         await release.wait()
         return work()
 
-    monkeypatch.setattr(cyber_application, "joined_thread_call", hold)
+    monkeypatch.setattr("ase.adapters.store.memory.joined_thread_call", hold)
     pending = asyncio.create_task(svc.read())
     await entered.wait()
     try:

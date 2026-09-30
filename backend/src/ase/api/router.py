@@ -38,9 +38,11 @@ from ase.api.routers import (
     events,
     figures,
     footprints,
+    forecast_watches,
     health,
     identities,
     infrastructure,
+    lei_candidates,
     map_image,
     map_views,
     map_workspace,
@@ -63,6 +65,7 @@ from ase.api.routers import (
     report_ledgers,
     report_methodology,
     report_search,
+    report_stix,
     reports,
     research_briefs,
     research_inputs,
@@ -92,6 +95,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(report_stix.router)
 api_router.include_router(csp_reports.router)
 api_router.include_router(cyber.router)
 api_router.include_router(economy.router)
@@ -137,6 +141,7 @@ api_router.include_router(annotation_comparisons.router)
 api_router.include_router(annotation_monitors.router)
 api_router.include_router(relationships.router)
 api_router.include_router(report_ledgers.router)
+api_router.include_router(forecast_watches.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
@@ -148,6 +153,7 @@ api_router.include_router(research_preflight.router)
 api_router.include_router(research_presets.router)
 api_router.include_router(research_inputs.router)
 api_router.include_router(sec_filings.router)
+api_router.include_router(lei_candidates.router)
 api_router.include_router(research_runs.router)
 api_router.include_router(report_documents.router)
 api_router.include_router(report_methodology.router)
