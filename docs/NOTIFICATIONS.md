@@ -18,6 +18,11 @@ needs-review edition transitions, including those without a completed report.
 Each recipient manages their own preferences. Administrators' ability to inspect
 someone else's personal subscription does not subscribe them to its emails.
 
+**Material changes** email works independently of the subscription's in-app change
+alert setting. It compares successive saved reports when a recipient has opted in,
+without enabling in-app alerts. With neither channel enabled, publication does not
+add change-alert state or notification intents.
+
 Messages contain a link, an event label and a preference-management link. They
 never contain report prose, evidence or source titles. Subscription names require
 a separate account-level opt-in because a topic name can itself be sensitive.
