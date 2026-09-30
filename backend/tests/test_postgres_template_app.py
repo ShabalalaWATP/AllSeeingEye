@@ -19,9 +19,10 @@ def early_url():
 
 
 async def test_url_precedes_settings_and_independent_fixture_consumers(
-    early_url, settings, container, template_database, template_worker
+    early_url, settings, container, template_database, request
 ):
     assert template_database is not None
+    template_worker = request.getfixturevalue("template_worker")
     assert make_url(early_url) == make_url(settings.database_url) == container.engine.url
     assert template_worker._leases == {template_database.name: template_database}
     async with container.engine.begin() as connection:
@@ -29,9 +30,10 @@ async def test_url_precedes_settings_and_independent_fixture_consumers(
 
 
 async def test_next_default_app_has_no_prior_rows_or_connections(
-    container, template_database, template_worker
+    container, template_database, request
 ):
     assert template_database is not None
+    template_worker = request.getfixturevalue("template_worker")
     assert template_worker._leases == {template_database.name: template_database}
     async with container.engine.begin() as connection:
         assert await connection.scalar(text("SELECT count(*) FROM administration_lock")) == 0
