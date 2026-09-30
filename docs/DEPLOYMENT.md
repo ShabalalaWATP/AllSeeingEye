@@ -89,8 +89,10 @@ Do not publish environment files, detailed recovery records or unredacted logs w
 Compose reserves Caddy's address on a dedicated proxy network and gives Uvicorn
 only that address as `ASE_FORWARDED_ALLOW_IPS`. Other peers' forwarded headers are
 ignored. The standalone API image trusts loopback only. If the default subnet
-conflicts with an existing network, set `ASE_PROXY_SUBNET` and `ASE_PROXY_WEB_IP`
-together; the latter must be a free usable address in that subnet. Recreate the
+conflicts with an existing network, set `ASE_PROXY_SUBNET`, `ASE_PROXY_WEB_IP`
+and `ASE_PROXY_API_IP` together. The web and API addresses must be distinct,
+free usable addresses in that subnet. Both are explicit so the API cannot
+take Caddy's reserved address before the web container starts. Recreate the
 network through the reviewed manual rollout and verify client IPs and rate limits.
 Do not override trust with `*`.
 

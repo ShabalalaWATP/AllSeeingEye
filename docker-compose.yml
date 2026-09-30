@@ -50,8 +50,9 @@ services:
       ASE_PUBLIC_BASE_URL: ${ASE_PUBLIC_BASE_URL:-https://localhost}
       ASE_FORWARDED_ALLOW_IPS: ${ASE_PROXY_WEB_IP:-172.30.250.2}
     networks:
-      - default
-      - proxy
+      default: {}
+      proxy:
+        ipv4_address: ${ASE_PROXY_API_IP:-172.30.250.3}
     depends_on:
       db:
         condition: service_healthy

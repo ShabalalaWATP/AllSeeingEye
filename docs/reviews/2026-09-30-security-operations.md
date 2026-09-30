@@ -67,3 +67,12 @@ GitHub CI and the first advisory SBOM workflow remain pending on publication.
 The new CI preserves the SQLite 90% global coverage gate and adds reviewed
 95% security-module floors. KAN-71 explicitly removes only the duplicate
 PostgreSQL percentage gate while retaining persistence tests and their report.
+
+The full disposable Compose rehearsal then reproduced two operational defects:
+Docker assigned the API Caddy's reserved address before web startup, and the
+API shell entrypoint prevented SIGTERM reaching Uvicorn. A populated stop took
+30.751 seconds, exited 137 without OOM, and wrote neither shutdown phases nor
+the final snapshot. The repair explicitly assigns distinct API/web proxy
+addresses and uses `exec uvicorn` after migration. Six configuration regressions
+pass. A fresh full Compose retry is required before claiming these behaviours
+verified; individual-container health checks did not expose either issue.
