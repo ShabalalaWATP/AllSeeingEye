@@ -40,6 +40,44 @@ acceptance or release is complete.
 | Runtime observability | [KAN-41](https://alex-orr.atlassian.net/browse/KAN-41), [KAN-42](https://alex-orr.atlassian.net/browse/KAN-42), [KAN-43](https://alex-orr.atlassian.net/browse/KAN-43) | `codex/KAN-41-runtime-observability` |
 | Operator-only prerequisites | [KAN-45](https://alex-orr.atlassian.net/browse/KAN-45), [KAN-46](https://alex-orr.atlassian.net/browse/KAN-46) | `No implementation branch` |
 
+## Published review stack
+
+All nine PRs are published as drafts. Their bases follow this order; an approved
+merge must be followed by updating and checking the next affected branch against
+the resulting main. The primary checkout's prepared edits remain untouched.
+
+| Order | PR | Batch | Tickets |
+| --- | --- | --- | --- |
+| 1 | [#88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) | Workflow, contracts and guidance | 6 |
+| 2 | [#89](https://github.com/ShabalalaWATP/AllSeeingEye/pull/89) | Architecture and startup | 8 |
+| 3 | [#90](https://github.com/ShabalalaWATP/AllSeeingEye/pull/90) | Runtime observability | 3 |
+| 4 | [#91](https://github.com/ShabalalaWATP/AllSeeingEye/pull/91) | CI and test quality | 8 |
+| 5 | [#92](https://github.com/ShabalalaWATP/AllSeeingEye/pull/92) | Security and operations | 8 |
+| 6 | [#93](https://github.com/ShabalalaWATP/AllSeeingEye/pull/93) | Backend performance | 8 |
+| 7 | [#94](https://github.com/ShabalalaWATP/AllSeeingEye/pull/94) | Forecasts and alert feedback | 5 |
+| 8 | [#95](https://github.com/ShabalalaWATP/AllSeeingEye/pull/95) | Sources and exports | 7 |
+| 9 | [#96](https://github.com/ShabalalaWATP/AllSeeingEye/pull/96) | Opt-in notifications | 5 |
+
+The first three PRs passed their complete CI at the published implementation
+heads. Later branches are undergoing combined checks and repairs. Fresh Linux
+evidence establishes 94% combined backend coverage, 92.16% frontend branches,
+the reviewed 95% security/auth floors and a 70% floor for frontend files with at
+least 20 branches. These are dated measurements, not an assertion that every
+subsequent feature branch has completed its own checks.
+
+The first successful selected PostgreSQL CI run executed 2,361 unique cases with
+no omission from the reviewed 2,360-case census. Its 62.1 runner-minutes exceeded
+KAN-71's 30-minute target, so timing optimisation and measurement remain active.
+The first local DOM timing attempt omitted a repository fixture and is excluded
+from acceptance; a corrected paired run is still required for KAN-73.
+
+The complete notification integration passed 211 SQLite backend cases and 40
+frontend cases. Three PostgreSQL concurrency cases passed separately. The
+[combined migration rehearsal](../reviews/2026-09-30-combined-migration-rehearsal.md)
+passed six new PostgreSQL cases and the repaired historical checks, preserving
+legacy data, private sender receipts and frozen alert evidence. It records the
+exact failed-then-repaired fixture sequence and verified resource cleanup.
+
 ## Shared contracts and integration
 
 The coordinator owns this register and the master plan/development story.
@@ -53,8 +91,8 @@ The integrated migration chain is `0066 -> 0067 -> 0068 -> 0069 -> 0070 -> 0073
 -> 0071 -> 0072 -> 0074`. Forecast reminders precede notification digests even
 though their reserved numbers are not in numerical order. Migration 0067 has an
 intentional privacy downgrade guard; historical roundtrip tests must not bypass
-it. Combined database rehearsal is recorded below when complete. Never deploy a
-combined set with accidental multiple heads.
+it. The combined database rehearsal is linked above. Never deploy a combined set
+with accidental multiple heads.
 
 Keep the required CI check identities. Run focused tests independently and
 coordinate full coverage/performance runs to avoid invalid timing evidence.

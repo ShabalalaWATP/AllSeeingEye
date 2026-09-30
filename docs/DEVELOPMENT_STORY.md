@@ -5806,3 +5806,26 @@ final code commit. See
 - Reproduced the retired-manager schema mismatch, corrected inputs while preserving legacy outputs, regenerated contracts and passed 38 focused tests. Independent static review found no actionable role/authority issue. Type, lint and import checks passed.
 - Enabled and verified GitHub private vulnerability reporting. A real report/notification delivery was not sent. Personal-data policy remains an operator decision; a disposable report export/delete/deactivation rehearsal passed while preserving shared work.
 - Started separate architecture, performance, security, CI, source/export, notification, forecast and runtime batches. Their own acceptance and release checks remain required. See docs/delivery/CODEX_BACKLOG_2026_09_30.md and KAN-4-workflow-contracts.md for exact evidence and gaps.
+
+The nine batches are now published as draft PRs #88 through #96, covering 58
+implementation and documentation tickets. Independent integration reviews found
+and repaired lost material-change email when in-app alerts were disabled, frozen
+baseline evidence lost during downgrade, invalid KML Unicode and stale-authority
+release races. Historical migration fixtures now compare their intended schemas
+without weakening production validation or the privacy downgrade barrier.
+
+The final notification stack passed 211 SQLite backend cases, 40 frontend cases
+and three real PostgreSQL concurrency cases. The combined migration rehearsal
+passed six new PostgreSQL cases and repaired historical checks, with explicit
+schema/data preservation and private-resource cleanup. Production build and the
+initial-JavaScript budget passed at 197,398 gzip bytes. Newly reported transitive
+brace-expansion advisories were repaired using verified patched lockfile versions;
+the dependency audit and feature Gitleaks checks are clean.
+
+Fresh CI established 94% backend coverage and 92.16% frontend branch coverage,
+including the higher reviewed security/auth floors. Full branch CI remains active.
+The PostgreSQL selection is complete, but its first successful run exceeded the
+runner-time target; profiling identified repeated pytest directory discovery.
+An incomplete local timing archive is excluded from performance acceptance.
+Operator approvals, live transport/provider evidence and elapsed observation
+criteria remain explicit. None of these drafts has been merged to main.

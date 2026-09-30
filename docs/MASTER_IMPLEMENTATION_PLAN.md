@@ -8,9 +8,18 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 The [delivery register](delivery/CODEX_BACKLOG_2026_09_30.md) maps every remaining
 Codex-owned non-epic item to a bounded batch or explicit operator prerequisite.
-[Draft PR #88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) publishes the
-shared workflow and reconciles contract/documentation drift. Parallel batch
-implementation is underway; assigned scope is not a completion claim.
+Nine draft PRs, [#88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) through
+[#96](https://github.com/ShabalalaWATP/AllSeeingEye/pull/96), cover 58 implementation
+and documentation tickets in dependency order. Code, independent review and
+focused integration checks are recorded per batch. Full combined CI and the
+remaining measured acceptance checks are active; publication is not completion.
+
+The combined PostgreSQL migration rehearsal preserves legacy records through the
+single head 0074 and tests refusal before losing protected history. CI enforces
+the measured 92% frontend branch floor and reviewed 95% security/auth floors.
+KAN-71's PostgreSQL runner-time target and KAN-73's paired frontend timing still
+need qualifying measurements. Operator-only KAN-45/46 and explicit live/provider
+acceptance remain outstanding. No new main merge or production deploy is claimed.
 
 KAN-146/148/147 were reconciled to Done after checking merged PR #81 and all
 final CI results. New tickets require their own acceptance, checks, independent
