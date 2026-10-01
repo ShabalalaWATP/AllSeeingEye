@@ -11,7 +11,8 @@ from ase.application.dto import RequestContext
 from ase.application.ports import UnitOfWork
 from ase.application.ports.reports import ReportRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import NotFound
+from ase.domain.errors import InvalidRequest, NotFound
+from ase.domain.report_listing import DISCOVERY_WINDOW, GROUP_ORIGINS, ReportGroup
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.reports import ReportOrigin
 from ase.domain.users import User
@@ -39,16 +40,28 @@ class ListReportsUseCase:
         *,
         origin: ReportOrigin | None = None,
         offset: int = 0,
+        group: ReportGroup | None = None,
     ) -> ReportPage:
+        if origin is not None and group is not None:
+            raise InvalidRequest("Choose one report origin or one group, not both.")
         access = await self._access.context(actor)
         limit, offset = min(max(1, limit), MAX_LIST), max(0, offset)
+        if group is None:
+            records = await self._reports.list_visible(
+                access.visibility, limit + 1, origin=origin, offset=offset
+            )
+            return ReportPage(records[:limit], limit, offset, len(records) > limit)
+        # Cross-origin discovery reaches the caller's latest visible reports in the group
+        # only; filtering by scope and visibility happens in SQL before this window.
+        window = max(0, DISCOVERY_WINDOW - offset)
+        if window == 0:
+            return ReportPage([], limit, offset, False)
+        fetch = min(limit, window)
         records = await self._reports.list_visible(
-            access.visibility,
-            limit + 1,
-            origin=origin,
-            offset=offset,
+            access.visibility, fetch + 1, offset=offset, origins=GROUP_ORIGINS[group]
         )
-        return ReportPage(records[:limit], limit, offset, len(records) > limit)
+        more = len(records) > fetch and offset + fetch < DISCOVERY_WINDOW
+        return ReportPage(records[:fetch], limit, offset, more)
 
 
 class GetReportUseCase:

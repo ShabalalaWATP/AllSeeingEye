@@ -17,6 +17,9 @@ export default function SavedUpdatesPage() {
           Every edition your subscriptions have produced, newest first. Each one states what changed
           since the previous update.
         </p>
+        <Link to="/reports/saved" className="text-sm text-muted underline hover:text-text">
+          All saved reports
+        </Link>
       </header>
       <SavedReports
         origin="subscription"

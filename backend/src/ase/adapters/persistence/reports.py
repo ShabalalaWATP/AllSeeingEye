@@ -216,11 +216,12 @@ class SqlReportRepository:
         *,
         origin: ReportOrigin | None = None,
         offset: int = 0,
+        origins: tuple[ReportOrigin, ...] | None = None,
     ) -> list[ReportRecord]:
         query = select(ReportRow).where(
             visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility)
         )
-        if origin is not None:
+        if origin is not None or origins is not None:
             # Recognised explicit origins win. Older or unrecognised scopes retain
             # the same media/research classification used by saved report links.
             stated = ReportRow.scope["origin"].as_string()
@@ -229,7 +230,10 @@ class SqlReportRepository:
                 (ReportRow.scope["research_focus"].as_string() == "media", "geolocation"),
                 else_="research",
             )
-            query = query.where(effective == origin.value)
+            if origin is not None:
+                query = query.where(effective == origin.value)
+            if origins is not None:
+                query = query.where(effective.in_([value.value for value in origins]))
         rows = await self._session.scalars(
             query.order_by(ReportRow.created_at.desc(), ReportRow.id)
             .offset(offset)

@@ -38,6 +38,7 @@ const CyberIntelligencePage = lazy(() => import('@/features/cyber/CyberPage'));
 const SavedResearchPage = lazy(() => import('@/features/reports/SavedResearchPage'));
 const SavedUpdatesPage = lazy(() => import('@/features/reports/SavedUpdatesPage'));
 const SavedAssessmentsPage = lazy(() => import('@/features/reports/SavedAssessmentsPage'));
+const SavedReportsPage = lazy(() => import('@/features/reports/SavedReportsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
 const ReportJobsPage = lazy(() => import('@/features/report-jobs/ReportJobsPage'));
 const ReportJobPage = lazy(() => import('@/features/report-jobs/ReportJobPage'));
@@ -137,6 +138,7 @@ const pages: RouteObject[] = [
           { path: 'geolocation/saved', element: <SavedAssessmentsPage /> },
           // Each section keeps its own saved reports; this link still opens one.
           { path: 'reports', element: <RedirectWithQuery to="/research/saved" /> },
+          { path: 'reports/saved', element: <SavedReportsPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
           { path: 'annotation-monitors', element: <AnnotationMonitorsPage /> },
           { path: 'annotation-monitors/:monitorId', element: <AnnotationMonitorPage /> },

@@ -17,6 +17,9 @@ export default function SavedAssessmentsPage() {
           Photograph assessments and the candidate locations each one considered, with the evidence
           frozen as it was read.
         </p>
+        <Link to="/reports/saved" className="text-sm text-muted underline hover:text-text">
+          All saved reports
+        </Link>
       </header>
       <SavedReports
         origin="geolocation"

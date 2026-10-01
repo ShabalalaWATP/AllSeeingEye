@@ -24,6 +24,7 @@ from ase.api.session_fence import FenceDep
 from ase.application.reports.document import build_document
 from ase.application.reports.document_release import release_document, release_report_view
 from ase.container.source_reviews import source_reviews
+from ase.domain.report_listing import ReportGroup
 from ase.domain.reports import ReportOrigin
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -93,8 +94,12 @@ async def list_reports(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
     origin: ReportOrigin | None = None,
+    group: ReportGroup | None = None,
 ) -> ReportsOut:
-    page = await container.list_reports(session).execute(user, limit, origin=origin, offset=offset)
+    """Saved reports by one origin, or one named group of origins such as requested work."""
+    page = await container.list_reports(session).execute(
+        user, limit, origin=origin, offset=offset, group=group
+    )
     return ReportsOut(
         items=[ReportSummaryOut.from_record(record) for record in page.items],
         limit=page.limit,

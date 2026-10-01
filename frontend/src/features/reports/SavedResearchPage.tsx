@@ -41,6 +41,9 @@ export default function SavedResearchPage() {
           <p className="mt-2 max-w-2xl text-sm text-muted">
             Questions you have asked, their frozen evidence, comparisons and exports.
           </p>
+          <Link to="/reports/saved" className="text-sm text-muted underline hover:text-text">
+            All saved reports
+          </Link>
         </div>
         <Link
           to="/research"

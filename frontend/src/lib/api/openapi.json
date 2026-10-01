@@ -8259,6 +8259,7 @@
           "reports"
         ],
         "summary": "List Reports",
+        "description": "Saved reports by one origin, or one named group of origins such as requested work.",
         "operationId": "list_reports_api_reports_get",
         "security": [
           {
@@ -8303,6 +8304,22 @@
                 }
               ],
               "title": "Origin"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportGroup"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group"
             }
           }
         ],
@@ -8699,6 +8716,192 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/team-copy-preview": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Preview Team Copy",
+        "operationId": "preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyPreviewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/team-copies": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Copy To Team",
+        "operationId": "copy_to_team_api_reports__report_id__versions__number__team_copies_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamCopyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/team-copy-provenance": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Team Copy Provenance",
+        "operationId": "team_copy_provenance_api_reports__report_id__team_copy_provenance_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyProvenanceOut"
                 }
               }
             }
@@ -30679,6 +30882,40 @@
         ],
         "title": "LibraryPreferenceOut"
       },
+      "LinkedArtefactsOut": {
+        "properties": {
+          "claims": {
+            "type": "integer",
+            "title": "Claims"
+          },
+          "original_files": {
+            "type": "integer",
+            "title": "Original Files"
+          },
+          "original_passages": {
+            "type": "integer",
+            "title": "Original Passages"
+          },
+          "reviewed_snapshots": {
+            "type": "integer",
+            "title": "Reviewed Snapshots"
+          },
+          "map_views": {
+            "type": "integer",
+            "title": "Map Views"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claims",
+          "original_files",
+          "original_passages",
+          "reviewed_snapshots",
+          "map_views"
+        ],
+        "title": "LinkedArtefactsOut",
+        "description": "Records attached to the personal version that stay with it and are not copied."
+      },
       "LlmConnectionIn": {
         "properties": {
           "user_id": {
@@ -35869,6 +36106,29 @@
         ],
         "title": "PresetSourceReadiness"
       },
+      "PrivateInputOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "title",
+          "source_id"
+        ],
+        "title": "PrivateInputOut"
+      },
       "Probability": {
         "type": "string",
         "enum": [
@@ -39015,6 +39275,14 @@
         ],
         "title": "ReportEvidenceOut"
       },
+      "ReportGroup": {
+        "type": "string",
+        "enum": [
+          "requested"
+        ],
+        "title": "ReportGroup",
+        "description": "Named sets of origins. Requested work never includes automatic briefings."
+      },
       "ReportJobCreateIn": {
         "properties": {
           "request_id": {
@@ -39926,6 +40194,9 @@
               }
             ],
             "title": "Team Id"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/ReportOrigin"
           }
         },
         "type": "object",
@@ -39940,7 +40211,8 @@
           "created_by",
           "created_at",
           "latest_version",
-          "team_id"
+          "team_id",
+          "origin"
         ],
         "title": "ReportSummaryOut"
       },
@@ -47913,6 +48185,227 @@
           "unread_count"
         ],
         "title": "TeamBoardUnreadOut"
+      },
+      "TeamCopyIn": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "disclosed_evidence_labels": {
+            "items": {
+              "type": "string",
+              "pattern": "^E[1-9][0-9]{0,3}$"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Disclosed Evidence Labels"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "title": "TeamCopyIn"
+      },
+      "TeamCopyOmission": {
+        "type": "string",
+        "enum": [
+          "research_brief",
+          "claim_generation",
+          "original_passages",
+          "source_assessment",
+          "scope_references"
+        ],
+        "title": "TeamCopyOmission"
+      },
+      "TeamCopyOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "copied_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Copied At"
+          },
+          "created": {
+            "type": "boolean",
+            "title": "Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "version_number",
+          "team_id",
+          "copied_at",
+          "created"
+        ],
+        "title": "TeamCopyOut"
+      },
+      "TeamCopyPreviewOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "source_version_number": {
+            "type": "integer",
+            "title": "Source Version Number"
+          },
+          "private_inputs": {
+            "items": {
+              "$ref": "#/components/schemas/PrivateInputOut"
+            },
+            "type": "array",
+            "title": "Private Inputs"
+          },
+          "omissions": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCopyOmission"
+            },
+            "type": "array",
+            "title": "Omissions"
+          },
+          "omitted_scope_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Omitted Scope Keys"
+          },
+          "not_copied": {
+            "$ref": "#/components/schemas/LinkedArtefactsOut"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "existing_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Existing Report Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "team_name",
+          "source_version_number",
+          "private_inputs",
+          "omissions",
+          "omitted_scope_keys",
+          "not_copied",
+          "content_sha256",
+          "existing_report_id"
+        ],
+        "title": "TeamCopyPreviewOut"
+      },
+      "TeamCopyProvenanceOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "copied_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Copied By"
+          },
+          "copied_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Copied By Name"
+          },
+          "copied_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Copied At"
+          },
+          "source_version_number": {
+            "type": "integer",
+            "title": "Source Version Number"
+          },
+          "source_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Report Id"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "disclosed_private_inputs": {
+            "type": "integer",
+            "title": "Disclosed Private Inputs"
+          },
+          "omissions": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCopyOmission"
+            },
+            "type": "array",
+            "title": "Omissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "team_id",
+          "copied_by",
+          "copied_by_name",
+          "copied_at",
+          "source_version_number",
+          "source_report_id",
+          "content_sha256",
+          "disclosed_private_inputs",
+          "omissions"
+        ],
+        "title": "TeamCopyProvenanceOut"
       },
       "TeamDashboardActionOut": {
         "properties": {
