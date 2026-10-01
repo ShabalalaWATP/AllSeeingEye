@@ -79,8 +79,19 @@ describe('alert rule fields', () => {
     ]);
   });
 
-  it('round-trips every saved value, including the ones the form does not edit', () => {
-    const fields = ruleFieldsFromIndicator({ ...indicator, severity_floor: 0.4 });
+  it.each([
+    {
+      label: 'legacy baseline defaults',
+      saved: {},
+      expected: { baseline_ratio: null, baseline_days: 30, window_minutes: 360 },
+    },
+    {
+      label: 'a non-default ratio and baseline window',
+      saved: { baseline_ratio: 2.5, baseline_days: 14, window_minutes: 60 },
+      expected: { baseline_ratio: 2.5, baseline_days: 14, window_minutes: 60 },
+    },
+  ])('round-trips every saved value with $label', ({ saved, expected }) => {
+    const fields = ruleFieldsFromIndicator({ ...indicator, ...saved, severity_floor: 0.4 });
     const request = ruleRequest(fields, { teamId: '', bbox: undefined, geometry: undefined });
     expect(request).toEqual({
       name: 'Kharkiv strikes',
@@ -89,7 +100,7 @@ describe('alert rule fields', () => {
       categories: ['conflict'],
       keywords: ['Kharkiv', 'shelling'],
       threshold: 2,
-      window_minutes: 360,
+      ...expected,
       cooldown_minutes: 60,
       severity_floor: 0.4,
       report_template: 'intsum',
