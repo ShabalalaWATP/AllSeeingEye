@@ -21,6 +21,27 @@ MARKING_IDS = {
 MAX_STIX_OBJECTS = 3000
 CVE = re.compile(r"\bCVE-\d{4}-\d{4,19}\b", re.IGNORECASE)
 ACTOR_URL = re.compile(r"https://attack\.mitre\.org/groups/(G\d{4})/?$")
+_CANONICAL_HEADER = re.compile(
+    r"\A(?P<title># [^\r\n]*\r?\n\r?\n)Report "
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    r" \\\| version [1-9][0-9]*(?P<separator>\r?\n\r?\n)"
+)
+
+
+def _export_markdown(record: ReportRecord, version: ReportVersion) -> str:
+    """Rebind only the generated identity wrapper when frozen content has been copied.
+
+    Team copies retain stored Markdown verbatim. Their STIX description must identify
+    the authorised copy, without repeating the personal source's generated header.
+    Narrative, explicit citations and legacy Markdown remain unchanged.
+    """
+    match = _CANONICAL_HEADER.match(version.markdown)
+    if match is None:
+        return version.markdown
+    return (
+        f"{match['title']}Report {record.id} \\| version {version.number}{match['separator']}"
+        + version.markdown[match.end() :]
+    )
 
 
 def identifier(kind: str, value: object) -> str:
@@ -62,6 +83,7 @@ class FrozenStixRenderer:
         )
         if minimum > MAX_PACKAGE_BYTES:
             raise InvalidRequest("STIX input exceeds the 8 MiB limit.")
+        markdown = _export_markdown(record, version)
         marking_id = MARKING_IDS[tlp]
         marking = {
             "type": "marking-definition",
@@ -73,7 +95,7 @@ class FrozenStixRenderer:
             "definition": {"tlp": tlp.value},
         }
         timestamp = stamp(version.created_at)
-        report_id = identifier("report", [str(version.id), version.markdown, marking_id])
+        report_id = identifier("report", [str(version.id), markdown, marking_id])
         common: dict[str, Any] = {
             "spec_version": "2.1",
             "created": timestamp,
@@ -145,13 +167,13 @@ class FrozenStixRenderer:
             **common,
             "type": "report",
             "id": report_id,
-            "name": version.markdown.splitlines()[0].lstrip("# ")[:300]
-            if version.markdown
+            "name": markdown.splitlines()[0].lstrip("# ")[:300]
+            if markdown
             else f"ASE report version {version.number}",
             "description": (
                 f"Frozen ASE report version {version.number}. Status: {version.status.value}. "
                 f"Selected {marking['name']} applies to this export; source rights still "
-                f"apply.\n\n{version.markdown}"
+                f"apply.\n\n{markdown}"
             ),
             "published": timestamp,
             "report_types": ["threat-report"],
