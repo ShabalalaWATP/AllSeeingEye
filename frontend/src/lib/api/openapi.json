@@ -11974,6 +11974,7 @@
           "warning"
         ],
         "summary": "Update Indicator",
+        "description": "Edit, pause or resume one rule from the revision the caller read.",
         "operationId": "update_indicator_api_warning_indicators__indicator_id__put",
         "security": [
           {
@@ -11997,7 +11998,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IndicatorIn"
+                "$ref": "#/components/schemas/IndicatorUpdateIn"
               }
             }
           }
@@ -29553,7 +29554,8 @@
           },
           "countries": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
             },
             "type": "array",
             "maxItems": 50,
@@ -29606,7 +29608,8 @@
           },
           "keywords": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 60
             },
             "type": "array",
             "maxItems": 20,
@@ -29947,6 +29950,172 @@
           "verification_reference"
         ],
         "title": "IndicatorReading"
+      },
+      "IndicatorUpdateIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Description",
+            "default": ""
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Countries"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Categories"
+          },
+          "keywords": {
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Keywords"
+          },
+          "threshold": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Threshold",
+            "default": 1
+          },
+          "window_minutes": {
+            "type": "integer",
+            "maximum": 10080.0,
+            "minimum": 5.0,
+            "title": "Window Minutes",
+            "default": 60
+          },
+          "cooldown_minutes": {
+            "type": "integer",
+            "maximum": 1440.0,
+            "minimum": 1.0,
+            "title": "Cooldown Minutes",
+            "default": 60
+          },
+          "severity_floor": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Severity Floor",
+            "default": 0.0
+          },
+          "report_template": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Template"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Updated At"
+          },
+          "confirm_wider_scope": {
+            "type": "boolean",
+            "title": "Confirm Wider Scope",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "expected_updated_at"
+        ],
+        "title": "IndicatorUpdateIn",
+        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409.\n\nRemoving every location, category or keyword restriction needs `confirm_wider_scope`.\nPause and resume are edits of `enabled` that send the rule's other values unchanged."
       },
       "IndicatorVersion": {
         "properties": {

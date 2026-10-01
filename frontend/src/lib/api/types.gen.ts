@@ -3292,7 +3292,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Indicator */
+        /**
+         * Update Indicator
+         * @description Edit, pause or resume one rule from the revision the caller read.
+         */
         put: operations["update_indicator_api_warning_indicators__indicator_id__put"];
         post?: never;
         /** Delete Indicator */
@@ -9509,6 +9512,77 @@ export interface components {
             missing_reason?: string | null;
             /** Corrects Reading Id */
             corrects_reading_id?: string | null;
+        };
+        /**
+         * IndicatorUpdateIn
+         * @description An edit names the revision (`updated_at`) it was made from; stale edits get 409.
+         *
+         *     Removing every location, category or keyword restriction needs `confirm_wider_scope`.
+         *     Pause and resume are edits of `enabled` that send the rule's other values unchanged.
+         */
+        IndicatorUpdateIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Bbox */
+            bbox?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+            /** Keywords */
+            keywords?: string[];
+            /**
+             * Threshold
+             * @default 1
+             */
+            threshold: number;
+            /**
+             * Window Minutes
+             * @default 60
+             */
+            window_minutes: number;
+            /**
+             * Cooldown Minutes
+             * @default 60
+             */
+            cooldown_minutes: number;
+            /**
+             * Severity Floor
+             * @default 0
+             */
+            severity_floor: number;
+            /** Report Template */
+            report_template?: string | null;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Team Id */
+            team_id?: string | null;
+            /**
+             * Expected Updated At
+             * Format: date-time
+             */
+            expected_updated_at: string;
+            /**
+             * Confirm Wider Scope
+             * @default false
+             */
+            confirm_wider_scope: boolean;
         };
         /** IndicatorVersion */
         IndicatorVersion: {
@@ -24294,7 +24368,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["IndicatorIn"];
+                "application/json": components["schemas"]["IndicatorUpdateIn"];
             };
         };
         responses: {

@@ -1,4 +1,4 @@
-"""Warning: indicators over the live picture and the alerts they raise."""
+"""Warning: alert rules (API name "indicators") over the live picture and their alerts."""
 
 from __future__ import annotations
 
@@ -8,7 +8,14 @@ from uuid import UUID
 from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
-from ase.api.schemas_warning import AlertOut, AlertsOut, IndicatorIn, IndicatorOut, IndicatorsOut
+from ase.api.schemas_warning import (
+    AlertOut,
+    AlertsOut,
+    IndicatorIn,
+    IndicatorOut,
+    IndicatorsOut,
+    IndicatorUpdateIn,
+)
 
 router = APIRouter(prefix="/warning", tags=["warning"])
 
@@ -36,14 +43,20 @@ async def create_indicator(
 @router.put("/indicators/{indicator_id}")
 async def update_indicator(
     indicator_id: UUID,
-    body: IndicatorIn,
+    body: IndicatorUpdateIn,
     user: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> IndicatorOut:
+    """Edit, pause or resume one rule from the revision the caller read."""
     updated = await container.update_indicator(session).execute(
-        user, indicator_id, body.to_input(), context
+        user,
+        indicator_id,
+        body.to_input(),
+        body.expected_updated_at,
+        context,
+        confirm_wider_scope=body.confirm_wider_scope,
     )
     return IndicatorOut.from_indicator(updated)
 

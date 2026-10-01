@@ -1,16 +1,22 @@
-"""Schemas for indicators and alerts."""
+"""Schemas for alert rules (historically "indicators") and the alerts they raise."""
 
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
+
+# Values are rejected rather than truncated: a shortened country code or keyword would
+# silently change what the rule watches.
+CountryCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z]{2}$")]
+Keyword = Annotated[str, StringConstraints(max_length=60)]
 
 
 class IndicatorIn(BaseModel):
@@ -19,11 +25,11 @@ class IndicatorIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=1000)
     plan_id: UUID | None = None
-    countries: list[str] = Field(default_factory=list, max_length=50)
+    countries: list[CountryCode] = Field(default_factory=list, max_length=50)
     bbox: tuple[float, float, float, float] | None = None
     research_area: ResearchAreaIn | None = None
     categories: list[Category] = Field(default_factory=list, max_length=20)
-    keywords: list[str] = Field(default_factory=list, max_length=20)
+    keywords: list[Keyword] = Field(default_factory=list, max_length=20)
     threshold: int = Field(default=1, ge=1, le=10_000)
     window_minutes: int = Field(default=60, ge=5, le=10_080)
     cooldown_minutes: int = Field(default=60, ge=1, le=1_440)
@@ -37,11 +43,11 @@ class IndicatorIn(BaseModel):
             name=self.name,
             description=self.description,
             plan_id=self.plan_id,
-            countries=[code[:2] for code in self.countries],
+            countries=list(self.countries),
             bbox=self.bbox,
             research_area=self.research_area.to_domain() if self.research_area else None,
             categories=self.categories,
-            keywords=[word[:60] for word in self.keywords],
+            keywords=list(self.keywords),
             threshold=self.threshold,
             window_minutes=self.window_minutes,
             cooldown_minutes=self.cooldown_minutes,
@@ -50,6 +56,17 @@ class IndicatorIn(BaseModel):
             enabled=self.enabled,
             team_id=self.team_id,
         )
+
+
+class IndicatorUpdateIn(IndicatorIn):
+    """An edit names the revision (`updated_at`) it was made from; stale edits get 409.
+
+    Removing every location, category or keyword restriction needs `confirm_wider_scope`.
+    Pause and resume are edits of `enabled` that send the rule's other values unchanged.
+    """
+
+    expected_updated_at: datetime
+    confirm_wider_scope: bool = False
 
 
 class IndicatorOut(BaseModel):

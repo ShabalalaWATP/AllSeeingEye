@@ -75,6 +75,8 @@ class AuditAction(StrEnum):
     PLAN_DELETED = "plan_deleted"
     INDICATOR_CREATED = "indicator_created"
     INDICATOR_UPDATED = "indicator_updated"
+    INDICATOR_PAUSED = "indicator_paused"
+    INDICATOR_RESUMED = "indicator_resumed"
     INDICATOR_DELETED = "indicator_deleted"
     FORECAST_LEDGER_UPDATED = "forecast_ledger_updated"
     INDICATOR_LEDGER_UPDATED = "indicator_ledger_updated"
