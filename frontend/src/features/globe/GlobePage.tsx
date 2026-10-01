@@ -1,4 +1,5 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
+import { useRef } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 
 import { mapPanelId, readMapPanel } from '@/lib/mapLayerDirectory';
@@ -11,7 +12,8 @@ import { dashboardCataloguePanels } from './dashboardCataloguePanels';
 import { eventControlPanels } from './eventControlPanels';
 import { MapStatusReadouts } from './MapStatusReadouts';
 import { MapToolActivity } from './MapToolActivity';
-import { GlobeControls } from './GlobeControls';
+import { GlobeControls, type ShowPanel } from './GlobeControls';
+import { GlobeHeading } from './GlobeHeading';
 import { DashboardLayerRail } from './DashboardLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
 import { ModeToolbar } from './ModeToolbar';
@@ -95,8 +97,10 @@ export default function GlobePage() {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const requestedPanel = readMapPanel(params);
+  const showPanel = useRef<ShowPanel | null>(null);
   return (
     <div className="globe-dashboard absolute inset-0 bg-ground">
+      <GlobeHeading mode={mode} showRef={opsRoom ? null : showPanel} />
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
@@ -124,6 +128,7 @@ export default function GlobePage() {
           activity={<MapToolActivity tools={tools} />}
           requestedPanel={requestedPanel}
           requestKey={location.key}
+          showRef={showPanel}
           onPanelChange={(label) => {
             const next = new URLSearchParams(params);
             if (label) next.set('panel', mapPanelId(label) ?? label);

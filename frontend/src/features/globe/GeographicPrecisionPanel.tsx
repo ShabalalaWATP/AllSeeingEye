@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import { useSettledAnnouncement } from '@/lib/hooks/useSettledAnnouncement';
@@ -42,6 +42,7 @@ export function GeographicPrecisionPanel({
   const id = useId();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const searchField = useRef<HTMLInputElement>(null);
   const visible = useMemo(
     () => events.filter((event) => !hidden.includes(event.category)),
     [events, hidden],
@@ -112,6 +113,7 @@ export function GeographicPrecisionPanel({
       <label htmlFor={`${id}-search`} className="map-tool-field">
         Search loaded records
         <input
+          ref={searchField}
           id={`${id}-search`}
           type="search"
           maxLength={200}
@@ -136,7 +138,27 @@ export function GeographicPrecisionPanel({
         <span key={announcement.id}>{announcement.text}</span>
       </p>
       {matches.length === 0 ? (
-        <p className="map-tool-notice">No records match these filters.</p>
+        <div className="map-tool-notice">
+          <p>
+            {visible.length === 0
+              ? 'No records are loaded for the current layers, nation and time window. Turn on a layer or widen the window to load some.'
+              : 'No records match these filters.'}
+          </p>
+          {search !== '' && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setPage(0);
+                announce();
+                searchField.current?.focus();
+              }}
+              className="map-tool-secondary"
+            >
+              Clear search
+            </button>
+          )}
+        </div>
       ) : (
         <ul className="map-reference-results">
           {matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map((event) => (

@@ -114,6 +114,12 @@ drawing collections and radio studies explicitly in their respective tools.
 - Location quality puts filtering, search and matching records before the
   classification glossary. The active quality explanation and unplotted-record
   warning remain visible. Nation results say "loaded", avoiding a freshness claim.
+  The map route has one visually hidden page heading naming the selected view
+  (Globe view or Map view). The first stop in the main region is a link, Browse
+  loaded events as a list, shown on keyboard focus. It opens Location quality in
+  one activation, focuses its search field and returns focus to the link on close,
+  so loaded records are reachable without the canvas. Empty results explain why
+  and keep Clear search and Close tool available. The ops room hides the link.
 - Topics & time puts time choices first and uses labelled switches for additional
   topics. Aircraft/vessel filters retain native radio semantics with clearer
   selected states, consistent fields and pagination controls.

@@ -6,6 +6,8 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
 import { HEADING_WAIT_MS, focusPage } from './useRouteFocus';
+// Load the lazy globe route once, outside the per-test timeout.
+import '@/features/globe/GlobePage';
 
 function announcer() {
   return document.querySelector('[aria-live="polite"][aria-atomic="true"]');
@@ -57,8 +59,15 @@ describe('route titles, focus and announcements', () => {
     await waitFor(() => {
       expect(announcer()).toHaveTextContent('Navigated to Map');
     });
-    // The globe has no page heading, so focus rests on the main landmark.
-    expect(screen.getByRole('main')).toHaveFocus();
+    // The lazy globe names itself once it renders, and focus moves on to its heading.
+    const heading = await screen.findByRole(
+      'heading',
+      { level: 1, name: 'Globe view' },
+      { timeout: 10_000 },
+    );
+    await waitFor(() => {
+      expect(heading).toHaveFocus();
+    });
     expect(document.title).toBe('Map · The All Seeing Eye');
   });
 
@@ -95,6 +104,19 @@ describe('focusPage', () => {
       expect(heading).toHaveFocus();
     });
     expect(heading.classList.contains('focus:outline-none')).toBe(true);
+  });
+
+  it('focuses main at once and a lazy heading as soon as it renders, not after the wait', async () => {
+    vi.useFakeTimers();
+    const region = main();
+    focusPage(region);
+    expect(region).toHaveFocus();
+    vi.advanceTimersByTime(50);
+    const heading = document.createElement('h1');
+    region.append(heading);
+    // MutationObserver callbacks are microtasks, so no timer needs to elapse.
+    await Promise.resolve();
+    expect(heading).toHaveFocus();
   });
 
   it('never takes focus back from something the reader chose', async () => {
