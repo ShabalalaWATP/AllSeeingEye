@@ -35,12 +35,12 @@ def corrupt_checkpoint(connection, job_id):
 async def test_corrupt_legacy_checkpoint_refuses_without_partial_postgres_ddl(migration_database):
     await migration_database.migrate("0066")
     original = await migration_database.run(seed_legacy)
-    await migration_database.migrate("0067")
+    await migration_database.migrate("0082")
     await migration_database.run(corrupt_checkpoint, original["job"])
     await refuses_unchanged(
         migration_database, "head", "Repair the reported checkpoint", downgrade=False
     )
-    assert await migration_database.run(revision) == "0067"
+    assert await migration_database.run(revision) == "0082"
 
 
 def set_frozen_ratio(connection, original, values, deleted):
@@ -61,15 +61,15 @@ async def test_frozen_alert_baselines_refuse_downgrade_after_rule_changes(
 ):
     await migration_database.migrate("0066")
     original = await migration_database.run(seed_legacy)
-    await migration_database.migrate("0070")
+    await migration_database.migrate("0085")
     for values in (
         {"baseline_mean": 2.0, "baseline_ratio": None},
         {"baseline_mean": None, "baseline_ratio": 3.0},
         {"baseline_mean": 2.0, "baseline_ratio": 3.0},
     ):
         await migration_database.run(set_frozen_ratio, original, values, deleted)
-        await refuses_unchanged(migration_database, "0069", "baseline", downgrade=True)
-        assert await migration_database.run(revision) == "0070"
+        await refuses_unchanged(migration_database, "0084", "baseline", downgrade=True)
+        assert await migration_database.run(revision) == "0085"
 
 
 def change_feedback(connection, retained):
@@ -82,9 +82,9 @@ def change_feedback(connection, retained):
 async def test_feedback_and_privacy_barriers_preserve_schema_and_retained_rows(migration_database):
     await migration_database.migrate("0066")
     await migration_database.run(seed_legacy)
-    await migration_database.migrate("0069")
+    await migration_database.migrate("0084")
     await migration_database.run(change_feedback, True)
-    await refuses_unchanged(migration_database, "0068", "retained alert feedback", downgrade=True)
+    await refuses_unchanged(migration_database, "0083", "retained alert feedback", downgrade=True)
     await migration_database.run(change_feedback, False)
-    await migration_database.migrate("0067", downgrade=True)
+    await migration_database.migrate("0082", downgrade=True)
     await refuses_unchanged(migration_database, "0066", "preserve privacy", downgrade=True)

@@ -12,11 +12,11 @@ def test_additive_routing_migration_and_downgrade(tmp_path):
     database = tmp_path / "routing-migration.db"
     config = alembic_config(f"sqlite+aiosqlite:///{database.as_posix()}")
     try:
-        command.upgrade(config, "0071")
+        command.upgrade(config, "0087")
         engine = sa.create_engine(f"sqlite:///{database.as_posix()}")
         with engine.connect() as connection:
             previous = set(sa.inspect(connection).get_table_names())
-        command.upgrade(config, "0072")
+        command.upgrade(config, "0088")
         with engine.connect() as connection:
             tables = set(sa.inspect(connection).get_table_names())
             added = {
@@ -39,7 +39,7 @@ def test_additive_routing_migration_and_downgrade(tmp_path):
                 for item in sa.inspect(connection).get_columns("alert_webhook_destinations")
             }
             assert "url_encrypted" in columns and "url" not in columns
-        command.downgrade(config, "0071")
+        command.downgrade(config, "0087")
         with engine.connect() as connection:
             assert set(sa.inspect(connection).get_table_names()) == previous
         engine.dispose()

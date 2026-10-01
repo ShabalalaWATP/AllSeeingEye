@@ -25,7 +25,7 @@ from notification_migration_helpers import (
 
 
 def assert_head(connection):
-    assert revision(connection) == "0074"
+    assert revision(connection) == "0089"
     changed = NOTIFICATION_TABLES | {
         "team_invitation_receipts",
         "report_job_monthly_usage",
@@ -59,14 +59,14 @@ def assert_unenrolled(connection):
 
 
 async def test_empty_combined_upgrade_roundtrip_and_model_parity(migration_database):
-    await migration_database.migrate("0067")
+    await migration_database.migrate("0082")
     before = await migration_database.run(schema_state)
     await migration_database.migrate("head")
     await migration_database.run(assert_head)
     await migration_database.run(assert_unenrolled)
-    await migration_database.migrate("0067", downgrade=True)
+    await migration_database.migrate("0082", downgrade=True)
     assert await migration_database.run(schema_state) == before
-    assert await migration_database.run(revision) == "0067"
+    assert await migration_database.run(revision) == "0082"
     await migration_database.migrate("head")
     await migration_database.run(assert_head)
 
@@ -240,23 +240,23 @@ async def test_legacy_upgrade_constraints_and_explicit_notification_rollback(mig
     await migration_database.run(write_notification_state, original)
     # Downgrade intentionally discards new opt-ins/outboxes; legacy records must survive.
     for target, removed in (
-        ("0072", {"web_push_devices", "web_push_outbox"}),
+        ("0088", {"web_push_devices", "web_push_outbox"}),
         (
-            "0071",
+            "0087",
             {
                 "alert_webhook_destinations",
                 "alert_notification_routes",
                 "alert_notification_outbox",
             },
         ),
-        ("0073", {"notification_preferences", "notification_digest_outbox", "private_feed_tokens"}),
+        ("0086", {"notification_preferences", "notification_digest_outbox", "private_feed_tokens"}),
     ):
         await migration_database.migrate(target, downgrade=True)
         current_schema = await migration_database.run(schema_state)
         assert not removed & current_schema.keys()
         assert await migration_database.run(revision) == target
         await migration_database.run(assert_preserved, original["before"])
-    await migration_database.migrate("0067", downgrade=True)
+    await migration_database.migrate("0082", downgrade=True)
     await migration_database.run(assert_preserved, original["before"])
     await migration_database.migrate("head")
     await migration_database.run(assert_head)
