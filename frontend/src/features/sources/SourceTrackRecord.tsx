@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { verdictShares } from '@/lib/api/citationVerdicts';
 import { describeError } from '@/lib/api/errors';
 import { fetchSourceTrackRecord, type SourceTrackRecord } from '@/lib/api/sourceTrackRecord';
 import { formatUtc } from '@/lib/format';
@@ -132,6 +133,26 @@ function Entries({ record }: { record: SourceTrackRecord }) {
   );
 }
 
+function Verdicts({ verdicts }: { verdicts: SourceTrackRecord['citation_verdicts'] }) {
+  return (
+    <>
+      <p>{verdicts.note}</p>
+      {verdicts.available && (
+        <>
+          <p>
+            {`${plural(verdicts.current_verdicts, 'current verdict')} from ${plural(verdicts.reviewers, 'reviewer')} on ${formatCount(verdicts.citations_with_verdicts)} of ${plural(verdicts.citations, 'key-judgement citation')} (${formatCount(verdicts.superseded_verdicts)} superseded).`}
+          </p>
+          <ul>
+            {verdictShares(verdicts, verdicts.current_verdicts).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
+}
+
 function Reviews({ record }: { record: SourceTrackRecord }) {
   return (
     <div>
@@ -151,7 +172,7 @@ function Reviews({ record }: { record: SourceTrackRecord }) {
         </>
       )}
       <Heading>Citation verdicts</Heading>
-      <p>{record.citation_verdicts.note}</p>
+      <Verdicts verdicts={record.citation_verdicts} />
     </div>
   );
 }

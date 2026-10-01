@@ -14,9 +14,11 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from ase.domain.citation_verdicts import HUMAN_OPINION_NOTE, tally_verdicts
 from ase.domain.reports import ReportStatus
 
 if TYPE_CHECKING:
+    from ase.domain.citation_verdicts import CitationVerdict
     from ase.domain.evidence import EvidenceItem
     from ase.domain.reports import ReportBody
     from ase.domain.source_reviews import SourceReviewRevision
@@ -25,10 +27,12 @@ MAX_TRACK_RECORD_REPORTS = 1_000
 MAX_TRACK_RECORD_ENTRIES = 25
 MAX_TRACK_RECORD_REVIEWS = 25
 MAX_REVIEW_SCAN = 2_000
+MAX_VERDICT_SCAN = 5_000
 _SOURCE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}\Z")
 CITATION_VERDICTS_NOTE = (
-    "Citation verdicts are not recorded yet, so none are shown. "
-    "Their absence is not a passed check."
+    f"{HUMAN_OPINION_NOTE} Counts cover each reviewer's latest verdict on citations of this "
+    "source in the latest saved version of each considered report. A citation without a "
+    "verdict has not passed any check."
 )
 
 
@@ -112,8 +116,19 @@ class ReviewEntry:
 
 @dataclass(frozen=True, slots=True)
 class CitationVerdicts:
+    """Current human verdicts out of this source's key-judgement citations. No score."""
+
     available: bool
     note: str
+    citations: int = 0
+    citations_with_verdicts: int = 0
+    current_verdicts: int = 0
+    superseded_verdicts: int = 0
+    supports: int = 0
+    partly_supports: int = 0
+    does_not_support: int = 0
+    cannot_tell: int = 0
+    reviewers: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -198,10 +213,43 @@ def _reviews(
     return sorted(rows, key=lambda row: (row.recorded_at, str(row.report_id)), reverse=True)
 
 
+def _verdicts(
+    versions: Sequence[CitedVersion], verdicts: Sequence[CitationVerdict]
+) -> CitationVerdicts:
+    labels = {
+        (row.report_id, row.version_number): {item.label for item in row.items} for row in versions
+    }
+    citations = sum(
+        label in labels[(row.report_id, row.version_number)]
+        for row in versions
+        for judgement in row.body.key_judgements
+        for label in (*judgement.supporting_evidence, *judgement.contradicting_evidence)
+    )
+    tally = tally_verdicts(
+        row
+        for row in verdicts
+        if row.anchor.label in labels.get((row.report_id, row.version_number), set())
+    )
+    return CitationVerdicts(
+        True,
+        CITATION_VERDICTS_NOTE,
+        citations,
+        tally.citations_with_verdicts,
+        tally.current_verdicts,
+        tally.superseded_verdicts,
+        tally.supports,
+        tally.partly_supports,
+        tally.does_not_support,
+        tally.cannot_tell,
+        tally.reviewers,
+    )
+
+
 def build_track_record(
     source_id: str,
     population: TrackRecordPopulation,
     reviews: Sequence[SourceReviewRevision] = (),
+    verdicts: Sequence[CitationVerdict] = (),
 ) -> SourceTrackRecord:
     versions = sorted(
         (row for row in population.versions if row.report_id in population.report_ids),
@@ -248,5 +296,5 @@ def build_track_record(
         entries_total=len(entries),
         reviews=tuple(review_rows[:MAX_TRACK_RECORD_REVIEWS]),
         reviews_total=len(review_rows),
-        citation_verdicts=CitationVerdicts(False, CITATION_VERDICTS_NOTE),
+        citation_verdicts=_verdicts(versions, verdicts),
     )

@@ -19,6 +19,7 @@ class AuditAction(StrEnum):
     SOURCE_RESET = "source_reset"
     SOURCE_RATING_REVIEWED = "source_rating_reviewed"
     SOURCE_ASSESSMENT_FROZEN = "source_assessment_frozen"
+    CITATION_VERDICT_RECORDED = "citation_verdict_recorded"
     LOGIN_SUCCEEDED = "login_succeeded"
     LOGIN_FAILED = "login_failed"
     TOTP_ENROLMENT_STARTED = "totp_enrolment_started"

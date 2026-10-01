@@ -12,12 +12,15 @@ from sqlalchemy import Text, and_, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.citation_verdict_models import CitationVerdictRow
+from ase.adapters.persistence.citation_verdicts import verdict_from_row
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.source_review_models import (
     SourceReviewHeadRow,
     SourceReviewRevisionRow,
 )
 from ase.domain.access import Visibility
+from ase.domain.citation_verdicts import CitationVerdict
 from ase.domain.report_records import body_from_dict, evidence_from_list
 from ase.domain.reports import ReportStatus
 from ase.domain.source_review_records import decode_source_review
@@ -119,3 +122,24 @@ class SqlSourceTrackRecordReader:
             if value.target.source_id == source_id and value.target.report_id in report_ids:
                 result.append(value)
         return tuple(result)
+
+    async def verdicts(
+        self, visibility: Visibility, versions: frozenset[tuple[UUID, int]], limit: int
+    ) -> tuple[CitationVerdict, ...]:
+        if not versions:
+            return ()
+        rows = await self._session.scalars(
+            select(CitationVerdictRow)
+            .join(ReportRow, ReportRow.id == CitationVerdictRow.report_id)
+            .where(
+                visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility),
+                CitationVerdictRow.owner_id == ReportRow.created_by,
+                CitationVerdictRow.team_id.is_not_distinct_from(ReportRow.team_id),
+                CitationVerdictRow.report_id.in_({report_id for report_id, _ in versions}),
+            )
+            .order_by(CitationVerdictRow.recorded_at.desc(), CitationVerdictRow.id)
+            .limit(limit)
+        )
+        return tuple(
+            verdict_from_row(row) for row in rows if (row.report_id, row.version_number) in versions
+        )

@@ -147,7 +147,8 @@ async def test_saved_versions_and_jobs_are_separate_counted_populations(
     assert _group(jobs["by_template"], "not_recorded")["jobs"] == 1
     assert _group(jobs["by_depth"], "not_recorded")["failed_with_version"] == 1
     assert _group(jobs["by_model"], "not_recorded")["queued"] == 1
-    assert body["citation_checks"]["available"] is False
+    assert body["citation_checks"]["available"] is True
+    assert body["citation_checks"]["in_window"] == 0
 
     text = str(body)
     for private in (SECRET_TITLE, SECRET_FINDING, str(revised), "Synthetic job title"):

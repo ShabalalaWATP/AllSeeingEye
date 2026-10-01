@@ -1,6 +1,7 @@
 import { AdminPage, AdminSection, EmptyState } from '@/components/admin/AdminPage';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { verdictShares } from '@/lib/api/citationVerdicts';
 import { describeError } from '@/lib/api/errors';
 import { QUALITY_WINDOWS, type ResearchQuality } from '@/lib/api/researchQuality';
 import { formatUtc } from '@/lib/format';
@@ -110,8 +111,37 @@ function Details({ data }: { data: ResearchQuality }) {
         )}
       </AdminSection>
       <AdminSection title="Citation checks" icon="check">
-        <p className="text-sm text-muted">{data.citation_checks.note}</p>
+        <CitationVerdictCounts checks={data.citation_checks} windowDays={data.window_days} />
       </AdminSection>
+    </div>
+  );
+}
+
+function CitationVerdictCounts({
+  checks,
+  windowDays,
+}: {
+  checks: ResearchQuality['citation_checks'];
+  windowDays: number;
+}) {
+  return (
+    <div className="space-y-2 text-sm text-muted">
+      <p>{checks.note}</p>
+      {checks.available && (
+        <>
+          <p>
+            {`${formatCount(checks.counted)} of ${plural(checks.in_window, 'verdict')} recorded in the last ${formatCount(windowDays)} days: ${plural(checks.current_verdicts, 'current verdict')} on ${plural(checks.citations_with_verdicts, 'citation')} (${formatCount(checks.superseded_verdicts)} superseded).`}
+          </p>
+          {checks.bound_reached && (
+            <p>{`Only the newest ${formatCount(checks.bound)} verdicts are counted.`}</p>
+          )}
+          <ul className="space-y-1">
+            {verdictShares(checks, checks.current_verdicts).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

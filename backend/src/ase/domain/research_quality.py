@@ -13,6 +13,8 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 
+from ase.domain.citation_verdicts import HUMAN_OPINION_NOTE, CitationVerdict, tally_verdicts
+
 MAX_QUALITY_VERSIONS = 1_000
 MAX_QUALITY_JOBS = 1_000
 QUALITY_WINDOWS = (7, 30, 90, 365)
@@ -21,9 +23,10 @@ NOT_RECORDED = "not_recorded"
 TOP_FINDINGS = 5
 TOP_FAILURE_CODES = 5
 MAX_LABEL = 120
+MAX_QUALITY_VERDICTS = 5_000
 CITATION_CHECKS_NOTE = (
-    "Citation verdicts are not recorded yet, so no outcomes are counted. "
-    "Their absence is not a passed check."
+    f"{HUMAN_OPINION_NOTE} Counts cover each reviewer's latest verdict among the newest "
+    "verdicts recorded in the window. A citation without a verdict has not passed any check."
 )
 UNSUCCESSFUL_RECEIPTS = frozenset(
     {"failed", "timed_out", "budget_exhausted", "not_collected", "unsupported"}
@@ -144,8 +147,40 @@ class JobPopulation:
 
 @dataclass(frozen=True, slots=True)
 class CitationCheckOutcomes:
+    """Human citation verdicts recorded in the window: counts and denominators only."""
+
     available: bool
     note: str
+    bound: int = MAX_QUALITY_VERDICTS
+    in_window: int = 0
+    counted: int = 0
+    bound_reached: bool = False
+    current_verdicts: int = 0
+    superseded_verdicts: int = 0
+    citations_with_verdicts: int = 0
+    supports: int = 0
+    partly_supports: int = 0
+    does_not_support: int = 0
+    cannot_tell: int = 0
+
+
+def _verdict_outcomes(total: int, rows: Sequence[CitationVerdict]) -> CitationCheckOutcomes:
+    tally = tally_verdicts(rows)
+    return CitationCheckOutcomes(
+        True,
+        CITATION_CHECKS_NOTE,
+        MAX_QUALITY_VERDICTS,
+        total,
+        len(rows),
+        total > len(rows),
+        tally.current_verdicts,
+        tally.superseded_verdicts,
+        tally.citations_with_verdicts,
+        tally.supports,
+        tally.partly_supports,
+        tally.does_not_support,
+        tally.cannot_tell,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -273,6 +308,7 @@ def build_scorecard(
     jobs: tuple[int, Sequence[JobOutcome]],
     template_labels: Mapping[str, str],
     connection_labels: Mapping[str, str],
+    verdicts: tuple[int, Sequence[CitationVerdict]] = (0, ()),
 ) -> ResearchQualityScorecard:
     version_total, version_rows = versions
     job_total, job_rows = jobs
@@ -301,7 +337,7 @@ def build_scorecard(
             _split(job_rows, lambda row: row.depth, {}, _job_group),
             _split(job_rows, lambda row: row.model, models, _job_group),
         ),
-        citation_checks=CitationCheckOutcomes(False, CITATION_CHECKS_NOTE),
+        citation_checks=_verdict_outcomes(*verdicts),
     )
 
 

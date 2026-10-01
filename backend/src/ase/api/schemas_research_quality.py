@@ -94,6 +94,17 @@ class QualityJobPopulationOut(_Out):
 class QualityCitationChecksOut(_Out):
     available: bool
     note: str
+    bound: int
+    in_window: int
+    counted: int
+    bound_reached: bool
+    current_verdicts: int
+    superseded_verdicts: int
+    citations_with_verdicts: int
+    supports: int
+    partly_supports: int
+    does_not_support: int
+    cannot_tell: int
 
 
 class ResearchQualityOut(_Out):

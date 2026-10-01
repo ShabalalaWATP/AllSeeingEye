@@ -10847,6 +10847,191 @@
         }
       }
     },
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts": {
+      "get": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "List Verdicts",
+        "operationId": "list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationVerdictListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "Record Verdict",
+        "operationId": "record_verdict_api_reports__report_id__versions__number__citation_verdicts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CitationVerdictIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationVerdictOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts/export": {
+      "get": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "Export Verdicts",
+        "operationId": "export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/stream": {
       "get": {
         "tags": [
@@ -19864,6 +20049,192 @@
         ],
         "title": "CitationStatus"
       },
+      "CitationVerdictIn": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Judgement Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "contradicting"
+            ],
+            "title": "Relation"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/CitationVerdictValue"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "label",
+          "relation",
+          "verdict"
+        ],
+        "title": "CitationVerdictIn"
+      },
+      "CitationVerdictListOut": {
+        "properties": {
+          "verdicts": {
+            "items": {
+              "$ref": "#/components/schemas/CitationVerdictOut"
+            },
+            "type": "array",
+            "title": "Verdicts"
+          },
+          "can_record": {
+            "type": "boolean",
+            "title": "Can Record"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "note_limit": {
+            "type": "integer",
+            "title": "Note Limit",
+            "default": 300
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": "Citation verdicts are human opinions recorded by reviewers. They are not ground truth, and they never change the frozen report, its grades or its confidence."
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdicts",
+          "can_record",
+          "limit"
+        ],
+        "title": "CitationVerdictListOut"
+      },
+      "CitationVerdictOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "contradicting"
+            ],
+            "title": "Relation"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/CitationVerdictValue"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Reviewer Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "version_number",
+          "judgement_id",
+          "label",
+          "relation",
+          "verdict",
+          "note",
+          "reviewer_id",
+          "team_id",
+          "recorded_at"
+        ],
+        "title": "CitationVerdictOut"
+      },
+      "CitationVerdictValue": {
+        "type": "string",
+        "enum": [
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell"
+        ],
+        "title": "CitationVerdictValue"
+      },
       "CitationVerdictsOut": {
         "properties": {
           "available": {
@@ -19873,12 +20244,57 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "citations": {
+            "type": "integer",
+            "title": "Citations"
+          },
+          "citations_with_verdicts": {
+            "type": "integer",
+            "title": "Citations With Verdicts"
+          },
+          "current_verdicts": {
+            "type": "integer",
+            "title": "Current Verdicts"
+          },
+          "superseded_verdicts": {
+            "type": "integer",
+            "title": "Superseded Verdicts"
+          },
+          "supports": {
+            "type": "integer",
+            "title": "Supports"
+          },
+          "partly_supports": {
+            "type": "integer",
+            "title": "Partly Supports"
+          },
+          "does_not_support": {
+            "type": "integer",
+            "title": "Does Not Support"
+          },
+          "cannot_tell": {
+            "type": "integer",
+            "title": "Cannot Tell"
+          },
+          "reviewers": {
+            "type": "integer",
+            "title": "Reviewers"
           }
         },
         "type": "object",
         "required": [
           "available",
-          "note"
+          "note",
+          "citations",
+          "citations_with_verdicts",
+          "current_verdicts",
+          "superseded_verdicts",
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell",
+          "reviewers"
         ],
         "title": "CitationVerdictsOut"
       },
@@ -36670,12 +37086,67 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "current_verdicts": {
+            "type": "integer",
+            "title": "Current Verdicts"
+          },
+          "superseded_verdicts": {
+            "type": "integer",
+            "title": "Superseded Verdicts"
+          },
+          "citations_with_verdicts": {
+            "type": "integer",
+            "title": "Citations With Verdicts"
+          },
+          "supports": {
+            "type": "integer",
+            "title": "Supports"
+          },
+          "partly_supports": {
+            "type": "integer",
+            "title": "Partly Supports"
+          },
+          "does_not_support": {
+            "type": "integer",
+            "title": "Does Not Support"
+          },
+          "cannot_tell": {
+            "type": "integer",
+            "title": "Cannot Tell"
           }
         },
         "type": "object",
         "required": [
           "available",
-          "note"
+          "note",
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "current_verdicts",
+          "superseded_verdicts",
+          "citations_with_verdicts",
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell"
         ],
         "title": "QualityCitationChecksOut"
       },

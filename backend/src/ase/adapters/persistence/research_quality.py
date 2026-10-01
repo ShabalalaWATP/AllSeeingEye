@@ -5,6 +5,7 @@ counts are mapped; titles, report prose and finding messages never leave this mo
 """
 
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import datetime
 from typing import Any
 
@@ -13,9 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.citation_verdict_models import CitationVerdictRow
+from ase.adapters.persistence.citation_verdicts import verdict_from_row
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.domain.access import Visibility
+from ase.domain.citation_verdicts import CitationVerdict
 from ase.domain.research import CollectionStatus, ResearchMode
 from ase.domain.research_quality import JobOutcome, VersionOutcome, known
 from ase.domain.validation_types import Severity
@@ -142,3 +146,26 @@ class SqlResearchQualityReader:
             )
             for status, error, template, depth, model, version_saved in rows
         ]
+
+    async def citation_verdicts(
+        self, visibility: Visibility, since: datetime, limit: int
+    ) -> tuple[int, Sequence[CitationVerdict]]:
+        scope = (
+            visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility),
+            CitationVerdictRow.owner_id == ReportRow.created_by,
+            CitationVerdictRow.team_id.is_not_distinct_from(ReportRow.team_id),
+            CitationVerdictRow.recorded_at >= since,
+        )
+        joined = select(CitationVerdictRow).join(
+            ReportRow, ReportRow.id == CitationVerdictRow.report_id
+        )
+        total = await self._session.scalar(
+            select(func.count()).select_from(joined.where(*scope).subquery())
+        )
+        rows = await self._session.scalars(
+            joined.where(*scope)
+            .order_by(CitationVerdictRow.recorded_at.desc(), CitationVerdictRow.id)
+            .limit(limit)
+        )
+        # Reviewer notes are never needed for counts, so they are dropped at the boundary.
+        return int(total or 0), [replace(verdict_from_row(row), note=None) for row in rows]

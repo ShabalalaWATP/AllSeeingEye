@@ -54,6 +54,15 @@ class TrackRecordReviewOut(_Out):
 class CitationVerdictsOut(_Out):
     available: bool
     note: str
+    citations: int
+    citations_with_verdicts: int
+    current_verdicts: int
+    superseded_verdicts: int
+    supports: int
+    partly_supports: int
+    does_not_support: int
+    cannot_tell: int
+    reviewers: int
 
 
 class SourceTrackRecordOut(_Out):

@@ -2925,6 +2925,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Verdicts */
+        get: operations["list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get"];
+        put?: never;
+        /** Record Verdict */
+        post: operations["record_verdict_api_reports__report_id__versions__number__citation_verdicts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Verdicts */
+        get: operations["export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stream": {
         parameters: {
             query?: never;
@@ -6034,12 +6069,113 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CitationVerdictIn */
+        CitationVerdictIn: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note?: string | null;
+        };
+        /** CitationVerdictListOut */
+        CitationVerdictListOut: {
+            /** Verdicts */
+            verdicts: components["schemas"]["CitationVerdictOut"][];
+            /** Can Record */
+            can_record: boolean;
+            /** Limit */
+            limit: number;
+            /**
+             * Note Limit
+             * @default 300
+             */
+            note_limit: number;
+            /**
+             * Notice
+             * @default Citation verdicts are human opinions recorded by reviewers. They are not ground truth, and they never change the frozen report, its grades or its confidence.
+             */
+            notice: string;
+        };
+        /** CitationVerdictOut */
+        CitationVerdictOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note: string | null;
+            /**
+             * Reviewer Id
+             * Format: uuid
+             */
+            reviewer_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+        };
+        /**
+         * CitationVerdictValue
+         * @enum {string}
+         */
+        CitationVerdictValue: "supports" | "partly_supports" | "does_not_support" | "cannot_tell";
         /** CitationVerdictsOut */
         CitationVerdictsOut: {
             /** Available */
             available: boolean;
             /** Note */
             note: string;
+            /** Citations */
+            citations: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
+            /** Reviewers */
+            reviewers: number;
         };
         /** CivilianHarmMonthOut */
         CivilianHarmMonthOut: {
@@ -11965,6 +12101,28 @@ export interface components {
             available: boolean;
             /** Note */
             note: string;
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
         };
         /** QualityFailureCodeOut */
         QualityFailureCodeOut: {
@@ -23312,6 +23470,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceReviewSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_verdict_api_reports__report_id__versions__number__citation_verdicts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CitationVerdictIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": string;
                 };
             };
             /** @description Validation Error */

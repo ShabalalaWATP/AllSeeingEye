@@ -14,12 +14,11 @@ import { formatUtc } from '@/lib/format';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { AnnotationMonitorsSection } from './AnnotationMonitorsSection';
-import { CitationCheckMethod, JudgementCitationChecks } from './CitationChecks';
+import { AssessmentReview } from './AssessmentReview';
 import { DirectionView } from './ReportSections';
 import { EvidenceAnnex } from './EvidenceAnnex';
 import { FreshWebContext } from './FreshWebContext';
 import { ReportAssessmentSummary } from './ReportAssessmentSummary';
-import { JudgementEvidence } from './JudgementEvidence';
 import { ReportChallengeView } from './ReportChallenge';
 import { ReportDiff } from './ReportDiff';
 import { ReportManagement } from './ReportManagement';
@@ -144,24 +143,7 @@ export default function ReportSupportingWorkspace({
           <>
             <ReportMethodology savedMethod={version.assessment?.method_version} />
             <ReportAssessmentSummary assessment={version.assessment} />
-            {version.body.key_judgements.map((judgement) => {
-              const assessment = version.assessment?.judgements.find(
-                (item) => item.judgement_id === judgement.id,
-              );
-              const citationCheck = version.citation_checks?.judgements.find(
-                (item) => item.judgement_id === judgement.id,
-              );
-              if (!assessment && !citationCheck) return null;
-              return (
-                <section key={judgement.id} aria-label={`Technical review for ${judgement.id}`}>
-                  <h2 className="text-sm font-semibold">{judgement.id}</h2>
-                  <p className="mt-1 text-xs leading-5 text-muted">{judgement.statement}</p>
-                  {assessment && <JudgementEvidence assessment={assessment} />}
-                  <JudgementCitationChecks check={citationCheck} />
-                </section>
-              );
-            })}
-            <CitationCheckMethod checks={version.citation_checks} />
+            <AssessmentReview reportId={reportId} version={version} teams={workspaces.teams} />
             {version.challenge ? (
               <ReportChallengeView challenge={version.challenge} />
             ) : (

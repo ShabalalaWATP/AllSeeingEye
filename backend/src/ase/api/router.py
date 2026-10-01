@@ -26,6 +26,7 @@ from ase.api.routers import (
     auth,
     cameras,
     capabilities,
+    citation_verdicts,
     claims,
     countries,
     cyber,
@@ -147,6 +148,7 @@ api_router.include_router(social.router)
 api_router.include_router(sources.router)
 api_router.include_router(source_track_record.router)
 api_router.include_router(source_reviews.router)
+api_router.include_router(citation_verdicts.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
