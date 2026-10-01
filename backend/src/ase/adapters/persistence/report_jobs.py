@@ -17,7 +17,7 @@ from ase.adapters.persistence.report_job_codec import (
     PayloadCache,
     from_row,
     payload_columns,
-    with_payload,
+    with_summary,
 )
 from ase.adapters.persistence.report_job_listing import list_job_page
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
@@ -98,10 +98,25 @@ class SqlReportJobRepository:
             .limit(limit)
             .execution_options(populate_existing=True)
         )
-        return [
-            with_payload(row, {"schema_version": 1, "summary": summary or {}})
-            for row, summary in rows
-        ]
+        return [with_summary(row, summary) for row, summary in rows]
+
+    async def list_page(
+        self,
+        visibility: Visibility,
+        *,
+        limit: int,
+        statuses: Sequence[str] | None = None,
+        include_briefings: bool = False,
+        after: tuple[datetime, UUID] | None = None,
+    ) -> list[ReportJob]:
+        return await list_job_page(
+            self.session,
+            visibility,
+            limit=limit,
+            statuses=statuses,
+            include_briefings=include_briefings,
+            after=after,
+        )
 
     async def list_page(
         self,

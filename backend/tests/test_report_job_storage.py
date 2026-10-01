@@ -314,7 +314,10 @@ async def test_visibility_filters_before_limit_and_lists_never_load_frozen_evide
             repository = SqlReportJobRepository(session)
             rows = await repository.list_visible(Visibility(owner, False, ()), limit=1)
             assert rows[0].id == personal.id
-            assert rows[0].payload == {"schema_version": 1, "summary": {"completed_sections": 2}}
+            assert rows[0].payload == {
+                "schema_version": 1,
+                "summary": {"completed_sections": 2, "origin": "research"},
+            }
             assert len(statements) == 1 and "report_jobs.payload," not in statements[0]
             assert all(
                 "payload" in inspect(value).unloaded for value in session.identity_map.values()
