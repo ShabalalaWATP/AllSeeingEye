@@ -56,7 +56,7 @@ does not persist a separate raw feed per team.
 |---|---|---|
 | `GET /api/reports/templates` | None | Available report templates |
 | `GET /api/report-methodology` | None | Current versioned contribution matrix, rules, grade labels, PHIA bands and doctrine references |
-| `GET /api/reports` | `limit=1..200` (default 50), `offset>=0`, optional `origin=research/subscription/geolocation` | `{items, limit, offset, has_more}`; current access and origin filters apply before pagination. Missing or unrecognised legacy origins use the report's original classification fallback. |
+| `GET /api/reports` | `limit=1..200` (default 50), `offset>=0`, optional `origin=research/subscription/geolocation/briefing` | `{items, limit, offset, has_more}`; current access and origin filters apply before pagination. Missing or unrecognised legacy origins use the report's original classification fallback. `briefing` marks daily, economy and cyber briefings prepared automatically by a workspace visit; the server assigns it and its `scope.briefing` kind, and request bodies cannot. |
 | `POST /api/reports` | Template, optional `team_id`, `plan`, country/question and supported template options | 201 report and saved version |
 | `POST /api/reports/{id}/versions` | None | 201 regenerated version in the original report scope |
 | `GET /api/reports/{id}` | Optional positive `version` | Current or requested historical version, subject to current report access |

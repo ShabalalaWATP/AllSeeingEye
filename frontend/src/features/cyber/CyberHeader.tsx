@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button';
+import { AutomaticBriefingNote } from '@/components/research/AutomaticBriefingNote';
 import { CYBER_PERIODS, type CyberDays, type CyberSnapshot } from '@/lib/api/cyber';
 import { formatUtc } from '@/lib/format';
 
@@ -79,6 +80,10 @@ export function CyberHeader({
               </button>
             ))}
           </div>
+          <AutomaticBriefingNote
+            subject="Choosing a period"
+            className="max-w-sm text-xs leading-5 text-muted sm:text-right"
+          />
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onRefresh} busy={loading}>
               Refresh sources

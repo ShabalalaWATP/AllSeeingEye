@@ -4,6 +4,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
+import { AutomaticBriefingNote } from '@/components/research/AutomaticBriefingNote';
 
 import { DailyBriefingSummary } from './DailyBriefingSummary';
 import { useDailyBriefing } from './useDailyBriefing';
@@ -20,6 +21,10 @@ export function DailyBriefing() {
           <p className="mt-1 text-sm text-muted">
             A daily situation summary of conflicts, global disasters and humanitarian developments.
           </p>
+          <AutomaticBriefingNote
+            subject="Opening this page"
+            className="mt-1 text-xs leading-5 text-muted"
+          />
         </div>
         <span className="font-mono text-[11px] uppercase tracking-wider text-ember">
           24-hour update

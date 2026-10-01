@@ -518,6 +518,7 @@
           "report-jobs"
         ],
         "summary": "List Jobs",
+        "description": "Scope, status and origin filters apply before the page; see application listing.",
         "operationId": "list_jobs_api_report_jobs_get",
         "security": [
           {
@@ -535,6 +536,50 @@
               "minimum": 1,
               "default": 20,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "running",
+                "attention",
+                "finished"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "include_briefings",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Briefings"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
             }
           }
         ],
@@ -39027,6 +39072,10 @@
             "type": "string",
             "title": "Title"
           },
+          "origin": {
+            "$ref": "#/components/schemas/ReportOrigin",
+            "default": "research"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -39270,6 +39319,17 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
           }
         },
         "type": "object",
@@ -39471,7 +39531,8 @@
         "enum": [
           "research",
           "subscription",
-          "geolocation"
+          "geolocation",
+          "briefing"
         ],
         "title": "ReportOrigin"
       },

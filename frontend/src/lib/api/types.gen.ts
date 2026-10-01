@@ -205,7 +205,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Jobs */
+        /**
+         * List Jobs
+         * @description Scope, status and origin filters apply before the page; see application listing.
+         */
         get: operations["list_jobs_api_report_jobs_get"];
         put?: never;
         /** Create Job */
@@ -12771,6 +12774,8 @@ export interface components {
             revision: number;
             /** Title */
             title: string;
+            /** @default research */
+            origin: components["schemas"]["ReportOrigin"];
             /**
              * Status
              * @enum {string}
@@ -12852,6 +12857,8 @@ export interface components {
         ReportJobsOut: {
             /** Items */
             items: components["schemas"]["ReportJobOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         };
         /** ReportLedger */
         ReportLedger: {
@@ -12930,7 +12937,7 @@ export interface components {
          * ReportOrigin
          * @enum {string}
          */
-        ReportOrigin: "research" | "subscription" | "geolocation";
+        ReportOrigin: "research" | "subscription" | "geolocation" | "briefing";
         /** ReportOut */
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -17069,6 +17076,9 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                status?: "all" | "running" | "attention" | "finished";
+                include_briefings?: boolean;
+                cursor?: string | null;
             };
             header?: never;
             path?: never;

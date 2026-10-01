@@ -85,6 +85,23 @@ using the former direct schedule producer.
 
 `GET /api/report-jobs` returns small progress summaries, without loading every
 evidence packet. `GET /api/report-jobs/{id}` returns authorised saved sections.
+
+The list takes `limit=1..50` (default 20), `status`, `include_briefings` and an
+opaque `cursor`, and returns `{items, next_cursor}`. Access scope, status group
+and origin are SQL filters applied before the page limit, so hidden or
+non-matching jobs never take a page's slots. Status groups map existing states:
+`running` is queued or running, `attention` is paused or failed (each row's
+`can_resume` separates resumable work from failures that cannot resume) and
+`finished` is completed or needs review; `all` applies no status filter. Pages
+are ordered by creation time then job ID and continue strictly after the
+previous page's last row, so updates and newly admitted jobs cannot repeat or
+skip rows. Each job reports `origin`. Daily, economy and cyber briefings
+prepared by a workspace visit carry the server-assigned `briefing` origin and
+are omitted unless `include_briefings=true`; direct reads by ID are unchanged.
+Briefings prepared before this classification have no stored briefing marker in
+their frozen scope and remain listed as requested research. Their admission key
+is the only reliable provenance; reclassifying them would need a reviewed data
+migration, so they are left as they are rather than guessed from titles.
 `POST /{id}/pause` and `POST /{id}/resume` control work.
 `DELETE /{id}` discards inactive job progress after authorisation.
 Protected responses are private and not cacheable; current sessions are checked

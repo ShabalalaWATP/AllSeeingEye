@@ -155,6 +155,7 @@ it('uses all five periods while filters and refresh never admit another briefing
   );
   const { user, router } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
+  expect(screen.getByText(/Choosing a period can start a personal AI briefing/)).toBeVisible();
   await user.selectOptions(screen.getByRole('combobox', { name: 'Country context' }), 'GB');
   await user.click(screen.getByRole('button', { name: 'Refresh sources' }));
   await waitFor(() =>
@@ -211,6 +212,7 @@ it('shows the AI assessment at the top, keeps export links, then hides it when t
 it('opens labelled country context on the map and can enable the GNSS layer', async () => {
   const { user, router } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
+  expect(screen.getByText(/Choosing a period can start a personal AI briefing/)).toBeVisible();
   await user.selectOptions(screen.getByRole('combobox', { name: 'Country context' }), 'GB');
   await user.click(screen.getByRole('button', { name: 'Open cyber map' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/'));
