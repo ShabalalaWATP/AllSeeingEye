@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { expect, it } from 'vitest';
 
@@ -15,27 +15,27 @@ it('places plan reasons beside the plan fields, including nested requirement pat
       '/api/direction/plans',
       rejected({
         'pirs.0.text': 'Write the requirement as one question.',
-        'pirs.0.sirs.1.keywords': 'Too many keywords.',
+        'pirs.0.sirs.0.keywords': 'Too many keywords.',
       }),
     ),
   );
   const { user } = renderApp('/direction', 'user');
   const form = within(await screen.findByRole('form', { name: 'New collection plan' }));
   await user.type(form.getByLabelText('Plan name'), 'Scoped');
-  await user.type(form.getByLabelText('Priority intelligence requirement'), 'Q?');
-  await user.type(form.getByLabelText('Specific requirements'), 'Anything');
+  await user.type(form.getByLabelText('PIR-1 priority intelligence requirement'), 'Q?');
+  await user.type(form.getByLabelText('SIR-1.1 specific requirement'), 'Anything');
+  await user.type(form.getByLabelText('SIR-1.1 keywords'), 'a, b');
   await user.click(form.getByRole('button', { name: 'Add plan' }));
 
-  const summary = await form.findByRole('alert', { name: 'Check these fields and try again:' });
-  expect(summary).toHaveFocus();
-  const pir = form.getByLabelText('Priority intelligence requirement');
-  expect(pir).toHaveAttribute('aria-invalid', 'true');
-  expect(pir).toHaveAccessibleDescription(
-    'The question the plan serves, as one sentence. Write the requirement as one question.',
-  );
-  expect(form.getByLabelText('Specific requirements')).toHaveAttribute('aria-invalid', 'true');
-  await user.click(within(summary).getByRole('link', { name: /Specific requirements/ }));
-  expect(form.getByLabelText('Specific requirements')).toHaveFocus();
+  const pir = form.getByLabelText('PIR-1 priority intelligence requirement');
+  await waitFor(() => {
+    expect(pir).toHaveAttribute('aria-invalid', 'true');
+  });
+  expect(pir).toHaveAccessibleDescription(/Write the requirement as one question\./);
+  const keywords = form.getByLabelText('SIR-1.1 keywords');
+  expect(keywords).toHaveAttribute('aria-invalid', 'true');
+  expect(keywords).toHaveAccessibleDescription(/Too many keywords\./);
+  expect(form.getByText(/Review the highlighted fields/)).toBeInTheDocument();
   expect(pir).toHaveValue('Q?');
 });
 

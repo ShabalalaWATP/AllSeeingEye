@@ -77,6 +77,38 @@ describe('collection plan editor', () => {
     });
   });
 
+  it('places server validation reasons beside their fields and keeps the draft', async () => {
+    server.use(
+      http.put(`/api/direction/plans/${plan.id}`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'validation_error',
+              message: 'The request is invalid.',
+              fields: {
+                'pirs.0.text': 'Requirement text is too long.',
+                description: 'Background is too long.',
+              },
+            },
+          },
+          { status: 422 },
+        ),
+      ),
+    );
+    const { user, form } = await openEditor();
+    const name = within(form).getByLabelText('Plan name');
+    await user.type(name, ' revised');
+    await user.click(within(form).getByRole('button', { name: /save/i }));
+    const pir = within(form).getByLabelText('PIR-1 priority intelligence requirement');
+    await waitFor(() => {
+      expect(pir).toHaveAttribute('aria-invalid', 'true');
+    });
+    expect(pir).toHaveAccessibleDescription(/Requirement text is too long\./);
+    // A reason no control owns is listed in the summary rather than dropped.
+    expect(within(form).getByText('Background is too long.')).toBeInTheDocument();
+    expect(name).toHaveValue('Kharkiv axis revised');
+  });
+
   it('shows field-level errors for empty or invalid groups and sends nothing', async () => {
     let posted = false;
     server.use(

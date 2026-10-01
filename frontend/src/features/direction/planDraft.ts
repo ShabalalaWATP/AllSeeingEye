@@ -112,6 +112,27 @@ export function validatePlanDraft(draft: PlanDraft, areaAvailable: boolean): Pla
   return errors;
 }
 
+const SHOWN_BESIDE_A_FIELD =
+  /^(name|countries|pirs(\.\d+\.(text|sirs(\.\d+\.(text|keywords|categories))?))?)$/;
+
+/**
+ * Server validation reasons, keyed by dotted request paths, as draft errors. Request paths
+ * already match the draft's (`pirs.0.sirs.1.text`); `aoi_id` and `countries.N` are renamed.
+ */
+export function planErrorsFromServer(fields: Readonly<Record<string, string>>): PlanErrors {
+  const errors: PlanErrors = {};
+  for (const [path, reason] of Object.entries(fields)) {
+    const key = path === 'aoi_id' ? 'areaId' : path.startsWith('countries.') ? 'countries' : path;
+    errors[key] ??= reason;
+  }
+  return errors;
+}
+
+/** Reasons no control shows, so the summary can list them instead of dropping them. */
+export function unplacedPlanErrors(errors: PlanErrors): [string, string][] {
+  return Object.entries(errors).filter(([key]) => !SHOWN_BESIDE_A_FIELD.test(key));
+}
+
 function sirRequest(sir: SirDraft): SirRequest {
   const request: SirRequest = { text: sir.text.trim() };
   const keywords = parseCommaList(sir.keywords);

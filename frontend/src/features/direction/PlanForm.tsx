@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
-import { describeError } from '@/lib/api/errors';
+import { describeError, isApiError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
@@ -17,7 +17,9 @@ import {
   draftFromPlan,
   emptyPlanDraft,
   PLAN_LIMITS,
+  planErrorsFromServer,
   planRequest,
+  unplacedPlanErrors,
   validatePlanDraft,
   type PlanDraft,
   type PlanErrors,
@@ -53,7 +55,7 @@ export function PlanForm({
     setDraft(next);
     if (Object.keys(errors).length > 0) setErrors(validatePlanDraft(next, true));
   };
-  const save = useAsyncAction(async (current: PlanDraft) => {
+  const persist = async (current: PlanDraft) => {
     const body = planRequest(current, teamId === '' ? null : teamId, enabled);
     if (plan) {
       const saved = await updatePlan(plan.id, { ...body, expected_updated_at: revision });
@@ -64,7 +66,20 @@ export function PlanForm({
     const saved = await createPlan(body);
     setDraft(emptyPlanDraft());
     await onSaved(saved);
+  };
+  const save = useAsyncAction(async (current: PlanDraft) => {
+    try {
+      await persist(current);
+    } catch (error) {
+      // The server's field reasons sit beside the controls that caused them (KAN-48).
+      if (isApiError(error) && Object.keys(error.fields).length > 0) {
+        setErrors(planErrorsFromServer(error.fields));
+        summary.current?.focus();
+      }
+      throw error;
+    }
   });
+  const unplaced = unplacedPlanErrors(errors);
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const found = validatePlanDraft(draft, areaAvailable);
@@ -87,6 +102,13 @@ export function PlanForm({
         {Object.keys(errors).length > 0 && (
           <Alert tone="error">
             Review the highlighted fields. Nothing has been saved and your draft is kept.
+            {unplaced.length > 0 && (
+              <ul className="mt-1 list-disc pl-5">
+                {unplaced.map(([key, reason]) => (
+                  <li key={key}>{reason}</li>
+                ))}
+              </ul>
+            )}
           </Alert>
         )}
       </div>
