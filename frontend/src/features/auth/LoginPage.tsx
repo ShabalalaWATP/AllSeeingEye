@@ -57,7 +57,7 @@ export function LoginPage() {
       aria-busy={busy}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!busy) void run();
+        void run();
       }}
     >
       <header className="mb-2">

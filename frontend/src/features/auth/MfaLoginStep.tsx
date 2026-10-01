@@ -27,7 +27,7 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
       aria-busy={mfa.busy}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!mfa.busy && ready) void mfa.run('verify');
+        if (ready) void mfa.run('verify');
       }}
     >
       <header className="mb-2">
