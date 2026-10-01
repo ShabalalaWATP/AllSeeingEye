@@ -20,7 +20,7 @@ from team_helpers import CONTEXT, team_service
 
 async def _upgrade(container: Container) -> None:
     revision = ScriptDirectory.from_config(alembic_config("sqlite+aiosqlite://")).get_revision(
-        "0067"
+        "0082"
     )
     assert revision is not None
 
