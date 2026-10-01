@@ -40,7 +40,7 @@ export function EquipmentCard({
       ) : null}
       <div className="flex flex-1 flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
-          <h5 className="text-sm leading-tight font-semibold text-text">{entry.name}</h5>
+          <h4 className="text-sm leading-tight font-semibold text-text">{entry.name}</h4>
           <span className="flex shrink-0 flex-wrap justify-end gap-1">
             {showSide ? (
               <span

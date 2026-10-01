@@ -30,14 +30,19 @@ export default function EconomyPage() {
   const focusExplainer = regionExplainer(explainerState.data, focus.id);
   const owner = useAuthStore((state) => state.user?.id);
   return (
-    <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
+    <section
+      aria-labelledby="economy-page-heading"
+      className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10"
+    >
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 font-mono text-2xs uppercase tracking-[0.22em] text-ember">
               Economic intelligence
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight">Economy</h1>
+            <h1 id="economy-page-heading" className="text-3xl font-semibold tracking-tight">
+              Economy
+            </h1>
             <p className="mt-2 text-sm text-muted">
               Markets, economic signals and the stories behind them.
             </p>

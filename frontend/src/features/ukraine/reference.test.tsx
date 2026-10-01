@@ -101,6 +101,21 @@ describe('Ukraine reference sections', () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps heading levels in order on the page, including equipment cards', async () => {
+    renderApp('/conflicts/ukraine', 'user');
+    const recon = await screen.findByRole(
+      'region',
+      { name: 'Drones: Reconnaissance' },
+      { timeout: 5000 },
+    );
+    expect(within(recon).getByRole('heading', { name: 'Orlan-10', level: 4 })).toBeInTheDocument();
+    const levels = screen.getAllByRole('heading').map((heading) => Number(heading.tagName[1]));
+    levels.forEach((level, index) => {
+      const previous = index === 0 ? 1 : levels[index - 1]!;
+      expect(level, `heading ${index + 1} follows h${previous}`).toBeLessThanOrEqual(previous + 1);
+    });
+  });
+
   it('keeps the rest of the page when the reference notes are missing', async () => {
     server.use(
       http.get('/api/conflicts/ukraine/reference', () =>
