@@ -87,7 +87,13 @@ export async function reviseBrief(brief: ResearchBrief, draft: BriefDraft, signa
   return result;
 }
 
-export function runBrief(brief: ResearchBrief, signal: AbortSignal, requestId: string) {
+/** `planRevision` is the collection-plan revision the author reviewed, for plan-led briefs. */
+export function runBrief(
+  brief: ResearchBrief,
+  signal: AbortSignal,
+  requestId: string,
+  planRevision?: string,
+) {
   return researchUsageMutation(() =>
     apiCall('/api/report-jobs/from-brief', {
       method: 'POST',
@@ -95,6 +101,7 @@ export function runBrief(brief: ResearchBrief, signal: AbortSignal, requestId: s
         request_id: requestId,
         brief_id: brief.identity.id,
         revision: brief.identity.revision,
+        ...(planRevision ? { expected_plan_updated_at: planRevision } : {}),
       },
       schema: reportJobSchema,
       signal,

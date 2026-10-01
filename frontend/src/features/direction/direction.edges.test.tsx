@@ -37,10 +37,13 @@ describe('direction form edges', () => {
     expect(await screen.findByText('Area boom')).toBeInTheDocument();
     const planForm = screen.getByRole('form', { name: 'New collection plan' });
     await user.type(within(planForm).getByLabelText('Plan name'), 'Failing');
-    await user.type(within(planForm).getByLabelText('Priority intelligence requirement'), 'Q?');
-    await user.type(within(planForm).getByLabelText('Specific requirements'), 'Anything');
+    await user.type(
+      within(planForm).getByLabelText('PIR-1 priority intelligence requirement'),
+      'Q?',
+    );
+    await user.type(within(planForm).getByLabelText('SIR-1.1 specific requirement'), 'Anything');
     await user.click(within(planForm).getByRole('button', { name: 'Add plan' }));
-    expect(await screen.findByText('Plan boom')).toBeInTheDocument();
+    expect(await screen.findByText(/Plan boom/)).toBeInTheDocument();
     expect(screen.getAllByText(aoi.name).length).toBeGreaterThan(0);
   });
 });

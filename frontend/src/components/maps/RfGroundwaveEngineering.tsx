@@ -37,7 +37,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
       <div className="rf-result-summary space-y-3">
         <p className="rf-result-kicker font-mono uppercase tracking-wider text-muted">{status}</p>
         <p
-          className={`mt-1 font-mono text-xl ${summary.noPassing ? 'text-amber-300' : 'text-cyan'}`}
+          className={`mt-1 font-mono text-xl ${summary.noPassing ? 'text-amber' : 'text-cyan'}`}
         >
           {summary.radiusKm === null ? 'Below threshold' : `${km(summary.radiusKm)} km`}
         </p>
@@ -53,7 +53,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
           dBm + {reserveDb.toFixed(1)} dB planning reserve.
         </p>
         {summary.noPassing && (
-          <p className="rf-result-next-step text-amber-200">
+          <p className="rf-result-next-step text-amber">
             Check the equipment sensitivity, antenna gains and ground conductivity. The model begins
             at 1 km; it cannot determine shorter-range reception.
           </p>
@@ -94,7 +94,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
             y2={thresholdY}
             stroke="currentColor"
             strokeDasharray="4 4"
-            className="text-amber-300"
+            className="text-amber"
           />
           {reserveDb > 0 && (
             <line
@@ -130,7 +130,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
               cy={y(receive.receivedDbm)}
               r="4"
               fill="currentColor"
-              className="text-amber-200"
+              className="text-amber"
               stroke="#080c10"
               strokeWidth="1.5"
             />
@@ -191,7 +191,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
         </svg>
         <figcaption className="flex flex-wrap justify-between gap-2 px-2 text-muted">
           <span className="text-cyan">Model samples</span>
-          <span className="text-amber-300">Planning threshold {thresholdDbm.toFixed(1)} dBm</span>
+          <span className="text-amber">Planning threshold {thresholdDbm.toFixed(1)} dBm</span>
           <span className="text-muted">Sensitivity {input.sensitivityDbm.toFixed(1)} dBm</span>
         </figcaption>
       </figure>
@@ -212,7 +212,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
                 <div className="rf-result-metric">
                   <dt className="text-muted">Margin above sensitivity</dt>
                   <dd
-                    className={`mt-1 font-mono text-base ${receive.receivedDbm < input.sensitivityDbm ? 'text-amber-300' : 'text-cyan'}`}
+                    className={`mt-1 font-mono text-base ${receive.receivedDbm < input.sensitivityDbm ? 'text-amber' : 'text-cyan'}`}
                   >
                     {(receive.receivedDbm - input.sensitivityDbm).toFixed(1)} dB
                   </dd>
@@ -220,7 +220,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
                 <div className="rf-result-metric">
                   <dt className="text-muted">Margin after planning reserve</dt>
                   <dd
-                    className={`mt-1 font-mono text-base ${receive.receivedDbm < thresholdDbm ? 'text-amber-300' : 'text-cyan'}`}
+                    className={`mt-1 font-mono text-base ${receive.receivedDbm < thresholdDbm ? 'text-amber' : 'text-cyan'}`}
                   >
                     {(receive.receivedDbm - thresholdDbm).toFixed(1)} dB
                   </dd>
@@ -234,7 +234,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
               </p>
             </>
           ) : (
-            <p className="mt-2 text-amber-300">
+            <p className="mt-2 text-amber">
               Receiver is outside the sampled interval. No received level or link margin is
               estimated.
             </p>

@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from ase.domain.doctrine import Confidence, Probability
 from ase.domain.report_diagram_records import restore_diagrams
@@ -35,6 +35,12 @@ class ReportOrigin(StrEnum):
     RESEARCH = "research"
     SUBSCRIPTION = "subscription"
     GEOLOCATION = "geolocation"
+    # Prepared automatically by a workspace visit, never chosen by a request body.
+    BRIEFING = "briefing"
+
+
+BriefingKind = Literal["daily", "economy", "cyber"]
+BRIEFING_KINDS: frozenset[str] = frozenset({"daily", "economy", "cyber"})
 
 
 class ChangeFromPrevious(StrEnum):

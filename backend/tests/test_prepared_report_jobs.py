@@ -68,8 +68,8 @@ async def test_prepared_job_rejects_changed_plan_and_does_not_save(container, us
         assert job.request.question == "What changed?"
         assert job.scope["collection_plan_revision"]["updated_at"] == now.isoformat()
         assert job.background == "Frozen description"
-        await container.repositories(session).plans.save(
-            replace(plan, updated_at=now + timedelta(seconds=1))
+        assert await container.repositories(session).plans.save_if_unchanged(
+            replace(plan, updated_at=now + timedelta(seconds=1)), plan.updated_at
         )
         await session.commit()
         _, version = document_records(user.id)

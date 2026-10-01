@@ -33,7 +33,7 @@ export function Labels({ labels }: { labels: readonly string[] }) {
             key={label}
             href={`#${encodeURIComponent(evidenceId(label))}`}
             aria-label={`View evidence ${label}`}
-            className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ember transition-colors hover:bg-ember/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember motion-reduce:transition-none"
+            className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs text-ember transition-colors hover:bg-ember/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember motion-reduce:transition-none"
             onClick={(event) => {
               if (
                 event.button !== 0 ||
@@ -59,7 +59,7 @@ export function Labels({ labels }: { labels: readonly string[] }) {
         ) : (
           <span
             key={label}
-            className="rounded bg-surface-2 px-1 font-mono text-[11px] text-muted"
+            className="rounded bg-surface-2 px-1 font-mono text-2xs text-muted"
             title="Evidence is not available in this view"
           >
             {label}

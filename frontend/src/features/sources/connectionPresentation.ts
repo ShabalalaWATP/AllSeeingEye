@@ -1,7 +1,8 @@
 import type { ConnectionState, SourceRequirement } from '@/lib/api/sourceContext';
 
 export type ConnectionTone = 'good' | 'amber' | 'critical' | 'cyan' | 'muted';
-export type ConnectionGroup = 'live' | 'retrying' | 'setup' | 'blocked' | 'on_demand' | 'off';
+export type ConnectionGroup =
+  'live' | 'unconfirmed' | 'retrying' | 'setup' | 'blocked' | 'on_demand' | 'off';
 
 export interface ConnectionMeta {
   label: string;
@@ -9,12 +10,15 @@ export interface ConnectionMeta {
   group: ConnectionGroup;
 }
 
-/** One vocabulary for sources, data assets and platform services; the group drives totals. */
+/**
+ * One vocabulary for sources, data assets and platform services; the group drives totals.
+ * A feed with no successful collection yet is unconfirmed, never counted as live.
+ */
 export const CONNECTION_META: Record<ConnectionState, ConnectionMeta> = {
   connected: { label: 'Connected', tone: 'good', group: 'live' },
   available: { label: 'Available', tone: 'good', group: 'live' },
-  idle: { label: 'Waiting for first collection', tone: 'cyan', group: 'live' },
-  key_unverified: { label: 'Key set, awaiting collection', tone: 'cyan', group: 'live' },
+  idle: { label: 'Waiting for first collection', tone: 'cyan', group: 'unconfirmed' },
+  key_unverified: { label: 'Key set, awaiting collection', tone: 'cyan', group: 'unconfirmed' },
   degraded: { label: 'Retrying', tone: 'amber', group: 'retrying' },
   failing: { label: 'Failing', tone: 'critical', group: 'retrying' },
   key_missing: { label: 'API key missing', tone: 'critical', group: 'setup' },
@@ -27,6 +31,7 @@ export const CONNECTION_META: Record<ConnectionState, ConnectionMeta> = {
 
 export const GROUPS: readonly ConnectionGroup[] = [
   'live',
+  'unconfirmed',
   'on_demand',
   'setup',
   'blocked',
@@ -36,6 +41,7 @@ export const GROUPS: readonly ConnectionGroup[] = [
 
 export const GROUP_LABELS: Record<ConnectionGroup, string> = {
   live: 'Live or available',
+  unconfirmed: 'Not yet confirmed',
   on_demand: 'On demand',
   setup: 'Needs key or setup',
   blocked: 'Blocked upstream',
@@ -45,6 +51,7 @@ export const GROUP_LABELS: Record<ConnectionGroup, string> = {
 
 export const GROUP_TONE: Record<ConnectionGroup, string> = {
   live: 'text-good',
+  unconfirmed: 'text-cyan',
   on_demand: 'text-cyan',
   setup: 'text-critical',
   blocked: 'text-critical',

@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -61,7 +62,16 @@ function Section({
   );
 }
 
-export default function SourcesPage() {
+/**
+ * The read-only catalogue. Every signed-in account reads the same contract at /sources;
+ * the administration workspace mounts it at /admin/catalogue with a way back to the
+ * source controls, which stay under /admin and are checked again on the server.
+ */
+export default function SourcesPage({
+  workspace = 'research',
+}: {
+  workspace?: 'research' | 'admin';
+}) {
   const { data, error, loading, reload } = useScopedResource(fetchSourceCatalogue);
   const platform = useScopedResource(fetchPlatformConnections);
   const [params, setParams] = useSearchParams();
@@ -102,19 +112,28 @@ export default function SourcesPage() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-ember)_12%,transparent),transparent_70%)]"
           />
-          <div className="relative">
-            <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-              Collection directory
+          <PageHeader
+            as="div"
+            className="relative"
+            title="Sources and connections"
+            eyebrow="Collection directory"
+            eyebrowTone="cyan"
+            description="Every feed, research capability, camera provider, map layer and dataset this deployment uses, with what each one is doing right now. Values are never shown; a missing key names the server setting that unlocks it."
+          >
+            <p className="text-xs leading-5 text-muted">
+              Read only. Grades are editorial context with a recorded basis, not measured accuracy.
+              A feed counts as live only after a successful collection on this server; a key or
+              registration alone shows as not yet confirmed.
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Sources and connections
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
-              Every feed, research capability, camera provider, map layer and dataset this
-              deployment uses, with what each one is doing right now. Values are never shown; a
-              missing key names the server setting that unlocks it.
-            </p>
-          </div>
+            {workspace === 'admin' && (
+              <Link
+                to="/admin/sources"
+                className="inline-flex min-h-11 w-fit items-center text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+              >
+                Open source controls
+              </Link>
+            )}
+          </PageHeader>
         </header>
         {loading && !data && <LoadingNote label="Loading source catalogue" />}
         {error !== null && (
@@ -172,6 +191,13 @@ export default function SourcesPage() {
             <div className="py-10 text-center">
               <p className="text-sm text-muted">No sources match your search.</p>
               <p className="mt-2 text-xs text-muted">Try a broader search or clear the filters.</p>
+              <Button
+                variant="secondary"
+                className="mt-4"
+                onClick={() => setFilters(EMPTY_FILTERS)}
+              >
+                Clear all filters
+              </Button>
             </div>
           )}
           <div className="space-y-8">
@@ -186,7 +212,11 @@ export default function SourcesPage() {
                   dot={CATEGORY_STYLES[topic].css}
                 >
                   {rows.map((source) => (
-                    <SourceCatalogueRow key={source.id} source={source} />
+                    <SourceCatalogueRow
+                      key={source.id}
+                      source={source}
+                      trackRecord={workspace === 'research'}
+                    />
                   ))}
                 </Section>
               );

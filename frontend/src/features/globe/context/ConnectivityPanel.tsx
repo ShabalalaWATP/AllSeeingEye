@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SourceText } from '@/components/events/SourceText';
 import { useContextEvents } from './useContextEvents';
 import { NETWORK_SOURCES } from '../networkSources';
 import {
@@ -49,13 +50,13 @@ export function ConnectivityPanelView({
       snapshot={snapshot}
       scope={`IODA measurements and Cloudflare Radar annotations. ${country ? `Nation: ${country}, using provider country attribution.` : 'Worldwide, including records without a country attribution.'} No location is inferred from a network name.`}
     >
-      <p className="rounded-lg border border-amber-300/20 bg-amber-300/5 p-3 text-[11px] leading-relaxed text-muted">
+      <p className="rounded-lg border border-amber/20 bg-amber/5 p-3 text-2xs leading-relaxed text-muted">
         IODA alerts and event windows are measured anomalies. Cloudflare Radar annotations are a
         separate provider assessment. Neither feed establishes that a disruption is ongoing or
         caused by an attack. Country markers indicate reported scope, not an outage location.
       </p>
       {mappedCount !== undefined && !snapshot.loading && (
-        <p className="text-[11px] text-muted">
+        <p className="text-2xs text-muted">
           {mappedCount} source-attributed {mappedCount === 1 ? 'country' : 'countries'} shown on the
           map. Other records have no safe map position. Markers show country references, not outage
           locations.
@@ -108,9 +109,15 @@ export function ConnectivityPanelView({
       <ul className="space-y-2">
         {events.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
-            <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
+            <SourceText
+              as="h4"
+              language={event.language}
+              className="font-medium leading-relaxed text-text"
+            >
+              {event.title}
+            </SourceText>
             <p className="mt-1 text-2xs text-muted">Reported: {utcDate(event.published_at)}</p>
-            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px]">
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-2xs">
               <dt className="text-muted">Entity</dt>
               <dd className="break-words text-text">
                 {attribute(event, 'entity_type')} · {attribute(event, 'entity_code')}

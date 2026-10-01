@@ -96,11 +96,12 @@ it.each(['globe', 'map'] as const)(
       }),
     );
     const { user } = renderApp('/', 'user');
-    const toggle = await screen.findByRole('switch', { name: 'News 0' });
+    await screen.findByText('News: 0 loaded');
+    const toggle = screen.getByRole('switch', { name: 'News' });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(requests).toHaveLength(0);
     await user.click(toggle);
-    await screen.findByRole('switch', { name: 'News 3' });
+    await screen.findByText('News: 3 loaded');
     await waitFor(() => expect(layer('event-icons')?.props.data).toContainEqual(located));
     expect(layer('event-icons')?.props.data).not.toContainEqual(unlocated);
     const group = layer('news-country-icons')!.props.data[0] as NewsCountryContext;
@@ -121,11 +122,11 @@ it.each(['globe', 'map'] as const)(
     expect(
       within(screen.getByRole('complementary', { name: 'Event details' })).getByText(located.title),
     ).toBeVisible();
-    await user.click(screen.getByRole('switch', { name: 'News 3' }));
+    await user.click(screen.getByRole('switch', { name: 'News' }));
     await waitFor(() => expect(layer('news-country-icons')).toBeUndefined());
     expect(layer('event-icons')).toBeUndefined();
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('switch', { name: /^News \d/ }));
+    await user.click(screen.getByRole('switch', { name: 'News' }));
     await waitFor(() => expect(layer('news-country-icons')).toBeDefined());
     act(() => {
       layer('news-country-icons')!.props.onClick({ object: group });
@@ -139,7 +140,7 @@ it.each(['globe', 'map'] as const)(
     expect(
       within(screen.getByRole('complementary', { name: 'Event details' })).getByText(country.title),
     ).toBeVisible();
-    await user.click(screen.getByRole('switch', { name: /^News \d/ }));
+    await user.click(screen.getByRole('switch', { name: 'News' }));
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
   },
 );

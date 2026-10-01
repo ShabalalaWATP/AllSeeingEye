@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -29,7 +30,7 @@ export function SetPasswordPage() {
   if (token === null || token === '') {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Link incomplete</h1>
+        <PageHeader title="Link incomplete" />
         <Alert tone="error">This link is missing its token. Please request a new one.</Alert>
         <Link to="/forgot-password" className="text-sm text-muted hover:text-text">
           Request a new link
@@ -41,7 +42,7 @@ export function SetPasswordPage() {
   if (done) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Password set</h1>
+        <PageHeader title="Password set" />
         <Alert tone="success">Your password has been set. You can sign in now.</Alert>
         <Link to="/login" className="text-sm text-ember hover:underline">
           Go to sign in
@@ -65,7 +66,7 @@ export function SetPasswordPage() {
         if (problem === null) void run();
       }}
     >
-      <h1 className="text-lg font-semibold">Set your password</h1>
+      <PageHeader title="Set your password" />
       {invalidToken ? (
         <Alert tone="error">
           This link is invalid, has expired or has already been used.{' '}

@@ -13,10 +13,26 @@ export const ADVANCED_OPTIONS_ID = 'research-advanced-options';
 
 type Patch = (changes: Partial<ResearchDraft>) => void;
 
-export function ResearchQuestionField({ draft, patch }: { draft: ResearchDraft; patch: Patch }) {
+/** The id and server reason for the question control, from the form's field errors. */
+export interface QuestionFieldState {
+  id: string;
+  error: string | undefined;
+}
+
+export function ResearchQuestionField({
+  draft,
+  patch,
+  field,
+}: {
+  draft: ResearchDraft;
+  patch: Patch;
+  field?: QuestionFieldState | undefined;
+}) {
   return (
     <TextAreaField
       label="Your question"
+      id={field?.id}
+      error={field?.error}
       value={draft.question}
       onChange={(event) => patch({ question: event.target.value })}
       maxLength={1000}
@@ -32,10 +48,12 @@ export function ResearchQuickSteps({
   draft,
   patch,
   countries,
+  question,
 }: {
   draft: ResearchDraft;
   patch: Patch;
   countries: readonly Country[];
+  question?: QuestionFieldState | undefined;
 }) {
   return (
     <>
@@ -45,7 +63,7 @@ export function ResearchQuickSteps({
         lead="Any topic: a conflict, a market, an organisation, a technology or a place."
         id="research-question"
       >
-        <ResearchQuestionField draft={draft} patch={patch} />
+        <ResearchQuestionField draft={draft} patch={patch} field={question} />
       </Step>
       <Step
         number={2}

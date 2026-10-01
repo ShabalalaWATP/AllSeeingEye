@@ -23,6 +23,7 @@ from ase.application.teams.board_access import (
     board_actor,
     require_revision,
 )
+from ase.application.teams.board_mentions import BoardMentions
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.team_board import (
@@ -45,7 +46,9 @@ class TeamBoardModerationService:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        mentions: BoardMentions,
     ) -> None:
+        self._mentions = mentions
         self._board = board
         self._teams = teams
         self._users = users
@@ -104,6 +107,8 @@ class TeamBoardModerationService:
             revision=post.revision + 1,
         )
         await self._write(updated, expected_revision)
+        # A removed post's pending mentions go with it, in the same transaction.
+        cleared = await self._mentions.clear(post.id)
         details: dict[str, object] = {"team_id": str(team_id), "moderation": moderated}
         if moderation_reason is not None:
             details |= {"author_id": str(post.author_id), "reason": moderation_reason}
@@ -115,6 +120,7 @@ class TeamBoardModerationService:
             details=details,
         )
         await self._uow.commit()
+        await self._mentions.announce(cleared)
         return updated
 
     async def pin(

@@ -52,6 +52,17 @@ it('opens from the rail, jumps to a tracker and focuses the new page heading', a
   });
 });
 
+it('keeps the search field focus indicator visible', async () => {
+  const { user } = renderApp('/research/saved', 'user');
+  await user.click(await screen.findByRole('button', { name: /Find anything/ }));
+  const search = within(await screen.findByRole('dialog', { name: 'Find anything' })).getByRole(
+    'combobox',
+  );
+  expect(search).toHaveFocus();
+  // The global :focus-visible outline paints the ring; nothing may switch it off.
+  expect(search.className).not.toMatch(/(^|\s)(focus:)?outline-(none|hidden|0)(\s|$)/);
+});
+
 it('opens with the keyboard and moves through results with the arrow keys', async () => {
   const { user, router } = renderApp('/research/saved', 'user');
   await screen.findByRole('button', { name: /Find anything/ });
@@ -118,22 +129,23 @@ it('offers Watches first for watch searches and groups pages as the rail does', 
   expect(matchTargets(targets, 'watches')[0]).toMatchObject({
     label: 'Watches',
     to: '/watches',
-    group: 'Standing watches',
+    group: 'Watches',
   });
   expect(matchTargets(targets, 'alerts')[0]).toMatchObject({ to: '/warning', label: 'Alerts' });
   expect(targets.find((target) => target.to === '/')?.group).toBe('Pages');
-  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Collaboration');
+  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Teams');
 });
 
-it('offers the source catalogue by family only to an administrator', () => {
-  const routes = commandTargets({ admin: true }).map((target) => target.to);
-  expect(routes).toContain('/admin/catalogue?family=map_layer');
-  expect(commandTargets().some((target) => target.group === 'Sources')).toBe(false);
+it('offers the read-only source catalogue by family to every signed-in account', () => {
+  for (const options of [{}, { admin: true }]) {
+    const routes = commandTargets(options).map((target) => target.to);
+    expect(routes).toContain('/sources?family=map_layer');
+    expect(routes.some((route) => route.startsWith('/admin/catalogue'))).toBe(false);
+  }
 });
 
 it('ranks a label match above a description match and needs every term', () => {
-  // The catalogue families are an administrator's entries, and one of them carries
-  // the two-term case this ranks.
+  // One of the catalogue families carries the two-term case this ranks.
   const targets = commandTargets({ admin: true });
   expect(matchTargets(targets, 'teams')[0]?.label).toBe('Teams');
   expect(matchTargets(targets, 'ukraine dataset').map((target) => target.label)).toEqual([

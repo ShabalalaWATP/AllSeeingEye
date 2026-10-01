@@ -7,6 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from ase.domain.team_board import (
+    BoardSubjectKind,
     TeamBoardPage,
     TeamBoardPost,
     TeamBoardPostView,
@@ -32,6 +33,12 @@ class TeamBoardRepository(Protocol):
     async def pinned(self, team_id: UUID, limit: int) -> list[TeamBoardPostView]: ...
 
     async def reply_count(self, parent_id: UUID) -> int: ...
+
+    async def subject_threads(
+        self, team_id: UUID, kind: BoardSubjectKind, subject_id: UUID
+    ) -> tuple[int, UUID | None]:
+        """Live top-level posts in this team about the subject, and the newest one's id."""
+        ...
 
     async def get_cursor(self, team_id: UUID, user_id: UUID) -> TeamBoardReadCursor | None: ...
 

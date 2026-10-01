@@ -26,7 +26,21 @@ function value(body: string, property: string): string {
   if (!declaration) throw new Error(`Missing ${property}`);
   const raw = declaration.slice(property.length + 1).trim();
   const token = /^var\(--color-([\w-]+)\)$/.exec(raw);
-  return token ? palettes['map dashboard']![token[1]!]! : raw;
+  if (token) return palettes['map dashboard']![token[1]!]!;
+  const named = /^var\((--[\w-]+)\)$/.exec(raw);
+  return named ? namedColour(named[1]!) : raw;
+}
+
+/** A colour the dashboard names once in its `:root` palette (KAN-99). */
+function namedColour(name: string): string {
+  const open = dashboardCss.indexOf(':root {');
+  const palette = dashboardCss.slice(open, dashboardCss.indexOf('}', open));
+  const entry = palette
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}:`));
+  if (!entry) throw new Error(`Missing ${name}`);
+  return entry.slice(name.length + 1).trim();
 }
 
 /** An `#rrggbb` or `#rrggbbaa` colour composited over an opaque backdrop. */
@@ -82,15 +96,15 @@ describe('layer switch on state', () => {
         onToggle={vi.fn()}
       />,
     );
-    const space = screen.getByRole('switch', { name: 'Space 3' });
-    const conflict = screen.getByRole('switch', { name: 'Conflict & unrest 2' });
+    const space = screen.getByRole('switch', { name: 'Space' });
+    const conflict = screen.getByRole('switch', { name: 'Conflict & unrest' });
     expect(space).toHaveAttribute('aria-checked', 'false');
     expect(conflict).toHaveAttribute('aria-checked', 'true');
     await user.click(space);
     await user.click(conflict);
     expect(space).toHaveAttribute('aria-checked', 'true');
-    expect(space).toHaveAccessibleName('Space 3');
+    expect(space).toHaveAccessibleName('Space');
     expect(conflict).toHaveAttribute('aria-checked', 'false');
-    expect(conflict).toHaveAccessibleName('Conflict & unrest 2');
+    expect(conflict).toHaveAccessibleName('Conflict & unrest');
   });
 });

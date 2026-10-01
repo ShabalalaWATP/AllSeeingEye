@@ -144,7 +144,9 @@ async def test_areas_and_plans_are_owned_and_scoped(
 
     # Another user cannot edit or delete; the owner and an admin can.
     other = await client.put(
-        f"/api/direction/plans/{plan_id}", json=PLAN, headers=bearer(admin_token)
+        f"/api/direction/plans/{plan_id}",
+        json={**PLAN, "expected_updated_at": plan.json()["updated_at"]},
+        headers=bearer(admin_token),
     )
     assert other.status_code == 200  # admins may edit
     assert other.json()["created_by"] == plan.json()["created_by"]
@@ -168,7 +170,11 @@ async def test_a_second_user_cannot_change_someone_elses_plan(
     await create_user(container, email="second@example.com", password="another-long-passphrase")
     second = await login_token(client, "second@example.com", "another-long-passphrase")
     assert (
-        await client.put(f"/api/direction/plans/{plan_id}", json=PLAN, headers=bearer(second))
+        await client.put(
+            f"/api/direction/plans/{plan_id}",
+            json={**PLAN, "expected_updated_at": plan.json()["updated_at"]},
+            headers=bearer(second),
+        )
     ).status_code == 404
     assert (
         await client.delete(f"/api/direction/plans/{plan_id}", headers=bearer(second))

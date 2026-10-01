@@ -68,7 +68,7 @@ export function CyberActors({
               setLimit(24);
             }}
             placeholder="APT29, Midnight Blizzard, Lazarus…"
-            className="mt-2 min-h-11 w-full rounded-md border border-control-border bg-surface px-3 text-sm focus:border-ember focus:outline-none"
+            className="mt-2 min-h-11 w-full rounded-md border border-control-border bg-surface px-3 text-sm focus:border-ember"
           />
           <p className="mt-3 text-xs text-muted">
             {filtered.length} matching profiles · MITRE ATT&CK {catalogue.version}
@@ -121,7 +121,7 @@ export function CyberActors({
         </div>
         <aside
           aria-label="Selected threat actor"
-          className="border-l-2 border-cyan/60 pl-5 xl:sticky xl:top-6"
+          className="border-l-2 border-cyan/60 pl-5 xl:sticky xl:top-16"
         >
           {selected ? (
             <div className="space-y-5">

@@ -80,7 +80,7 @@ export function InfrastructureFacts({ selected }: { selected: InfrastructureSele
       {detail && <p className="leading-relaxed">{detail}</p>}
       {description && <p className="leading-relaxed">{description}</p>}
       {precision === 'city' && (
-        <p className="text-amber-300">
+        <p className="text-amber">
           Placed at the named city; the site itself is not geolocated in the public record.
         </p>
       )}

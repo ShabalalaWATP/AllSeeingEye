@@ -11,7 +11,7 @@ export function ConflictScreeningDetails({ event }: { event: LiveEvent }) {
       className="mt-3 space-y-2 rounded-lg border border-line bg-surface-2/50 p-3 text-xs"
     >
       <span
-        className={`inline-flex rounded border px-2 py-1 font-medium ${review.state === 'accepted' ? 'border-cyan-400/30 text-cyan-200' : 'border-amber-400/30 text-amber-200'}`}
+        className={`inline-flex rounded border px-2 py-1 font-medium ${review.state === 'accepted' ? 'border-cyan/30 text-cyan' : 'border-amber/30 text-amber'}`}
       >
         {review.label}
       </span>

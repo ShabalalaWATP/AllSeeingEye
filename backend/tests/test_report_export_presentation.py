@@ -7,11 +7,11 @@ from docx import Document
 from pypdf import PdfReader
 
 from ase.adapters.reports.document_sections import leading_identity
+from ase.adapters.reports.markdown_package import render_markdown_export
 from ase.adapters.reports.pdf import render_pdf
 from ase.adapters.reports.pdf_content import _column_widths
 from ase.adapters.reports.word import render_docx
 from ase.application.reports.document import build_document
-from ase.application.reports.render import render_markdown
 from ase.domain.report_documents import (
     BlockKind,
     DocumentBlock,
@@ -135,18 +135,20 @@ def test_word_bands_a_review_notice_so_it_reads_as_a_notice() -> None:
 
 def test_markdown_is_portable_with_one_blank_line_between_blocks() -> None:
     record, version = document_records()
-    markdown = render_markdown(
-        record.header, version.body, version.evidence, version.quality, version.findings
-    )
+    document = build_document(record, version)
+    export = render_markdown_export(document, record.id, version.id, version.number)
+    assert export.media_type == "text/markdown; charset=utf-8"
+    markdown = export.content.decode("utf-8")
+    assert markdown == version.markdown
     assert markdown.endswith("\n") and not markdown.endswith("\n\n")
     assert "\n\n\n" not in markdown
     assert not any(line != line.rstrip() for line in markdown.splitlines())
     # Headings and the paragraphs under them must not run together when rendered.
-    for heading in ("### Ground activity", "### Trajectory"):
-        assert f"{heading}\n\n" in markdown
-    assert "**Original title:** " in markdown
-    assert "**Recorded metadata**\n\n- Published:" in markdown
-    # A judgement's likelihood and confidence read as their own lines, not as a run-on
+    for heading in ("### Ground activity", "### Trajectory", "## References", "### Reference 1"):
+        assert f"\n{heading}\n\n" in markdown
+    # A judgement's likelihood and confidence read as their own paragraph, not as a run-on
     # continuation of the statement they belong to.
-    assert "\n\n  Probability: " in markdown
-    assert "Watch condition: elevated.\n\n- " in markdown
+    assert "[2](#reference-2)\n\nHighly likely, with moderate confidence.\n\n" in markdown
+    assert "\n\nWatch level: Elevated.\n\n" in markdown
+    # Each part of a reference is its own paragraph rather than one run of prose.
+    assert "\n\n[Open source](https://example.org/report)\n\n[Archived copy](" in markdown

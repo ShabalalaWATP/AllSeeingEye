@@ -2,6 +2,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { useDashboardEvents } from './useDashboardEvents';
 import { ControlPanel } from './GlobeControls';
 import { LayerPanel } from './LayerPanel';
+import { PlanFilterPanel } from './PlanFilterPanel';
 
 /** Event controls state their scope separately from independent catalogues. */
 export function eventControlPanels(
@@ -17,7 +18,11 @@ export function eventControlPanels(
         error={data.error}
         windowHours={data.windowHours}
         onWindow={data.setWindow}
+        replay={data.replay}
       />
+    </ControlPanel>,
+    <ControlPanel key="plan" side="right" label="Collection plan" caption="Plan" icon="filter">
+      <PlanFilterPanel shown={data.quality.filtered.length} />
     </ControlPanel>,
   ];
 }

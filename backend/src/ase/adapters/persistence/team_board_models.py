@@ -1,14 +1,33 @@
-"""SQL rows for team board posts, replies and per-membership read cursors."""
+"""SQL rows for team board posts, replies, per-membership read cursors and mentions."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Index, Integer, String, Text, Uuid
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
+
+# Shared with migration 0075: only top-level posts name a subject, and only a report
+# version carries a version number.
+SUBJECT_SHAPE = (
+    "(subject_kind IS NULL AND subject_id IS NULL AND subject_version IS NULL)"
+    " OR (subject_kind IS NOT NULL AND subject_id IS NOT NULL AND parent_id IS NULL AND ("
+    "(subject_kind = 'report_version' AND subject_version IS NOT NULL AND subject_version >= 1)"
+    " OR (subject_kind IN ('saved_area', 'drawing_collection') AND subject_version IS NULL)))"
+)
 
 
 class TeamBoardPostRow(Base):
@@ -19,12 +38,14 @@ class TeamBoardPostRow(Base):
         CheckConstraint(
             "removal IS NULL OR removal IN ('author', 'moderator')", name="ck_board_removal"
         ),
-        # Mirrors migration 0048 exactly, including its composite listing indexes.
+        CheckConstraint(SUBJECT_SHAPE, name="ck_board_subject"),
+        # Mirrors migrations 0048 and 0075 exactly, including the composite indexes.
         Index("ix_team_board_posts_team", "team_id"),
         Index("ix_team_board_posts_author", "author_id"),
         Index("ix_team_board_posts_created", "team_id", "created_at"),
         Index("ix_team_board_posts_parent", "parent_id"),
         Index("ix_team_board_posts_pinned", "team_id", "is_pinned"),
+        Index("ix_team_board_posts_subject", "team_id", "subject_kind", "subject_id"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
@@ -41,6 +62,11 @@ class TeamBoardPostRow(Base):
     revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     edited_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     removal: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # A typed reference with no foreign key: the subject may later move or be deleted,
+    # so every read resolves it again under the reader's current access.
+    subject_kind: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    subject_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    subject_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class TeamBoardReadCursorRow(Base):
@@ -56,3 +82,34 @@ class TeamBoardReadCursorRow(Base):
     last_read_at: Mapped[datetime] = mapped_column(UTCDateTime)
     last_read_post_id: Mapped[UUID] = mapped_column(Uuid)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class TeamBoardMentionRow(Base):
+    """One recipient of one post's mention (migration 0081); at most ten per post.
+
+    The recipient's stable id and the handle as written are kept together, so a later
+    handle change or reuse never redirects the notice. Rows go with the post or account.
+    """
+
+    __tablename__ = "team_board_mentions"
+    __table_args__ = (
+        UniqueConstraint("post_id", "handle", name="uq_board_mention_handle"),
+        Index("ix_board_mentions_recipient", "recipient_id", "read_at"),
+    )
+
+    post_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("team_board_posts.id", ondelete="CASCADE", name="fk_board_mentions_post"),
+        primary_key=True,
+    )
+    recipient_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE", name="fk_board_mentions_recipient"),
+        primary_key=True,
+    )
+    team_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("teams.id", ondelete="CASCADE", name="fk_board_mentions_team")
+    )
+    handle: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    read_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)

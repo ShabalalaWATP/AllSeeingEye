@@ -62,7 +62,7 @@ export default function AdminAuditPage() {
                   </Td>
                   <Td className="min-w-48 py-2.5">
                     <span className="block text-sm">{describeAction(entry.action)}</span>
-                    <span className="block font-mono text-[11px] text-muted">{entry.action}</span>
+                    <span className="block font-mono text-2xs text-muted">{entry.action}</span>
                   </Td>
                   <Td className="py-2.5 font-mono text-xs">
                     {entry.actor_user_id === null ? (

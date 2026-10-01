@@ -38,6 +38,10 @@ def strip_html(value: str | None) -> str | None:
     """Plain text from a body that may hold literal or entity-escaped HTML."""
     if not value:
         return None
+    if "<" not in value and "&" not in value:
+        # Without either character unescape is a no-op and the parser emits the
+        # whole value as one data chunk, so its result is exactly the stripped text.
+        return value.strip() or None
     extractor = _TextExtractor()
     extractor.feed(unescape(value))
     extractor.close()
@@ -88,8 +92,16 @@ class Normaliser:
             digest = event.content_hash or content_hash(
                 title, summary, url, event.published_at.isoformat() if event.published_at else None
             )
+            unchanged = (
+                title == event.title
+                and summary == event.summary
+                and url == event.url
+                and digest == event.content_hash
+            )
             result.append(
-                event.with_changes(title=title, summary=summary, url=url, content_hash=digest)
+                event
+                if unchanged
+                else event.with_changes(title=title, summary=summary, url=url, content_hash=digest)
             )
         return result
 

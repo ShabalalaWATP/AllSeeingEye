@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router';
 import { useCallback } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useProfile } from '@/stores/profile';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
@@ -65,13 +66,10 @@ export default function ResearchPage() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-8 sm:px-8">
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
-        <header>
-          <h1 className="text-3xl font-semibold tracking-tight">Research</h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-            Ask a question, choose your scope and collect an answer from the available sources. Save
-            the findings with their evidence and uncertainty.
-          </p>
-        </header>
+        <PageHeader
+          title="Research"
+          description="Ask a question, choose your scope and collect an answer from the available sources. Save the findings with their evidence and uncertainty."
+        />
         <ResearchNavigation />
         {/* The map draft panel carries its own copy of this notice. */}
         {!mapDraftRequested && <AiResearchNotice />}
@@ -108,6 +106,7 @@ export default function ResearchPage() {
             fromReportId={params.get('from_report') ?? undefined}
             fromReportVersion={fromReportVersion}
             intent={params.get('intent') === 'subscribe' ? 'subscribe' : undefined}
+            planId={briefId === 'new' ? (params.get('plan') ?? undefined) : undefined}
           />
         )}
         {!briefId && !mapDraftRequested && (

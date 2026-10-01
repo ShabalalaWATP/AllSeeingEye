@@ -45,7 +45,7 @@ export function ConflictSourceCoverage() {
             <li key={source.id} className="space-y-1 py-3 text-xs">
               <div className="flex flex-wrap justify-between gap-2">
                 <span className="font-medium">{source.name}</span>
-                <span className={source.status === 'healthy' ? 'text-emerald-300' : 'text-muted'}>
+                <span className={source.status === 'healthy' ? 'text-good' : 'text-muted'}>
                   {labels[source.status]}
                 </span>
               </div>
@@ -63,7 +63,7 @@ export function ConflictSourceCoverage() {
           ))}
         </ul>
       )}
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Source availability, release dates and collection gaps limit what this tracker can show.
       </p>
     </section>

@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
@@ -10,26 +9,45 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 const localEnv = loadEnv('development', process.cwd(), 'ASE_');
 const apiTarget = localEnv.ASE_DEV_API_TARGET ?? 'http://127.0.0.1:8001';
 
-// MapLibre resolves its module worker beside the bundled library at runtime.
-// Its worker also imports the shared module, so preserve both package assets.
-function maplibreWorkerAssets(): Plugin {
+// MapLibre starts a module worker that imports the same shared module as the main thread.
+// Building the worker as an extra entry of this graph lets both import one hashed shared
+// chunk, so a cold load fetches and parses it once, and a deploy never pairs old main-thread
+// code with a new worker. The map passes the hashed worker URL to setWorkerUrl. In
+// development and tests the URL is empty and MapLibre finds its worker beside the library.
+const WORKER_URL_MODULE = 'virtual:maplibre-worker-url';
+function maplibreWorker(): Plugin {
+  const resolved = `\0${WORKER_URL_MODULE}`;
+  let building = false;
+  let reference: string | null = null;
   return {
-    name: 'maplibre-worker-assets',
-    apply: 'build',
-    generateBundle() {
-      for (const name of ['maplibre-gl-worker.mjs', 'maplibre-gl-shared.mjs']) {
-        this.emitFile({
-          type: 'asset',
-          fileName: `assets/${name}`,
-          source: readFileSync(new URL(`./node_modules/maplibre-gl/dist/${name}`, import.meta.url)),
-        });
-      }
+    name: 'maplibre-worker',
+    configResolved(config) {
+      building = config.command === 'build';
+    },
+    buildStart() {
+      if (!building) return;
+      reference = this.emitFile({
+        type: 'chunk',
+        id: fileURLToPath(
+          new URL('./node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url),
+        ),
+        name: 'maplibre-gl-worker',
+      });
+    },
+    resolveId(id) {
+      return id === WORKER_URL_MODULE ? resolved : null;
+    },
+    load(id) {
+      if (id !== resolved) return null;
+      return reference === null
+        ? 'export default "";'
+        : `export default import.meta.ROLLUP_FILE_URL_${reference};`;
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), maplibreWorkerAssets()],
+  plugins: [react(), tailwindcss(), maplibreWorker()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -66,7 +84,17 @@ export default defineConfig({
             // higher-priority group, recursion captures it into the first vendor group
             // that uses dynamic imports, and the entry then loads all of deck.gl.
             { name: 'preload-helper', test: /vite[\\/]preload-helper/, priority: 10 },
-            { name: 'maplibre', test: /node_modules[\\/]maplibre-gl[\\/]/ },
+            // The worker entry imports this chunk too, so it holds the shared module alone:
+            // no main-thread code may reach the worker.
+            {
+              name: 'maplibre-shared',
+              test: /node_modules[\\/]maplibre-gl[\\/]dist[\\/]maplibre-gl-shared\.mjs$/,
+              priority: 5,
+            },
+            {
+              name: 'maplibre',
+              test: /node_modules[\\/]maplibre-gl[\\/]dist[\\/]maplibre-gl\.(?:mjs|css)$/,
+            },
             { name: 'deck', test: /node_modules[\\/]@(?:deck|luma|loaders|math)\.gl[\\/]/ },
             // three.js is only ever reached through the lazily imported Ukraine timeline scene.
             { name: 'three', test: /node_modules[\\/]three[\\/]/ },

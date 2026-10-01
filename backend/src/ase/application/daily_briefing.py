@@ -42,6 +42,7 @@ def briefing_request() -> ReportRequest:
         window_hours=24,
         research_mode=ResearchMode.QUICK,
         report_style="briefing",
+        briefing="daily",
     )
 
 

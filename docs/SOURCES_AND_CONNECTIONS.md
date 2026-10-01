@@ -1,15 +1,18 @@
 # Sources and connections
 
-Implemented 13 September 2026. Open **Settings**, then **Sources and connections**
-(`/sources`). The page is available to every signed-in user and answers two
-questions the old catalogue could not: which registered sources are actually
-collecting on this server, and which API keys or local requirements are missing.
+Implemented 13 September 2026. Open **Source catalogue** (`/sources`) from Settings,
+the map guide, the research **What to read** step or a report's evidence annex. The
+page is read-only and available to every signed-in user; administrators also reach it
+at `/admin/catalogue`, which links to the source controls under **Administration >
+Sources**. It answers two questions the old catalogue could not: which registered
+sources are actually collecting on this server, and which API keys or local
+requirements are missing.
 
 ## What the page shows
 
 | Section | Content |
 | --- | --- |
-| Catalogue summary | Totals by state (live or available, on demand, needs key or setup, blocked upstream, retrying or failing, off by operator choice) and by family (scheduled feeds, on-demand research, camera indexes, map layers and services, Ukraine tracker datasets, reference datasets). Selecting a tile filters the catalogue. |
+| Catalogue summary | Totals by state (live or available, not yet confirmed, on demand, needs key or setup, blocked upstream, retrying or failing, off by operator choice; `idle` and `key_unverified` count as not yet confirmed, never as live) and by family (scheduled feeds, on-demand research, camera indexes, map layers and services, Ukraine tracker datasets, reference datasets). Selecting a tile filters the catalogue. |
 | Needs attention | Actionable items only: an upstream that refuses this server or account (with its fixed reason), a feed paused by the circuit breaker, or a required key or setup step with the setting that unlocks it. Optional settings, on-demand tools, operator switches and short retries are not listed. |
 | Platform connections | Services that are not sources: the AI assessment model for the viewer's personal workspace, credential encryption, Ordnance Survey maps, email delivery, the alert webhook, live feed collection, Wayback archiving, conflict screening, local OCR and video tools and the optional PDF runtime. Toggles report the effective state, including defaults, so archiving and feed collection show as on outside tests without an explicit setting. |
 | Source catalogue | Every scheduled feed and research capability grouped by topic, then camera providers, map layers, Ukraine datasets and reference datasets grouped by family. Filters: family, connection, topic, country, language and access. Topic, country and language apply to feeds and research only. |

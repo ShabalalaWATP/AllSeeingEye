@@ -3,10 +3,13 @@
  * the stream, plus which categories are shown and which event is selected.
  */
 import { create } from 'zustand';
-import { boundedEvents, mergeSnapshots } from './events.coverage';
-import { SnapshotRefresh } from './events.refresh';
+import { boundedEvents } from './events.coverage';
 import { publishEventChange } from './events.changes';
 import { selectionAfterMirrorUpdate, type SelectionOwner } from './events.selection';
+import { mergeMirrorBatch, toList } from './events.batch';
+import { MAX_CLIENT_EVENTS } from './events.limits';
+import { createSnapshotLoader } from './events.snapshot';
+export { MAX_CLIENT_EVENTS, SNAPSHOT_LIMIT } from './events.limits';
 export {
   filterByCountry,
   filterByWindow,
@@ -16,18 +19,17 @@ export {
   countByCategory,
 } from './events.selectors';
 
-import { insideCoverage, type CoverageBounds } from './events.geography';
-import { loadCoverageSupplements } from './events.supplements';
+import type { CoverageBounds } from './events.geography';
 
-import { fetchEvents, fetchStats } from '@/lib/api/events';
-import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
+import {
+  refreshPartitions,
+  streamExpireSchema,
+  streamResyncSchema,
+  streamUpsertSchema,
+} from '@/lib/api/eventSchemas';
 import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import { ORDERED_CATEGORIES } from '@/lib/categories';
-import { describeError } from '@/lib/api/errors';
 import type { SseMessage, StreamStatus } from '@/lib/sse';
-
-export const MAX_CLIENT_EVENTS = 5_000;
-export const SNAPSHOT_LIMIT = 2_000;
 
 export interface EventsState {
   byId: Record<string, LiveEvent>;
@@ -55,6 +57,8 @@ export interface EventsState {
   cancelLoad: () => void;
   applyUpsert: (events: LiveEvent[]) => void;
   applyExpire: (ids: string[]) => void;
+  /** Expiries then upserts, as one bounded mirror update and one store notification. */
+  applyBatch: (expired: readonly string[], events: readonly LiveEvent[]) => void;
   handleStreamMessage: (message: SseMessage) => void;
   setStatus: (status: StreamStatus) => void;
   toggleCategory: (category: Category) => void;
@@ -83,128 +87,17 @@ export const initialEventsState = {
   selectionOwner: 'mirror' as SelectionOwner,
 };
 
-/** Newest first, with the id as a tie-break so the order is stable. */
-function toList(byId: Record<string, LiveEvent>): LiveEvent[] {
-  return Object.values(byId).sort(
-    (a, b) =>
-      (b.published_at ?? '').localeCompare(a.published_at ?? '') || a.id.localeCompare(b.id),
-  );
-}
-
-function without(
-  byId: Record<string, LiveEvent>,
-  ids: readonly string[],
-): Record<string, LiveEvent> {
-  const gone = new Set(ids);
-  return Object.fromEntries(Object.entries(byId).filter(([id]) => !gone.has(id)));
-}
-
 export const useEventsStore = create<EventsState>()((set, get) => {
-  const snapshotBarriers = new Set<() => void>();
-  const refresh = new SnapshotRefresh(() => {
-    void get().load();
-  });
-  let pending: {
-    controller: AbortController;
-    changes: Map<string, LiveEvent | null>;
-    overflow: boolean;
-  } | null = null;
-  const record = (id: string, event: LiveEvent | null) => {
-    if (!pending || pending.overflow) return;
-    if (!pending.changes.has(id) && pending.changes.size >= MAX_CLIENT_EVENTS) {
-      // Never drop tombstones or overwrite fresh events with an unsafe snapshot.
-      pending.overflow = true;
-      pending.changes.clear();
-      return;
-    }
-    pending.changes.set(id, event);
-  };
+  const snapshots = createSnapshotLoader(get, set);
   return {
     ...initialEventsState,
 
-    onSnapshotStart: (flush) => {
-      snapshotBarriers.add(flush);
-      return () => {
-        snapshotBarriers.delete(flush);
-      };
-    },
+    onSnapshotStart: snapshots.onSnapshotStart,
 
-    load: async () => {
-      for (const flush of snapshotBarriers) flush();
-      refresh.started();
-      pending?.controller.abort();
-      const request = {
-        controller: new AbortController(),
-        changes: new Map<string, LiveEvent | null>(),
-        overflow: false,
-      };
-      pending = request;
-      const isCurrent = () => pending === request && !request.controller.signal.aborted;
-      const bounds = get().coverageBounds;
-      const scope = { sampling: 'geographic' as const, ...(bounds ? { bbox: bounds } : {}) };
-      set({ loading: true, error: null });
-      try {
-        const [events, stats] = await Promise.all([
-          fetchEvents({ limit: SNAPSHOT_LIMIT, ...scope }, request.controller.signal),
-          fetchStats(request.controller.signal),
-        ]);
-        if (!isCurrent()) return;
-        const supplement = await loadCoverageSupplements(
-          events,
-          stats,
-          request.controller.signal,
-          scope,
-        );
-        if (!isCurrent()) return;
-        if (request.overflow) {
-          set({
-            error:
-              'Live updates exceeded the snapshot reconciliation limit. Displaying received updates; reload to resynchronise.',
-            loaded: true,
-          });
-          return;
-        }
-        const merged = mergeSnapshots(events, supplement.events);
-        for (const [id, event] of merged) if (!insideCoverage(event, bounds)) merged.delete(id);
-        const snapshotCount = merged.size;
-        for (const [id, event] of request.changes) {
-          if (event === null) merged.delete(id);
-          else merged.set(id, event);
-        }
-        const byId = Object.fromEntries(merged);
-        const capped = boundedEvents(byId, MAX_CLIENT_EVENTS, get().selectedId);
-        set({
-          byId: capped,
-          list: toList(capped),
-          stats,
-          loaded: true,
-          error: supplement.error,
-          snapshotCount,
-          snapshotLimited:
-            events.length >= SNAPSHOT_LIMIT || supplement.limited || stats.total > snapshotCount,
-          mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
-          selectedId: selectionAfterMirrorUpdate(get(), capped),
-        });
-      } catch (caught) {
-        if (pending === request && !request.controller.signal.aborted) {
-          set({ error: describeError(caught), loaded: true });
-        }
-      } finally {
-        // Cancel a sibling request if Promise.all failed before it completed.
-        request.controller.abort();
-        if (pending === request) {
-          pending = null;
-          set({ loading: false });
-          refresh.finished();
-        }
-      }
-    },
+    load: snapshots.load,
 
     cancelLoad: () => {
-      refresh.cancel();
-      pending?.controller.abort();
-      pending = null;
-      set({ loading: false });
+      snapshots.cancel();
     },
 
     setCoverageBounds: (coverageBounds) => {
@@ -213,40 +106,40 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
 
     applyUpsert: (events) => {
-      if (events.length === 0) return;
-      publishEventChange({ kind: 'upsert', events });
-      const current = get();
-      let merged = current.byId;
-      for (const event of events) {
-        const visible = insideCoverage(event, current.coverageBounds);
-        record(event.id, visible ? event : null);
-        if (visible ? merged[event.id] === event : !(event.id in merged)) continue;
-        if (merged === current.byId) merged = { ...current.byId };
-        if (visible) merged[event.id] = event;
-        else Reflect.deleteProperty(merged, event.id);
-      }
-      if (merged === current.byId) return;
-      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, current.selectedId);
-      set({
-        byId,
-        list: toList(byId),
-        mirrorCapped: get().mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
-        selectedId: selectionAfterMirrorUpdate(get(), byId),
-      });
+      get().applyBatch([], events);
     },
 
     applyExpire: (ids) => {
-      if (ids.length === 0) return;
-      publishEventChange({ kind: 'expire', ids });
-      for (const id of ids) record(id, null);
-      const selected = get().selectedId;
-      if (selected !== null && ids.includes(selected)) get().select(null);
-      if (!ids.some((id) => id in get().byId)) return;
-      const byId = without(get().byId, ids);
+      get().applyBatch(ids, []);
+    },
+
+    applyBatch: (expired, events) => {
+      if (expired.length > 0) publishEventChange({ kind: 'expire', ids: expired });
+      if (events.length > 0) publishEventChange({ kind: 'upsert', events });
+      const current = get();
+      const merged = mergeMirrorBatch(
+        current.byId,
+        current.coverageBounds,
+        expired,
+        events,
+        snapshots.record,
+      );
+      // An expired selection clears whoever owns it, as the stream says the record is gone.
+      const selection =
+        current.selectedId !== null && expired.includes(current.selectedId)
+          ? { selectedId: null, selectionOwner: 'mirror' as const }
+          : current;
+      if (merged === null) {
+        if (selection !== current) set(selection);
+        return;
+      }
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, selection.selectedId);
       set({
         byId,
-        list: toList(byId),
-        selectedId: selectionAfterMirrorUpdate(get(), byId),
+        list: toList(byId, current.list),
+        mirrorCapped: current.mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
+        selectedId: selectionAfterMirrorUpdate(selection, byId),
+        selectionOwner: selection.selectionOwner,
       });
     },
 
@@ -268,11 +161,13 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         if (!parsed.success) return;
         if (parsed.data.reason === 'snapshot_required') {
           // A bulk update is a refresh hint, not evidence that this snapshot is unsafe.
-          // Publish useful completed work and coalesce one bounded follow-up.
-          refresh.request(pending !== null);
+          // Publish useful completed work and coalesce one bounded follow-up of the
+          // partitions it names, or of everything when it names none it recognises.
+          snapshots.requestRefresh(refreshPartitions(parsed.data.categories));
           return;
         }
         publishEventChange({ kind: 'reset' });
+        snapshots.invalidate();
         set({
           byId: {},
           list: [],
@@ -315,9 +210,8 @@ export const useEventsStore = create<EventsState>()((set, get) => {
 
     reset: () => {
       publishEventChange({ kind: 'reset' });
-      refresh.cancel();
-      pending?.controller.abort();
-      pending = null;
+      snapshots.cancel();
+      snapshots.invalidate();
       set({ ...initialEventsState });
     },
   };

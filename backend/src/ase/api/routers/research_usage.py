@@ -17,6 +17,7 @@ from ase.api.schemas_research_usage import (
 from ase.domain.research_usage import TIERS
 
 router = APIRouter(tags=["research-usage"])
+# Registered here, beside the other administrator research views, as a nested router.
 
 
 @router.get("/research-usage/me")

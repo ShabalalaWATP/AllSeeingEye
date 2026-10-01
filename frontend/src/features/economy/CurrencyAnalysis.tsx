@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { EconomySeries } from '@/lib/api/economy';
 import { SelectField } from '@/components/ui/Field';
 import { SourceLink } from '@/components/ui/SourceLink';
@@ -8,6 +8,8 @@ import { formatEconomicValue } from './economyPresentation';
 
 export function CurrencyAnalysis({ items }: { items: readonly EconomySeries[] }) {
   const [base, setBase] = useState<FxCode>('GBP');
+  // Each side note is a named complementary landmark, so several on one page stay distinct.
+  const asideHeading = useId();
   const [quote, setQuote] = useState<FxCode>('USD');
   const [days, setDays] = useState(90);
   const data = currencyAnalysis(items, base, quote, days);
@@ -59,8 +61,13 @@ export function CurrencyAnalysis({ items }: { items: readonly EconomySeries[] })
         <>
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
             <EconomicChart key={`${base}:${quote}:${days}`} series={data.series} />
-            <aside className="space-y-4 text-sm leading-6 text-muted">
-              <h3 className="font-semibold text-text">What changed</h3>
+            <aside
+              aria-labelledby={asideHeading}
+              className="space-y-4 text-sm leading-6 text-muted"
+            >
+              <h3 id={asideHeading} className="font-semibold text-text">
+                What changed
+              </h3>
               <p>
                 {data.change === null ? (
                   'Only one matching observation is available, so a period change cannot be calculated.'

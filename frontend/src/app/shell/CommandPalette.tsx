@@ -79,7 +79,7 @@ export function CommandPalette() {
                 go(active.to);
               }
             }}
-            className="min-h-11 w-full bg-transparent text-sm text-text outline-none placeholder:text-muted"
+            className="min-h-11 w-full bg-transparent text-sm text-text placeholder:text-muted"
           />
         </label>
         <div
@@ -112,7 +112,7 @@ export function CommandPalette() {
                   {target.group}
                 </span>
               </span>
-              <span className="text-[11px] leading-relaxed text-muted">{target.description}</span>
+              <span className="text-2xs leading-relaxed text-muted">{target.description}</span>
             </button>
           ))}
           {matches.length === 0 && (
@@ -120,7 +120,7 @@ export function CommandPalette() {
           )}
         </div>
         <div className="flex items-center justify-between gap-2 border-t border-line px-3 py-2">
-          <p className="text-[11px] text-muted">Arrow keys to move, Enter to open, Esc to close.</p>
+          <p className="text-2xs text-muted">Arrow keys to move, Enter to open, Esc to close.</p>
           <button
             type="button"
             onClick={close}

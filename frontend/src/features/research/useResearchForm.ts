@@ -1,7 +1,9 @@
-import { useCallback, useState, type SyntheticEvent } from 'react';
+import { useCallback, useRef, useState, type SyntheticEvent } from 'react';
+import { useLocation } from 'react-router';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { Profile } from '@/lib/api/profile';
 import type { ReportTemplate } from '@/lib/api/reports';
+import { clearDraft, draftForms, useDraftState, useHasDraft } from '@/lib/formDrafts';
 import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspaces';
 import type { ResearchDates } from '@/lib/researchPeriod';
 import { projectInterval } from './ProjectHistory';
@@ -18,6 +20,8 @@ import { changeResearchFocus } from './researchTransitions';
 import { useResearchFormMode } from './useResearchFormMode';
 import { useResearchPlan } from './useResearchPlan';
 import { useResearchRun } from './useResearchRun';
+
+const withoutPrivateInput = (draft: ResearchDraft): ResearchDraft => ({ ...draft, inputId: null });
 
 export function useResearchForm({
   preferences,
@@ -40,11 +44,21 @@ export function useResearchForm({
   initialCountry: string;
   parent?: Parent | undefined;
 }) {
-  const scope = useWorkspaceSelection(workspaces);
-  const action = useResearchRun();
+  // Each link context keeps its own in-memory draft; attached private files are never kept.
+  const form = draftForms.research(useLocation().search);
+  const released = useRef(false);
+  const scope = useWorkspaceSelection(workspaces, form);
+  const action = useResearchRun(() => {
+    released.current = true;
+    clearDraft(form);
+  });
   const { clearError } = action;
-  const [draft, setDraft] = useState<ResearchDraft>(() =>
-    initialDraft(preferences, parent, initialQuestion, initialDates, initialCountry),
+  const stored = useHasDraft(form);
+  const [draft, setDraft] = useDraftState<ResearchDraft>(
+    form,
+    'draft',
+    () => initialDraft(preferences, parent, initialQuestion, initialDates, initialCountry),
+    withoutPrivateInput,
   );
   const patch = (changes: Partial<ResearchDraft>) =>
     setDraft((current) => ({ ...current, ...changes }));
@@ -56,14 +70,14 @@ export function useResearchForm({
       setValidation(null);
       clearError();
     },
-    [clearError],
+    [clearError, setDraft],
   );
   const { focus } = draft;
   const privateFocus = isPrivateFocus(focus);
   const general = focus === 'general';
   const historical = !parent && general && draft.history.enabled;
   const interval = historical ? projectInterval(draft.history) : null;
-  const mode = useResearchFormMode({ followUp: Boolean(parent), focus, historical });
+  const mode = useResearchFormMode({ followUp: Boolean(parent), focus, historical, form });
   const plan = useResearchPlan({
     ...(historical
       ? {
@@ -122,6 +136,11 @@ export function useResearchForm({
     changeFocus,
     submit,
     mode,
+    leave: {
+      released,
+      dirty: stored || draft.inputId !== null || plan.customised,
+      unrestorable: draft.inputId !== null || inputBusy || plan.customised,
+    },
   };
 }
 export type ResearchFormProps = Parameters<typeof useResearchForm>[0];

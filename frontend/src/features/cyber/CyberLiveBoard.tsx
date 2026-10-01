@@ -11,7 +11,7 @@ import type { CyberLiveState } from './useCyberWorkspace';
 function Figure({ label, value }: { label: string; value: number }) {
   return (
     <li className="rounded-xl border border-line/70 bg-surface/60 p-4">
-      <p className="text-[11px] text-muted">{label}</p>
+      <p className="text-2xs text-muted">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight">{formatCount(value)}</p>
     </li>
   );

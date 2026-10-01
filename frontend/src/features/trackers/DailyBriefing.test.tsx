@@ -129,3 +129,12 @@ it('does not enter an automatic request loop when access is denied', async () =>
   await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Your access changed'));
   expect(start).toHaveBeenCalledTimes(1);
 });
+
+it('explains that visiting prepares a reusable automatic briefing kept out of the bell', async () => {
+  server.use(http.post('/api/live-monitor/briefing', () => HttpResponse.json(briefing())));
+  show();
+  const region = screen.getByRole('region', { name: 'Daily briefing' });
+  expect(region).toHaveTextContent(/Opening this page can start a personal AI briefing/);
+  expect(region).toHaveTextContent(/stay out of Saved research and the notification bell/);
+  expect(await screen.findByText('Shelling was reported overnight.')).toBeInTheDocument();
+});

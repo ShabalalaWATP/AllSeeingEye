@@ -39,6 +39,7 @@ REASONS = frozenset(
         "transport_failed",
         "original_candidate_unavailable",
         "retention_store_unavailable",
+        "omitted_from_team_copy",
     }
 )
 

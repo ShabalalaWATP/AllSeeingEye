@@ -33,7 +33,7 @@ export function CountryChips({
   onClear: () => void;
 }) {
   const chip = (active: boolean) =>
-    `min-h-8 rounded-full border px-2.5 py-1 text-[11px] leading-none transition-colors ${
+    `min-h-8 rounded-full border px-2.5 py-1 text-2xs leading-none transition-colors ${
       active
         ? 'border-cyan/70 bg-cyan/15 text-text'
         : 'border-line text-muted hover:border-cyan/40 hover:text-text'

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -57,18 +58,16 @@ export function LoginPage() {
       aria-busy={busy}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!busy) void run();
+        void run();
       }}
     >
-      <header className="mb-2">
-        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Account access
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          Use your approved account to continue.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-2"
+        title="Sign in"
+        eyebrow="Account access"
+        eyebrowTone="muted"
+        description="Use your approved account to continue."
+      />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       {passwordChanged ? (
         <Alert tone="success">Your password has changed. Sign in with your new password.</Alert>
@@ -79,7 +78,6 @@ export function LoginPage() {
         type="email"
         autoComplete="email"
         required
-        disabled={busy}
         className="min-h-12"
         value={email}
         onChange={(event) => {
@@ -93,7 +91,6 @@ export function LoginPage() {
           type={showPassword ? 'text' : 'password'}
           autoComplete="current-password"
           required
-          disabled={busy}
           className="min-h-12 pr-20"
           value={password}
           onKeyUp={(event) => {
@@ -113,8 +110,6 @@ export function LoginPage() {
           type="button"
           className="absolute right-1 top-7 min-h-11 min-w-16 rounded px-3 text-xs font-medium text-muted hover:text-text"
           aria-label={showPassword ? 'Hide password' : 'Show password'}
-          aria-pressed={showPassword}
-          disabled={busy}
           onClick={() => {
             setShowPassword((shown) => !shown);
           }}

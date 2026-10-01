@@ -17,10 +17,13 @@ describe('personal settings', () => {
       expect(await screen.findByRole('radio', { name: /^Obsidian/ })).toBeChecked();
       expect(screen.getAllByRole('radio')).toHaveLength(8);
       expect(screen.getByRole('radio', { name: /^Midnight/ })).not.toBeChecked();
-      // The rail also links to alerts, so scope these to the page itself. The source
-      // catalogue is not here: it is an administrator's page.
+      // The rail also links to alerts, so scope these to the page itself. Every account
+      // can read the source catalogue; only its administration stays under /admin.
       const page = within(screen.getByRole('main'));
-      expect(page.queryByRole('link', { name: /Sources and connections/ })).toBeNull();
+      expect(page.getByRole('link', { name: /^Source catalogue/ })).toHaveAttribute(
+        'href',
+        '/sources',
+      );
       // Alerts and rules are retired from the app's navigation entirely.
       expect(page.queryByRole('link', { name: /Alerts & rules/ })).toBeNull();
       expect(page.getByRole('link', { name: 'Profile & teams' })).toHaveAttribute(
