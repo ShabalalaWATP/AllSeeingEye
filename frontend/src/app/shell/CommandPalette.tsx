@@ -79,7 +79,7 @@ export function CommandPalette() {
                 go(active.to);
               }
             }}
-            className="min-h-11 w-full bg-transparent text-sm text-text outline-none placeholder:text-muted"
+            className="min-h-11 w-full bg-transparent text-sm text-text placeholder:text-muted"
           />
         </label>
         <div
