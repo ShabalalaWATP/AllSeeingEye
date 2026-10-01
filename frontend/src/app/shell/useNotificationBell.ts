@@ -13,8 +13,8 @@ import { SHELL_POLL_MS, useShellAlertsResource } from './useShellAlerts';
 export const BELL_SHOWN = 5;
 
 const FINISHED: ReadonlySet<ReportJob['status']> = new Set(['completed', 'needs_review', 'failed']);
-// The shell never cancels this read; the scoped resource discards stale answers instead.
-const loadJobs = () => fetchReportJobs(new AbortController().signal);
+// The polled resource aborts this read on unmount, a hidden tab, an access change or a newer load.
+const loadJobs = (signal: AbortSignal) => fetchReportJobs(signal);
 
 const time = (iso: string) => {
   const value = Date.parse(iso);

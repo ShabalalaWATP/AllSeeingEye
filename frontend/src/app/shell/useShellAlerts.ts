@@ -1,7 +1,7 @@
 import { fetchAlerts } from '@/lib/api/warning';
 import { usePolledResource } from '@/lib/hooks/usePolledResource';
 
-const loadAlerts = () => fetchAlerts(24);
+const loadAlerts = (signal: AbortSignal) => fetchAlerts(24, signal);
 export const SHELL_POLL_MS = 60_000;
 
 /**

@@ -91,9 +91,12 @@ export function deleteIndicator(id: string): Promise<void> {
   );
 }
 
-export function fetchAlerts(hours?: number): Promise<AlertsPage> {
+export function fetchAlerts(hours?: number, signal?: AbortSignal): Promise<AlertsPage> {
   const query = hours === undefined ? '' : `?hours=${String(hours)}`;
-  return apiCall(`/api/warning/alerts${query}`, { schema: alertsPageSchema });
+  return apiCall(`/api/warning/alerts${query}`, {
+    schema: alertsPageSchema,
+    ...(signal ? { signal } : {}),
+  });
 }
 
 export function acknowledgeAlert(id: string): Promise<Alert> {

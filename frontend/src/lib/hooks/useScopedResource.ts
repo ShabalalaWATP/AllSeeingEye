@@ -18,7 +18,7 @@ export function currentScopeKey(): string {
 
 interface Snapshot<T> {
   key: string;
-  loader: () => Promise<T>;
+  loader: (signal: AbortSignal) => Promise<T>;
   data: T | null;
   error: ApiError | null;
   loading: boolean;
@@ -26,11 +26,28 @@ interface Snapshot<T> {
 
 /** Identity/access changes hide previous data before a fresh request can settle. */
 export function useScopedResource<T>(loader: () => Promise<T>) {
+  // The loader keeps its own call shape: many loaders take optional, non-signal arguments.
+  const unsignalled = useCallback(() => loader(), [loader]);
+  return useScopedLoads(unsignalled).resource;
+}
+
+/**
+ * A scoped resource whose loader receives an abort signal and must forward it. A newer load,
+ * a scope change or unmount aborts the request in flight, as does the signal passed to
+ * `refreshWithSignal`; an aborted load never updates state or surfaces as an error.
+ */
+export function useAbortableScopedResource<T>(loader: (signal: AbortSignal) => Promise<T>) {
+  const { resource, refreshWithSignal } = useScopedLoads(loader);
+  return { ...resource, refreshWithSignal };
+}
+
+function useScopedLoads<T>(loader: (signal: AbortSignal) => Promise<T>) {
   const user = useAuthStore((state) => state.user);
   const revision = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
   const actor = `${user?.id ?? ''}:${user?.role ?? ''}:${user?.is_active ?? false}`;
   const key = `${actor}:${revision}`;
   const sequence = useRef(0);
+  const inFlight = useRef<AbortController | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot<T>>({
     key,
     loader,
@@ -39,32 +56,47 @@ export function useScopedResource<T>(loader: () => Promise<T>) {
     loading: true,
   });
   const load = useCallback(
-    async (background: boolean) => {
+    async (background: boolean, external?: AbortSignal) => {
       const request = ++sequence.current;
+      inFlight.current?.abort();
+      const controller = new AbortController();
+      inFlight.current = controller;
+      const abort = () => controller.abort();
+      if (external?.aborted) abort();
+      external?.addEventListener('abort', abort, { once: true });
       setSnapshot((previous) =>
         background && previous.key === key && previous.loader === loader && previous.data !== null
           ? previous
           : { key, loader, data: null, error: null, loading: true },
       );
       const current = () =>
-        request === sequence.current && identity() === actor && workspaceRevision() === revision;
+        !controller.signal.aborted &&
+        request === sequence.current &&
+        identity() === actor &&
+        workspaceRevision() === revision;
       try {
-        const data = await loader();
+        const data = await loader(controller.signal);
         if (current()) setSnapshot({ key, loader, data, error: null, loading: false });
       } catch (error) {
         if (current())
           setSnapshot({ key, loader, data: null, error: asApiError(error), loading: false });
+      } finally {
+        external?.removeEventListener('abort', abort);
+        if (inFlight.current === controller) inFlight.current = null;
       }
     },
     [actor, key, loader, revision],
   );
   const reload = useCallback(() => load(false), [load]);
   const refresh = useCallback(() => load(true), [load]);
+  /** A background refresh that is also aborted when `signal` is, for pollers. */
+  const refreshWithSignal = useCallback((signal: AbortSignal) => load(true, signal), [load]);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload();
     return () => {
       sequence.current += 1;
+      inFlight.current?.abort();
     };
   }, [reload]);
   const setData = useCallback(
@@ -86,7 +118,7 @@ export function useScopedResource<T>(loader: () => Promise<T>) {
     },
     [actor, key, loader, revision],
   );
-  return {
+  const resource = {
     ...(snapshot.key === key && snapshot.loader === loader
       ? snapshot
       : { data: null, error: null, loading: true }),
@@ -95,4 +127,5 @@ export function useScopedResource<T>(loader: () => Promise<T>) {
     setData,
     key,
   };
+  return { resource, refreshWithSignal };
 }
