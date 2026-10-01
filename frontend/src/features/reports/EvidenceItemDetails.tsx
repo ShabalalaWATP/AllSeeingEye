@@ -41,7 +41,7 @@ function time(value: string | null | undefined): string {
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="min-w-0">
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
+      <h3 className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
       <dl className="mt-2 grid min-w-0 gap-x-6 gap-y-3 sm:grid-cols-2">{children}</dl>
     </section>
   );
@@ -59,7 +59,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 function Prose({ title, text }: { title: string; text: string }) {
   return (
     <div className="min-w-0">
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
+      <h3 className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
       <p dir="auto" className="mt-1 whitespace-pre-wrap text-sm leading-6 [overflow-wrap:anywhere]">
         {text}
       </p>
@@ -191,7 +191,7 @@ export function EvidenceItemDetails({
         </details>
         {item.flags.length > 0 && (
           <div className="min-w-0">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+            <h3 className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">
               Recorded source flags
             </h3>
             <div className="mt-2 flex flex-wrap gap-2">

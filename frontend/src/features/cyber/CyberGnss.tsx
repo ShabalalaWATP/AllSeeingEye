@@ -19,7 +19,7 @@ export interface CyberGnssSnapshot {
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-line/60 bg-ground/40 px-3 py-2">
-      <p className="text-[11px] text-muted">{label}</p>
+      <p className="text-2xs text-muted">{label}</p>
       <p className="mt-0.5 text-lg font-semibold tracking-tight">{value}</p>
     </div>
   );
@@ -112,7 +112,7 @@ export function CyberGnss({
                 </table>
               </div>
             )}
-            <p className="text-[11px] leading-5 text-muted">
+            <p className="text-2xs leading-5 text-muted">
               Latest aircraft observation{' '}
               {gnss.data?.updated_at ? formatUtc(gnss.data.updated_at) : 'not available'}. Cells bin
               ADS-B navigation-accuracy reports into one-degree squares. They cannot confirm

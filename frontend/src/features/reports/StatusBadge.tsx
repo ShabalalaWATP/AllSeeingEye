@@ -10,7 +10,7 @@ const STATUS_CLASSES: Record<string, string> = {
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`rounded px-1.5 py-0.5 font-mono text-[11px] uppercase ${
+      className={`rounded px-1.5 py-0.5 font-mono text-2xs uppercase ${
         STATUS_CLASSES[status] ?? 'bg-muted/15 text-muted'
       }`}
     >

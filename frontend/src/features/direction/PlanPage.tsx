@@ -160,7 +160,7 @@ export default function PlanPage() {
                   <span className="mr-2 font-mono text-xs text-muted">{sir.code}</span>
                   {sir.text}
                 </h3>
-                <p className="mt-1 font-mono text-[11px] text-muted">
+                <p className="mt-1 font-mono text-2xs text-muted">
                   {sir.keywords.length > 0 ? `keywords: ${sir.keywords.join(', ')}` : 'no keywords'}
                   {sir.categories.length > 0 ? ` · ${sir.categories.join(', ')}` : ''}
                 </p>

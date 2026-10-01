@@ -59,7 +59,7 @@ export function TeamDashboardTabs<Id extends string>({
             }`}
           >
             <span className="block font-medium">{tab.label}</span>
-            <span className="mt-0.5 hidden text-[11px] text-muted lg:block">{tab.detail}</span>
+            <span className="mt-0.5 hidden text-2xs text-muted lg:block">{tab.detail}</span>
           </button>
         );
       })}

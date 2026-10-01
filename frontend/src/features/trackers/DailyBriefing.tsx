@@ -26,7 +26,7 @@ export function DailyBriefing() {
             className="mt-1 text-xs leading-5 text-muted"
           />
         </div>
-        <span className="font-mono text-[11px] uppercase tracking-wider text-ember">
+        <span className="font-mono text-2xs uppercase tracking-wider text-ember">
           24-hour update
         </span>
       </div>
@@ -40,7 +40,7 @@ export function DailyBriefing() {
         </div>
       )}
       {briefing && (
-        <p className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-muted">
+        <p className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-2xs text-muted">
           <span>
             {report ? 'Updated' : 'Started'}{' '}
             {formatUtc(report?.version.created_at ?? job?.created_at ?? '')}

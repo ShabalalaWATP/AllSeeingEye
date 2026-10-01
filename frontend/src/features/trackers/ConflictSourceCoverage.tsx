@@ -63,7 +63,7 @@ export function ConflictSourceCoverage() {
           ))}
         </ul>
       )}
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Source availability, release dates and collection gaps limit what this tracker can show.
       </p>
     </section>

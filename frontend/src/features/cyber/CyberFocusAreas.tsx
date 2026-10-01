@@ -29,7 +29,7 @@ export function CyberFocusAreas({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold">{view.label}</h3>
-                <p className="mt-1 text-[11px] leading-5 text-muted">{view.detail}</p>
+                <p className="mt-1 text-2xs leading-5 text-muted">{view.detail}</p>
               </div>
               <div className="w-28 shrink-0 text-right">
                 <p className="text-2xl font-semibold tracking-tight">
@@ -57,7 +57,7 @@ export function CyberFocusAreas({
               )}
             </div>
             <div className="mt-4 border-t border-line/60 pt-3">
-              <p className="text-[11px] font-medium text-muted">Latest matched reporting</p>
+              <p className="text-2xs font-medium text-muted">Latest matched reporting</p>
               {view.items.length ? (
                 <ul className="mt-2 space-y-2">
                   {view.items.map((item) => (

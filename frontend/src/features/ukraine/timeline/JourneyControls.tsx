@@ -55,7 +55,7 @@ export function JourneyControls({
           className="h-11 w-full accent-ember"
         />
       </label>
-      <span className="font-mono text-[11px] text-muted">
+      <span className="font-mono text-2xs text-muted">
         {stops.length === 0 ? '0 of 0' : `${index + 1} of ${stops.length}`}
       </span>
       {showPlay ? (

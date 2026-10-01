@@ -22,7 +22,7 @@ export function describeRatio(ratio: number | null): string {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-card border border-line bg-surface px-3 py-2">
-      <div className="font-mono text-[11px] uppercase tracking-wide text-muted">{label}</div>
+      <div className="font-mono text-2xs uppercase tracking-wide text-muted">{label}</div>
       <div className="text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );

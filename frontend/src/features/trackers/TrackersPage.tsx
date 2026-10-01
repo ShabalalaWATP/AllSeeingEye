@@ -65,7 +65,7 @@ function HazardBoard({ items }: { items: readonly HazardCard[] }) {
               {card.title}
             </Link>
             {card.red_alerts > 0 && (
-              <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-[11px] text-critical">
+              <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-2xs text-critical">
                 {card.red_alerts} red
               </span>
             )}

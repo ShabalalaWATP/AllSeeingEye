@@ -33,7 +33,7 @@ export default function ConflictPage() {
         <BackToTrackers />
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold">{conflict.name}</h1>
-          <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] uppercase text-muted">
+          <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs uppercase text-muted">
             {conflict.status}
           </span>
         </div>

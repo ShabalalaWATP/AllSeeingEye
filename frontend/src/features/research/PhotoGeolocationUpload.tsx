@@ -75,7 +75,7 @@ export function PhotoGeolocationUpload({
                   <p role="status" className="break-all text-xs font-medium">
                     Photo ready: {receipt.filename}
                   </p>
-                  <p className="mt-1 text-[11px] text-muted">
+                  <p className="mt-1 text-2xs text-muted">
                     Expires {formatUtc(receipt.expires_at)}
                   </p>
                 </div>

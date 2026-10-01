@@ -23,7 +23,7 @@ function Tile({
         aria-pressed={pressed}
         className={`flex w-full flex-col rounded-xl border p-4 text-left transition-colors hover:border-line focus-visible:outline-2 focus-visible:outline-ember ${pressed ? 'border-ember bg-surface-2' : 'border-line/70 bg-surface/60'}`}
       >
-        <span className="text-[11px] text-muted">{label}</span>
+        <span className="text-2xs text-muted">{label}</span>
         <span className={`mt-1 text-2xl font-semibold tracking-tight ${tone}`}>{count}</span>
       </button>
     </li>

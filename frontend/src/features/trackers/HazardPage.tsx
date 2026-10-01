@@ -30,7 +30,7 @@ export default function HazardPage() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold">{card.title}</h1>
           {card.red_alerts > 0 && (
-            <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-[11px] text-critical">
+            <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-2xs text-critical">
               {card.red_alerts} red alerts / 7 d
             </span>
           )}

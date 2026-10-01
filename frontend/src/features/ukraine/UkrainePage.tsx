@@ -51,7 +51,7 @@ function Freshness({ board, now }: { board: UkraineBoard; now: number }) {
       {chips.map(([label, value]) => (
         <li
           key={label}
-          className="rounded border border-line bg-surface px-2 py-1 font-mono text-[11px] text-muted"
+          className="rounded border border-line bg-surface px-2 py-1 font-mono text-2xs text-muted"
         >
           {label}: {value ? formatAgo(value, now) : 'not yet collected'}
         </li>

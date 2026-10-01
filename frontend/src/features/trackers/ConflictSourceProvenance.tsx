@@ -48,7 +48,7 @@ export function ConflictSourceProvenance({ event }: { event: LiveEvent }) {
           );
         })}
       </dl>
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Attribution supplied by the provider. Related sources may repeat the same account;
         independence is not established.
       </p>

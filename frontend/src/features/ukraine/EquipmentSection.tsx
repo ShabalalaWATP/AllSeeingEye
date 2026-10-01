@@ -189,7 +189,7 @@ export function EquipmentSection({
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-2">
             <h3 className="text-sm font-semibold text-text">
               {speciality.label}{' '}
-              <span className="font-mono text-[11px] font-normal text-muted">
+              <span className="font-mono text-2xs font-normal text-muted">
                 {entries.length} of {matching.length} matching entries
               </span>
             </h3>

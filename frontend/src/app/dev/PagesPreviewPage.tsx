@@ -76,7 +76,7 @@ function SourcesPreview() {
             ] as const
           ).map(([label, value, tone]) => (
             <li key={label} className="rounded-xl border border-line/70 bg-surface/60 p-4">
-              <span className="text-[11px] text-muted">{label}</span>
+              <span className="text-2xs text-muted">{label}</span>
               <span className={`mt-1 block text-2xl font-semibold tracking-tight ${tone}`}>
                 {value}
               </span>

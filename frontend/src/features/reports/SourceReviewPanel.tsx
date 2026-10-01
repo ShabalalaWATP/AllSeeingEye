@@ -160,7 +160,7 @@ export function SourceReviewPanel({
       aria-label={`Human source reviews for ${item.label}`}
       className="min-w-0 space-y-3 text-xs text-muted"
     >
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+      <h3 className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">
         Human source reviews
       </h3>
       <p>

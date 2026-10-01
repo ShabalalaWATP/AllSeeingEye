@@ -53,7 +53,7 @@ export function JudgementCitationChecks({
                 </blockquote>
                 <details>
                   <summary className="cursor-pointer py-2">Exact excerpt provenance</summary>
-                  <dl className="space-y-2 font-mono text-[11px]">
+                  <dl className="space-y-2 font-mono text-2xs">
                     <div>
                       <dt>Original field / offsets</dt>
                       <dd>

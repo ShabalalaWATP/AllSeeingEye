@@ -147,7 +147,7 @@ export function SchedulesSection({
               key={figure.label}
               className="rounded-xl border border-line/70 bg-surface/60 px-4 py-3"
             >
-              <p className="text-[11px] text-muted">{figure.label}</p>
+              <p className="text-2xs text-muted">{figure.label}</p>
               <p className={`mt-1 truncate text-xl font-semibold tracking-tight ${figure.tone}`}>
                 {figure.value}
               </p>
