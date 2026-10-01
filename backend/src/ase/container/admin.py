@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
@@ -40,11 +38,10 @@ from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase,
 from ase.container.core import ContainerCore
 from ase.domain.reasoning import ReasoningEffortPolicy
 
-if TYPE_CHECKING:
-    pass
-
 
 class AdminWiring(ContainerCore):
+    """Administration factories."""
+
     def initialise_models(
         self, encryption_key: str | None, effort: ReasoningEffortPolicy | None = None
     ) -> None:

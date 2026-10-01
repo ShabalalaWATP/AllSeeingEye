@@ -15,6 +15,7 @@ from ase.domain.languages import ReportLanguage
 from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.query_variant_records import required_variant, validate_variant_anchors
 from ase.domain.regions import Region, normalise_regions
+from ase.domain.reports import BRIEFING_KINDS, BriefingKind
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea, area_from_dict, validate_direct_area
 from ase.domain.research_brief_values import IntelligenceRequirement
@@ -47,6 +48,8 @@ class ReportRequest:
     plan_id: UUID | None = None
     team_id: UUID | None = None
     automation: bool = False
+    # Server-assigned by the fixed workspace briefing factories; absent from public schemas.
+    briefing: BriefingKind | None = None
     research_mode: ResearchMode | None = None
     research_languages: tuple[str, ...] = ("en",)
     research_source_ids: tuple[str, ...] | None = None
@@ -96,6 +99,8 @@ class ReportRequest:
         self._validate_interval()
 
     def _validate_scope(self) -> None:
+        if self.briefing is not None and self.briefing not in BRIEFING_KINDS:
+            raise ValueError("An automatic briefing needs a known briefing kind")
         if self.parent_version is not None and (
             self.parent_report_id is None
             or type(self.parent_version) is not int
@@ -230,6 +235,8 @@ class ReportRequest:
             regions=normalise_regions(scope.get("regions", ())),
             research_web_search=scope.get("research_web_search", False),
             categories=categories,
+            # Report and job scopes are written by the server, never by a request body.
+            briefing=scope.get("briefing") or None,
             question=scope.get("question") or None,
             window_hours=int(window) if window and not scope.get("research_since") else None,
             research_since=datetime.fromisoformat(str(scope["research_since"]))

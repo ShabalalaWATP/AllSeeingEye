@@ -40,7 +40,7 @@ export function RfAnalysisResults({
             : 'No compatible hop in these assumptions'}
         </p>
         <RfEngineeringDetails>
-          <p className="text-indigo-200">Single-hop geometry scenario</p>
+          <p className="text-cyan">Single-hop geometry scenario</p>
           <p className="text-xs text-muted">
             The inner and outer rings show the selected virtual-layer and launch-angle scenario.
             They do not predict signal strength or reception. Power and mast height do not determine

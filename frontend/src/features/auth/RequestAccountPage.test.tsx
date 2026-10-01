@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -71,5 +71,30 @@ describe('RequestAccountPage', () => {
     const { user } = renderApp('/request-account', 'anonymous');
     await fillAndSubmit(user);
     expect(await screen.findByRole('alert')).toHaveTextContent('Too many attempts.');
+  });
+
+  it('sends one pending request even when the form is submitted twice', async () => {
+    let requests = 0;
+    let release: () => void = () => undefined;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post('/api/auth/request-account', async () => {
+        requests += 1;
+        await pending;
+        return Response.json({ message: 'Received.' }, { status: 202 });
+      }),
+    );
+    const { user } = renderApp('/request-account', 'anonymous');
+    await user.type(screen.getByLabelText('Email'), 'newcomer@example.com');
+    await user.type(screen.getByLabelText('Display name'), 'Nia Newcomer');
+    const form = screen.getByRole('button', { name: 'Send request' }).closest('form');
+    if (form === null) throw new Error('Expected the request form');
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    release();
+    expect(await screen.findByRole('status')).toHaveTextContent('Received.');
+    expect(requests).toBe(1);
   });
 });

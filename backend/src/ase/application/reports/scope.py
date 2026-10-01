@@ -53,9 +53,12 @@ def conflict_background(conflict: Conflict | None) -> str | None:
 def report_origin(request: ReportRequest) -> str:
     """Where this report was asked for, so a reader finds it where they created it.
 
-    A scheduled run is a subscription update, a photograph is a geolocation
-    assessment, and everything else is research the operator asked for directly.
+    A workspace visit's automatic briefing is a briefing, a scheduled run is a
+    subscription update, a photograph is a geolocation assessment, and everything
+    else is research the operator asked for directly.
     """
+    if request.briefing is not None:
+        return "briefing"
     if request.automation:
         return "subscription"
     if request.research_focus is ResearchFocus.MEDIA:
@@ -66,6 +69,7 @@ def report_origin(request: ReportRequest) -> str:
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
         "origin": report_origin(request),
+        **({"briefing": request.briefing} if request.briefing is not None else {}),
         **({"regions": [region.value for region in request.regions]} if request.regions else {}),
         **(
             {"research_time_basis": request.research_time_basis.value}

@@ -75,7 +75,7 @@ export function ReportChallengeView({ challenge }: { challenge: ReportChallenge 
                     </li>
                   ))}
                 </ul>
-                <p className="font-mono text-[11px] text-muted">
+                <p className="font-mono text-2xs text-muted">
                   Selected event IDs: {search.selected_event_ids.join(', ') || 'None recorded'}
                 </p>
               </div>

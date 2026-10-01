@@ -2,6 +2,7 @@
 import { http, HttpResponse } from 'msw';
 
 import { acknowledgedAlert, alert, indicator } from './fixtures.warning';
+import { bellHandlers } from './handlers.bell';
 
 interface IndicatorBody {
   name: string;
@@ -42,8 +43,23 @@ export const warningHandlers = [
 
   http.put('/api/warning/indicators/:id', async ({ request, params }) => {
     if (params.id !== indicator.id) return notFound('Indicator');
-    const body = (await request.json()) as IndicatorBody & { enabled?: boolean };
-    return HttpResponse.json({ ...indicator, ...body });
+    const {
+      expected_updated_at,
+      confirm_wider_scope: _confirmed,
+      ...body
+    } = (await request.json()) as IndicatorBody & {
+      enabled?: boolean;
+      expected_updated_at?: string;
+      confirm_wider_scope?: boolean;
+    };
+    if (expected_updated_at !== indicator.updated_at)
+      return HttpResponse.json(
+        {
+          error: { code: 'conflict', message: 'This alert rule was changed after you opened it.' },
+        },
+        { status: 409 },
+      );
+    return HttpResponse.json({ ...indicator, ...body, updated_at: '2026-09-04T11:00:00Z' });
   }),
 
   http.delete('/api/warning/indicators/:id', ({ params }) =>
@@ -63,4 +79,6 @@ export const warningHandlers = [
         })
       : notFound('Alert'),
   ),
+  // The bell reads the same alerts through its own scoped summary.
+  ...bellHandlers,
 ];

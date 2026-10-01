@@ -6,9 +6,12 @@ import { RESET_LINK, adminUser, plainUser } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
 
 import { matchesUser } from './AdminUsersPage';
 import { SELF_MODIFICATION_MESSAGE } from './UserRow';
+
+installDialogStub();
 
 async function findRow(name: string): Promise<HTMLElement> {
   // Scope to the table: the signed-in admin's name also appears in the top bar.
@@ -33,6 +36,9 @@ describe('AdminUsersPage', () => {
     expect(within(row).getByText('Never')).toBeInTheDocument();
     const select = within(row).getByLabelText(`Role for ${plainUser.email}`);
     await user.selectOptions(select, 'admin');
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Change role' }),
+    );
     await waitFor(() => {
       expect(select).toHaveValue('admin');
     });
@@ -45,6 +51,9 @@ describe('AdminUsersPage', () => {
     const checkbox = within(row).getByRole('checkbox', { name: 'Active' });
     expect(checkbox).toBeChecked();
     await user.click(checkbox);
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Pause access' }),
+    );
     await waitFor(() => {
       expect(checkbox).not.toBeChecked();
     });
@@ -55,7 +64,9 @@ describe('AdminUsersPage', () => {
     const row = await findRow('Ada Admin');
     const select = within(row).getByLabelText(`Role for ${adminUser.email}`);
     await user.selectOptions(select, 'user');
-    expect(await within(row).findByRole('alert')).toHaveTextContent(SELF_MODIFICATION_MESSAGE);
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Change role' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(SELF_MODIFICATION_MESSAGE);
     expect(select).toHaveValue('admin');
   });
 

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Table, Td, Th } from '@/components/ui/Table';
@@ -14,7 +15,7 @@ export default function SocialPage() {
     <article className="flex h-full flex-col gap-5 overflow-y-auto p-6">
       <header className="flex flex-col gap-2">
         <BackToTrackers />
-        <h1 className="text-xl font-semibold">Social listening</h1>
+        <PageHeader as="div" type="record" title="Social listening" />
         <p className="text-sm text-muted">
           Public posts and outlet videos retained from the last 24 hours. Counts describe the
           watched feeds, not platform-wide activity or verification of a claim.

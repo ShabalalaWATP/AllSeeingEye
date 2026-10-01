@@ -67,7 +67,8 @@ it('gives clicks to one drawing tool, retains sketches across projection changes
   const { user } = renderApp('/', 'user');
   await screen.findByRole('region', { name: '3D globe' });
   await user.click(screen.getByRole('button', { name: 'Measure distance and area' }));
-  await user.click(screen.getByRole('button', { name: 'Pick points on map' }));
+  // The panel loads when its tool opens.
+  await user.click(await screen.findByRole('button', { name: 'Pick points on map' }));
   clickMap(0, 0);
   expect(layer('measurement-points')?.props.data).toHaveLength(1);
   await user.click(screen.getByRole('button', { name: 'Draw on map' }));

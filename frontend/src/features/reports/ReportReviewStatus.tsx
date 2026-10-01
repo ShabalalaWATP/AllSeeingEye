@@ -43,7 +43,8 @@ const paperTones: Record<ReportStatus, string> = {
     'border-[color:var(--paper-rule)] bg-[color:var(--paper-ground-2)] text-[color:var(--paper-ink)]',
   needs_review:
     'border-[color:var(--paper-caution-rule)] bg-[color:var(--paper-caution-ground)] text-[color:var(--paper-caution-ink)]',
-  failed: 'border-[#b7554b] bg-[#fdefec] text-[#6f2b24]',
+  failed:
+    'border-[color:var(--paper-failed-rule)] bg-[color:var(--paper-failed-ground)] text-[color:var(--paper-failed-ink)]',
 };
 
 export function ReportReviewStatus({

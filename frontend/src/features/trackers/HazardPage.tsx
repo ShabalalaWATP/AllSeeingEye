@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Link, useParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchDisasterDetail } from '@/lib/api/trackers';
@@ -28,9 +29,9 @@ export default function HazardPage() {
       <header className="flex flex-col gap-2">
         <BackToTrackers />
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold">{card.title}</h1>
+          <PageHeader as="div" type="record" title={card.title} />
           {card.red_alerts > 0 && (
-            <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-[11px] text-critical">
+            <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-2xs text-critical">
               {card.red_alerts} red alerts / 7 d
             </span>
           )}

@@ -66,6 +66,8 @@ export type SirRequest = components['schemas']['SirIn'];
 
 export type PlanRequest = components['schemas']['PlanIn'];
 
+export type PlanUpdateRequest = components['schemas']['PlanUpdateIn'];
+
 export async function fetchAois(): Promise<AreaOfInterest[]> {
   const page = await apiCall('/api/direction/aois', {
     schema: z.object({ items: z.array(aoiSchema) }),
@@ -98,6 +100,25 @@ export function createPlan(request: PlanRequest): Promise<CollectionPlan> {
   );
 }
 
+/** Saves an edit made from `expected_updated_at`; a newer revision answers 409 conflict. */
+export function updatePlan(id: string, request: PlanUpdateRequest): Promise<CollectionPlan> {
+  return scopedMutation(() =>
+    apiCall(`/api/direction/plans/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: request,
+      schema: planSchema,
+    }),
+  );
+}
+
+/** The plan's requirements and revision without gathering live evidence. */
+export function fetchPlan(id: string, signal?: AbortSignal): Promise<CollectionPlan> {
+  return apiCall(`/api/direction/plans/${encodeURIComponent(id)}/definition`, {
+    schema: planSchema,
+    ...(signal ? { signal } : {}),
+  });
+}
+
 export function fetchPlanEvidence(id: string): Promise<PlanEvidence> {
   return apiCall(`/api/direction/plans/${encodeURIComponent(id)}`, { schema: planEvidenceSchema });
 }
@@ -106,4 +127,23 @@ export function deletePlan(id: string): Promise<void> {
   return scopedMutation(() =>
     apiSend(`/api/direction/plans/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   );
+}
+
+export const planMapMatchesSchema = z.object({
+  plan: planSchema,
+  window_hours: z.number().int(),
+  pool_limit: z.number().int(),
+  per_requirement_limit: z.number().int(),
+  considered: z.number().int(),
+  truncated: z.boolean(),
+  matches: z.array(z.object({ event_id: z.string(), codes: z.array(z.string()) })),
+});
+export type PlanMapMatches = z.infer<typeof planMapMatchesSchema>;
+
+/** A bounded, on-demand sample of live events matching one readable plan; never streamed. */
+export function fetchPlanMapMatches(id: string, signal?: AbortSignal): Promise<PlanMapMatches> {
+  return apiCall(`/api/direction/plans/${encodeURIComponent(id)}/map-matches`, {
+    schema: planMapMatchesSchema,
+    ...(signal ? { signal } : {}),
+  });
 }

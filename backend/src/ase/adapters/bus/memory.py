@@ -24,6 +24,24 @@ MAX_UPSERT_EVENTS = 500
 MAX_UPSERT_BYTES = 384 * 1024
 
 
+def soft_invalidation(message: BusMessage) -> BusMessage:
+    """A refresh hint naming the partitions a bulk upsert touched.
+
+    Every event in the batch is attributed, including neighbours whose grade moved, as
+    the publisher includes them. A batch with anything unrecognised names no partition,
+    so subscribers fall back to a full reconciliation.
+    """
+    payload: dict[str, object] = {"reason": "snapshot_required"}
+    events = message.payload.get("events")
+    if isinstance(events, list) and events and all(isinstance(e, Event) for e in events):
+        categories = {event.category for event in events}
+        payload["categories"] = tuple(sorted(categories, key=lambda category: category.value))
+    source_id = message.payload.get("source_id")
+    if isinstance(source_id, str):
+        payload["source_id"] = source_id
+    return BusMessage("event.resync", payload)
+
+
 def _oversized_upsert(message: BusMessage) -> bool:
     events = message.payload.get("events")
     if message.kind != "event.upsert" or not isinstance(events, list):
@@ -159,7 +177,7 @@ class InMemoryEventBus:
         # A sensor batch may contain tens of thousands of immutable events. Never
         # retain or serialise that batch per slow browser: reload its bounded snapshot.
         if _oversized_upsert(message):
-            message = BusMessage("event.resync", {"reason": "snapshot_required"})
+            message = soft_invalidation(message)
         self._sequence += 1
         message = replace(message, sequence=self._sequence)
         self._replay.record(message)

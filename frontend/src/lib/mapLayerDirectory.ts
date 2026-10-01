@@ -159,10 +159,25 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         panel: 'Map style',
       },
       {
+        id: 'imagery',
+        label: 'Daily satellite imagery',
+        description:
+          'Dated NASA true-colour imagery, roughly 250 m to 1 km, for clouds, smoke and floods.',
+        // Listed after Map style so that tool keeps its own description and route id.
+        panel: 'Map style',
+      },
+      {
         id: 'time',
         label: 'Event time',
-        description: 'How far back the map reaches, from one hour to everything collected.',
+        description:
+          'How far back the map reaches, and an hour-by-hour replay of the events still retained.',
         panel: 'Event time',
+      },
+      {
+        id: 'plan',
+        label: 'Collection plan',
+        description: "Show only events matching one of your collection plans' requirements.",
+        panel: 'Collection plan',
       },
       {
         id: 'nation',
@@ -175,6 +190,18 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         label: 'Location quality',
         description: 'Hide items that are only placed to a country or region centre.',
         panel: 'Location quality',
+      },
+      {
+        id: 'views',
+        label: 'Saved views',
+        description: 'Save these layers, filters, time window and camera by name, or open a view.',
+        panel: 'Saved views',
+      },
+      {
+        id: 'ops-room',
+        label: 'Ops room playlist',
+        description: 'Cycle the wall screen through saved views and areas with captions.',
+        panel: 'Ops room playlist',
       },
     ],
   },

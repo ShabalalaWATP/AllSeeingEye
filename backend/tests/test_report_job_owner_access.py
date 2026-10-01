@@ -31,7 +31,9 @@ async def test_admin_reads_paused_job_after_owner_deactivation(client, user, adm
     response = await client.get(f"/api/report-jobs/{job_id}", headers=admin_headers)
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "paused"
-    listed = (await client.get("/api/report-jobs", headers=admin_headers)).json()["items"]
+    # Another user's work appears only in the explicit administrative view (KAN-90).
+    assert (await client.get("/api/report-jobs", headers=admin_headers)).json()["items"] == []
+    listed = (await client.get("/api/report-jobs?scope=all", headers=admin_headers)).json()["items"]
     assert [item["id"] for item in listed] == [job_id]
     # Resume starts work, so the inactive owner refuses it without ending the admin session.
     resumed = await client.post(f"/api/report-jobs/{job_id}/resume", headers=admin_headers)

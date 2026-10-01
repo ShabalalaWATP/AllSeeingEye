@@ -57,7 +57,7 @@ it('opens Eye on the selected older edition and keeps fresh research separate', 
     http.get('/api/assistant/conversations', () => HttpResponse.json({ items: [] })),
   );
   const { user } = renderApp(`/reports/${reportSummary.id}?version=1`, 'user');
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.selectOptions(screen.getByLabelText('Eye time period'), '168');
   await user.click(screen.getByText('Source types'));
   await user.click(screen.getByRole('checkbox', { name: 'CCTV' }));

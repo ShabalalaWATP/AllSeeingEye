@@ -180,3 +180,38 @@ production code. Frontend auth enforces its measured 95% floor; the measured
 Action versions are pinned to verified upstream release commits. Image jobs load
 locally for existing Trivy/smoke checks and do not push images. No deployment or
 SBOM workflow is changed in this batch.
+
+## Main integration checkpoint, 1 October 2026
+
+Merged runtime parent `6eeca4cf41134fea9070b22ab589f3ae44c7da99`, which includes
+main `9ae40e3d`, into this batch without rewriting history. Main's login focus
+and `aria-disabled` assertions remain alongside the deterministic request wait
+and guaranteed response release. Its page-title, error-message and readability
+assertions are preserved exactly under their `.unit.test.ts` names. The team
+fixture retains both the router/path wrapper and the pure-data re-exports.
+Frozen private installs retain PyJWT 2.15.1, urllib3 2.8.0 and axe-core 4.13.0.
+
+- Focused frontend: 203 tests passed across 25 files, including auth, teams,
+  terrain and the changed/new Node suites. Both TypeScript configurations,
+  targeted ESLint/Prettier, Ruff and 21 shard/coverage-policy tests passed.
+- Backend fixture/guard regressions: 58 passed. A private PostgreSQL service
+  passed seven clone/ownership/listener/native-lock tests and two ordinary-app
+  template cases. Fsync, synchronous commit and full-page writes stayed on;
+  no owned child databases remained after the checks.
+- The current metadata contains 85 tables. Its fingerprint remained
+  `5304c8f8b987365689e35e96b806f80d6c47062d2bb05c386ed757194aba812c`
+  before and after collection. SQLAlchemy remains pinned to 2.0.54.
+- Collection found 10,391 cases in 927 files. The four PostgreSQL shards select
+  2,248 parallel and 293 serial cases exactly once. Actual pytest marker
+  collections match that partition, and all 2,363 previously selected case IDs
+  remain selected. Existing untracked census evidence was preserved.
+- Actionlint with ShellCheck passed after documenting its two narrow storage
+  sampler false positives: indirect trap invocation and container-side variable
+  expansion. The sampler's execution and cleanup are unchanged.
+
+Full coverage and current-head CI remain pending at this integration checkpoint.
+Main's successful run `36919106432` reports 90.47% frontend branches and uploaded
+no frontend coverage artefact. Additional behaviour-test commits will follow;
+the global 92%, eligible-file 70%, auth 95% and existing global 90% gates and all
+coverage exclusions remain unchanged. Earlier timing and coverage measurements
+do not establish acceptance on this expanded source tree.

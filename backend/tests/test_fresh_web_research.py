@@ -15,7 +15,6 @@ from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_types import Totals
 from ase.application.reports.research_export import research_sections
-from ase.application.reports.web_research_export import web_context_markdown
 from ase.application.research.service import ResearchCollectionService
 from ase.domain.errors import EncryptionUnavailable
 from ase.domain.llm import LlmProvider, LlmRole
@@ -252,9 +251,11 @@ async def test_production_collection_preserves_generated_context_outside_evidenc
     assert "published_at" not in json.dumps(research_to_dict(receipt)["web_research"])
     sections = dict(research_sections(receipt))
     assert URL in "\n".join(sections["Fresh web context"])
-    markdown = "\n".join(web_context_markdown(receipt.web_research))
-    assert "[Climate report](https://example.org/climate-report)" in markdown
-    assert "AI-generated web context" in markdown
+    assert "AI-generated web context" in "\n".join(sections["Fresh web context"])
+    citations = research_to_dict(receipt)["web_research"]["citations"]
+    assert {"title": "Climate report", "url": "https://example.org/climate-report"}.items() <= (
+        citations[0].items()
+    )
 
 
 @pytest.mark.parametrize(

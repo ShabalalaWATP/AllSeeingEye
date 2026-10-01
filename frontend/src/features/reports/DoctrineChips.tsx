@@ -1,4 +1,6 @@
 import { probabilityTerm } from '@/lib/doctrine';
+import { bandText } from '@/lib/hooks/useYardstick';
+import type { Yardstick } from '@/lib/hooks/useYardstick';
 
 import { confidenceTone, yardstickPosition, type Tone } from './doctrineTone';
 
@@ -26,11 +28,23 @@ export function Chip({
   );
 }
 
-/** The UK PHIA yardstick term, with its band position on the seven-band scale. */
-export function LikelihoodChip({ probability }: { probability: string }) {
+/**
+ * The UK PHIA yardstick term, its configured band as readable text, and its position on the
+ * seven-band scale. The band comes from the server's yardstick; an unknown term or an
+ * unavailable yardstick is said plainly rather than given a guessed range.
+ */
+export function LikelihoodChip({
+  probability,
+  yardstick = null,
+}: {
+  probability: string;
+  yardstick?: Yardstick;
+}) {
   const { band, bands } = yardstickPosition(probability);
+  const range = bandText(yardstick, probability);
   return (
     <Chip label="Likelihood" value={probabilityTerm(probability)} tone="neutral">
+      {range !== null && <span className="report-reader-fact-label">{range}</span>}
       {band > 0 && (
         <span className="report-reader-scale" aria-hidden="true">
           {Array.from({ length: bands }, (_, index) => (

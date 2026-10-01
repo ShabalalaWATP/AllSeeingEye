@@ -49,11 +49,11 @@ from ase.application.trackers.social import SocialMonitor, SocialService
 from ase.application.translate.queue import TranslationQueue
 from ase.application.warning.alerts import AcknowledgeAlertUseCase, ListAlertsUseCase
 from ase.application.warning.evaluator import IndicatorEvaluator
+from ase.application.warning.indicator_updates import UpdateIndicatorUseCase
 from ase.application.warning.indicators import (
     CreateIndicatorUseCase,
     DeleteIndicatorUseCase,
     ListIndicatorsUseCase,
-    UpdateIndicatorUseCase,
 )
 from ase.container.reporting import ReportWiring
 from ase.container.subscription_enqueue import SubscriptionAdmission

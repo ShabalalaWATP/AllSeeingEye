@@ -154,6 +154,7 @@ class IndicatorRow(Base):
     severity_floor: Mapped[float] = mapped_column(Float, default=0.0)
     report_template: Mapped[str | None] = mapped_column(String(40), nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    resumed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)

@@ -6,8 +6,9 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from ase.domain.report_listing import effective_origin
 from ase.domain.report_records import ReportRecord
-from ase.domain.reports import ReportStatus
+from ase.domain.reports import ReportOrigin, ReportStatus
 
 
 class ReportSummaryOut(BaseModel):
@@ -22,6 +23,7 @@ class ReportSummaryOut(BaseModel):
     created_at: datetime
     latest_version: int
     team_id: UUID | None
+    origin: ReportOrigin
 
     @classmethod
     def from_record(cls, record: ReportRecord) -> Self:
@@ -37,6 +39,7 @@ class ReportSummaryOut(BaseModel):
             created_at=record.created_at,
             latest_version=record.latest_version,
             team_id=record.team_id,
+            origin=effective_origin(record.scope),
         )
 
 

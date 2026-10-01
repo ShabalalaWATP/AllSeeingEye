@@ -8,7 +8,7 @@ describe('ops room', () => {
   it('can exit with a pointer or touch without a hardware keyboard', async () => {
     const { user } = renderApp('/', 'user');
     await user.keyboard('o');
-    await user.click(await screen.findByRole('button', { name: 'Exit ops room' }));
+    await user.click(await screen.findByRole('button', { name: /^Ops room · Esc to exit/ }));
     expect(useGlobeStore.getState().opsRoom).toBe(false);
     expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
   });

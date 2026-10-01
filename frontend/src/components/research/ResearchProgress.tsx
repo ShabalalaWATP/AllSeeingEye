@@ -1,9 +1,7 @@
 import { Link } from 'react-router';
 
 import { Button } from '@/components/ui/Button';
-import type { ResearchStage } from '@/lib/api/researchProgress';
-
-import type { ResearchProgressSnapshot } from '@/lib/hooks/useResearchProgress';
+import type { ResearchProgressSnapshot, ResearchStage } from '@/lib/researchProgressTypes';
 
 const stages: Record<ResearchStage, string> = {
   planning: 'Planning the research',

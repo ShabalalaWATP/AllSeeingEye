@@ -3,6 +3,8 @@ import { useState, type SyntheticEvent } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import type { BriefSubscriptionSettings } from '@/lib/api/briefSubscriptions';
 import type { ResearchBrief } from '@/lib/api/researchBriefSchema';
 
@@ -32,6 +34,18 @@ const months = [
   'November',
   'December',
 ];
+/** Form fields for the API paths a brief subscription request can reject. */
+const SUBSCRIPTION_FIELDS = {
+  name: 'Subscription name',
+  cadence: 'Cadence',
+  timezone: 'IANA timezone',
+  time: { label: 'Local time', paths: ['local_hour', 'local_minute'] },
+  weekday: 'Weekday',
+  monthday: 'Day of month',
+  anchor_month: 'Starting month',
+  collection_policy: 'Future collection window',
+} as const;
+
 const calendar = (cadence: BriefCadence) =>
   ['monthly', 'quarterly', 'semiannual', 'annual'].includes(cadence);
 
@@ -46,7 +60,8 @@ export function BriefSubscriptionForm({
 }: {
   brief: ResearchBrief;
   busy: boolean;
-  error: string | null;
+  /** A safe message, or the failed save to map to field reasons. */
+  error: unknown;
   onCreate: (settings: BriefSubscriptionSettings) => void;
   onCancel: () => void;
   initialSettings?: BriefSubscriptionSettings;
@@ -68,6 +83,7 @@ export function BriefSubscriptionForm({
   const [notify, setNotify] = useState(initialSettings?.notify_on_change ?? false);
   const [avoid, setAvoid] = useState(initialSettings?.avoid_repetition ?? true);
   const [issue, setIssue] = useState<string | null>(null);
+  const errors = useFieldErrors(error, SUBSCRIPTION_FIELDS);
   const submit = (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     event.preventDefault();
     if (busy) return;
@@ -137,6 +153,7 @@ export function BriefSubscriptionForm({
       </div>
       <TextField
         label="Subscription name"
+        {...errors.field('name')}
         maxLength={120}
         required
         value={name}
@@ -145,12 +162,14 @@ export function BriefSubscriptionForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <SelectField
           label="Cadence"
+          {...errors.field('cadence')}
           value={cadence}
           onChange={(event) => setCadence(event.target.value as BriefCadence)}
           options={cadenceOptions}
         />
         <TextField
           label="IANA timezone"
+          {...errors.field('timezone')}
           value={timezone}
           required
           maxLength={100}
@@ -158,6 +177,7 @@ export function BriefSubscriptionForm({
         />
         <TextField
           label="Local time"
+          {...errors.field('time')}
           type="time"
           step={60}
           required
@@ -172,6 +192,7 @@ export function BriefSubscriptionForm({
       {cadence === 'weekly' && (
         <SelectField
           label="Weekday"
+          {...errors.field('weekday')}
           value={weekday}
           onChange={(event) => setWeekday(event.target.value)}
           options={weekdays.map((label, index) => ({ value: String(index), label }))}
@@ -180,6 +201,7 @@ export function BriefSubscriptionForm({
       {calendar(cadence) && (
         <TextField
           label="Day of month"
+          {...errors.field('monthday')}
           type="number"
           min={1}
           max={31}
@@ -190,6 +212,7 @@ export function BriefSubscriptionForm({
       {['quarterly', 'semiannual', 'annual'].includes(cadence) && (
         <SelectField
           label="Starting month"
+          {...errors.field('anchor_month')}
           value={anchorMonth}
           onChange={(event) => setAnchorMonth(event.target.value)}
           options={months.map((label, index) => ({ value: String(index + 1), label }))}
@@ -197,6 +220,7 @@ export function BriefSubscriptionForm({
       )}
       <SelectField
         label="Future collection window"
+        {...errors.field('collection_policy')}
         value={policy}
         onChange={(event) => setPolicy(event.target.value as typeof policy)}
         options={[
@@ -221,7 +245,7 @@ export function BriefSubscriptionForm({
         Avoid repeating unchanged evidence
       </label>
       {issue && <Alert tone="error">{issue}</Alert>}
-      {error && <Alert tone="error">{error}</Alert>}
+      <FormErrors errors={errors} />
       <div className="flex gap-2">
         <Button type="submit" busy={busy}>
           {duplicate ? 'Create paused copy' : 'Create subscription'}

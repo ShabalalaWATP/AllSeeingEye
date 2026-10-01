@@ -7,6 +7,9 @@ import { report, reportSummary } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 // Await real lazy modules before timing navigation and reader assertions.
 // A cold reader import can retain the previous page during React's transition.
@@ -94,7 +97,7 @@ describe('ReportPage', () => {
     expect(screen.getByRole('menuitem', { name: 'Download Markdown' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
     await user.click(await screen.findByRole('button', { name: 'Review' }));
-    for (const name of ['Regenerate', 'Delete']) {
+    for (const name of ['Regenerate', 'Delete report']) {
       if (role === 'admin') expect(screen.getByRole('button', { name })).toBeInTheDocument();
       else expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     }
@@ -146,7 +149,10 @@ describe('ReportPage', () => {
     expect(flag.closest('.evidence-signal')).toHaveTextContent('Flagstate controlled');
     expect(screen.getByText('1 validator note')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Review' }));
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Delete report' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete report' }),
+    );
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Saved research' })).toBeInTheDocument();
     });

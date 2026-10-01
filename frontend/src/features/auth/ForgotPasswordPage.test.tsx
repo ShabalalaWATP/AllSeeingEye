@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -53,5 +53,32 @@ describe('ForgotPasswordPage', () => {
       'Invalid.',
       'Enter a valid email address.',
     ]);
+  });
+
+  it('sends one reset request even when the form is submitted twice', async () => {
+    let requests = 0;
+    let release: () => void = () => undefined;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post('/api/auth/forgot-password', async () => {
+        requests += 1;
+        await pending;
+        return HttpResponse.json(
+          { email_available: true, message: 'Check your email.' },
+          { status: 202 },
+        );
+      }),
+    );
+    const { user } = renderApp('/forgot-password', 'anonymous');
+    await user.type(screen.getByLabelText('Email'), 'someone@example.com');
+    const form = screen.getByRole('button', { name: 'Send reset link' }).closest('form');
+    if (form === null) throw new Error('Expected the reset form');
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    release();
+    expect(await screen.findByRole('heading', { name: 'Check your inbox' })).toBeVisible();
+    expect(requests).toBe(1);
   });
 });

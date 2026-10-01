@@ -116,11 +116,11 @@
 }
 .map-tool-primary {
   background: var(--color-ember);
-  color: #071115;
+  color: var(--color-ground);
   font-weight: 600;
 }
 .map-tool-primary:hover:not(:disabled) {
-  background: #a1e5f2;
+  background: color-mix(in srgb, var(--color-ember) 70%, var(--color-white));
 }
 .map-tool-secondary,
 .map-tool-choice {
@@ -132,12 +132,12 @@
   color: var(--color-muted);
 }
 :is(.map-tool-secondary, .map-tool-choice, .map-tool-text-button):hover:not(:disabled) {
-  background: #ffffff12;
+  background: color-mix(in srgb, var(--color-white) 7%, transparent);
   color: var(--color-text);
 }
 :is(.map-tool-secondary, .map-tool-choice)[aria-pressed='true'] {
-  border-color: #79d8eb70;
-  background: #79d8eb15;
+  border-color: color-mix(in srgb, var(--color-ember) 44%, transparent);
+  background: color-mix(in srgb, var(--color-ember) 8%, transparent);
   color: var(--color-ember);
 }
 :is(.map-tool-primary, .map-tool-secondary, .map-tool-text-button, .map-tool-choice):disabled {
@@ -203,7 +203,7 @@
   min-width: 0;
   padding: 12px 14px;
   border-left: 2px solid var(--color-ember);
-  background: #79d8eb08;
+  background: color-mix(in srgb, var(--color-ember) 3%, transparent);
   color: var(--color-ember);
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
@@ -211,14 +211,14 @@
 .map-tool-notice {
   padding: 10px 12px;
   border-left: 2px solid var(--color-ember);
-  background: #79d8eb08;
+  background: color-mix(in srgb, var(--color-ember) 3%, transparent);
   color: var(--color-text);
   font-size: 12px;
   overflow-wrap: anywhere;
 }
 .map-tool-notice[role='alert'] {
-  border-color: #fbbf24;
-  background: #fbbf240a;
+  border-color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 4%, transparent);
 }
 .map-tool-radio-option {
   display: flex;
@@ -240,8 +240,8 @@
   font-size: 12px;
 }
 .map-tool-radio-option > input:checked + span {
-  border-color: #79d8eb70;
-  background: #79d8eb15;
+  border-color: color-mix(in srgb, var(--color-ember) 44%, transparent);
+  background: color-mix(in srgb, var(--color-ember) 8%, transparent);
   color: var(--color-ember);
 }
 .map-tool-radio-option > input:focus-visible + span {
@@ -254,7 +254,7 @@
   height: 16px;
   padding: 3px;
   border-radius: 12px;
-  background: #ffffff25;
+  background: color-mix(in srgb, var(--color-white) 15%, transparent);
 }
 .map-tool-switch-track::after {
   content: '';
@@ -265,7 +265,7 @@
   background: var(--color-muted);
 }
 [aria-checked='true'] .map-tool-switch-track {
-  background: #79d8eb30;
+  background: color-mix(in srgb, var(--color-ember) 19%, transparent);
 }
 [aria-checked='true'] .map-tool-switch-track::after {
   margin-left: 12px;
@@ -284,7 +284,7 @@
 }
 .map-tool-list-button:hover,
 .map-tool-list-button[aria-pressed='true'] {
-  background: #79d8eb10;
+  background: color-mix(in srgb, var(--color-ember) 6%, transparent);
 }
 .map-tool-list-button:focus-visible {
   outline: 2px solid var(--color-ember);

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
@@ -48,9 +48,30 @@ class SqlIndicatorRepository:
     async def save(self, indicator: Indicator) -> None:
         row = await self._session.get(IndicatorRow, indicator.id)
         if row is None:
-            raise NotFound("Indicator not found.")
+            raise NotFound("Alert rule not found.")
         _fill_indicator(row, indicator)
         await self._session.flush()
+
+    async def save_if_unchanged(self, indicator: Indicator, expected_updated_at: datetime) -> bool:
+        # One conditional statement: PostgreSQL re-evaluates the predicate after a competing
+        # writer commits, and SQLite serialises writers, so only one edit of a revision lands.
+        values = IndicatorRow(id=indicator.id)
+        _fill_indicator(values, indicator)
+        columns = {
+            column.key: getattr(values, column.key)
+            for column in IndicatorRow.__table__.columns
+            if column.key not in {"id", "created_by", "created_at", "team_id"}
+        }
+        result = await self._session.execute(
+            update(IndicatorRow)
+            .where(
+                IndicatorRow.id == indicator.id,
+                IndicatorRow.updated_at == expected_updated_at,
+            )
+            .values(**columns)
+            .execution_options(synchronize_session=False)
+        )
+        return bool(getattr(result, "rowcount", 0) == 1)
 
     async def delete(self, indicator_id: UUID) -> None:
         await self._session.execute(delete(IndicatorRow).where(IndicatorRow.id == indicator_id))

@@ -1,5 +1,6 @@
 """Session-scoped durable jobs with atomic revision and lease fencing, never commits."""
 
+from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -18,6 +19,7 @@ from ase.adapters.persistence.report_job_codec import (
     payload_columns,
     with_payload,
 )
+from ase.adapters.persistence.report_job_listing import list_job_page
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
 from ase.adapters.persistence.report_job_recovery import recover_expired
 from ase.adapters.persistence.report_job_usage_models import ReportJobUsageRow
@@ -100,6 +102,24 @@ class SqlReportJobRepository:
             with_payload(row, {"schema_version": 1, "summary": summary or {}})
             for row, summary in rows
         ]
+
+    async def list_page(
+        self,
+        visibility: Visibility,
+        *,
+        limit: int,
+        statuses: Sequence[str] | None = None,
+        include_briefings: bool = False,
+        after: tuple[datetime, UUID] | None = None,
+    ) -> list[ReportJob]:
+        return await list_job_page(
+            self.session,
+            visibility,
+            limit=limit,
+            statuses=statuses,
+            include_briefings=include_briefings,
+            after=after,
+        )
 
     async def count_active(self, owner_id: UUID | None = None) -> int:
         query = select(func.count()).select_from(Row).where(Row.status.in_(("queued", "running")))

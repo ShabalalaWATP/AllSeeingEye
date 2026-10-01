@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { CitationChecks } from '@/lib/api/reportResearch';
 import { Labels } from './EvidenceLinks';
 
@@ -8,10 +10,15 @@ const statusLabel = {
   review_required: 'Review required',
 } as const;
 
+type CitationCheck = CitationChecks['judgements'][number]['citations'][number];
+
 export function JudgementCitationChecks({
   check,
+  renderCitation,
 }: {
   check: CitationChecks['judgements'][number] | undefined;
+  /** Extra controls for one citation, such as human verdicts; checks stay read-only. */
+  renderCitation?: ((citation: CitationCheck) => ReactNode) | undefined;
 }) {
   if (!check) return null;
   return (
@@ -46,7 +53,7 @@ export function JudgementCitationChecks({
                 </blockquote>
                 <details>
                   <summary className="cursor-pointer py-2">Exact excerpt provenance</summary>
-                  <dl className="space-y-2 font-mono text-[11px]">
+                  <dl className="space-y-2 font-mono text-2xs">
                     <div>
                       <dt>Original field / offsets</dt>
                       <dd>
@@ -83,6 +90,7 @@ export function JudgementCitationChecks({
                 <p>Excerpt values: {indicator.excerpt_values.join(', ') || 'None detected'}</p>
               </div>
             ))}
+            {renderCitation?.(citation)}
           </section>
         ))}
       </div>

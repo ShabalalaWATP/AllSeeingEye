@@ -5,7 +5,10 @@ import { expect, it } from 'vitest';
 import { schedule } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
 import { newBriefDraft } from '@/lib/researchBriefDraft';
+
+installDialogStub();
 
 it('shows linked validation errors without submitting an incomplete subscription', async () => {
   let writes = 0;
@@ -61,13 +64,17 @@ it('requires a named archive confirmation and restores focus when cancelled', as
   const remove = table.getByRole('button', { name: 'Archive' });
   await user.click(remove);
   expect(deletes).toBe(0);
-  expect(table.getByRole('group', { name: `Archive ${schedule.name}` })).toHaveTextContent(
-    'Future runs stop. Existing reports remain available.',
+  const dialog = within(
+    await screen.findByRole('alertdialog', { name: `Archive subscription “${schedule.name}”?` }),
   );
-  expect(table.getByRole('button', { name: 'Confirm archive' })).toHaveFocus();
-  await user.click(table.getByRole('button', { name: 'Cancel archiving' }));
-  expect(table.queryByRole('button', { name: 'Confirm archive' })).not.toBeInTheDocument();
-  expect(table.getByRole('button', { name: 'Archive' })).toHaveFocus();
+  expect(dialog.getByText('Future runs stop. Existing reports remain available.')).toBeVisible();
+  // The safe choice takes focus; archiving is never the default.
+  expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  await user.click(dialog.getByRole('button', { name: 'Cancel' }));
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  await waitFor(() => {
+    expect(table.getByRole('button', { name: 'Archive' })).toHaveFocus();
+  });
   expect(deletes).toBe(0);
 });
 

@@ -52,7 +52,7 @@ export function CyberNationState({
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{actor.name}</span>
-                    <span className="block text-[11px] text-muted">
+                    <span className="block text-2xs text-muted">
                       {actor.state
                         ? `Profile association: ${actor.state}`
                         : 'No state association in the profile'}

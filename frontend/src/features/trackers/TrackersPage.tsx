@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
@@ -65,7 +66,7 @@ function HazardBoard({ items }: { items: readonly HazardCard[] }) {
               {card.title}
             </Link>
             {card.red_alerts > 0 && (
-              <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-[11px] text-critical">
+              <span className="rounded bg-critical/15 px-1.5 py-0.5 font-mono text-2xs text-critical">
                 {card.red_alerts} red
               </span>
             )}
@@ -90,7 +91,7 @@ export default function TrackersPage() {
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Live monitor</h1>
+          <PageHeader as="div" type="record" title="Live monitor" />
           <p className="mt-1 text-sm text-muted">
             Daily analysis, with the latest collected activity below.
           </p>
