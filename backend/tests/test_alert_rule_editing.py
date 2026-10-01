@@ -15,6 +15,7 @@ from ase.container import Container
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from team_helpers import CONTEXT
+from test_exact_reusable_areas import triangle
 
 RULE: dict[str, Any] = {
     "name": "Kharkiv strikes",
@@ -170,3 +171,27 @@ async def test_linked_plan_problems_are_actionable_and_never_reveal_other_plans(
         url, json=_editable(paused.json()) | {"enabled": True}, headers=bearer(token)
     )
     assert resumed.status_code == 422 and resumed.json()["error"]["message"] == messages[0]
+
+
+async def test_an_exact_shape_survives_a_pause_round_trip(
+    client: AsyncClient, container: Container, user: User
+) -> None:
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    created = await client.post(
+        "/api/warning/indicators",
+        json={"name": "Exact", "research_area": {"geometry": triangle().geometry.to_collection()}},
+        headers=bearer(token),
+    )
+    saved = created.json()
+    paused = await client.put(
+        f"/api/warning/indicators/{saved['id']}",
+        json={
+            "name": "Exact",
+            "research_area": {"geometry": saved["research_area"]["geometry"]},
+            "enabled": False,
+            "expected_updated_at": saved["updated_at"],
+        },
+        headers=bearer(token),
+    )
+    assert paused.status_code == 200, paused.text
+    assert paused.json()["research_area"] == saved["research_area"]
