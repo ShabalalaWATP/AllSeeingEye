@@ -2267,6 +2267,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/team-discussion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report Team Discussion
+         * @description Board threads about this team report, for its current readers; no titles or text.
+         */
+        get: operations["report_team_discussion_api_reports__report_id__team_discussion_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/markdown": {
         parameters: {
             query?: never;
@@ -2779,6 +2799,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sources/{source_id}/track-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Track Record */
+        get: operations["get_track_record_api_sources__source_id__track_record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/versions/{number}/source-reviews": {
         parameters: {
             query?: never;
@@ -3085,6 +3122,46 @@ export interface paths {
         post?: never;
         /** Delete Plan */
         delete: operations["delete_plan_api_direction_plans__plan_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans/{plan_id}/definition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Definition
+         * @description The plan's requirements and revision without gathering live evidence.
+         */
+        get: operations["get_plan_definition_api_direction_plans__plan_id__definition_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans/{plan_id}/map-matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Map Matches
+         * @description Event ids and SIR codes for one reader's map filter; never cached or streamed.
+         */
+        get: operations["get_plan_map_matches_api_direction_plans__plan_id__map_matches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3794,6 +3871,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/evaluations/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluation Catalogue */
+        get: operations["evaluation_catalogue_api_admin_llm_evaluations_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Evaluation Runs */
+        get: operations["list_evaluation_runs_api_admin_llm_evaluations_get"];
+        put?: never;
+        /** Start Evaluation Run */
+        post: operations["start_evaluation_run_api_admin_llm_evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evaluation Run */
+        get: operations["get_evaluation_run_api_admin_llm_evaluations__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Evaluation Run */
+        post: operations["cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/artefact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Evaluation Artefact */
+        get: operations["download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/ai-usage/policies": {
         parameters: {
             query?: never;
@@ -3920,6 +4083,23 @@ export interface paths {
          * @description Create every missing policy in the set. Existing policies are never overwritten.
          */
         post: operations["apply_default_policies_api_admin_ai_usage_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/research-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Research Quality */
+        get: operations["get_research_quality_api_admin_research_quality_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5437,6 +5617,12 @@ export interface components {
          * @enum {string}
          */
         BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "diagram" | "reference";
+        /**
+         * BoardSubjectKind
+         * @description Team work a top-level post may discuss. The board never becomes evidence.
+         * @enum {string}
+         */
+        BoardSubjectKind: "report_version" | "saved_area" | "drawing_collection";
         /** BriefJobCreateIn */
         BriefJobCreateIn: {
             /**
@@ -5451,6 +5637,8 @@ export interface components {
             brief_id: string;
             /** Revision */
             revision: number;
+            /** Expected Plan Updated At */
+            expected_plan_updated_at?: string | null;
         };
         /**
          * BriefLimits
@@ -5789,6 +5977,13 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CitationVerdictsOut */
+        CitationVerdictsOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+        };
         /** CivilianHarmMonthOut */
         CivilianHarmMonthOut: {
             /**
@@ -7656,6 +7851,161 @@ export interface components {
             as_of: string;
             /** Links */
             links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
+        };
+        /** EvaluationCaseOut */
+        EvaluationCaseOut: {
+            /** Id */
+            id: string;
+            /**
+             * Casebook
+             * @enum {string}
+             */
+            casebook: "core" | "regional";
+            /** Title */
+            title: string;
+            /** Fingerprint */
+            fingerprint: string;
+        };
+        /** EvaluationCaseResultOut */
+        EvaluationCaseResultOut: {
+            /** Case Id */
+            case_id: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Report Status */
+            report_status: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /**
+             * Checks
+             * @description Deterministic structural checks only; never accuracy.
+             */
+            checks: {
+                [key: string]: number | boolean | null;
+            };
+        };
+        /** EvaluationCatalogueOut */
+        EvaluationCatalogueOut: {
+            /** Cases */
+            cases: components["schemas"]["EvaluationCaseOut"][];
+            /**
+             * Calls Per Case
+             * @default 4
+             */
+            calls_per_case: number;
+            /**
+             * Max Calls
+             * @default 200
+             */
+            max_calls: number;
+            /**
+             * Max Cases
+             * @default 40
+             */
+            max_cases: number;
+            /**
+             * Estimate Notice
+             * @default Estimate only: selected cases multiplied by the usual calls per case. The call cap is enforced; failed and retried calls count towards it.
+             */
+            estimate_notice: string;
+            /**
+             * Result Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            result_notice: string;
+        };
+        /** EvaluationRunOut */
+        EvaluationRunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Name */
+            profile_name: string;
+            /** Model */
+            model: string;
+            status: components["schemas"]["EvaluationRunStatus"];
+            stop_reason: components["schemas"]["EvaluationStopReason"] | null;
+            /** Cancel Requested */
+            cancel_requested: boolean;
+            /** Case Ids */
+            case_ids: string[];
+            /** Case Fingerprints */
+            case_fingerprints: {
+                [key: string]: string;
+            };
+            /** Max Calls */
+            max_calls: number;
+            /** Estimated Calls */
+            estimated_calls: number;
+            /** Calls Reserved */
+            calls_reserved: number;
+            /** Calls Failed */
+            calls_failed: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /** Results */
+            results: components["schemas"]["EvaluationCaseResultOut"][];
+            /** Has Artefact */
+            has_artefact: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            notice: string;
+        };
+        /**
+         * EvaluationRunStatus
+         * @enum {string}
+         */
+        EvaluationRunStatus: "running" | "completed" | "cancelled" | "stopped";
+        /** EvaluationRunsOut */
+        EvaluationRunsOut: {
+            /** Items */
+            items: components["schemas"]["EvaluationRunOut"][];
+        };
+        /** EvaluationStartIn */
+        EvaluationStartIn: {
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Case Ids */
+            case_ids: string[];
+            /** Max Calls */
+            max_calls: number;
+        };
+        /**
+         * EvaluationStopReason
+         * @enum {string}
+         */
+        EvaluationStopReason: "call_cap" | "allowance_limit" | "connection_changed" | "access_revoked" | "interrupted" | "failed";
+        /** EventMatchOut */
+        EventMatchOut: {
+            /** Event Id */
+            event_id: string;
+            /** Codes */
+            codes: string[];
         };
         /** EventOut */
         EventOut: {
@@ -10998,6 +11348,25 @@ export interface components {
              */
             enabled: boolean;
         };
+        /**
+         * PlanMapMatchesOut
+         * @description A bounded sample: the window, pool and per-requirement cap say how it was drawn.
+         */
+        PlanMapMatchesOut: {
+            plan: components["schemas"]["PlanOut"];
+            /** Window Hours */
+            window_hours: number;
+            /** Pool Limit */
+            pool_limit: number;
+            /** Per Requirement Limit */
+            per_requirement_limit: number;
+            /** Considered */
+            considered: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Matches */
+            matches: components["schemas"]["EventMatchOut"][];
+        };
         /** PlanOut */
         PlanOut: {
             /** Team Id */
@@ -11034,6 +11403,37 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * PlanUpdateIn
+         * @description An edit names the revision (`updated_at`) it was made from; stale edits get 409.
+         */
+        PlanUpdateIn: {
+            /** Team Id */
+            team_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Aoi Id */
+            aoi_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Pirs */
+            pirs: components["schemas"]["PirIn"][];
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Expected Updated At
+             * Format: date-time
+             */
+            expected_updated_at: string;
         };
         /** PlannedQueryTaskIn */
         PlannedQueryTaskIn: {
@@ -11476,6 +11876,149 @@ export interface components {
             implementation_year: number | null;
             /** Completion Year */
             completion_year: number | null;
+        };
+        /** QualityCitationChecksOut */
+        QualityCitationChecksOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+        };
+        /** QualityFailureCodeOut */
+        QualityFailureCodeOut: {
+            /** Code */
+            code: string;
+            /** Jobs */
+            jobs: number;
+        };
+        /** QualityFindingOut */
+        QualityFindingOut: {
+            /** Key */
+            key: string;
+            /** Rule */
+            rule: string;
+            /** Severity */
+            severity: string;
+            /** Versions */
+            versions: number;
+            /** Occurrences */
+            occurrences: number;
+        };
+        /** QualityJobGroupOut */
+        QualityJobGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Jobs */
+            jobs: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
+            /** Paused */
+            paused: number;
+            /** Completed */
+            completed: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Failed Without Version */
+            failed_without_version: number;
+            /** Failed With Version */
+            failed_with_version: number;
+            /** Failure Codes */
+            failure_codes: components["schemas"]["QualityFailureCodeOut"][];
+        };
+        /** QualityJobPopulationOut */
+        QualityJobPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityJobGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityJobGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityJobGroupOut"][];
+            /** By Model */
+            by_model: components["schemas"]["QualityJobGroupOut"][];
+        };
+        /** QualityReceiptsOut */
+        QualityReceiptsOut: {
+            /** Versions With Receipts */
+            versions_with_receipts: number;
+            /** Versions Without Receipts */
+            versions_without_receipts: number;
+            /** Attempts */
+            attempts: number;
+            /** Completed */
+            completed: number;
+            /** Empty */
+            empty: number;
+            /** Unavailable */
+            unavailable: number;
+            /** Other Unsuccessful */
+            other_unsuccessful: number;
+            /** Versions With Empty Or Unavailable */
+            versions_with_empty_or_unavailable: number;
+        };
+        /** QualityUsageOut */
+        QualityUsageOut: {
+            /** Versions With Usage */
+            versions_with_usage: number;
+            /** Versions Without Usage */
+            versions_without_usage: number;
+            /** Prompt Tokens */
+            prompt_tokens: number;
+            /** Completion Tokens */
+            completion_tokens: number;
+            /** Prompt Tokens Per Version */
+            prompt_tokens_per_version: number | null;
+            /** Completion Tokens Per Version */
+            completion_tokens_per_version: number | null;
+        };
+        /** QualityVersionGroupOut */
+        QualityVersionGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Versions */
+            versions: number;
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Findings */
+            findings: components["schemas"]["QualityFindingOut"][];
+            receipts: components["schemas"]["QualityReceiptsOut"];
+            usage: components["schemas"]["QualityUsageOut"];
+        };
+        /** QualityVersionPopulationOut */
+        QualityVersionPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityVersionGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Connection */
+            by_connection: components["schemas"]["QualityVersionGroupOut"][];
         };
         /** QueryTransformationOut */
         QueryTransformationOut: {
@@ -12117,6 +12660,20 @@ export interface components {
             /** Research Until */
             research_until?: string | null;
             research_time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
+        };
+        /**
+         * ReportDiscussionOut
+         * @description Live board threads about any version of a team report; personal reports have none.
+         */
+        ReportDiscussionOut: {
+            /** Team Id */
+            team_id: string | null;
+            /** Count */
+            count: number;
+            /** Latest Post Id */
+            latest_post_id: string | null;
+            /** Can Post */
+            can_post: boolean;
         };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {
@@ -13399,6 +13956,24 @@ export interface components {
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
             planning?: components["schemas"]["PlanningTraceOut"] | null;
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
+        };
+        /** ResearchQualityOut */
+        ResearchQualityOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Window Days */
+            window_days: number;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            versions: components["schemas"]["QualityVersionPopulationOut"];
+            jobs: components["schemas"]["QualityJobPopulationOut"];
+            citation_checks: components["schemas"]["QualityCitationChecksOut"];
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
@@ -14844,6 +15419,37 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** SourceTrackRecordOut */
+        SourceTrackRecordOut: {
+            /** Source Id */
+            source_id: string;
+            /** Report Bound */
+            report_bound: number;
+            /** Reports Considered */
+            reports_considered: number;
+            /** Visible Reports */
+            visible_reports: number;
+            /** Reports Citing */
+            reports_citing: number;
+            /** Frozen Items */
+            frozen_items: number;
+            roles: components["schemas"]["TrackRecordRolesOut"];
+            reports_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            judgements_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            /** Reliability */
+            reliability: components["schemas"]["TrackRecordValueOut"][];
+            /** Credibility */
+            credibility: components["schemas"]["TrackRecordValueOut"][];
+            /** Entries */
+            entries: components["schemas"]["TrackRecordEntryOut"][];
+            /** Entries Total */
+            entries_total: number;
+            /** Reviews */
+            reviews: components["schemas"]["TrackRecordReviewOut"][];
+            /** Reviews Total */
+            reviews_total: number;
+            citation_verdicts: components["schemas"]["CitationVerdictsOut"];
+        };
         /** SpaceBoardOut */
         SpaceBoardOut: {
             /** Stations */
@@ -15171,6 +15777,7 @@ export interface components {
             text: string;
             /** Parent Id */
             parent_id?: string | null;
+            subject?: components["schemas"]["TeamBoardSubjectIn"] | null;
         };
         /** TeamBoardPostOut */
         TeamBoardPostOut: {
@@ -15215,6 +15822,7 @@ export interface components {
             removal: ("author" | "moderator") | null;
             /** Revision */
             revision: number;
+            subject: components["schemas"]["TeamBoardSubjectOut"] | null;
         };
         /** TeamBoardPostUpdateIn */
         TeamBoardPostUpdateIn: {
@@ -15240,6 +15848,35 @@ export interface components {
             expected_revision: number;
             /** Reason */
             reason?: string | null;
+        };
+        /**
+         * TeamBoardSubjectIn
+         * @description A same-team report version, saved area or drawing collection; checked server-side.
+         */
+        TeamBoardSubjectIn: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version?: number | null;
+        };
+        /**
+         * TeamBoardSubjectOut
+         * @description Only an available subject carries its identifier and title.
+         */
+        TeamBoardSubjectOut: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /** Id */
+            id: string | null;
+            /** Version */
+            version: number | null;
+            /** Available */
+            available: boolean;
+            /** Title */
+            title: string | null;
         };
         /** TeamBoardUnreadOut */
         TeamBoardUnreadOut: {
@@ -15726,6 +16363,85 @@ export interface components {
             enabled: boolean;
             /** Available */
             available: boolean;
+        };
+        /** TrackRecordEntryOut */
+        TrackRecordEntryOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Title */
+            title: string;
+            /** Version Number */
+            version_number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "needs_review" | "failed";
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Items */
+            items: number;
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Grades */
+            grades: string[];
+        };
+        /** TrackRecordReviewOut */
+        TrackRecordReviewOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reliability" | "credibility" | "authenticity";
+            /** Decision */
+            decision: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Team Scoped */
+            team_scoped: boolean;
+        };
+        /** TrackRecordRolesOut */
+        TrackRecordRolesOut: {
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Items Cited Elsewhere */
+            items_cited_elsewhere: number;
+            /** Items Not Cited */
+            items_not_cited: number;
+        };
+        /** TrackRecordStatusesOut */
+        TrackRecordStatusesOut: {
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+        };
+        /** TrackRecordValueOut */
+        TrackRecordValueOut: {
+            /** Value */
+            value: string;
+            /** Items */
+            items: number;
         };
         /** UkraineBoardOut */
         UkraineBoardOut: {
@@ -21133,6 +21849,37 @@ export interface operations {
             };
         };
     };
+    report_team_discussion_api_reports__report_id__team_discussion_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDiscussionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     report_markdown_api_reports__report_id__markdown_get: {
         parameters: {
             query?: {
@@ -22112,6 +22859,37 @@ export interface operations {
             };
         };
     };
+    get_track_record_api_sources__source_id__track_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTrackRecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     history_api_reports__report_id__versions__number__source_reviews_get: {
         parameters: {
             query: {
@@ -22687,7 +23465,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PlanIn"];
+                "application/json": components["schemas"]["PlanUpdateIn"];
             };
         };
         responses: {
@@ -22728,6 +23506,68 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_definition_api_direction_plans__plan_id__definition_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_map_matches_api_direction_plans__plan_id__map_matches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanMapMatchesOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -24190,6 +25030,172 @@ export interface operations {
             };
         };
     };
+    evaluation_catalogue_api_admin_llm_evaluations_catalogue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCatalogueOut"];
+                };
+            };
+        };
+    };
+    list_evaluation_runs_api_admin_llm_evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunsOut"];
+                };
+            };
+        };
+    };
+    start_evaluation_run_api_admin_llm_evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvaluationStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evaluation_run_api_admin_llm_evaluations__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_policies_api_admin_ai_usage_policies_get: {
         parameters: {
             query?: never;
@@ -24504,6 +25510,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppliedDefaultsOut"];
+                };
+            };
+        };
+    };
+    get_research_quality_api_admin_research_quality_get: {
+        parameters: {
+            query?: {
+                /** @description Days to look back: 7, 30, 90 or 365. */
+                window_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchQualityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

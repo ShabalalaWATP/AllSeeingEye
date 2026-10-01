@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { aoi, plan, report, reportSummary } from '@/test/fixtures';
+import { aoi, plan } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -40,45 +40,23 @@ describe('direction', () => {
     });
   });
 
-  it('creates a plan from the compact requirement lines', async () => {
-    let captured: unknown = null;
+  it('links a team area to a new team thread and keeps personal areas private', async () => {
+    const teamId = 'c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3';
     server.use(
-      http.post('/api/direction/plans', async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json(plan, { status: 201 });
-      }),
+      http.get('/api/direction/aois', () =>
+        HttpResponse.json({
+          items: [aoi, { ...aoi, id: 'd4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4', team_id: teamId }],
+        }),
+      ),
     );
-    const { user } = renderApp('/direction', 'user');
-    const form = await screen.findByRole('form', { name: 'New collection plan' });
-    await user.type(within(form).getByLabelText('Plan name'), 'Sumy watch');
-    await user.type(within(form).getByLabelText('Nations'), 'ua, xx1');
-    await user.type(
-      within(form).getByLabelText('Priority intelligence requirement'),
-      'Is Sumy next?',
+    renderApp('/direction', 'user');
+    const areas = await screen.findByRole('table', { name: 'Areas of interest' });
+    const links = within(areas).getAllByRole('link', { name: 'Discuss with team' });
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute(
+      'href',
+      `/teams?team=${teamId}&board=thread&subject=saved_area&subject_id=d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4`,
     );
-    await user.type(
-      within(form).getByLabelText('Specific requirements'),
-      'Strikes near Sumy | Sumy, strike | conflict{enter}Talks | talks | news, bogus{enter}',
-    );
-    await user.click(within(form).getByRole('button', { name: 'Add plan' }));
-    await waitFor(() => {
-      expect(captured).toEqual({
-        name: 'Sumy watch',
-        enabled: true,
-        description: '',
-        aoi_id: null,
-        countries: ['UA'],
-        pirs: [
-          {
-            text: 'Is Sumy next?',
-            sirs: [
-              { text: 'Strikes near Sumy', keywords: ['Sumy', 'strike'], categories: ['conflict'] },
-              { text: 'Talks', keywords: ['talks'], categories: ['news'] },
-            ],
-          },
-        ],
-      });
-    });
   });
 
   it('shows a plan with the evidence per requirement, and deletes it', async () => {
@@ -92,39 +70,9 @@ describe('direction', () => {
     expect(within(pir).getByText('Nothing gathered in the last week.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Generate assessment' })).toHaveAttribute(
       'href',
-      `/reports?template=ask&plan=${plan.id}`,
+      `/research?brief=new&plan=${plan.id}`,
     );
     await user.click(screen.getByRole('button', { name: 'Delete plan' }));
     expect(await screen.findByRole('heading', { name: 'Plans and areas' })).toBeInTheDocument();
-  });
-
-  it('generates a plan-scoped ask without typing a question', async () => {
-    let captured: unknown = null;
-    server.use(
-      http.post('/api/reports', async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json(
-          { ...report, report: { ...reportSummary, id: '99999999-9999-4999-8999-999999999999' } },
-          { status: 201 },
-        );
-      }),
-    );
-    const { user } = renderApp(`/reports?template=ask&plan=${plan.id}`, 'user');
-    const form = await screen.findByRole('form', { name: 'Generate a report' });
-    expect(within(form).getByText(/Scoped by a collection plan/)).toBeInTheDocument();
-    expect(within(form).getByLabelText('Question')).not.toBeRequired();
-    await user.click(within(form).getByRole('button', { name: 'Generate' }));
-    await waitFor(() => {
-      expect(captured).toEqual({
-        disclose_area_to_provider: false,
-        template: 'ask',
-        plan: plan.id,
-        research_focus: 'general',
-        research_web_search: false,
-        report_language: 'en',
-        report_style: 'assessment',
-        devils_advocacy: false,
-      });
-    });
   });
 });

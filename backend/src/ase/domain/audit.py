@@ -50,6 +50,8 @@ class AuditAction(StrEnum):
     LLM_PROFILE_TEST_STARTED = "llm_profile_test_started"
     LLM_CONNECTION_ACTIVATED = "llm_connection_activated"
     LLM_CONNECTION_RESET = "llm_connection_reset"
+    EVALUATION_RUN_STARTED = "evaluation_run_started"
+    EVALUATION_RUN_CANCELLED = "evaluation_run_cancelled"
     REPORT_GENERATED = "report_generated"
     REPORT_DELETED = "report_deleted"
     LIBRARY_UPDATED = "library_updated"

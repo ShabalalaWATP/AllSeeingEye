@@ -21,7 +21,30 @@ interface PlanBody {
   description: string;
   aoi_id: string | null;
   countries: string[];
+  enabled: boolean;
   pirs: { text: string; sirs: SirBody[] }[];
+}
+
+/** The plan the server would store for a create or update body, with positional codes. */
+export function planFromBody(body: Partial<PlanBody>) {
+  return {
+    ...plan,
+    name: String(body.name),
+    description: body.description ?? '',
+    aoi_id: body.aoi_id ?? null,
+    countries: body.countries ?? [],
+    enabled: body.enabled ?? true,
+    pirs: (body.pirs ?? []).map((pir, index) => ({
+      code: `PIR-${index + 1}`,
+      text: pir.text,
+      sirs: pir.sirs.map((sir, position) => ({
+        code: `SIR-${index + 1}.${position + 1}`,
+        text: sir.text,
+        keywords: sir.keywords ?? [],
+        categories: sir.categories ?? [],
+      })),
+    })),
+  };
 }
 
 const notFound = (what: string) =>
@@ -57,26 +80,19 @@ export const directionHandlers = [
   http.post('/api/direction/plans', async ({ request }) => {
     const body = (await request.json()) as Partial<PlanBody>;
     return HttpResponse.json(
-      {
-        ...plan,
-        id: 'b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4',
-        name: String(body.name),
-        description: body.description ?? '',
-        aoi_id: body.aoi_id ?? null,
-        countries: body.countries ?? [],
-        pirs: (body.pirs ?? []).map((pir, index) => ({
-          code: `PIR-${index + 1}`,
-          text: pir.text,
-          sirs: pir.sirs.map((sir, position) => ({
-            code: `SIR-${index + 1}.${position + 1}`,
-            text: sir.text,
-            keywords: sir.keywords ?? [],
-            categories: sir.categories ?? [],
-          })),
-        })),
-      },
+      { ...planFromBody(body), id: 'b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4' },
       { status: 201 },
     );
+  }),
+
+  http.get('/api/direction/plans/:id/definition', ({ params }) =>
+    params.id === plan.id ? HttpResponse.json(plan) : notFound('Plan'),
+  ),
+
+  http.put('/api/direction/plans/:id', async ({ params, request }) => {
+    if (params.id !== plan.id) return notFound('Plan');
+    const body = (await request.json()) as Partial<PlanBody>;
+    return HttpResponse.json({ ...planFromBody(body), updated_at: '2026-09-04T11:00:00Z' });
   }),
 
   http.get('/api/direction/plans/:id', ({ params }) =>

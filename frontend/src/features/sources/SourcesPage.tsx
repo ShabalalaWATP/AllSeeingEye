@@ -215,7 +215,11 @@ export default function SourcesPage({
                   dot={CATEGORY_STYLES[topic].css}
                 >
                   {rows.map((source) => (
-                    <SourceCatalogueRow key={source.id} source={source} />
+                    <SourceCatalogueRow
+                      key={source.id}
+                      source={source}
+                      trackRecord={workspace === 'research'}
+                    />
                   ))}
                 </Section>
               );

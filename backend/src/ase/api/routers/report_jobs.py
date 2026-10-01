@@ -79,6 +79,10 @@ async def create_job_from_brief(
         user.id, brief.identity.team_id, brief.identity.owner_id, brief.identity.team_id
     )
     access.require_create(brief.identity.team_id)
+    if brief.scope.plan_id is not None:
+        await container.plan_handoff(session).execute(
+            user, brief.scope.plan_id, brief.identity.team_id, body.expected_plan_updated_at
+        )
     try:
         result = await container.report_jobs(session).create(
             user,

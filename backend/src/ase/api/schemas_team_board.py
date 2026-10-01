@@ -6,14 +6,57 @@ from datetime import datetime
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.domain.team_board import (
     MAX_REASON_LENGTH,
+    BoardSubject,
+    BoardSubjectKind,
+    BoardSubjectView,
+    ReportDiscussion,
     TeamBoardPage,
     TeamBoardPost,
     TeamBoardPostView,
 )
+
+
+class TeamBoardSubjectIn(BaseModel):
+    """A same-team report version, saved area or drawing collection; checked server-side."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: BoardSubjectKind
+    id: UUID
+    version: int | None = Field(default=None, ge=1, le=100_000)
+
+    @model_validator(mode="after")
+    def _shape(self) -> Self:
+        self.to_subject()  # Only a report version names a version number.
+        return self
+
+    def to_subject(self) -> BoardSubject:
+        return BoardSubject(self.kind, self.id, self.version)
+
+
+class TeamBoardSubjectOut(BaseModel):
+    """Only an available subject carries its identifier and title."""
+
+    kind: BoardSubjectKind
+    id: UUID | None
+    version: int | None
+    available: bool
+    title: str | None
+
+    @classmethod
+    def from_view(cls, view: BoardSubjectView) -> Self:
+        available = view.available
+        return cls(
+            kind=view.subject.kind,
+            id=view.subject.id if available else None,
+            version=view.subject.version,
+            available=available,
+            title=view.title if available else None,
+        )
 
 
 class TeamBoardPostIn(BaseModel):
@@ -21,6 +64,7 @@ class TeamBoardPostIn(BaseModel):
 
     text: str = Field(min_length=1, max_length=4000)
     parent_id: UUID | None = None
+    subject: TeamBoardSubjectIn | None = None
 
 
 class TeamBoardPostUpdateIn(BaseModel):
@@ -71,9 +115,12 @@ class TeamBoardPostOut(BaseModel):
     deleted_at: datetime | None
     removal: Literal["author", "moderator"] | None
     revision: int
+    subject: TeamBoardSubjectOut | None
 
     @classmethod
-    def from_post(cls, post: TeamBoardPost, author_name: str) -> Self:
+    def from_post(
+        cls, post: TeamBoardPost, author_name: str, subject: BoardSubjectView | None = None
+    ) -> Self:
         return cls(
             id=post.id,
             team_id=post.team_id,
@@ -88,11 +135,12 @@ class TeamBoardPostOut(BaseModel):
             deleted_at=post.deleted_at,
             removal=post.removal.value if post.removal else None,
             revision=post.revision,
+            subject=TeamBoardSubjectOut.from_view(subject) if subject else None,
         )
 
     @classmethod
     def from_view(cls, view: TeamBoardPostView) -> Self:
-        return cls.from_post(view.post, view.author_name)
+        return cls.from_post(view.post, view.author_name, view.subject)
 
 
 class TeamBoardPageOut(BaseModel):
@@ -114,4 +162,22 @@ class TeamBoardPageOut(BaseModel):
             limit=page.limit,
             next_offset=page.next_offset,
             unread_count=page.unread_count,
+        )
+
+
+class ReportDiscussionOut(BaseModel):
+    """Live board threads about any version of a team report; personal reports have none."""
+
+    team_id: UUID | None
+    count: int
+    latest_post_id: UUID | None
+    can_post: bool
+
+    @classmethod
+    def from_discussion(cls, discussion: ReportDiscussion) -> Self:
+        return cls(
+            team_id=discussion.team_id,
+            count=discussion.count,
+            latest_post_id=discussion.latest_post_id,
+            can_post=discussion.can_post,
         )

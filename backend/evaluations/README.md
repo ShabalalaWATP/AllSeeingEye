@@ -4,6 +4,28 @@ This harness exercises the application's `Producer`, conservative grading, evide
 
 The eight cases are fictional and representative of failure modes, not a representative sample of world events. Their labels and reference rubrics were written by an assistant from the fixture definitions. They have **not been validated by a human**. A model passing these cases is not evidence of general factual accuracy, source independence, doctrine certification or readiness for autonomous publication.
 
+## Where the cases live
+
+The eight core cases and twelve regional seed cases are packaged with the
+application under `src/ase/resources/evaluations/core` and
+`src/ase/resources/evaluations/regional`, read through `importlib.resources`.
+The CLI defaults to the packaged core casebook; pass
+`--cases-dir ../backend/src/ase/resources/evaluations/regional` (or the path from
+your working directory) for the regional seeds. Moving the files did not change
+any case content or case fingerprint; `tests/test_evaluation_casebooks.py` pins
+them. The two research replay cases stay in `evaluations/research_cases` and the
+V01 contract corpus stays in `evaluations/v01`; neither is run from the app.
+
+The harness modules (`casebook`, `replay`, `metrics`, `human_review` and
+`pipeline`) now live in `ase.adapters.evaluations`. The `evaluations.*` modules
+of the same names re-export them, so existing commands and imports still work.
+
+Administrators can also run a selected subset of the packaged cases from
+**Administration, Evaluations** against a saved AI connection. That path is
+described in [docs/AI.md](../../docs/AI.md); it uses the stored connection
+without copying credentials into files, meters every call through the AI
+allowance ledger and keeps the same no-secrets rules for its download.
+
 ## Offline checks
 
 From `backend`:
@@ -94,4 +116,4 @@ remain available. This avoids comparing an earlier answer with the wrong packet.
 
 ## Integration boundary and remaining validation
 
-`evaluations.pipeline.evaluate_case(case, profile, recording_gateway, api_key)` is the reusable integration hook. Tests pass a scripted gateway through the same `Producer`; actual runs use the existing `OpenAiCompatibleGateway`. The default evaluates synthesis from a fixed packet; optional replay additionally exercises automated research stages. Neither evaluates live retrieval completeness, translation generation, auth, source availability, report persistence or browser behaviour. Real-model results and human semantic labels are still required; unit-test success only verifies the harness and its accounting.
+`ase.adapters.evaluations.pipeline.evaluate_case(case, profile, recording_gateway, api_key)` (also importable as `evaluations.pipeline.evaluate_case`) is the reusable integration hook. Tests pass a scripted gateway through the same `Producer`; actual runs use the existing `OpenAiCompatibleGateway`. The default evaluates synthesis from a fixed packet; optional replay additionally exercises automated research stages. Neither evaluates live retrieval completeness, translation generation, auth, source availability, report persistence or browser behaviour. Real-model results and human semantic labels are still required; unit-test success only verifies the harness and its accounting.

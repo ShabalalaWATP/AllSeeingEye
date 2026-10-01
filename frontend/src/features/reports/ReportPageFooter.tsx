@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import type { ReportVersion } from '@/lib/api/reports';
 import type { followUpAvailability } from '@/lib/followUpScope';
 
+import { ReportTeamDiscussion } from './ReportTeamDiscussion';
+
 const action =
   'rounded-md border border-line px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none';
 
@@ -26,6 +28,7 @@ export function ReportPageFooter({
         {version.evidence.length} retained source item
         {version.evidence.length === 1 ? '' : 's'} · Exact version {version.number}
       </span>
+      <ReportTeamDiscussion reportId={reportId} version={version.number} />
       {briefLink ? (
         <div className="flex flex-wrap gap-2">
           <Link to={briefLink} className={action}>

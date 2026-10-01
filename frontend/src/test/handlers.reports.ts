@@ -5,6 +5,10 @@ import { apiError } from './handlers';
 
 export const reportHandlers = [
   http.get('/api/reports/:id/original-assets', () => HttpResponse.json({ items: [] })),
+  // Fixture reports are personal unless a test serves a team discussion.
+  http.get('/api/reports/:id/team-discussion', () =>
+    HttpResponse.json({ team_id: null, count: 0, latest_post_id: null, can_post: false }),
+  ),
   http.get('/api/reports/templates', () => HttpResponse.json({ items: reportTemplates })),
 
   http.get('/api/reports', ({ request }) => {

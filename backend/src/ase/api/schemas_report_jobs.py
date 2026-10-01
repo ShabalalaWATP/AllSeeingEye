@@ -20,6 +20,8 @@ class BriefJobCreateIn(BaseModel):
     request_id: UUID
     brief_id: UUID
     revision: int = Field(ge=1, strict=True)
+    # The collection-plan revision the author reviewed; required when the brief names a plan.
+    expected_plan_updated_at: datetime | None = None
 
 
 class ReportJobUsageOut(BaseModel):

@@ -19,6 +19,7 @@ from ase.api.schemas_reports import (
     ReportSummaryOut,
     TemplatesOut,
 )
+from ase.api.schemas_team_board import ReportDiscussionOut
 from ase.api.session_fence import FenceDep
 from ase.application.reports.document import build_document
 from ase.application.reports.document_release import release_document, release_report_view
@@ -192,6 +193,21 @@ async def get_report(
             snapshot.id if snapshot is not None else None,
         )
     return result
+
+
+@router.get("/{report_id}/team-discussion")
+async def report_team_discussion(
+    report_id: UUID,
+    user: CurrentUser,
+    fence: FenceDep,
+    session: SessionDep,
+    container: ContainerDep,
+    response: Response,
+) -> ReportDiscussionOut:
+    """Board threads about this team report, for its current readers; no titles or text."""
+    discussion = await container.report_discussions(session).for_report(user, report_id)
+    response.headers["Cache-Control"] = "no-store"
+    return await fence.release(ReportDiscussionOut.from_discussion(discussion), session=session)
 
 
 @router.get(
