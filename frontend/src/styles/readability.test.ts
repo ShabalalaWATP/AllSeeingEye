@@ -33,8 +33,22 @@ const NOT_TEXT_CONTROL = /\btype="(?:checkbox|radio|range|file|hidden|color)"/;
 
 /** The opening tag of every `<input>`, `<select>` and `<textarea>` that is a text control. */
 function textControls(source: string): string[] {
+  return openingTags(source, /<(?:input|select|textarea)\b/g).filter(
+    (tag) => !NOT_TEXT_CONTROL.test(tag),
+  );
+}
+
+/** The opening tag of every element a keyboard user can operate. */
+function operableControls(source: string): string[] {
+  return openingTags(source, /<(?:input|select|textarea|button|a|summary)\b/g).filter(
+    (tag) => !/\btype="hidden"/.test(tag),
+  );
+}
+
+/** The full opening tag of each JSX element matched by `start`, braces and quotes respected. */
+function openingTags(source: string, start: RegExp): string[] {
   const tags: string[] = [];
-  for (const match of source.matchAll(/<(?:input|select|textarea)\b/g)) {
+  for (const match of source.matchAll(start)) {
     let index = match.index + match[0].length;
     let depth = 0;
     let quote = '';
@@ -47,8 +61,7 @@ function textControls(source: string): string[] {
       else if (char === '}') depth -= 1;
       else if (char === '>' && depth === 0) break;
     }
-    const tag = source.slice(match.index, index + 1);
-    if (!NOT_TEXT_CONTROL.test(tag)) tags.push(tag);
+    tags.push(source.slice(match.index, index + 1));
   }
   return tags;
 }
@@ -185,6 +198,16 @@ describe('form control borders', () => {
     const offenders = Object.entries(sources).flatMap(([file, source]) =>
       textControls(source)
         .filter((tag) => /\bborder-line\b/.test(classesOf(tag, source)))
+        .map((tag) => `${file}: ${tag.slice(0, 60)}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  // `outline-none` sets outline-style: none, which forced-colours modes cannot repaint (WCAG 2.4.7).
+  it('never removes the focus outline from a control a keyboard user can operate', () => {
+    const offenders = Object.entries(sources).flatMap(([file, source]) =>
+      operableControls(source)
+        .filter((tag) => /\boutline-none\b/.test(classesOf(tag, source)))
         .map((tag) => `${file}: ${tag.slice(0, 60)}`),
     );
     expect(offenders).toEqual([]);
