@@ -194,7 +194,7 @@ export function RfTerrainProfileChart({
         power risk, including the interval before a sampled intrusion. Red: obstructed direct ray.
         Dashed amber: lower 60% Fresnel boundary.
         {maximumObstacleM > 0 && (
-          <span className="mt-1 block text-violet-200">
+          <span className="mt-1 block text-text">
             Violet dashed: assumed {maximumObstacleM.toFixed(1)} m obstacle screen above sampled
             ground. Buildings and trees have not been measured.
           </span>
