@@ -40,6 +40,7 @@ class EvaluationWiring(ContainerCore):
             self.clock,
             r.uow,
             self.evaluation_tasks,
+            self._auditor(r),
         )
 
     async def _execute_evaluation(self, run_id: UUID) -> None:

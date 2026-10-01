@@ -6,6 +6,7 @@ import asyncio
 from uuid import uuid4
 
 from ase.application.dto import RequestContext
+from ase.domain.audit import AuditAction
 from evaluation_run_helpers import (
     CORE_CASES,
     ScriptedRunGateway,
@@ -91,6 +92,20 @@ async def test_a_second_start_conflicts_and_the_first_can_be_cancelled(
     await container.evaluation_tasks.drain()
     final = await client.get(f"{BASE}/{first.json()['id']}", headers=headers)
     assert final.json()["status"] == "cancelled"
+    async with container.session_factory() as session:
+        entries = await container.repositories(session).audit.list_before(None, 50)
+    audited = {entry.action: entry for entry in entries}
+    run_id = first.json()["id"]
+    started = audited[AuditAction.EVALUATION_RUN_STARTED]
+    assert started.subject == run_id and started.actor_user_id == admin.id
+    assert started.details == {
+        "profile_id": str(profile.id),
+        "cases": len(CORE_CASES),
+        "max_calls": 8,
+    }
+    assert audited[AuditAction.EVALUATION_RUN_CANCELLED].subject == run_id
+    # A refused second start records nothing.
+    assert sum(entry.action is AuditAction.EVALUATION_RUN_STARTED for entry in entries) == 1
 
 
 async def test_invalid_requests_are_refused(client, container, admin) -> None:

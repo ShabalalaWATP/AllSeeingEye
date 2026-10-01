@@ -1,6 +1,6 @@
 """Administrator evaluation runs over packaged synthetic cases.
 
-Mounted under ``/admin/llm`` by ``admin_llm_discovery``. Every route re-validates
+Served under ``/admin/llm/evaluations``. Every route re-validates
 the administrator's MFA-verified session through the release fence before it
 returns run state or the download.
 """
@@ -12,7 +12,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import AdminUser, ContainerDep, SessionDep
+from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas_evaluations import (
     EvaluationCaseOut,
     EvaluationCatalogueOut,
@@ -22,7 +22,7 @@ from ase.api.schemas_evaluations import (
 )
 from ase.api.session_fence import FenceDep
 
-router = APIRouter(prefix="/evaluations", tags=["admin"])
+router = APIRouter(prefix="/admin/llm/evaluations", tags=["admin"])
 
 
 @router.get("/catalogue")
@@ -47,6 +47,7 @@ async def list_evaluation_runs(
 async def start_evaluation_run(
     body: EvaluationStartIn,
     admin: AdminUser,
+    context: ContextDep,
     session: SessionDep,
     fence: FenceDep,
     container: ContainerDep,
@@ -54,6 +55,7 @@ async def start_evaluation_run(
     run = await container.evaluation_runs(session).start(
         admin,
         body.to_input(),
+        context,
         before_save=partial(fence.confirm, session=session, admin_only=True),
     )
     fence.assert_live()
@@ -76,12 +78,13 @@ async def get_evaluation_run(
 async def cancel_evaluation_run(
     run_id: UUID,
     admin: AdminUser,
+    context: ContextDep,
     session: SessionDep,
     fence: FenceDep,
     container: ContainerDep,
 ) -> EvaluationRunOut:
     run = await container.evaluation_runs(session).cancel(
-        admin, run_id, before_save=partial(fence.confirm, session=session, admin_only=True)
+        admin, run_id, context, before_save=partial(fence.confirm, session=session, admin_only=True)
     )
     fence.assert_live()
     return EvaluationRunOut.from_run(run)

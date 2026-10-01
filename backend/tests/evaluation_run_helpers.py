@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 from ase.application.admin.evaluations import EvaluationStart
+from ase.application.dto import RequestContext
 from ase.application.ports.llm import LlmGatewayError
 from ase.container import Container
 from ase.domain.evaluations import EvaluationRun
@@ -75,7 +76,7 @@ async def start_run(
 ) -> EvaluationRun:
     async with container.session_factory() as session:
         return await container.evaluation_runs(session).start(
-            admin, EvaluationStart(profile.id, cases or CORE_CASES[:1], max_calls)
+            admin, EvaluationStart(profile.id, cases or CORE_CASES[:1], max_calls), RequestContext()
         )
 
 
