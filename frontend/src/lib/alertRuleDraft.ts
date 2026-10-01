@@ -12,6 +12,8 @@ import { useSyncExternalStore } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
 
+import { CATEGORIES } from './api/eventSchemas';
+
 import { clearAreaWatchDraft, subscribeAreaWatchDraft } from './areaWatchDraft';
 import { subscribeWorkspaceAccess, workspaceRevision } from './workspaceAccess';
 
@@ -133,3 +135,52 @@ useAuthStore.subscribe((state, previous) => {
   )
     clearReportWatchDraft();
 });
+
+const COUNTRY = /^[A-Z]{2}$/;
+
+function list(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+function savedGeometry(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const geometry: unknown = Reflect.get(value, 'geometry');
+  return typeof geometry === 'object' && geometry !== null && !Array.isArray(geometry)
+    ? (geometry as Record<string, unknown>)
+    : null;
+}
+
+/**
+ * The report's own places as alert rule scope. Only explicit, well-formed values carry over:
+ * a malformed or ambiguous saved scope is left for the person to choose, never widened.
+ */
+export function reportWatchScope(
+  scope: Readonly<Record<string, unknown>>,
+): Pick<ReportWatchInput, 'countries' | 'categories' | 'geometry' | 'areaNote'> {
+  const countries = [
+    ...new Set([...list(scope.countries), ...list(scope.country_isos), ...list([scope.country])]),
+  ];
+  const categories = list(scope.categories).filter((value) =>
+    (CATEGORIES as readonly string[]).includes(value),
+  );
+  const exact = savedGeometry(scope.research_area);
+  const origin =
+    typeof scope.map_origin === 'object' && scope.map_origin !== null
+      ? savedGeometry(Reflect.get(scope.map_origin, 'area'))
+      : null;
+  const hasArea = Boolean(scope.research_area ?? scope.map_origin);
+  const geometry = exact && origin ? null : (exact ?? origin);
+  return {
+    countries: countries.every((code) => COUNTRY.test(code)) ? countries : [],
+    categories,
+    geometry,
+    areaNote:
+      hasArea && geometry === null
+        ? "The report's saved area could not be carried over. Choose a location for the alert rule."
+        : !countries.every((code) => COUNTRY.test(code))
+          ? "The report's saved countries could not be carried over. Choose them for the alert rule."
+          : null,
+  };
+}
