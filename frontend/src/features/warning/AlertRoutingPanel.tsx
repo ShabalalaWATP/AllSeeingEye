@@ -12,7 +12,7 @@ import {
   saveAlertRoute,
 } from '@/lib/api/alertRouting';
 import type { AlertDestination, AlertRoute } from '@/lib/api/alertRouting';
-import { describeError } from '@/lib/api/errors';
+import { describeError, isApiError } from '@/lib/api/errors';
 import type { Indicator } from '@/lib/api/warning';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { InstallationCopyNotice } from './InstallationCopyNotice';
@@ -21,10 +21,12 @@ function RoutingFields({
   indicator,
   initial,
   initialDestinations,
+  onReload,
 }: {
   indicator: Indicator;
   initial: AlertRoute;
   initialDestinations: AlertDestination[];
+  onReload: () => Promise<void>;
 }) {
   const [route, setRoute] = useState(initial);
   const [destinations, setDestinations] = useState(initialDestinations);
@@ -33,6 +35,7 @@ function RoutingFields({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [needsReload, setNeedsReload] = useState(false);
   async function action(run: () => Promise<void>) {
     setBusy(true);
     setError(null);
@@ -41,6 +44,7 @@ function RoutingFields({
       await run();
     } catch (reason) {
       setError(describeError(reason));
+      if (isApiError(reason) && reason.status === 409) setNeedsReload(true);
     } finally {
       setBusy(false);
     }
@@ -53,13 +57,21 @@ function RoutingFields({
       <h3 className="font-medium">Notification destinations: {indicator.name}</h3>
       <InstallationCopyNotice />
       {error && <Alert tone="error">{error}</Alert>}
+      {needsReload && (
+        <div className="space-y-2">
+          <p>Reloading replaces unsaved routing changes with the current saved settings.</p>
+          <Button variant="secondary" disabled={busy} onClick={() => void onReload()}>
+            Reload notification routing
+          </Button>
+        </div>
+      )}
       {!route.can_manage && (
         <p>
           Only the personal rule owner, a team manager or an administrator can change external
           routing.
         </p>
       )}
-      <fieldset disabled={busy || !route.can_manage} className="space-y-3">
+      <fieldset disabled={busy || needsReload || !route.can_manage} className="space-y-3">
         <label className="flex gap-2 text-sm">
           <input type="checkbox" checked disabled />
           Store alerts in the application (always on)
@@ -186,7 +198,15 @@ export function AlertRoutingPanel({ indicator }: { indicator: Indicator }) {
     return { route, destinations };
   }, [indicator.id, indicator.team_id]);
   const result = useScopedResource(load);
-  if (result.error) return <Alert tone="error">{describeError(result.error)}</Alert>;
+  if (result.error)
+    return (
+      <div className="space-y-2">
+        <Alert tone="error">{describeError(result.error)}</Alert>
+        <Button variant="secondary" onClick={() => void result.reload()}>
+          Retry loading notification routing
+        </Button>
+      </div>
+    );
   if (!result.data) return <LoadingNote label="Loading notification routing" />;
   return (
     <RoutingFields
@@ -194,6 +214,7 @@ export function AlertRoutingPanel({ indicator }: { indicator: Indicator }) {
       indicator={indicator}
       initial={result.data.route}
       initialDestinations={result.data.destinations}
+      onReload={result.reload}
     />
   );
 }

@@ -136,4 +136,78 @@ describe('alert rule notification routing', () => {
       await panel.findByText(/Installation copy settings could not be checked/),
     ).toBeInTheDocument();
   });
+
+  it('reloads the latest routing after a conflict and saves only its current revision', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const { panel, user } = await openPanel();
+    server.use(
+      http.put('/api/warning/indicators/:id/notifications', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        bodies.push(body);
+        return bodies.length === 1
+          ? HttpResponse.json(
+              { error: { code: 'conflict', message: 'Routing changed. Reload it before saving.' } },
+              { status: 409 },
+            )
+          : HttpResponse.json({ ...route, ...body, revision: 2 });
+      }),
+      http.get('/api/warning/indicators/:id/notifications', () =>
+        HttpResponse.json({ ...route, revision: 1, webhook_id: destination.id }),
+      ),
+      http.get('/api/warning/webhook-destinations', () =>
+        HttpResponse.json({ items: [destination] }),
+      ),
+    );
+    await user.click(panel.getByLabelText('Email me when this rule fires'));
+    await user.click(panel.getByRole('button', { name: 'Save notification routing' }));
+    expect(await panel.findByText('Routing changed. Reload it before saving.')).toBeVisible();
+    expect(bodies).toEqual([{ email_enabled: true, webhook_id: null, expected_revision: 0 }]);
+    expect(panel.getByRole('button', { name: 'Save notification routing' })).toBeDisabled();
+    await user.click(panel.getByRole('button', { name: 'Reload notification routing' }));
+    const latest = within(
+      await screen.findByRole('region', { name: `Notification routing for ${indicator.name}` }),
+    );
+    expect(latest.getByLabelText('Email me when this rule fires')).not.toBeChecked();
+    expect(latest.getByLabelText('Registered webhook destination')).toHaveValue(destination.id);
+    await user.click(latest.getByLabelText('Email me when this rule fires'));
+    await user.click(latest.getByRole('button', { name: 'Save notification routing' }));
+    expect(await latest.findByText('Notification routing saved.')).toBeVisible();
+    expect(bodies[1]).toEqual({
+      email_enabled: true,
+      webhook_id: destination.id,
+      expected_revision: 1,
+    });
+  });
+
+  it('can retry a failed reload and honours authority removed while the panel was stale', async () => {
+    let reloads = 0;
+    const { panel, user } = await openPanel();
+    server.use(
+      http.put('/api/warning/indicators/:id/notifications', () =>
+        HttpResponse.json(
+          { error: { code: 'conflict', message: 'Routing changed. Reload it before saving.' } },
+          { status: 409 },
+        ),
+      ),
+      http.get('/api/warning/indicators/:id/notifications', () => {
+        reloads += 1;
+        return reloads === 1
+          ? HttpResponse.json(
+              { error: { code: 'unavailable', message: 'The latest routing is unavailable.' } },
+              { status: 503 },
+            )
+          : HttpResponse.json({ ...route, revision: 1, can_manage: false });
+      }),
+    );
+    await user.click(panel.getByRole('button', { name: 'Save notification routing' }));
+    await user.click(await panel.findByRole('button', { name: 'Reload notification routing' }));
+    expect(await screen.findByText('The latest routing is unavailable.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Retry loading notification routing' }));
+    const latest = within(
+      await screen.findByRole('region', { name: `Notification routing for ${indicator.name}` }),
+    );
+    expect(latest.getByRole('button', { name: 'Save notification routing' })).toBeDisabled();
+    expect(latest.getByLabelText('Email me when this rule fires')).toBeDisabled();
+    expect(latest.getByText(/Only the personal rule owner/)).toBeVisible();
+  });
 });
