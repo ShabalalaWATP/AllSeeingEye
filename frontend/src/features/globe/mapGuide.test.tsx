@@ -74,8 +74,11 @@ it('names every map layer, says what it is and opens the tool that filters it', 
   expect(screen.getByRole('list', { name: 'Reference layers' })).toBeInTheDocument();
   expect(screen.getByRole('list', { name: 'Map setup' })).toBeInTheDocument();
   expect(screen.getByRole('list', { name: 'Planning tools' })).toBeInTheDocument();
-  // The source catalogue is an administrator's page, so an analyst is not sent there.
-  expect(screen.queryByRole('link', { name: /source catalogue/i })).toBeNull();
+  // An analyst can follow the guide to the read-only catalogue, never to its administration.
+  expect(screen.getByRole('link', { name: /source catalogue/i })).toHaveAttribute(
+    'href',
+    '/sources',
+  );
   await user.click(live.getByRole('button', { name: 'Open Conflict reports' }));
   expect(screen.getByText('Conflict report filters')).toBeInTheDocument();
 });
@@ -101,15 +104,18 @@ it('opens the guide directly when a link asks for it', () => {
   expect(screen.getByRole('list', { name: 'Live events' })).toBeInTheDocument();
 });
 
-it('offers the source catalogue to an administrator only', () => {
-  useAuthStore.setState({ user: adminUser, status: 'authenticated' });
-  render(<Harness initial="Map guide" />);
-  expect(screen.getByRole('link', { name: 'Open the source catalogue' })).toHaveAttribute(
-    'href',
-    '/admin/catalogue',
-  );
-  useAuthStore.setState({ user: plainUser, status: 'authenticated' });
-});
+it.each([plainUser, adminUser])(
+  'offers the read-only source catalogue to $role accounts',
+  (who) => {
+    useAuthStore.setState({ user: who, status: 'authenticated' });
+    render(<Harness initial="Map guide" />);
+    expect(screen.getByRole('link', { name: 'Open the source catalogue' })).toHaveAttribute(
+      'href',
+      '/sources',
+    );
+    useAuthStore.setState({ user: plainUser, status: 'authenticated' });
+  },
+);
 
 it.each([false, true])(
   'enables a hidden parent when regions are switched on (remembered regions %s)',

@@ -127,4 +127,17 @@ export const streamHelloSchema = z.object({
 });
 export const streamResyncSchema = z.object({
   reason: z.enum(['expiry_overflow', 'stream_gap', 'snapshot_required']),
+  // A bulk refresh hint may name its affected partitions. Names stay plain strings here so
+  // an unrecognised one widens the refresh instead of discarding the hint.
+  categories: z.array(z.string()).optional(),
+  source_id: z.string().optional(),
 });
+
+/** The known partitions a refresh hint names, or null when the whole mirror must refresh. */
+export function refreshPartitions(names: readonly string[] | undefined): Category[] | null {
+  if (!names?.length) return null;
+  const known = names.filter((name): name is Category =>
+    (CATEGORIES as readonly string[]).includes(name),
+  );
+  return known.length === names.length ? [...new Set(known)] : null;
+}

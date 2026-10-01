@@ -10,7 +10,6 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from ase.adapters.research_inputs.memory import MAX_USER_SLOTS
-from ase.application.reports.export_text import evidence_metadata
 from ase.application.reports.prompts import evidence_block
 from ase.domain.errors import InvalidRequest, NotFound, RateLimited
 from ase.domain.evidence import EvidenceItem
@@ -67,8 +66,8 @@ async def test_declaration_derives_immutable_private_input_and_frozen_json():
     assert "2025-03-21" in evidence_block(frozen)
     assert "transliteration" in evidence_block(frozen)
     assert "timezone unknown" in evidence_block(frozen)
-    assert any("2025-03-21" in line for line in evidence_metadata(frozen))
     rows = json.loads(json.dumps(evidence_to_list((frozen,))))
+    assert "2025-03-21" in json.dumps(rows[0]["source_dates"])
     assert evidence_from_list(rows) == (frozen,)
     assert rows[0]["summary"] == TEXT and rows[0]["transformations"][0]["original_text"] == TEXT
     legacy = replace(frozen, transformations=(), source_dates=())

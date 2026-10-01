@@ -3,11 +3,47 @@
   --rf-accent: #8cf1d0;
   --rf-muted: #9aa6ad;
   --rf-line: #293137;
+  /* The radio instrument keeps this dark palette in every theme. */
+  --rf-ground: #0b0f12;
+  --rf-text: #e9eeef;
+  --rf-button-line: #3a484e;
+  --rf-button-text: #d3e1dc;
+  --rf-primary-line: #a6f5d9;
+  --rf-primary-text: #10221b;
+  --rf-primary-hover: #b7ffe7;
+  --rf-disabled-ground: #233730;
+  --rf-disabled-line: #365046;
+  --rf-disabled-text: #8aab9f;
+  --rf-idle: #929ba5;
+  --rf-warning: #f8c969;
+  --rf-risk: #ffca64;
+  --rf-field-readonly: #0d1115;
+  --rf-label: #b8c2c7;
+  --rf-field-line: #333d44;
+  --rf-field-ground: #11171b;
+  --rf-field-text: #edf4f3;
+  --rf-field-focus: #151e22;
+  --rf-basis: #b5cbc5;
+  --rf-summary: #d2dcdf;
+  --rf-switch-ground: #070b0e;
+  --rf-selected-ground: #192b27;
+  --rf-selected-line: #35564c;
+  --rf-hover-text: #e7f3ef;
+  --rf-check-text: #dce8e4;
+  --rf-station-line: #344048;
+  --rf-station-ground: #11181d;
+  --rf-station-selected: #17251f;
+  --rf-toggle-text: #d2e6dc;
+  --rf-quality-text: #dce7e3;
+  --rf-next-line: #75978b;
+  --rf-next-text: #c0d2ca;
+  --rf-profile-ground: #080e12;
+  --rf-caption: #dce5e5;
   --rf-gutter: 16px;
   container: rf-planner / inline-size;
   padding: var(--rf-gutter);
-  background: #0b0f12;
-  color: #e9eeef;
+  background: var(--rf-ground);
+  color: var(--rf-text);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -97,14 +133,14 @@
   font-size: 12px;
 }
 .rf-text-button:hover {
-  color: #e9eeef;
+  color: var(--rf-text);
 }
 .rf-secondary-button {
   min-height: 40px;
   padding: 9px 14px;
-  border: 1px solid #3a484e;
+  border: 1px solid var(--rf-button-line);
   border-radius: 7px;
-  color: #d3e1dc;
+  color: var(--rf-button-text);
   font-size: 12px;
 }
 .rf-secondary-button:hover {
@@ -122,7 +158,7 @@
   padding: 16px var(--rf-gutter) var(--rf-gutter);
   margin-inline: calc(-1 * var(--rf-gutter));
   margin-bottom: calc(-1 * var(--rf-gutter));
-  background: #0b0f12;
+  background: var(--rf-ground);
   border-top: 1px solid var(--rf-line);
 }
 .rf-primary-button {
@@ -130,9 +166,9 @@
   min-height: 46px;
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #a6f5d9;
+  border: 1px solid var(--rf-primary-line);
   background: var(--rf-accent);
-  color: #10221b;
+  color: var(--rf-primary-text);
   font-size: 14px;
   font-weight: 600;
   transition:
@@ -140,15 +176,15 @@
     transform 0.15s ease;
 }
 .rf-primary-button:hover:enabled {
-  background: #b7ffe7;
+  background: var(--rf-primary-hover);
 }
 .rf-primary-button:active:enabled {
   transform: translateY(1px);
 }
 .rf-primary-button:disabled {
-  background: #233730;
-  border-color: #365046;
-  color: #8aab9f;
+  background: var(--rf-disabled-ground);
+  border-color: var(--rf-disabled-line);
+  color: var(--rf-disabled-text);
   cursor: not-allowed;
 }
 .rf-readiness {
@@ -160,7 +196,7 @@
 }
 .rf-readiness-dot {
   margin-top: 6px;
-  background: #929ba5;
+  background: var(--rf-idle);
 }
 .rf-readiness-dot[data-ready='true'] {
   background: var(--rf-accent);
@@ -169,7 +205,7 @@
   padding: 10px 0;
 }
 .rf-notice-warning {
-  color: #f8c969;
+  color: var(--rf-warning);
   font-size: 12px;
 }
 .rf-completed-results {
@@ -224,7 +260,7 @@
   letter-spacing: normal;
 }
 .rf-budget-metrics .rf-budget-risk {
-  color: #ffca64;
+  color: var(--rf-risk);
 }
 .rf-budget-preview > p {
   margin: 12px 0;
@@ -238,7 +274,7 @@
 }
 .rf-power-input input:disabled {
   color: var(--rf-muted);
-  background: #0d1115;
+  background: var(--rf-field-readonly);
 }
 @container rf-planner (max-width: 270px) {
   .rf-field-grid,

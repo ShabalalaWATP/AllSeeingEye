@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import type { RequestHandler } from 'msw';
 import { createElement } from 'react';
+import { MemoryRouter } from 'react-router';
 
 import type { User } from '@/lib/api/schemas';
 import type { Team, TeamDetail, TeamMember } from '@/lib/api/teams';
@@ -48,6 +49,7 @@ export function setupTeams(
   actor: User = plainUser,
   initial: TeamDetail = roster,
   handlers: RequestHandler[] = [],
+  path = '/teams',
 ) {
   let detail = structuredClone(initial);
   const writes: { method: string; body?: unknown; userId?: string }[] = [];
@@ -108,5 +110,9 @@ export function setupTeams(
   server.use(...handlers);
   useAuthStore.getState().setSession(tokenFor(actor));
   const user = userEvent.setup();
-  return { user, writes, ...render(createElement(TeamsPage)) };
+  return {
+    user,
+    writes,
+    ...render(createElement(MemoryRouter, { initialEntries: [path] }, createElement(TeamsPage))),
+  };
 }

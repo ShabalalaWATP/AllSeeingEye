@@ -52,18 +52,18 @@ it('preserves expiry/upsert ordering and does not rebuild for absent expiries', 
 });
 
 it('bounds queued records during a larger feed burst and leaves no timer after clear', () => {
-  const sink = { applyUpsert: vi.fn(), applyExpire: vi.fn(), handleStreamMessage: vi.fn() };
+  const sink = { applyBatch: vi.fn(), handleStreamMessage: vi.fn() };
   const batch = new EventUpdateBatch(() => sink);
   for (let i = 0; i < 5_001; i++) batch.receive(upsert(String(i)));
-  expect(sink.applyUpsert).toHaveBeenCalledOnce();
-  expect(sink.applyUpsert.mock.calls[0]?.[0]).toHaveLength(5_000);
+  expect(sink.applyBatch).toHaveBeenCalledOnce();
+  expect(sink.applyBatch.mock.calls[0]?.[1]).toHaveLength(5_000);
   batch.clear();
   vi.advanceTimersByTime(STREAM_BATCH_MS);
-  expect(sink.applyUpsert).toHaveBeenCalledOnce();
+  expect(sink.applyBatch).toHaveBeenCalledOnce();
 });
 
 it('handles authority and resync immediately, dropping queued sensor records', () => {
-  const sink = { applyUpsert: vi.fn(), applyExpire: vi.fn(), handleStreamMessage: vi.fn() };
+  const sink = { applyBatch: vi.fn(), handleStreamMessage: vi.fn() };
   const batch = new EventUpdateBatch(() => sink);
   for (const event of ['access.changed', 'event.resync']) {
     batch.receive(upsert('old'));
@@ -72,25 +72,24 @@ it('handles authority and resync immediately, dropping queued sensor records', (
     expect(sink.handleStreamMessage).toHaveBeenLastCalledWith(message);
   }
   vi.advanceTimersByTime(STREAM_BATCH_MS);
-  expect(sink.applyUpsert).not.toHaveBeenCalled();
+  expect(sink.applyBatch).not.toHaveBeenCalled();
 });
 
 it('preserves queued updates when a resync signal is malformed', () => {
-  const sink = { applyUpsert: vi.fn(), applyExpire: vi.fn(), handleStreamMessage: vi.fn() };
+  const sink = { applyBatch: vi.fn(), handleStreamMessage: vi.fn() };
   const batch = new EventUpdateBatch(() => sink);
   batch.receive(upsert('valid'));
   for (const data of ['invalid JSON', '{}', '{"reason":"unrecognised"}'])
     batch.receive({ event: 'event.resync', data, id: null });
   vi.advanceTimersByTime(STREAM_BATCH_MS);
-  expect(sink.applyUpsert).toHaveBeenCalledWith([expect.objectContaining({ id: 'valid' })]);
+  expect(sink.applyBatch).toHaveBeenCalledWith([], [expect.objectContaining({ id: 'valid' })]);
   expect(sink.handleStreamMessage).not.toHaveBeenCalled();
 });
 
 it('preserves queued tombstones and updates before requesting a bulk refresh', () => {
   const order: string[] = [];
   const sink = {
-    applyUpsert: vi.fn(() => order.push('upsert')),
-    applyExpire: vi.fn(() => order.push('expire')),
+    applyBatch: vi.fn(() => order.push('batch')),
     handleStreamMessage: vi.fn(() => order.push('refresh')),
   };
   const batch = new EventUpdateBatch(() => sink);
@@ -98,11 +97,13 @@ it('preserves queued tombstones and updates before requesting a bulk refresh', (
   batch.receive(expire('gone'));
   batch.receive(upsert('latest'));
   batch.receive({ event: 'event.resync', data: '{"reason":"snapshot_required"}', id: null });
-  expect(sink.applyExpire).toHaveBeenCalledWith(['gone']);
-  expect(sink.applyUpsert).toHaveBeenCalledWith([expect.objectContaining({ id: 'latest' })]);
-  expect(order).toEqual(['expire', 'upsert', 'refresh']);
+  expect(sink.applyBatch).toHaveBeenCalledWith(
+    ['gone'],
+    [expect.objectContaining({ id: 'latest' })],
+  );
+  expect(order).toEqual(['batch', 'refresh']);
   vi.advanceTimersByTime(STREAM_BATCH_MS);
-  expect(sink.applyUpsert).toHaveBeenCalledOnce();
+  expect(sink.applyBatch).toHaveBeenCalledOnce();
 });
 
 it('ignores out-of-view deltas without rebuilding the mirror, but removes records leaving it', () => {
@@ -130,7 +131,7 @@ it('ignores out-of-view deltas without rebuilding the mirror, but removes record
 });
 
 it('ignores malformed sensor frames and lets metadata bypass without flushing sensors', () => {
-  const sink = { applyUpsert: vi.fn(), applyExpire: vi.fn(), handleStreamMessage: vi.fn() };
+  const sink = { applyBatch: vi.fn(), handleStreamMessage: vi.fn() };
   const batch = new EventUpdateBatch(() => sink);
   for (const [event, data] of [
     ['event.upsert', 'bad'],
@@ -139,11 +140,11 @@ it('ignores malformed sensor frames and lets metadata bypass without flushing se
   ])
     batch.receive({ event: event!, data: data!, id: null });
   batch.flush();
-  expect(sink.applyUpsert).not.toHaveBeenCalled();
+  expect(sink.applyBatch).not.toHaveBeenCalled();
   batch.receive(upsert('valid'));
   batch.receive({ event: 'hello', data: '{}', id: null });
-  expect(sink.applyUpsert).not.toHaveBeenCalled();
+  expect(sink.applyBatch).not.toHaveBeenCalled();
   expect(sink.handleStreamMessage).toHaveBeenCalledOnce();
   vi.advanceTimersByTime(STREAM_BATCH_MS);
-  expect(sink.applyUpsert).toHaveBeenCalledOnce();
+  expect(sink.applyBatch).toHaveBeenCalledOnce();
 });

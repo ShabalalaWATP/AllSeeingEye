@@ -3,13 +3,13 @@ import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useGlobeStore } from '@/stores/globe';
-import { alert } from '@/test/fixtures';
+import { bellAlerts, bellSummary } from '@/test/fixtures.bell';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { adminUser, tokenFor } from '@/test/fixtures';
-import * as warningApi from '@/lib/api/warning';
+import * as bellApi from '@/lib/api/bell';
 
 afterEach(() => useGlobeStore.setState({ opsRoom: false }));
 
@@ -19,13 +19,13 @@ describe('ops-room alert strip', () => {
     const pending = new Promise<void>((resolve) => {
       release = resolve;
     });
-    const oldPage = { items: [alert], unacknowledged: 1 };
+    const oldPage = bellSummary();
     const delayedPage = pending.then(() => oldPage);
     const fetch = vi
-      .spyOn(warningApi, 'fetchAlerts')
+      .spyOn(bellApi, 'fetchBell')
       .mockResolvedValueOnce(oldPage)
       .mockReturnValueOnce(delayedPage)
-      .mockResolvedValue({ items: [], unacknowledged: 0 });
+      .mockResolvedValue(bellSummary([]));
     useGlobeStore.setState({ opsRoom: true });
     renderApp('/', 'user');
     expect(
@@ -57,9 +57,7 @@ describe('ops-room alert strip', () => {
     useGlobeStore.setState({ opsRoom: true });
     renderApp('/', 'user');
     await screen.findByRole('complementary', { name: 'Unacknowledged alerts' });
-    server.use(
-      http.get('/api/warning/alerts', () => HttpResponse.json({ items: [], unacknowledged: 0 })),
-    );
+    server.use(http.get('/api/bell', () => HttpResponse.json(bellSummary([]))));
     act(() => {
       useAuthStore.getState().setSession(tokenFor(adminUser));
     });
@@ -69,7 +67,7 @@ describe('ops-room alert strip', () => {
     useGlobeStore.setState({ opsRoom: false });
   });
   it('gives the regular workspace a bell count rather than the wall-screen strip', async () => {
-    const fetch = vi.spyOn(warningApi, 'fetchAlerts');
+    const fetch = vi.spyOn(bellApi, 'fetchBell');
     renderApp('/research/saved', 'user');
     await screen.findByRole('heading', { name: 'Saved research' });
     expect(
@@ -82,17 +80,10 @@ describe('ops-room alert strip', () => {
   });
 
   it('shows three alerts on the wall and counts the rest', async () => {
-    const many = [1, 2, 3, 4].map((n) => ({
-      ...alert,
-      id: `${String(n)}1111111-1111-4111-8111-111111111111`,
-      title: `Alert ${String(n)}`,
-      summary: n === 4 ? '' : alert.summary,
-    }));
-    server.use(
-      http.get('/api/warning/alerts', () =>
-        HttpResponse.json({ items: many, unacknowledged: many.length }),
-      ),
+    const many = bellAlerts(4).map((item, index) =>
+      index === 3 ? { ...item, summary: '' } : item,
     );
+    server.use(http.get('/api/bell', () => HttpResponse.json(bellSummary(many))));
     useGlobeStore.setState({ opsRoom: true });
     renderApp('/', 'user');
     const strip = await screen.findByRole('complementary', { name: 'Unacknowledged alerts' });

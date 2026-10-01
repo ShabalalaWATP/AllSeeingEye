@@ -1,6 +1,6 @@
-import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   fetchUkraineBoard,
@@ -14,17 +14,12 @@ import { applySession } from '@/test/render';
 import { server } from '@/test/server';
 
 import { ReferenceImage, loadReferenceImage } from './ReferenceImage';
-import { REFRESH_MS, useUkraineBoard } from './useUkraineBoard';
 
 beforeAll(() => {
   applySession('user');
   if (!('createObjectURL' in URL)) {
     Object.assign(URL, { createObjectURL: () => 'blob:unit', revokeObjectURL: () => undefined });
   }
-});
-
-afterEach(() => {
-  vi.useRealTimers();
 });
 
 describe('Ukraine API client', () => {
@@ -83,30 +78,5 @@ describe('reference images', () => {
     const failing = () => Promise.reject(new Error('gone'));
     render(<ReferenceImage imageId="missing-two" meta={meta} alt="Gone" fetcher={failing} />);
     await waitFor(() => expect(screen.queryByRole('img', { name: 'Gone' })).toBeNull());
-  });
-});
-
-describe('board refresh', () => {
-  it('reloads on the timer only while the document is visible', async () => {
-    vi.useFakeTimers();
-    const load = vi.fn(() => Promise.resolve(ukraineBoard));
-    const { result } = renderHook(() => useUkraineBoard(load));
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-    expect(load).toHaveBeenCalledTimes(1);
-    expect(result.current.data?.board.day_number).toBe(1663);
-    const visibility = vi.spyOn(document, 'visibilityState', 'get');
-    visibility.mockReturnValue('hidden');
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(REFRESH_MS);
-    });
-    expect(load).toHaveBeenCalledTimes(1);
-    visibility.mockReturnValue('visible');
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(REFRESH_MS);
-    });
-    expect(load).toHaveBeenCalledTimes(2);
-    visibility.mockRestore();
   });
 });

@@ -213,6 +213,18 @@ def map_layer_assets() -> list[SourceAsset]:
             "Tiles are requested by the browser as you pan and zoom.",
         ),
         asset(
+            "map:nasa_gibs_daily",
+            "NASA GIBS daily imagery",
+            "map_layer",
+            "browser_direct",
+            "NASA Global Imagery Browse Services (ESDIS)",
+            "Optional, off-by-default MODIS and VIIRS true-colour imagery for a chosen date.",
+            "NASA imagery with no usage restrictions; credit NASA GIBS, part of NASA ESDIS.",
+            "https://www.earthdata.nasa.gov/gibs",
+            "Worldwide to about 85 degrees latitude, roughly 250 m to 1 km per pixel.",
+            "Tiles for the chosen date are requested by the browser as you pan and zoom.",
+        ),
+        asset(
             "map:terrain_elevation",
             "Terrain elevation tiles",
             "map_layer",

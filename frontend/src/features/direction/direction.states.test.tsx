@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { aoi, plan, planEvidence } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 const failure = (message: string) =>
   HttpResponse.json({ error: { code: 'server_error', message } }, { status: 500 });
@@ -17,7 +20,7 @@ describe('direction states', () => {
     );
     renderApp('/direction', 'user');
     expect(await screen.findByText('Areas boom')).toBeInTheDocument();
-    expect(await screen.findByText('No plans yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No collection plans yet')).toBeInTheDocument();
     server.use(
       http.get('/api/direction/aois', () =>
         HttpResponse.json({
@@ -65,14 +68,20 @@ describe('direction states', () => {
     });
     const table = screen.getByRole('table', { name: 'Areas of interest' });
     await user.click(within(table).getByRole('button', { name: 'Delete' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete area' }),
+    );
     await waitFor(() => {
       expect(deleted).toBe(aoi.id);
     });
     const planForm = screen.getByRole('form', { name: 'New collection plan' });
     await user.type(within(planForm).getByLabelText('Plan name'), 'Scoped');
     await user.selectOptions(within(planForm).getByLabelText('Area'), aoi.id);
-    await user.type(within(planForm).getByLabelText('Priority intelligence requirement'), 'Q?');
-    await user.type(within(planForm).getByLabelText('Specific requirements'), 'Anything');
+    await user.type(
+      within(planForm).getByLabelText('PIR-1 priority intelligence requirement'),
+      'Q?',
+    );
+    await user.type(within(planForm).getByLabelText('SIR-1.1 specific requirement'), 'Anything');
     await user.type(within(planForm).getByLabelText('Background'), 'Context');
     await user.click(within(planForm).getByRole('button', { name: 'Add plan' }));
     await waitFor(() => {

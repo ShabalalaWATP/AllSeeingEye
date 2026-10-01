@@ -34,7 +34,7 @@ export function ConflictEvidenceList({
         <li key={representative.id}>
           <ConflictEvidenceRow event={representative} />
           {reportCount > 1 && (
-            <p className="text-[11px] text-muted">
+            <p className="text-2xs text-muted">
               {reportCount} related reports grouped; independence not established.
             </p>
           )}

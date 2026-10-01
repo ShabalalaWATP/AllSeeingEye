@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
 
@@ -32,30 +32,23 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
   const [code, setCode] = useState('');
   const [visible, setVisible] = useState(false);
   const [validation, setValidation] = useState<string | null>(null);
-  const inFlight = useRef(false);
   const action = useAsyncAction(async () => {
-    if (inFlight.current) return;
-    inFlight.current = true;
-    try {
-      if (emailMethod && challenge === null) {
-        const pending = await startPasswordChangeMfa(current);
-        setChallenge(pending.challenge_token);
-        return;
-      }
-      await changePassword({
-        current_password: current,
-        new_password: password,
-        totp_code: !emailMethod && code ? code : null,
-        ...(emailMethod ? { mfa_challenge_token: challenge, mfa_code: code } : {}),
-      });
-      // A response for an earlier identity must not sign out a newly signed-in account.
-      if (useAuthStore.getState().user?.id === actorId) {
-        // Commit the auth guard's sign-out before replacing its redirect with the notice.
-        flushSync(() => useAuthStore.getState().clearSession());
-        await navigate('/login', { replace: true, state: { passwordChanged: true } });
-      }
-    } finally {
-      inFlight.current = false;
+    if (emailMethod && challenge === null) {
+      const pending = await startPasswordChangeMfa(current);
+      setChallenge(pending.challenge_token);
+      return;
+    }
+    await changePassword({
+      current_password: current,
+      new_password: password,
+      totp_code: !emailMethod && code ? code : null,
+      ...(emailMethod ? { mfa_challenge_token: challenge, mfa_code: code } : {}),
+    });
+    // A response for an earlier identity must not sign out a newly signed-in account.
+    if (useAuthStore.getState().user?.id === actorId) {
+      // Commit the auth guard's sign-out before replacing its redirect with the notice.
+      flushSync(() => useAuthStore.getState().clearSession());
+      await navigate('/login', { replace: true, state: { passwordChanged: true } });
     }
   });
   const error =
@@ -69,7 +62,7 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
       className="flex flex-col gap-5"
       onSubmit={(event) => {
         event.preventDefault();
-        if (action.busy || inFlight.current || security.data === null) return;
+        if (security.data === null) return;
         const problem =
           current === ''
             ? 'Enter your current password.'
@@ -135,7 +128,6 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
         />
         <button
           type="button"
-          aria-pressed={visible}
           className="min-h-11 w-fit rounded text-sm text-muted hover:text-text"
           onClick={() => setVisible((value) => !value)}
         >

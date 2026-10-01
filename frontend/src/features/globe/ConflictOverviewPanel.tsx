@@ -85,7 +85,7 @@ export function ConflictOverviewPanel({
               <option value="tension">Tension areas (curated)</option>
             </select>
           </label>
-          <p className="text-[11px] text-muted">
+          <p className="text-2xs text-muted">
             Red: curated war region. Amber: tension area. These are regional locators, not live
             incident positions or frontline boundaries.
           </p>

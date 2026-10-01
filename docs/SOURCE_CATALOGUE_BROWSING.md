@@ -1,7 +1,8 @@
 # Source catalogue browsing
 
-Updated 8 September 2026. Sources are grouped by topic, with alphabetical source
-names within each group. Search accepts multiple terms across names,
+Updated 8 September 2026. Every signed-in account can browse the read-only catalogue
+at `/sources`. Sources are grouped by topic, with alphabetical source names within
+each group. Search accepts multiple terms across names,
 organisations, topics, languages and declared coverage. Maritime search also
 recognises ships, boats, shipping and AIS.
 

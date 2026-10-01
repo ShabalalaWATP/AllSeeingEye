@@ -21,7 +21,7 @@ export function OryxCards({ confirmed }: { confirmed: ConfirmedLosses }) {
             className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-[11px] uppercase tracking-wide text-muted">
+              <span className="font-mono text-2xs uppercase tracking-wide text-muted">
                 {SIDE_LABELS[side]} losses, Oryx
               </span>
               <BasisBadge basis="visually_confirmed" />
@@ -67,7 +67,7 @@ export function HarmCard({ harm }: { harm: CivilianHarm }) {
   return (
     <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] uppercase tracking-wide text-muted">
+        <span className="font-mono text-2xs uppercase tracking-wide text-muted">
           Civilians killed, {label}
         </span>
         <BasisBadge basis="documented" />

@@ -2,16 +2,18 @@
 
 ## Navigation
 
-The main sidebar contains Map, Research, Subscriptions, Geolocation, Economy and
-Cyber intelligence. See [the cyber workspace guide](CYBER_THREAT_INTELLIGENCE.md).
-Research contains New research, Saved reports, Daily briefing and Plans & areas.
-The profile icon opens identity, security and team sharing. The settings icon
-opens personal preferences and links to the source catalogue and alert rules.
-Existing direct routes remain usable. Administration remains a separate guarded
-workspace with its own navigation.
+Economy is in the Monitoring group of the navigation, beside Live monitor, Ukraine
+war and Cyber intelligence. See [the cyber workspace guide](CYBER_THREAT_INTELLIGENCE.md)
+and [Using the app](04_FEATURES_AND_VIEWS.md) for every destination. The profile
+icon opens identity, security and team sharing. The settings icon opens personal
+preferences, which link to account security. The source catalogue is an
+administrator's page, and alert rules are in Alerts, under Watches. Existing direct
+routes remain usable. Administration remains a separate guarded workspace with its
+own navigation.
 
-Personal settings include Obsidian, Slate and Daylight themes, reduced motion,
-time and region preferences, research defaults and report preferences. Values are
+Personal settings include eight themes (Obsidian, Slate, Daylight, Midnight, Aurora,
+Phosphor, Crimson and Graphite), reduced motion, keyboard shortcuts, time and region
+preferences, research defaults, report preferences and the AI allowance. Values are
 stored in the authenticated user's existing profile JSON. Themes reset on logout
 and do not alter another account. Reduced motion also disables eye motion and
 globe auto-rotation. Map colours remain legible independently of the page theme.

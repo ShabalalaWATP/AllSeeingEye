@@ -43,10 +43,21 @@ export function describeError(value: unknown): string {
   if (isApiError(value)) {
     if (value.status === 429 && !['research_usage_limit', 'ai_usage_limit'].includes(value.code)) {
       const wait =
-        value.retryAfterSeconds === null ? '' : ` Try again in ${value.retryAfterSeconds} seconds.`;
-      return `Too many attempts.${wait}`;
+        value.retryAfterSeconds === null
+          ? 'Wait a few minutes before trying again.'
+          : describeRetryWait(value.retryAfterSeconds);
+      return `Too many attempts. ${wait}`;
     }
     return value.message;
   }
   return 'Something went wrong. Please try again.';
+}
+
+/** "Try again in 20 seconds." or "Try again in about 5 minutes." for a known wait. */
+function describeRetryWait(seconds: number): string {
+  if (seconds <= 90) return `Try again in ${String(seconds)} seconds.`;
+  const minutes = Math.ceil(seconds / 60);
+  return minutes < 120
+    ? `Try again in about ${String(minutes)} minutes.`
+    : `Try again in about ${String(Math.ceil(minutes / 60))} hours.`;
 }

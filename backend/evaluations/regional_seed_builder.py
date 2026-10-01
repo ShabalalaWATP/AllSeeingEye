@@ -108,7 +108,7 @@ def cases() -> list[dict[str, object]]:
 
 
 if __name__ == "__main__":
-    destination = Path(__file__).parent / "regional_cases"
+    destination = Path(__file__).parents[1] / "src/ase/resources/evaluations/regional"
     destination.mkdir(exist_ok=True)
     for case in cases():
         (destination / f"{case['id']}.json").write_bytes(

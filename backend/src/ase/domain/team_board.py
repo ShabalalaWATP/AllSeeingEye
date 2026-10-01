@@ -61,6 +61,46 @@ def clean_reason(value: str | None) -> str:
     return value
 
 
+class BoardSubjectKind(StrEnum):
+    """Team work a top-level post may discuss. The board never becomes evidence."""
+
+    REPORT_VERSION = "report_version"
+    SAVED_AREA = "saved_area"
+    DRAWING_COLLECTION = "drawing_collection"
+
+
+@dataclass(frozen=True, slots=True)
+class BoardSubject:
+    """A typed reference; only a report version names an exact version number."""
+
+    kind: BoardSubjectKind
+    id: UUID
+    version: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.kind is BoardSubjectKind.REPORT_VERSION:
+            if self.version is None or self.version < 1:
+                raise ValueError("A report version subject needs a version of 1 or more.")
+        elif self.version is not None:
+            raise ValueError("Only a report version subject has a version.")
+
+
+@dataclass(frozen=True, slots=True)
+class BoardSubjectView:
+    """What a reader may see of a subject now. ``title`` is None when unavailable."""
+
+    subject: BoardSubject
+    title: str | None
+
+    @property
+    def available(self) -> bool:
+        return self.title is not None
+
+    @classmethod
+    def unavailable(cls, subject: BoardSubject) -> BoardSubjectView:
+        return cls(subject, None)
+
+
 @dataclass(frozen=True, slots=True)
 class TeamBoardPost:
     id: UUID
@@ -75,12 +115,25 @@ class TeamBoardPost:
     revision: int = 1
     edited_at: datetime | None = None
     removal: BoardRemoval | None = None
+    subject: BoardSubject | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class TeamBoardPostView:
     post: TeamBoardPost
     author_name: str
+    # Resolved for the current reader; None for no subject or a removed post.
+    subject: BoardSubjectView | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ReportDiscussion:
+    """Live top-level threads about any version of one team report, for its readers."""
+
+    team_id: UUID | None
+    count: int
+    latest_post_id: UUID | None
+    can_post: bool
 
 
 @dataclass(frozen=True, slots=True)

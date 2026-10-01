@@ -23,7 +23,7 @@ export function Step({
       <header className="flex items-baseline gap-3">
         <span
           aria-hidden="true"
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ember/15 font-mono text-[11px] text-ember"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ember/15 font-mono text-2xs text-ember"
         >
           {number}
         </span>

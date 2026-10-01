@@ -1,6 +1,8 @@
 """Personal and team authorisation, rebuilt from authoritative identity and membership."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Literal
 from uuid import UUID
 
 from ase.application.ports.repositories import UserRepository
@@ -9,6 +11,10 @@ from ase.domain.access import Visibility
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.teams import MembershipRole, Team
 from ase.domain.users import User
+
+# "mine": personal records plus current team memberships, for every role (the default).
+# "all": the administrative view across every user; only administrators may request it.
+OwnershipScope = Literal["mine", "all"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +28,18 @@ class AccessContext:
     @property
     def visibility(self) -> Visibility:
         return Visibility(self.actor.id, self.actor.is_admin, tuple(self.memberships))
+
+    def scoped_visibility(self, scope: OwnershipScope) -> Visibility:
+        """Narrow list queries to the caller's own work unless an administrator widens them.
+
+        This selects a view; it never grants access. Object-level checks still use the
+        caller's full authority through ``require_read`` and friends.
+        """
+        if scope == "all":
+            if not self.actor.is_admin:
+                raise Forbidden("Only administrators can view every user's work.")
+            return self.visibility
+        return Visibility(self.actor.id, False, tuple(self.memberships))
 
     def require_read(self, created_by: UUID | None, team_id: UUID | None) -> None:
         if self.actor.is_admin:
@@ -97,6 +115,18 @@ class AccessPolicy:
             if team is None or not team.is_active or team_id not in context.memberships:
                 raise Forbidden("Background work requires current membership of an active team.")
         return context
+
+    async def owner_names(self, actor: User, owner_ids: Iterable[UUID]) -> dict[UUID, str]:
+        """Display names for owners of records the caller has already been allowed to list."""
+        names: dict[UUID, str] = {}
+        for owner_id in dict.fromkeys(owner_ids):
+            if owner_id == actor.id:
+                names[owner_id] = actor.display_name
+                continue
+            owner = await self._users.get_by_id(owner_id)
+            if owner is not None:
+                names[owner_id] = owner.display_name
+        return names
 
     async def context(self, actor: User, *, for_update: bool = False) -> AccessContext:
         if for_update:

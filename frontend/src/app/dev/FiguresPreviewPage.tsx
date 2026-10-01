@@ -6,6 +6,7 @@
  */
 import { useState } from 'react';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { LeftRail } from '@/app/shell/LeftRail';
 import { countryOptions, matchesCountries } from '@/components/ui/CountryChips';
 import { TopBar } from '@/app/shell/TopBar';
@@ -78,11 +79,14 @@ export default function FiguresPreviewPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
         <main className="relative flex min-h-0 flex-1">
-          <aside className="w-80 shrink-0 overflow-y-auto border-r border-line bg-surface/60 p-3">
+          <aside
+            aria-label="Figure list"
+            className="w-80 shrink-0 overflow-y-auto border-r border-line bg-surface/60 p-3"
+          >
             <FigurePanel figures={figures} onSelect={figures.select} />
           </aside>
           <article className="relative flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto p-6">
-            <h1 className="text-xl font-semibold">Public figures</h1>
+            <PageHeader type="record" title="Public figures" />
             <FiguresBoard board={board} />
           </article>
           {figures.selected && (

@@ -10,6 +10,7 @@ from ase.application.report_jobs.budget import (
 )
 from ase.application.report_jobs.context_resume import can_split_context
 from ase.application.report_jobs.controls import resume_error_allowed
+from ase.application.report_jobs.listing import job_origin
 from ase.application.report_jobs.section_text import alternatives_preview
 from ase.application.report_jobs.section_text import context_preview as _context_preview
 from ase.application.report_jobs.section_text import text as _text
@@ -290,11 +291,13 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
         "period_to": period.get("period_to"),
         "revision": job.revision,
         "title": job.title,
+        "origin": job_origin(job.payload),
         "status": job.status,
         "stage": job.stage,
         "created_at": job.created_at,
         "updated_at": job.updated_at,
         "team_id": job.team_id,
+        "owner_id": job.owner_id,
         "report_id": job.report_id if job.status in {"completed", "needs_review"} else None,
         "model": _text(summary.get("model")),
         "reasoning_effort": None if effort is None else _text(effort, 40),

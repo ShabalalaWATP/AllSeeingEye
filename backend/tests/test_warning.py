@@ -85,13 +85,14 @@ async def test_indicators_are_owned_and_validated(
 
     await create_user(container, email="second@example.com", password="another-long-passphrase")
     second = await login_token(client, "second@example.com", "another-long-passphrase")
+    revision = {"expected_updated_at": created.json()["updated_at"]}
     forbidden = await client.put(
-        f"/api/warning/indicators/{indicator_id}", json=body, headers=bearer(second)
+        f"/api/warning/indicators/{indicator_id}", json=body | revision, headers=bearer(second)
     )
     assert forbidden.status_code == 404
     edited = await client.put(
         f"/api/warning/indicators/{indicator_id}",
-        json={**body, "enabled": False, "threshold": 3},
+        json={**body, **revision, "enabled": False, "threshold": 3},
         headers=bearer(admin_token),
     )
     assert edited.status_code == 200 and edited.json()["threshold"] == 3

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -18,9 +19,9 @@ export function ForgotPasswordPage() {
   if (result !== null) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">
-          {result.email_available ? 'Check your inbox' : 'Contact an administrator'}
-        </h1>
+        <PageHeader
+          title={result.email_available ? 'Check your inbox' : 'Contact an administrator'}
+        />
         <Alert tone={result.email_available ? 'info' : 'warning'}>{result.message}</Alert>
         <Link to="/login" className="text-sm text-muted hover:text-text">
           Back to sign in
@@ -37,7 +38,7 @@ export function ForgotPasswordPage() {
         void run();
       }}
     >
-      <h1 className="text-lg font-semibold">Forgotten password</h1>
+      <PageHeader title="Forgotten password" />
       <p className="text-sm text-muted">
         Enter your email address to request a reset link. If email recovery is unavailable, an
         administrator can help you recover access.

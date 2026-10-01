@@ -28,12 +28,22 @@ function readReducedMotion(): boolean {
   return mediaQuery()?.matches ?? false;
 }
 
-export function useReducedMotion(): boolean {
+/** The operating system's reduced-motion request alone, which nothing in the app overrides. */
+export function useSystemReducedMotion(): boolean {
+  return useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => false);
+}
+
+/** The signed-in account's saved reduced-motion preference, never another account's. */
+export function useAccountReducedMotion(): boolean {
   const actorId = useAuthStore((state) => state.user?.id);
-  const preference = useProfileStore(
+  return useProfileStore(
     (state) => state.owner === actorId && (state.profile?.reduced_motion ?? false),
   );
-  const system = useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => false);
+}
+
+export function useReducedMotion(): boolean {
+  const preference = useAccountReducedMotion();
+  const system = useSystemReducedMotion();
   return system || preference;
 }
 

@@ -15,6 +15,7 @@ export function AssistantEye({ className }: { className?: string }) {
         flameSpeed={reducedMotion ? 0 : 1}
         pupilFollow={reducedMotion ? 0 : 1}
         paused={!visible}
+        fallbackSizes="64px"
       />
     </div>
   );

@@ -8,6 +8,7 @@ import { Link } from 'react-router';
 import { LibraryButton } from '@/components/library/LibraryButton';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import { formatPersonalDate, formatUtc } from '@/lib/format';
@@ -45,6 +46,7 @@ export function SavedReports({
         </Alert>
       )}
       {reports.loading && <LoadingNote label="Loading reports" />}
+      {reports.loading && listed === null && <Skeleton lines={4} />}
       {listed?.length === 0 && (
         <p className="text-sm text-muted">
           {reports.canPrevious ? 'No reports on this page. Return to the previous page.' : empty}

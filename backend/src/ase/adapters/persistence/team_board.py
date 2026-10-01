@@ -16,11 +16,19 @@ from ase.adapters.persistence.models import UserRow
 from ase.adapters.persistence.team_board_models import TeamBoardPostRow, TeamBoardReadCursorRow
 from ase.domain.team_board import (
     BoardRemoval,
+    BoardSubject,
+    BoardSubjectKind,
     TeamBoardPage,
     TeamBoardPost,
     TeamBoardPostView,
     TeamBoardReadCursor,
 )
+
+
+def _subject(row: TeamBoardPostRow) -> BoardSubject | None:
+    if row.subject_kind is None or row.subject_id is None:
+        return None
+    return BoardSubject(BoardSubjectKind(row.subject_kind), row.subject_id, row.subject_version)
 
 
 def _post(row: TeamBoardPostRow) -> TeamBoardPost:
@@ -37,6 +45,7 @@ def _post(row: TeamBoardPostRow) -> TeamBoardPost:
         row.revision,
         row.edited_at,
         BoardRemoval(row.removal) if row.removal else None,
+        _subject(row),
     )
 
 
@@ -105,6 +114,9 @@ class SqlTeamBoardRepository:
                 revision=post.revision,
                 edited_at=post.edited_at,
                 removal=post.removal.value if post.removal else None,
+                subject_kind=post.subject.kind.value if post.subject else None,
+                subject_id=post.subject.id if post.subject else None,
+                subject_version=post.subject.version if post.subject else None,
             )
         )
         await self._session.flush()
@@ -169,6 +181,30 @@ class SqlTeamBoardRepository:
             )
             or 0
         )
+
+    async def subject_threads(
+        self, team_id: UUID, kind: BoardSubjectKind, subject_id: UUID
+    ) -> tuple[int, UUID | None]:
+        threads = (
+            TeamBoardPostRow.team_id == team_id,
+            TeamBoardPostRow.subject_kind == kind.value,
+            TeamBoardPostRow.subject_id == subject_id,
+            TeamBoardPostRow.parent_id.is_(None),
+            TeamBoardPostRow.deleted_at.is_(None),
+        )
+        count = int(
+            await self._session.scalar(
+                select(func.count()).select_from(TeamBoardPostRow).where(*threads)
+            )
+            or 0
+        )
+        latest = await self._session.scalar(
+            select(TeamBoardPostRow.id)
+            .where(*threads)
+            .order_by(TeamBoardPostRow.created_at.desc(), TeamBoardPostRow.id)
+            .limit(1)
+        )
+        return count, latest
 
     async def get_cursor(self, team_id: UUID, user_id: UUID) -> TeamBoardReadCursor | None:
         row = await self._session.get(

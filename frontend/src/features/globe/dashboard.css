@@ -1,3 +1,20 @@
+/* Fixed map instrument palette (KAN-99): each colour is named once here and the
+   rules below paint with var(). */
+:root {
+  --globe-map-layer-rail-scrollbar-thumb: #77818d;
+  --globe-map-layer-rail-scrollbar-track: #080a0d;
+  --globe-map-layer-rail-bg: #080a0de8;
+  --globe-map-layer-rail-border: #ffffff12;
+  --globe-map-icon-button-hover-bg: #ffffff10;
+  --globe-map-icon-button-aria-checked-true-bg: #79d8eb12;
+  --globe-map-layer-count-bg: #11161a;
+  --globe-map-control-label-border: #ffffff30;
+  --globe-map-control-label-bg: #101419;
+  --globe-map-control-label-ink: #f1f5f9;
+  --globe-map-control-label-shadow: #0007;
+  --globe-map-style-label-ink: #e5e7eb;
+}
+
 .globe-dashboard,
 .globe-dashboard-controls {
   --color-ground: #050607;
@@ -64,11 +81,12 @@
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #77818d #080a0d;
+  scrollbar-color: var(--globe-map-layer-rail-scrollbar-thumb)
+    var(--globe-map-layer-rail-scrollbar-track);
   overscroll-behavior-y: contain;
   border-radius: 12px;
-  background: #080a0de8;
-  border: 1px solid #ffffff12;
+  background: var(--globe-map-layer-rail-bg);
+  border: 1px solid var(--globe-map-layer-rail-border);
   padding: 3px 0;
 }
 .map-layer-rail > *,
@@ -94,7 +112,7 @@
 }
 .map-icon-button:hover,
 .map-icon-button:focus-visible {
-  background: #ffffff10;
+  background: var(--globe-map-icon-button-hover-bg);
   color: var(--color-text);
 }
 .map-icon-button:focus-visible {
@@ -106,7 +124,7 @@
 .map-icon-button[data-active='true'],
 .map-icon-button[data-on='true'] {
   color: var(--color-ember);
-  background: #79d8eb12;
+  background: var(--globe-map-icon-button-aria-checked-true-bg);
 }
 /* A lit bar marks layers that are on by shape as well as colour (WCAG 1.4.1). */
 .map-icon-button[role='switch'][aria-checked='true']::before,
@@ -133,7 +151,7 @@
   top: 0;
   font: 11px/1 monospace;
   padding: 1px 2px;
-  background: #11161a;
+  background: var(--globe-map-layer-count-bg);
   border-radius: 3px;
 }
 
@@ -212,18 +230,18 @@
 .map-control-label {
   position: fixed;
   z-index: 1000;
-  pointer-events: none;
+  /* Hoverable (WCAG 1.4.13): the pointer can move onto the label without it closing. */
   width: max-content;
   max-width: min(260px, calc(100vw - 90px));
   padding: 7px 10px;
-  border: 1px solid #ffffff30;
+  border: 1px solid var(--globe-map-control-label-border);
   border-radius: 6px;
-  background: #101419;
-  color: #f1f5f9;
+  background: var(--globe-map-control-label-bg);
+  color: var(--globe-map-control-label-ink);
   font:
     12px/1.4 Inter,
     sans-serif;
-  box-shadow: 0 3px 12px #0007;
+  box-shadow: 0 3px 12px var(--globe-map-control-label-shadow);
 }
 .map-style-button {
   height: 56px;
@@ -235,11 +253,11 @@
   line-height: 1.1;
   font-weight: 600;
   white-space: nowrap;
-  color: #e5e7eb;
+  color: var(--globe-map-style-label-ink);
 }
 
 @media (max-width: 1023px) {
-  .globe-dashboard [aria-label='Copy coordinates'] {
+  .globe-dashboard .map-coordinate-readout {
     max-width: calc(100% - 7.5rem);
     white-space: normal;
   }

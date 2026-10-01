@@ -57,6 +57,36 @@ async def release_job(
         return result
 
 
+async def release_list(
+    actor: User,
+    jobs: list[ReportJob],
+    *,
+    guard: Callable[[], AbstractAsyncContextManager[None]],
+    check_job: Callable[[ReportJob], Awaitable[None]],
+    uow: UnitOfWork,
+    access_policy: AccessPolicy,
+    check_session: SessionCheck,
+) -> list[dict[str, Any]]:
+    async with guard():
+        for job in jobs:
+            # Thin rows contain progress metadata only. The callback must not
+            # load frozen evidence or perform a provider request for this list.
+            await check_job(job)
+        try:
+            access = await access_policy.context(actor)
+            result = []
+            for job in jobs:
+                try:
+                    access.require_read(job.owner_id, job.team_id)
+                except NotFound:
+                    continue
+                result.append(job_view(job, detail=False, can_control=can_control(access, job)))
+        finally:
+            await uow.rollback()
+        await check_session()
+        return result
+
+
 async def load_job(
     actor: User,
     job_id: UUID,

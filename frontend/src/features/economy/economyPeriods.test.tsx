@@ -153,3 +153,13 @@ it('places an attributed overview before exactly six worldwide stories', async (
   expect(within(stories).getAllByRole('listitem')).toHaveLength(6);
   expect(overview).toHaveTextContent('Bank of England');
 });
+
+it('explains automatic briefing reuse beside the period choice before work is chosen', async () => {
+  renderApp('/economy', 'user');
+  const region = await screen.findByRole('region', { name: 'Economic summary period' });
+  expect(region).toHaveTextContent(/Choosing a period can start a personal AI briefing/);
+  expect(region).toHaveTextContent(/same period in the last 24 hours, that briefing is reused/);
+  expect(
+    within(region).getByRole('link', { name: 'Find them in Research progress' }),
+  ).toHaveAttribute('href', '/research/jobs?briefings=1');
+});

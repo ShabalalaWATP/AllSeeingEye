@@ -518,6 +518,7 @@
           "report-jobs"
         ],
         "summary": "List Jobs",
+        "description": "Scope, status and origin filters apply before the page; see application listing.\n\n``mine`` (the default) is the caller's personal and current-team work; only\nadministrators may request ``all``.",
         "operationId": "list_jobs_api_report_jobs_get",
         "security": [
           {
@@ -535,6 +536,64 @@
               "minimum": 1,
               "default": 20,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "running",
+                "attention",
+                "finished"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "include_briefings",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Briefings"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -2766,7 +2825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -2834,7 +2893,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -3152,6 +3211,361 @@
             }
           }
         }
+      }
+    },
+    "/api/bell": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Bell",
+        "operationId": "read_bell_api_bell_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/alerts/{alert_id}/destination": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Alert Destination",
+        "operationId": "alert_destination_api_bell_alerts__alert_id__destination_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDestinationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/alerts/acknowledge": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Acknowledge Shown",
+        "operationId": "acknowledge_shown_api_bell_alerts_acknowledge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellAcknowledgeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellAcknowledgeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/preferences": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Set Bell Preferences",
+        "operationId": "set_bell_preferences_api_bell_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/muted-rules/{indicator_id}": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Mute Rule",
+        "operationId": "mute_rule_api_bell_muted_rules__indicator_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Unmute Rule",
+        "operationId": "unmute_rule_api_bell_muted_rules__indicator_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/mentions/{post_id}/open": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Open Mention",
+        "description": "Re-check the post against current membership and mark the caller's notice read.",
+        "operationId": "open_mention_api_bell_mentions__post_id__open_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentionOpenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/mentions/read": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Mentions",
+        "operationId": "read_mentions_api_bell_mentions_read_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellMentionsReadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellMentionsReadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/me/team-invitations": {
@@ -4886,7 +5300,9 @@
             "schema": {
               "enum": [
                 "drawings",
-                "radio"
+                "radio",
+                "live_view",
+                "ops_playlist"
               ],
               "type": "string",
               "title": "Kind"
@@ -8214,6 +8630,7 @@
           "reports"
         ],
         "summary": "List Reports",
+        "description": "Saved reports by one origin, or one named group of origins such as requested work.",
         "operationId": "list_reports_api_reports_get",
         "security": [
           {
@@ -8258,6 +8675,22 @@
                 }
               ],
               "title": "Origin"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportGroup"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group"
             }
           }
         ],
@@ -8534,6 +8967,55 @@
         }
       }
     },
+    "/api/reports/{report_id}/team-discussion": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Report Team Discussion",
+        "description": "Board threads about this team report, for its current readers; no titles or text.",
+        "operationId": "report_team_discussion_api_reports__report_id__team_discussion_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDiscussionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/markdown": {
       "get": {
         "tags": [
@@ -8605,6 +9087,192 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/team-copy-preview": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Preview Team Copy",
+        "operationId": "preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyPreviewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/team-copies": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Copy To Team",
+        "operationId": "copy_to_team_api_reports__report_id__versions__number__team_copies_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamCopyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/team-copy-provenance": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Team Copy Provenance",
+        "operationId": "team_copy_provenance_api_reports__report_id__team_copy_provenance_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamCopyProvenanceOut"
                 }
               }
             }
@@ -10191,6 +10859,56 @@
         ]
       }
     },
+    "/api/sources/{source_id}/track-record": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Get Track Record",
+        "operationId": "get_track_record_api_sources__source_id__track_record_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceTrackRecordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/versions/{number}/source-reviews": {
       "get": {
         "tags": [
@@ -10429,6 +11147,64 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "source-reviews"
+        ],
+        "summary": "Snapshots",
+        "description": "Snapshots of this exact version, newest first, for an explicit reader choice.",
+        "operationId": "snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceSnapshotListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/reports/{report_id}/versions/{number}/source-assessment-snapshots/{snapshot_id}": {
@@ -10483,6 +11259,191 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SourceReviewSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts": {
+      "get": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "List Verdicts",
+        "operationId": "list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationVerdictListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "Record Verdict",
+        "operationId": "record_verdict_api_reports__report_id__versions__number__citation_verdicts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CitationVerdictIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationVerdictOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts/export": {
+      "get": {
+        "tags": [
+          "citation-verdicts"
+        ],
+        "summary": "Export Verdicts",
+        "operationId": "export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -11128,7 +12089,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PlanIn"
+                "$ref": "#/components/schemas/PlanUpdateIn"
               }
             }
           }
@@ -11182,6 +12143,104 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/direction/plans/{plan_id}/definition": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Get Plan Definition",
+        "description": "The plan's requirements and revision without gathering live evidence.",
+        "operationId": "get_plan_definition_api_direction_plans__plan_id__definition_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/direction/plans/{plan_id}/map-matches": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Get Plan Map Matches",
+        "description": "Event ids and SIR codes for one reader's map filter; never cached or streamed.",
+        "operationId": "get_plan_map_matches_api_direction_plans__plan_id__map_matches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanMapMatchesOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -11272,6 +12331,7 @@
           "warning"
         ],
         "summary": "Update Indicator",
+        "description": "Edit, pause or resume one rule from the revision the caller read.",
         "operationId": "update_indicator_api_warning_indicators__indicator_id__put",
         "security": [
           {
@@ -11295,7 +12355,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IndicatorIn"
+                "$ref": "#/components/schemas/IndicatorUpdateIn"
               }
             }
           }
@@ -11369,6 +12429,7 @@
           "warning"
         ],
         "summary": "List Alerts",
+        "description": "Defaults to the caller's personal and current-team alerts; only admins may ask for all.",
         "operationId": "list_alerts_api_warning_alerts_get",
         "security": [
           {
@@ -11404,6 +12465,20 @@
               "minimum": 1,
               "default": 50,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -13474,6 +14549,242 @@
         ]
       }
     },
+    "/api/admin/llm/evaluations/catalogue": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Evaluation Catalogue",
+        "operationId": "evaluation_catalogue_api_admin_llm_evaluations_catalogue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationCatalogueOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/llm/evaluations": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Evaluation Runs",
+        "operationId": "list_evaluation_runs_api_admin_llm_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Start Evaluation Run",
+        "operationId": "start_evaluation_run_api_admin_llm_evaluations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationStartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Evaluation Run",
+        "operationId": "get_evaluation_run_api_admin_llm_evaluations__run_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}/cancel": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Cancel Evaluation Run",
+        "operationId": "cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}/artefact": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Download Evaluation Artefact",
+        "operationId": "download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/ai-usage/policies": {
       "get": {
         "tags": [
@@ -13980,6 +15291,56 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/admin/research-quality": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Research Quality",
+        "operationId": "get_research_quality_api_admin_research_quality_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Days to look back: 7, 30, 90 or 365.",
+              "default": 90,
+              "title": "Window Days"
+            },
+            "description": "Days to look back: 7, 30, 90 or 365."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchQualityOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/admin/sources/firms_viirs_noaa20/connection": {
@@ -14684,6 +16045,25 @@
           "truncated"
         ],
         "title": "AccountSessionsOut"
+      },
+      "AcknowledgeFailureOut": {
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Alert Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alert_id",
+          "message"
+        ],
+        "title": "AcknowledgeFailureOut"
       },
       "ActivityOut": {
         "properties": {
@@ -15677,6 +17057,74 @@
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
+      "AlertDestinationOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/DestinationKind"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Id"
+          },
+          "transition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transition Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "available",
+          "report_id",
+          "monitor_id",
+          "transition_id",
+          "message"
+        ],
+        "title": "AlertDestinationOut"
+      },
       "AlertOut": {
         "properties": {
           "id": {
@@ -15826,6 +17274,17 @@
               }
             ],
             "title": "Team Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
           }
         },
         "type": "object",
@@ -18021,6 +19480,360 @@
         ],
         "title": "AviationBoardOut"
       },
+      "BellAcknowledgeIn": {
+        "properties": {
+          "alert_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Alert Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "alert_ids"
+        ],
+        "title": "BellAcknowledgeIn"
+      },
+      "BellAcknowledgeOut": {
+        "properties": {
+          "acknowledged": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Acknowledged"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/AcknowledgeFailureOut"
+            },
+            "type": "array",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acknowledged",
+          "failed"
+        ],
+        "title": "BellAcknowledgeOut"
+      },
+      "BellAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "fired_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fired At"
+          },
+          "indicator_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indicator Id"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "annotation_monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation Monitor Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "can_acknowledge": {
+            "type": "boolean",
+            "title": "Can Acknowledge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "fired_at",
+          "indicator_id",
+          "report_id",
+          "annotation_monitor_id",
+          "team_id",
+          "team_name",
+          "can_acknowledge"
+        ],
+        "title": "BellAlertOut"
+      },
+      "BellAlertSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellAlertOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "muted"
+        ],
+        "title": "BellAlertSectionOut"
+      },
+      "BellKind": {
+        "type": "string",
+        "enum": [
+          "alerts",
+          "research",
+          "mentions"
+        ],
+        "title": "BellKind",
+        "description": "In-app notification kinds a viewer may mute."
+      },
+      "BellMentionOut": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "thread_id",
+          "team_id",
+          "team_name",
+          "author_name",
+          "snippet",
+          "created_at"
+        ],
+        "title": "BellMentionOut",
+        "description": "A plain-text snippet of a post the recipient can still read; never markup."
+      },
+      "BellMentionSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellMentionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread",
+          "muted"
+        ],
+        "title": "BellMentionSectionOut"
+      },
+      "BellMentionsReadIn": {
+        "properties": {
+          "post_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Post Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "post_ids"
+        ],
+        "title": "BellMentionsReadIn"
+      },
+      "BellMentionsReadOut": {
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unread"
+        ],
+        "title": "BellMentionsReadOut"
+      },
+      "BellOut": {
+        "properties": {
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "alerts": {
+            "$ref": "#/components/schemas/BellAlertSectionOut"
+          },
+          "mentions": {
+            "$ref": "#/components/schemas/BellMentionSectionOut"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/BellPreferencesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window_days",
+          "alerts",
+          "mentions",
+          "preferences"
+        ],
+        "title": "BellOut"
+      },
+      "BellPreferencesIn": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Muted Kinds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "muted_kinds"
+        ],
+        "title": "BellPreferencesIn"
+      },
+      "BellPreferencesOut": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "title": "Muted Kinds"
+          },
+          "muted_rules": {
+            "items": {
+              "$ref": "#/components/schemas/MutedRuleOut"
+            },
+            "type": "array",
+            "title": "Muted Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "muted_kinds",
+          "muted_rules"
+        ],
+        "title": "BellPreferencesOut"
+      },
       "BlockKind": {
         "type": "string",
         "enum": [
@@ -18039,6 +19852,16 @@
         ],
         "title": "BlockKind"
       },
+      "BoardSubjectKind": {
+        "type": "string",
+        "enum": [
+          "report_version",
+          "saved_area",
+          "drawing_collection"
+        ],
+        "title": "BoardSubjectKind",
+        "description": "Team work a top-level post may discuss. The board never becomes evidence."
+      },
       "BriefJobCreateIn": {
         "properties": {
           "request_id": {
@@ -18055,6 +19878,18 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Revision"
+          },
+          "expected_plan_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Plan Updated At"
           }
         },
         "additionalProperties": false,
@@ -19115,6 +20950,255 @@
           "review_required"
         ],
         "title": "CitationStatus"
+      },
+      "CitationVerdictIn": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Judgement Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "contradicting"
+            ],
+            "title": "Relation"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/CitationVerdictValue"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "label",
+          "relation",
+          "verdict"
+        ],
+        "title": "CitationVerdictIn"
+      },
+      "CitationVerdictListOut": {
+        "properties": {
+          "verdicts": {
+            "items": {
+              "$ref": "#/components/schemas/CitationVerdictOut"
+            },
+            "type": "array",
+            "title": "Verdicts"
+          },
+          "can_record": {
+            "type": "boolean",
+            "title": "Can Record"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "note_limit": {
+            "type": "integer",
+            "title": "Note Limit",
+            "default": 300
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": "Citation verdicts are human opinions recorded by reviewers. They are not ground truth, and they never change the frozen report, its grades or its confidence."
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdicts",
+          "can_record",
+          "limit"
+        ],
+        "title": "CitationVerdictListOut"
+      },
+      "CitationVerdictOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "contradicting"
+            ],
+            "title": "Relation"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/CitationVerdictValue"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Reviewer Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "version_number",
+          "judgement_id",
+          "label",
+          "relation",
+          "verdict",
+          "note",
+          "reviewer_id",
+          "team_id",
+          "recorded_at"
+        ],
+        "title": "CitationVerdictOut"
+      },
+      "CitationVerdictValue": {
+        "type": "string",
+        "enum": [
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell"
+        ],
+        "title": "CitationVerdictValue"
+      },
+      "CitationVerdictsOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "citations": {
+            "type": "integer",
+            "title": "Citations"
+          },
+          "citations_with_verdicts": {
+            "type": "integer",
+            "title": "Citations With Verdicts"
+          },
+          "current_verdicts": {
+            "type": "integer",
+            "title": "Current Verdicts"
+          },
+          "superseded_verdicts": {
+            "type": "integer",
+            "title": "Superseded Verdicts"
+          },
+          "supports": {
+            "type": "integer",
+            "title": "Supports"
+          },
+          "partly_supports": {
+            "type": "integer",
+            "title": "Partly Supports"
+          },
+          "does_not_support": {
+            "type": "integer",
+            "title": "Does Not Support"
+          },
+          "cannot_tell": {
+            "type": "integer",
+            "title": "Cannot Tell"
+          },
+          "reviewers": {
+            "type": "integer",
+            "title": "Reviewers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "note",
+          "citations",
+          "citations_with_verdicts",
+          "current_verdicts",
+          "superseded_verdicts",
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell",
+          "reviewers"
+        ],
+        "title": "CitationVerdictsOut"
       },
       "CivilianHarmMonthOut": {
         "properties": {
@@ -22795,6 +24879,15 @@
         ],
         "title": "DecisionMethod"
       },
+      "DestinationKind": {
+        "type": "string",
+        "enum": [
+          "report",
+          "transition",
+          "alerts"
+        ],
+        "title": "DestinationKind"
+      },
       "DigestChangeOut": {
         "properties": {
           "text": {
@@ -24513,6 +26606,393 @@
           "links"
         ],
         "title": "EquipmentOut"
+      },
+      "EvaluationCaseOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "casebook": {
+            "type": "string",
+            "enum": [
+              "core",
+              "regional"
+            ],
+            "title": "Casebook"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "casebook",
+          "title",
+          "fingerprint"
+        ],
+        "title": "EvaluationCaseOut"
+      },
+      "EvaluationCaseResultOut": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "report_status": {
+            "type": "string",
+            "title": "Report Status"
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "checks": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Checks",
+            "description": "Deterministic structural checks only; never accuracy."
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "fingerprint",
+          "report_status",
+          "model_calls",
+          "prompt_tokens",
+          "completion_tokens",
+          "checks"
+        ],
+        "title": "EvaluationCaseResultOut"
+      },
+      "EvaluationCatalogueOut": {
+        "properties": {
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationCaseOut"
+            },
+            "type": "array",
+            "title": "Cases"
+          },
+          "calls_per_case": {
+            "type": "integer",
+            "title": "Calls Per Case",
+            "default": 4
+          },
+          "max_calls": {
+            "type": "integer",
+            "title": "Max Calls",
+            "default": 200
+          },
+          "max_cases": {
+            "type": "integer",
+            "title": "Max Cases",
+            "default": 40
+          },
+          "estimate_notice": {
+            "type": "string",
+            "title": "Estimate Notice",
+            "default": "Estimate only: selected cases multiplied by the usual calls per case. The call cap is enforced; failed and retried calls count towards it."
+          },
+          "result_notice": {
+            "type": "string",
+            "title": "Result Notice",
+            "default": "Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication."
+          }
+        },
+        "type": "object",
+        "required": [
+          "cases"
+        ],
+        "title": "EvaluationCatalogueOut"
+      },
+      "EvaluationRunOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_name": {
+            "type": "string",
+            "title": "Profile Name"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvaluationRunStatus"
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvaluationStopReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cancel_requested": {
+            "type": "boolean",
+            "title": "Cancel Requested"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "case_fingerprints": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Case Fingerprints"
+          },
+          "max_calls": {
+            "type": "integer",
+            "title": "Max Calls"
+          },
+          "estimated_calls": {
+            "type": "integer",
+            "title": "Estimated Calls"
+          },
+          "calls_reserved": {
+            "type": "integer",
+            "title": "Calls Reserved"
+          },
+          "calls_failed": {
+            "type": "integer",
+            "title": "Calls Failed"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationCaseResultOut"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "has_artefact": {
+            "type": "boolean",
+            "title": "Has Artefact"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": "Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "profile_id",
+          "profile_name",
+          "model",
+          "status",
+          "stop_reason",
+          "cancel_requested",
+          "case_ids",
+          "case_fingerprints",
+          "max_calls",
+          "estimated_calls",
+          "calls_reserved",
+          "calls_failed",
+          "prompt_tokens",
+          "completion_tokens",
+          "results",
+          "has_artefact",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "EvaluationRunOut"
+      },
+      "EvaluationRunStatus": {
+        "type": "string",
+        "enum": [
+          "running",
+          "completed",
+          "cancelled",
+          "stopped"
+        ],
+        "title": "EvaluationRunStatus"
+      },
+      "EvaluationRunsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationRunOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "EvaluationRunsOut"
+      },
+      "EvaluationStartIn": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Case Ids"
+          },
+          "max_calls": {
+            "type": "integer",
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Max Calls"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile_id",
+          "case_ids",
+          "max_calls"
+        ],
+        "title": "EvaluationStartIn"
+      },
+      "EvaluationStopReason": {
+        "type": "string",
+        "enum": [
+          "call_cap",
+          "allowance_limit",
+          "connection_changed",
+          "access_revoked",
+          "interrupted",
+          "failed"
+        ],
+        "title": "EvaluationStopReason"
+      },
+      "EventMatchOut": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "codes"
+        ],
+        "title": "EventMatchOut"
       },
       "EventOut": {
         "properties": {
@@ -27886,7 +30366,8 @@
           },
           "countries": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
             },
             "type": "array",
             "maxItems": 50,
@@ -27939,7 +30420,8 @@
           },
           "keywords": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 60
             },
             "type": "array",
             "maxItems": 20,
@@ -28280,6 +30762,172 @@
           "verification_reference"
         ],
         "title": "IndicatorReading"
+      },
+      "IndicatorUpdateIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Description",
+            "default": ""
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Countries"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Categories"
+          },
+          "keywords": {
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Keywords"
+          },
+          "threshold": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Threshold",
+            "default": 1
+          },
+          "window_minutes": {
+            "type": "integer",
+            "maximum": 10080.0,
+            "minimum": 5.0,
+            "title": "Window Minutes",
+            "default": 60
+          },
+          "cooldown_minutes": {
+            "type": "integer",
+            "maximum": 1440.0,
+            "minimum": 1.0,
+            "title": "Cooldown Minutes",
+            "default": 60
+          },
+          "severity_floor": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Severity Floor",
+            "default": 0.0
+          },
+          "report_template": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Template"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Updated At"
+          },
+          "confirm_wider_scope": {
+            "type": "boolean",
+            "title": "Confirm Wider Scope",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "expected_updated_at"
+        ],
+        "title": "IndicatorUpdateIn",
+        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409.\n\nRemoving every location, category or keyword restriction needs `confirm_wider_scope`.\nPause and resume are edits of `enabled` that send the rule's other values unchanged."
       },
       "IndicatorVersion": {
         "properties": {
@@ -29728,6 +32376,40 @@
           "updated_at"
         ],
         "title": "LibraryPreferenceOut"
+      },
+      "LinkedArtefactsOut": {
+        "properties": {
+          "claims": {
+            "type": "integer",
+            "title": "Claims"
+          },
+          "original_files": {
+            "type": "integer",
+            "title": "Original Files"
+          },
+          "original_passages": {
+            "type": "integer",
+            "title": "Original Passages"
+          },
+          "reviewed_snapshots": {
+            "type": "integer",
+            "title": "Reviewed Snapshots"
+          },
+          "map_views": {
+            "type": "integer",
+            "title": "Map Views"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claims",
+          "original_files",
+          "original_passages",
+          "reviewed_snapshots",
+          "map_views"
+        ],
+        "title": "LinkedArtefactsOut",
+        "description": "Records attached to the personal version that stay with it and are not copied."
       },
       "LlmConnectionIn": {
         "properties": {
@@ -31243,7 +33925,9 @@
             "type": "string",
             "enum": [
               "drawings",
-              "radio"
+              "radio",
+              "live_view",
+              "ops_playlist"
             ],
             "title": "Kind"
           },
@@ -31291,7 +33975,9 @@
             "type": "string",
             "enum": [
               "drawings",
-              "radio"
+              "radio",
+              "live_view",
+              "ops_playlist"
             ],
             "title": "Kind"
           },
@@ -31572,6 +34258,32 @@
           "manager"
         ],
         "title": "MembershipRole"
+      },
+      "MentionOpenOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "post_id",
+          "thread_id"
+        ],
+        "title": "MentionOpenOut"
       },
       "MessageOut": {
         "properties": {
@@ -31937,6 +34649,31 @@
           "limit"
         ],
         "title": "MonthlyUsageOut"
+      },
+      "MutedRuleOut": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "muted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Muted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "name",
+          "muted_at"
+        ],
+        "title": "MutedRuleOut"
       },
       "NavigationCapabilitiesOut": {
         "properties": {
@@ -33843,6 +36580,52 @@
         ],
         "title": "PlanIn"
       },
+      "PlanMapMatchesOut": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "window_hours": {
+            "type": "integer",
+            "title": "Window Hours"
+          },
+          "pool_limit": {
+            "type": "integer",
+            "title": "Pool Limit"
+          },
+          "per_requirement_limit": {
+            "type": "integer",
+            "title": "Per Requirement Limit"
+          },
+          "considered": {
+            "type": "integer",
+            "title": "Considered"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/EventMatchOut"
+            },
+            "type": "array",
+            "title": "Matches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "window_hours",
+          "pool_limit",
+          "per_requirement_limit",
+          "considered",
+          "truncated",
+          "matches"
+        ],
+        "title": "PlanMapMatchesOut",
+        "description": "A bounded sample: the window, pool and per-requirement cap say how it was drawn."
+      },
       "PlanOut": {
         "properties": {
           "team_id": {
@@ -33931,6 +36714,81 @@
           "updated_at"
         ],
         "title": "PlanOut"
+      },
+      "PlanUpdateIn": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "aoi_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aoi Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Countries"
+          },
+          "pirs": {
+            "items": {
+              "$ref": "#/components/schemas/PirIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Pirs"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "pirs",
+          "expected_updated_at"
+        ],
+        "title": "PlanUpdateIn",
+        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409."
       },
       "PlannedQueryTaskIn": {
         "properties": {
@@ -34798,6 +37656,29 @@
         ],
         "title": "PresetSourceReadiness"
       },
+      "PrivateInputOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "title",
+          "source_id"
+        ],
+        "title": "PrivateInputOut"
+      },
       "Probability": {
         "type": "string",
         "enum": [
@@ -35329,6 +38210,467 @@
           "completion_year"
         ],
         "title": "ProjectOut"
+      },
+      "QualityCitationChecksOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "current_verdicts": {
+            "type": "integer",
+            "title": "Current Verdicts"
+          },
+          "superseded_verdicts": {
+            "type": "integer",
+            "title": "Superseded Verdicts"
+          },
+          "citations_with_verdicts": {
+            "type": "integer",
+            "title": "Citations With Verdicts"
+          },
+          "supports": {
+            "type": "integer",
+            "title": "Supports"
+          },
+          "partly_supports": {
+            "type": "integer",
+            "title": "Partly Supports"
+          },
+          "does_not_support": {
+            "type": "integer",
+            "title": "Does Not Support"
+          },
+          "cannot_tell": {
+            "type": "integer",
+            "title": "Cannot Tell"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "note",
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "current_verdicts",
+          "superseded_verdicts",
+          "citations_with_verdicts",
+          "supports",
+          "partly_supports",
+          "does_not_support",
+          "cannot_tell"
+        ],
+        "title": "QualityCitationChecksOut"
+      },
+      "QualityFailureCodeOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "jobs": {
+            "type": "integer",
+            "title": "Jobs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "jobs"
+        ],
+        "title": "QualityFailureCodeOut"
+      },
+      "QualityFindingOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "versions": {
+            "type": "integer",
+            "title": "Versions"
+          },
+          "occurrences": {
+            "type": "integer",
+            "title": "Occurrences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "rule",
+          "severity",
+          "versions",
+          "occurrences"
+        ],
+        "title": "QualityFindingOut"
+      },
+      "QualityJobGroupOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "jobs": {
+            "type": "integer",
+            "title": "Jobs"
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued"
+          },
+          "running": {
+            "type": "integer",
+            "title": "Running"
+          },
+          "paused": {
+            "type": "integer",
+            "title": "Paused"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "failed_without_version": {
+            "type": "integer",
+            "title": "Failed Without Version"
+          },
+          "failed_with_version": {
+            "type": "integer",
+            "title": "Failed With Version"
+          },
+          "failure_codes": {
+            "items": {
+              "$ref": "#/components/schemas/QualityFailureCodeOut"
+            },
+            "type": "array",
+            "title": "Failure Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "jobs",
+          "queued",
+          "running",
+          "paused",
+          "completed",
+          "needs_review",
+          "failed",
+          "failed_without_version",
+          "failed_with_version",
+          "failure_codes"
+        ],
+        "title": "QualityJobGroupOut"
+      },
+      "QualityJobPopulationOut": {
+        "properties": {
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/QualityJobGroupOut"
+          },
+          "by_template": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Template"
+          },
+          "by_depth": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Depth"
+          },
+          "by_model": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "overall",
+          "by_template",
+          "by_depth",
+          "by_model"
+        ],
+        "title": "QualityJobPopulationOut"
+      },
+      "QualityReceiptsOut": {
+        "properties": {
+          "versions_with_receipts": {
+            "type": "integer",
+            "title": "Versions With Receipts"
+          },
+          "versions_without_receipts": {
+            "type": "integer",
+            "title": "Versions Without Receipts"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "empty": {
+            "type": "integer",
+            "title": "Empty"
+          },
+          "unavailable": {
+            "type": "integer",
+            "title": "Unavailable"
+          },
+          "other_unsuccessful": {
+            "type": "integer",
+            "title": "Other Unsuccessful"
+          },
+          "versions_with_empty_or_unavailable": {
+            "type": "integer",
+            "title": "Versions With Empty Or Unavailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versions_with_receipts",
+          "versions_without_receipts",
+          "attempts",
+          "completed",
+          "empty",
+          "unavailable",
+          "other_unsuccessful",
+          "versions_with_empty_or_unavailable"
+        ],
+        "title": "QualityReceiptsOut"
+      },
+      "QualityUsageOut": {
+        "properties": {
+          "versions_with_usage": {
+            "type": "integer",
+            "title": "Versions With Usage"
+          },
+          "versions_without_usage": {
+            "type": "integer",
+            "title": "Versions Without Usage"
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens"
+          },
+          "prompt_tokens_per_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens Per Version"
+          },
+          "completion_tokens_per_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens Per Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versions_with_usage",
+          "versions_without_usage",
+          "prompt_tokens",
+          "completion_tokens",
+          "prompt_tokens_per_version",
+          "completion_tokens_per_version"
+        ],
+        "title": "QualityUsageOut"
+      },
+      "QualityVersionGroupOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "versions": {
+            "type": "integer",
+            "title": "Versions"
+          },
+          "ready": {
+            "type": "integer",
+            "title": "Ready"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/QualityFindingOut"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "receipts": {
+            "$ref": "#/components/schemas/QualityReceiptsOut"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/QualityUsageOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "versions",
+          "ready",
+          "needs_review",
+          "failed",
+          "findings",
+          "receipts",
+          "usage"
+        ],
+        "title": "QualityVersionGroupOut"
+      },
+      "QualityVersionPopulationOut": {
+        "properties": {
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/QualityVersionGroupOut"
+          },
+          "by_template": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Template"
+          },
+          "by_depth": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Depth"
+          },
+          "by_connection": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Connection"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "overall",
+          "by_template",
+          "by_depth",
+          "by_connection"
+        ],
+        "title": "QualityVersionPopulationOut"
       },
       "QueryTransformationOut": {
         "properties": {
@@ -37197,6 +40539,51 @@
         ],
         "title": "ReportCreateIn"
       },
+      "ReportDiscussionOut": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "latest_post_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Post Id"
+          },
+          "can_post": {
+            "type": "boolean",
+            "title": "Can Post"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "count",
+          "latest_post_id",
+          "can_post"
+        ],
+        "title": "ReportDiscussionOut",
+        "description": "Live board threads about any version of a team report; personal reports have none."
+      },
       "ReportEvidenceOut": {
         "properties": {
           "label": {
@@ -37493,6 +40880,14 @@
         ],
         "title": "ReportEvidenceOut"
       },
+      "ReportGroup": {
+        "type": "string",
+        "enum": [
+          "requested"
+        ],
+        "title": "ReportGroup",
+        "description": "Named sets of origins. Requested work never includes automatic briefings."
+      },
       "ReportJobCreateIn": {
         "properties": {
           "request_id": {
@@ -37550,6 +40945,10 @@
             "type": "string",
             "title": "Title"
           },
+          "origin": {
+            "$ref": "#/components/schemas/ReportOrigin",
+            "default": "research"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -37587,6 +40986,22 @@
               }
             ],
             "title": "Team Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
           },
           "report_id": {
             "anyOf": [
@@ -37659,6 +41074,7 @@
           "created_at",
           "updated_at",
           "team_id",
+          "owner_id",
           "report_id",
           "model",
           "reasoning_effort",
@@ -37793,6 +41209,17 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
           }
         },
         "type": "object",
@@ -37994,7 +41421,8 @@
         "enum": [
           "research",
           "subscription",
-          "geolocation"
+          "geolocation",
+          "briefing"
         ],
         "title": "ReportOrigin"
       },
@@ -38388,6 +41816,9 @@
               }
             ],
             "title": "Team Id"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/ReportOrigin"
           }
         },
         "type": "object",
@@ -38402,7 +41833,8 @@
           "created_by",
           "created_at",
           "latest_version",
-          "team_id"
+          "team_id",
+          "origin"
         ],
         "title": "ReportSummaryOut"
       },
@@ -40755,6 +44187,43 @@
           "country_iso"
         ],
         "title": "ResearchPreviewOut"
+      },
+      "ResearchQualityOut": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "versions": {
+            "$ref": "#/components/schemas/QualityVersionPopulationOut"
+          },
+          "jobs": {
+            "$ref": "#/components/schemas/QualityJobPopulationOut"
+          },
+          "citation_checks": {
+            "$ref": "#/components/schemas/QualityCitationChecksOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "window_days",
+          "since",
+          "versions",
+          "jobs",
+          "citation_checks"
+        ],
+        "title": "ResearchQualityOut"
       },
       "ResearchReceiptOut": {
         "properties": {
@@ -44833,6 +48302,79 @@
         ],
         "title": "SourceSnapshotIn"
       },
+      "SourceSnapshotListOut": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSnapshotSummaryOut"
+            },
+            "type": "array",
+            "title": "Snapshots"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 20
+          }
+        },
+        "type": "object",
+        "required": [
+          "snapshots"
+        ],
+        "title": "SourceSnapshotListOut"
+      },
+      "SourceSnapshotSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "authored_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Authored By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "decisions": {
+            "type": "integer",
+            "title": "Decisions"
+          },
+          "subjects": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Subjects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "authored_by",
+          "created_at",
+          "decisions",
+          "subjects"
+        ],
+        "title": "SourceSnapshotSummaryOut",
+        "description": "Enough to choose a snapshot deliberately; the full projection is read separately."
+      },
       "SourceStatus": {
         "type": "string",
         "enum": [
@@ -44975,6 +48517,102 @@
           "message"
         ],
         "title": "SourceTestOut"
+      },
+      "SourceTrackRecordOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "report_bound": {
+            "type": "integer",
+            "title": "Report Bound"
+          },
+          "reports_considered": {
+            "type": "integer",
+            "title": "Reports Considered"
+          },
+          "visible_reports": {
+            "type": "integer",
+            "title": "Visible Reports"
+          },
+          "reports_citing": {
+            "type": "integer",
+            "title": "Reports Citing"
+          },
+          "frozen_items": {
+            "type": "integer",
+            "title": "Frozen Items"
+          },
+          "roles": {
+            "$ref": "#/components/schemas/TrackRecordRolesOut"
+          },
+          "reports_by_status": {
+            "$ref": "#/components/schemas/TrackRecordStatusesOut"
+          },
+          "judgements_by_status": {
+            "$ref": "#/components/schemas/TrackRecordStatusesOut"
+          },
+          "reliability": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordValueOut"
+            },
+            "type": "array",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordValueOut"
+            },
+            "type": "array",
+            "title": "Credibility"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordEntryOut"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "entries_total": {
+            "type": "integer",
+            "title": "Entries Total"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          },
+          "reviews_total": {
+            "type": "integer",
+            "title": "Reviews Total"
+          },
+          "citation_verdicts": {
+            "$ref": "#/components/schemas/CitationVerdictsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "report_bound",
+          "reports_considered",
+          "visible_reports",
+          "reports_citing",
+          "frozen_items",
+          "roles",
+          "reports_by_status",
+          "judgements_by_status",
+          "reliability",
+          "credibility",
+          "entries",
+          "entries_total",
+          "reviews",
+          "reviews_total",
+          "citation_verdicts"
+        ],
+        "title": "SourceTrackRecordOut"
       },
       "SpaceBoardOut": {
         "properties": {
@@ -45827,6 +49465,25 @@
         ],
         "title": "TeamAiUsageOut"
       },
+      "TeamBoardMentionedOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name"
+        ],
+        "title": "TeamBoardMentionedOut"
+      },
       "TeamBoardPageOut": {
         "properties": {
           "items": {
@@ -45934,6 +49591,16 @@
               }
             ],
             "title": "Parent Id"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -46036,6 +49703,16 @@
           "revision": {
             "type": "integer",
             "title": "Revision"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -46052,7 +49729,8 @@
           "is_pinned",
           "deleted_at",
           "removal",
-          "revision"
+          "revision",
+          "subject"
         ],
         "title": "TeamBoardPostOut"
       },
@@ -46121,6 +49799,94 @@
         "title": "TeamBoardRemoveIn",
         "description": "Moderators must give a reason for removing someone else's post; it is audited only."
       },
+      "TeamBoardSubjectIn": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BoardSubjectKind"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "TeamBoardSubjectIn",
+        "description": "A same-team report version, saved area or drawing collection; checked server-side."
+      },
+      "TeamBoardSubjectOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BoardSubjectKind"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "version",
+          "available",
+          "title"
+        ],
+        "title": "TeamBoardSubjectOut",
+        "description": "Only an available subject carries its identifier and title."
+      },
       "TeamBoardUnreadOut": {
         "properties": {
           "unread_count": {
@@ -46133,6 +49899,360 @@
           "unread_count"
         ],
         "title": "TeamBoardUnreadOut"
+      },
+      "TeamBoardWriteOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Author Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "edited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "title": "Is Pinned"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "author",
+                  "moderator"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notified": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardMentionedOut"
+            },
+            "type": "array",
+            "title": "Notified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "author_id",
+          "author_name",
+          "text",
+          "created_at",
+          "updated_at",
+          "edited_at",
+          "parent_id",
+          "is_pinned",
+          "deleted_at",
+          "removal",
+          "revision",
+          "subject",
+          "notified"
+        ],
+        "title": "TeamBoardWriteOut",
+        "description": "A saved post plus the teammates this write newly notified (never outsiders)."
+      },
+      "TeamCopyIn": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "disclosed_evidence_labels": {
+            "items": {
+              "type": "string",
+              "pattern": "^E[1-9][0-9]{0,3}$"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Disclosed Evidence Labels"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "title": "TeamCopyIn"
+      },
+      "TeamCopyOmission": {
+        "type": "string",
+        "enum": [
+          "research_brief",
+          "claim_generation",
+          "original_passages",
+          "source_assessment",
+          "scope_references"
+        ],
+        "title": "TeamCopyOmission"
+      },
+      "TeamCopyOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "copied_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Copied At"
+          },
+          "created": {
+            "type": "boolean",
+            "title": "Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "version_number",
+          "team_id",
+          "copied_at",
+          "created"
+        ],
+        "title": "TeamCopyOut"
+      },
+      "TeamCopyPreviewOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "source_version_number": {
+            "type": "integer",
+            "title": "Source Version Number"
+          },
+          "private_inputs": {
+            "items": {
+              "$ref": "#/components/schemas/PrivateInputOut"
+            },
+            "type": "array",
+            "title": "Private Inputs"
+          },
+          "omissions": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCopyOmission"
+            },
+            "type": "array",
+            "title": "Omissions"
+          },
+          "omitted_scope_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Omitted Scope Keys"
+          },
+          "not_copied": {
+            "$ref": "#/components/schemas/LinkedArtefactsOut"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "existing_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Existing Report Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "team_name",
+          "source_version_number",
+          "private_inputs",
+          "omissions",
+          "omitted_scope_keys",
+          "not_copied",
+          "content_sha256",
+          "existing_report_id"
+        ],
+        "title": "TeamCopyPreviewOut"
+      },
+      "TeamCopyProvenanceOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "copied_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Copied By"
+          },
+          "copied_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Copied By Name"
+          },
+          "copied_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Copied At"
+          },
+          "source_version_number": {
+            "type": "integer",
+            "title": "Source Version Number"
+          },
+          "source_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Report Id"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "disclosed_private_inputs": {
+            "type": "integer",
+            "title": "Disclosed Private Inputs"
+          },
+          "omissions": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCopyOmission"
+            },
+            "type": "array",
+            "title": "Omissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "team_id",
+          "copied_by",
+          "copied_by_name",
+          "copied_at",
+          "source_version_number",
+          "source_report_id",
+          "content_sha256",
+          "disclosed_private_inputs",
+          "omissions"
+        ],
+        "title": "TeamCopyProvenanceOut"
       },
       "TeamDashboardActionOut": {
         "properties": {
@@ -47378,6 +51498,178 @@
           "available"
         ],
         "title": "TotpStatusOut"
+      },
+      "TrackRecordEntryOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "needs_review",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Saved At"
+          },
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          },
+          "supporting_judgements": {
+            "type": "integer",
+            "title": "Supporting Judgements"
+          },
+          "contradicting_judgements": {
+            "type": "integer",
+            "title": "Contradicting Judgements"
+          },
+          "grades": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Grades"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "title",
+          "version_number",
+          "status",
+          "saved_at",
+          "items",
+          "supporting_judgements",
+          "contradicting_judgements",
+          "grades"
+        ],
+        "title": "TrackRecordEntryOut"
+      },
+      "TrackRecordReviewOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "reliability",
+              "credibility",
+              "authenticity"
+            ],
+            "title": "Kind"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "team_scoped": {
+            "type": "boolean",
+            "title": "Team Scoped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "decision",
+          "recorded_at",
+          "report_id",
+          "team_scoped"
+        ],
+        "title": "TrackRecordReviewOut"
+      },
+      "TrackRecordRolesOut": {
+        "properties": {
+          "supporting_judgements": {
+            "type": "integer",
+            "title": "Supporting Judgements"
+          },
+          "contradicting_judgements": {
+            "type": "integer",
+            "title": "Contradicting Judgements"
+          },
+          "items_cited_elsewhere": {
+            "type": "integer",
+            "title": "Items Cited Elsewhere"
+          },
+          "items_not_cited": {
+            "type": "integer",
+            "title": "Items Not Cited"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supporting_judgements",
+          "contradicting_judgements",
+          "items_cited_elsewhere",
+          "items_not_cited"
+        ],
+        "title": "TrackRecordRolesOut"
+      },
+      "TrackRecordStatusesOut": {
+        "properties": {
+          "ready": {
+            "type": "integer",
+            "title": "Ready"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "needs_review",
+          "failed"
+        ],
+        "title": "TrackRecordStatusesOut"
+      },
+      "TrackRecordValueOut": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "items"
+        ],
+        "title": "TrackRecordValueOut"
       },
       "UkraineBoardOut": {
         "properties": {

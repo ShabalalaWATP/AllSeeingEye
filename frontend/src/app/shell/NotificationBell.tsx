@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
 
 import { NotificationPanel } from './NotificationPanel';
+import { useBellAlertActions } from './useBellAlertActions';
 import { useNotificationBell } from './useNotificationBell';
 import type { NotificationBellState } from './useNotificationBell';
 
@@ -55,14 +56,33 @@ function useDismiss(
 function BellControl({ userId }: { userId: string }) {
   const state = useNotificationBell(userId);
   const panelId = useId();
+  const hintId = useId();
   const wrapper = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const { open, unread, close } = state;
-  useDismiss(open, close, wrapper, button);
+  const alertsHeading = useRef<HTMLHeadingElement>(null);
+  const [settingsChosen, setSettings] = useState(false);
+  const { open, unread, close, windowDays } = state;
+  // When an acknowledged or muted item leaves the list, keep focus inside the bell.
+  const keepFocus = useCallback(() => {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (active !== null && active !== document.body && panel.current?.contains(active)) return;
+      (alertsHeading.current ?? panel.current)?.focus();
+    }, 0);
+  }, []);
+  const actions = useBellAlertActions(state, keepFocus);
+  // The confirmation is a modal outside the popover; it must not dismiss the bell.
+  useDismiss(open && actions.acknowledgeShown.target === null, close, wrapper, button);
   useEffect(() => {
     if (open) panel.current?.focus();
   }, [open]);
+  const settings = open && settingsChosen;
+  const toggleBell = () => {
+    // Each opening starts on the notifications themselves.
+    setSettings(false);
+    state.toggle();
+  };
 
   return (
     <div ref={wrapper} className="relative">
@@ -72,8 +92,9 @@ function BellControl({ userId }: { userId: string }) {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-label={describe(state)}
+        aria-describedby={hintId}
         title="Notifications"
-        onClick={state.toggle}
+        onClick={toggleBell}
         className={buttonClass}
       >
         <svg
@@ -99,6 +120,10 @@ function BellControl({ userId }: { userId: string }) {
           </span>
         )}
       </button>
+      <span id={hintId} hidden>
+        Counts unacknowledged alerts from the last {windowDays} days, unread board mentions and
+        research finished since you last opened notifications.
+      </span>
       <span role="status" className="sr-only">
         {unread > 0 ? `${unread} unread notifications` : ''}
       </span>
@@ -111,8 +136,25 @@ function BellControl({ userId }: { userId: string }) {
           tabIndex={-1}
           className="absolute top-full right-0 z-40 mt-2 max-h-[70vh] w-80 max-w-[calc(100vw-1rem)] overflow-y-auto rounded-lg border border-line bg-ground p-2 text-text shadow-card focus:outline-none"
         >
-          <h2 className="px-2 pt-1 pb-3 text-sm font-semibold">Notifications</h2>
-          <NotificationPanel state={state} />
+          <div className="flex items-center justify-between gap-2 px-2 pt-1 pb-3">
+            <h2 className="text-sm font-semibold">Notifications</h2>
+            <button
+              type="button"
+              aria-pressed={settings}
+              onClick={() => setSettings((value) => !value)}
+              className="min-h-11 rounded-md px-2 text-xs text-ember hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember"
+            >
+              {settings ? 'Back to notifications' : 'Settings'}
+            </button>
+          </div>
+          <NotificationPanel
+            state={state}
+            actions={actions}
+            settings={settings}
+            headingRef={alertsHeading}
+            returnFocus={panel}
+            keepFocus={keepFocus}
+          />
         </div>
       )}
     </div>

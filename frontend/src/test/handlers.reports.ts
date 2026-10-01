@@ -1,10 +1,17 @@
 import { http, HttpResponse } from 'msw';
 
 import { report, reportSummary, reportTemplates } from './fixtures';
+import { reportMethodology } from './fixtures.reportAssessment';
 import { apiError } from './handlers';
 
 export const reportHandlers = [
+  // Report readers show likelihood bands from the configured yardstick.
+  http.get('/api/report-methodology', () => HttpResponse.json(reportMethodology)),
   http.get('/api/reports/:id/original-assets', () => HttpResponse.json({ items: [] })),
+  // Fixture reports are personal unless a test serves a team discussion.
+  http.get('/api/reports/:id/team-discussion', () =>
+    HttpResponse.json({ team_id: null, count: 0, latest_post_id: null, can_post: false }),
+  ),
   http.get('/api/reports/templates', () => HttpResponse.json({ items: reportTemplates })),
 
   http.get('/api/reports', ({ request }) => {

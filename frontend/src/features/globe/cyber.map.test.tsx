@@ -59,11 +59,12 @@ it.each(['globe', 'map'] as const)(
       http.get('/api/events', () => HttpResponse.json({ items: [claim, outage], count: 2 })),
     );
     const { user } = renderApp('/', 'user');
-    const toggle = await screen.findByRole('switch', { name: 'Cyber 0' });
+    await screen.findByText('Cyber: 0 loaded');
+    const toggle = screen.getByRole('switch', { name: 'Cyber' });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(layer('cyber-country-context-icons')).toBeUndefined();
     await user.click(toggle);
-    await screen.findByRole('switch', { name: 'Cyber 2' });
+    await screen.findByText('Cyber: 2 loaded');
     await waitFor(() => expect(layer('cyber-country-context-icons')?.props.data).toHaveLength(1));
     await user.click(screen.getByRole('button', { name: 'Cyber filters' }));
     const panel = screen.getByRole('region', { name: 'Cyber threat intelligence filters' });
@@ -94,17 +95,17 @@ it.each(['globe', 'map'] as const)(
         (layer('cyber-country-context-icons')!.props.data[0] as CyberCountryContext).events,
       ).toHaveLength(1),
     );
-    await user.click(screen.getByRole('switch', { name: 'Cyber 1' }));
+    await user.click(screen.getByRole('switch', { name: 'Cyber' }));
     expect(layer('cyber-country-context-icons')).toBeUndefined();
-    await user.click(screen.getByRole('switch', { name: 'Cyber 0' }));
+    await user.click(screen.getByRole('switch', { name: 'Cyber' }));
     await waitFor(() => expect(layer('cyber-country-context-icons')?.props.data).toHaveLength(1));
     await user.click(
       within(panel).getByRole('checkbox', { name: 'Show approximate country context' }),
     );
     expect(layer('cyber-country-context-icons')).toBeUndefined();
-    await user.click(screen.getByRole('switch', { name: 'Cyber 1' }));
-    await user.click(screen.getByRole('switch', { name: 'Cyber 0' }));
-    await screen.findByRole('switch', { name: 'Cyber 1' });
+    await user.click(screen.getByRole('switch', { name: 'Cyber' }));
+    await user.click(screen.getByRole('switch', { name: 'Cyber' }));
+    await screen.findByText('Cyber: 1 loaded');
     expect(layer('cyber-country-context-icons')).toBeUndefined();
   },
 );

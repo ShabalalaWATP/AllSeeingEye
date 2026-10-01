@@ -40,7 +40,7 @@ export function AuditCard({ className = '' }: { className?: string }) {
                 <time
                   dateTime={entry.at}
                   title={formatUtc(entry.at)}
-                  className="font-mono text-[11px] whitespace-nowrap text-muted"
+                  className="font-mono text-2xs whitespace-nowrap text-muted"
                 >
                   {formatAgo(entry.at, now)}
                 </time>

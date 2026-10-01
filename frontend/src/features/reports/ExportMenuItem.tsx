@@ -40,9 +40,7 @@ export function ExportMenuItem({
               Preferred
             </span>
           )}
-          <span className="text-[11px] uppercase tracking-wide text-muted">
-            {description.purpose}
-          </span>
+          <span className="text-2xs uppercase tracking-wide text-muted">{description.purpose}</span>
         </span>
       </span>
       <span className="block text-xs leading-5 text-muted">{description.detail}</span>

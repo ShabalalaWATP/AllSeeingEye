@@ -106,13 +106,27 @@ describe('compact map navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enter fullscreen' }));
     expect(enter).toHaveBeenCalledOnce();
     const exitButton = await screen.findByRole('button', { name: 'Exit fullscreen' });
-    expect(exitButton).toHaveAttribute('aria-pressed', 'true');
     expect(exitButton).toHaveAttribute('title', 'Exit fullscreen');
     fireEvent.click(exitButton);
     expect(exit).toHaveBeenCalledOnce();
-    expect(await screen.findByRole('button', { name: 'Enter fullscreen' })).toHaveAttribute(
+    expect(await screen.findByRole('button', { name: 'Enter fullscreen' })).toBeInTheDocument();
+  });
+
+  it('changes the fullscreen action name without also reporting a pressed state', async () => {
+    let fullscreen: Element | null = null;
+    Object.defineProperty(document, 'fullscreenEnabled', { value: true, configurable: true });
+    Object.defineProperty(document, 'fullscreenElement', {
+      get: () => fullscreen,
+      configurable: true,
+    });
+    render(<MapNavigationTools engine={engineAt()} enabled />);
+    expect(screen.getByRole('button', { name: 'Enter fullscreen' })).not.toHaveAttribute(
       'aria-pressed',
-      'false',
+    );
+    fullscreen = document.documentElement;
+    fireEvent(document, new Event('fullscreenchange'));
+    expect(await screen.findByRole('button', { name: 'Exit fullscreen' })).not.toHaveAttribute(
+      'aria-pressed',
     );
   });
 });

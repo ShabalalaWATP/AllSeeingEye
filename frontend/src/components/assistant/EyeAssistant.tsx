@@ -9,6 +9,7 @@ import { panelPlacement } from './panelPlacement';
 import { useEyeChat } from './useEyeChat';
 import { EyeAssistantPanel } from './EyeAssistantPanel';
 import { AssistantBoundary } from './AssistantBoundary';
+import { useEyeStatus } from './eyeStatus';
 import './eyeAssistant.css';
 import './eyeLauncher.css';
 
@@ -30,6 +31,7 @@ function EyeSession() {
     launcher.current?.focus();
   };
   const latest = chat.turns.at(-1);
+  const status = useEyeStatus(chat.turns);
   const unread = !open && latest?.status === 'answered' && latest.id !== seenTurn;
   useEffect(() => () => clearAssistantMapFocus(), []);
   useEffect(() => {
@@ -41,12 +43,14 @@ function EyeSession() {
     setOpen(true);
   }, [reportContext.launch, chat]);
   return (
-    <div className="eye-assistant" data-dragging={placement.dragging}>
+    // A labelled complementary landmark, so the floating launcher is never stray page content.
+    <aside aria-label="Eye assistant" className="eye-assistant" data-dragging={placement.dragging}>
       <button
         ref={launcher}
         type="button"
         className="eye-launcher"
-        aria-label={open ? 'Minimise Eye assistant' : 'Open Eye assistant'}
+        // The name matches the visible "ASK EYE" text; aria-expanded carries open or minimised.
+        aria-label="Ask Eye"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-describedby={helpId}
@@ -75,11 +79,14 @@ function EyeSession() {
         <span className="eye-launcher-label" aria-hidden="true">
           ASK EYE
         </span>
-        {chat.busy && (
-          <span className="eye-launcher-working" role="status" aria-label="Answer in progress" />
-        )}
-        {unread && <span className="eye-launcher-ready" role="status" aria-label="Answer ready" />}
+        {/* Visual cues only: the status region below carries the same states as text. */}
+        {chat.busy && <span className="eye-launcher-working" aria-hidden="true" />}
+        {unread && <span className="eye-launcher-ready" aria-hidden="true" />}
       </button>
+      {/* A polite live region without the status role, so pages keep their own single status. */}
+      <p aria-live="polite" aria-atomic="true" className="sr-only" data-eye-status="">
+        {status}
+      </p>
       <span id={helpId} className="sr-only">
         Click to chat. Drag to move. Arrow keys reposition; Home resets. Hold Shift for larger
         steps.
@@ -100,7 +107,7 @@ function EyeSession() {
           style={panelPlacement(placement.position, expanded)}
         />
       )}
-    </div>
+    </aside>
   );
 }
 

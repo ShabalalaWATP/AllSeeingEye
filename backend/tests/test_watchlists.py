@@ -170,8 +170,12 @@ async def test_database_reload_is_bounded_and_observes_changes(
     assert [p.id for p in await source.enabled_plans()] == [enabled.id]
     async with container.session_factory() as session:
         repos = container.repositories(session)
-        await repos.plans.save(replace(enabled, enabled=False))
-        await repos.plans.save(replace(disabled, enabled=True))
+        assert await repos.plans.save_if_unchanged(
+            replace(enabled, enabled=False), enabled.updated_at
+        )
+        assert await repos.plans.save_if_unchanged(
+            replace(disabled, enabled=True), disabled.updated_at
+        )
         await repos.uow.commit()
     assert [p.id for p in await source.enabled_plans()] == [disabled.id]
     async with container.session_factory() as session:
