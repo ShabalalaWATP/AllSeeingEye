@@ -1,6 +1,5 @@
 """Private PostgreSQL databases and legacy-schema fixtures for the combined rehearsal."""
 
-import asyncio
 import hashlib
 import json
 import os
@@ -13,6 +12,7 @@ import sqlalchemy as sa
 from alembic import command
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.infrastructure.migrations import alembic_config
 
 NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
@@ -51,7 +51,9 @@ class MigrationDatabase:
 
     async def migrate(self, revision, *, downgrade=False):
         operation = command.downgrade if downgrade else command.upgrade
-        await asyncio.to_thread(operation, alembic_config(self.url), revision)
+        # Fixture teardown must wait for Alembic to release its connection even
+        # when the requesting test is cancelled repeatedly.
+        await joined_thread_call(lambda: operation(alembic_config(self.url), revision))
 
     async def run(self, action, *args):
         engine = create_async_engine(self.url)
