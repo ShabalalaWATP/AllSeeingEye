@@ -149,7 +149,7 @@ export function EquipmentSection({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search name, origin or role"
-              className="min-h-9 w-52 rounded-full border border-control-border bg-surface px-3 text-xs text-text placeholder:text-muted focus:border-cyan focus:outline-none"
+              className="min-h-9 w-52 rounded-full border border-control-border bg-surface px-3 text-xs text-text placeholder:text-muted focus:border-cyan"
             />
           </label>
           <button
@@ -189,7 +189,7 @@ export function EquipmentSection({
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-2">
             <h3 className="text-sm font-semibold text-text">
               {speciality.label}{' '}
-              <span className="font-mono text-[11px] font-normal text-muted">
+              <span className="font-mono text-2xs font-normal text-muted">
                 {entries.length} of {matching.length} matching entries
               </span>
             </h3>

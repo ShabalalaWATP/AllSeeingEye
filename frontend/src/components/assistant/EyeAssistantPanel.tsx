@@ -90,7 +90,14 @@ export function EyeAssistantPanel({
       style={style}
     >
       <header className="eye-assistant-heading">
-        <img src="/brand/eye-512.png" alt="" aria-hidden="true" width="42" height="30" />
+        <img
+          src="/brand/eye-128.webp"
+          alt=""
+          aria-hidden="true"
+          width="42"
+          height="30"
+          decoding="async"
+        />
         <div>
           <h2>The Eye</h2>
           <p>{chat.report ? 'Ask this report edition' : 'Ask your map sources'}</p>
@@ -101,7 +108,6 @@ export function EyeAssistantPanel({
             className="eye-size-action"
             aria-label={expanded ? 'Restore compact chat' : 'Expand chat'}
             title={expanded ? 'Restore compact chat' : 'Expand chat'}
-            aria-pressed={expanded}
             onClick={onToggleExpanded}
           >
             <svg
@@ -206,8 +212,9 @@ export function EyeAssistantPanel({
             </p>
             {turn.saved && <p className="eye-turn-snapshot">Saved answer · recheck before use</p>}
             {turn.answer && <EyeAnswer answer={turn.answer} />}
+            {/* The launcher's persistent status region announces this state once. */}
             {turn.status === 'pending' && (
-              <div role="status">
+              <div>
                 <p className="eye-pending">
                   <span aria-hidden="true" />
                   Searching sources and preparing a reply…

@@ -1,3 +1,4 @@
+import { CategoryAxisLabels, ValueAxisLabels } from './ChartAxis';
 import { SLOT_BG, SLOT_FILL, type ChartSlot } from './chartSlots';
 
 export interface ColumnSeries {
@@ -8,8 +9,9 @@ export interface ColumnSeries {
 }
 
 const WIDTH = 640;
-const HEIGHT = 150;
 const BASE = 118;
+// Axis labels are HTML beneath and over the plot, so the drawing stops just below the base.
+const HEIGHT = BASE + 4;
 const TOP = 10;
 const GAP = 2;
 
@@ -42,91 +44,97 @@ export function StackedColumns({
   const barWidth = Math.min(24, slotWidth * 0.7);
   const labelEvery = days.length > 16 ? Math.ceil(days.length / 8) : days.length > 8 ? 2 : 1;
   const gridlines = Array.from({ length: Math.round(ceiling / step) + 1 }, (_, i) => i * step);
+  const valueTicks = gridlines.map((value) => ({
+    key: value,
+    label: value.toLocaleString('en-GB'),
+    at: (BASE - value * scale) / HEIGHT,
+  }));
+  const dayTicks = days.flatMap((day, index) =>
+    index % labelEvery === 0
+      ? [{ key: day, label: day.slice(5), at: (index * slotWidth + slotWidth / 2) / WIDTH }]
+      : [],
+  );
   return (
     <figure className="space-y-3">
-      <svg
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        role="img"
-        aria-label={label}
-        className="w-full overflow-visible"
-      >
-        <title>{label}</title>
-        {gridlines.map((value) => (
-          <g key={value}>
+      <div>
+        <div className="relative">
+          {/* A minimum height keeps gridline labels apart on narrow screens; the plot stretches. */}
+          <svg
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            preserveAspectRatio="none"
+            role="img"
+            aria-label={label}
+            className="block h-auto min-h-36 w-full overflow-visible"
+          >
+            <title>{label}</title>
+            {gridlines.map((value) => (
+              <line
+                key={value}
+                x1="0"
+                x2={WIDTH}
+                y1={BASE - value * scale}
+                y2={BASE - value * scale}
+                className="stroke-line/60"
+                strokeWidth="1"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            {days.map((day, index) => {
+              let offset = 0;
+              const x = index * slotWidth + (slotWidth - barWidth) / 2;
+              const summary = series
+                .filter((row) => (row.values[index] ?? 0) > 0)
+                .map((row) => `${row.label} ${row.values[index] ?? 0}`)
+                .join(', ');
+              return (
+                <g key={day}>
+                  <title>
+                    {day}: {totals[index]} {unit}
+                    {summary ? ` (${summary})` : ''}
+                  </title>
+                  <rect
+                    x={index * slotWidth}
+                    y={TOP - 6}
+                    width={slotWidth}
+                    height={BASE - TOP + 6}
+                    className="fill-transparent hover:fill-surface-2/60"
+                  />
+                  {series.map((row) => {
+                    const value = row.values[index] ?? 0;
+                    if (value <= 0) return null;
+                    const height = value * scale;
+                    const y = BASE - offset - height;
+                    offset += height;
+                    const visible = Math.max(0, height - GAP);
+                    return (
+                      <rect
+                        key={row.key}
+                        x={x}
+                        y={y + (height - visible)}
+                        width={barWidth}
+                        height={visible}
+                        className={`${SLOT_FILL[row.slot]} pointer-events-none`}
+                      />
+                    );
+                  })}
+                </g>
+              );
+            })}
             <line
               x1="0"
               x2={WIDTH}
-              y1={BASE - value * scale}
-              y2={BASE - value * scale}
-              className="stroke-line/60"
+              y1={BASE}
+              y2={BASE}
+              className="stroke-line"
               strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
             />
-            <text
-              x={WIDTH}
-              y={BASE - value * scale - 3}
-              textAnchor="end"
-              fontSize="9"
-              className="fill-muted"
-            >
-              {value.toLocaleString('en-GB')}
-            </text>
-          </g>
-        ))}
-        {days.map((day, index) => {
-          let offset = 0;
-          const x = index * slotWidth + (slotWidth - barWidth) / 2;
-          const summary = series
-            .filter((row) => (row.values[index] ?? 0) > 0)
-            .map((row) => `${row.label} ${row.values[index] ?? 0}`)
-            .join(', ');
-          return (
-            <g key={day}>
-              <title>
-                {day}: {totals[index]} {unit}
-                {summary ? ` (${summary})` : ''}
-              </title>
-              <rect
-                x={index * slotWidth}
-                y={TOP - 6}
-                width={slotWidth}
-                height={BASE - TOP + 6}
-                className="fill-transparent hover:fill-surface-2/60"
-              />
-              {series.map((row) => {
-                const value = row.values[index] ?? 0;
-                if (value <= 0) return null;
-                const height = value * scale;
-                const y = BASE - offset - height;
-                offset += height;
-                const visible = Math.max(0, height - GAP);
-                return (
-                  <rect
-                    key={row.key}
-                    x={x}
-                    y={y + (height - visible)}
-                    width={barWidth}
-                    height={visible}
-                    className={`${SLOT_FILL[row.slot]} pointer-events-none`}
-                  />
-                );
-              })}
-              {index % labelEvery === 0 && (
-                <text
-                  x={index * slotWidth + slotWidth / 2}
-                  y={BASE + 16}
-                  textAnchor="middle"
-                  fontSize="9"
-                  className="fill-muted"
-                >
-                  {day.slice(5)}
-                </text>
-              )}
-            </g>
-          );
-        })}
-        <line x1="0" x2={WIDTH} y1={BASE} y2={BASE} className="stroke-line" strokeWidth="1" />
-      </svg>
-      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
+          </svg>
+          <ValueAxisLabels ticks={valueTicks} />
+        </div>
+        <CategoryAxisLabels ticks={dayTicks} />
+      </div>
+      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-2xs text-muted">
         {series.length > 1 &&
           series.map((row) => (
             <span key={row.key} className="inline-flex items-center gap-1.5">

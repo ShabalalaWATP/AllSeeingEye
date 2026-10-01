@@ -1,13 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 
-import { AuthenticatorQr } from '@/components/account/AuthenticatorQr';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { describeError } from '@/lib/api/errors';
 import type { PendingMfa } from '@/lib/api/mfa';
 
 import { useMfaLogin } from './useMfaLogin';
+
+// The QR encoder is only needed during authenticator enrolment, so keep it out of the entry chunk.
+const AuthenticatorQr = lazy(async () => {
+  const module = await import('@/components/account/AuthenticatorQr');
+  return { default: module.AuthenticatorQr };
+});
 
 export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onBack: () => void }) {
   const mfa = useMfaLogin(challenge);
@@ -27,22 +33,22 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
       aria-busy={mfa.busy}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!mfa.busy && ready) void mfa.run('verify');
+        if (ready) void mfa.run('verify');
       }}
     >
-      <header className="mb-2">
-        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Account security
-        </p>
-        <h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold tracking-tight">
-          {challenge.enrollment_required ? 'Secure your account' : 'Verify your sign-in'}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          {challenge.enrollment_required
+      <PageHeader
+        className="mb-2"
+        title={challenge.enrollment_required ? 'Secure your account' : 'Verify your sign-in'}
+        headingRef={heading}
+        focusable
+        eyebrow="Account security"
+        eyebrowTone="muted"
+        description={
+          challenge.enrollment_required
             ? 'Administrators must enable multi-factor authentication before continuing. Choose a method to get started.'
-            : 'Your password is verified. Complete the security check to continue.'}
-        </p>
-      </header>
+            : 'Your password is verified. Complete the security check to continue.'
+        }
+      />
       {mfa.error === null ? null : (
         <Alert tone="error">
           {mfa.error.code === 'invalid_credentials'
@@ -89,7 +95,15 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
             </Button>
           ) : (
             <div className="space-y-3">
-              <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
+              <Suspense
+                fallback={
+                  <p role="status" className="flex h-52 w-52 items-center text-sm text-muted">
+                    Preparing QR code...
+                  </p>
+                }
+              >
+                <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
+              </Suspense>
               <p className="mb-2 text-xs text-muted">Setup key</p>
               <code className="block select-all break-all rounded bg-surface-2 p-3 font-mono text-sm tracking-wider">
                 {mfa.enrolment.secret}
@@ -142,7 +156,6 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
             pattern={isRecovery ? '(?:[A-Fa-f0-9]|-){32,39}' : '[0-9]{6}'}
             maxLength={isRecovery ? 39 : 6}
             required
-            disabled={mfa.busy}
             className="min-h-12 font-mono tracking-widest"
             value={mfa.code}
             onChange={(event) => {

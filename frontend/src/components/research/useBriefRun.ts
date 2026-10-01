@@ -33,7 +33,7 @@ export function useBriefRun(brief: ResearchBrief | null) {
     },
     [key],
   );
-  const run = async () => {
+  const run = async (planRevision?: string) => {
     if (!brief || pending.current) return null;
     if (attempt.current?.key !== key) attempt.current = { key, requestId: crypto.randomUUID() };
     const controller = new AbortController();
@@ -41,7 +41,7 @@ export function useBriefRun(brief: ResearchBrief | null) {
     const signal = AbortSignal.any([controller.signal, begin()]);
     setState({ key, busy: true, error: null, jobId: null });
     try {
-      const job = await runBrief(brief, signal, attempt.current.requestId);
+      const job = await runBrief(brief, signal, attempt.current.requestId, planRevision);
       if (signal.aborted) return null;
       attempt.current = null;
       setState({ key, busy: false, error: null, jobId: job.id });

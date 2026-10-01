@@ -122,3 +122,4 @@ export class FakeMap {
 }
 
 export { FakeMap as Map };
+export const setWorkerUrl = vi.fn();

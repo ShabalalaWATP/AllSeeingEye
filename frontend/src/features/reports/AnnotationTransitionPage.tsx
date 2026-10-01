@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { fetchMonitorTransition, exportMonitorTransition } from '@/lib/api/annotationMonitors';
@@ -45,7 +46,7 @@ function Contents({ id, transitionId }: { id: string; transitionId: string }) {
       <Link to={annotationMonitorHref(id)} className="text-ember underline">
         Monitor and history
       </Link>
-      <h1 className="text-xl font-semibold">Stored monitoring transition</h1>
+      <PageHeader type="record" title="Stored monitoring transition" />
       <p className="text-sm text-muted">
         This is the exact recorded transition, including its historical comparison. Later
         corrections do not replace it.

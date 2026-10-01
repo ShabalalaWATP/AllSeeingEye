@@ -5,6 +5,8 @@ import { useResearchForm, type ResearchFormProps } from './useResearchForm';
  * period. The rarely changed settings sit folded at the end, before the start button.
  */
 
+import { Link } from 'react-router';
+
 import { ReportOptions } from '@/components/reports/ReportOptions';
 import { ChipPicker } from '@/components/research/ChipPicker';
 import { CountryMultiSelect } from '@/components/research/CountryMultiSelect';
@@ -13,7 +15,9 @@ import { Step, Toggle } from '@/components/research/FormStep';
 import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { describeError } from '@/lib/api/errors';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { LeaveGuard } from '@/components/ui/LeaveGuard';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import { MAX_REGIONS, REGIONS } from '@/lib/regions';
 import { MAX_THEMES, THEMES } from '@/lib/themes';
 
@@ -30,8 +34,12 @@ import {
   ResearchQuickSteps,
 } from './ResearchQuickSteps';
 
+import { researchFieldSpecs } from './researchFieldErrors';
 import { ResearchScope } from './ResearchScope';
 import { ResearchTimeScope } from './ResearchTimeScope';
+
+const LEAVE_RESEARCH =
+  'Leave this research form? Your question and scope are kept for this session, but an attached file or edited collection plan settings will be lost.';
 
 export function ResearchForm(props: ResearchFormProps) {
   const {
@@ -52,11 +60,15 @@ export function ResearchForm(props: ResearchFormProps) {
     changeFocus,
     submit,
     mode,
+    leave,
   } = useResearchForm(props);
   const { workspaces, countries, parent } = props;
   let step = 0;
   const next = () => ++step;
   const showRead = privateFocus || !parent;
+  const errors = useFieldErrors(action.error, researchFieldSpecs(mode.advanced), {
+    root: 'report',
+  });
 
   return (
     <form
@@ -65,8 +77,16 @@ export function ResearchForm(props: ResearchFormProps) {
       noValidate
       className="flex min-w-0 flex-col gap-5"
     >
+      <LeaveGuard {...leave} message={LEAVE_RESEARCH} />
       <fieldset disabled={action.busy} className="grid min-w-0 gap-10 disabled:opacity-70">
-        {!mode.advanced && <ResearchQuickSteps draft={draft} patch={patch} countries={countries} />}
+        {!mode.advanced && (
+          <ResearchQuickSteps
+            draft={draft}
+            patch={patch}
+            countries={countries}
+            question={errors.field('question')}
+          />
+        )}
         {!mode.required && (
           <AdvancedOptionsToggle open={mode.advanced} draft={draft} onToggle={mode.toggle} />
         )}
@@ -78,7 +98,7 @@ export function ResearchForm(props: ResearchFormProps) {
               lead="Any topic: a conflict, a market, an organisation, a technology or a place."
               id="research-question"
             >
-              <ResearchQuestionField draft={draft} patch={patch} />
+              <ResearchQuestionField draft={draft} patch={patch} field={errors.field('question')} />
               {!parent && (
                 <ResearchFocusField
                   focus={focus}
@@ -171,6 +191,16 @@ export function ResearchForm(props: ResearchFormProps) {
                 }
                 id="research-sources"
               >
+                <p className="text-xs leading-5 text-muted">
+                  Each source's grade basis, coverage and limitations are recorded in the read-only
+                  catalogue.{' '}
+                  <Link
+                    to="/sources"
+                    className="text-ember underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+                  >
+                    Browse the source catalogue
+                  </Link>
+                </p>
                 {!privateFocus && (
                   <Toggle
                     checked={draft.webSearch}
@@ -270,7 +300,7 @@ export function ResearchForm(props: ResearchFormProps) {
         </Alert>
       )}
       {validation && <Alert tone="error">{validation}</Alert>}
-      {action.error && <Alert tone="error">{describeError(action.error)}</Alert>}
+      <FormErrors errors={errors} />
       <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
         <Button type="submit" className="min-h-12 px-6" busy={action.busy} disabled={waiting}>
           Start research

@@ -1,7 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { NavigationType, useLocation, useNavigationType } from 'react-router';
 
-import { APP_TITLE, documentTitle, pageTitle } from './pageTitles';
+import { APP_TITLE, pageTitle, withAppTitle } from './pageTitles';
 
 /** How long a lazily loaded page may take to render its heading before focus stays on main. */
 export const HEADING_WAIT_MS = 5_000;
@@ -46,19 +46,22 @@ export function focusPage(main: HTMLElement): () => void {
  * focus into the new page and announces it through the returned polite live region.
  * The first render of a page load is left alone. Redirects are announced but keep focus
  * where it was, since the reader did not choose them. Search-only changes do nothing.
+ * `title` names a page that is not in the route title map, such as the not-found page.
  */
 export function useRouteFocus(
   mainRef: RefObject<HTMLElement | null>,
+  title?: string,
 ): RefObject<HTMLParagraphElement | null> {
   const { pathname } = useLocation();
+  const name = title ?? pageTitle(pathname);
   const navigationType = useNavigationType();
   const announcerRef = useRef<HTMLParagraphElement>(null);
   const previous = useRef<string | null>(null);
   const pending = useRef<() => void>(() => undefined);
 
   useEffect(() => {
-    document.title = documentTitle(pathname);
-  }, [pathname]);
+    document.title = withAppTitle(name);
+  }, [name]);
 
   useEffect(() => {
     const work = pending;
@@ -82,7 +85,7 @@ export function useRouteFocus(
     if (region !== null) region.textContent = '';
     let stop: () => void = () => undefined;
     const timer = window.setTimeout(() => {
-      if (region !== null) region.textContent = `Navigated to ${pageTitle(pathname)}`;
+      if (region !== null) region.textContent = `Navigated to ${name}`;
       if (navigationType !== NavigationType.Replace && mainRef.current !== null)
         stop = focusPage(mainRef.current);
     }, 0);
@@ -90,7 +93,7 @@ export function useRouteFocus(
       window.clearTimeout(timer);
       stop();
     };
-  }, [mainRef, navigationType, pathname]);
+  }, [mainRef, name, navigationType, pathname]);
 
   return announcerRef;
 }

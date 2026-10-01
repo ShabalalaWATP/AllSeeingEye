@@ -51,7 +51,7 @@ export function FiresFilterPanel({
             />
             <span className="flex-1">
               <span className="block font-medium">{label}</span>
-              <span className="mt-1 block text-[11px] text-muted">{note}</span>
+              <span className="mt-1 block text-2xs text-muted">{note}</span>
             </span>
             <span className="font-mono text-muted">{counts[kind].toLocaleString()}</span>
           </label>
@@ -60,12 +60,12 @@ export function FiresFilterPanel({
       {!options.thermal && !options.wildfire && (
         <p className="text-xs text-muted">No fire evidence types selected.</p>
       )}
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Satellite detections are acquisition snapshots, not a live fire perimeter. Heat can also
         come from industry or volcanoes. Nearby detections may describe the same fire and are not
         extra independent reports.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Counts are loaded records, not unique fires. FIRMS may be geographically sampled. The shared
         nation, time and location-quality filters apply; natural-hazard refinements do not change
         fire records.

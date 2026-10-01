@@ -77,9 +77,7 @@ function MastheadFact({
   return (
     <div className="min-w-0">
       <dt className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted">{label}</dt>
-      <dd className={`mt-0.5 text-text ${mono ? 'font-mono text-[11px] leading-5' : ''}`}>
-        {value}
-      </dd>
+      <dd className={`mt-0.5 text-text ${mono ? 'font-mono text-2xs leading-5' : ''}`}>{value}</dd>
     </div>
   );
 }

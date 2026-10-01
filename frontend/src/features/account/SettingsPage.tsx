@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useAuthStore } from '@/stores/auth';
 
 import { AiUsageSummary } from './AiUsageSummary';
@@ -22,6 +23,11 @@ const resources = [
     title: 'Account security',
     detail: 'Manage multi-factor authentication, passwords and active sessions.',
   },
+  {
+    to: '/sources',
+    title: 'Source catalogue',
+    detail: 'Read source grades, collection coverage, limitations and connection state.',
+  },
 ];
 
 export default function SettingsPage() {
@@ -32,15 +38,13 @@ export default function SettingsPage() {
   return (
     <section className="h-full overflow-y-auto p-4 sm:p-8">
       <div className="mx-auto max-w-6xl">
-        <header className="border-b border-line pb-7">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            Personal workspace
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">Settings</h1>
-          <p className="mt-2 text-sm text-muted">
-            Set up the app for the way you work. These preferences apply only to you.
-          </p>
-        </header>
+        <PageHeader
+          className="border-b border-line pb-7"
+          title="Settings"
+          eyebrow="Personal workspace"
+          eyebrowTone="muted"
+          description="Set up the app for the way you work. These preferences apply only to you."
+        />
         <div className="grid gap-8 py-7 md:grid-cols-[190px_minmax(0,1fr)] md:gap-12">
           <nav
             aria-label="Personal settings"

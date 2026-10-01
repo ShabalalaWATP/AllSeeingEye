@@ -1,4 +1,6 @@
-import { geolocationTabs, SectionTabs } from '@/components/research/SectionTabs';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Tabs } from '@/components/ui/Tabs';
+import { geolocationTabs } from '@/lib/workspaceNavigation';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { PhotoGeolocationPanel } from './PhotoGeolocationPanel';
@@ -23,23 +25,20 @@ export default function PhotoResearchPage() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-8 pb-24">
-        <SectionTabs tabs={geolocationTabs} label="Geolocation" />
+        <Tabs links={geolocationTabs} label="Geolocation" />
         <header className="relative overflow-hidden rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-cyan)_12%,transparent),transparent_70%)]"
           />
           <div className="relative grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
-            <div>
-              <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-                Visual research
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Geolocation</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-                Compare photographs, examine visible clues and assess possible locations. Save the
-                findings with supporting evidence and the checks still needed.
-              </p>
-            </div>
+            <PageHeader
+              as="div"
+              title="Geolocation"
+              eyebrow="Visual research"
+              eyebrowTone="cyan"
+              description="Compare photographs, examine visible clues and assess possible locations. Save the findings with supporting evidence and the checks still needed."
+            />
             <ol className="grid gap-2 text-xs sm:grid-cols-3 lg:grid-cols-1">
               {STEPS.map((step, index) => (
                 <li

@@ -71,7 +71,7 @@ export function TrafficPanel({
           </div>
         </fieldset>
       )}
-      <p className={`text-xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}>
+      <p className={`text-xs ${kind === 'aircraft' ? 'text-amber' : 'text-cyan'}`}>
         {count}{' '}
         {kind === 'aircraft'
           ? 'provider-labelled military aircraft loaded'

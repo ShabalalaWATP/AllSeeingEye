@@ -24,8 +24,9 @@ from ase.application.report_jobs.controls import (
     require_discardable,
     resumed_payload,
 )
-from ase.application.report_jobs.release import can_control, load_job, release_job
-from ase.application.report_jobs.views import job_view, refresh_summary
+from ase.application.report_jobs.listing import JobListQuery
+from ase.application.report_jobs.release import load_job, release_job, release_list
+from ase.application.report_jobs.views import refresh_summary
 from ase.application.reports.request import ReportRequest
 from ase.application.research.brief_conversion import run_request_from_brief
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
@@ -212,6 +213,45 @@ class ReportJobService:
         await check_session()
         return await self._release(actor, await self._load(actor, job_id), check_session)
 
+    async def page(
+        self, actor: User, query: JobListQuery, *, check_session: SessionCheck
+    ) -> tuple[list[dict[str, Any]], tuple[datetime, UUID] | None]:
+        """One filtered page and the position after its last row, when more rows follow."""
+        if type(query.limit) is not int or not 1 <= query.limit <= 50:
+            raise InvalidRequest("Choose between one and fifty report jobs.")
+        await check_session()
+        try:
+            access = await self._access.context(actor)
+            jobs = await self._repo.list_page(
+                access.scoped_visibility(query.scope),
+                limit=query.limit + 1,
+                statuses=query.statuses,
+                include_briefings=query.include_briefings,
+                after=query.after,
+            )
+        finally:
+            await self._uow.rollback()
+        more, jobs = len(jobs) > query.limit, jobs[: query.limit]
+        after = (jobs[-1].created_at, jobs[-1].id) if more else None
+        result = await release_list(
+            actor,
+            jobs,
+            guard=self._guard,
+            check_job=self._check_job,
+            uow=self._uow,
+            access_policy=self._access,
+            check_session=check_session,
+        )
+        personal = [job.owner_id for job in jobs if job.team_id is None]
+        try:
+            names = await self._access.owner_names(actor, personal)
+        finally:
+            await self._uow.rollback()
+        for value in result:
+            if value["team_id"] is None:
+                value["owner_name"] = names.get(value["owner_id"])
+        return result, after
+
     async def list(
         self,
         actor: User,
@@ -219,32 +259,8 @@ class ReportJobService:
         *,
         check_session: SessionCheck,
     ) -> list[dict[str, Any]]:
-        if type(limit) is not int or not 1 <= limit <= 50:
-            raise InvalidRequest("Choose between one and fifty report jobs.")
-        await check_session()
-        try:
-            access = await self._access.context(actor)
-            jobs = await self._repo.list_visible(access.visibility, limit=limit)
-        finally:
-            await self._uow.rollback()
-        async with self._guard():
-            for job in jobs:
-                # Thin rows contain progress metadata only. The callback must not
-                # load frozen evidence or perform a provider request for this list.
-                await self._check_job(job)
-            try:
-                access = await self._access.context(actor)
-                result = []
-                for job in jobs:
-                    try:
-                        access.require_read(job.owner_id, job.team_id)
-                    except NotFound:
-                        continue
-                    result.append(job_view(job, detail=False, can_control=can_control(access, job)))
-            finally:
-                await self._uow.rollback()
-            await check_session()
-            return result
+        """The newest requested work, excluding automatic workspace briefings."""
+        return (await self.page(actor, JobListQuery(limit), check_session=check_session))[0]
 
     async def pause(
         self,

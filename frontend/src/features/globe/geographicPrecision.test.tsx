@@ -1,12 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { liveEvent } from '@/test/fixtures';
 import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
 import { EventInspector } from './EventInspector';
 import { buildEventLayers } from './layers/registry';
 import { isMappedEvent } from './geographicPrecision';
+import { SETTLE_MS } from '@/lib/hooks/useSettledAnnouncement';
 
 it.each([0, 6])('separates approximate locations from exact clustering at zoom %s', (zoom) => {
   const exact = ['a', 'b', 'c'].map((id) => liveEvent({ id, point: { lon: 1, lat: 1 } }));
@@ -83,4 +84,80 @@ it('rejects invalid supplied geometry without relocating the event', () => {
   expect(isMappedEvent(liveEvent({ point: { lon: 181, lat: 1 } }))).toBe(false);
   expect(isMappedEvent(liveEvent({ point: { lon: 1, lat: NaN } }))).toBe(false);
   expect(isMappedEvent(liveEvent({ point: { lon: 180, lat: 90 } }))).toBe(true);
+});
+
+describe('location quality list announcements', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const records = (count: number) =>
+    Array.from({ length: count }, (_, i) =>
+      liveEvent({ id: `r${String(i)}`, title: `Loaded record ${String(i)}`, point: null }),
+    );
+  const panel = (count: number) => (
+    <GeographicPrecisionPanel
+      events={records(count)}
+      hidden={[]}
+      filter="all"
+      onFilterChange={vi.fn()}
+      onSelect={vi.fn()}
+    />
+  );
+  const settle = () => act(() => vi.advanceTimersByTimeAsync(SETTLE_MS));
+
+  function announcements(): string[] {
+    const region = screen.getByRole('status');
+    const seen: string[] = [];
+    new MutationObserver(() => {
+      if (region.textContent) seen.push(region.textContent);
+    }).observe(region, { childList: true, characterData: true, subtree: true });
+    return seen;
+  }
+
+  it('keeps streamed count changes out of the live region', async () => {
+    const view = render(panel(25));
+    const seen = announcements();
+    expect(screen.getByText('25 matching loaded records · page 1 of 2')).toBeInTheDocument();
+    for (const count of [30, 45, 70]) {
+      view.rerender(panel(count));
+      await settle();
+    }
+    expect(screen.getByText('70 matching loaded records · page 1 of 4')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(seen).toEqual([]);
+  });
+
+  it('announces the settled result of a search, filter or page change once', async () => {
+    const view = render(panel(45));
+    const seen = announcements();
+    const search = screen.getByLabelText('Search loaded records');
+    for (const text of ['L', 'Lo', 'Loaded record 1'])
+      fireEvent.change(search, { target: { value: text } });
+    expect(seen).toEqual([]);
+    await settle();
+    expect(seen).toEqual(['11 matching loaded records, page 1 of 1.']);
+    view.rerender(panel(60));
+    await settle();
+    expect(seen).toHaveLength(1);
+    fireEvent.change(search, { target: { value: '' } });
+    await settle();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await settle();
+    expect(seen).toEqual([
+      '11 matching loaded records, page 1 of 1.',
+      '60 matching loaded records, page 1 of 3.',
+      '60 matching loaded records, page 2 of 3.',
+    ]);
+    fireEvent.change(screen.getByLabelText('Show on map or globe'), {
+      target: { value: 'reported' },
+    });
+    await settle();
+    // The filter is owned by the parent here; the page resets and an identical result still speaks.
+    expect(seen.at(-1)).toBe('60 matching loaded records, page 1 of 3.');
+    expect(seen).toHaveLength(4);
+  });
 });

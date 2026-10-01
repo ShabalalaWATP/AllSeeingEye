@@ -22,10 +22,12 @@ export function LegacyReportReferences({ evidence }: { evidence: readonly Eviden
             className="report-reader-legacy-reference scroll-mt-6"
           >
             <summary className="cursor-pointer rounded py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember">
-              <span className="mr-2 font-mono text-xs text-[#9b3b18]">[{item.label}]</span>
+              <span className="mr-2 font-mono text-xs text-[color:var(--paper-accent)]">
+                [{item.label}]
+              </span>
               {item.source_name}. {item.title}. {sourceDate(item.published_at)}.
             </summary>
-            <div className="mt-2 pl-8 text-xs leading-5 text-[#6d675e]">
+            <div className="mt-2 pl-8 text-xs leading-5 text-[color:var(--paper-ink-soft)]">
               {item.summary && <p dir="auto">{item.summary}</p>}
               <p className="mt-2 flex flex-wrap gap-4">
                 <SourceLink url={item.url}>Original source</SourceLink>

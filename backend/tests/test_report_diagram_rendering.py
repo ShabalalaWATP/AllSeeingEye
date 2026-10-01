@@ -15,10 +15,8 @@ from ase.adapters.reports.pdf import render_pdf
 from ase.adapters.reports.word import render_docx
 from ase.api.schemas_reports import ReportOut
 from ase.application.reports.document import build_document
-from ase.application.reports.render import render_markdown
 from ase.domain.canonical_provenance import canonical_snapshot
 from ase.domain.errors import InvalidRequest
-from ase.domain.evidence import quality_of_information
 from ase.domain.report_diagram_schema import parse_diagram
 from ase.domain.report_documents import (
     BlockKind,
@@ -29,7 +27,7 @@ from ase.domain.report_documents import (
 from ase.domain.report_records import ReportRecord, ReportVersion, body_to_dict
 from ase.domain.reports import parse_body
 from report_analysis_helpers import ACTOR_MAP, SERIES, TIMELINE
-from report_documents_helpers import document_records
+from report_documents_helpers import canonical_markdown, document_records
 
 LABELS = frozenset({"E1", "E2", "E3"})
 
@@ -91,15 +89,15 @@ def test_the_portable_formats_carry_the_text_alternative_instead_of_the_drawing(
 
 def test_the_report_markdown_gains_a_diagram_section_with_its_table() -> None:
     record, version = _records()
-    markdown = render_markdown(
-        record.header,
-        version.body,
-        version.evidence,
-        quality_of_information(version.evidence),
-    )
-    assert "## Diagrams" in markdown
+    markdown = canonical_markdown(record, version)
+    diagram = version.body.diagrams[0]
+    assert f"### Diagram\n\n### {diagram.title}\n\n{diagram.alt_text}\n\n" in markdown
+    assert "Timeline of three reported events" in diagram.alt_text
+    # The equivalent table always follows, so nothing is lost where nothing is drawn.
     assert "| When | What was reported | Source |" in markdown
-    assert "Timeline of three reported events" in markdown
+    assert "| 3 September | Forces entered the city | E1[1](#reference-1) |" in markdown
+    # The drawing's citations link to the numbered references like any other claim.
+    assert "](#reference-1)" in markdown and "### Reference 1" in markdown
 
 
 def _stored(version: ReportVersion) -> dict[str, object]:

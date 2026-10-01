@@ -24,7 +24,11 @@ async def test_large_publication_is_one_small_resync_for_each_subscriber() -> No
     for subscriber in subscribers:
         message = await anext(subscriber)
         assert message.kind == "event.resync"
-        assert message.payload == {"reason": "snapshot_required"}
+        # The hint names the touched partition so browsers refresh only that data.
+        assert message.payload == {
+            "reason": "snapshot_required",
+            "categories": (Category.DISASTER,),
+        }
         subscriber.close()
         with pytest.raises(StopAsyncIteration):
             await anext(subscriber)

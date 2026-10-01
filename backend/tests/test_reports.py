@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import json
-from datetime import timedelta
+from dataclasses import replace
 
 from httpx import AsyncClient
 
 from ase.application.dto import RateLimits
 from ase.application.ports.feeds import EventQuery
-from ase.application.reports.render import render_markdown
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import TEMPLATES, template_for
 from ase.container import Container
@@ -17,12 +16,11 @@ from ase.domain.doctrine import Confidence
 from ase.domain.events import Category
 from ase.domain.evidence import quality_of_information
 from ase.domain.grading import SourceProfile
-from ase.domain.reports import ReportHeader, parse_body
 from ase.domain.users import User
-from ase.domain.validation import Finding, Severity
 from feeds_helpers import NOW
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
+from report_documents_helpers import canonical_markdown, document_records
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 
 
@@ -55,43 +53,35 @@ def test_selection_ranks_filters_and_flags() -> None:
     assert len(select_evidence(store, profiles, capped, now=NOW).items) == 1
 
 
-def test_render_markdown_has_every_section() -> None:
-    body = parse_body(good_body())
-    store = filled_store()
-    items = select_evidence(store, {}, TEMPLATES["intsum"].strategy, now=NOW).items
-    header = ReportHeader(
-        "intsum",
-        "Intelligence summary: global",
-        {"country": None},
-        NOW - timedelta(days=2),
-        NOW,
-        NOW,
+def test_canonical_markdown_has_every_reader_section() -> None:
+    record, version = document_records()
+    version = replace(
+        version,
+        period_from=record.period_from,
+        period_to=record.period_to,
+        data_cutoff=record.data_cutoff,
     )
-    text = render_markdown(
-        header,
-        body,
-        items,
-        quality_of_information(items),
-        [Finding("citation", Severity.WARNING, "KJ2", "Unknown evidence E9 removed")],
-    )
+    text = canonical_markdown(record, version)
     for heading in (
-        "# Intelligence summary: global",
-        "## Key judgements",
-        "## Reporting",
-        "## Assessment",
-        "## Assumptions",
-        "## Alternative hypotheses",
-        "## Indicators and warning",
-        "## Gaps and collection",
-        "## Sourcing statement",
-        "## Quality of information",
-        "## Validator findings",
-        "## Evidence annex",
+        "# Intelligence summary: Ukraine",
+        "## What happened",
+        "### Ground activity",
+        "## What it means",
+        "## What we judge",
+        "## Other explanations",
+        "## What to watch",
+        "## What we are unsure about",
+        "## Notes on method and sources",
+        "## How the assessment was made",
+        "## Source grades",
+        "## Key to the terms",
+        "## References",
     ):
-        assert heading in text, heading
-    assert "Probability: highly likely. Confidence: moderate." in text
-    assert r"| E1 | A1 | fake\_feed |" in text
-    assert "- warning: KJ2: Unknown evidence E9 removed" in text
+        assert heading in text.splitlines(), heading
+    assert "Highly likely, with moderate confidence." in text
+    assert "Template: intsum. Period 2026-09-03 00:00 to 2026-09-05 00:00 UTC." in text
+    assert r"| 2026-09-05 | fake\_feed | Drone strike near Sumy[1](#reference-1) |" in text
+    assert "### Reference 1\n\nfake\\_feed. Drone strike near Sumy. 2026-09-05." in text
     assert template_for("ask").needs_question
 
 

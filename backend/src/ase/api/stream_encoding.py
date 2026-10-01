@@ -45,6 +45,47 @@ def _serialise_upsert(message: BusMessage, wanted: frozenset[Category]) -> dict[
     return {"source_id": message.payload.get("source_id"), "events": selected}
 
 
+def _serialise_soft_resync(
+    message: BusMessage, wanted: frozenset[Category]
+) -> dict[str, Any] | None:
+    """Name the affected partitions this subscriber shows, or drop an unrelated hint.
+
+    Without recognisable partitions every subscriber receives the bare hint and
+    reconciles fully. An empty filter keeps its meaning of every category.
+    """
+    payload: dict[str, Any] = {"reason": "snapshot_required"}
+    categories = message.payload.get("categories")
+    if (
+        not isinstance(categories, tuple | list | frozenset | set)
+        or not categories
+        or not all(isinstance(category, Category) for category in categories)
+    ):
+        return payload
+    affected = frozenset(categories) & wanted if wanted else frozenset(categories)
+    if not affected:
+        return None
+    payload["categories"] = sorted(category.value for category in affected)
+    source_id = message.payload.get("source_id")
+    if isinstance(source_id, str):
+        payload["source_id"] = source_id
+    return payload
+
+
+def _serialise_resync(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
+    reason = message.payload.get("reason")
+    if reason == "snapshot_required":
+        return _serialise_soft_resync(message, wanted)
+    # Real gaps and expiry overflows always clear and reload, whatever the filter.
+    return {"reason": reason} if reason in RESYNC_REASONS else None
+
+
+def _filtered(message: BusMessage) -> bool:
+    """Upserts and partition-scoped refresh hints differ by category filter."""
+    return message.kind == "event.upsert" or (
+        message.kind == "event.resync" and message.payload.get("reason") == "snapshot_required"
+    )
+
+
 def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
     """Turn a bus message into a JSON-safe payload, or None when the filter drops it."""
     if message.kind == "event.upsert":
@@ -54,9 +95,7 @@ def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any
         id_list = [str(i) for i in ids] if isinstance(ids, tuple | list) else []
         return {"ids": id_list, "count": len(id_list)}
     if message.kind == "event.resync":
-        reason = message.payload.get("reason")
-        if reason in RESYNC_REASONS:
-            return {"reason": reason}
+        return _serialise_resync(message, wanted)
     if message.kind == "alert":
         alert = message.payload.get("alert")
         if isinstance(alert, Alert):
@@ -109,8 +148,8 @@ class StreamEncoder:
             entry = self._entries[id(message)] = _Encoded(message)
         else:
             self._entries.move_to_end(id(message))
-        # Only upserts are filtered; every other public kind has one text for everyone.
-        key = wanted if message.kind == "event.upsert" else _UNFILTERED
+        # Upserts and refresh hints are filtered; other public kinds have one text for everyone.
+        key = wanted if _filtered(message) else _UNFILTERED
         if key not in entry.texts:
             entry.texts[key] = self._encode(entry, key)
             self.encoded += 1

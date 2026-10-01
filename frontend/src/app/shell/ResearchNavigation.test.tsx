@@ -77,9 +77,11 @@ describe('research workspace navigation', () => {
     );
     expect(screen.queryByRole('form', { name: 'Generate a report' })).not.toBeInTheDocument();
     expect(boardRequest).not.toHaveBeenCalled();
-    expect(
-      within(screen.getByRole('main')).getByRole('link', { name: 'Research progress' }),
-    ).toHaveAttribute('href', '/research/jobs');
+    // Progress is one of Research's own tabs, under the same name as the rail entry.
+    expect(within(tabs).getByRole('link', { name: 'Research progress' })).toHaveAttribute(
+      'href',
+      '/research/jobs',
+    );
   });
 
   it('preserves old subscription links while displaying the shorter destination name', async () => {

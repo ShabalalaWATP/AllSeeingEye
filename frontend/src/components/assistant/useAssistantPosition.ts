@@ -3,6 +3,8 @@ import type { KeyboardEvent, PointerEvent } from 'react';
 
 export const LAUNCHER_WIDTH = 136;
 export const LAUNCHER_HEIGHT = 82;
+/** Gap between the launcher's home position and the bottom of the viewport. */
+export const LAUNCHER_HOME_BOTTOM = 28;
 const MARGIN = 12;
 interface Position {
   x: number;
@@ -18,7 +20,7 @@ export function clampAssistantPosition(position: Position, size = viewport()): P
 const home = () =>
   clampAssistantPosition({
     x: window.innerWidth - LAUNCHER_WIDTH - 20,
-    y: window.innerHeight - LAUNCHER_HEIGHT - 28,
+    y: window.innerHeight - LAUNCHER_HEIGHT - LAUNCHER_HOME_BOTTOM,
   });
 
 /** Pointer movement stays local; nothing subscribes map rendering to this position. */

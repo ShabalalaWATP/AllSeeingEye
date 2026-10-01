@@ -1,347 +1,130 @@
-/** Orchestrates the live map data, selections and scene outside the page view. */
-import { useMemo } from 'react';
-import { useGlobeLayerGroups } from './useGlobeLayerGroups';
-import { useSavedMapArea } from './useSavedMapArea';
-import { useInfrastructure } from './infrastructure/useInfrastructure';
-import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
-import { useConflictRegions } from './useConflictRegions';
-import { useConflictRegionSelection } from './useConflictRegionSelection';
+/**
+ * Composes the live map from responsibility-owned hooks. Every hook is called unconditionally
+ * in a fixed order; state stays with the hook that owns it and flows down explicitly.
+ */
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
-import { useCameras } from './cameras/useCameras';
-import { useCameraSelection } from './cameras/useCameraSelection';
-import { useFigures } from './figures/useFigures';
-import { useFigureSelection } from './figures/useFigureSelection';
 import { useNow } from '@/lib/hooks/useNow';
-import { useMapReferenceData } from './useMapReferenceData';
-import { useDashboardEvents } from './useDashboardEvents';
-import { useReportingReferences } from './useReportingReferences';
-import { useNewsCountryLayers } from './useNewsCountryLayers';
-import { useCyberMapSelection } from './useCyberMapSelection';
-import { useContextSelection } from './context/useContextSelection';
-import { useTechnologyControl } from './useTechnologyControl';
-import { useNetworkMap, useNetworkMapSelection } from './useNetworkMap';
-import { useRadarAttackMap, useRadarAttackLayers } from './useRadarAttackMap';
-import { useDashboardFocus } from './useDashboardFocus';
+import { useGlobeAssistant } from './useGlobeAssistant';
+import { useGlobeCanvas } from './useGlobeCanvas';
+import { useGlobeCatalogueLayers } from './useGlobeCatalogueLayers';
+import { useGlobeEvents } from './useGlobeEvents';
+import { useGlobeInterference } from './useGlobeInterference';
+import { useGlobeLiveViews } from './useGlobeLiveViews';
 import { useGlobePreferences } from './useGlobePreferences';
-import { useBritishGrid } from './useBritishGrid';
-import { useNewsSelectionGuard } from './useNewsSelectionGuard';
-import { useMapWorkspaceTools } from './useMapWorkspaceTools';
-import { useInterference } from './useInterference';
-import { useGnssFilters } from './useGnssFilters';
 import { useGlobeScene } from './useGlobeScene';
-import { useMapPicking } from './useMapPicking';
-import { useTrafficSelection } from './useTrafficSelection';
-import { useMapRenderView } from './useMapRenderView';
-import { useDashboardEngine } from './useDashboardEngine';
-import { useViewportCoverage } from './useViewportCoverage';
-import { useLiveEvents } from './useLiveEvents';
-import { useEyeMapContext } from './useEyeMapContext';
-import { useAssistantMapSelection } from './useAssistantMapSelection';
-import { useMapFocus } from './useMapFocus';
-import { useCatalogueCloser } from './useCatalogueCloser';
+import { useGlobeSelection } from './useGlobeSelection';
+import { useGlobeSources } from './useGlobeSources';
+import { useTechnologyControl } from './useTechnologyControl';
 
 export function useGlobePage() {
-  const {
-    mode,
-    setMode,
-    baseLayer,
-    setBaseLayer,
-    terminator,
-    toggleTerminator,
-    lite,
-    toggleLite,
-    interference,
-    opsRoom,
-  } = useGlobePreferences();
+  const display = useGlobePreferences();
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
-  const gnss = useInterference(interference && visible);
-  const { supported, containerRef, engine } = useDashboardEngine({ mode, baseLayer, lite });
-  const britishGrid = useBritishGrid(engine);
-  useLiveEvents();
-  useViewportCoverage(engine, supported && visible);
-  const tools = useMapWorkspaceTools(engine, supported && !opsRoom, mode);
   const now = useNow();
-  const gnssFilters = useGnssFilters(gnss.cells, gnss.receivedAt, now);
-  const { zoom, symbolMode } = useMapRenderView(engine, mode);
-  const { osMaps, osLoading, osError, recheckOs, countries, countryByIso, countriesError } =
-    useMapReferenceData(baseLayer, setBaseLayer);
-  const savedArea = useSavedMapArea(engine, countryByIso, mode === 'map');
-  const toolLayers = useMemo(
-    () => [...tools.layers, ...savedArea.layers],
-    [tools.layers, savedArea.layers],
-  );
-
-  const data = useDashboardEvents(now);
-  const {
-    hidden,
-    country,
-    selectedId,
-    selected,
-    select,
-    setCountry,
-    toggleCategory,
-    observations,
-    quality,
-    storySize,
-  } = data;
-  const network = useNetworkMap(country, countryByIso);
-  const radar = useRadarAttackMap(!hidden.includes('cyber'), visible, countryByIso);
-  const regions = useConflictRegions(supported && !hidden.includes('conflict'), country);
-  const { cyber, news } = useReportingReferences(data, countryByIso, visible, now);
-  const nation = country === null ? null : (countryByIso[country] ?? null);
-
-  const cameras = useCameras();
-  const figures = useFigures(country);
-  const infrastructure = useInfrastructure(countryByIso);
-  const context = useContextSelection(country, tools.picking, symbolMode);
-  useNewsSelectionGuard(context, data, now);
-  const closeCatalogues = useCatalogueCloser({
-    radar: radar.close,
-    network: network.close,
-    cameras: cameras.close,
-    figures: figures.close,
-    infrastructure: infrastructure.close,
-    regions: regions.close,
-    context: context.close,
-    cyber: cyber.close,
-    news: news.close,
+  const interference = useGlobeInterference(display.interference && visible, now);
+  const canvas = useGlobeCanvas(display, visible);
+  const { engine, supported, tools, symbolMode } = canvas;
+  const { countryByIso } = canvas.reference;
+  const data = useGlobeEvents(now);
+  const liveViews = useGlobeLiveViews(engine, display, data, interference.filters);
+  const scope = { data, countryByIso, engine, picking: tools.picking, symbolMode, now };
+  const sources = useGlobeSources({ ...scope, supported, visible });
+  const selection = useGlobeSelection({ ...scope, sources });
+  const catalogue = useGlobeCatalogueLayers({
+    ...scope,
+    sources,
+    selection,
+    gridLayers: canvas.britishGrid.layers,
+    toolLayers: canvas.toolLayers,
   });
-  const {
-    details,
-    highlightedId,
-    visible: pickableEvents,
-    choose,
-    close,
-    onPick,
-    onCluster,
-    onJam,
-  } = useMapPicking(
-    quality.filtered,
-    data.renderHidden,
-    tools.picking,
-    select,
-    engine,
-    closeCatalogues,
-  );
-  const newsLayers = useNewsCountryLayers(
-    news,
-    context.event,
-    engine,
-    close,
-    tools.picking,
-    symbolMode,
-  );
-  const cyberSelection = useCyberMapSelection({
-    cyber,
-    enabled: !hidden.includes('cyber'),
-    picking: tools.picking,
-    closeOthers: close,
-    engine,
-    mode: symbolMode,
-    context,
-    countries: countryByIso,
-    quality: quality.filter,
-    windowHours: data.windowHours,
-    now,
-    networkOpen: network.open,
-  });
-  const { selectContext, selectSatellite } = useDashboardFocus({
-    engine,
-    picking: tools.picking,
-    hidden,
-    toggleCategory,
-    choose,
-    close,
-    chooseContext: context.choose,
-  });
-  const networkSelection = useNetworkMapSelection({
-    network,
-    contextEvent: context.event,
-    selectContext,
-    picking: tools.picking,
-    closeOthers: close,
-    engine,
-    mode: symbolMode,
-    countries: countryByIso,
-  });
-  const radarAttackLayers = useRadarAttackLayers({
-    radar,
-    engine,
-    closeOthers: close,
-    picking: tools.picking,
-    mode: symbolMode,
-  });
-  const regionSelection = useConflictRegionSelection(
-    regions,
-    !hidden.includes('conflict'),
-    tools.picking,
-    close,
-    engine,
-    symbolMode,
-  );
-
-  const { focusCamera, cameraLayers } = useCameraSelection(
-    cameras,
-    tools.picking,
-    close,
-    engine,
-    symbolMode,
-  );
   const technology = useTechnologyControl(
-    network,
-    infrastructure,
-    country,
-    networkSelection.selectRecord,
+    sources.network,
+    sources.infrastructure,
+    data.country,
+    catalogue.networkSelection.selectRecord,
   );
-  const { focusFigure, figureLayers } = useFigureSelection(
-    figures,
-    tools.picking,
-    close,
-    engine,
-    symbolMode,
-  );
-  const selectTraffic = useTrafficSelection(
-    engine,
-    choose,
-    observations.visibility,
-    observations.toggle,
-    hidden,
-    toggleCategory,
-  );
-  const { focus: focusInfrastructure, layers: infrastructureLayers } = useInfrastructureSelection(
-    infrastructure,
-    tools.picking,
-    close,
-    engine,
-    symbolMode,
-  );
-  const selectAssistantMapSource = useAssistantMapSelection(
-    pickableEvents,
-    cameras,
-    infrastructure,
-    choose,
-    focusCamera,
-    focusInfrastructure,
-  );
-  useEyeMapContext(
+  useGlobeAssistant({
     engine,
     supported,
-    selected ?? context.event,
-    cameras,
-    infrastructure,
-    selectAssistantMapSource,
-  );
-  const layerGroups = useGlobeLayerGroups({
-    grid: britishGrid.layers,
-    infrastructure: infrastructureLayers,
-    regions: regionSelection.layers,
-    cameras: cameraLayers,
-    figures: figureLayers,
-    context: context.layers,
-    cyber: cyberSelection.layers,
-    radar: radarAttackLayers,
-    network: networkSelection.layers,
-    news: newsLayers,
-    tools: toolLayers,
+    inspected: data.selected ?? sources.context.event,
+    sources,
+    selection,
+    catalogue,
   });
+  const { details } = selection;
   useGlobeScene({
     engine,
-    events: quality.filtered,
+    events: data.quality.filtered,
     hidden: data.renderHidden,
-    selectedId,
-    highlightedId,
-    onPick,
-    onCluster,
-    onJam,
-    jamCells: gnssFilters.filtered,
+    selectedId: data.selectedId,
+    highlightedId: selection.highlightedId,
+    onPick: selection.onPick,
+    onCluster: selection.onCluster,
+    onJam: selection.onJam,
+    jamCells: interference.filters.filtered,
     jamSelection: details?.kind === 'jam' ? details.cell : null,
-    layerGroups,
+    layerGroups: catalogue.layerGroups,
     supported,
-    terminator,
-    lite,
-    interference,
-    opsRoom,
+    terminator: display.terminator,
+    lite: display.lite,
+    interference: display.interference,
+    // A rotating playlist holds each saved view's camera instead of turning the globe.
+    opsRoom: display.opsRoom && !liveViews.rotating,
     reducedMotion,
     visible,
     now,
-    zoom,
-    mode,
+    zoom: canvas.zoom,
+    mode: display.mode,
     symbolMode,
   });
 
-  const { focus, changeNation } = useMapFocus(
-    engine,
-    select,
-    closeCatalogues,
-    setCountry,
-    countryByIso,
-  );
-
+  const { country } = data;
   return {
-    display: {
-      mode,
-      setMode,
-      baseLayer,
-      setBaseLayer,
-      terminator,
-      toggleTerminator,
-      lite,
-      toggleLite,
-      interference,
-      opsRoom,
+    display,
+    canvas: {
+      containerRef: canvas.containerRef,
+      supported,
+      engine,
+      britishGrid: canvas.britishGrid,
+      tools,
+      savedArea: canvas.savedArea,
     },
-    canvas: { containerRef, supported, engine, britishGrid, tools, savedArea },
     reference: {
-      osMaps,
-      osLoading,
-      osError,
-      recheckOs,
-      countries,
-      countriesError,
-      changeNation,
-      nation,
+      ...canvas.reference,
+      changeNation: selection.changeNation,
+      nation: country === null ? null : (countryByIso[country] ?? null),
     },
     events: {
       data,
-      hidden,
+      hidden: data.hidden,
       country,
-      selectedId,
-      selected,
-      quality,
-      storySize,
+      selectedId: data.selectedId,
+      selected: data.selected,
+      quality: data.quality,
+      storySize: data.storySize,
       details,
-      pickableEvents,
-      choose,
-      close,
-      onJam,
-      focus,
-      selectTraffic,
+      pickableEvents: selection.pickableEvents,
+      choose: selection.choose,
+      close: selection.close,
+      onJam: selection.onJam,
+      focus: selection.focus,
+      selectTraffic: selection.selectTraffic,
     },
-    sources: {
-      radar,
-      network,
-      news,
-      cyber,
-      regions,
-      infrastructure,
-      cameras,
-      figures,
-      context,
-      gnss,
-      gnssFilters,
-    },
+    sources: { ...sources, gnss: interference.gnss, gnssFilters: interference.filters },
     actions: {
       technology,
-      selectContext,
-      selectSatellite,
-      focusInfrastructure,
-      focusCamera,
-      focusFigure,
-      regionSelection,
-      cyberSelection,
-      networkSelection,
+      selectContext: selection.selectContext,
+      selectSatellite: selection.selectSatellite,
+      focusInfrastructure: catalogue.focusInfrastructure,
+      focusCamera: catalogue.focusCamera,
+      focusFigure: catalogue.focusFigure,
+      regionSelection: catalogue.regionSelection,
+      cyberSelection: catalogue.cyberSelection,
+      networkSelection: catalogue.networkSelection,
     },
+    liveViews,
     now,
   };
 }
+
+export type GlobePageModel = ReturnType<typeof useGlobePage>;

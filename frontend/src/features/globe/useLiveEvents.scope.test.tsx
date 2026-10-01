@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 
+import { subscribeBellChanges } from '@/lib/bellSignal';
 import { workspaceRevision } from '@/lib/workspaceAccess';
 import { useEventsStore } from '@/stores/events';
 import { FakeEventStreamClient } from '@/test/fakeStream';
@@ -64,5 +65,25 @@ it('disconnects hidden tabs and takes a fresh authenticated snapshot on return',
   expect(load).toHaveBeenCalledTimes(2);
   unmount();
   visibility.mockRestore();
+  load.mockRestore();
+});
+
+it('asks the bell to refetch on a bell change or new alert without passing their content on', () => {
+  FakeEventStreamClient.reset();
+  const load = vi.spyOn(useEventsStore.getState(), 'load').mockResolvedValue();
+  const handle = vi.spyOn(useEventsStore.getState(), 'handleStreamMessage');
+  const changed = vi.fn();
+  const stop = subscribeBellChanges(changed);
+  const { unmount } = renderHook(() => useLiveEvents());
+  const client = FakeEventStreamClient.instances[0]!;
+  act(() => {
+    client.emit({ event: 'bell.changed', data: '{}', id: null });
+    client.emit({ event: 'alert', data: '{"title":"private"}', id: null });
+  });
+  expect(changed).toHaveBeenCalledTimes(2);
+  expect(handle).not.toHaveBeenCalled();
+  stop();
+  unmount();
+  handle.mockRestore();
   load.mockRestore();
 });

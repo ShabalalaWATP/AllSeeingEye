@@ -27,7 +27,16 @@ const SAVED_PATHS: Record<SavedOrigin, string> = {
   geolocation: '/geolocation/saved',
 };
 
+/** Automatic briefings are read in the workspace that prepared them, not Saved research. */
+const BRIEFING_PATHS = new Map<unknown, string>([
+  ['daily', '/trackers'],
+  ['economy', '/economy'],
+  ['cyber', '/cyber'],
+]);
+
 /** The section that lists this report, for a reader returning from it. */
 export function savedPathFor(report: ReportSummary | null | undefined): string {
+  if (report?.scope.origin === 'briefing')
+    return BRIEFING_PATHS.get(report.scope.briefing) ?? '/research/jobs?briefings=1';
   return report ? SAVED_PATHS[reportOrigin(report)] : SAVED_PATHS.research;
 }

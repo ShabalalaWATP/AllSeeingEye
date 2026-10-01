@@ -1,23 +1,39 @@
 import { z } from 'zod';
-import type { components } from './types.gen';
+import type { components, operations } from './types.gen';
 import { apiCall, apiSend } from './client';
 import { ApiError } from './errors';
+import type { OwnershipScope } from '@/lib/ownershipScope';
 import { scopedMutation } from '@/lib/workspaceAccess';
 import { researchUsageMutation } from '@/lib/researchUsageEvents';
 
 export type ReportJob = components['schemas']['ReportJobOut'];
 export type ReportJobCreate = components['schemas']['ReportJobCreateIn'];
 export type ReportJobSection = components['schemas']['ReportJobSectionOut'];
+export type ReportJobStatusGroup = NonNullable<
+  NonNullable<operations['list_jobs_api_report_jobs_get']['parameters']['query']>['status']
+>;
+export interface ReportJobQuery {
+  status: ReportJobStatusGroup;
+  /** Automatic workspace briefings are hidden unless explicitly requested. */
+  includeBriefings: boolean;
+  cursor: string | null;
+  /** Omitted means the caller's personal and current-team work; "all" is administrators only. */
+  scope?: OwnershipScope;
+}
 
 export const reportJobSchema: z.ZodType<ReportJob> = z.object({
   id: z.uuid(),
   revision: z.number().int().positive(),
   title: z.string(),
+  origin: z.enum(['research', 'subscription', 'geolocation', 'briefing']).default('research'),
   status: z.enum(['queued', 'running', 'paused', 'completed', 'needs_review', 'failed']),
   stage: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
   team_id: z.uuid().nullable(),
+  owner_id: z.uuid(),
+  // The personal owner's name on list views; null for team work and detail reads.
+  owner_name: z.string().nullable().default(null),
   report_id: z.uuid().nullable(),
   model: z.string(),
   reasoning_effort: z.string().nullable(),
@@ -58,12 +74,24 @@ export function createReportJob(body: ReportJobCreate, signal: AbortSignal) {
     }),
   );
 }
+const reportJobPageSchema = z.object({
+  items: z.array(reportJobSchema),
+  next_cursor: z.string().nullable().default(null),
+});
+export type ReportJobPage = z.infer<typeof reportJobPageSchema>;
+
+/** The newest requested research, without automatic workspace briefings. */
 export async function fetchReportJobs(signal: AbortSignal) {
-  const page = await apiCall('/api/report-jobs?limit=20', {
-    schema: z.object({ items: z.array(reportJobSchema) }),
-    signal,
-  });
+  const page = await apiCall('/api/report-jobs?limit=20', { schema: reportJobPageSchema, signal });
   return page.items;
+}
+/** One server-filtered page; the cursor continues strictly after the previous page. */
+export function fetchReportJobPage(query: ReportJobQuery, signal: AbortSignal) {
+  const params = new URLSearchParams({ limit: '20', status: query.status });
+  if (query.includeBriefings) params.set('include_briefings', 'true');
+  if (query.cursor) params.set('cursor', query.cursor);
+  if (query.scope === 'all') params.set('scope', 'all');
+  return apiCall(`/api/report-jobs?${params.toString()}`, { schema: reportJobPageSchema, signal });
 }
 function matchingJob(job: ReportJob, id: string) {
   if (job.id !== id)

@@ -64,18 +64,23 @@ from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
+from ase.container.bell import BellWiring
+from ase.container.citation_verdicts import CitationVerdictWiring
 from ase.container.conflict_screening import build_conflict_screening
 from ase.container.cyber import CyberWiring
+from ase.container.direction_plans import DirectionPlanWiring
 from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
+from ase.container.evaluations import EvaluationWiring
 from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
 from ase.container.map_services import MapWiring
 from ase.container.private_records import PrivateRecordWiring
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
+from ase.container.report_team_copies import ReportTeamCopyWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -100,9 +105,12 @@ class Container(
     MapWiring,
     PrivateRecordWiring,
     FeatureWiring,
+    DirectionPlanWiring,
     ResearchInputWiring,
     SecFilingWiring,
     AdminWiring,
+    EvaluationWiring,
+    CitationVerdictWiring,
     AuthWiring,
     AssistantWiring,
     EconomyWiring,
@@ -114,6 +122,8 @@ class Container(
     ReferenceWiring,
     UkraineWiring,
     TeamBoardWiring,
+    ReportTeamCopyWiring,
+    BellWiring,
 ):
     def __init__(
         self,

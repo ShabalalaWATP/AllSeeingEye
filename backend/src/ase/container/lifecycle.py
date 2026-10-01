@@ -34,3 +34,8 @@ async def dispose_resources(container: "Container") -> None:
         if digest is not None:
             cleanup.push_async_callback(digest.drain)
             cleanup.callback(digest.cancel)
+        # Evaluation runs record their interruption before the database closes.
+        evaluations = container.__dict__.get("evaluation_tasks")
+        if evaluations is not None:
+            cleanup.push_async_callback(evaluations.drain)
+            cleanup.callback(evaluations.cancel_all)

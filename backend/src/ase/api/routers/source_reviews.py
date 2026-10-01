@@ -6,7 +6,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Path, Query, Response
 
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, SessionDep, get_current_user
-from ase.api.schemas_source_reviews import SourceReviewIn, SourceSnapshotIn
+from ase.api.schemas_source_reviews import (
+    SourceReviewIn,
+    SourceSnapshotIn,
+    SourceSnapshotListOut,
+    SourceSnapshotSummaryOut,
+)
+from ase.api.session_fence import FenceDep
 from ase.container.source_reviews import source_reviews
 from ase.domain.source_review_records import SourceReviewSnapshot
 from ase.domain.source_reviews import SourceReviewKind, SourceReviewRevision
@@ -74,6 +80,25 @@ async def freeze(
     )
     response.headers["Cache-Control"] = "private, no-store"
     return result
+
+
+@router.get("/source-assessment-snapshots")
+async def snapshots(
+    report_id: UUID,
+    number: VersionNumber,
+    claims: ClaimsDep,
+    fence: FenceDep,
+    container: ContainerDep,
+    session: SessionDep,
+    response: Response,
+) -> SourceSnapshotListOut:
+    """Snapshots of this exact version, newest first, for an explicit reader choice."""
+    rows = await source_reviews(container, session).snapshots(claims, report_id, number)
+    response.headers["Cache-Control"] = "private, no-store"
+    result = SourceSnapshotListOut(
+        snapshots=[SourceSnapshotSummaryOut.from_snapshot(row) for row in rows]
+    )
+    return await fence.release(result, session=session)
 
 
 @router.get("/source-assessment-snapshots/{snapshot_id}")

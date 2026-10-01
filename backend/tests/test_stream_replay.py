@@ -14,6 +14,7 @@ from ase.adapters.bus.replay import (
 from ase.adapters.store.memory import estimate_bytes
 from ase.application.ports.feeds import BusMessage
 from ase.application.ports.session import SESSION_CHANGED
+from ase.domain.events import Category
 from ase.domain.warning import Alert
 from feeds_helpers import NOW, make_event
 
@@ -122,7 +123,7 @@ async def test_oversized_batches_are_replayed_as_a_snapshot_request() -> None:
     await bus.publish(BusMessage("event.upsert", {"events": events}))
     replayed = bus.replay(bus.epoch, 0) or []
     assert [(message.kind, dict(message.payload)) for message in replayed] == [
-        ("event.resync", {"reason": "snapshot_required"})
+        ("event.resync", {"reason": "snapshot_required", "categories": (Category.DISASTER,)})
     ]
 
 

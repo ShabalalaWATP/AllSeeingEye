@@ -27,7 +27,7 @@
 - **Draw on map > Watch this area:** finish a rectangle, polygon or circle, then
   review a watch in Alerts. All geodesic sketches use a conservative geographic
   envelope, including their curved edges and some surrounding area. Edit bounds,
-  category, terms, threshold and workspace before Add indicator. A path has no area.
+  category, terms, threshold and workspace before Add alert rule. A path has no area.
   The default is No report; nothing is submitted by opening the form.
 
 Active refinements live in their own panels; the former event-scope strip across

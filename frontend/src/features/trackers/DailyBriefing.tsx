@@ -4,6 +4,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
+import { AutomaticBriefingNote } from '@/components/research/AutomaticBriefingNote';
 
 import { DailyBriefingSummary } from './DailyBriefingSummary';
 import { useDailyBriefing } from './useDailyBriefing';
@@ -20,8 +21,12 @@ export function DailyBriefing() {
           <p className="mt-1 text-sm text-muted">
             A daily situation summary of conflicts, global disasters and humanitarian developments.
           </p>
+          <AutomaticBriefingNote
+            subject="Opening this page"
+            className="mt-1 text-xs leading-5 text-muted"
+          />
         </div>
-        <span className="font-mono text-[11px] uppercase tracking-wider text-ember">
+        <span className="font-mono text-2xs uppercase tracking-wider text-ember">
           24-hour update
         </span>
       </div>
@@ -35,7 +40,7 @@ export function DailyBriefing() {
         </div>
       )}
       {briefing && (
-        <p className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-muted">
+        <p className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-2xs text-muted">
           <span>
             {report ? 'Updated' : 'Started'}{' '}
             {formatUtc(report?.version.created_at ?? job?.created_at ?? '')}

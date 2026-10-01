@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from evaluations.casebook import CASE_DIRECTORY, load_cases
+from evaluations.citation_verdicts import read_verdict_files, verdict_metrics
 from evaluations.human_review import human_metrics, review_template
 from evaluations.pipeline import EvaluationProfile, RecordingGateway, evaluate_case
 
@@ -52,6 +53,13 @@ def parser() -> argparse.ArgumentParser:
     score.add_argument("--results", type=Path, required=True)
     score.add_argument("--review", type=Path, required=True)
     score.add_argument("--out", type=Path, required=True, help="New semantic-metrics JSON file.")
+    verdicts = commands.add_parser(
+        "verdicts", help="Count exported human citation verdicts from saved reports."
+    )
+    verdicts.add_argument(
+        "--export", type=Path, action="append", required=True, help="A verdict JSONL export."
+    )
+    verdicts.add_argument("--out", type=Path, required=True, help="New verdict-metrics JSON file.")
     return command
 
 
@@ -124,6 +132,11 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "run":
             output = asyncio.run(run_evaluation(args))
             print(f"Saved model outputs and an unlabelled human review to {output}")  # noqa: T201
+        elif args.command == "verdicts":
+            rows = read_verdict_files(args.export)
+            with args.out.open("xb") as target:
+                target.write(json_bytes(verdict_metrics(rows, len(args.export))))
+            print(f"Saved human citation verdict counts to {args.out}")  # noqa: T201
         else:
             if args.results.stat().st_size > 128_000_000 or args.review.stat().st_size > 8_000_000:
                 raise ValueError("Evaluation artefacts exceed the supported size.")

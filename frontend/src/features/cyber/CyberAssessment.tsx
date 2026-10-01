@@ -25,7 +25,7 @@ export function CyberAssessment({ state, days }: { state: CyberBriefingState; da
             {days}-day AI assessment
           </p>
           {briefing && (
-            <p className="text-[11px] text-muted">
+            <p className="text-2xs text-muted">
               Period {formatUtc(briefing.period_from)} to {formatUtc(briefing.period_to)}
             </p>
           )}

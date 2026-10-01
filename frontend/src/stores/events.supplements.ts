@@ -1,5 +1,5 @@
 import { fetchEvents, type EventsQuery } from '@/lib/api/events';
-import type { LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import { describeError } from '@/lib/api/errors';
 import {
   MARITIME_SNAPSHOT_LIMIT,
@@ -9,19 +9,31 @@ import {
   RESERVED_AIRCRAFT,
 } from './events.coverage';
 
-/** Supplemental snapshots stop busy categories from hiding ships or public spacecraft. */
+interface SupplementRequest {
+  label: string;
+  /** The partition the request refreshes, so a partial refresh skips unrelated ones. */
+  category: Category;
+  query: EventsQuery;
+}
+
+/**
+ * Supplemental snapshots stop busy categories from hiding ships or public spacecraft.
+ * `only` limits them to the partitions a bulk update touched.
+ */
 export async function loadCoverageSupplements(
   events: LiveEvent[],
   stats: StoreStats,
   signal: AbortSignal,
   scope: Pick<EventsQuery, 'bbox' | 'sampling'> = {},
+  only: ReadonlySet<Category> | null = null,
 ): Promise<{ events: LiveEvent[]; error: string | null; limited: boolean }> {
-  const requests: { label: string; query: EventsQuery }[] = [];
+  const requests: SupplementRequest[] = [];
   const count = (category: 'maritime' | 'space' | 'disaster' | 'aviation') =>
     stats.per_category.find((entry) => entry.category === category)?.count ?? 0;
   if (count('maritime') > events.filter((event) => event.category === 'maritime').length) {
     requests.push({
       label: 'maritime',
+      category: 'maritime',
       query: { categories: ['maritime'], limit: MARITIME_SNAPSHOT_LIMIT },
     });
   }
@@ -29,27 +41,32 @@ export async function loadCoverageSupplements(
     if (count('aviation') > events.filter((event) => event.category === 'aviation').length)
       requests.push({
         label: 'aviation',
+        category: 'aviation',
         query: { categories: ['aviation'], limit: AVIATION_SNAPSHOT_LIMIT },
       });
     requests.push({
       label: 'military aircraft',
+      category: 'aviation',
       query: { categories: ['aviation'], military: true, limit: RESERVED_AIRCRAFT },
     });
   }
   if (count('maritime') > MARITIME_SNAPSHOT_LIMIT)
     requests.push({
       label: 'reported military vessel',
+      category: 'maritime',
       query: { categories: ['maritime'], military: true, limit: MARITIME_SNAPSHOT_LIMIT },
     });
   if (count('space') > 0) {
     if (count('space') > events.filter((event) => event.category === 'space').length) {
       requests.push({
         label: 'satellite',
+        category: 'space',
         query: { categories: ['space'], limit: SATELLITE_SNAPSHOT_LIMIT },
       });
     }
     requests.push({
       label: 'public military and crewed satellite',
+      category: 'space',
       query: {
         sources: ['celestrak_skynet', 'celestrak_military', 'celestrak_stations'],
         limit: SATELLITE_SNAPSHOT_LIMIT,
@@ -59,6 +76,7 @@ export async function loadCoverageSupplements(
   if (count('disaster') > 0) {
     requests.push({
       label: 'FIRMS thermal detection',
+      category: 'disaster',
       query: {
         sources: [
           'firms_viirs_noaa20',
@@ -76,6 +94,7 @@ export async function loadCoverageSupplements(
   // The server admits two event reads per user. Use one slot for this snapshot,
   // leaving room for another panel instead of rejecting later catalogues with 429.
   for (const request of requests) {
+    if (only !== null && !only.has(request.category)) continue;
     signal.throwIfAborted();
     try {
       const result = await fetchEvents({ ...request.query, ...scope }, signal);

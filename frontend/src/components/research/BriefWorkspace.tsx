@@ -5,13 +5,16 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { ApiError, describeError } from '@/lib/api/errors';
 import { fetchBrief } from '@/lib/api/researchBriefs';
+import { fetchPlan } from '@/lib/api/direction';
 import { fetchMapView } from '@/lib/api/mapViews';
 import { fetchReport } from '@/lib/api/reports';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
-import { draftFromBrief, newBriefDraft } from '@/lib/researchBriefDraft';
+import { draftFromBrief, newBriefDraft, seedDraftFromPlan } from '@/lib/researchBriefDraft';
 
 import { BriefEditor, type InitialBrief } from './BriefEditor';
 import { BriefLibrary } from './BriefLibrary';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function BriefWorkspace({
   briefId,
@@ -22,6 +25,7 @@ export function BriefWorkspace({
   fromReportVersion,
   initialQuestion,
   intent,
+  planId,
 }: {
   briefId: string;
   revision?: number | undefined;
@@ -31,6 +35,8 @@ export function BriefWorkspace({
   fromReportVersion?: number | undefined;
   initialQuestion?: string | undefined;
   intent?: 'subscribe' | undefined;
+  /** Only the plan id travels in the URL; its requirements are loaded with current access. */
+  planId?: string | undefined;
 }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -79,6 +85,14 @@ export function BriefWorkspace({
     }
     const draft = newBriefDraft();
     if (initialQuestion) draft.question.main = initialQuestion;
+    if (planId !== undefined) {
+      if (mapViewId || mapRevisionId)
+        throw new ApiError(422, 'invalid_plan_link', 'Choose a collection plan or a saved map.');
+      if (!UUID.test(planId))
+        throw new ApiError(422, 'invalid_plan_link', 'This collection plan link is not valid.');
+      const plan = await fetchPlan(planId, controller.signal);
+      return { brief: null, draft: seedDraftFromPlan(draft, plan), copy: false, mapTitle: null };
+    }
     if (mapViewId || mapRevisionId) {
       if (!mapViewId || !mapRevisionId)
         throw new ApiError(422, 'invalid_map_link', 'Choose an exact saved map revision.');
@@ -104,6 +118,7 @@ export function BriefWorkspace({
     fromReportId,
     fromReportVersion,
     initialQuestion,
+    planId,
   ]);
   const resource = useScopedResource(loader);
   const { data, loading, error, reload } = resource;
@@ -121,7 +136,7 @@ export function BriefWorkspace({
   if (briefId === 'library') return <BriefLibrary />;
   return (
     <BriefEditor
-      key={`${resource.key}:${briefId}:${revision ?? ''}:${mapRevisionId ?? ''}`}
+      key={`${resource.key}:${briefId}:${revision ?? ''}:${mapRevisionId ?? ''}:${planId ?? ''}`}
       initial={data}
       fromReportId={fromReportId}
       fromReportVersion={fromReportVersion}

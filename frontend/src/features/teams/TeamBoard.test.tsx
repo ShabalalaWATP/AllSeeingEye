@@ -30,6 +30,7 @@ function boardPost(overrides: Partial<TeamBoardPost>): TeamBoardPost {
     deleted_at: null,
     removal: null,
     revision: 1,
+    subject: null,
     ...overrides,
   };
 }

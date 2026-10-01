@@ -100,7 +100,7 @@ describe('route recovery', () => {
   });
 
   it('replaces the page with a plain recovery screen when no layout can render', async () => {
-    open('/broken-root', 'anonymous', '/sources', { path: '/broken-root', element: <Broken /> });
+    open('/broken-root', 'anonymous', '/activate', { path: '/broken-root', element: <Broken /> });
     const main = await recoveryIn('This page could not load');
     expect(within(main).getByRole('link', { name: 'Back to map' })).toHaveAttribute('href', '/');
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
