@@ -18,6 +18,7 @@ import {
   type Tone,
 } from './doctrineTone';
 import { evidenceId } from './EvidenceLinks';
+import { SourceReviewPanel, type SourceReviewContext } from './SourceReviewPanel';
 
 /** A recorded value with its label; the tone repeats what the label and value say. */
 function Signal({ label, value, tone }: { label: string; value: string; tone: Tone }) {
@@ -70,9 +71,11 @@ function Prose({ title, text }: { title: string; text: string }) {
 export function EvidenceItemDetails({
   item,
   assessment,
+  review,
 }: {
   item: EvidenceItem;
   assessment: EvidenceAssessment | undefined;
+  review?: SourceReviewContext | undefined;
 }) {
   return (
     <details id={evidenceId(item.label)} className="scroll-mt-6 border-b border-line">
@@ -155,6 +158,7 @@ export function EvidenceItemDetails({
         <EvidenceProjectDetails item={item} />
         <EvidenceObservationDetails item={item} />
         <SourceRatingDetails rating={item.source_rating} frozen />
+        {review && <SourceReviewPanel item={item} context={review} />}
         <details className="min-w-0 text-xs">
           <summary className="cursor-pointer py-2 font-medium">Identifiers and integrity</summary>
           <dl className="mt-2 grid gap-x-6 gap-y-3 sm:grid-cols-2">

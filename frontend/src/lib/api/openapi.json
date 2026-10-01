@@ -10776,6 +10776,64 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "source-reviews"
+        ],
+        "summary": "Snapshots",
+        "description": "Snapshots of this exact version, newest first, for an explicit reader choice.",
+        "operationId": "snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceSnapshotListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/reports/{report_id}/versions/{number}/source-assessment-snapshots/{snapshot_id}": {
@@ -47150,6 +47208,79 @@
           "subjects"
         ],
         "title": "SourceSnapshotIn"
+      },
+      "SourceSnapshotListOut": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSnapshotSummaryOut"
+            },
+            "type": "array",
+            "title": "Snapshots"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 20
+          }
+        },
+        "type": "object",
+        "required": [
+          "snapshots"
+        ],
+        "title": "SourceSnapshotListOut"
+      },
+      "SourceSnapshotSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "authored_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Authored By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "decisions": {
+            "type": "integer",
+            "title": "Decisions"
+          },
+          "subjects": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Subjects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "authored_by",
+          "created_at",
+          "decisions",
+          "subjects"
+        ],
+        "title": "SourceSnapshotSummaryOut",
+        "description": "Enough to choose a snapshot deliberately; the full projection is read separately."
       },
       "SourceStatus": {
         "type": "string",

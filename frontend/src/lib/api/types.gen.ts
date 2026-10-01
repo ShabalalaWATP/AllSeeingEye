@@ -2898,7 +2898,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Snapshots
+         * @description Snapshots of this exact version, newest first, for an explicit reader choice.
+         */
+        get: operations["snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get"];
         put?: never;
         /** Freeze */
         post: operations["freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post"];
@@ -15618,6 +15622,53 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** SourceSnapshotListOut */
+        SourceSnapshotListOut: {
+            /** Snapshots */
+            snapshots: components["schemas"]["SourceSnapshotSummaryOut"][];
+            /**
+             * Limit
+             * @default 20
+             */
+            limit: number;
+        };
+        /**
+         * SourceSnapshotSummaryOut
+         * @description Enough to choose a snapshot deliberately; the full projection is read separately.
+         */
+        SourceSnapshotSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decisions */
+            decisions: number;
+            /** Subjects */
+            subjects: {
+                [key: string]: string;
+            };
+        };
         /**
          * SourceStatus
          * @enum {string}
@@ -23401,6 +23452,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceReviewRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSnapshotListOut"];
                 };
             };
             /** @description Validation Error */

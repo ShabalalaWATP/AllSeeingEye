@@ -112,6 +112,36 @@ Its PHIA bands include `range_description`, preserving approximate wording and
 the exclusive 0/50/100 boundaries. Numerical bounds remain descriptive vocabulary,
 not calculated report probabilities. See [the policy](../REPORT_EVIDENCE_SCORING.md).
 
+## Source reviews and reviewed snapshots
+
+Base path: `/api/reports/{report_id}/versions/{number}`. Responses use
+`Cache-Control: private, no-store`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /source-reviews?label&judgement_id&subject&kind` | Bounded history (at most 100 revisions) for one exact target. |
+| `POST /source-reviews` | Record a review or a correction (`previous_id` must name the current revision). |
+| `GET /source-assessment-snapshots` | Snapshots of this exact version in the report's scope, newest first, at most 20. Release-fenced. |
+| `POST /source-assessment-snapshots` | Freeze current reviews for this version; `subjects` names one subject per key judgement. |
+| `GET /source-assessment-snapshots/{id}` | One snapshot, only for its own version and scope. |
+
+- Each kind has its own identity: reliability applies to a source and subject across the
+  personal or team scope; credibility to one capture and one judgement's claim;
+  authenticity to one capture and its issuer. A credibility review of one claim is never
+  shown as a source-wide grade.
+- Reading needs current read access. Recording needs write access to the report (owner,
+  team manager or administrator) in an active team; a correction to another reviewer's
+  history needs that reviewer, a team manager or an administrator. Archived teams are
+  read-only.
+- A stale `previous_id` returns 409. A full 100-revision history returns 422 with an
+  explicit limit message; no revision is discarded and there is no continuation cursor.
+- Report reads and exports (`GET /api/reports/{id}`, `/markdown`, `/export/{format}`)
+  apply a snapshot only when `version` and `source_snapshot_id` are both given. Without
+  one, the original frozen report, grading, likelihood and export content are returned.
+- The report reader offers these reviews inside each evidence item and lists snapshots
+  in the Sources view. Nothing is selected automatically: the reader chooses a snapshot
+  before viewing its reviewed grades or exporting with it.
+
 ## Semantic search
 
 | Method and path | Request | Result |

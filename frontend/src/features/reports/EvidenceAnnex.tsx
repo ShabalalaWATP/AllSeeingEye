@@ -2,6 +2,7 @@ import type { EvidenceItem, Finding } from '@/lib/api/reports';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
 import { EvidenceItemDetails } from './EvidenceItemDetails';
+import type { SourceReviewContext } from './SourceReviewPanel';
 import './evidenceSignals.css';
 
 /**
@@ -13,11 +14,14 @@ export function EvidenceAnnex({
   findings,
   status,
   assessment,
+  review,
 }: {
   evidence: readonly EvidenceItem[];
   findings: readonly Finding[];
   status: string;
   assessment?: ReportAssessment | null | undefined;
+  /** Saved-report context for recording human source reviews; omitted in previews. */
+  review?: SourceReviewContext | undefined;
 }) {
   const warnings = findings.filter((finding) => finding.severity === 'warning');
   return (
@@ -74,6 +78,7 @@ export function EvidenceAnnex({
                 key={item.label}
                 item={item}
                 assessment={assessment?.evidence.find((row) => row.label === item.label)}
+                review={review}
               />
             ))}
           </div>
