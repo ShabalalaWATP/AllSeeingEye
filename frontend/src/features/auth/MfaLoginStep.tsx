@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 
-import { AuthenticatorQr } from '@/components/account/AuthenticatorQr';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -8,6 +7,12 @@ import { describeError } from '@/lib/api/errors';
 import type { PendingMfa } from '@/lib/api/mfa';
 
 import { useMfaLogin } from './useMfaLogin';
+
+// The QR encoder is only needed during authenticator enrolment, so keep it out of the entry chunk.
+const AuthenticatorQr = lazy(async () => {
+  const module = await import('@/components/account/AuthenticatorQr');
+  return { default: module.AuthenticatorQr };
+});
 
 export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onBack: () => void }) {
   const mfa = useMfaLogin(challenge);
@@ -89,7 +94,15 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
             </Button>
           ) : (
             <div className="space-y-3">
-              <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
+              <Suspense
+                fallback={
+                  <p role="status" className="flex h-52 w-52 items-center text-sm text-muted">
+                    Preparing QR code...
+                  </p>
+                }
+              >
+                <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
+              </Suspense>
               <p className="mb-2 text-xs text-muted">Setup key</p>
               <code className="block select-all break-all rounded bg-surface-2 p-3 font-mono text-sm tracking-wider">
                 {mfa.enrolment.secret}
