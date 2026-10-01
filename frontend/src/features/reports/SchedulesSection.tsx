@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import type { Country } from '@/lib/api/geoSchemas';
@@ -231,9 +232,11 @@ export function SchedulesSection({
           <LoadingNote label="Loading subscriptions" />
         ) : null
       ) : schedules.data.length === 0 ? (
-        <p className="text-sm text-muted">
-          No subscriptions yet. Choose a topic and create your first update below.
-        </p>
+        <EmptyState
+          title="No subscriptions yet"
+          purpose="A subscription runs the same research again on a schedule and saves each update as a report you can compare with the last."
+          action="Choose a topic and create your first update below."
+        />
       ) : (
         <Table caption="Subscriptions">
           <thead>

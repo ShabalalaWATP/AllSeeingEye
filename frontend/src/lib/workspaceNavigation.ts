@@ -59,6 +59,15 @@ export const administrationDestination: WorkspaceDestination = {
   icon: 'admin',
 };
 
+/** Help is reached from the account controls and search rather than the rail. */
+export const helpDestination: WorkspaceDestination = {
+  to: '/help',
+  label: 'Help and guide',
+  description:
+    'The user guide: the core loop from map to research to watches, where each workspace lives, and the Start here steps.',
+  icon: 'search',
+};
+
 /** The parent of every standing watch; each supported kind is listed beneath it. */
 export const watchesHub: WorkspaceDestination = {
   to: '/watches',

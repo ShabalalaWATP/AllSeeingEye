@@ -6,6 +6,7 @@
 import { adminLocation } from '@/lib/adminNavigation';
 import {
   activeWorkspacePath,
+  helpDestination,
   savedViews,
   trackerModules,
   workspaceDestinations,
@@ -51,6 +52,7 @@ export function pageTitle(pathname: string): string {
   if (publicPage !== undefined) return publicPage;
   const detail = DETAIL_PAGES.find(([pattern]) => pattern.test(path));
   if (detail !== undefined) return detail[1];
+  if (path === helpDestination.to) return helpDestination.label;
   const saved = savedViews().find((view) => view.to === path);
   if (saved !== undefined) return saved.label;
   const tracker = trackerModules.find((module) => module.to === path);

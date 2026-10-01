@@ -3,10 +3,12 @@ import { Link } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { deleteAoi, fetchAois, fetchPlans } from '@/lib/api/direction';
 import type { AreaOfInterest } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
+import { mapPanelHref } from '@/lib/mapLayerDirectory';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
@@ -62,7 +64,15 @@ export default function DirectionPage() {
             <LoadingNote label="Loading areas" />
           ) : null
         ) : areas.data.length === 0 ? (
-          <p className="text-sm text-muted">No areas yet.</p>
+          <EmptyState
+            title="No areas of interest yet"
+            purpose="An area of interest is a saved place you can reuse in research, subscriptions and collection plans."
+            action={
+              <Link to={mapPanelHref('Research area')} className="text-ember underline">
+                Draw an area on the map
+              </Link>
+            }
+          />
         ) : (
           <Table caption="Areas of interest">
             <thead>
@@ -112,7 +122,11 @@ export default function DirectionPage() {
             <LoadingNote label="Loading plans" />
           ) : null
         ) : plans.data.length === 0 ? (
-          <p className="text-sm text-muted">No plans yet.</p>
+          <EmptyState
+            title="No collection plans yet"
+            purpose="A collection plan sets out intelligence requirements and gathers matching evidence from the live feeds as it arrives."
+            action="Write your first plan with the form below."
+          />
         ) : (
           <ul aria-label="Collection plans" className="flex flex-col gap-2">
             {plans.data.map((plan) => (

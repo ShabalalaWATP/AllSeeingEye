@@ -7,7 +7,12 @@
 import { FAMILIES, FAMILY_LABELS } from '@/features/sources/catalogueEntries';
 import { catalogueHref } from '@/features/sources/catalogueFilters';
 import { MAP_GUIDE_PANEL, mapLayerEntries, mapPanelHref } from '@/lib/mapLayerDirectory';
-import { navigationEntries, savedViews, trackerModules } from '@/lib/workspaceNavigation';
+import {
+  helpDestination,
+  navigationEntries,
+  savedViews,
+  trackerModules,
+} from '@/lib/workspaceNavigation';
 
 export interface CommandTarget {
   readonly id: string;
@@ -21,6 +26,13 @@ export function commandTargets(options: { admin?: boolean } = {}): readonly Comm
   return [
     ...navigationEntries(options).map((page) => ({ id: `page:${page.to}`, ...page })),
     ...savedViews().map((view) => ({ id: `view:${view.to}`, ...view })),
+    {
+      id: 'help:guide',
+      label: helpDestination.label,
+      group: 'Help',
+      description: helpDestination.description,
+      to: helpDestination.to,
+    },
     ...trackerModules.map((tracker) => ({
       id: `tracker:${tracker.to}`,
       label: tracker.label,
