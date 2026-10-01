@@ -93,14 +93,11 @@ it.each(['globe', 'map'] as const)(
     await waitFor(() => expect(useEventsStore.getState().loaded).toBe(true));
     act(() => useEventsStore.getState().toggleCategory('aviation'));
     expect(eventIds()).toEqual(['hazard-plane']);
-    expect(screen.getByRole('switch', { name: /^Natural hazards / })).toHaveAttribute(
+    expect(screen.getByRole('switch', { name: 'Natural hazards' })).toHaveAttribute(
       'aria-checked',
       'false',
     );
-    expect(screen.getByRole('switch', { name: /^Fires / })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
+    expect(screen.getByRole('switch', { name: 'Fires' })).toHaveAttribute('aria-checked', 'false');
     await user.click(screen.getByRole('button', { name: 'Natural hazard filters' }));
     const panel = screen.getByRole('region', { name: 'Natural hazard filters' });
     expect(within(panel).queryByRole('radio')).not.toBeInTheDocument();
@@ -111,14 +108,11 @@ it.each(['globe', 'map'] as const)(
     await user.click(within(panel).getByRole('checkbox', { name: /^Earthquakes:/ }));
     await user.click(within(panel).getByRole('checkbox', { name: /^Floods:/ }));
     expect(eventIds()).toEqual(['hazard-plane']);
-    await user.click(screen.getByRole('switch', { name: /^Natural hazards / }));
+    await user.click(screen.getByRole('switch', { name: 'Natural hazards' }));
     await waitFor(() =>
       expect(eventIds()).toEqual(['hazard-flood', 'hazard-plane', 'hazard-quake']),
     );
-    expect(screen.getByRole('switch', { name: /^Fires / })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
+    expect(screen.getByRole('switch', { name: 'Fires' })).toHaveAttribute('aria-checked', 'false');
     await user.click(within(panel).getByRole('checkbox', { name: /^Earthquakes:/ }));
     await waitFor(() => expect(eventIds()).toEqual(['hazard-flood', 'hazard-plane']));
     await user.click(within(panel).getByRole('checkbox', { name: /^Floods:/ }));

@@ -82,15 +82,15 @@ describe('layer switch on state', () => {
         onToggle={vi.fn()}
       />,
     );
-    const space = screen.getByRole('switch', { name: 'Space 3' });
-    const conflict = screen.getByRole('switch', { name: 'Conflict & unrest 2' });
+    const space = screen.getByRole('switch', { name: 'Space' });
+    const conflict = screen.getByRole('switch', { name: 'Conflict & unrest' });
     expect(space).toHaveAttribute('aria-checked', 'false');
     expect(conflict).toHaveAttribute('aria-checked', 'true');
     await user.click(space);
     await user.click(conflict);
     expect(space).toHaveAttribute('aria-checked', 'true');
-    expect(space).toHaveAccessibleName('Space 3');
+    expect(space).toHaveAccessibleName('Space');
     expect(conflict).toHaveAttribute('aria-checked', 'false');
-    expect(conflict).toHaveAccessibleName('Conflict & unrest 2');
+    expect(conflict).toHaveAccessibleName('Conflict & unrest');
   });
 });
