@@ -51,7 +51,7 @@ def test_team_copy_migration_is_unique_per_version_and_team_and_downgrades() -> 
             Table(name, metadata, Column("id", Uuid(), primary_key=True))
         metadata.create_all(connection)
         migration = _migration(connection)
-        assert migration.revision == "0078" and migration.down_revision == "0076"
+        assert migration.revision == "0078" and migration.down_revision == "0077"
         migration.upgrade()
         table = ReportTeamCopyRow.__table__
         first = _row()
