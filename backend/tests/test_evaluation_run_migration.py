@@ -54,7 +54,7 @@ def test_evaluation_run_migration_enforces_one_active_run_and_downgrades() -> No
     with engine.begin() as connection:
         Table("users", MetaData(), Column("id", Uuid(), primary_key=True)).create(connection)
         migration = _migration(connection)
-        assert migration.revision == "0076" and migration.down_revision == "0066"
+        assert migration.revision == "0076" and migration.down_revision == "0075"
         migration.upgrade()
         table = EvaluationRunRow.__table__
         connection.execute(table.insert().values(**_row()))
