@@ -1,5 +1,6 @@
 import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
 import { HistoricalBaselineNote } from '@/components/reports/HistoricalBaselineNote';
+import { SourceText } from '@/components/events/SourceText';
 import { Fragment, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
@@ -107,7 +108,13 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
-        <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
+        <SourceText
+          as="h2"
+          language={event.language}
+          className="text-base leading-snug font-semibold text-text"
+        >
+          {event.title}
+        </SourceText>
         {kind && (
           <p className="mt-2 flex items-center gap-2 text-xs text-text">
             <ConflictSymbol kind={kind} />
@@ -169,7 +176,13 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         <SelectedEventFacts event={event} />
         <ReferenceNotes event={event} />
         {event.summary !== null && (
-          <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
+          <SourceText
+            as="p"
+            language={event.language}
+            className="mt-3 whitespace-pre-line text-text"
+          >
+            {event.summary}
+          </SourceText>
         )}
         <SourceProvenanceDetails
           transformations={event.transformations}

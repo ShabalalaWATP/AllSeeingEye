@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { describeError } from '@/lib/api/errors';
 import { SourceLink } from '@/components/ui/SourceLink';
+import { SourceText } from '@/components/events/SourceText';
+import { shownTitle } from '@/components/events/sourceLanguage';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import { formatUtc } from '@/lib/format';
 import { isMappedEvent, precisionLabel } from './geographicPrecision';
@@ -178,10 +180,22 @@ export function NewsPanel({
                   {newsSourceLabel(lead)} ·{' '}
                   {lead.published_at ? formatUtc(lead.published_at) : 'Publication date unknown'}
                 </p>
-                <h3 className="text-sm font-semibold leading-6">{lead.title_en ?? lead.title}</h3>
+                <SourceText
+                  as="h3"
+                  language={shownTitle(lead).language}
+                  className="text-sm font-semibold leading-6"
+                >
+                  {shownTitle(lead).text}
+                </SourceText>
                 <SourceLink url={lead.url}>Read source</SourceLink>
                 {lead.summary && lead.summary !== lead.title && (
-                  <p className="line-clamp-3 text-xs leading-6 text-muted">{lead.summary}</p>
+                  <SourceText
+                    as="p"
+                    language={lead.language}
+                    className="line-clamp-3 text-xs leading-6 text-muted"
+                  >
+                    {lead.summary}
+                  </SourceText>
                 )}
                 <p className="text-2xs text-muted">
                   {precisionLabel(lead)}
@@ -222,7 +236,8 @@ export function NewsPanel({
                     <ul className="mt-2 space-y-2">
                       {records.slice(0, 8).map((item) => (
                         <li key={item.id}>
-                          {newsSourceLabel(item)}: {item.title}{' '}
+                          {newsSourceLabel(item)}:{' '}
+                          <SourceText language={item.language}>{item.title}</SourceText>{' '}
                           <SourceLink url={item.url}>Read source</SourceLink>
                         </li>
                       ))}
