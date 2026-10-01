@@ -1,5 +1,6 @@
 import type { DrawingWorkspace } from './useDrawingWorkspace';
 import { useEffect, useRef } from 'react';
+import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import { useWorkspaces, useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 
@@ -64,6 +65,16 @@ export function DrawingStorageControls({ storage }: { storage: DrawingWorkspace[
           Browse saved
         </button>
       </div>
+      {storage.active?.team_id &&
+        (storage.dirty ? (
+          <p className="map-tool-help">Save the collection before discussing it with the team.</p>
+        ) : (
+          <DiscussWithTeamLink
+            teamId={storage.active.team_id}
+            subject={{ kind: 'drawing_collection', id: storage.active.id }}
+            className="map-tool-text-button"
+          />
+        ))}
       {storage.pendingEdits && (
         <p role="status" className="map-tool-notice">
           Add the sketch to the collection or apply its edits before saving. Clearing the temporary

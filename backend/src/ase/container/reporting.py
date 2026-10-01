@@ -47,7 +47,6 @@ from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_image import ExportMapImage
 from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
-from ase.container.direction_plans import DirectionPlanWiring
 from ase.container.map_workspace import MapWorkspaceWiring
 from ase.container.report_generation import ReportGenerationWiring
 from ase.container.report_jobs import ReportJobWiring
@@ -66,7 +65,6 @@ class ReportWiring(
     ReportJobWiring,
     WebResearchWiring,
     MapWorkspaceWiring,
-    DirectionPlanWiring,
 ):
     """Session-scoped report production, export and search factories."""
 
