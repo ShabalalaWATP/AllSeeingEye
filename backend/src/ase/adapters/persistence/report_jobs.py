@@ -118,24 +118,6 @@ class SqlReportJobRepository:
             after=after,
         )
 
-    async def list_page(
-        self,
-        visibility: Visibility,
-        *,
-        limit: int,
-        statuses: Sequence[str] | None = None,
-        include_briefings: bool = False,
-        after: tuple[datetime, UUID] | None = None,
-    ) -> list[ReportJob]:
-        return await list_job_page(
-            self.session,
-            visibility,
-            limit=limit,
-            statuses=statuses,
-            include_briefings=include_briefings,
-            after=after,
-        )
-
     async def count_active(self, owner_id: UUID | None = None) -> int:
         query = select(func.count()).select_from(Row).where(Row.status.in_(("queued", "running")))
         if owner_id is not None:
