@@ -26,6 +26,11 @@ it('preserves missing years as gaps and exposes unrounded observations in the ta
   expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
   fireEvent.change(screen.getByRole('slider'), { target: { value: '0' } });
   expect(screen.getByLabelText('Selected observation value')).toHaveTextContent(/\$3\.1T/);
+  // The slider is named by its visible label and announces the date and value it selects.
+  const slider = screen.getByRole('slider', { name: 'Explore dates' });
+  expect(slider).toHaveAttribute('aria-valuetext', expect.stringMatching(/^2023: \$3\.1T/));
+  fireEvent.change(slider, { target: { value: '1' } });
+  expect(slider).toHaveAttribute('aria-valuetext', expect.stringMatching(/: Not available$/));
 });
 
 it('draws axis labels in HTML at the 11px text size so they stay readable at 320px', () => {

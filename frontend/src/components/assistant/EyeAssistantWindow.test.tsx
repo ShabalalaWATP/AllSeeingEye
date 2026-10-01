@@ -18,7 +18,7 @@ async function mount() {
     </MemoryRouter>,
   );
   const user = userEvent.setup();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   return user;
 }
 
@@ -28,7 +28,12 @@ it('expands near full screen and restores without losing the draft or reopening 
   const compactWidth = panel.style.width;
   const compactHeight = panel.style.height;
   await user.type(screen.getByLabelText('Ask the Eye'), 'My unfinished question');
+  // One pattern per control: the name states the action, so there is no pressed state.
+  expect(screen.getByRole('button', { name: 'Expand chat' })).not.toHaveAttribute('aria-pressed');
   await user.click(screen.getByRole('button', { name: 'Expand chat' }));
+  expect(screen.getByRole('button', { name: 'Restore compact chat' })).not.toHaveAttribute(
+    'aria-pressed',
+  );
   expect(screen.getByRole('dialog')).toBe(panel);
   expect(parseFloat(panel.style.width)).toBeGreaterThan(window.innerWidth * 0.9);
   expect(parseFloat(panel.style.width)).toBeLessThan(window.innerWidth);
@@ -52,7 +57,7 @@ it('keeps the expanded panel and wider launcher inside the viewport after resizi
   expect(parseFloat(panel.style.top)).toBeGreaterThanOrEqual(16);
   expect(parseFloat(panel.style.left) + parseFloat(panel.style.width)).toBeLessThanOrEqual(308);
   expect(parseFloat(panel.style.top) + parseFloat(panel.style.height)).toBeLessThanOrEqual(552);
-  const launcher = screen.getByRole('button', { name: 'Minimise Eye assistant' });
+  const launcher = screen.getByRole('button', { name: 'Ask Eye', expanded: true });
   expect(parseFloat(launcher.style.left) + parseFloat(launcher.style.width)).toBeLessThanOrEqual(
     308,
   );

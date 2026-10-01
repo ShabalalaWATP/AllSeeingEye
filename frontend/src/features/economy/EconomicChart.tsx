@@ -129,7 +129,11 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
       <label className="flex items-center gap-4 text-xs text-muted">
         <span className="shrink-0">Explore dates</span>
         <input
-          aria-label={`Explore ${series.name} observations`}
+          aria-valuetext={
+            focused
+              ? `${focused.date}: ${formatEconomicValue(focused.value, series.unit)}`
+              : undefined
+          }
           type="range"
           min="0"
           max={Math.max(0, points.length - 1)}

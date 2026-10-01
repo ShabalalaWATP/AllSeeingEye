@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { http, HttpResponse } from 'msw';
@@ -21,7 +21,7 @@ async function mount() {
     </MemoryRouter>,
   );
   const user = userEvent.setup();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   return { ...result, user };
 }
 
@@ -57,7 +57,7 @@ it.each(['access', 'account', 'logout'] as const)(
       await gate;
     });
     if (change !== 'logout') {
-      await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+      await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
       expect(screen.getByText('What would you like to know?')).toBeVisible();
     }
     expect(screen.queryByText('Private operator question.')).not.toBeInTheDocument();
@@ -82,7 +82,9 @@ it('prevents duplicate sends, stops a request and allows a new question without 
   );
   const { user } = await mount();
   await user.type(screen.getByLabelText('Ask the Eye'), 'First question');
-  const form = screen.getByRole('button', { name: 'Ask Eye' }).closest('form')!;
+  const form = within(screen.getByRole('dialog'))
+    .getByRole('button', { name: 'Ask Eye' })
+    .closest('form')!;
   act(() => {
     fireEvent.submit(form);
     fireEvent.submit(form);
@@ -181,7 +183,7 @@ it('keeps unsafe markup and URLs inert and offers a retry after a failed answer'
   await user.type(screen.getByLabelText('Ask the Eye'), 'Retry me{Enter}');
   expect(await screen.findByRole('alert')).toHaveTextContent('AI connection unavailable');
   expect(screen.getByLabelText('Ask the Eye')).toHaveValue('Retry me');
-  await user.click(screen.getByRole('button', { name: 'Ask Eye' }));
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Ask Eye' }));
   expect(await screen.findByText('<img src=x onerror=alert(1)>')).toBeVisible();
   expect(document.querySelector('[onerror]')).toBeNull();
   expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
@@ -208,7 +210,7 @@ it('minimising keeps the request running and restores its completed answer', asy
     await gate;
   });
   expect(screen.getByRole('status', { name: 'Answer ready' })).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   expect(screen.getByText('Two recent vessel observations are available.')).toBeVisible();
 });
 
