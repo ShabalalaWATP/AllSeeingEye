@@ -151,3 +151,91 @@ and operator credentials are excluded from software verification.
 All new implementation tickets remain open until their checks, independent
 reviews, acceptance criteria and authorised merge are complete. Epics remain
 open while their children do. Opening a PR is not production release approval.
+
+## Current delivery snapshot, 1 October 2026
+
+This section supersedes the earlier current-status counts, CI conclusions and
+migration reservations; their dated evidence remains historical. Jira now has
+**68 open Codex items: 57 non-epic delivery/prerequisite items and 11 coordinating
+epics**. KAN-1, KAN-2, KAN-4 and KAN-144 are Done following their recorded verification.
+The earlier KAN-146/KAN-148/KAN-147 reconciliation remains unchanged. The remaining
+57 comprise 55 batched items and the two operator prerequisites, KAN-45/KAN-46.
+Implemented, reviewed and CI-passing work is not automatically Done or released.
+
+Main is `9ae40e3d`. The primary checkout at `9a01161a` and the user's prepared edits
+remain untouched. The review stack continues from PR88 through PR96; no merge to
+main or production deployment is authorised by this register.
+
+| PR                                                          | Checked head                  | Latest full workflow named **CI**                                                                          |
+| ----------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) | `9634f824`                    | [36922277772](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36922277772), passed              |
+| [89](https://github.com/ShabalalaWATP/AllSeeingEye/pull/89) | `fad1327f`                    | [36923838968](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36923838968), passed              |
+| [90](https://github.com/ShabalalaWATP/AllSeeingEye/pull/90) | `f1a32e17`                    | [36927813271](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36927813271), passed              |
+| [91](https://github.com/ShabalalaWATP/AllSeeingEye/pull/91) | `18ce8245`                    | [36930619530](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36930619530), passed, all 30 jobs |
+| [92](https://github.com/ShabalalaWATP/AllSeeingEye/pull/92) | `6886a141`                    | [36931665034](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36931665034), passed              |
+| [93](https://github.com/ShabalalaWATP/AllSeeingEye/pull/93) | `2afb4831`                    | [36931692903](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36931692903), passed              |
+| [94](https://github.com/ShabalalaWATP/AllSeeingEye/pull/94) | `2097eb3b`                    | [36933344519](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36933344519), pending             |
+| [95](https://github.com/ShabalalaWATP/AllSeeingEye/pull/95) | `a45ae032`                    | [36933445271](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36933445271), pending             |
+| [96](https://github.com/ShabalalaWATP/AllSeeingEye/pull/96) | `68af50a1` working checkpoint | Final source checks and independent reviews passed; full published-head CI required                        |
+
+PR91's current frontend evidence records 4,292 tests, one skip and **92.14% branch
+coverage**. Its passing CI supersedes the earlier failed main-integration diagnostic;
+it does not certify downstream feature heads. PR95's
+[36931922889](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/36931922889)
+passed the separate two-job **Image SBOMs** workflow, not full CI. Required CI
+identities and the existing global, per-file and security/auth floors remain intact.
+
+### Reconciled migration chain
+
+After main's untouched `0081`, the combined chain is:
+
+`0081 -> 0082 -> 0083 -> 0084 -> 0085 -> 0086 -> 0087 -> 0088 -> 0089`
+
+| Revision | Feature                     |
+| -------- | --------------------------- |
+| `0082`   | Invitation privacy receipts |
+| `0083`   | Performance projections     |
+| `0084`   | Alert feedback              |
+| `0085`   | Frozen indicator ratios     |
+| `0086`   | Forecast reminders          |
+| `0087`   | Notification delivery       |
+| `0088`   | Alert routing               |
+| `0089`   | Browser push                |
+
+Only previously unmerged Codex migrations were rekeyed. Main's historical chain,
+including `0075` following `0066`, remains unchanged. The privacy and frozen-evidence
+downgrade refusals remain deliberate. See the
+[migration reconciliation](../reviews/2026-10-01-migration-history-reconciliation.md)
+for real SQLite/PostgreSQL history checks and their limits. Final PR96 whole-model parity and 21 real history cases pass on SQLite/PostgreSQL. Published-head CI remains required; isolated historical
+rehearsals do not authorise production migration or rollback.
+
+### Remaining acceptance and release work
+
+- Finish PR96 integration, inspect the pending full CI runs and complete any resulting
+  repairs. Record reviews and checks against the final immutable heads, then obtain
+  authorised stack-merge/release decisions. Recheck downstream branches after each
+  parent change. Green CI alone does not close every ticket criterion.
+- Retain criterion-specific measurement requirements: KAN-69/KAN-71 comparable
+  multi-run timing evidence; KAN-70's twenty consecutive main runs; KAN-73's controlled
+  70-second saving with coverage difference within 0.05 percentage points; and KAN-75's
+  repeatability and four weekly dependency-update observations. Historical partial
+  improvements and the new coverage result are not substitutes for those criteria.
+- KAN-45 still needs approved off-host backup/monitoring choices and an isolated
+  recovery from that copy. KAN-46 needs operator replacement/revocation of the three
+  provider keys and verification of production use. No key values belong in tickets.
+- KAN-22's reporting setting is verified, but private-report recipient delivery is
+  unverified. KAN-23 still needs the operator's policy/shared-team retention decision;
+  deactivation and supported record deletion must not be called account-wide erasure.
+- KAN-130 needs authority-specific UN/EU access/reuse approval before enabling imports;
+  KAN-131 needs the genuine 24-hour translation measurement; KAN-134 needs the
+  installation's HAPI identifier and live response-row validation. KAN-133's official
+  NVD terms/rate review and non-endorsement notice are now verified and implemented,
+  so they are no longer an outstanding prerequisite.
+- KAN-110/111/113/141 retain the chosen live relay, feed-reader and browser-push
+  acceptance checks. Fixture transports and disposable databases do not prove inbox,
+  device or production delivery. Other batch-specific operator and production
+  observations remain governed by their delivery records.
+
+Jira remains authoritative. Keep the 57 non-epic items and their coordinating epics
+open wherever checks, review, acceptance or authorised release are still outstanding.
+Do not turn this snapshot into a blanket Done or production-readiness claim.

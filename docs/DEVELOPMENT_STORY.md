@@ -5855,3 +5855,30 @@ coverage is 20,697/22,470 branches (92.10%), with every qualifying file at least
 70%; backend coverage reports 94% and the reviewed security/auth floors pass.
 The CI batch's storage capacity and controlled Node timing trials remain active,
 so these feature checks do not complete the outstanding performance criteria.
+
+## 1 October 2026: Codex stack reconciled with Claude's main changes
+
+All nine Codex batches incorporated main `9ae40e3d` by ordinary merges,
+preserving Claude's alert confirmation, live store, team provenance and extracted
+map controls. Released migrations remain unchanged; the unmerged Codex chain now
+runs from 0082 through 0089 with one head.
+
+Combined checks exposed stale request-ID and baseline-payload expectations, a
+copied-report STIX header retaining personal origin identity, routing without
+revision-conflict recovery and a migration fixture which could clean up before
+its cancelled worker finished. Failing regressions preceded the repairs.
+Independent reviewers closed the findings.
+
+PRs #88–#93 passed fresh full CI and became ready for review. The complete PR #91
+frontend run passed 4,292 tests with one existing skip and 92.14% branch coverage,
+including all auth and per-file floors. Repaired-head checks for #94–#96 remain
+tracked in their live PRs. Private SQLite/PostgreSQL history tests verified fresh
+and populated upgrades, full model parity, retained-data guards and repair/retry;
+owned resources were removed.
+
+KAN-1 joined KAN-2, KAN-4 and KAN-144 in Done after non-code acceptance verification.
+Fifty-seven delivery/prerequisite tickets and eleven epics remain open. The
+PostgreSQL runner cost is 39.50 minutes, still above 30; reference-host, elapsed
+workload and operator/live acceptance remain explicit. No main merge, real
+credential rotation, notification delivery or production deployment occurred.
+Release approval remains required.
