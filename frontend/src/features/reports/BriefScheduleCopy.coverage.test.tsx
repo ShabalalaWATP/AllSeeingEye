@@ -111,12 +111,17 @@ it.each([{ brief_id: 'different-brief' }, { brief_revision: 3 }, { enabled: true
     createCopy.mockResolvedValueOnce({ ...created, ...mismatch });
     const { onCreated } = mount();
     const form = await screen.findByRole('form', { name: 'Duplicate Research Brief subscription' });
+    const button = screen.getByRole('button', { name: 'Create paused copy' });
+    button.focus();
     fireEvent.submit(form);
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'did not retain the exact brief revision and paused state',
     );
     expect(onCreated).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Create paused copy' })).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button).toHaveFocus();
+    fireEvent.click(button);
     fireEvent.submit(form);
     expect(createCopy).toHaveBeenCalledOnce();
   },
@@ -167,9 +172,15 @@ it('aborts an outstanding copy on unmount and never announces its cancellation a
     }),
   );
   const { unmount, onCreated } = mount();
-  fireEvent.click(await screen.findByRole('button', { name: 'Create paused copy' }));
+  const button = await screen.findByRole('button', { name: 'Create paused copy' });
+  button.focus();
+  fireEvent.click(button);
   const signal = createCopy.mock.calls[0]![2];
-  expect(screen.getByRole('button', { name: 'Create paused copy' })).toBeDisabled();
+  expect(button).toHaveAttribute('aria-disabled', 'true');
+  expect(button).toHaveAttribute('aria-busy', 'true');
+  expect(button).toHaveFocus();
+  fireEvent.click(button);
+  expect(createCopy).toHaveBeenCalledOnce();
   unmount();
   expect(signal.aborted).toBe(true);
   await act(async () => {
