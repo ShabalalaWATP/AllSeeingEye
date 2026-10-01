@@ -176,7 +176,7 @@ export function SourceReviewPanel({
               Judgement
               <select
                 id={`${id}-judgement`}
-                className="mt-1 w-full rounded border border-line bg-surface p-2 text-text"
+                className="mt-1 w-full rounded border border-control-border bg-surface p-2 text-text"
                 value={judgementId}
                 onChange={(event) => setJudgementId(event.target.value)}
               >
@@ -191,7 +191,7 @@ export function SourceReviewPanel({
               Review kind
               <select
                 id={`${id}-kind`}
-                className="mt-1 w-full rounded border border-line bg-surface p-2 text-text"
+                className="mt-1 w-full rounded border border-control-border bg-surface p-2 text-text"
                 value={kind}
                 onChange={(event) => setKind(event.target.value as SourceReviewKind)}
               >
@@ -206,7 +206,7 @@ export function SourceReviewPanel({
               Subject area (required)
               <input
                 id={`${id}-subject`}
-                className="mt-1 w-full rounded border border-line bg-surface p-2 text-text"
+                className="mt-1 w-full rounded border border-control-border bg-surface p-2 text-text"
                 maxLength={200}
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}

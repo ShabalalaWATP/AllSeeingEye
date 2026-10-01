@@ -207,7 +207,7 @@ export function ReviewedSnapshots({
                   Subject area for {row.id}
                   <input
                     id={`${id}-${row.id}`}
-                    className="mt-1 w-full rounded border border-line bg-surface p-2 text-text"
+                    className="mt-1 w-full rounded border border-control-border bg-surface p-2 text-text"
                     maxLength={200}
                     value={subjects[row.id] ?? ''}
                     onChange={(event) => setSubjects({ ...subjects, [row.id]: event.target.value })}

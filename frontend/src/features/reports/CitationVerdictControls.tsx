@@ -139,7 +139,7 @@ export function CitationVerdictControls({
           </label>
           <textarea
             id={`${id}-note`}
-            className="w-full rounded border border-line bg-surface p-2 text-text"
+            className="w-full rounded border border-control-border bg-surface p-2 text-text"
             maxLength={list.note_limit}
             rows={2}
             value={note}

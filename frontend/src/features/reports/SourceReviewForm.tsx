@@ -40,7 +40,7 @@ export function draftComplete(kind: SourceReviewKind, draft: ReviewDraft): boole
   return grade !== '' && draft.basis.trim().length > 0;
 }
 
-const field = 'w-full rounded border border-line bg-surface p-2 text-sm text-text';
+const field = 'w-full rounded border border-control-border bg-surface p-2 text-sm text-text';
 
 /** The grade each kind requires, its basis and optional notes. The draft is owned above. */
 export function SourceReviewForm({
