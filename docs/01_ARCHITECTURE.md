@@ -30,6 +30,25 @@ Exact versions are recorded in [backend dependencies](../backend/pyproject.toml)
 [Compose](../docker-compose.yml). The Compose database uses a PostGIS image;
 the application does not require a separate vector database.
 
+### Download budgets
+
+`pnpm check:bundle` runs after every build in CI and prints two gzip totals:
+
+- Initial JavaScript, which every visitor downloads before the first page,
+  including sign-in: budget 240 KiB (measured 196 KiB on 1 October 2026).
+- The globe route, the default landing page: the static closure of the
+  `GlobePage` chunk and the MapLibre worker, less what the initial load already
+  fetched. Budget 850 KiB (measured 772 KiB on 1 October 2026), mostly
+  MapLibre, deck.gl and the page itself.
+
+The check also fails when a lazy-only library loads on first paint, when the
+measurement or area research panels return to the globe's static closure (they
+load when their tool opens), or when a fixed-name MapLibre worker or shared
+module ships. MapLibre's worker is built as an extra entry of the same graph, so
+the main thread and the worker import one content-hashed shared chunk: a cold
+load downloads it once, Caddy serves it immutable, and a deploy cannot pair old
+main-thread code with a new worker.
+
 ## System context
 
 ![C4 system context: researchers use the app, which reads public sources and can call configured AI and email services](diagrams/system-context.svg)
