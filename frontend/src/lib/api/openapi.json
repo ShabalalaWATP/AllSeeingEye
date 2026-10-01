@@ -4278,7 +4278,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ase__api__schemas_bell__AlertDestinationOut"
+                  "$ref": "#/components/schemas/AlertDestinationOut"
                 }
               }
             }
@@ -17105,7 +17105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ase__api__schemas_alert_routing__AlertDestinationOut"
+                  "$ref": "#/components/schemas/AlertWebhookDestinationOut"
                 }
               }
             }
@@ -22779,11 +22779,79 @@
         ],
         "title": "AlertDestinationIn"
       },
+      "AlertDestinationOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/DestinationKind"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Id"
+          },
+          "transition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transition Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "available",
+          "report_id",
+          "monitor_id",
+          "transition_id",
+          "message"
+        ],
+        "title": "AlertDestinationOut"
+      },
       "AlertDestinationsOut": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/ase__api__schemas_alert_routing__AlertDestinationOut"
+              "$ref": "#/components/schemas/AlertWebhookDestinationOut"
             },
             "type": "array",
             "title": "Items"
@@ -23179,6 +23247,55 @@
           "can_manage"
         ],
         "title": "AlertRoutingOut"
+      },
+      "AlertWebhookDestinationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_by",
+          "team_id",
+          "enabled",
+          "created_at"
+        ],
+        "title": "AlertWebhookDestinationOut"
       },
       "AlertsOut": {
         "properties": {
@@ -59456,123 +59573,6 @@
           "items"
         ],
         "title": "SourcesOut"
-      },
-      "ase__api__schemas_alert_routing__AlertDestinationOut": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "created_by": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Created By"
-          },
-          "team_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Team Id"
-          },
-          "enabled": {
-            "type": "boolean",
-            "title": "Enabled"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "created_by",
-          "team_id",
-          "enabled",
-          "created_at"
-        ],
-        "title": "AlertDestinationOut"
-      },
-      "ase__api__schemas_bell__AlertDestinationOut": {
-        "properties": {
-          "kind": {
-            "$ref": "#/components/schemas/DestinationKind"
-          },
-          "available": {
-            "type": "boolean",
-            "title": "Available"
-          },
-          "report_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Report Id"
-          },
-          "monitor_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Monitor Id"
-          },
-          "transition_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Transition Id"
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "kind",
-          "available",
-          "report_id",
-          "monitor_id",
-          "transition_id",
-          "message"
-        ],
-        "title": "AlertDestinationOut"
       },
       "ase__api__schemas_events__SourcesOut": {
         "properties": {

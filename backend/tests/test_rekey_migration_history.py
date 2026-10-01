@@ -5,8 +5,11 @@ import json
 
 import pytest
 import sqlalchemy as sa
+from alembic.autogenerate import compare_metadata
+from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 
+from ase.adapters.persistence.base import Base
 from ase.domain.report_jobs import MAX_JOB_SUMMARY_BYTES, canonical_job_payload
 from ase.infrastructure.migrations import alembic_config
 from notification_migration_helpers import (
@@ -171,6 +174,7 @@ async def test_fresh_rekey_upgrade_is_complete_unenrolled_and_repeatable(rekey_d
     await rekey_database.migrate("head")
     assert await rekey_database.run(revision) == "0089"
     await rekey_database.run(assert_unenrolled)
+    await rekey_database.run(assert_model_parity)
     state = await rekey_database.run(retained_state)
     assert {
         "evaluation_runs",
@@ -185,6 +189,11 @@ async def test_fresh_rekey_upgrade_is_complete_unenrolled_and_repeatable(rekey_d
     assert await rekey_database.run(retained_state) == state
 
 
+def assert_model_parity(connection):
+    context = MigrationContext.configure(connection)
+    assert compare_metadata(context, Base.metadata) == []
+
+
 async def test_populated_main0081_upgrade_preserves_released_features(rekey_database):
     await rekey_database.migrate("0081")
     original = await rekey_database.run(seed_released_features)
@@ -194,6 +203,7 @@ async def test_populated_main0081_upgrade_preserves_released_features(rekey_data
     await rekey_database.run(assert_released_schema, old_schema)
     await rekey_database.run(assert_backfills, original)
     await rekey_database.run(assert_unenrolled)
+    await rekey_database.run(assert_model_parity)
     await rekey_database.run(assert_preserved, original["before"])
 
 
@@ -266,15 +276,18 @@ async def test_rekeyed_frozen_ratio_barrier_preserves_main_features(rekey_databa
 def seed_origin_checkpoints(connection):
     owner = insert_row(connection, "users", email="origins@example.test", role="user")
     scopes = (
-        {"origin": "briefing"},
-        {"research_focus": "media"},
-        {"origin": "unknown-origin"},
-        {"origin": {"invalid": True}},
+        ({"origin": "briefing"}, "briefing"),
+        ({"origin": "subscription", "research_focus": "media"}, "subscription"),
+        ({"origin": "research", "research_focus": "media"}, "research"),
+        ({"origin": "geolocation"}, "geolocation"),
+        ({"research_focus": "media"}, "geolocation"),
+        ({"origin": "unknown-origin"}, "research"),
+        ({"origin": {"invalid": True}}, "research"),
     )
     summary = {"note": "x" * (MAX_JOB_SUMMARY_BYTES - len(json.dumps({"note": ""})))}
     assert len(json.dumps(summary).encode()) == MAX_JOB_SUMMARY_BYTES
     original = {}
-    for scope in scopes:
+    for scope, origin in scopes:
         payload = {"schema_version": 1, "input": {"scope": scope}, "summary": summary}
         raw = canonical_job_payload(payload)
         job_id = insert_row(
@@ -287,19 +300,19 @@ def seed_origin_checkpoints(connection):
             payload_bytes=len(raw),
             payload_sha256=hashlib.sha256(raw).hexdigest(),
         )
-        original[job_id] = raw, summary
+        original[job_id] = raw, summary, origin
     return original
 
 
 def assert_origin_checkpoint_integrity(connection, original):
     for row in connection.execute(sa.select(table(connection, "report_jobs"))).mappings():
-        raw, summary = original[row["id"]]
+        raw, summary, origin = original[row["id"]]
         assert row["payload"].encode() == raw
         assert row["payload_bytes"] == len(raw)
         assert row["payload_sha256"] == hashlib.sha256(raw).hexdigest()
-        # A later compact-origin projection may add a derived field. It must not
-        # shorten the original summary or consume its existing 8 KiB allowance.
-        assert {key: row["summary"][key] for key in summary} == summary
+        # The derived origin belongs to the projection, outside the unchanged
+        # checkpoint summary's full 8 KiB allowance.
+        assert row["summary"] == {**summary, "origin": origin}
 
 
 async def test_rekey_preserves_frozen_origins_and_full_summary_allowance(rekey_database):

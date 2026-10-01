@@ -30,7 +30,7 @@ class AlertDestinationIn(BaseModel):
     team_id: UUID | None = None
 
 
-class AlertDestinationOut(BaseModel):
+class AlertWebhookDestinationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     name: str
@@ -41,7 +41,7 @@ class AlertDestinationOut(BaseModel):
 
 
 class AlertDestinationsOut(BaseModel):
-    items: list[AlertDestinationOut]
+    items: list[AlertWebhookDestinationOut]
 
 
 class AlertRoutingCapabilitiesOut(BaseModel):

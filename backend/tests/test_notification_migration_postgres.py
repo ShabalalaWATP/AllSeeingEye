@@ -81,7 +81,10 @@ def assert_backfills(connection, original):
     assert receipt["status"] == "accepted" and receipt["recipient_id"] == original["recipient"]
     assert receipt["recipient_username"] is receipt["recipient_display_name"] is None
     jobs = table(connection, "report_jobs")
-    assert connection.scalar(sa.select(jobs.c.summary)) == {"completed_sections": 3}
+    assert connection.scalar(sa.select(jobs.c.summary)) == {
+        "completed_sections": 3,
+        "origin": "research",
+    }
     usage = table(connection, "report_job_monthly_usage")
     projected = connection.execute(
         sa.select(

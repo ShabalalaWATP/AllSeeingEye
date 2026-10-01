@@ -47,10 +47,18 @@ async def test_team_exports_stop_after_authority_changes(
             f"/api/teams/{team}", headers=admin_headers, json={"is_active": False}
         )
     else:
+        listed = await client.get("/api/warning/indicators", headers=headers)
+        assert listed.status_code == 200
+        current = next(item for item in listed.json()["items"] if item["id"] == rule_id)
         response = await client.put(
             f"/api/warning/indicators/{rule_id}",
             headers=headers,
-            json={"name": "Routing rule", "team_id": team, "enabled": False},
+            json={
+                "name": "Routing rule",
+                "team_id": team,
+                "enabled": False,
+                "expected_updated_at": current["updated_at"],
+            },
         )
     assert response.status_code == 200, response.text
     store = delivery_store(container)

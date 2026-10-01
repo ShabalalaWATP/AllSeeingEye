@@ -27,7 +27,7 @@ const capabilitiesSchema = z.object({
 });
 
 export type AlertRoute = components['schemas']['AlertRoutingOut'];
-export type AlertDestination = components['schemas']['AlertDestinationOut'];
+export type AlertDestination = components['schemas']['AlertWebhookDestinationOut'];
 
 export function getRoutingCapabilities() {
   return apiCall('/api/warning/notification-capabilities', { schema: capabilitiesSchema });

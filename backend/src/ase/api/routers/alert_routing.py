@@ -8,11 +8,11 @@ from fastapi import APIRouter, Response
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_alert_routing import (
     AlertDestinationIn,
-    AlertDestinationOut,
     AlertDestinationsOut,
     AlertRoutingCapabilitiesOut,
     AlertRoutingIn,
     AlertRoutingOut,
+    AlertWebhookDestinationOut,
 )
 from ase.api.session_fence import FenceDep
 from ase.container.alert_routing import alert_routing
@@ -79,13 +79,13 @@ async def list_webhook_destinations(
     items = await alert_routing(container, session).destinations(actor, team_id)
     return await fence.release(
         AlertDestinationsOut(
-            items=[AlertDestinationOut.model_validate(item) for item in items],
+            items=[AlertWebhookDestinationOut.model_validate(item) for item in items],
         ),
         session=session,
     )
 
 
-@router.post("/webhook-destinations", status_code=201, response_model=AlertDestinationOut)
+@router.post("/webhook-destinations", status_code=201, response_model=AlertWebhookDestinationOut)
 async def register_webhook_destination(
     body: AlertDestinationIn,
     actor: CurrentUser,
@@ -93,7 +93,7 @@ async def register_webhook_destination(
     session: SessionDep,
     fence: FenceDep,
     context: ContextDep,
-) -> AlertDestinationOut:
+) -> AlertWebhookDestinationOut:
     destination = await alert_routing(container, session).register_destination(
         actor,
         body.name,
@@ -101,7 +101,9 @@ async def register_webhook_destination(
         body.team_id,
         context,
     )
-    return await fence.release(AlertDestinationOut.model_validate(destination), session=session)
+    return await fence.release(
+        AlertWebhookDestinationOut.model_validate(destination), session=session
+    )
 
 
 @router.delete("/webhook-destinations/{destination_id}", status_code=204)

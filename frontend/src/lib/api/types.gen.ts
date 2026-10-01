@@ -5439,10 +5439,24 @@ export interface components {
             /** Team Id */
             team_id?: string | null;
         };
+        /** AlertDestinationOut */
+        AlertDestinationOut: {
+            kind: components["schemas"]["DestinationKind"];
+            /** Available */
+            available: boolean;
+            /** Report Id */
+            report_id: string | null;
+            /** Monitor Id */
+            monitor_id: string | null;
+            /** Transition Id */
+            transition_id: string | null;
+            /** Message */
+            message: string | null;
+        };
         /** AlertDestinationsOut */
         AlertDestinationsOut: {
             /** Items */
-            items: components["schemas"]["ase__api__schemas_alert_routing__AlertDestinationOut"][];
+            items: components["schemas"]["AlertWebhookDestinationOut"][];
         };
         /**
          * AlertDisposition
@@ -5586,6 +5600,30 @@ export interface components {
             revision: number;
             /** Can Manage */
             can_manage: boolean;
+        };
+        /** AlertWebhookDestinationOut */
+        AlertWebhookDestinationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** AlertsOut */
         AlertsOut: {
@@ -18505,44 +18543,6 @@ export interface components {
              */
             assets: components["schemas"]["SourceAssetOut"][];
         };
-        /** AlertDestinationOut */
-        ase__api__schemas_alert_routing__AlertDestinationOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Name */
-            name: string;
-            /**
-             * Created By
-             * Format: uuid
-             */
-            created_by: string;
-            /** Team Id */
-            team_id: string | null;
-            /** Enabled */
-            enabled: boolean;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /** AlertDestinationOut */
-        ase__api__schemas_bell__AlertDestinationOut: {
-            kind: components["schemas"]["DestinationKind"];
-            /** Available */
-            available: boolean;
-            /** Report Id */
-            report_id: string | null;
-            /** Monitor Id */
-            monitor_id: string | null;
-            /** Transition Id */
-            transition_id: string | null;
-            /** Message */
-            message: string | null;
-        };
         /** SourcesOut */
         ase__api__schemas_events__SourcesOut: {
             /** Items */
@@ -21587,7 +21587,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ase__api__schemas_bell__AlertDestinationOut"];
+                    "application/json": components["schemas"]["AlertDestinationOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -29807,7 +29807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ase__api__schemas_alert_routing__AlertDestinationOut"];
+                    "application/json": components["schemas"]["AlertWebhookDestinationOut"];
                 };
             };
             /** @description Unprocessable Content */

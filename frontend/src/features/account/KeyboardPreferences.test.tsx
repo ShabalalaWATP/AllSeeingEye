@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { PREFERENCES_KEY, usePreferencesStore } from '@/stores/preferences';
@@ -20,6 +20,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
   usePreferencesStore.setState({ singleKeyShortcuts: true, shortcutHelpOpen: false });
