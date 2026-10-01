@@ -42,7 +42,10 @@ it('keeps STIX progress visible after dismissal without stealing focus on comple
   await user.selectOptions(screen.getByRole('combobox', { name: 'STIX sharing marking' }), 'green');
   await user.click(screen.getByRole('menuitem', { name: 'Download STIX 2.1' }));
   await waitFor(() => expect(queries).toEqual(['?version=3&tlp=green']));
-  expect(trigger).toBeDisabled();
+  expect(trigger).toHaveAttribute('aria-disabled', 'true');
+  await user.click(trigger);
+  expect(screen.getByRole('menu')).toBeVisible();
+  expect(queries).toHaveLength(1);
   expect(trigger).toHaveTextContent('Preparing STIX 2.1…');
   expect(screen.getByRole('status')).toHaveTextContent('Preparing STIX 2.1…');
   const elsewhere = screen.getByRole('button', { name: 'Read another report' });
