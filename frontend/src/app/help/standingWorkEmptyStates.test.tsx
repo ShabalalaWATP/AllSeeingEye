@@ -1,6 +1,6 @@
 /**
  * Each standing-work list says what the work is for and what to do first when it is
- * empty. Alert rules are deferred: their page is owned by in-flight warning work.
+ * empty: areas, plans, subscriptions, annotation monitors and alert rules.
  */
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
@@ -53,5 +53,20 @@ describe('standing-work empty states', () => {
       'href',
       '/research/saved',
     );
+  });
+
+  it('explains alert rules and names the first step', async () => {
+    server.use(http.get('/api/warning/indicators', empty));
+    renderApp('/warning', 'user');
+    expect(await screen.findByText('No alert rules yet')).toBeInTheDocument();
+    expect(
+      screen.getByText(/raises an alert when enough matching items arrive within its time window/),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Set up your first alert rule with the form below, or choose Watch this area on the map.',
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole('form', { name: 'New alert rule' })).toBeInTheDocument();
   });
 });
