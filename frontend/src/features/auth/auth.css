@@ -1,6 +1,18 @@
 .auth-shell {
+  /* The sign-in screen's fixed palette: it renders before any account theme applies. */
   --auth-ground: #060606;
   --auth-line: #242424;
+  --auth-grid-line: #ffffff0d;
+  --auth-grid-fade: #0004;
+  --auth-eyebrow: #a7a7a7;
+  --auth-description: #ababab;
+  --auth-footer: #8a8a8a;
+  --auth-access-ground: #090909;
+  --auth-link: #a6a6a6;
+  --auth-link-current: #f2f2f2;
+  --auth-field: #101010;
+  --auth-access-footer: #969696;
+  --auth-access-footer-muted: #666666;
   --color-muted: #a2a2a2;
   --color-control-border: #626262;
   min-height: 100dvh;
@@ -26,17 +38,17 @@
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(#ffffff0d 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff0d 1px, transparent 1px);
+    linear-gradient(var(--auth-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--auth-grid-line) 1px, transparent 1px);
   background-size: 56px 56px;
-  mask-image: linear-gradient(150deg, black, #0004 60%, black);
+  mask-image: linear-gradient(150deg, black, var(--auth-grid-fade) 60%, black);
 }
 
 .auth-eyebrow {
   position: absolute;
   top: 40px;
   left: 48px;
-  color: #a7a7a7;
+  color: var(--auth-eyebrow);
   font: 11px var(--font-mono);
   letter-spacing: 0.19em;
   text-transform: uppercase;
@@ -73,7 +85,7 @@
 }
 .auth-brand-description {
   margin-top: 16px;
-  color: #ababab;
+  color: var(--auth-description);
   font-size: 15px;
   line-height: 1.7;
 }
@@ -86,7 +98,7 @@
   gap: 16px;
   padding-top: 20px;
   border-top: 1px solid var(--auth-line);
-  color: #8a8a8a;
+  color: var(--auth-footer);
   font: 9px var(--font-mono);
   letter-spacing: 0.08em;
 }
@@ -97,7 +109,7 @@
   justify-content: center;
   min-width: 0;
   padding: 48px;
-  background: #090909;
+  background: var(--auth-access-ground);
 }
 
 .auth-access-inner {
@@ -113,7 +125,7 @@
 .auth-navigation a {
   position: relative;
   padding: 16px 0;
-  color: #a6a6a6;
+  color: var(--auth-link);
   font-size: 13px;
   transition: color 180ms ease;
 }
@@ -131,7 +143,7 @@
 }
 .auth-navigation a:hover,
 .auth-navigation a[aria-current='page'] {
-  color: #f2f2f2;
+  color: var(--auth-link-current);
 }
 .auth-navigation a[aria-current='page']::after,
 .auth-navigation a:hover::after {
@@ -140,14 +152,9 @@
 .auth-form {
   animation: auth-arrive 500ms 80ms ease-out both;
 }
-.auth-form h1 {
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-}
 .auth-form input,
 .auth-form textarea {
-  background: #101010;
+  background: var(--auth-field);
   border-color: var(--color-control-border);
   min-height: 48px;
 }
@@ -160,12 +167,12 @@
 }
 .auth-access-footer {
   margin-top: 48px;
-  color: #969696;
+  color: var(--auth-access-footer);
   font: 10px var(--font-mono);
 }
 .auth-access-footer span {
   padding: 0 8px;
-  color: #666666;
+  color: var(--auth-access-footer-muted);
 }
 
 @keyframes auth-arrive {

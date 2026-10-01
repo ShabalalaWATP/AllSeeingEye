@@ -177,6 +177,27 @@ contracts are the source of truth, rather than file size or a SOLID score.
 - A browser pass is still needed for contrast over imagery, zoom, reflow and screen reader
   behaviour. Passing these tests is not a WCAG conformance claim.
 
+### Shared interface primitives and design tokens
+
+- **Primitives** live in `frontend/src/components/ui`. Every route page names itself
+  through `PageHeader`, which has one heading size per page type: workspace and sign-in
+  pages, records and tools, and status pages. `Tabs` is the one tab strip. Route tabs are a
+  labelled navigation of links; panel tabs are WAI-ARIA tabs. `Skeleton` draws
+  placeholders beside a status message. Confirmations use `ConfirmButton` and
+  `ConfirmDialog`; empty lists use `EmptyState`.
+- **One type scale.** `styles/theme.css` resets Tailwind's font sizes and declares the
+  scale (`text-2xs` to `text-4xl`, plus a display `text-6xl`) in rem, so text follows the
+  reader's font size. `styles/typeScale.test.ts` rejects arbitrary sizes such as
+  `text-[11px]`, undeclared steps and any `h1` outside `PageHeader`. The listed exceptions
+  are the paper report reader and the globe's visually hidden heading.
+- **Colours come from tokens.** Theme-dependent colours use the `--color-*` tokens. Fixed
+  palettes are named once at the top of their stylesheet: the paper report, the sign-in
+  screen and the radio planner instrument. `styles/featureColours.test.ts` rejects a hex
+  colour outside a custom property declaration and any hex colour in a component class.
+- Some globe stylesheets and panels are temporarily exempt from the type-scale and
+  colour checks while the globe is being refactored. Each exemption fails its own test once
+  it is no longer needed.
+
 ## What is stored
 
 | Data | Lifetime and location |

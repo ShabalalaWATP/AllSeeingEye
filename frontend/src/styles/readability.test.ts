@@ -100,11 +100,12 @@ function declaration(css: string, selector: string, property: string): string {
  * worst case under a light border on a dark panel.
  */
 function paint(value: string, palette: Palette): string {
-  const token = /var\(--color-([\w-]+)\)/.exec(value);
+  const token = /var\(--(?:color-)?([\w-]+)\)/.exec(value);
   if (token) {
-    const hex = palette[token[1]!];
-    if (hex === undefined) throw new Error(`Unresolved ${value}`);
-    return hex;
+    // Theme tokens are keyed without `--color-`; a feature's named colours keep `--`.
+    const named = value.includes('var(--color-') ? palette[token[1]!] : palette[`--${token[1]!}`];
+    if (named === undefined) throw new Error(`Unresolved ${value}`);
+    return paint(named, palette);
   }
   const hex = /#([0-9a-f]{6})([0-9a-f]{2})?\b/i.exec(value);
   if (!hex) throw new Error(`Unresolved ${value}`);
@@ -113,6 +114,15 @@ function paint(value: string, palette: Palette): string {
     Math.round(parseInt(hex[1]!.slice(index, index + 2), 16) * alpha + 255 * (1 - alpha)),
   );
   return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** A feature's own named colours (`--auth-field: #101010`) in the rule matching `selector`. */
+function namedColours(css: string, selector: string): Palette {
+  const start = css.indexOf(selector);
+  const body = css.slice(start, css.indexOf('}', start));
+  return Object.fromEntries(
+    [...body.matchAll(/(--(?!color-)[\w-]+):\s*(#[0-9a-f]{6,8})\b/gi)].map((m) => [m[1]!, m[2]!]),
+  );
 }
 
 /**
@@ -253,7 +263,11 @@ describe('form control borders', () => {
 
   it('keeps sign-in input borders at 3:1 against the field and the panel', () => {
     // Sign-in renders outside the account shell, so it always uses the base theme.
-    const palette = { ...palettes.obsidian!, ...block(authCss, '.auth-shell {') };
+    const palette = {
+      ...palettes.obsidian!,
+      ...block(authCss, '.auth-shell {'),
+      ...namedColours(authCss, '.auth-shell {'),
+    };
     const input = '.auth-form input,';
     const border = paint(declaration(authCss, input, 'border-color'), palette);
     const backgrounds = [
