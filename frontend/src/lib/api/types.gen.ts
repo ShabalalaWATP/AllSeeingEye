@@ -10955,7 +10955,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "drawings" | "radio";
+            kind: "drawings" | "radio" | "live_view";
             /** Title */
             title: string;
             /** Payload */
@@ -10976,7 +10976,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "drawings" | "radio";
+            kind: "drawings" | "radio" | "live_view";
             /** Title */
             title: string;
             /** Payload */
@@ -20952,7 +20952,7 @@ export interface operations {
     list_documents_api_map_workspaces_get: {
         parameters: {
             query: {
-                kind: "drawings" | "radio";
+                kind: "drawings" | "radio" | "live_view";
                 limit?: number;
                 offset?: number;
             };

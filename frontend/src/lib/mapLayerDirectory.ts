@@ -191,6 +191,12 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         description: 'Hide items that are only placed to a country or region centre.',
         panel: 'Location quality',
       },
+      {
+        id: 'views',
+        label: 'Saved views',
+        description: 'Save these layers, filters, time window and camera by name, or open a view.',
+        panel: 'Saved views',
+      },
     ],
   },
   {

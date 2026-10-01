@@ -19,6 +19,8 @@ import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
 import { mapGuidePanel } from './MapGuidePanel';
 import { useGlobePage } from './useGlobePage';
+import { LiveViewNotice } from './LiveViewNotice';
+import { liveViewPanels } from './liveViewPanels';
 import './dashboard.css';
 
 export { FOCUS_ZOOM } from './useMapFocus';
@@ -87,6 +89,7 @@ export default function GlobePage() {
       cyberSelection,
       networkSelection,
     },
+    liveViews,
     now,
   } = useGlobePage();
   const [params, setParams] = useSearchParams();
@@ -97,6 +100,9 @@ export default function GlobePage() {
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
+      {!opsRoom && (
+        <LiveViewNotice notice={liveViews.opening.notice} onClose={liveViews.opening.dismiss} />
+      )}
       <MaritimeAttribution events={quality.filtered} hidden={hidden.includes('maritime')} />
       {!opsRoom && (
         <GlobeControls
@@ -196,6 +202,7 @@ export default function GlobePage() {
               onNavigate: (center) => engine.flyTo({ center, zoom: 12 }),
             }),
             eventControlPanels(data, networkSelection.selectRecord),
+            liveViewPanels(liveViews),
           ]}
         </GlobeControls>
       )}

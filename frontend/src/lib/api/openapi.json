@@ -5300,7 +5300,8 @@
             "schema": {
               "enum": [
                 "drawings",
-                "radio"
+                "radio",
+                "live_view"
               ],
               "type": "string",
               "title": "Kind"
@@ -33918,7 +33919,8 @@
             "type": "string",
             "enum": [
               "drawings",
-              "radio"
+              "radio",
+              "live_view"
             ],
             "title": "Kind"
           },
@@ -33966,7 +33968,8 @@
             "type": "string",
             "enum": [
               "drawings",
-              "radio"
+              "radio",
+              "live_view"
             ],
             "title": "Kind"
           },

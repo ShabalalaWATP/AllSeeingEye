@@ -8,16 +8,27 @@ from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims, RequestContext
+from ase.application.map_workspace_links import MapWorkspaceLinks
 from ase.application.ports import Clock, RefreshTokenRepository, UnitOfWork, UserRepository
 from ase.application.ports.map_workspace import MapWorkspaceRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.map_workspace import (
     MAX_SCOPE_DOCUMENTS,
+    WORKSPACE_KINDS,
     MapWorkspaceDocument,
     WorkspaceKind,
     validate_payload,
 )
+
+MAX_LIVE_VIEWS = 50
+
+
+def _quota(kind: WorkspaceKind) -> tuple[int, tuple[WorkspaceKind, ...]]:
+    """Live views have their own small allowance per scope."""
+    if kind == "live_view":
+        return MAX_LIVE_VIEWS, ("live_view",)
+    return MAX_SCOPE_DOCUMENTS, ("drawings", "radio")
 
 
 class MapWorkspace:
@@ -30,9 +41,11 @@ class MapWorkspace:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        links: MapWorkspaceLinks,
     ) -> None:
         self.users, self.refresh, self.documents = users, refresh, documents
         self.access, self.clock, self.auditor, self.uow = access, clock, auditor, uow
+        self.links = links
 
     async def _context(self, claims: AccessClaims) -> AccessContext:
         await self.users.lock_administration()
@@ -59,7 +72,7 @@ class MapWorkspace:
     async def list(
         self, claims: AccessClaims, kind: WorkspaceKind, limit: int = 100, offset: int = 0
     ) -> list[MapWorkspaceDocument]:
-        if kind not in ("drawings", "radio") or not 1 <= limit <= 100 or not 0 <= offset <= 10000:
+        if kind not in WORKSPACE_KINDS or not 1 <= limit <= 100 or not 0 <= offset <= 10000:
             raise InvalidRequest("Invalid map document page.")
         access = await self._context(claims)
         documents = await self.documents.list_visible(access.visibility, kind, limit, offset)
@@ -83,8 +96,12 @@ class MapWorkspace:
         title = self._validate(kind, title, payload)
         access = await self._context(claims)
         access.require_create(team_id)
-        if await self.documents.scope_count(access.actor.id, team_id) >= MAX_SCOPE_DOCUMENTS:
-            raise InvalidRequest("This personal/team scope has reached its 100 map document limit.")
+        await self.links.check(access, kind, payload, access.actor.id, team_id)
+        limit, kinds = _quota(kind)
+        if await self.documents.scope_count(access.actor.id, team_id, kinds) >= limit:
+            raise InvalidRequest(
+                f"This personal/team scope has reached its {limit} map document limit."
+            )
         now = self.clock.now()
         document = MapWorkspaceDocument(
             uuid4(), kind, title, payload, 1, access.actor.id, team_id, now, now
@@ -107,6 +124,9 @@ class MapWorkspace:
         document = await self._get(access, document_id)
         access.require_write(document.created_by, document.team_id)
         title = self._validate(document.kind, title, payload)
+        await self.links.check(
+            access, document.kind, payload, document.created_by, document.team_id
+        )
         if document.revision != expected_revision or type(expected_revision) is not int:
             raise Conflict()
         revised = replace(
