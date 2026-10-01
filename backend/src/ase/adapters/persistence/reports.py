@@ -21,6 +21,7 @@ from ase.adapters.persistence.original_passages import SqlOriginalPassageReposit
 from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
 from ase.adapters.persistence.report_ledgers import delete_report_ledgers
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
+from ase.adapters.persistence.report_team_copies import delete_team_copy_provenance
 from ase.adapters.persistence.source_reviews import delete_source_snapshots_for_report
 from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
@@ -242,6 +243,7 @@ class SqlReportRepository:
         # Explicit cleanup also supports SQLite connections without FK enforcement.
         await delete_source_snapshots_for_report(self._session, report_id)
         await delete_report_ledgers(self._session, report_id)
+        await delete_team_copy_provenance(self._session, report_id)
         await SqlOriginalAssetRepository(self._session).delete_for_report(report_id)
         await SqlOriginalPassageRepository(self._session).delete_for_report(report_id)
         await SqlClaimRepository(self._session).delete_for_report(report_id)

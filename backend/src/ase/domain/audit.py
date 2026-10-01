@@ -54,6 +54,7 @@ class AuditAction(StrEnum):
     EVALUATION_RUN_CANCELLED = "evaluation_run_cancelled"
     REPORT_GENERATED = "report_generated"
     REPORT_DELETED = "report_deleted"
+    REPORT_COPIED_TO_TEAM = "report_copied_to_team"
     LIBRARY_UPDATED = "library_updated"
     LIBRARY_REMOVED = "library_removed"
     CLAIM_CREATED = "claim.created"

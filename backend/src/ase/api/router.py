@@ -58,6 +58,7 @@ from ase.api.routers import (
     report_ledgers,
     report_methodology,
     report_search,
+    report_team_copies,
     reports,
     research_briefs,
     research_inputs,
@@ -132,6 +133,7 @@ api_router.include_router(capabilities.router)
 api_router.include_router(cameras.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
+api_router.include_router(report_team_copies.router)
 api_router.include_router(research_briefs.router)
 api_router.include_router(research_preflight.router)
 api_router.include_router(research_presets.router)

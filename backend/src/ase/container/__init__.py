@@ -78,6 +78,7 @@ from ase.container.map_services import MapWiring
 from ase.container.private_records import PrivateRecordWiring
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
+from ase.container.report_team_copies import ReportTeamCopyWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -118,6 +119,7 @@ class Container(
     ReferenceWiring,
     UkraineWiring,
     TeamBoardWiring,
+    ReportTeamCopyWiring,
 ):
     def __init__(
         self,
