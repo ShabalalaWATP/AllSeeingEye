@@ -14,6 +14,7 @@ import { isNewsCategory, useNewsFilters } from './newsFilters';
 import { useMapNewsFeed } from './useMapNewsFeed';
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
 import { mergeSnapshots } from '@/stores/events.coverage';
+import { usePlanMapFilter } from './usePlanMapFilter';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -65,7 +66,9 @@ export function useDashboardEvents(now: number) {
     () => hidden.filter((category) => category !== 'disaster' && !isNewsCategory(category)),
     [hidden],
   );
-  const quality = useLocationQuality(cyberFiltered, renderHidden);
+  // A selected collection plan narrows what every other filter already allows.
+  const planned = usePlanMapFilter(cyberFiltered);
+  const quality = useLocationQuality(planned, renderHidden);
   const { selected, select } = useDashboardSelection(quality.filtered);
   const storySize = useMemo(
     () =>
