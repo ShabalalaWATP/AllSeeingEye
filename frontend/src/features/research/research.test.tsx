@@ -183,7 +183,10 @@ describe('question-led research', () => {
       fireEvent.submit(form);
     });
     expect(await screen.findByText('Starting your research job')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Start research' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Start research' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(screen.getByLabelText('Your question')).toBeDisabled();
     await waitFor(() => expect(requests).toBe(1));
     release();

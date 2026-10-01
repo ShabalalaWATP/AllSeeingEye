@@ -121,7 +121,9 @@ describe('account settings', () => {
     await fill(user);
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
-    expect(await screen.findByRole('button', { name: 'Please wait...' })).toBeDisabled();
+    const busy = await screen.findByRole('button', { name: 'Please wait...' });
+    expect(busy).toHaveAttribute('aria-disabled', 'true');
+    expect(busy).toHaveFocus();
     expect(screen.getByLabelText('Current password')).toBeDisabled();
     fireEvent.submit(screen.getByRole('form', { name: 'Change password' }));
     await waitFor(() => expect(bodies).toHaveLength(1));
@@ -229,9 +231,13 @@ describe('account settings', () => {
     await user.tab();
     const show = screen.getByRole('button', { name: 'Show passwords' });
     expect(show).toHaveFocus();
+    // The name carries the state, so the toggle must not also expose a pressed state.
+    expect(show).not.toHaveAttribute('aria-pressed');
     await user.keyboard('{Enter}');
     const form = screen.getByRole('form', { name: 'Change password' });
     expect(within(form).getByLabelText('New password')).toHaveAttribute('type', 'text');
+    expect(show).toHaveAccessibleName('Hide passwords');
+    expect(show).not.toHaveAttribute('aria-pressed');
     await user.keyboard('{Enter}');
     expect(within(form).getByLabelText('New password')).toHaveAttribute('type', 'password');
     expect(useAuthStore.getState().status).toBe('authenticated');

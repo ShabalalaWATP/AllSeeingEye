@@ -40,7 +40,6 @@ export function OpsRoomOverlay() {
         <BrandMark still={lite} />
         <Button
           variant="ghost"
-          aria-label="Exit ops room"
           onClick={() => setOpsRoom(false)}
           className="min-h-11 font-mono text-[11px] uppercase tracking-[0.2em] text-muted"
         >

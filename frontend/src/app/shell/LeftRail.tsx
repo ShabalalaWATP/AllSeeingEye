@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Link, useLocation } from 'react-router';
 
 import { BrandMark } from '@/components/brand/BrandMark';
@@ -66,9 +67,11 @@ export function LeftRail({
   const toggleRail = useShellStore((state) => state.toggleRail);
   const openPalette = useShellStore((state) => state.openPalette);
   const collapsed = railCollapsed && !mobile;
+  const railId = useId();
 
   return (
     <aside
+      id={railId}
       data-collapsed={collapsed ? 'true' : undefined}
       className={`flex min-h-0 flex-col bg-ground ${
         mobile
@@ -82,7 +85,8 @@ export function LeftRail({
         title={collapsed ? 'The All Seeing Eye' : undefined}
         className={`flex items-center gap-3 py-3.5 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
       >
-        <BrandMark size={collapsed ? 34 : 38} still={lite} />
+        {/* The wordmark names the link, so the mark itself stays silent. */}
+        <BrandMark size={collapsed ? 34 : 38} still={lite} decorative />
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
@@ -131,7 +135,8 @@ export function LeftRail({
           <button
             type="button"
             onClick={toggleRail}
-            aria-pressed={collapsed}
+            aria-expanded={!collapsed}
+            aria-controls={railId}
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             title={`${collapsed ? 'Expand' : 'Collapse'} navigation ([)`}
             className={`flex min-h-10 w-full items-center gap-3 rounded-lg text-xs text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center' : 'px-3'}`}

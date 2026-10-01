@@ -57,7 +57,7 @@ export function LoginPage() {
       aria-busy={busy}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!busy) void run();
+        void run();
       }}
     >
       <header className="mb-2">
@@ -79,7 +79,6 @@ export function LoginPage() {
         type="email"
         autoComplete="email"
         required
-        disabled={busy}
         className="min-h-12"
         value={email}
         onChange={(event) => {
@@ -93,7 +92,6 @@ export function LoginPage() {
           type={showPassword ? 'text' : 'password'}
           autoComplete="current-password"
           required
-          disabled={busy}
           className="min-h-12 pr-20"
           value={password}
           onKeyUp={(event) => {
@@ -113,8 +111,6 @@ export function LoginPage() {
           type="button"
           className="absolute right-1 top-7 min-h-11 min-w-16 rounded px-3 text-xs font-medium text-muted hover:text-text"
           aria-label={showPassword ? 'Hide password' : 'Show password'}
-          aria-pressed={showPassword}
-          disabled={busy}
           onClick={() => {
             setShowPassword((shown) => !shown);
           }}

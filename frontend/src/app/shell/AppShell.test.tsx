@@ -28,8 +28,10 @@ describe('AppShell', () => {
 
   it('shows the brand, the rail items and the user', async () => {
     renderApp('/', 'user');
-    expect(await screen.findByRole('img', { name: 'The All Seeing Eye' })).toBeInTheDocument();
-    expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
+    // The wordmark names the home link once; the brand mark beside it is decorative.
+    const home = await screen.findByRole('link', { name: 'The All Seeing Eye' });
+    expect(home).toHaveAttribute('href', '/');
+    expect(within(home).getByTestId('evil-eye')).toBeInTheDocument();
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
     expect(
@@ -56,7 +58,10 @@ describe('AppShell', () => {
       expect(within(nav).getByText(group)).toBeInTheDocument();
     }
     expect(within(nav).queryByText('Standing desks')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
+    expect(screen.getByRole('link', { name: 'Your profile: Uma User' })).toHaveAttribute(
+      'href',
+      '/account',
+    );
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',
       '/settings',

@@ -52,6 +52,17 @@ it('opens from the rail, jumps to a tracker and focuses the new page heading', a
   });
 });
 
+it('keeps the search field focus indicator visible', async () => {
+  const { user } = renderApp('/research/saved', 'user');
+  await user.click(await screen.findByRole('button', { name: /Find anything/ }));
+  const search = within(await screen.findByRole('dialog', { name: 'Find anything' })).getByRole(
+    'combobox',
+  );
+  expect(search).toHaveFocus();
+  // The global :focus-visible outline paints the ring; nothing may switch it off.
+  expect(search.className).not.toMatch(/(^|\s)(focus:)?outline-(none|hidden|0)(\s|$)/);
+});
+
 it('opens with the keyboard and moves through results with the arrow keys', async () => {
   const { user, router } = renderApp('/research/saved', 'user');
   await screen.findByRole('button', { name: /Find anything/ });
