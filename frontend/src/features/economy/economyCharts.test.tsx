@@ -26,6 +26,26 @@ it('preserves missing years as gaps and exposes unrounded observations in the ta
   expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
   fireEvent.change(screen.getByRole('slider'), { target: { value: '0' } });
   expect(screen.getByLabelText('Selected observation value')).toHaveTextContent(/\$3\.1T/);
+  // The slider is named by its visible label and announces the date and value it selects.
+  const slider = screen.getByRole('slider', { name: 'Explore dates' });
+  expect(slider).toHaveAttribute('aria-valuetext', expect.stringMatching(/^2023: \$3\.1T/));
+  fireEvent.change(slider, { target: { value: '1' } });
+  expect(slider).toHaveAttribute('aria-valuetext', expect.stringMatching(/: Not available$/));
+});
+
+it('draws axis labels in HTML at the 11px text size so they stay readable at 320px', () => {
+  const { container } = render(<EconomicChart series={economySeries} />);
+  const chart = screen.getByRole('img', { name: /GDP history/ });
+  expect(chart.querySelectorAll('text')).toHaveLength(0);
+  const axes = container.querySelectorAll('[data-chart-axis]');
+  expect(axes).toHaveLength(2);
+  for (const axis of axes) {
+    expect(axis).toHaveClass('text-2xs');
+    expect(chart).not.toContainElement(axis as HTMLElement);
+  }
+  expect(container.querySelector('[data-chart-axis="category"]')).toHaveTextContent(
+    economySeries.points[0]!.date,
+  );
 });
 
 it('handles a constant series and retains currency precision in its data table', () => {

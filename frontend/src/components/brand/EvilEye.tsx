@@ -21,10 +21,21 @@
  *   4. Shader/noise helpers are extracted unchanged into evilEyeShader.ts.
  *   5. Opt-in transparent compositing preserves the original eye/flame pattern
  *      for the assistant launcher. The captured fallback hides after a good frame.
+ *   6. The captured fallback offers downscaled captures of this component (64,
+ *      128, 192 and 512 px, WebP with PNG fallback) and an optional `fallbackSizes`
+ *      prop, so small marks never request the 512 px capture.
  */
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef, useState } from 'react';
 import { generateNoiseTexture, hexToVec3, vertexShader, fragmentShader } from './evilEyeShader';
+
+// Added for The All Seeing Eye: real captures of this component at several widths.
+const CAPTURE_WIDTHS = [64, 128, 192, 512] as const;
+function captureSet(format: 'png' | 'webp'): string {
+  return CAPTURE_WIDTHS.map((width) => `/brand/eye-${width}.${format} ${width}w`).join(', ');
+}
+const PNG_CAPTURES = captureSet('png');
+const WEBP_CAPTURES = captureSet('webp');
 
 interface EvilEyeProps {
   eyeColor?: string;
@@ -44,6 +55,8 @@ interface EvilEyeProps {
   paused?: boolean;
   /** Render the original eye energy on a transparent surface, without a background. */
   transparent?: boolean;
+  /** Added for The All Seeing Eye: the `sizes` hint for the captured fallback image. */
+  fallbackSizes?: string;
 }
 
 export default function EvilEye({
@@ -61,6 +74,7 @@ export default function EvilEye({
   maxFps,
   paused = false,
   transparent = false,
+  fallbackSizes,
 }: EvilEyeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
@@ -265,21 +279,27 @@ export default function EvilEye({
 
   return (
     <div className="relative h-full w-full">
-      <img
-        ref={fallbackRef}
-        src="/brand/eye-512.png"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-contain"
-        style={
-          transparent
-            ? {
-                mixBlendMode: 'screen',
-                maskImage: 'radial-gradient(ellipse at center, black 35%, transparent 72%)',
-              }
-            : undefined
-        }
-      />
+      <picture>
+        <source type="image/webp" srcSet={WEBP_CAPTURES} sizes={fallbackSizes} />
+        <img
+          ref={fallbackRef}
+          src="/brand/eye-512.png"
+          srcSet={PNG_CAPTURES}
+          sizes={fallbackSizes}
+          decoding="async"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-contain"
+          style={
+            transparent
+              ? {
+                  mixBlendMode: 'screen',
+                  maskImage: 'radial-gradient(ellipse at center, black 35%, transparent 72%)',
+                }
+              : undefined
+          }
+        />
+      </picture>
       <div ref={containerRef} className="relative h-full w-full" hidden={unavailable} />
     </div>
   );

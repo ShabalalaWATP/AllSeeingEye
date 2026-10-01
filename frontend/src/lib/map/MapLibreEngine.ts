@@ -21,6 +21,7 @@ import type {
 } from './MapEngine';
 import { DARK_STYLE_URL, DEFAULT_BASE_LAYER, vectorStyleFor } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
+import { applyDailyImagery, type DailyImagery } from './dailyImagery';
 import { normaliseCamera, normaliseViewport, validateBounds, validateFitOptions } from './camera';
 
 import { GLOBE_SKY, PAINT_OVERRIDES, applyRasterLayer } from './mapAppearance';
@@ -43,6 +44,7 @@ export class MapLibreEngine implements MapEngine {
   }
   private projection: Projection = 'globe';
   private baseLayer: BaseLayer = DEFAULT_BASE_LAYER;
+  private imagery: DailyImagery | null = null;
   private styleUrl = DARK_STYLE_URL;
   private lite = false;
   private styleReady = false;
@@ -163,6 +165,12 @@ export class MapLibreEngine implements MapEngine {
       return;
     }
     this.applyBaseLayer();
+  }
+
+  setDailyImagery(imagery: DailyImagery | null): void {
+    this.revision += 1;
+    this.imagery = imagery;
+    if (this.map !== null && this.styleReady) applyDailyImagery(this.map, imagery);
   }
 
   setLite(lite: boolean): void {
@@ -336,6 +344,7 @@ export class MapLibreEngine implements MapEngine {
     const map = this.map;
     if (map === null || !this.styleReady) return;
     applyRasterLayer(map, this.baseLayer);
+    applyDailyImagery(map, this.imagery);
   }
 }
 

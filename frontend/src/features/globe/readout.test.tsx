@@ -45,11 +45,13 @@ describe('CoordinateReadout', () => {
     act(() => {
       for (const handler of handlers) handler({ lon: -0.1278, lat: 51.5074 });
     });
-    const button = screen.getByRole('button', { name: 'Copy coordinates' });
+    const button = screen.getByRole('button', { name: /^Copy coordinates/ });
     expect(button).toHaveTextContent('51.5074° N, 0.1278° W');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
     await userEvent.click(button);
     expect(writeText).toHaveBeenCalledWith('51.5074° N, 0.1278° W');
     expect(button).toHaveTextContent('Copied');
+    expect(screen.getByRole('status')).toHaveTextContent('Coordinates copied');
     unmount();
     expect(handlers.size).toBe(0);
   });
@@ -63,8 +65,23 @@ describe('CoordinateReadout', () => {
     act(() => {
       for (const handler of handlers) handler({ lon: 1, lat: 2 });
     });
-    await userEvent.click(screen.getByRole('button', { name: 'Copy coordinates' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Copy coordinates/ }));
     expect(screen.getByRole('button')).toHaveTextContent('2.0000° N, 1.0000° E');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('includes the visible coordinates in its accessible name, in the same order', async () => {
+    const { handle, handlers } = fakeHandle();
+    Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+    render(<CoordinateReadout engine={handle} />);
+    act(() => {
+      for (const handler of handlers) handler({ lon: -0.1278, lat: 51.5074 });
+    });
+    const button = screen.getByRole('button', { name: /^Copy coordinates/ });
+    expect(button).toHaveAccessibleName('Copy coordinates 51.5074° N, 0.1278° W');
+    await userEvent.click(button);
+    expect(button).toHaveTextContent('51.5074° N, 0.1278° W');
+    expect(button).toHaveAccessibleName('Copy coordinates 51.5074° N, 0.1278° W');
   });
 });
 

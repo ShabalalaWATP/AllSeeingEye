@@ -28,7 +28,7 @@ export function StatusPill({
   return (
     <span
       data-tone={tone}
-      className={`inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 font-medium whitespace-nowrap ${style.className} ${className}`}
+      className={`inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-2xs leading-4 font-medium whitespace-nowrap ${style.className} ${className}`}
     >
       <AdminIcon name={icon ?? style.icon} size={12} />
       <span className="truncate">{children}</span>

@@ -48,7 +48,12 @@ export function EvidencePackageDownload({
   };
   return (
     <div className="space-y-2">
-      <Button variant="secondary" busy={busy} onClick={() => void download()}>
+      <Button
+        variant="secondary"
+        busy={busy}
+        busyLabel="Preparing evidence package…"
+        onClick={() => void download()}
+      >
         Download evidence package
       </Button>
       <p className="text-xs text-muted">

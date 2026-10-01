@@ -3,21 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.persistence import alert_feedback
 from ase.adapters.persistence.access import visibility_predicate
-from ase.adapters.persistence.models import (
-    ActivitySampleRow,
-    AlertRow,
-    CollectionPlanRow,
-    IndicatorRow,
-    ReportRow,
-)
+from ase.adapters.persistence.models import AlertRow, CollectionPlanRow, IndicatorRow, ReportRow
 from ase.adapters.persistence.warning_mapping import (
     _alert_from_row,
     _alert_row,
@@ -26,9 +19,7 @@ from ase.adapters.persistence.warning_mapping import (
 )
 from ase.application.access import AccessContext, AccessPolicy
 from ase.domain.access import Visibility
-from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
-from ase.domain.indicator_baseline import matching_semantics
 from ase.domain.warning import Alert, Indicator
 
 
@@ -57,16 +48,30 @@ class SqlIndicatorRepository:
     async def save(self, indicator: Indicator) -> None:
         row = await self._session.get(IndicatorRow, indicator.id)
         if row is None:
-            raise NotFound("Indicator not found.")
-        if matching_semantics(_indicator_from_row(row)) != matching_semantics(indicator):
-            await self._session.execute(
-                delete(ActivitySampleRow).where(
-                    ActivitySampleRow.kind == "indicator",
-                    ActivitySampleRow.key == str(indicator.id),
-                )
-            )
+            raise NotFound("Alert rule not found.")
         _fill_indicator(row, indicator)
         await self._session.flush()
+
+    async def save_if_unchanged(self, indicator: Indicator, expected_updated_at: datetime) -> bool:
+        # One conditional statement: PostgreSQL re-evaluates the predicate after a competing
+        # writer commits, and SQLite serialises writers, so only one edit of a revision lands.
+        values = IndicatorRow(id=indicator.id)
+        _fill_indicator(values, indicator)
+        columns = {
+            column.key: getattr(values, column.key)
+            for column in IndicatorRow.__table__.columns
+            if column.key not in {"id", "created_by", "created_at", "team_id"}
+        }
+        result = await self._session.execute(
+            update(IndicatorRow)
+            .where(
+                IndicatorRow.id == indicator.id,
+                IndicatorRow.updated_at == expected_updated_at,
+            )
+            .values(**columns)
+            .execution_options(synchronize_session=False)
+        )
+        return bool(getattr(result, "rowcount", 0) == 1)
 
     async def delete(self, indicator_id: UUID) -> None:
         await self._session.execute(delete(IndicatorRow).where(IndicatorRow.id == indicator_id))
@@ -101,16 +106,6 @@ class SqlAlertRepository:
         row.acknowledged_by = alert.acknowledged_by
         row.report_id = alert.report_id
         await self._session.flush()
-
-    async def acknowledge(self, alert: Alert) -> bool:
-        return await alert_feedback.acknowledge(self._session, alert)
-
-    async def feedback(
-        self, indicator: Indicator, since: datetime, until: datetime
-    ) -> dict[AlertDisposition, int]:
-        return await alert_feedback.counts(
-            self._session, indicator.id, indicator.created_by, indicator.team_id, since, until
-        )
 
 
 class SqlWarningStore:
@@ -235,8 +230,5 @@ class SqlWarningStore:
             count = int(await session.scalar(stale) or 0)
             if count:
                 await session.execute(delete(AlertRow).where(AlertRow.fired_at < before))
-            # Counts use acknowledgement days, not the raw alert's firing time.
-            cutoff = before.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-            await alert_feedback.prune(session, cutoff)
-            await session.commit()
+                await session.commit()
             return count

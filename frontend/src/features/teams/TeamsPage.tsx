@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
 import { createTeam, listTeams } from '@/lib/api/teams';
+import { parseBoardLink } from '@/lib/teamBoardLinks';
 import { useAuthStore } from '@/stores/auth';
 
 import { TeamNameForm } from './TeamForms';
@@ -81,7 +85,10 @@ function EmptyTeams({ onCreate }: { onCreate: () => void }) {
 function TeamsWorkspace({ user }: { user: User }) {
   const resource = useTeamsResource(listTeams);
   const action = useTeamAction();
-  const [selected, setSelected] = useState('');
+  const [params] = useSearchParams();
+  // Read once: a team discussion link selects its team and opens the board.
+  const [boardLink] = useState(() => parseBoardLink(params));
+  const [selected, setSelected] = useState(boardLink?.teamId ?? '');
   const [creating, setCreating] = useState(false);
   const teams = resource.data;
   const teamId = teams?.find((team) => team.id === selected)?.id ?? teams?.[0]?.id;
@@ -102,30 +109,26 @@ function TeamsWorkspace({ user }: { user: User }) {
     resource.error !== null && isAccessError(resource.error.status, resource.error.code);
 
   return (
-    <section className="h-full overflow-y-auto p-4 sm:p-6">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-8">
-        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line/70 pb-6">
-          <div>
-            <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">
-              Shared workspaces
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Teams</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              Keep collaboration focused: shared research, a lightweight team board, and access
-              controls in one workspace.
-            </p>
-          </div>
-          {user.is_active && teams?.length !== 0 ? (
-            <Button
-              variant="secondary"
-              onClick={() => setCreating((value) => !value)}
-              aria-expanded={creating}
-              aria-controls="create-team-panel"
-            >
-              {creating ? 'Close create form' : 'Create a team'}
-            </Button>
-          ) : null}
-        </header>
+    <section className={`h-full overflow-y-auto p-4 sm:p-6 ${LAUNCHER_SCROLL_PADDING}`}>
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-28">
+        <PageHeader
+          className="border-b border-line/70 pb-6"
+          title="Teams"
+          eyebrow="Shared workspaces"
+          description="Keep collaboration focused: shared research, a lightweight team board, and access controls in one workspace."
+          actions={
+            user.is_active && teams?.length !== 0 ? (
+              <Button
+                variant="secondary"
+                onClick={() => setCreating((value) => !value)}
+                aria-expanded={creating}
+                aria-controls="create-team-panel"
+              >
+                {creating ? 'Close create form' : 'Create a team'}
+              </Button>
+            ) : undefined
+          }
+        />
         <TeamInvitationInbox onAccepted={resource.reload} />
         {action.error ? <Alert tone="error">{action.error}</Alert> : null}
         {action.notice ? (
@@ -190,7 +193,13 @@ function TeamsWorkspace({ user }: { user: User }) {
               }}
             />
             {teamId ? (
-              <TeamPanel key={teamId} id={teamId} user={user} refreshList={resource.reload} />
+              <TeamPanel
+                key={teamId}
+                id={teamId}
+                user={user}
+                refreshList={resource.reload}
+                boardLink={boardLink?.teamId === teamId ? boardLink : null}
+              />
             ) : null}
           </>
         ) : null}

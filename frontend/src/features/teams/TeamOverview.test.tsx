@@ -48,6 +48,7 @@ const dashboard: TeamDashboard = {
       deleted_at: null,
       removal: null,
       revision: 2,
+      subject: null,
     },
   ],
   unread_count: 120,

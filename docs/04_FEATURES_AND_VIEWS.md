@@ -12,18 +12,30 @@ Ordinary users start on the globe. Administrators normally start in the separate
 Administration workspace after completing MFA and can return to research from
 there. A requested page can take precedence over that default destination.
 
+The desktop rail, the mobile navigation menu and **Find anything** (Ctrl K) use
+the same names. Research, Watches, Monitoring and Teams group the destinations,
+and indented entries sit beneath the destination that summarises them. Older
+addresses such as `/warning`, `/direction` and `/trackers` still open the same pages.
+
 | Workspace | Use it for |
 | --- | --- |
 | Map | Explore the globe or flat map, inspect observations and layers, select an area |
-| Research | Ask a question, use a Research Brief, follow progress and read saved research |
-| Subscriptions | Set up recurring research and review saved editions |
-| Geolocation | Analyse supplied photos for possible locations and verification leads |
-| Live monitor | Browse observations by subject and inspect specialist trackers |
+| Research | Ask a question, use a Research Brief and read saved research (tabs: New research, Saved research, Research progress) |
+| Research progress | Follow queued, running and finished research; listed under Research |
+| Geolocation | Analyse supplied photos for possible locations and keep saved assessments |
+| Source catalogue | Read-only source grades, coverage and limitations, open to every signed-in account; administrators change sources from Administration |
+| Watches | See every standing watch in one place, with a card for each kind of watch |
+| Subscriptions | Set up recurring research and review saved updates; listed under Watches |
+| Alerts | Read raised alerts and manage the alert rules and area watches behind them; listed under Watches |
+| Plans and areas | Keep collection plans and saved areas of interest; listed under Watches |
+| Annotation monitors | Watch selected claims, identities or relationships in a saved report version; listed under Watches |
+| Live monitor | Read the daily briefing and browse conflicts, disasters and the specialist trackers |
 | Ukraine war | Explore the conflict workspace and its dated source/reference material |
 | Cyber intelligence | Review advisories, vulnerability and connectivity signals with source context |
 | Economy | Explore economic series and supporting explanations |
 | Teams | Manage membership and shared work within your authority |
-| Administration | Approve accounts and manage users, sources, AI connections and audit activity |
+| Administration | Approve accounts and manage users, sources, AI connections and audit activity (administrators only) |
+| Help and guide | Read the in-app guide and reopen the Start here card; reached from the account controls or Find anything |
 
 The floating **Ask Eye** assistant is for shorter questions within the context and
 tools available to it. A full research run has its own collection, saved evidence
@@ -78,6 +90,8 @@ Follow the research job's progress, then open the report. Read the main findings
 alongside the citations, evidence annex, collection gaps and confidence limits.
 Source reliability, information credibility, likelihood and analytical confidence
 are separate concepts, explained in [reporting and assessment](03_DOCTRINE_AND_REPORTING.md).
+The report reader shows each likelihood term with its configured band, expands
+PIR, SIR and EEI codes where they appear, and links to a glossary in **Help**.
 
 A saved version keeps the selected evidence used for that assessment even after
 live observations expire. It does not prove that the source was truthful or that
@@ -100,6 +114,23 @@ whether to retry or resume failed work; a provider error does not establish that
 no model call was billed. Timing, source availability, provider limits and usage
 allowances can affect delivery. See [subscription operations](SUBSCRIPTIONS_OPERATIONS.md).
 
+In **Alerts**, an alert rule watches connected feeds and raises an alert when
+enough matching items arrive within its time window. Choose specific countries or
+an explicit **Worldwide** scope, and specific event categories or **All event
+categories**; an empty choice never quietly becomes unrestricted. Check the
+summary before saving. Edit, pause or resume a rule from its row. A paused rule is
+not evaluated and raises nothing; on resuming it counts only activity published
+after it resumed, so the paused period is not replayed. Removing a location,
+category or keyword restriction needs an explicit confirmation, and an edit made
+from an out-of-date copy is refused so it cannot overwrite someone else's change.
+Pausing a rule is separate from muting notifications.
+
+A report's **Watch for these indicators** action opens an editable alert rule
+draft with the judgement's original wording, the report's countries and any saved
+area it can represent, in the report's own workspace. Nothing is saved until
+**Add alert rule**. Alert rules match keywords literally; they do not monitor the
+meaning of an indicator. The API and saved data keep the name `indicator`.
+
 ## 5. Manage access and connections
 
 An administrator approves accounts, configures source connections and tests AI
@@ -110,6 +141,6 @@ Team membership controls shared access. Archived teams retain readable work whil
 ordinary writes stop. Reactivation requires an active manager; the administrator
 recovery control can appoint an eligible manager as part of that action.
 
-Use **Settings** for personal defaults and **Account security** for MFA and sessions.
+Use **Your settings** (the settings icon) for personal defaults and **Account security** for MFA and sessions.
 Use the source and AI administration screens for the installation's current state,
 rather than treating any documentation screenshot as a live status report.

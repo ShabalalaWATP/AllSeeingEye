@@ -112,6 +112,8 @@ jobs:
         run: |
           sample_storage() {
             local sleeper=
+            # The signal trap invokes this function indirectly.
+            # shellcheck disable=SC2317
             stop_sample() {
               if [ -n "$sleeper" ]; then
                 kill "$sleeper" 2>/dev/null || true
@@ -122,6 +124,8 @@ jobs:
             trap stop_sample TERM INT
             while true; do
               date --utc --iso-8601=seconds
+              # PGDATA is expanded inside the container.
+              # shellcheck disable=SC2016
               timeout 10s docker exec "$POSTGRES_CONTAINER_ID" sh -c \
                 'df -k "$PGDATA"; df -i "$PGDATA"; du -sk "$PGDATA/base" "$PGDATA/pg_wal"' \
                 || printf '%s\n' 'Storage sample unavailable or changed during scan; retrying.'
@@ -165,6 +169,8 @@ jobs:
         run: |
           sample_storage() {
             local sleeper=
+            # The signal trap invokes this function indirectly.
+            # shellcheck disable=SC2317
             stop_sample() {
               if [ -n "$sleeper" ]; then
                 kill "$sleeper" 2>/dev/null || true
@@ -175,6 +181,8 @@ jobs:
             trap stop_sample TERM INT
             while true; do
               date --utc --iso-8601=seconds
+              # PGDATA is expanded inside the container.
+              # shellcheck disable=SC2016
               timeout 10s docker exec "$POSTGRES_CONTAINER_ID" sh -c \
                 'df -k "$PGDATA"; df -i "$PGDATA"; du -sk "$PGDATA/base" "$PGDATA/pg_wal"' \
                 || printf '%s\n' 'Storage sample unavailable or changed during scan; retrying.'

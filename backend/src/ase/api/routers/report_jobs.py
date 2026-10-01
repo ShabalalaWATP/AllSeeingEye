@@ -1,9 +1,9 @@
 """Start, inspect and control authorised durable report work."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, HTTPException, Query, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.routers.research_briefs import _invalid
@@ -15,6 +15,13 @@ from ase.api.schemas_report_jobs import (
     public_job,
 )
 from ase.api.session_fence import FenceDep
+from ase.application.report_jobs.listing import (
+    MAX_CURSOR_CHARS,
+    JobListQuery,
+    JobStatusGroup,
+    decode_job_cursor,
+    encode_job_cursor,
+)
 from ase.domain.research_brief_values import BriefValidationError
 
 router = APIRouter(prefix="/report-jobs", tags=["report-jobs"])
@@ -79,6 +86,10 @@ async def create_job_from_brief(
         user.id, brief.identity.team_id, brief.identity.owner_id, brief.identity.team_id
     )
     access.require_create(brief.identity.team_id)
+    if brief.scope.plan_id is not None:
+        await container.plan_handoff(session).execute(
+            user, brief.scope.plan_id, brief.identity.team_id, body.expected_plan_updated_at
+        )
     try:
         result = await container.report_jobs(session).create(
             user,
@@ -103,14 +114,30 @@ async def list_jobs(
     container: ContainerDep,
     response: Response,
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
+    status: Annotated[JobStatusGroup, Query()] = "all",
+    include_briefings: Annotated[bool, Query()] = False,
+    cursor: Annotated[str | None, Query(min_length=1, max_length=MAX_CURSOR_CHARS)] = None,
+    scope: Annotated[Literal["mine", "all"], Query()] = "mine",
 ) -> ReportJobsOut:
-    values = await container.report_jobs(session).list(
+    """Scope, status and origin filters apply before the page; see application listing.
+
+    ``mine`` (the default) is the caller's personal and current-team work; only
+    administrators may request ``all``.
+    """
+    try:
+        after = decode_job_cursor(cursor) if cursor is not None else None
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    values, last = await container.report_jobs(session).page(
         user,
-        limit,
+        JobListQuery(limit, status, include_briefings, after, scope),
         check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"
-    payload = ReportJobsOut(items=[public_job(value) for value in values])
+    payload = ReportJobsOut(
+        items=[public_job(value) for value in values],
+        next_cursor=encode_job_cursor(*last) if last is not None else None,
+    )
     fence.assert_live()
     return payload
 

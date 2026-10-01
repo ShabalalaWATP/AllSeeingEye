@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -100,5 +100,32 @@ describe('SetPasswordPage', () => {
       expect(reset.router.state.location.pathname).toBe('/set-password');
     });
     expect(reset.router.state.location.search).toBe('?token=abc');
+  });
+
+  it('uses the token once even when the form is submitted twice', async () => {
+    let requests = 0;
+    let release: () => void = () => undefined;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post('/api/auth/set-password', async () => {
+        requests += 1;
+        if (requests > 1) return apiError(400, 'invalid_token', 'Token already used.');
+        await pending;
+        return new Response(null, { status: 204 });
+      }),
+    );
+    const { user } = renderApp(`/set-password?token=${GOOD_TOKEN}`, 'anonymous');
+    await user.type(screen.getByLabelText('New password'), STRONG);
+    await user.type(screen.getByLabelText('Confirm password'), STRONG);
+    const form = screen.getByRole('button', { name: 'Set password' }).closest('form');
+    if (form === null) throw new Error('Expected the password form');
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    release();
+    expect(await screen.findByRole('status')).toHaveTextContent('Your password has been set.');
+    expect(requests).toBe(1);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

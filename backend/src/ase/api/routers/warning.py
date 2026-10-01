@@ -1,8 +1,8 @@
-"""Warning: indicators over the live picture and the alerts they raise."""
+"""Warning: alert rules (API name "indicators") over the live picture and their alerts."""
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
@@ -16,6 +16,7 @@ from ase.api.schemas_warning import (
     IndicatorIn,
     IndicatorOut,
     IndicatorsOut,
+    IndicatorUpdateIn,
 )
 from ase.api.session_fence import FenceDep
 from ase.domain.alert_feedback import AlertFeedback
@@ -46,14 +47,20 @@ async def create_indicator(
 @router.put("/indicators/{indicator_id}")
 async def update_indicator(
     indicator_id: UUID,
-    body: IndicatorIn,
+    body: IndicatorUpdateIn,
     user: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> IndicatorOut:
+    """Edit, pause or resume one rule from the revision the caller read."""
     updated = await container.update_indicator(session).execute(
-        user, indicator_id, body.to_input(), context
+        user,
+        indicator_id,
+        body.to_input(),
+        body.expected_updated_at,
+        context,
+        confirm_wider_scope=body.confirm_wider_scope,
     )
     return IndicatorOut.from_indicator(updated)
 
@@ -77,11 +84,15 @@ async def list_alerts(
     container: ContainerDep,
     hours: Annotated[int | None, Query(ge=1, le=720)] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    scope: Annotated[Literal["mine", "all"], Query()] = "mine",
 ) -> AlertsOut:
-    items = await container.list_alerts(session).execute(user, hours=hours, limit=limit)
+    """Defaults to the caller's personal and current-team alerts; only admins may ask for all."""
+    listing = await container.list_alerts(session).execute(
+        user, hours=hours, limit=limit, scope=scope
+    )
     return AlertsOut(
-        items=[AlertOut.from_alert(item) for item in items],
-        unacknowledged=sum(1 for item in items if item.acknowledged_at is None),
+        items=[AlertOut.from_alert(item, listing.owner_name(item)) for item in listing.items],
+        unacknowledged=listing.unacknowledged,
     )
 
 

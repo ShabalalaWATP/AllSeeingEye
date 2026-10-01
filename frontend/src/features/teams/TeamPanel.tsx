@@ -12,6 +12,7 @@ import {
   setMember,
   updateTeam,
 } from '@/lib/api/teams';
+import type { BoardLink } from '@/lib/teamBoardLinks';
 
 import { AddMemberForm, TeamNameForm } from './TeamForms';
 import { ConfirmAction, TeamRoster } from './TeamRoster';
@@ -25,10 +26,12 @@ export function TeamPanel({
   id,
   user,
   refreshList,
+  boardLink = null,
 }: {
   id: string;
   user: User;
   refreshList: () => Promise<void>;
+  boardLink?: BoardLink | null;
 }) {
   const load = useCallback(() => getTeam(id), [id]);
   const resource = useTeamsResource(load);
@@ -41,7 +44,8 @@ export function TeamPanel({
   // Keep the roster as the landing view so existing team workflows remain one
   // click from the team selector. Overview, Research, and Board are available
   // alongside it in the dashboard tabs.
-  const [activeTab, setActiveTab] = useState<TeamDashboardTab>('members');
+  // A team discussion link opens the board instead.
+  const [activeTab, setActiveTab] = useState<TeamDashboardTab>(boardLink ? 'board' : 'members');
   const reload = resource.reload;
   const accessRevoked =
     resource.error?.status === 401 ||
@@ -83,6 +87,7 @@ export function TeamPanel({
           capabilities={capabilities}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          boardLink={boardLink}
           actions={
             <Button
               variant="ghost"
@@ -162,7 +167,9 @@ export function TeamPanel({
                 <div className="border-t border-line pt-4">
                   <ConfirmAction
                     label="Leave team"
-                    question="Leave this team? You will lose access to its research and board."
+                    question="Leave this team?"
+                    busyLabel="Leaving team…"
+                    consequence="You will lose access to its research and board until a manager adds you again."
                     busy={action.busy}
                     onConfirm={() => {
                       void action.run(() => leaveTeam(id), 'You left the team.', refreshList);
@@ -203,6 +210,8 @@ export function TeamPanel({
                       <ConfirmAction
                         label="Archive team"
                         question="Archive this team and make its roster read-only?"
+                        busyLabel="Archiving team…"
+                        consequence="Its records stay readable, but ordinary changes stop. Only a site administrator can reactivate it."
                         busy={action.busy}
                         onConfirm={() => {
                           void action.run(

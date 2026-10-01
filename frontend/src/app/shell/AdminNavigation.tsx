@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Link, NavLink } from 'react-router';
 
 import { AdminIcon } from '@/components/admin/AdminIcon';
@@ -16,8 +17,10 @@ export function AdminNavigation({
   const railCollapsed = useShellStore((state) => state.railCollapsed);
   const toggleRail = useShellStore((state) => state.toggleRail);
   const collapsed = railCollapsed && !mobile;
+  const railId = useId();
   return (
     <aside
+      id={railId}
       data-collapsed={collapsed ? 'true' : undefined}
       className={`flex min-h-0 flex-col bg-ground ${
         mobile
@@ -31,7 +34,8 @@ export function AdminNavigation({
         title={collapsed ? 'Administration' : undefined}
         className={`flex items-center gap-3 border-b border-line/70 py-4 ${collapsed ? 'justify-center px-2' : 'px-4'}`}
       >
-        <BrandMark size={collapsed ? 34 : 38} still />
+        {/* The text names the link, so the mark itself stays silent. */}
+        <BrandMark size={collapsed ? 34 : 38} still decorative />
         <span className={collapsed ? 'sr-only' : 'min-w-0 leading-tight'}>
           <span className="block truncate text-xs text-muted">The All Seeing Eye</span>
           <span className="mt-0.5 flex items-center gap-2 font-semibold">
@@ -77,7 +81,8 @@ export function AdminNavigation({
           <button
             type="button"
             onClick={toggleRail}
-            aria-pressed={collapsed}
+            aria-expanded={!collapsed}
+            aria-controls={railId}
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             className={`mt-0.5 flex min-h-10 w-full items-center gap-3 rounded-lg text-xs text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center' : 'px-3'}`}

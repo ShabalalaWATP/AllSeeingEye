@@ -16,19 +16,26 @@ export class AssistantBoundary extends Component<{ children: ReactNode }, Bounda
   override render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <div className="eye-assistant">
+      <aside aria-label="Eye assistant" className="eye-assistant">
         <button
           type="button"
           className="eye-restart"
           onClick={() => this.setState({ failed: false })}
         >
-          <img src="/brand/eye-512.png" alt="" aria-hidden="true" width="64" height="42" />
+          <img
+            src="/brand/eye-128.webp"
+            alt=""
+            aria-hidden="true"
+            width="64"
+            height="42"
+            decoding="async"
+          />
           <span>
             Restart Eye assistant
             <small>Clear this chat and try again.</small>
           </span>
         </button>
-      </div>
+      </aside>
     );
   }
 }

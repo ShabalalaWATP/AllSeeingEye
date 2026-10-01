@@ -73,7 +73,7 @@
   height: 23px;
   flex-shrink: 0;
   margin-right: 10px;
-  border: 1px solid #79d8eb70;
+  border: 1px solid color-mix(in srgb, var(--color-ember) 44%, transparent);
   border-radius: 50%;
   background: var(--color-surface-2);
   color: var(--color-ember);
@@ -142,7 +142,7 @@
   line-height: 1.6;
 }
 .route-address-match:hover {
-  background: #79d8eb12;
+  background: color-mix(in srgb, var(--color-ember) 7%, transparent);
   color: var(--color-ember);
 }
 .route-address-match:focus-visible {

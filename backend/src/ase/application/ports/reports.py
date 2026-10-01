@@ -31,5 +31,9 @@ class ReportRepository(Protocol):
         *,
         origin: ReportOrigin | None = None,
         offset: int = 0,
-    ) -> list[ReportRecord]: ...
+        origins: tuple[ReportOrigin, ...] | None = None,
+    ) -> list[ReportRecord]:
+        """Visible records, filtered by effective origin before ordering and limits."""
+        ...
+
     async def delete(self, report_id: UUID) -> None: ...

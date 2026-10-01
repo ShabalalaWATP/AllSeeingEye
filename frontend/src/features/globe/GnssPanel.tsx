@@ -155,7 +155,7 @@ export function GnssPanel({
                   className="flex min-h-12 w-full items-center justify-between gap-2 rounded px-2 text-left hover:bg-white/5 aria-pressed:bg-cyan/10 disabled:opacity-50"
                 >
                   <span>
-                    <span className={cell.level === 'red' ? 'text-red-400' : 'text-amber-300'}>
+                    <span className={cell.level === 'red' ? 'text-critical' : 'text-amber'}>
                       {cell.level === 'red' ? 'Red' : 'Amber'} · {cell.percent_bad.toFixed(1)}%
                     </span>
                     <span className="mt-1 block font-mono text-muted">

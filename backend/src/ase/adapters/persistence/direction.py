@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import AoiRow, CollectionPlanRow
 from ase.domain.access import Visibility
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
-from ase.domain.errors import NotFound
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import area_from_dict, area_to_dict
 
@@ -185,12 +185,27 @@ class SqlPlanRepository:
         )
         return [_plan_from_row(row) for row in rows]
 
-    async def save(self, plan: CollectionPlan) -> None:
-        row = await self._session.get(CollectionPlanRow, plan.id)
-        if row is None:
-            raise NotFound()
-        _apply_plan(row, plan)
-        await self._session.flush()
+    async def save_if_unchanged(self, plan: CollectionPlan, expected_updated_at: datetime) -> bool:
+        # One conditional statement: PostgreSQL re-evaluates the predicate after a competing
+        # writer commits, and SQLite serialises writers, so only one edit of a revision lands.
+        result = await self._session.execute(
+            update(CollectionPlanRow)
+            .where(
+                CollectionPlanRow.id == plan.id,
+                CollectionPlanRow.updated_at == expected_updated_at,
+            )
+            .values(
+                name=plan.name,
+                description=plan.description,
+                aoi_id=plan.aoi_id,
+                countries=list(plan.countries),
+                pirs=pirs_to_list(plan.pirs),
+                enabled=plan.enabled,
+                updated_at=plan.updated_at,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        return bool(getattr(result, "rowcount", 0) == 1)
 
     async def delete(self, plan_id: UUID) -> None:
         await self._session.execute(

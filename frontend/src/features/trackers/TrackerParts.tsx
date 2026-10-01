@@ -22,7 +22,7 @@ export function ActivityCells({ activity }: { activity: Activity }) {
           trend === 'rising'
             ? 'text-critical'
             : trend === 'falling'
-              ? 'text-emerald-300'
+              ? 'text-good'
               : 'text-muted'
         }
       >

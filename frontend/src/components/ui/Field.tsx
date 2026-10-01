@@ -1,7 +1,8 @@
 /**
  * Labelled form controls. Each control gets a generated id, its label is bound
  * with htmlFor, and hint and error text are linked through aria-describedby so
- * assistive technology reads them with the field.
+ * assistive technology reads them with the field. An explicit id lets an error summary
+ * link to and focus the control.
  */
 import { useId } from 'react';
 import type {
@@ -23,8 +24,9 @@ const controlClass =
   'w-full rounded-md border border-control-border bg-ground px-3 py-2 text-sm text-text ' +
   'placeholder:text-muted aria-invalid:border-critical disabled:opacity-50';
 
-function useFieldIds(hint: string | undefined, error: string | undefined) {
-  const id = useId();
+function useFieldIds(hint: string | undefined, error: string | undefined, explicit?: string) {
+  const generated = useId();
+  const id = explicit ?? generated;
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
   const describedBy = [hint === undefined ? null : hintId, error === undefined ? null : errorId]
@@ -64,17 +66,18 @@ function FieldFrame({
 }
 
 export interface TextFieldProps
-  extends FieldFrameProps, Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'aria-describedby'> {}
+  extends FieldFrameProps, Omit<InputHTMLAttributes<HTMLInputElement>, 'aria-describedby'> {}
 
 export function TextField({
   label,
   labelHidden,
   hint,
   error,
+  id,
   className = '',
   ...rest
 }: TextFieldProps) {
-  const ids = useFieldIds(hint, error);
+  const ids = useFieldIds(hint, error, id);
   return (
     <FieldFrame label={label} labelHidden={labelHidden} hint={hint} error={error} {...ids}>
       <input
@@ -89,19 +92,18 @@ export function TextField({
 }
 
 export interface TextAreaFieldProps
-  extends
-    FieldFrameProps,
-    Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id' | 'aria-describedby'> {}
+  extends FieldFrameProps, Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'aria-describedby'> {}
 
 export function TextAreaField({
   label,
   labelHidden,
   hint,
   error,
+  id,
   className = '',
   ...rest
 }: TextAreaFieldProps) {
-  const ids = useFieldIds(hint, error);
+  const ids = useFieldIds(hint, error, id);
   return (
     <FieldFrame label={label} labelHidden={labelHidden} hint={hint} error={error} {...ids}>
       <textarea
@@ -121,9 +123,7 @@ export interface SelectOption {
 }
 
 export interface SelectFieldProps
-  extends
-    FieldFrameProps,
-    Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id' | 'aria-describedby'> {
+  extends FieldFrameProps, Omit<SelectHTMLAttributes<HTMLSelectElement>, 'aria-describedby'> {
   options: readonly SelectOption[];
 }
 
@@ -133,10 +133,11 @@ export function SelectField({
   hint,
   error,
   options,
+  id,
   className = '',
   ...rest
 }: SelectFieldProps) {
-  const ids = useFieldIds(hint, error);
+  const ids = useFieldIds(hint, error, id);
   return (
     <FieldFrame label={label} labelHidden={labelHidden} hint={hint} error={error} {...ids}>
       <select

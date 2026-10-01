@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Any, cast
 
 from ase.adapters.persistence.report_job_models import ReportJobRow
+from ase.adapters.persistence.report_job_projection import compact_summary, polling_payload
 from ase.domain.errors import Conflict
 from ase.domain.report_jobs import (
     MAX_JOB_PAYLOAD_BYTES,
@@ -19,7 +20,7 @@ def payload_columns(payload: dict[str, Any]) -> dict[str, Any]:
     encoded = canonical_job_payload(payload)
     return {
         "payload": encoded.decode("utf-8"),
-        "summary": deepcopy(payload.get("summary", {})),
+        "summary": compact_summary(payload),
         "payload_sha256": hashlib.sha256(encoded).hexdigest(),
         "payload_bytes": len(encoded),
     }
@@ -49,6 +50,12 @@ def with_payload(
         brief_revision=row.brief_revision,
         _payload_validated=validated,
     )
+
+
+def with_summary(row: ReportJobRow, summary: dict[str, Any]) -> ReportJob:
+    # The thin codec checks unchanged JSON/summary bounds and the separate derived
+    # origin allowance. Full checkpoint reads still verify actual canonical bytes.
+    return with_payload(row, polling_payload(summary), validated=True)
 
 
 class PayloadCache:

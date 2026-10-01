@@ -1,7 +1,8 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 import { fetchUkraineBoard, type UkraineBoard } from '@/lib/api/ukraine';
 import { useResource } from '@/lib/hooks/useResource';
+import { useVisiblePolling, type PollOutcome } from '@/lib/hooks/useVisiblePolling';
 
 export const REFRESH_MS = 5 * 60 * 1000;
 
@@ -19,12 +20,11 @@ export function useUkraineBoard(load: () => Promise<UkraineBoard> = fetchUkraine
   );
   const resource = useResource<LoadedBoard>(loader);
   const { reload } = resource;
-  useEffect(() => {
-    const tick = () => {
-      if (document.visibilityState === 'visible') void reload();
-    };
-    const timer = window.setInterval(tick, REFRESH_MS);
-    return () => window.clearInterval(timer);
+  const poll = useCallback(async (): Promise<PollOutcome> => {
+    await reload();
+    return 'ok';
   }, [reload]);
+  // A tab that returns after the interval refreshes at once instead of waiting a full cycle.
+  useVisiblePolling({ enabled: true, intervalMs: REFRESH_MS, poll });
   return resource;
 }

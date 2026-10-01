@@ -84,7 +84,7 @@ export function ReferenceNotes({ event }: { event: LiveEvent }) {
           )}
         </div>
       ))}
-      <p className="mt-2 text-[11px] leading-relaxed text-muted">
+      <p className="mt-2 text-2xs leading-relaxed text-muted">
         Background for the broadcast identifier, not confirmation that this is the object on record.
         Identifiers are reused, mistyped and spoofed.
       </p>

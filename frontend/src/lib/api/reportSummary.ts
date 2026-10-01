@@ -15,5 +15,8 @@ export const reportSummarySchema = z.object({
   created_by: z.string(),
   created_at: z.string(),
   latest_version: z.number().int(),
+  // The server's effective origin, including the legacy media/research fallback.
+  // Older cached or fixture summaries without it read as research, as the server does.
+  origin: z.enum(['research', 'subscription', 'geolocation']).default('research'),
 });
 export type ReportSummary = z.infer<typeof reportSummarySchema>;

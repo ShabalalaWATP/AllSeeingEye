@@ -1,6 +1,11 @@
 import { useId, useState } from 'react';
+import { CategoryAxisLabels, ValueAxisLabels } from '@/components/charts/ChartAxis';
 import type { EconomySeries } from '@/lib/api/economy';
 import { formatEconomicValue } from './economyPresentation';
+
+// Axis labels are HTML (see ChartAxis), so the drawing ends just below the lowest point.
+const WIDTH = 840;
+const HEIGHT = 255;
 
 /** Small bounded official series. Missing observations split the line, never become zero. */
 export function EconomicChart({ series }: { series: EconomySeries }) {
@@ -38,6 +43,15 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
       ? selected
       : points.findLastIndex((point) => point.value !== null);
   const focused = points[activeIndex];
+  const gridValues = [0, 1, 2, 3].map((tick) => low + ((high - low) * tick) / 3);
+  const valueTicks = gridValues.map((value, tick) => ({
+    key: tick,
+    label: formatEconomicValue(value, series.unit),
+    at: y(value) / HEIGHT,
+  }));
+  const dateTicks = [0, Math.floor((points.length - 1) / 2), points.length - 1]
+    .filter((n, i, all) => all.indexOf(n) === i)
+    .map((index) => ({ key: index, label: points[index]?.date ?? '', at: x(index) / WIDTH }));
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-4 font-mono">
@@ -49,22 +63,22 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
           {formatEconomicValue(focused?.value ?? null, series.unit)}
         </output>
       </div>
-      <svg
-        viewBox="0 0 840 285"
-        role="img"
-        aria-labelledby={`${id}-title ${id}-desc`}
-        className="w-full overflow-visible text-ember"
-      >
-        <title id={`${id}-title`}>{series.name} history</title>
-        <desc id={`${id}-desc`}>
-          Published {series.frequency} observations. Missing data creates gaps. Exact values are
-          available in the table below.
-        </desc>
-        {[0, 1, 2, 3].map((tick) => {
-          const value = low + ((high - low) * tick) / 3;
-          return (
-            <g key={tick}>
+      <div>
+        <div className="relative">
+          <svg
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            role="img"
+            aria-labelledby={`${id}-title ${id}-desc`}
+            className="block w-full overflow-visible text-ember"
+          >
+            <title id={`${id}-title`}>{series.name} history</title>
+            <desc id={`${id}-desc`}>
+              Published {series.frequency} observations. Missing data creates gaps. Exact values are
+              available in the table below.
+            </desc>
+            {gridValues.map((value) => (
               <line
+                key={value}
                 x1="84"
                 x2="802"
                 y1={y(value)}
@@ -72,69 +86,54 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
                 className="stroke-line"
                 strokeDasharray="3 5"
               />
-              <text
-                x="72"
-                y={y(value) + 4}
-                textAnchor="end"
-                className="fill-muted font-mono text-2xs"
-              >
-                {formatEconomicValue(value, series.unit)}
-              </text>
-            </g>
-          );
-        })}
-        <path
-          d={path}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        {points.map((point, index) =>
-          point.value === null ? null : (
-            <circle
-              key={point.date}
-              cx={x(index)}
-              cy={y(point.value)}
-              r={activeIndex === index ? 5 : 2.5}
-              fill="currentColor"
-            >
-              <title>
-                {point.date}: {formatEconomicValue(point.value, series.unit)}
-              </title>
-            </circle>
-          ),
-        )}
-        {selected !== null && points[selected] && (
-          <line
-            x1={x(selected)}
-            x2={x(selected)}
-            y1="24"
-            y2="245"
-            stroke="currentColor"
-            strokeOpacity="0.35"
-            strokeDasharray="4 4"
-          />
-        )}
-        {[0, Math.floor((points.length - 1) / 2), points.length - 1]
-          .filter((n, i, all) => all.indexOf(n) === i)
-          .map((index) => (
-            <text
-              key={index}
-              x={x(index)}
-              y="276"
-              textAnchor="middle"
-              className="fill-muted font-mono text-2xs"
-            >
-              {points[index]?.date}
-            </text>
-          ))}
-      </svg>
+            ))}
+            <path
+              d={path}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            {points.map((point, index) =>
+              point.value === null ? null : (
+                <circle
+                  key={point.date}
+                  cx={x(index)}
+                  cy={y(point.value)}
+                  r={activeIndex === index ? 5 : 2.5}
+                  fill="currentColor"
+                >
+                  <title>
+                    {point.date}: {formatEconomicValue(point.value, series.unit)}
+                  </title>
+                </circle>
+              ),
+            )}
+            {selected !== null && points[selected] && (
+              <line
+                x1={x(selected)}
+                x2={x(selected)}
+                y1="24"
+                y2="245"
+                stroke="currentColor"
+                strokeOpacity="0.35"
+                strokeDasharray="4 4"
+              />
+            )}
+          </svg>
+          <ValueAxisLabels ticks={valueTicks} edge="left" />
+        </div>
+        <CategoryAxisLabels ticks={dateTicks} />
+      </div>
       <label className="flex items-center gap-4 text-xs text-muted">
         <span className="shrink-0">Explore dates</span>
         <input
-          aria-label={`Explore ${series.name} observations`}
+          aria-valuetext={
+            focused
+              ? `${focused.date}: ${formatEconomicValue(focused.value, series.unit)}`
+              : undefined
+          }
           type="range"
           min="0"
           max={Math.max(0, points.length - 1)}

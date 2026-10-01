@@ -5,12 +5,32 @@ import { apiCall, apiSend } from './client';
 import type { components } from './types.gen';
 
 export type TeamBoardPost = components['schemas']['TeamBoardPostOut'];
+/** A saved post plus the teammates that write newly notified. */
+export type TeamBoardWrite = components['schemas']['TeamBoardWriteOut'];
 export type TeamBoardPage = components['schemas']['TeamBoardPageOut'];
 export type TeamBoardUnread = components['schemas']['TeamBoardUnreadOut'];
 export type TeamDashboard = components['schemas']['TeamDashboardOut'];
 export type TeamDashboardAction = components['schemas']['TeamDashboardActionOut'];
+export type TeamBoardSubject = components['schemas']['TeamBoardSubjectOut'];
+export type BoardSubjectInput = components['schemas']['TeamBoardSubjectIn'];
+export type BoardSubjectKind = components['schemas']['BoardSubjectKind'];
+export type ReportDiscussion = components['schemas']['ReportDiscussionOut'];
 
 const timestamp = z.string();
+const subjectKind = z.enum(['report_version', 'saved_area', 'drawing_collection']);
+const subjectSchema = z.object({
+  kind: subjectKind,
+  id: z.uuid().nullable(),
+  version: z.number().int().positive().nullable(),
+  available: z.boolean(),
+  title: z.string().nullable(),
+}) satisfies z.ZodType<TeamBoardSubject>;
+const discussionSchema = z.object({
+  team_id: z.uuid().nullable(),
+  count: z.number().int().nonnegative(),
+  latest_post_id: z.uuid().nullable(),
+  can_post: z.boolean(),
+}) satisfies z.ZodType<ReportDiscussion>;
 const postSchema = z.object({
   id: z.uuid(),
   team_id: z.uuid(),
@@ -25,7 +45,12 @@ const postSchema = z.object({
   deleted_at: timestamp.nullable(),
   removal: z.enum(['author', 'moderator']).nullable(),
   revision: z.number().int().min(1),
+  subject: subjectSchema.nullable(),
 }) satisfies z.ZodType<TeamBoardPost>;
+const writeSchema = postSchema.extend({
+  // Absent from a server without mentions; nobody was notified then.
+  notified: z.array(z.object({ user_id: z.uuid(), display_name: z.string() })).default([]),
+}) satisfies z.ZodType<TeamBoardWrite>;
 const pageSchema = z.object({
   items: z.array(postSchema),
   replies: z.array(postSchema),
@@ -98,15 +123,21 @@ export function listBoardPosts(
   });
 }
 
+/** A subject links a new top-level post to same-team work; the server checks its scope. */
 export function createBoardPost(
   teamId: string,
   text: string,
   parentId?: string,
-): Promise<TeamBoardPost> {
+  subject?: BoardSubjectInput,
+): Promise<TeamBoardWrite> {
   return apiCall(`${team(teamId)}/board/posts`, {
     method: 'POST',
-    body: { text, ...(parentId === undefined ? {} : { parent_id: parentId }) },
-    schema: postSchema,
+    body: {
+      text,
+      ...(parentId === undefined ? {} : { parent_id: parentId }),
+      ...(subject === undefined ? {} : { subject }),
+    },
+    schema: writeSchema,
   });
 }
 
@@ -115,11 +146,11 @@ export function editBoardPost(
   postId: string,
   text: string,
   expectedRevision: number,
-): Promise<TeamBoardPost> {
+): Promise<TeamBoardWrite> {
   return apiCall(post(teamId, postId), {
     method: 'PATCH',
     body: { text, expected_revision: expectedRevision },
-    schema: postSchema,
+    schema: writeSchema,
   });
 }
 
@@ -168,6 +199,17 @@ export function markBoardRead(teamId: string, lastSeenPostId: string): Promise<T
 export function getTeamDashboard(teamId: string, signal?: AbortSignal): Promise<TeamDashboard> {
   return apiCall(`${team(teamId)}/dashboard`, {
     schema: dashboardSchema,
+    ...(signal === undefined ? {} : { signal }),
+  });
+}
+
+/** Live board threads about a team report; personal reports have no team discussion. */
+export function getReportDiscussion(
+  reportId: string,
+  signal?: AbortSignal,
+): Promise<ReportDiscussion> {
+  return apiCall(`/api/reports/${encodeURIComponent(reportId)}/team-discussion`, {
+    schema: discussionSchema,
     ...(signal === undefined ? {} : { signal }),
   });
 }

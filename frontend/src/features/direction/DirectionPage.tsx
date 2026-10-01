@@ -1,17 +1,23 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
+import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { deleteAoi, fetchAois, fetchPlans } from '@/lib/api/direction';
 import type { AreaOfInterest } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
-import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { mapPanelHref } from '@/lib/mapLayerDirectory';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { AreaForm } from './AreaForm';
+import { AreaDeletion } from './DirectionDeletions';
 import { ResearchAreaButton } from './ResearchAreaButton';
 import { PlanForm } from './PlanForm';
 
@@ -29,10 +35,11 @@ export default function DirectionPage() {
   const plans = useScopedResource(fetchPlans);
   const reloadAreas = areas.reload;
   const reloadPlans = plans.reload;
-  const remove = useAsyncAction(
+  const areasHeading = useRef<HTMLHeadingElement>(null);
+  const remove = useConfirmedAction(
     useCallback(
-      async (id: string) => {
-        await deleteAoi(id);
+      async (area: AreaOfInterest) => {
+        await deleteAoi(area.id);
         await reloadAreas();
       },
       [reloadAreas],
@@ -40,7 +47,7 @@ export default function DirectionPage() {
   );
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Plans and areas</h1>
+      <PageHeader type="record" title="Plans and areas" />
       <p className="text-sm text-muted">
         Save reusable geographic areas and structured questions for more detailed research. Open
         saved areas on the map, or reuse them in{' '}
@@ -54,15 +61,24 @@ export default function DirectionPage() {
         .
       </p>
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Areas of interest</h2>
+        <h2 ref={areasHeading} className="text-base font-semibold">
+          Areas of interest
+        </h2>
         {areas.error === null ? null : <Alert tone="error">{describeError(areas.error)}</Alert>}
-        {remove.error === null ? null : <Alert tone="error">{describeError(remove.error)}</Alert>}
         {areas.data === null ? (
           areas.loading ? (
             <LoadingNote label="Loading areas" />
           ) : null
         ) : areas.data.length === 0 ? (
-          <p className="text-sm text-muted">No areas yet.</p>
+          <EmptyState
+            title="No areas of interest yet"
+            purpose="An area of interest is a saved place you can reuse in research, subscriptions and collection plans."
+            action={
+              <Link to={mapPanelHref('Research area')} className="text-ember underline">
+                Draw an area on the map
+              </Link>
+            }
+          />
         ) : (
           <Table caption="Areas of interest">
             <thead>
@@ -88,11 +104,16 @@ export default function DirectionPage() {
                     >
                       Open on map
                     </Link>
+                    <DiscussWithTeamLink
+                      teamId={area.team_id}
+                      subject={{ kind: 'saved_area', id: area.id }}
+                      className="mr-3 text-sm text-ember hover:underline"
+                    />
                     <Button
                       disabled={!workspaces.canManage(area)}
                       variant="danger"
-                      busy={remove.busy}
-                      onClick={() => void remove.run(area.id)}
+                      aria-haspopup="dialog"
+                      onClick={() => remove.ask(area)}
                     >
                       Delete
                     </Button>
@@ -102,6 +123,12 @@ export default function DirectionPage() {
             </tbody>
           </Table>
         )}
+        <AreaDeletion
+          action={remove}
+          workspaceLabel={workspaces.label}
+          describe={describeArea}
+          returnFocus={areasHeading}
+        />
         <AreaForm key={workspaces.key} workspaces={workspaces} onCreated={reloadAreas} />
       </div>
       <div className="flex flex-col gap-3">
@@ -112,31 +139,39 @@ export default function DirectionPage() {
             <LoadingNote label="Loading plans" />
           ) : null
         ) : plans.data.length === 0 ? (
-          <p className="text-sm text-muted">No plans yet.</p>
+          <EmptyState
+            title="No collection plans yet"
+            purpose="A collection plan sets out intelligence requirements and gathers matching evidence from the live feeds as it arrives."
+            action="Write your first plan with the form below."
+          />
         ) : (
-          <ul aria-label="Collection plans" className="flex flex-col gap-2">
-            {plans.data.map((plan) => (
-              <li key={plan.id} className="rounded-card border border-line bg-surface p-3">
-                <Link
-                  to={`/direction/plans/${plan.id}`}
-                  className="font-medium text-text hover:underline"
-                >
-                  {plan.name}
-                </Link>
-                <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
-                <p className="mt-1 text-xs text-muted">
-                  {plan.pirs.length} PIR, {plan.pirs.reduce((n, pir) => n + pir.sirs.length, 0)} SIR
-                  {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <RequirementCodesNote codes={['PIR', 'SIR']} />
+            <ul aria-label="Collection plans" className="flex flex-col gap-2">
+              {plans.data.map((plan) => (
+                <li key={plan.id} className="rounded-card border border-line bg-surface p-3">
+                  <Link
+                    to={`/direction/plans/${plan.id}`}
+                    className="font-medium text-text hover:underline"
+                  >
+                    {plan.name}
+                  </Link>
+                  <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {plan.pirs.length} PIR, {plan.pirs.reduce((n, pir) => n + pir.sirs.length, 0)}{' '}
+                    SIR
+                    {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
         <PlanForm
           key={workspaces.key}
           workspaces={workspaces}
           areas={areas.data ?? []}
-          onCreated={reloadPlans}
+          onSaved={reloadPlans}
         />
       </div>
     </section>

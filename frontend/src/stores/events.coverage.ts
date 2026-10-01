@@ -1,3 +1,4 @@
+import { compareText } from './events.batch';
 import { geographicOrder } from './events.geography';
 import { compareEventFreshness as observationOrder } from '@/lib/liveEventSnapshot';
 import { isSatellite, satellitePriority } from '@/lib/satellites';
@@ -31,6 +32,18 @@ export function mergeSnapshots(main: LiveEvent[], maritime: LiveEvent[]): Map<st
   return merged;
 }
 
+// Records are immutable, so each one's timestamps are parsed once across stream batches,
+// not at every comparison or every rebuild of a full sensor mirror.
+const parsedTimes = new WeakMap<LiveEvent, readonly [number, number]>();
+function eventTimes(event: LiveEvent): readonly [number, number] {
+  let times = parsedTimes.get(event);
+  if (times === undefined) {
+    times = [Date.parse(event.observed_at), Date.parse(event.published_at ?? event.observed_at)];
+    parsedTimes.set(event, times);
+  }
+  return times;
+}
+
 /** Reserve ships and satellites, favouring specific public catalogues over bulk active data. */
 export function boundedEvents(
   byId: Record<string, LiveEvent>,
@@ -39,20 +52,13 @@ export function boundedEvents(
 ): Record<string, LiveEvent> {
   const events = Object.values(byId);
   if (events.length <= limit) return byId;
-  // Parse each timestamp once, not at every comparison of a full sensor mirror.
-  const times = new Map(
-    events.map((event) => [
-      event,
-      [Date.parse(event.observed_at), Date.parse(event.published_at ?? event.observed_at)] as const,
-    ]),
+  // Look each record's times up once per rebuild, not at every comparison.
+  const keyed = events.map((event) => ({ event, times: eventTimes(event) }));
+  keyed.sort(
+    (a, b) =>
+      b.times[0] - a.times[0] || b.times[1] - a.times[1] || compareText(a.event.id, b.event.id),
   );
-  const newestFirst = (a: LiveEvent, b: LiveEvent) => {
-    const left = times.get(a) ?? [0, 0];
-    const right = times.get(b) ?? [0, 0];
-    return right[0] - left[0] || right[1] - left[1] || a.id.localeCompare(b.id);
-  };
-  events.sort(newestFirst);
-  const fair = geographicOrder(events);
+  const fair = geographicOrder(keyed.map((item) => item.event));
   const reserved = fair
     .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
     .sort((a, b) => Number(isMilitaryVessel(b)) - Number(isMilitaryVessel(a)))

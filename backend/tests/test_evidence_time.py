@@ -8,7 +8,6 @@ import pytest
 
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.ports.feeds import EventQuery
-from ase.application.reports.export_text import evidence_metadata
 from ase.application.reports.observation_text import observation_lines
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.prompts import evidence_block
@@ -85,7 +84,7 @@ def test_prompt_and_export_label_observation_times_separately():
         )
     )
     item = EvidenceItem.from_event("E1", event, NOW, source_name="Fixture", independence_key="")
-    for text in (evidence_block(item), " ".join(evidence_metadata(item))):
+    for text in (evidence_block(item), " ".join(observation_lines(item))):
         assert f"Acquisition time: {event.observation.acquired_at.isoformat()}" in text
         assert f"Processing time: {event.observation.processed_at.isoformat()}" in text
         assert "Scene cloud cover: 25%" in text

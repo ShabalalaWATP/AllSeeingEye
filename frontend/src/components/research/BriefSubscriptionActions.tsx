@@ -28,7 +28,7 @@ export function BriefSubscriptionActions({
 }) {
   const [open, setOpen] = useState(initialOpen);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [created, setCreated] = useState<string | null>(null);
   const [verificationFailed, setVerificationFailed] = useState(false);
   const request = useRef<AbortController | null>(null);
@@ -56,7 +56,7 @@ export function BriefSubscriptionActions({
       setCreated(schedule.id);
       setOpen(false);
     } catch (caught) {
-      setError(describeError(caught));
+      setError(caught);
     } finally {
       setBusy(false);
       request.current = null;
@@ -77,9 +77,9 @@ export function BriefSubscriptionActions({
           Subscription unavailable: {reason}
         </p>
       )}
-      {verificationFailed && error && (
+      {verificationFailed && error !== null && (
         <Alert tone="error">
-          {error}{' '}
+          {describeError(error)}{' '}
           <Link to="/subscriptions" className="underline">
             Review subscriptions
           </Link>

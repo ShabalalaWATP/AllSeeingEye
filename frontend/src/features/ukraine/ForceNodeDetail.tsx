@@ -52,12 +52,12 @@ export function ForceNodeDetail({
               </span>
             ) : null}
             {step.id === node.id ? (
-              <span className="text-[11px] text-text">{step.name}</span>
+              <span className="text-2xs text-text">{step.name}</span>
             ) : (
               <button
                 type="button"
                 onClick={() => onSelect(step.id)}
-                className="min-h-8 text-[11px] text-ember hover:underline"
+                className="min-h-8 text-2xs text-ember hover:underline"
               >
                 {step.name}
               </button>
@@ -102,7 +102,7 @@ export function ForceNodeDetail({
       ) : null}
       {children.length > 0 ? (
         <div className="flex flex-col gap-1">
-          <h5 className="text-[11px] font-medium text-muted">
+          <h5 className="text-2xs font-medium text-muted">
             Subordinate entries ({children.length})
           </h5>
           <ul className="flex flex-wrap gap-1">
@@ -111,7 +111,7 @@ export function ForceNodeDetail({
                 <button
                   type="button"
                   onClick={() => onSelect(child.id)}
-                  className="min-h-8 rounded border border-line px-2 text-[11px] text-muted hover:text-text"
+                  className="min-h-8 rounded border border-line px-2 text-2xs text-muted hover:text-text"
                 >
                   {child.name}
                 </button>
@@ -136,7 +136,7 @@ export function ForceNodeDetail({
           ))}
         </ul>
       ) : (
-        <p className="text-[11px] text-muted">No public source link was resolved for this entry.</p>
+        <p className="text-2xs text-muted">No public source link was resolved for this entry.</p>
       )}
     </aside>
   );

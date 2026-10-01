@@ -54,7 +54,7 @@ function NodeCard({ node, props }: { node: ForceNode; props: ChartProps }) {
           <span className="min-w-0 flex-1">
             <span className="block text-xs font-medium text-text">{node.name}</span>
             {node.commander ? (
-              <span className="mt-0.5 block text-[11px] text-muted">{node.commander}</span>
+              <span className="mt-0.5 block text-2xs text-muted">{node.commander}</span>
             ) : null}
             {node.strength ? (
               <span className="mt-1 line-clamp-2 block text-2xs text-muted">{node.strength}</span>
@@ -72,7 +72,7 @@ function NodeCard({ node, props }: { node: ForceNode; props: ChartProps }) {
             aria-expanded={expanded}
             aria-controls={listId}
             aria-label={`${expanded ? 'Collapse' : 'Expand'} ${node.name}, ${children.length} direct subordinate${children.length === 1 ? '' : 's'}`}
-            className="min-h-9 border-t border-line/60 px-2 text-[11px] text-muted hover:text-text"
+            className="min-h-9 border-t border-line/60 px-2 text-2xs text-muted hover:text-text"
           >
             {expanded ? `Hide ${children.length}` : `Show ${children.length}`}
             <span aria-hidden="true">{expanded ? ' ▴' : ' ▾'}</span>
