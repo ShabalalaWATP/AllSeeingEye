@@ -115,6 +115,37 @@ function paint(value: string, palette: Palette): string {
   return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
 }
 
+/**
+ * Every declaration in the innermost rules of `css`, whitespace collapsed, so a `font`
+ * shorthand written across several lines is read as one value.
+ */
+function declarations(css: string): { selector: string; property: string; value: string }[] {
+  const found: { selector: string; property: string; value: string }[] = [];
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const rule of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = rule[1]!.trim().replace(/\s+/g, ' ');
+    for (const part of rule[2]!.split(';')) {
+      const colon = part.indexOf(':');
+      if (colon < 0) continue;
+      const property = part.slice(0, colon).trim();
+      const value = part
+        .slice(colon + 1)
+        .trim()
+        .replace(/\s+/g, ' ');
+      found.push({ selector, property, value });
+    }
+  }
+  return found;
+}
+
+/** The font size in pixels a `font` or `font-size` declaration sets, or null for none. */
+function fontSizePx(property: string, value: string): number | null {
+  if (property !== 'font' && property !== 'font-size') return null;
+  const size = /(?:^|\s)(\d*\.?\d+)(px|rem|em)\b/.exec(value);
+  if (!size) return null;
+  return Number(size[1]) * (size[2] === 'px' ? 1 : 16);
+}
+
 // Muted strokes on SVG diagrams are drawing lines, not text.
 const DECORATIVE_DIMMED = new Set(['components/maps/RfGroundwaveEngineering.tsx']);
 // The sign-in brand footer is aria-hidden decoration; the access footer is not rendered.
@@ -152,16 +183,23 @@ describe('readable text', () => {
       }
     }
     for (const [file, css] of Object.entries(stylesheets)) {
-      let selector = '';
-      for (const line of css.split('\n')) {
-        if (line.includes('{')) selector = line.trim().replace(/\s*\{$/, '');
-        const size = /font(?:-size)?:\s*(\d*\.?\d+)(px|rem|em)\b/.exec(line);
-        if (!size || DECORATIVE_SMALL_CSS.has(selector)) continue;
-        const px = Number(size[1]) * (size[2] === 'px' ? 1 : 16);
-        if (px < 10.99) small.push(`${file} ${selector} ${line.trim()}`);
+      for (const { selector, property, value } of declarations(css)) {
+        if (DECORATIVE_SMALL_CSS.has(selector)) continue;
+        const px = fontSizePx(property, value);
+        if (px !== null && px < 10.99) small.push(`${file} ${selector} ${property}: ${value}`);
       }
     }
     expect(small).toEqual([]);
+  });
+
+  it('reads font sizes from shorthand that spans several lines', () => {
+    const css = '.label {\n  font:\n    9px "JetBrains Mono",\n    monospace;\n}';
+    expect(declarations(css)).toEqual([
+      { selector: '.label', property: 'font', value: '9px "JetBrains Mono", monospace' },
+    ]);
+    expect(fontSizePx('font', '600 12px/1.4 Inter, sans-serif')).toBe(12);
+    expect(fontSizePx('font', 'inherit')).toBeNull();
+    expect(fontSizePx('font-size', '0.5rem')).toBe(8);
   });
 
   it('measures contrast the way WCAG does over the whole source tree', () => {

@@ -163,6 +163,20 @@ explicit exception list remains for subscription read projections, and some
 subscription coordination lives in the composition package. The enforced
 contracts are the source of truth, rather than file size or a SOLID score.
 
+### Accessibility checks in the frontend tests
+
+- **axe-core** runs on representative pages through the real route table and on the
+  shared primitives (`frontend/src/test/a11y/`, `components/ui/primitives.a11y.test.tsx`).
+  Any violation fails CI with the rule, the element and a link to the fix. The helper,
+  `src/test/axe.ts`, also fails when an axe check throws, so a rule cannot be skipped silently.
+- **jsdom limits.** jsdom has no layout or paint, so `color-contrast`, `link-in-text-block`
+  and `target-size` are off there. Contrast is measured from the theme tokens instead
+  (`styles/paletteClasses.test.ts`, `styles/readability.test.ts`) for every palette.
+  Text tokens must reach 4.5:1. The focus ring, accent borders, control borders and
+  chart marks must reach 3:1.
+- A browser pass is still needed for contrast over imagery, zoom, reflow and screen reader
+  behaviour. Passing these tests is not a WCAG conformance claim.
+
 ## What is stored
 
 | Data | Lifetime and location |
