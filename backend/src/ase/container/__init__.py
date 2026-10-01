@@ -70,6 +70,7 @@ from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
+from ase.container.evaluations import EvaluationWiring
 from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
 from ase.container.map_services import MapWiring
@@ -103,6 +104,7 @@ class Container(
     ResearchInputWiring,
     SecFilingWiring,
     AdminWiring,
+    EvaluationWiring,
     AuthWiring,
     AssistantWiring,
     EconomyWiring,

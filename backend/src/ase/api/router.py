@@ -9,10 +9,12 @@ from ase.api.routers import (
     account_sessions,
     admin_ai_usage,
     admin_audit,
+    admin_evaluations,
     admin_firms_credentials,
     admin_llm,
     admin_llm_discovery,
     admin_requests,
+    admin_research_quality,
     admin_sources,
     admin_subscription_diagnostics,
     admin_users,
@@ -68,6 +70,7 @@ from ase.api.routers import (
     sec_filings,
     social,
     source_reviews,
+    source_track_record,
     sources,
     stream,
     subscription_usage,
@@ -140,6 +143,7 @@ api_router.include_router(report_methodology.router)
 api_router.include_router(report_search.router)
 api_router.include_router(social.router)
 api_router.include_router(sources.router)
+api_router.include_router(source_track_record.router)
 api_router.include_router(source_reviews.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
@@ -154,7 +158,9 @@ api_router.include_router(admin_sources.router)
 api_router.include_router(admin_subscription_diagnostics.router)
 api_router.include_router(admin_llm.router)
 api_router.include_router(admin_llm_discovery.router)
+api_router.include_router(admin_evaluations.router)
 api_router.include_router(admin_ai_usage.router)
+api_router.include_router(admin_research_quality.router)
 
 
 api_router.include_router(admin_firms_credentials.router)

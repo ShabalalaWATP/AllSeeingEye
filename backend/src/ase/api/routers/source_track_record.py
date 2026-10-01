@@ -9,7 +9,7 @@ from ase.api.schemas_source_track_record import SourceTrackRecordOut
 from ase.api.session_fence import FenceDep
 from ase.container.source_track_record import source_track_record
 
-router = APIRouter(tags=["sources"])
+router = APIRouter(prefix="/sources", tags=["sources"])
 SourceId = Annotated[
     str, Path(min_length=1, max_length=120, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")
 ]

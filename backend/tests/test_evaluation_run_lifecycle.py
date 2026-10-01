@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import pytest
 
+from ase.application.dto import RequestContext
 from ase.domain.errors import NotFound
 from ase.domain.evaluations import EvaluationRun, EvaluationRunStatus, EvaluationStopReason
 from evaluation_run_helpers import (
@@ -102,7 +103,9 @@ async def test_an_abandoned_run_can_be_cancelled_and_has_no_download(
         container, profile, admin.id, lease_expires_at=clock.now() - timedelta(seconds=1)
     )
     async with container.session_factory() as session:
-        cancelled = await container.evaluation_runs(session).cancel(admin, stale.id)
+        cancelled = await container.evaluation_runs(session).cancel(
+            admin, stale.id, RequestContext()
+        )
     assert cancelled.status is EvaluationRunStatus.CANCELLED and cancelled.cancel_requested
     with pytest.raises(NotFound):
         await artefact(container, admin, stale.id)

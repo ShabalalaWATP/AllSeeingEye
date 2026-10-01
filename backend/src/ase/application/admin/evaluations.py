@@ -12,11 +12,14 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 from ase.application.access import AccessPolicy
+from ase.application.auditing import Auditor
+from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.evaluations import EvaluationHarness, EvaluationRunRepository
 from ase.application.ports.llm import LlmProfileRepository, SecretCipher
 from ase.application.ports.session import SessionCheck
+from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, EncryptionUnavailable, InvalidRequest, NotFound
 from ase.domain.evaluations import (
     RETAINED_RUNS,
@@ -56,10 +59,11 @@ class EvaluationRuns:
         clock: Clock,
         uow: UnitOfWork,
         launcher: EvaluationLauncher,
+        auditor: Auditor,
     ) -> None:
         self._runs, self._profiles, self._harness = runs, profiles, harness
         self._cipher, self._access, self._clock = cipher, access, clock
-        self._uow, self._launcher = uow, launcher
+        self._uow, self._launcher, self._auditor = uow, launcher, auditor
 
     async def catalogue(self, actor: User) -> tuple[EvaluationCaseInfo, ...]:
         await self._admin(actor)
@@ -82,7 +86,12 @@ class EvaluationRuns:
         return run, content
 
     async def start(
-        self, actor: User, request: EvaluationStart, *, before_save: SessionCheck | None = None
+        self,
+        actor: User,
+        request: EvaluationStart,
+        context: RequestContext,
+        *,
+        before_save: SessionCheck | None = None,
     ) -> EvaluationRun:
         await self._admin(actor, for_update=True)
         cases = selected_cases(request.case_ids, self._harness.catalogue())
@@ -124,6 +133,17 @@ class EvaluationRuns:
         )
         await self._runs.prune(RETAINED_RUNS - 1)
         await self._runs.add(run)
+        await self._auditor.record(
+            AuditAction.EVALUATION_RUN_STARTED,
+            actor=actor.id,
+            subject=str(run.id),
+            ip=context.ip,
+            details={
+                "profile_id": str(profile.id),
+                "cases": len(run.case_ids),
+                "max_calls": max_calls,
+            },
+        )
         if before_save is not None:
             await before_save()
         await self._uow.commit()
@@ -131,7 +151,12 @@ class EvaluationRuns:
         return run
 
     async def cancel(
-        self, actor: User, run_id: UUID, *, before_save: SessionCheck | None = None
+        self,
+        actor: User,
+        run_id: UUID,
+        context: RequestContext,
+        *,
+        before_save: SessionCheck | None = None,
     ) -> EvaluationRun:
         await self._admin(actor, for_update=True)
         run = await self._existing(run_id)
@@ -143,6 +168,12 @@ class EvaluationRuns:
         if run.lease_expired(now):
             # Its process stopped without finishing; close it so it cannot block starts.
             await self._runs.finish(run_id, EvaluationRunStatus.CANCELLED, None, now, None)
+        await self._auditor.record(
+            AuditAction.EVALUATION_RUN_CANCELLED,
+            actor=actor.id,
+            subject=str(run_id),
+            ip=context.ip,
+        )
         if before_save is not None:
             await before_save()
         await self._uow.commit()

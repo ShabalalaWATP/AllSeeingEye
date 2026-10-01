@@ -12,6 +12,7 @@ import pytest
 
 from ai_usage_helpers import add_policy, policy, reservations
 from ase.application.admin.evaluations import EvaluationStart
+from ase.application.dto import RequestContext
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.evaluations import (
     CALLS_PER_CASE,
@@ -105,7 +106,9 @@ async def test_cancelling_mid_run_stops_before_the_next_call(container, admin) -
 
     async def cancel() -> None:
         async with container.session_factory() as session:
-            await container.evaluation_runs(session).cancel(admin, holder["run"].id)
+            await container.evaluation_runs(session).cancel(
+                admin, holder["run"].id, RequestContext()
+            )
 
     async def cancel_on_second_call(count: int) -> None:
         if count == 2:
@@ -272,5 +275,5 @@ async def test_start_validates_the_selection_and_connection(container, admin) ->
     async with container.session_factory() as session:
         with pytest.raises(NotFound):
             await container.evaluation_runs(session).start(
-                admin, EvaluationStart(uuid4(), CORE_CASES[:1], 4)
+                admin, EvaluationStart(uuid4(), CORE_CASES[:1], 4), RequestContext()
             )

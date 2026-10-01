@@ -7,7 +7,6 @@ from fastapi import APIRouter, Response
 
 from ase.api.ai_usage_guard import AiUsageMutationAdmin
 from ase.api.deps import AdminUser, ContainerDep, ContextDep, CurrentUser, SessionDep
-from ase.api.routers.admin_research_quality import router as research_quality_router
 from ase.api.schemas_research_usage import (
     ResearchAllowanceOut,
     ResearchTierIn,
@@ -19,7 +18,6 @@ from ase.domain.research_usage import TIERS
 
 router = APIRouter(tags=["research-usage"])
 # Registered here, beside the other administrator research views, as a nested router.
-router.include_router(research_quality_router)
 
 
 @router.get("/research-usage/me")
