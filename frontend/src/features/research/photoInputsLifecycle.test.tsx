@@ -1,3 +1,4 @@
+/** Receipt cleanup across replacement, navigation and account changes for photo batches. */
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,9 +9,8 @@ import { useAuthStore } from '@/stores/auth';
 import { adminUser, plainUser, tokenFor } from '@/test/fixtures';
 import { photoId, photoReceipt } from '@/test/photoGeolocationFixture';
 
-import { usePhotoReplacement } from './usePhotoReplacement';
-import { useResearchInput } from './useResearchInput';
 import { holdPhotoReceipt } from './photoReceiptRegistry';
+import { usePhotoInputs } from './usePhotoInputs';
 
 vi.mock('@/lib/api/researchGeolocation', () => ({ discardResearchInput: vi.fn() }));
 vi.mock('@/lib/api/researchInputs', () => ({ uploadResearchInput: vi.fn() }));
@@ -18,12 +18,7 @@ const discard = vi.mocked(discardResearchInput);
 const upload = vi.mocked(uploadResearchInput);
 const file = () => new File(['photo'], 'landmark.jpg', { type: 'image/jpeg' });
 
-function useHarness() {
-  const input = useResearchInput(() => undefined);
-  return { input, replacement: usePhotoReplacement(input) };
-}
-
-describe('explicit photo replacement', () => {
+describe('photo batch receipt lifecycle', () => {
   beforeEach(() => {
     useAuthStore.getState().setSession(tokenFor(plainUser));
     upload.mockReset();
@@ -33,36 +28,36 @@ describe('explicit photo replacement', () => {
   });
 
   it('remembers a failed cleanup receipt and retries it before accepting another photo', async () => {
-    const { result } = renderHook(useHarness);
-    await act(() => result.current.input.upload(file()));
+    const { result } = renderHook(usePhotoInputs);
+    await act(() => result.current.replace([file()]));
     discard.mockRejectedValueOnce(
       new ApiError(503, 'unavailable', 'Cleanup temporarily unavailable.'),
     );
-    await act(() => result.current.replacement.replace(file()));
-    expect(result.current.replacement.error).toBe('Cleanup temporarily unavailable.');
-    expect(result.current.input.receipt).toBeNull();
+    await act(() => result.current.replace([file()]));
+    expect(result.current.error).toBe('Cleanup temporarily unavailable.');
+    expect(result.current.receipts).toEqual([]);
     expect(upload).toHaveBeenCalledTimes(1);
-    await act(() => result.current.replacement.replace(file()));
+    await act(() => result.current.replace([file()]));
     expect(discard.mock.calls.map(([id]) => id)).toEqual([photoId, photoId]);
     expect(upload).toHaveBeenCalledTimes(2);
-    expect(result.current.replacement.error).toBeNull();
+    expect(result.current.error).toBeNull();
   });
 
   it('does not begin a replacement upload after the active account changed during cleanup', async () => {
     let finish: () => void = () => undefined;
+    const { result } = renderHook(usePhotoInputs);
+    await act(() => result.current.replace([file()]));
     discard.mockImplementation(
       () =>
         new Promise((resolve) => {
           finish = resolve;
         }),
     );
-    const { result } = renderHook(useHarness);
-    await act(() => result.current.input.upload(file()));
     let task: Promise<boolean>;
     act(() => {
-      task = result.current.replacement.replace(file());
+      task = result.current.replace([file()]);
     });
-    await act(() => result.current.replacement.replace(file()));
+    await act(() => result.current.replace([file()]));
     expect(discard).toHaveBeenCalledTimes(1);
     act(() => useAuthStore.getState().setSession(tokenFor(adminUser)));
     await act(async () => {
@@ -71,53 +66,50 @@ describe('explicit photo replacement', () => {
     });
     expect(discard.mock.calls[0]?.[1].aborted).toBe(true);
     expect(upload).toHaveBeenCalledTimes(1);
-    expect(result.current.input.receipt).toBeNull();
+    expect(result.current.receipts).toEqual([]);
   });
 
   it('does not discard receipts on ordinary unmount, when report persistence may still be using them', async () => {
-    const { result, unmount } = renderHook(useHarness);
-    await act(() => result.current.input.upload(file()));
+    const { result, unmount } = renderHook(usePhotoInputs);
+    await act(() => result.current.replace([file()]));
     unmount();
     expect(discard).not.toHaveBeenCalled();
   });
 
   it('recovers outstanding references after leaving and returning to the page', async () => {
-    const first = renderHook(useHarness);
-    await act(() => first.result.current.input.upload(file()));
+    const first = renderHook(usePhotoInputs);
+    await act(() => first.result.current.replace([file()]));
     first.unmount();
-    const next = renderHook(useHarness);
-    await act(() => next.result.current.replacement.replace(file()));
+    const next = renderHook(usePhotoInputs);
+    await act(() => next.result.current.replace([file()]));
     expect(discard).toHaveBeenCalledWith(photoId, expect.any(AbortSignal));
     expect(upload).toHaveBeenCalledTimes(2);
   });
 
   it('keeps a pending report receipt until its request settles, then allows the next photo', async () => {
-    const first = renderHook(useHarness);
-    await act(() => first.result.current.input.upload(file()));
-    const release = holdPhotoReceipt(
-      first.result.current.input.key,
-      first.result.current.input.receipt!,
-    );
+    const first = renderHook(usePhotoInputs);
+    await act(() => first.result.current.replace([file()]));
+    const release = holdPhotoReceipt(first.result.current.key, first.result.current.receipts[0]!);
     first.unmount();
-    const next = renderHook(useHarness);
-    await act(() => next.result.current.replacement.replace(file()));
-    expect(next.result.current.replacement.error).toContain('A photo report is still finishing');
+    const next = renderHook(usePhotoInputs);
+    await act(() => next.result.current.replace([file()]));
+    expect(next.result.current.error).toContain('A photo report is still finishing');
     expect(discard).not.toHaveBeenCalled();
     expect(upload).toHaveBeenCalledTimes(1);
     release();
-    await act(() => next.result.current.replacement.replace(file()));
+    await act(() => next.result.current.replace([file()]));
     expect(discard).toHaveBeenCalledWith(photoId, expect.any(AbortSignal));
     expect(upload).toHaveBeenCalledTimes(2);
   });
 
   it('never reuses cleanup references after logout, even if the same account signs in again', async () => {
-    const first = renderHook(useHarness);
-    await act(() => first.result.current.input.upload(file()));
+    const first = renderHook(usePhotoInputs);
+    await act(() => first.result.current.replace([file()]));
     first.unmount();
     useAuthStore.getState().clearSession();
     useAuthStore.getState().setSession(tokenFor(plainUser));
-    const next = renderHook(useHarness);
-    await act(() => next.result.current.replacement.replace(file()));
+    const next = renderHook(usePhotoInputs);
+    await act(() => next.result.current.replace([file()]));
     expect(discard).not.toHaveBeenCalled();
     expect(upload).toHaveBeenCalledTimes(2);
   });

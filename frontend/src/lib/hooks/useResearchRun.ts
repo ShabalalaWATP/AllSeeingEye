@@ -5,7 +5,7 @@ import type { ReportRequest } from '@/lib/api/reports';
 import { asApiError, type ApiError } from '@/lib/api/errors';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
-import type { ResearchProgressSnapshot } from './useResearchProgress';
+import type { ResearchProgressSnapshot } from '@/lib/researchProgressTypes';
 import { useScopedRequest } from './useScopedRequest';
 
 function authority() {
