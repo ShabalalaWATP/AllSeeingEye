@@ -61,6 +61,7 @@ export function SourceCatalogueRow({ source }: { source: CatalogueSource }) {
         <p className="py-2 leading-relaxed">{source.coverage_note}</p>
         <p className="font-mono">
           {source.id} · Configured reliability {source.reliability}
+          {source.rating.status === 'unassessed' && ', not an editorial assessment'}
         </p>
       </details>
     </li>

@@ -6,6 +6,10 @@ import { report } from '@/test/fixtures';
 
 import { EvidenceAnnex } from './ReportSections';
 
+// The annex's own catalogue link is the only destination an untrusted item may leave behind.
+const CATALOGUE = '/sources';
+const linkTargets = () => screen.queryAllByRole('link').map((link) => link.getAttribute('href'));
+
 const rich = {
   ...report.version.evidence[0]!,
   label: 'E1',
@@ -80,7 +84,7 @@ describe('frozen evidence reader', () => {
     );
     await user.click(screen.getByText(title));
     expect(container.querySelector('img')).toBeNull();
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(linkTargets()).toEqual([CATALOGUE]);
     expect(screen.getByText(title)).toBeVisible();
   });
 
@@ -95,7 +99,7 @@ describe('frozen evidence reader', () => {
       const user = userEvent.setup();
       render(<EvidenceAnnex evidence={[{ ...rich, url }]} findings={[]} status="ready" />);
       await user.click(screen.getByText('Original headline'));
-      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(linkTargets()).toEqual([CATALOGUE]);
     },
   );
 

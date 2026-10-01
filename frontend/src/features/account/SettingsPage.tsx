@@ -22,6 +22,11 @@ const resources = [
     title: 'Account security',
     detail: 'Manage multi-factor authentication, passwords and active sessions.',
   },
+  {
+    to: '/sources',
+    title: 'Source catalogue',
+    detail: 'Read source grades, collection coverage, limitations and connection state.',
+  },
 ];
 
 export default function SettingsPage() {

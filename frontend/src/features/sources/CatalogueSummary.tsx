@@ -54,7 +54,10 @@ export function CatalogueSummary({
       </p>
       <div className="space-y-2">
         <h2 className="text-xs font-medium tracking-wide text-muted uppercase">By state</h2>
-        <ul aria-label="Totals by state" className="grid grid-cols-2 gap-3 md:grid-cols-6">
+        <ul
+          aria-label="Totals by state"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7"
+        >
           {GROUPS.map((group) => (
             <Tile
               key={group}
