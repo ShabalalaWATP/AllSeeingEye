@@ -3,10 +3,13 @@
 from fastapi import APIRouter
 
 from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, SessionDep
+from ase.api.routers.admin_evaluations import router as evaluations_router
 from ase.api.schemas_llm import LlmModelsOut
 from ase.api.schemas_llm_discovery import DraftModelDiscoveryIn
 
 router = APIRouter(prefix="/admin/llm", tags=["admin"])
+# Evaluation runs check a saved AI connection, so they share this prefix.
+router.include_router(evaluations_router)
 
 
 @router.post("/models/discover")

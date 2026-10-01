@@ -13,6 +13,7 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     acled_credentials,
     claim_models,
     directory_profile,
+    evaluation_run_models,
     firms_credentials,
     identity_models,
     llm_bindings,

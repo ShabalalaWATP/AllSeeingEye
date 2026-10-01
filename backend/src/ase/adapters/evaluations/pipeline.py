@@ -3,6 +3,7 @@
 import hashlib
 import json
 import secrets
+from collections.abc import Awaitable, Callable
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -72,14 +73,25 @@ class EvaluationProfile(BaseModel):
 
 
 class RecordingGateway:
-    def __init__(self, gateway: LlmGateway, max_calls: int) -> None:
+    """Record every dispatched call. ``admit`` may refuse a call before it is recorded."""
+
+    def __init__(
+        self,
+        gateway: LlmGateway,
+        max_calls: int,
+        admit: Callable[[], Awaitable[None]] | None = None,
+    ) -> None:
         self.gateway = gateway
         self.max_calls = max_calls
+        self.admit = admit
         self.records: list[dict[str, Any]] = []
 
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
     ) -> LlmResult:
+        if self.admit is not None:
+            # The application's durable run cap and cancellation check come first.
+            await self.admit()
         if len(self.records) >= self.max_calls:
             raise LlmGatewayError("Evaluation model-call budget exhausted.")
         messages = [asdict(message) for message in request.messages]
