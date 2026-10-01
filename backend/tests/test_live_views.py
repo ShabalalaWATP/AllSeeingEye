@@ -1,4 +1,4 @@
-"""KAN-120: named live map views as workspace documents."""
+"""KAN-120/KAN-124: named live map views and ops-room playlists as workspace documents."""
 
 from copy import deepcopy
 from dataclasses import replace
@@ -11,6 +11,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.map_workspace import validate_payload
+from board_subject_helpers import seed_area
 from feeds_helpers import NOW
 from helpers import USER_PASSWORD, login_token
 from team_helpers import CONTEXT
@@ -28,6 +29,14 @@ VIEW = {
     "filters": {"flight": "military", "gnss_level": "red", "gnss_minimum": 10},
     "plan_id": None,
 }
+
+
+def playlist(*entries):
+    return {"version": 1, "entries": list(entries)}
+
+
+def entry(kind, identity, caption="Baltic", dwell=30):
+    return {"kind": kind, "id": str(identity), "caption": caption, "dwell_seconds": dwell}
 
 
 async def make(container, claims, kind="live_view", payload=None, team_id=None):
@@ -135,6 +144,50 @@ def test_live_view_accepts_every_known_layer_and_filter():
     validate_payload("live_view", payload)
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        playlist(*[entry("view", uuid4()) for _ in range(9)]),
+        playlist(entry("report", uuid4())),
+        playlist(entry("view", "nope")),
+        playlist(entry("view", uuid4(), dwell=4)),
+        playlist(entry("view", uuid4(), dwell=3601)),
+        playlist(entry("view", uuid4(), caption="x" * 121)),
+        {"version": 1, "entries": [], "events": []},
+        {"version": 1, "entries": [{**entry("area", uuid4()), "geometry": []}]},
+    ],
+)
+def test_playlist_bounds(payload):
+    with pytest.raises(ValueError):
+        validate_payload("ops_playlist", payload)
+
+
+async def test_playlist_area_must_share_scope_and_be_readable(client, container, user, admin):
+    claims = await claims_for(client, container, user)
+    team = await team_for(container, admin, user)
+    own_area = await seed_area(container, user.id, None, "Mine")
+    team_area = await seed_area(container, user.id, team.id)
+    hidden_area = await seed_area(container, admin.id, None, "Not yours")
+    team_view = await make(container, claims, team_id=team.id)
+    await make(container, claims, "ops_playlist", playlist(entry("area", own_area)))
+    await make(
+        container,
+        claims,
+        "ops_playlist",
+        playlist(entry("area", team_area), entry("view", team_view.id)),
+        team_id=team.id,
+    )
+    with pytest.raises(InvalidRequest, match="scope"):
+        await make(container, claims, "ops_playlist", playlist(entry("area", team_area)))
+    with pytest.raises(NotFound):
+        await make(container, claims, "ops_playlist", playlist(entry("area", hidden_area)))
+    with pytest.raises(NotFound):
+        await make(container, claims, payload={**VIEW, "plan_id": str(uuid4())})
+    administrator = await claims_for(client, container, admin)
+    with pytest.raises(InvalidRequest, match="scope"):
+        await make(container, administrator, "ops_playlist", playlist(entry("area", own_area)))
+
+
 async def test_linked_plan_must_share_scope(client, container, user, admin):
     claims = await claims_for(client, container, user)
     team = await team_for(container, admin, user)
@@ -185,6 +238,32 @@ async def test_stale_link_for_another_user_is_not_found(client, container, user,
         f"/api/map/workspaces/{private.id}", headers={"Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 404
+
+
+async def test_playlist_entries_must_be_readable_views_or_areas_in_scope(
+    client, container, user, admin
+):
+    claims = await claims_for(client, container, user)
+    team = await team_for(container, admin, user)
+    view = await make(container, claims)
+    area = await seed_area(container, user.id, None, "Mine")
+    drawings = await make(
+        container, claims, "drawings", {"version": 1, "objects": [], "selectedId": None}
+    )
+    team_view = await make(container, claims, team_id=team.id)
+    other = await make(container, await claims_for(client, container, admin))
+    saved = await make(
+        container, claims, "ops_playlist", playlist(entry("view", view.id), entry("area", area))
+    )
+    assert saved.kind == "ops_playlist"
+    with pytest.raises(InvalidRequest, match="live view"):
+        await make(container, claims, "ops_playlist", playlist(entry("view", drawings.id)))
+    with pytest.raises(InvalidRequest, match="scope"):
+        await make(container, claims, "ops_playlist", playlist(entry("view", team_view.id)))
+    with pytest.raises(NotFound):
+        await make(container, claims, "ops_playlist", playlist(entry("view", other.id)))
+    with pytest.raises(NotFound):
+        await make(container, claims, "ops_playlist", playlist(entry("area", uuid4())))
 
 
 async def test_live_views_have_their_own_quota(client, container, user, monkeypatch):

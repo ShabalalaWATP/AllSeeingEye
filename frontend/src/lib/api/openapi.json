@@ -5301,7 +5301,8 @@
               "enum": [
                 "drawings",
                 "radio",
-                "live_view"
+                "live_view",
+                "ops_playlist"
               ],
               "type": "string",
               "title": "Kind"
@@ -33920,7 +33921,8 @@
             "enum": [
               "drawings",
               "radio",
-              "live_view"
+              "live_view",
+              "ops_playlist"
             ],
             "title": "Kind"
           },
@@ -33969,7 +33971,8 @@
             "enum": [
               "drawings",
               "radio",
-              "live_view"
+              "live_view",
+              "ops_playlist"
             ],
             "title": "Kind"
           },

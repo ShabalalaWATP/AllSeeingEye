@@ -1,13 +1,14 @@
 /**
- * Opens a live view explicitly: from the saved-views panel or from a `/?view=<id>` link.
- * Only the view ID travels in a link; every open re-reads the document under the viewer's
- * current access. Nothing opens automatically at sign-in.
+ * Opens a live view explicitly: from the saved-views panel, from a `/?view=<id>` link or
+ * from the ops-room rotation. Only the view ID travels in a link; every open re-reads the
+ * document under the viewer's current access. Nothing opens automatically at sign-in.
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { getLiveView } from '@/lib/api/liveViews';
 import { subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
+import { useLiveViewStore } from '@/stores/liveView';
 import type { LiveViewControls } from './useLiveViewControls';
 
 export interface LiveViewNoticeState {
@@ -69,6 +70,38 @@ export function useLiveViewOpening(controls: LiveViewControls) {
     return () => controller.abort();
   }, [pending, apply]);
   useEffect(() => subscribeWorkspaceAccess(() => setPending(null)), []);
+
+  // Requests from the ops-room rotation. An area entry only focuses its saved area.
+  const request = useLiveViewStore((state) => state.request);
+  const playlistId = useLiveViewStore((state) => state.playlistId);
+  const consume = useLiveViewStore((state) => state.consume);
+  const rotationArea = useRef<string | null>(null);
+  const setArea = useCallback(
+    (areaId: string | null) => {
+      setParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          if (areaId) next.set('area', areaId);
+          else next.delete('area');
+          return next;
+        },
+        { replace: true },
+      );
+      rotationArea.current = areaId;
+    },
+    [setParams],
+  );
+  useEffect(() => {
+    if (!request) return;
+    consume(request.nonce);
+    if (request.kind === 'view') {
+      if (rotationArea.current) setArea(null);
+      apply(request.view);
+    } else setArea(request.areaId);
+  }, [request, consume, apply, setArea]);
+  useEffect(() => {
+    if (playlistId === null && rotationArea.current) setArea(null);
+  }, [playlistId, setArea]);
 
   return {
     notice: pending === null ? null : outcome?.request === pending ? outcome.notice : LOADING,

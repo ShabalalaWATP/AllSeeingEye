@@ -264,7 +264,7 @@ export function useGlobePage() {
     terminator,
     lite,
     interference,
-    opsRoom,
+    opsRoom: opsRoom && !liveViews.rotating,
     reducedMotion,
     visible,
     now,

@@ -22,12 +22,15 @@ from ase.domain.map_workspace import (
 )
 
 MAX_LIVE_VIEWS = 50
+MAX_PLAYLISTS = 10
 
 
 def _quota(kind: WorkspaceKind) -> tuple[int, tuple[WorkspaceKind, ...]]:
-    """Live views have their own small allowance per scope."""
+    """Live views and playlists have their own small allowances per scope."""
     if kind == "live_view":
         return MAX_LIVE_VIEWS, ("live_view",)
+    if kind == "ops_playlist":
+        return MAX_PLAYLISTS, ("ops_playlist",)
     return MAX_SCOPE_DOCUMENTS, ("drawings", "radio")
 
 

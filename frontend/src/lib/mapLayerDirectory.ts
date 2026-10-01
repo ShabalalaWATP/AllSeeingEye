@@ -197,6 +197,12 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         description: 'Save these layers, filters, time window and camera by name, or open a view.',
         panel: 'Saved views',
       },
+      {
+        id: 'ops-room',
+        label: 'Ops room playlist',
+        description: 'Cycle the wall screen through saved views and areas with captions.',
+        panel: 'Ops room playlist',
+      },
     ],
   },
   {

@@ -7,7 +7,7 @@ import type { components } from './types.gen';
 
 export const mapWorkspaceDocumentSchema = z.object({
   id: z.uuid(),
-  kind: z.enum(['drawings', 'radio', 'live_view']),
+  kind: z.enum(['drawings', 'radio', 'live_view', 'ops_playlist']),
   title: z.string(),
   payload: z.record(z.string(), z.unknown()),
   revision: z.number().int().positive(),

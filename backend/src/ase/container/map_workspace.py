@@ -25,5 +25,5 @@ class MapWorkspaceWiring(ContainerCore):
             self.clock,
             self._auditor(repos),
             repos.uow,
-            MapWorkspaceLinks(repos.plans),
+            MapWorkspaceLinks(documents, repos.aois, repos.plans),
         )

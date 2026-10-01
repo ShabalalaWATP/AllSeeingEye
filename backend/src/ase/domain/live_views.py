@@ -1,4 +1,4 @@
-"""Named live map views: view configuration only, never live events.
+"""Named live map views and ops-room playlists: view configuration only, never live events.
 
 A live view stores which layers and filters were chosen, the time window, the nation
 filter, the projection, the camera and an optional collection plan filter by ID.
@@ -13,6 +13,10 @@ from uuid import UUID
 
 from ase.domain.events import Category
 
+MAX_PLAYLIST_ENTRIES = 8
+MIN_DWELL_SECONDS = 5
+MAX_DWELL_SECONDS = 3600
+MAX_CAPTION = 120
 MAX_WINDOW_HOURS = 24 * 365
 
 BASE_LAYERS = frozenset(
@@ -105,10 +109,37 @@ def validate_live_view(payload: dict[str, Any]) -> None:
         _uuid(payload["plan_id"])
 
 
+def validate_ops_playlist(payload: dict[str, Any]) -> None:
+    if set(payload) != {"version", "entries"} or _int(payload["version"]) != 1:
+        raise ValueError("Unsupported ops-room playlist.")
+    entries = payload["entries"]
+    if not isinstance(entries, list) or not 1 <= len(entries) <= MAX_PLAYLIST_ENTRIES:
+        raise ValueError(f"A playlist holds between 1 and {MAX_PLAYLIST_ENTRIES} entries.")
+    for item in entries:
+        if not isinstance(item, dict) or set(item) != {"kind", "id", "caption", "dwell_seconds"}:
+            raise ValueError("Invalid playlist entry.")
+        if item["kind"] not in ("view", "area"):
+            raise ValueError("Playlist entries are saved live views or saved areas.")
+        _uuid(item["id"])
+        caption = item["caption"]
+        if not isinstance(caption, str) or len(caption) > MAX_CAPTION:
+            raise ValueError(f"Captions are limited to {MAX_CAPTION} characters.")
+        dwell = _int(item["dwell_seconds"])
+        if dwell is None or not MIN_DWELL_SECONDS <= dwell <= MAX_DWELL_SECONDS:
+            raise ValueError(
+                f"Dwell time must be {MIN_DWELL_SECONDS} to {MAX_DWELL_SECONDS} seconds."
+            )
+
+
 def view_plan(payload: dict[str, Any]) -> UUID | None:
     """The collection plan filter named by a validated live view."""
     plan = payload.get("plan_id")
     return UUID(plan) if plan else None
+
+
+def playlist_links(payload: dict[str, Any]) -> list[tuple[str, UUID]]:
+    """(kind, id) pairs from a validated playlist."""
+    return [(item["kind"], UUID(item["id"])) for item in payload["entries"]]
 
 
 def _camera(camera: object) -> None:

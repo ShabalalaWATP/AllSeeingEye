@@ -1,5 +1,6 @@
-/** Connects saved live views to the existing page state. */
+/** Connects saved live views and the ops-room rotation to the existing page state. */
 import { useGlobeStore } from '@/stores/globe';
+import { useLiveViewStore } from '@/stores/liveView';
 import type { useDashboardEvents } from './useDashboardEvents';
 import type { useGnssFilters } from './useGnssFilters';
 import type { useGlobePreferences } from './useGlobePreferences';
@@ -37,5 +38,7 @@ export function useGlobeLiveViews(
     conflicts: data.conflicts,
   });
   const opening = useLiveViewOpening(controls);
-  return { controls, opening };
+  // A rotating playlist holds each view's camera instead of turning the globe.
+  const rotating = useLiveViewStore((state) => state.playlistId !== null);
+  return { controls, opening, rotating };
 }

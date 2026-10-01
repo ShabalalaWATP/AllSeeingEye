@@ -1,5 +1,6 @@
-/** Live views are map workspace documents of their own kind. */
+/** Live views and ops-room playlists are map workspace documents of their own kinds. */
 import { readLiveView, type LiveViewState } from '@/lib/liveViews/liveViewState';
+import { readPlaylist, type OpsPlaylist } from '@/lib/liveViews/opsPlaylist';
 import { workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
@@ -13,11 +14,11 @@ import {
   type MapWorkspaceDocument,
 } from './mapWorkspace';
 
-type Kind = 'live_view';
+type Kind = 'live_view' | 'ops_playlist';
 
 /**
  * Reads discard a result that arrives after the account or workspace access changed. A
- * missing view is an ordinary outcome (a stale or unshared link), so it
+ * missing view is an ordinary outcome (a stale link or a deleted playlist entry), so it
  * does not invalidate every other scoped choice the way a rejected mutation does.
  */
 async function stableRead<T>(action: () => Promise<T>): Promise<T> {
@@ -66,3 +67,31 @@ export function saveLiveView(
 
 export const removeLiveDocument = (id: string, signal?: AbortSignal) =>
   removeMapWorkspaceDocument(id, signal);
+
+export const listPlaylists = (signal?: AbortSignal) =>
+  stableRead(() => listMapWorkspaceDocuments('ops_playlist', signal, { limit: 100 }));
+
+export async function getPlaylist(id: string, signal?: AbortSignal) {
+  const document = await getKind('ops_playlist', id, signal);
+  return { document, playlist: readPlaylist(document.payload) };
+}
+
+export function savePlaylist(
+  playlist: OpsPlaylist,
+  title: string,
+  options: { existing?: MapWorkspaceDocument | null; teamId?: string },
+  signal?: AbortSignal,
+) {
+  const payload = { ...playlist } as unknown as Record<string, unknown>;
+  const { existing, teamId } = options;
+  return existing
+    ? updateMapWorkspaceDocument(
+        existing.id,
+        { title, payload, expected_revision: existing.revision },
+        signal,
+      )
+    : createMapWorkspaceDocument(
+        { kind: 'ops_playlist', title, payload, ...(teamId ? { team_id: teamId } : {}) },
+        signal,
+      );
+}

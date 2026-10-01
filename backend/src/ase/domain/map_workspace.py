@@ -8,11 +8,11 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from ase.domain.live_views import validate_live_view
+from ase.domain.live_views import validate_live_view, validate_ops_playlist
 from ase.domain.map_workspace_radio import validate_radio
 
-WorkspaceKind = Literal["drawings", "radio", "live_view"]
-WORKSPACE_KINDS: tuple[WorkspaceKind, ...] = ("drawings", "radio", "live_view")
+WorkspaceKind = Literal["drawings", "radio", "live_view", "ops_playlist"]
+WORKSPACE_KINDS: tuple[WorkspaceKind, ...] = ("drawings", "radio", "live_view", "ops_playlist")
 MAX_DOCUMENT_BYTES = 128 * 1024
 MAX_SCOPE_DOCUMENTS = 100
 
@@ -39,6 +39,8 @@ def validate_payload(kind: WorkspaceKind, payload: dict[str, Any]) -> None:
         validate_radio(payload)
     elif kind == "live_view":
         validate_live_view(payload)
+    elif kind == "ops_playlist":
+        validate_ops_playlist(payload)
     else:
         raise ValueError("Unsupported map document kind.")
 
