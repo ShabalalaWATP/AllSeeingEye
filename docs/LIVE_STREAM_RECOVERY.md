@@ -14,8 +14,8 @@ data: {"reason":"expiry_overflow"}
 ```
 
 The other permitted reason is `stream_gap`. Unknown reasons are ignored by both
-the server serializer and browser handler. Resynchronisation is independent of
-category filters and follows the same current-session revalidation as every
+the server serializer and browser handler. These resynchronisations are independent
+of category filters (bulk refresh hints, below, are not) and follow the same current-session revalidation as every
 other stream message. A revoked session receives `bye`, not recovery data.
 
 `expiry_overflow` means expiry bookkeeping exceeded its 10,000-ID notification
@@ -55,6 +55,50 @@ consumer ordering. Browser tests cover preservation of filters, new stream
 deltas, late cancelled responses, reload failure, logout and delivery through a
 mounted globe. Session-revocation tests include resync frames. Browser rendering
 uses the existing mocked map engine; this is not GPU visual acceptance.
+
+## Bulk feed updates
+
+A single upsert of more than 500 events or about 384 KiB, such as an AIS or ADS-B
+batch, is not streamed record by record. The bus replaces it with a soft refresh
+hint that names the partitions the batch touched:
+
+```text
+event: event.resync
+data: {"reason":"snapshot_required","categories":["maritime"],"source_id":"aisstream"}
+```
+
+The categories cover every published event in the batch, including neighbouring
+records whose grade moved during contextual regrading. Each stream narrows the list
+to its own category filter, and a stream filtered only to unrelated categories does
+not receive the hint. An empty filter still means every category. A batch with any
+unrecognised content produces a hint without `categories`, which every stream
+receives. A hint after an unresumable reconnect also carries no categories.
+
+The browser keeps its mirror visible and coalesces hints for at least ten seconds
+after its previous snapshot started. It then refreshes only the named partitions:
+one category-scoped snapshot request, statistics, and only the coverage supplements
+for those categories (for maritime, the extra maritime and reported military
+vessel requests, not aviation, satellite or FIRMS requests). The response replaces
+the whole partition, so records that expired or no longer match are removed, while
+other categories keep their records and object identity and their map layers keep
+their rows. Stream deltas received during the request are journalled and win over
+the response; a viewport change, stream gap or reconnect supersedes the request.
+The existing 2,000-event snapshot limit, 5,000-event browser limit and source
+reservations still apply.
+
+Missing or unknown categories, or a mirror that has not completed a full snapshot,
+fall back to a full reload. `stream_gap`, `expiry_overflow` and access changes keep
+the clear-and-reload behaviour described above. A failed or rate-limited soft
+refresh keeps the last valid mirror and retries after 10, 20 and 40 seconds, then
+reports that the refresh failed until the next hint or a manual reload.
+
+Identical concurrent `GET /api/events` reads share one selection and response
+build while the retained store is unchanged. Results are keyed by the normalised
+query and a store generation that advances on every insert, replacement, expiry,
+eviction and regrade, and at most four results are kept for two seconds. Every
+caller is still authenticated, recorded as a map interest and checked by its
+release fence, and one account keeps its existing limit of two concurrent reads.
+`scripts/benchmark_event_reads.py` compares direct and shared reads offline.
 
 ## Resuming after a reconnect
 
