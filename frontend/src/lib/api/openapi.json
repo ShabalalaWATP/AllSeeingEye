@@ -10188,6 +10188,57 @@
         ]
       }
     },
+    "/api/sources/{source_id}/track-record": {
+      "get": {
+        "tags": [
+          "sources",
+          "sources"
+        ],
+        "summary": "Get Track Record",
+        "operationId": "get_track_record_api_sources__source_id__track_record_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceTrackRecordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/sources": {
       "get": {
         "tags": [
@@ -19169,6 +19220,24 @@
           "review_required"
         ],
         "title": "CitationStatus"
+      },
+      "CitationVerdictsOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "note"
+        ],
+        "title": "CitationVerdictsOut"
       },
       "CivilianHarmMonthOut": {
         "properties": {
@@ -45075,6 +45144,102 @@
         ],
         "title": "SourceTestOut"
       },
+      "SourceTrackRecordOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "report_bound": {
+            "type": "integer",
+            "title": "Report Bound"
+          },
+          "reports_considered": {
+            "type": "integer",
+            "title": "Reports Considered"
+          },
+          "visible_reports": {
+            "type": "integer",
+            "title": "Visible Reports"
+          },
+          "reports_citing": {
+            "type": "integer",
+            "title": "Reports Citing"
+          },
+          "frozen_items": {
+            "type": "integer",
+            "title": "Frozen Items"
+          },
+          "roles": {
+            "$ref": "#/components/schemas/TrackRecordRolesOut"
+          },
+          "reports_by_status": {
+            "$ref": "#/components/schemas/TrackRecordStatusesOut"
+          },
+          "judgements_by_status": {
+            "$ref": "#/components/schemas/TrackRecordStatusesOut"
+          },
+          "reliability": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordValueOut"
+            },
+            "type": "array",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordValueOut"
+            },
+            "type": "array",
+            "title": "Credibility"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordEntryOut"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "entries_total": {
+            "type": "integer",
+            "title": "Entries Total"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/TrackRecordReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          },
+          "reviews_total": {
+            "type": "integer",
+            "title": "Reviews Total"
+          },
+          "citation_verdicts": {
+            "$ref": "#/components/schemas/CitationVerdictsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "report_bound",
+          "reports_considered",
+          "visible_reports",
+          "reports_citing",
+          "frozen_items",
+          "roles",
+          "reports_by_status",
+          "judgements_by_status",
+          "reliability",
+          "credibility",
+          "entries",
+          "entries_total",
+          "reviews",
+          "reviews_total",
+          "citation_verdicts"
+        ],
+        "title": "SourceTrackRecordOut"
+      },
       "SpaceBoardOut": {
         "properties": {
           "stations": {
@@ -47586,6 +47751,178 @@
           "available"
         ],
         "title": "TotpStatusOut"
+      },
+      "TrackRecordEntryOut": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "needs_review",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Saved At"
+          },
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          },
+          "supporting_judgements": {
+            "type": "integer",
+            "title": "Supporting Judgements"
+          },
+          "contradicting_judgements": {
+            "type": "integer",
+            "title": "Contradicting Judgements"
+          },
+          "grades": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Grades"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "title",
+          "version_number",
+          "status",
+          "saved_at",
+          "items",
+          "supporting_judgements",
+          "contradicting_judgements",
+          "grades"
+        ],
+        "title": "TrackRecordEntryOut"
+      },
+      "TrackRecordReviewOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "reliability",
+              "credibility",
+              "authenticity"
+            ],
+            "title": "Kind"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "team_scoped": {
+            "type": "boolean",
+            "title": "Team Scoped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "decision",
+          "recorded_at",
+          "report_id",
+          "team_scoped"
+        ],
+        "title": "TrackRecordReviewOut"
+      },
+      "TrackRecordRolesOut": {
+        "properties": {
+          "supporting_judgements": {
+            "type": "integer",
+            "title": "Supporting Judgements"
+          },
+          "contradicting_judgements": {
+            "type": "integer",
+            "title": "Contradicting Judgements"
+          },
+          "items_cited_elsewhere": {
+            "type": "integer",
+            "title": "Items Cited Elsewhere"
+          },
+          "items_not_cited": {
+            "type": "integer",
+            "title": "Items Not Cited"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supporting_judgements",
+          "contradicting_judgements",
+          "items_cited_elsewhere",
+          "items_not_cited"
+        ],
+        "title": "TrackRecordRolesOut"
+      },
+      "TrackRecordStatusesOut": {
+        "properties": {
+          "ready": {
+            "type": "integer",
+            "title": "Ready"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "needs_review",
+          "failed"
+        ],
+        "title": "TrackRecordStatusesOut"
+      },
+      "TrackRecordValueOut": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "items"
+        ],
+        "title": "TrackRecordValueOut"
       },
       "UkraineBoardOut": {
         "properties": {

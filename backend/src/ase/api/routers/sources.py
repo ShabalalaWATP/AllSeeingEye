@@ -7,6 +7,7 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel
 
 from ase.api.deps import ContainerDep, CurrentUser, SessionDep
+from ase.api.routers.source_track_record import router as track_record_router
 from ase.api.schemas_source_ratings import SourceRatingOut
 from ase.application.feeds.health import SourceHealth, SourceStatus
 from ase.application.source_assets import AssetDelivery, AssetFamily, SourceAsset
@@ -25,6 +26,7 @@ from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.sources import SourceKind
 
 router = APIRouter(prefix="/sources", tags=["sources"])
+router.include_router(track_record_router)
 
 
 class SourceRequirementOut(BaseModel):

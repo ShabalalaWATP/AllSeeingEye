@@ -2765,6 +2765,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sources/{source_id}/track-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Track Record */
+        get: operations["get_track_record_api_sources__source_id__track_record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sources": {
         parameters: {
             query?: never;
@@ -5815,6 +5832,13 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CitationVerdictsOut */
+        CitationVerdictsOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+        };
         /** CivilianHarmMonthOut */
         CivilianHarmMonthOut: {
             /**
@@ -14884,6 +14908,37 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** SourceTrackRecordOut */
+        SourceTrackRecordOut: {
+            /** Source Id */
+            source_id: string;
+            /** Report Bound */
+            report_bound: number;
+            /** Reports Considered */
+            reports_considered: number;
+            /** Visible Reports */
+            visible_reports: number;
+            /** Reports Citing */
+            reports_citing: number;
+            /** Frozen Items */
+            frozen_items: number;
+            roles: components["schemas"]["TrackRecordRolesOut"];
+            reports_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            judgements_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            /** Reliability */
+            reliability: components["schemas"]["TrackRecordValueOut"][];
+            /** Credibility */
+            credibility: components["schemas"]["TrackRecordValueOut"][];
+            /** Entries */
+            entries: components["schemas"]["TrackRecordEntryOut"][];
+            /** Entries Total */
+            entries_total: number;
+            /** Reviews */
+            reviews: components["schemas"]["TrackRecordReviewOut"][];
+            /** Reviews Total */
+            reviews_total: number;
+            citation_verdicts: components["schemas"]["CitationVerdictsOut"];
+        };
         /** SpaceBoardOut */
         SpaceBoardOut: {
             /** Stations */
@@ -15797,6 +15852,85 @@ export interface components {
             enabled: boolean;
             /** Available */
             available: boolean;
+        };
+        /** TrackRecordEntryOut */
+        TrackRecordEntryOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Title */
+            title: string;
+            /** Version Number */
+            version_number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "needs_review" | "failed";
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Items */
+            items: number;
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Grades */
+            grades: string[];
+        };
+        /** TrackRecordReviewOut */
+        TrackRecordReviewOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reliability" | "credibility" | "authenticity";
+            /** Decision */
+            decision: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Team Scoped */
+            team_scoped: boolean;
+        };
+        /** TrackRecordRolesOut */
+        TrackRecordRolesOut: {
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Items Cited Elsewhere */
+            items_cited_elsewhere: number;
+            /** Items Not Cited */
+            items_not_cited: number;
+        };
+        /** TrackRecordStatusesOut */
+        TrackRecordStatusesOut: {
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+        };
+        /** TrackRecordValueOut */
+        TrackRecordValueOut: {
+            /** Value */
+            value: string;
+            /** Items */
+            items: number;
         };
         /** UkraineBoardOut */
         UkraineBoardOut: {
@@ -22170,6 +22304,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SocialBoardOut"];
+                };
+            };
+        };
+    };
+    get_track_record_api_sources__source_id__track_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTrackRecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
