@@ -167,7 +167,9 @@ export function TeamPanel({
                 <div className="border-t border-line pt-4">
                   <ConfirmAction
                     label="Leave team"
-                    question="Leave this team? You will lose access to its research and board."
+                    question="Leave this team?"
+                    busyLabel="Leaving team…"
+                    consequence="You will lose access to its research and board until a manager adds you again."
                     busy={action.busy}
                     onConfirm={() => {
                       void action.run(() => leaveTeam(id), 'You left the team.', refreshList);
@@ -208,6 +210,8 @@ export function TeamPanel({
                       <ConfirmAction
                         label="Archive team"
                         question="Archive this team and make its roster read-only?"
+                        busyLabel="Archiving team…"
+                        consequence="Its records stay readable, but ordinary changes stop. Only a site administrator can reactivate it."
                         busy={action.busy}
                         onConfirm={() => {
                           void action.run(

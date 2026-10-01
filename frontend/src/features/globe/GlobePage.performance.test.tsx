@@ -32,7 +32,7 @@ function layer(id: string): TestLayer | undefined {
 
 async function mount() {
   const view = renderApp('/', 'user');
-  await screen.findByRole('switch', { name: 'Natural hazards 1' });
+  await screen.findByText('Natural hazards: 1 loaded');
   await waitFor(() => expect(layer('events-disaster')).toBeDefined());
   return view;
 }

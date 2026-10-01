@@ -9,6 +9,8 @@ import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import type { ReportTemplate } from '@/lib/api/reports';
 import type { IndicatorRequest } from '@/lib/api/warning';
 import { parseCategories, parseCommaList, parseCountries } from '@/lib/text';
@@ -29,13 +31,27 @@ export function describeWindow(minutes: number): string {
   return `${String(minutes)} min`;
 }
 
+/** Form fields for the API paths an indicator request can reject. */
+const INDICATOR_FIELDS = {
+  team_id: 'Workspace',
+  plan_id: 'Collection plan',
+  area: { label: 'Watch location', paths: ['countries', 'bbox', 'research_area'] },
+  name: 'Indicator name',
+  categories: 'Categories',
+  keywords: 'Keywords',
+  threshold: 'Threshold',
+  window_minutes: 'Window',
+  report_template: 'Report when it fires',
+} as const;
+
 interface IndicatorFormProps {
   draft?: AreaWatchDraft | null;
   templates: readonly ReportTemplate[];
   plans: readonly CollectionPlan[];
   workspaces: Workspaces;
   busy: boolean;
-  error: string | null;
+  /** The failed save, mapped to field reasons or a safe message. */
+  error: unknown;
   onSubmit: (request: IndicatorRequest) => void;
 }
 
@@ -64,6 +80,7 @@ export function IndicatorForm({
   const [threshold, setThreshold] = useState('1');
   const [window, setWindow] = useState('360');
   const [template, setTemplate] = useState('');
+  const errors = useFieldErrors(error, INDICATOR_FIELDS);
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -123,16 +140,19 @@ export function IndicatorForm({
           The linked plan is no longer available. Choose a plan in this workspace or select No plan.
         </Alert>
       )}
-      <WorkspaceField
-        workspaces={workspaces}
-        value={scope.teamId}
-        onChange={(value) => {
-          scope.select(value);
-          setPlanId('');
-        }}
-      />
+      <div id={errors.id('team_id')}>
+        <WorkspaceField
+          workspaces={workspaces}
+          value={scope.teamId}
+          onChange={(value) => {
+            scope.select(value);
+            setPlanId('');
+          }}
+        />
+      </div>
       <SelectField
         label="Collection plan"
+        {...errors.field('plan_id')}
         value={selectedPlan}
         onChange={(event) => setPlanId(event.target.value)}
         hint="Optional. Linked plans must use the same workspace."
@@ -141,10 +161,13 @@ export function IndicatorForm({
           ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
         ]}
       />
-      <IndicatorAreaFields value={area} countries={countries} onCountriesChange={setCountries} />
+      <div id={errors.id('area')}>
+        <IndicatorAreaFields value={area} countries={countries} onCountriesChange={setCountries} />
+      </div>
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Indicator name"
+          {...errors.field('name')}
           value={name}
           onChange={(event) => {
             setName(event.target.value);
@@ -154,6 +177,7 @@ export function IndicatorForm({
         />
         <TextField
           label="Categories"
+          {...errors.field('categories')}
           hint="Comma separated, for example conflict, news."
           value={categories}
           onChange={(event) => {
@@ -162,6 +186,7 @@ export function IndicatorForm({
         />
         <TextField
           label="Keywords"
+          {...errors.field('keywords')}
           hint="Any of these in a title or summary, comma separated."
           value={keywords}
           onChange={(event) => {
@@ -170,6 +195,7 @@ export function IndicatorForm({
         />
         <TextField
           label="Threshold"
+          {...errors.field('threshold')}
           hint="Fires at this many matching items in the window."
           type="number"
           min={1}
@@ -181,6 +207,7 @@ export function IndicatorForm({
         />
         <SelectField
           label="Window"
+          {...errors.field('window_minutes')}
           value={window}
           onChange={(event) => {
             setWindow(event.target.value);
@@ -189,6 +216,7 @@ export function IndicatorForm({
         />
         <SelectField
           label="Report when it fires"
+          {...errors.field('report_template')}
           hint="Generated as you, scoped like the indicator."
           value={area.mode === 'shape' ? '' : template}
           disabled={area.mode === 'shape'}
@@ -201,7 +229,7 @@ export function IndicatorForm({
           ]}
         />
       </div>
-      {error === null ? null : <Alert tone="error">{error}</Alert>}
+      <FormErrors errors={errors} />
       <div>
         <Button
           type="submit"

@@ -11,6 +11,7 @@ import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import type { AssistantRequest } from '@/lib/api/assistant';
 import { EyeAssistant } from './EyeAssistant';
 import { eyeAnswer } from './assistantFixture';
+import { EYE_STATUS_TEXT } from './eyeStatus';
 import { continuationFresh } from './useEyeChat';
 
 async function mount() {
@@ -204,12 +205,12 @@ it('minimising keeps the request running and restores its completed answer', asy
   await user.type(screen.getByLabelText('Ask the Eye'), 'Answer while minimised{Enter}');
   await user.click(screen.getByRole('button', { name: 'Minimise chat window' }));
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  expect(screen.getByRole('status', { name: 'Answer in progress' })).toBeVisible();
+  expect(screen.getByText(EYE_STATUS_TEXT.pending)).toHaveAttribute('aria-live', 'polite');
   await act(async () => {
     release();
     await gate;
   });
-  expect(screen.getByRole('status', { name: 'Answer ready' })).toBeVisible();
+  expect(screen.getByText(EYE_STATUS_TEXT.answered)).toHaveAttribute('aria-live', 'polite');
   await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   expect(screen.getByText('Two recent vessel observations are available.')).toBeVisible();
 });

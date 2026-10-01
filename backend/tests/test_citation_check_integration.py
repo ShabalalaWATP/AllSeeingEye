@@ -24,7 +24,6 @@ from ase.application.reports.citation_checks import (
 from ase.application.reports.comparison import compare_versions
 from ase.application.reports.document import build_document
 from ase.application.reports.production import Producer
-from ase.application.reports.render import render_markdown
 from ase.application.reports.selection import Selection
 from ase.application.reports.templates import TEMPLATES
 from ase.container import Container
@@ -37,7 +36,7 @@ from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from planning_integration_helpers import PlanningStageGateway, synthetic_plan
 from production_integration_helpers import RecordingUsage, production_job
-from report_documents_helpers import document_records
+from report_documents_helpers import document_records, downloaded_markdown, package_file
 from report_helpers import filled_store
 
 
@@ -147,14 +146,7 @@ def test_reader_exports_hide_checks_receipts_and_untrusted_operational_text():
     record, version = frozen_records()
     hostile = "<script>alert(1)</script> [forged](javascript:alert(1))"
     version = replace(version, research=replace(version.research, question=hostile))
-    markdown = render_markdown(
-        record.header,
-        version.body,
-        version.evidence,
-        version.quality,
-        citation_checks=version.citation_checks,
-        research=version.research,
-    )
+    markdown = downloaded_markdown(record, version)
     document = build_document(record, version)
     renderer = ReportDocumentRenderer()
     word = Document(io.BytesIO(renderer.render(document, ExportFormat.DOCX)))
@@ -170,15 +162,23 @@ def test_reader_exports_hide_checks_receipts_and_untrusted_operational_text():
         "Unavailable source",
         "does not establish semantic entailment",
     )
-    for value in operational_values:
-        assert value in " ".join(markdown.split())
     for text in (
+        markdown,
         "\n".join(row.text for row in word.paragraphs),
         "\n".join(page.extract_text() for page in pdf.pages),
     ):
         assert all(value not in " ".join(text.split()) for value in operational_values)
     assert "<script>" not in markdown and "[forged](javascript" not in markdown
     assert hostile not in "\n".join(block.text for block in document.blocks)
+    # Saved checks and collection receipts stay in the package's supporting data.
+    analysis = json.loads(package_file(record, version, "analysis.json"))
+    assert analysis["citation_checks"]["method_version"] == "saved-citation-v0"
+    assert {row["judgement_id"] for row in analysis["citation_checks"]["judgements"]} >= {
+        "KJ1",
+        "KJ2",
+    }
+    assert analysis["research"]["question"] == hostile
+    assert analysis["research"]["attempts"]
 
 
 async def test_delayed_archival_keeps_saved_checks_and_collection_receipts():

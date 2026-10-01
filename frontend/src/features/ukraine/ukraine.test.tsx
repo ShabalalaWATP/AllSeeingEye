@@ -91,7 +91,7 @@ describe('Ukraine war page', () => {
     );
     renderApp('/conflicts/ukraine', 'user');
     expect(await screen.findByRole('alert', undefined, { timeout: 5000 })).toHaveTextContent(
-      /status 500/,
+      /Reference: HTTP 500/,
     );
     expect(screen.getByRole('heading', { name: /Sources and what this page/ })).toBeInTheDocument();
   });

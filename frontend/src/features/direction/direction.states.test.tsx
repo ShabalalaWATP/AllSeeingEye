@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { aoi, plan, planEvidence } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 const failure = (message: string) =>
   HttpResponse.json({ error: { code: 'server_error', message } }, { status: 500 });
@@ -65,6 +68,9 @@ describe('direction states', () => {
     });
     const table = screen.getByRole('table', { name: 'Areas of interest' });
     await user.click(within(table).getByRole('button', { name: 'Delete' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete area' }),
+    );
     await waitFor(() => {
       expect(deleted).toBe(aoi.id);
     });

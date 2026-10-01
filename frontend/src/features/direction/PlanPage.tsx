@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/Button';
 import { deletePlan, fetchAois, fetchPlanEvidence } from '@/lib/api/direction';
 import type { AreaOfInterest, CollectionPlan } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
-import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { EventRow } from '@/components/events/EventRow';
 import { describeArea } from './DirectionPage';
+import { PlanDeletion } from './DirectionDeletions';
 import { PlanForm } from './PlanForm';
 import { ResearchAreaButton } from './ResearchAreaButton';
 
@@ -28,10 +29,17 @@ export default function PlanPage() {
   const { data, error, loading, refresh } = useScopedResource(loader);
   const areas = useScopedResource(fetchAois);
   const [editing, setEditing] = useState<EditSession | null>(null);
-  const remove = useAsyncAction(async () => {
-    await deletePlan(id);
-    await navigate('/direction');
-  });
+  const remove = useConfirmedAction(
+    useCallback(
+      async (plan: CollectionPlan) => {
+        await deletePlan(plan.id);
+        await navigate('/direction');
+      },
+      [navigate],
+    ),
+  );
+  // Rendered in every state, so a refusal that reloads the plan keeps its confirmation open.
+  const confirmation = <PlanDeletion action={remove} workspaceLabel={workspaces.label} />;
   // The editor keeps its second slot in both renders below while the plan reloads after an access recheck, so a refused
   // save keeps the draft. A failed reload (lost access) unmounts it and drops the draft.
   const editor =
@@ -56,6 +64,7 @@ export default function PlanPage() {
           {loading ? <LoadingNote label="Loading plan" /> : null}
         </div>
         {editor}
+        {confirmation}
       </article>
     );
   }
@@ -118,8 +127,8 @@ export default function PlanPage() {
           <Button
             disabled={!manageable}
             variant="danger"
-            busy={remove.busy}
-            onClick={() => void remove.run()}
+            aria-haspopup="dialog"
+            onClick={() => remove.ask(plan)}
           >
             Delete plan
           </Button>
@@ -132,7 +141,7 @@ export default function PlanPage() {
             </Button>
           </Alert>
         )}
-        {remove.error === null ? null : <Alert tone="error">{describeError(remove.error)}</Alert>}
+        {confirmation}
       </header>
       {editor}
       {plan.pirs.map((pir) => (

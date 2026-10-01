@@ -212,8 +212,9 @@ export function EyeAssistantPanel({
             </p>
             {turn.saved && <p className="eye-turn-snapshot">Saved answer · recheck before use</p>}
             {turn.answer && <EyeAnswer answer={turn.answer} />}
+            {/* The launcher's persistent status region announces this state once. */}
             {turn.status === 'pending' && (
-              <div role="status">
+              <div>
                 <p className="eye-pending">
                   <span aria-hidden="true" />
                   Searching sources and preparing a reply…

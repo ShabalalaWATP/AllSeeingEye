@@ -3,13 +3,13 @@ import { Link } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { describeError } from '@/lib/api/errors';
 import { createBrief, reviseBrief } from '@/lib/api/researchBriefs';
 import type { BriefDraft, ResearchBrief } from '@/lib/api/researchBriefSchema';
 import { briefCanRun, draftFromBrief } from '@/lib/researchBriefDraft';
 
 import { BriefOptionsEditor } from './BriefOptionsEditor';
 import { BriefPreflight } from './BriefPreflight';
+import { describeBriefRejection } from './briefRejection';
 import { BriefQuestionEditor } from './BriefQuestionEditor';
 import { BriefScopeEditor } from './BriefScopeEditor';
 import { BriefSubscriptionActions } from './BriefSubscriptionActions';
@@ -95,7 +95,11 @@ export function BriefEditor({
       setStep('run');
       onSaved(result);
     } catch (caught) {
-      if (!pending.signal.aborted) setProblem(describeError(caught));
+      if (!pending.signal.aborted) {
+        const rejection = describeBriefRejection(caught);
+        if (rejection.step) setStep(rejection.step);
+        setProblem(rejection.message);
+      }
     } finally {
       if (!pending.signal.aborted) setBusy(false);
       if (controller.current === pending) controller.current = null;

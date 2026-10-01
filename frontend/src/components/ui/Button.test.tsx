@@ -77,5 +77,46 @@ describe('Button', () => {
     expect(button).toBeEnabled();
     expect(button).not.toHaveAttribute('aria-disabled');
     expect(button).toHaveAttribute('aria-busy', 'false');
+    expect(button.querySelector('[data-busy-indicator]')).toBeNull();
+  });
+
+  it('shows a visible progress indicator whenever it is busy', () => {
+    render(<Button busy>Save</Button>);
+    const indicator = screen
+      .getByRole('button', { name: 'Save' })
+      .querySelector('[data-busy-indicator]');
+    expect(indicator).not.toBeNull();
+    expect(indicator).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('shows a busy label and announces it while keeping its accessible name', () => {
+    const { rerender } = render(<Button busyLabel="Saving…">Save</Button>);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    rerender(
+      <Button busy busyLabel="Saving…">
+        Save
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'Save' });
+    expect(button).toHaveTextContent('Saving…');
+    expect(status).toHaveTextContent('Saving…');
+    rerender(<Button busyLabel="Saving…">Save</Button>);
+    expect(button).toHaveTextContent(/^Save$/);
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('forwards a ref to the native button', () => {
+    let node: HTMLButtonElement | null = null;
+    render(
+      <Button
+        ref={(element) => {
+          node = element;
+        }}
+      >
+        Save
+      </Button>,
+    );
+    expect(node).toBe(screen.getByRole('button', { name: 'Save' }));
   });
 });

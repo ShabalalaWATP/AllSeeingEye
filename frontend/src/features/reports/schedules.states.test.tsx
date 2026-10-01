@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { schedule } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 const failure = (message: string) =>
   HttpResponse.json({ error: { code: 'server_error', message } }, { status: 500 });
@@ -127,10 +130,11 @@ describe('schedule states', () => {
     expect(within(table).getByText('Intelligence summary')).toBeInTheDocument();
     await user.click(within(table).getAllByRole('button', { name: 'Archive' })[1]!);
     expect(deleted).toBeNull();
-    expect(within(table).getByRole('group', { name: 'Archive Morning INTSUM' })).toHaveTextContent(
-      'Existing reports remain available.',
-    );
-    await user.click(within(table).getByRole('button', { name: 'Confirm archive' }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Archive subscription “Morning INTSUM”?',
+    });
+    expect(dialog).toHaveTextContent('Existing reports remain available.');
+    await user.click(within(dialog).getByRole('button', { name: 'Confirm archive' }));
     await waitFor(() => {
       expect(deleted).toBe('e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4');
     });

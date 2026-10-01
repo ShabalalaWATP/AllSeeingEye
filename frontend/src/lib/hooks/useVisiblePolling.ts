@@ -21,8 +21,10 @@ const pageHidden = () => document.visibilityState === 'hidden';
 
 /**
  * Bounded background refresh: runs only while the page is not hidden, never overlaps
- * requests, backs off after failures and aborts in-flight work on unmount. An access
- * change triggers an immediate check so stale authority is not kept for a full interval.
+ * requests, backs off after failures and aborts in-flight work on unmount, when the page
+ * is hidden and on an access change. An access change triggers an immediate check so stale
+ * authority is not kept for a full interval. `poll` must forward its signal to any request
+ * it starts, and the outcome of an aborted poll is ignored.
  */
 export function useVisiblePolling({
   enabled,
@@ -88,7 +90,13 @@ export function useVisiblePolling({
     };
     const onVisibility = () => {
       clearTimeout(timer);
-      if (pageHidden() || controller !== null) return;
+      if (pageHidden()) {
+        // Nobody is looking: drop the request rather than finish it in the background.
+        controller?.abort();
+        controller = null;
+        return;
+      }
+      if (controller !== null) return;
       resume();
     };
     const onAccessChange = () => {

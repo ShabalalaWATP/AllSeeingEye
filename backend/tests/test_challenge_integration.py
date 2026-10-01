@@ -18,7 +18,6 @@ from ase.api.schemas_reports import ReportVersionOut
 from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.document import build_document
 from ase.application.reports.production import Producer
-from ase.application.reports.render import render_markdown
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.challenge import ChallengeReview, ChallengeSearch, ReportChallenge
 from ase.domain.challenge_records import challenge_from_dict, challenge_to_dict
@@ -29,7 +28,7 @@ from ase.domain.research_context import build_research_context
 from feeds_helpers import make_event
 from planning_integration_helpers import SchemaGateway, synthetic_plan
 from production_integration_helpers import RecordingUsage, production_job
-from report_documents_helpers import document_records
+from report_documents_helpers import document_records, downloaded_markdown, package_file
 from report_helpers import filled_store, good_body
 
 
@@ -122,20 +121,14 @@ async def test_challenge_and_context_export_plain_text_and_archive_all_views():
         ),
         evidence=tuple(replace(row, archive_url=None) for row in version.evidence),
     )
-    markdown = render_markdown(
-        record.header,
-        version.body,
-        version.evidence,
-        version.quality,
-        challenge=version.challenge,
-        research_context=version.research_context,
-    )
+    markdown = downloaded_markdown(record, version)
     doc = build_document(record, version)
     renderer = ReportDocumentRenderer()
     pdf = renderer.render(doc, ExportFormat.PDF)
     word = renderer.render(doc, ExportFormat.DOCX)
     pdf_text = " ".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf)).pages)
     word_text = " ".join(row.text for row in Document(io.BytesIO(word)).paragraphs)
+    # Every reader format, Markdown included, is the same document without diagnostics.
     for expected in (
         "saved-challenge-v0",
         "budget exhausted",
@@ -143,11 +136,17 @@ async def test_challenge_and_context_export_plain_text_and_archive_all_views():
         "Recorded publication timeline",
         "Declared source chains",
     ):
-        assert expected in markdown
+        assert expected not in markdown
         assert expected not in pdf_text
         assert expected not in word_text
     assert "<script>" not in markdown and "[bad](javascript" not in markdown
     assert hostile not in word_text
+    # The challenge receipt and research context stay in the package's supporting data.
+    analysis = json.loads(package_file(record, version, "analysis.json"))
+    assert analysis["challenge"]["method_version"] == "saved-challenge-v0"
+    assert analysis["challenge"]["searches"][0]["attempts"][0]["status"] == "budget_exhausted"
+    assert analysis["challenge"]["reviews"][0]["statement"] == hostile
+    assert analysis["research_context"] is not None
     repo, archiver, uow = AsyncMock(), AsyncMock(), AsyncMock()
     repo.get.return_value = record
     archiver.archive.return_value = "https://example.org/snapshot"

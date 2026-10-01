@@ -12,10 +12,13 @@ import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import type { Country } from '@/lib/api/geoSchemas';
 import { MAX_REGIONS, REGIONS } from '@/lib/regions';
 import { MAX_THEMES, THEMES } from '@/lib/themes';
 
+import { SCHEDULE_FIELDS } from './scheduleFieldErrors';
 import { focusScheduleIssue, scheduleIssueTarget } from './scheduleFormFocus';
 import { ScheduleFocus } from './ScheduleFocus';
 import { ScheduleScope } from './ScheduleScope';
@@ -26,7 +29,8 @@ import { useScheduleForm, type ScheduleFormStateProps } from './useScheduleForm'
 export function ScheduleForm(
   props: ScheduleFormStateProps & {
     countries: readonly Country[];
-    error: string | null;
+    /** The failed save, mapped to field reasons or a safe message. */
+    error: unknown;
     onCancel?: (() => void) | undefined;
     duplicate?: boolean;
   },
@@ -35,6 +39,7 @@ export function ScheduleForm(
   const state = useScheduleForm(props);
   const form = useRef<HTMLFormElement>(null);
   const [attempted, setAttempted] = useState(false);
+  const server = useFieldErrors(error, SCHEDULE_FIELDS);
   const { needsQuestion, activeResearch, subjectScoped, boundaryScoped, product } = state;
   const validateSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     if (state.invalid) {
@@ -101,7 +106,7 @@ export function ScheduleForm(
           </ul>
         </Alert>
       )}
-      {error !== null && <Alert tone="error">{error}</Alert>}
+      <FormErrors errors={server} />
       <fieldset disabled={busy} className="mx-auto grid max-w-3xl gap-10 disabled:opacity-70">
         {state.invalidPlan && (
           <Alert tone="error">
@@ -113,7 +118,12 @@ export function ScheduleForm(
         <Step number={next()} title="What to call it" id="subscription-name">
           <TextField
             label="Subscription name"
-            error={attempted && !state.name.trim() ? 'Enter a subscription name.' : undefined}
+            id={server.id('name')}
+            error={
+              attempted && !state.name.trim()
+                ? 'Enter a subscription name.'
+                : server.message('name')
+            }
             value={state.name}
             onChange={(event) => state.setName(event.target.value)}
             required
@@ -131,10 +141,11 @@ export function ScheduleForm(
           >
             <TextAreaField
               label="Question"
+              id={server.id('question')}
               error={
                 attempted && state.issues.some((issue) => issue.field === 'Question')
                   ? 'Enter a question.'
-                  : undefined
+                  : server.message('question')
               }
               value={state.question}
               onChange={(event) => state.setQuestion(event.target.value)}
