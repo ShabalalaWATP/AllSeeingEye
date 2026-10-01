@@ -16,7 +16,7 @@ export class AssistantBoundary extends Component<{ children: ReactNode }, Bounda
   override render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <div className="eye-assistant">
+      <aside aria-label="Eye assistant" className="eye-assistant">
         <button
           type="button"
           className="eye-restart"
@@ -35,7 +35,7 @@ export class AssistantBoundary extends Component<{ children: ReactNode }, Bounda
             <small>Clear this chat and try again.</small>
           </span>
         </button>
-      </div>
+      </aside>
     );
   }
 }
