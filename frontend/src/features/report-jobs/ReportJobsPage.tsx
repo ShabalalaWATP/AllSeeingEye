@@ -2,15 +2,55 @@ import { Link } from 'react-router';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { fetchReportJobs } from '@/lib/api/reportJobs';
+import type { ReportJob, ReportJobStatusGroup } from '@/lib/api/reportJobs';
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
-import { jobStage, jobStatus, jobsRunning } from './jobLabels';
-import { useJobPolling } from './useJobPolling';
+import { jobStage, jobStatus } from './jobLabels';
+import { ReportJobFilters, ReportJobPager } from './ReportJobListControls';
+import { useReportJobList } from './useReportJobList';
 import './reportJobs.css';
 
+const EMPTY: Record<ReportJobStatusGroup, string> = {
+  all: 'No research runs yet',
+  attention: 'No research needs attention',
+  running: 'No running research',
+  finished: 'No finished research yet',
+};
+
+function attention(job: ReportJob) {
+  if (job.status !== 'paused' && job.status !== 'failed') return null;
+  return job.can_resume ? 'Can resume' : 'Cannot resume';
+}
+
+function JobRow({ job }: { job: ReportJob }) {
+  const hint = attention(job);
+  return (
+    <li>
+      <Link to={`/research/jobs/${job.id}`}>
+        <div className="job-row-main">
+          <strong>{job.title}</strong>
+          <span>
+            {jobStage(job.stage)} · {job.completed_sections}{' '}
+            {job.completed_sections === 1 ? 'section' : 'sections'} saved
+            {job.origin === 'briefing' && ' · Automatic briefing'}
+          </span>
+        </div>
+        <div className="job-row-context">
+          <span>{jobStatus[job.status]}</span>
+          {hint && <span className="mt-1 block text-2xs text-muted">{hint}</span>}
+          <time dateTime={job.updated_at}>{formatUtc(job.updated_at)}</time>
+        </div>
+        <span className="job-row-arrow" aria-hidden="true">
+          ↗
+        </span>
+      </Link>
+    </li>
+  );
+}
+
 export default function ReportJobsPage() {
-  const resource = useJobPolling(fetchReportJobs, jobsRunning);
+  const list = useReportJobList();
+  const items = list.data?.items ?? null;
   return (
     <section className="report-jobs-page">
       <div className="report-jobs-workspace">
@@ -24,54 +64,50 @@ export default function ReportJobsPage() {
           </Link>
         </header>
         <ResearchNavigation />
-        {resource.loading && <LoadingNote label="Loading research progress" />}
-        {resource.error && (
+        <ReportJobFilters list={list} />
+        {list.loading && <LoadingNote label="Loading research progress" />}
+        {list.error && (
           <Alert tone="error">
-            {describeError(resource.error)}{' '}
-            <Button variant="secondary" onClick={resource.reload}>
+            {describeError(list.error)}{' '}
+            <Button variant="secondary" onClick={list.reload}>
               Retry research progress
             </Button>
+            {list.page > 1 && (
+              <Button variant="ghost" onClick={list.newest}>
+                Back to the newest runs
+              </Button>
+            )}
           </Alert>
         )}
-        {resource.data && (
+        {items && (
           <>
             <div className="job-list-caption">
-              <p>Your latest {resource.data.length} research runs</p>
-              <Button variant="ghost" onClick={resource.reload}>
+              <p role="status">
+                Page {list.page} · {items.length} research {items.length === 1 ? 'run' : 'runs'}
+              </p>
+              <Button variant="ghost" onClick={list.reload}>
                 Refresh
               </Button>
             </div>
-            {resource.data.length === 0 ? (
+            {items.length === 0 ? (
               <div className="job-empty">
-                <h2>No research runs yet</h2>
-                <p>Start a question from New research. Its progress will stay available here.</p>
+                <h2>{EMPTY[list.status]}</h2>
+                <p>
+                  {list.page > 1
+                    ? 'No further matching runs remain on this page.'
+                    : 'Start a question from New research. Its progress will stay available here.'}
+                </p>
               </div>
             ) : (
               <ul className="job-list" aria-label="Research runs">
-                {resource.data.map((job) => (
-                  <li key={job.id}>
-                    <Link to={`/research/jobs/${job.id}`}>
-                      <div className="job-row-main">
-                        <strong>{job.title}</strong>
-                        <span>
-                          {jobStage(job.stage)} · {job.completed_sections}{' '}
-                          {job.completed_sections === 1 ? 'section' : 'sections'} saved
-                        </span>
-                      </div>
-                      <div className="job-row-context">
-                        <span>{jobStatus[job.status]}</span>
-                        <time dateTime={job.updated_at}>{formatUtc(job.updated_at)}</time>
-                      </div>
-                      <span className="job-row-arrow" aria-hidden="true">
-                        ↗
-                      </span>
-                    </Link>
-                  </li>
+                {items.map((job) => (
+                  <JobRow key={job.id} job={job} />
                 ))}
               </ul>
             )}
           </>
         )}
+        <ReportJobPager list={list} />
       </div>
     </section>
   );

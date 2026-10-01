@@ -31,7 +31,7 @@ it('shows usable partial sections, selected model and a bounded usage breakdown'
   );
   mount();
   await screen.findByRole('heading', { name: 'Researching the available evidence' });
-  expect(screen.getByText('1 section saved')).toBeVisible();
+  expect(screen.getByText('1 of 3 sections saved')).toBeVisible();
   expect(screen.getByText(/configured-research-model · Thinking: high/)).toBeVisible();
   expect(screen.getByText(/Saved sections are a working draft/)).toBeVisible();
   fireEvent.click(screen.getByText('Available observations'));
@@ -139,19 +139,21 @@ it('pauses and resumes the same job while retaining accepted sections and warnin
   const user = userEvent.setup();
   mount();
   const stop = await screen.findByRole('button', { name: 'Stop' });
-  expect(screen.getByRole('progressbar', { name: 'Research progress' })).not.toHaveAttribute(
+  expect(screen.getByRole('progressbar', { name: 'Sections completed' })).toHaveAttribute(
     'value',
+    '1',
   );
   await user.click(stop);
   const resume = await screen.findByRole('button', { name: 'Resume research' });
   expect(screen.getByText(/previous provider call has an unconfirmed outcome/)).toBeVisible();
-  expect(screen.getByText('1 section saved')).toBeVisible();
+  expect(screen.getByText('1 of 1 section saved')).toBeVisible();
   await user.click(resume);
   await screen.findByRole('button', { name: 'Stop' });
   expect(actions).toEqual(['pause', 'resume']);
-  expect(screen.getByText('1 section saved')).toBeVisible();
-  expect(screen.getByRole('progressbar', { name: 'Research progress' })).not.toHaveAttribute(
-    'value',
+  expect(screen.getByText('1 of 1 section saved')).toBeVisible();
+  expect(screen.getByRole('progressbar', { name: 'Sections completed' })).toHaveAttribute(
+    'max',
+    '1',
   );
 });
 

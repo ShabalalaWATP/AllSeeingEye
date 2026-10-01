@@ -3,7 +3,8 @@ import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
-import { jobRunning, jobStage, jobStatus } from './jobLabels';
+import { jobRunning, jobStatus } from './jobLabels';
+import { ReportJobProgress } from './ReportJobProgress';
 import { ReportJobSections } from './ReportJobSections';
 import { ReportJobBudget } from './ReportJobBudget';
 import { DiscardReportJob } from './DiscardReportJob';
@@ -35,6 +36,7 @@ export default function ReportJobPage() {
             <header className="job-heading">
               <p className="job-eyebrow">
                 Research job <span>{jobStatus[job.status]}</span>
+                {job.origin === 'briefing' && <span>Automatic briefing</span>}
               </p>
               <h1>{job.title}</h1>
               <p className="job-connection">
@@ -51,18 +53,7 @@ export default function ReportJobPage() {
               </p>
             </header>
             <div className="job-progress" data-running={jobRunning(job)}>
-              <div className="job-progress-label">
-                <p role="status">{jobStage(job.stage)}</p>
-                <span>
-                  {job.completed_sections} {job.completed_sections === 1 ? 'section' : 'sections'}{' '}
-                  saved
-                </span>
-              </div>
-              <progress
-                aria-label={jobRunning(job) ? 'Research progress' : 'Saved research sections'}
-                value={jobRunning(job) ? undefined : job.completed_sections}
-                max={Math.max(1, job.total_sections)}
-              />
+              <ReportJobProgress job={job} />
               <div className="job-actions">
                 {jobRunning(job) && (
                   <Button
