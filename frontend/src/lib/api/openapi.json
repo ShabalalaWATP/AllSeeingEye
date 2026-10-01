@@ -18502,6 +18502,18 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Revision"
+          },
+          "expected_plan_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Plan Updated At"
           }
         },
         "additionalProperties": false,

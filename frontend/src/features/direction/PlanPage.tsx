@@ -93,12 +93,18 @@ export default function PlanPage() {
               </p>
             </div>
           ) : (
-            <Link
-              to={`/reports?template=ask&plan=${plan.id}`}
-              className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
-            >
-              Generate assessment
-            </Link>
+            <div>
+              <Link
+                to={`/research?brief=new&plan=${encodeURIComponent(plan.id)}`}
+                className="inline-block rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
+              >
+                Generate assessment
+              </Link>
+              <p className="text-xs text-muted">
+                Opens Research to review this plan&apos;s requirements (
+                {workspaces.label(plan.team_id)}). Nothing runs until you start it.
+              </p>
+            </div>
           )}
           <Button
             variant="secondary"

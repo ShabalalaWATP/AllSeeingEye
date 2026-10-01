@@ -16,8 +16,10 @@ import { BriefSubscriptionActions } from './BriefSubscriptionActions';
 import { PresetPicker } from './PresetPicker';
 import { BriefJourney, BriefRunSummary, BRIEF_STEPS, type BriefStep } from './BriefJourney';
 import { BriefPerspectiveEditor } from './BriefPerspectiveEditor';
+import { BriefPlanContext } from './BriefPlanContext';
 import { ResearchDepth } from './ResearchDepth';
 import { useBriefJourney } from './useBriefJourney';
+import { useBriefPlan } from './useBriefPlan';
 import { useBriefRun } from './useBriefRun';
 
 export interface InitialBrief {
@@ -50,6 +52,7 @@ export function BriefEditor({
   const [baseline, setBaseline] = useState(() => structuredClone(initial.draft));
   const [saving, setBusy] = useState(false);
   const execution = useBriefRun(saved);
+  const linkedPlan = useBriefPlan(draft.scope.plan_id, draft.team_id);
   const busy = saving || execution.busy;
   const [saveProblem, setProblem] = useState<string | null>(null);
   const problem = saveProblem ?? execution.error;
@@ -68,7 +71,7 @@ export function BriefEditor({
     () => JSON.stringify(draft) !== JSON.stringify(baseline),
     [draft, baseline],
   );
-  const runReason = briefCanRun(draft);
+  const runReason = briefCanRun(draft) ?? linkedPlan.blocker;
   const stepIndex = BRIEF_STEPS.findIndex((entry) => entry.id === step);
   const previous = BRIEF_STEPS[stepIndex - 1];
   const next = BRIEF_STEPS[stepIndex + 1];
@@ -102,7 +105,7 @@ export function BriefEditor({
     if (!saved || dirty || busy || controller.current || runReason || !validate()) return;
     setProblem(null);
     setNotice(null);
-    const job = await execution.run();
+    const job = await execution.run(linkedPlan.plan?.updated_at);
     if (job) setNotice(`Research started from brief revision ${saved.identity.revision}.`);
   };
   const cancel = () => {
@@ -138,6 +141,7 @@ export function BriefEditor({
         )}
       </header>
       <BriefJourney step={step} change={setStep} busy={busy} headingRef={heading} />
+      {draft.scope.plan_id && <BriefPlanContext state={linkedPlan} />}
       <fieldset disabled={busy} className="min-w-0 disabled:opacity-70">
         <div
           id="brief-stage-brief"
