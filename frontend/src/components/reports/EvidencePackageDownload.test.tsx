@@ -38,7 +38,10 @@ it.each(['access', 'account', 'unmount'])(
         }),
     );
     const rendered = render(<EvidencePackageDownload id="report" version={2} title="Review" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Download evidence package' }));
+    const button = screen.getByRole('button', { name: 'Download evidence package' });
+    await userEvent.click(button);
+    expect(button).toHaveTextContent('Preparing evidence package…');
+    expect(screen.getByRole('status')).toHaveTextContent('Preparing evidence package…');
     const signal = vi.mocked(fetchEvidencePackage).mock.calls[0]![2];
     act(() => {
       if (change === 'access') invalidateWorkspaceAccess();
