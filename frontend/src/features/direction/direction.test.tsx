@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { aoi, plan } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 describe('direction', () => {
   it('lists areas and plans, and creates an area from the form', async () => {
@@ -73,6 +76,9 @@ describe('direction', () => {
       `/research?brief=new&plan=${plan.id}`,
     );
     await user.click(screen.getByRole('button', { name: 'Delete plan' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete plan' }),
+    );
     expect(await screen.findByRole('heading', { name: 'Plans and areas' })).toBeInTheDocument();
   });
 });

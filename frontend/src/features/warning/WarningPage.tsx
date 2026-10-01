@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 
 import { Alert as Notice, LoadingNote } from '@/components/ui/Alert';
@@ -16,6 +16,7 @@ import {
 import type { Alert, Indicator, IndicatorRequest } from '@/lib/api/warning';
 import { formatAgo } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import { useNow } from '@/lib/hooks/useNow';
 import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
@@ -25,6 +26,7 @@ import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 
 import { AlertDestination } from './AlertDestination';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
+import { RuleDeletion } from './RuleDeletion';
 
 function describeScope(indicator: Indicator): string {
   if (indicator.research_area)
@@ -108,10 +110,11 @@ export default function WarningPage() {
       [reloadIndicators, draftId],
     ),
   );
-  const remove = useAsyncAction(
+  const rulesHeading = useRef<HTMLHeadingElement>(null);
+  const remove = useConfirmedAction(
     useCallback(
-      async (id: string) => {
-        await deleteIndicator(id);
+      async (rule: Indicator) => {
+        await deleteIndicator(rule.id);
         await reloadIndicators();
       },
       [reloadIndicators],
@@ -189,11 +192,12 @@ export default function WarningPage() {
         )}
       </div>
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Alert rules</h2>
+        <h2 ref={rulesHeading} className="text-base font-semibold">
+          Alert rules
+        </h2>
         {indicators.error === null ? null : (
           <Notice tone="error">{describeError(indicators.error)}</Notice>
         )}
-        {remove.error === null ? null : <Notice tone="error">{describeError(remove.error)}</Notice>}
         {indicators.data === null ? (
           indicators.loading ? (
             <LoadingNote label="Loading indicators" />
@@ -225,8 +229,8 @@ export default function WarningPage() {
                     <Button
                       disabled={!workspaces.canManage(item)}
                       variant="danger"
-                      busy={remove.busy}
-                      onClick={() => void remove.run(item.id)}
+                      aria-haspopup="dialog"
+                      onClick={() => remove.ask(item)}
                     >
                       Delete
                     </Button>
@@ -236,6 +240,12 @@ export default function WarningPage() {
             </tbody>
           </Table>
         )}
+        <RuleDeletion
+          action={remove}
+          workspaceLabel={workspaces.label}
+          describe={describeRule}
+          returnFocus={rulesHeading}
+        />
         {!draft && form}
       </div>
     </section>

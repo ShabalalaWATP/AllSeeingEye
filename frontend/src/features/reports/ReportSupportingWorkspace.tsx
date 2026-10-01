@@ -8,7 +8,6 @@ import { IdentityReviews } from '@/components/reports/IdentityReviews';
 import { OriginalAssets } from '@/components/reports/OriginalAssets';
 import { RelationshipReviews } from '@/components/reports/RelationshipReviews';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import type { SavedMapView } from '@/lib/api/mapViews';
 import type { ReportSummary, ReportVersion } from '@/lib/api/reports';
 import { formatUtc } from '@/lib/format';
@@ -23,6 +22,7 @@ import { ReportAssessmentSummary } from './ReportAssessmentSummary';
 import { JudgementEvidence } from './JudgementEvidence';
 import { ReportChallengeView } from './ReportChallenge';
 import { ReportDiff } from './ReportDiff';
+import { ReportManagement } from './ReportManagement';
 import { ReportMethodology } from './ReportMethodology';
 import { AdvocacyView } from './ReportSections';
 import { ReportedRelationships } from './ReportedRelationships';
@@ -70,7 +70,8 @@ export default function ReportSupportingWorkspace({
   onRegenerate,
   onDelete,
 }: ReportSupportingWorkspaceProps) {
-  const [view, setView] = useState<WorkspaceView>('sources');
+  // A refused action reloads the report under fresh access; reopen where its error and retry live.
+  const [view, setView] = useState<WorkspaceView>(() => (actionError ? 'review' : 'sources'));
   const [pendingEvidenceId, setPendingEvidenceId] = useState<string | null>(null);
   const canAcknowledge = mapWritable && workspaces.canAcknowledge(report.team_id);
   useEffect(() => {
@@ -229,20 +230,16 @@ export default function ReportSupportingWorkspace({
                 </p>
               </details>
               {canEdit && (
-                <section aria-label="Report management" className="border-b border-line pb-6">
-                  <h2 className="text-base font-semibold">Report management</h2>
-                  <p className="mt-1 text-xs leading-5 text-muted">
-                    Regeneration creates a new version. Deleting removes the saved report.
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    <Button variant="secondary" busy={regenerating} onClick={onRegenerate}>
-                      Regenerate
-                    </Button>
-                    <Button variant="danger" busy={deleting} onClick={onDelete}>
-                      Delete
-                    </Button>
-                  </div>
-                </section>
+                <ReportManagement
+                  title={report.title}
+                  workspaceLabel={workspaces.label(report.team_id)}
+                  versions={report.latest_version}
+                  actionError={actionError}
+                  regenerating={regenerating}
+                  deleting={deleting}
+                  onRegenerate={onRegenerate}
+                  onDelete={onDelete}
+                />
               )}
               <ClaimAnnotations
                 sharedSelection

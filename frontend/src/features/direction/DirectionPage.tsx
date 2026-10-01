@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 
 import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
@@ -10,11 +10,12 @@ import { deleteAoi, fetchAois, fetchPlans } from '@/lib/api/direction';
 import type { AreaOfInterest } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
 import { mapPanelHref } from '@/lib/mapLayerDirectory';
-import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { AreaForm } from './AreaForm';
+import { AreaDeletion } from './DirectionDeletions';
 import { ResearchAreaButton } from './ResearchAreaButton';
 import { PlanForm } from './PlanForm';
 
@@ -32,10 +33,11 @@ export default function DirectionPage() {
   const plans = useScopedResource(fetchPlans);
   const reloadAreas = areas.reload;
   const reloadPlans = plans.reload;
-  const remove = useAsyncAction(
+  const areasHeading = useRef<HTMLHeadingElement>(null);
+  const remove = useConfirmedAction(
     useCallback(
-      async (id: string) => {
-        await deleteAoi(id);
+      async (area: AreaOfInterest) => {
+        await deleteAoi(area.id);
         await reloadAreas();
       },
       [reloadAreas],
@@ -57,9 +59,10 @@ export default function DirectionPage() {
         .
       </p>
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Areas of interest</h2>
+        <h2 ref={areasHeading} className="text-base font-semibold">
+          Areas of interest
+        </h2>
         {areas.error === null ? null : <Alert tone="error">{describeError(areas.error)}</Alert>}
-        {remove.error === null ? null : <Alert tone="error">{describeError(remove.error)}</Alert>}
         {areas.data === null ? (
           areas.loading ? (
             <LoadingNote label="Loading areas" />
@@ -107,8 +110,8 @@ export default function DirectionPage() {
                     <Button
                       disabled={!workspaces.canManage(area)}
                       variant="danger"
-                      busy={remove.busy}
-                      onClick={() => void remove.run(area.id)}
+                      aria-haspopup="dialog"
+                      onClick={() => remove.ask(area)}
                     >
                       Delete
                     </Button>
@@ -118,6 +121,12 @@ export default function DirectionPage() {
             </tbody>
           </Table>
         )}
+        <AreaDeletion
+          action={remove}
+          workspaceLabel={workspaces.label}
+          describe={describeArea}
+          returnFocus={areasHeading}
+        />
         <AreaForm key={workspaces.key} workspaces={workspaces} onCreated={reloadAreas} />
       </div>
       <div className="flex flex-col gap-3">

@@ -5,6 +5,7 @@ import {
   saveLibraryPreference,
   removeLibraryPreference,
 } from '@/lib/api/researchLibrary';
+import { installDialogStub } from '@/test/dialogStub';
 import { applySession } from '@/test/render';
 import { LibraryButton } from './LibraryButton';
 vi.mock('@/lib/api/researchLibrary', () => ({
@@ -12,6 +13,7 @@ vi.mock('@/lib/api/researchLibrary', () => ({
   saveLibraryPreference: vi.fn(),
   removeLibraryPreference: vi.fn(),
 }));
+installDialogStub();
 const preference = { favourite: false, tags: [], note: null, updated_at: null };
 beforeEach(() => {
   vi.clearAllMocks();
@@ -51,6 +53,9 @@ it('requires explicit removal and leaves report intact', async () => {
   const view = await open();
   fireEvent.click(screen.getByText('Remove from my library'));
   expect(removeLibraryPreference).not.toHaveBeenCalled();
+  expect(
+    screen.getByRole('alertdialog', { name: 'Remove this report from your library?' }),
+  ).toHaveTextContent('remain available');
   fireEvent.click(screen.getByText('Confirm removal'));
   await waitFor(() => expect(view.changed).toHaveBeenCalled());
   expect(removeLibraryPreference).toHaveBeenCalledWith('report', expect.any(AbortSignal));
