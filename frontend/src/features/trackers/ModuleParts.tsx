@@ -30,7 +30,7 @@ export function TallyChips({ label, rows }: { label: string; rows: readonly Tall
             (row.max_severity ?? 0) >= 0.8
               ? 'border-critical/60 text-critical'
               : (row.max_severity ?? 0) >= 0.6
-                ? 'border-amber-300/60 text-amber-300'
+                ? 'border-amber/60 text-amber'
                 : 'border-line text-text'
           }`}
         >

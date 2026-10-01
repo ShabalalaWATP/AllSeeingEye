@@ -135,7 +135,7 @@ export function CorridorResearchPanel({
         Preview corridor for research
       </button>
       {error && (
-        <p role="alert" className="text-red-300">
+        <p role="alert" className="text-critical">
           {error}
         </p>
       )}

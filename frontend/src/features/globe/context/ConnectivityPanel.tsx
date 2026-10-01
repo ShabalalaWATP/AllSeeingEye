@@ -50,7 +50,7 @@ export function ConnectivityPanelView({
       snapshot={snapshot}
       scope={`IODA measurements and Cloudflare Radar annotations. ${country ? `Nation: ${country}, using provider country attribution.` : 'Worldwide, including records without a country attribution.'} No location is inferred from a network name.`}
     >
-      <p className="rounded-lg border border-amber-300/20 bg-amber-300/5 p-3 text-[11px] leading-relaxed text-muted">
+      <p className="rounded-lg border border-amber/20 bg-amber/5 p-3 text-[11px] leading-relaxed text-muted">
         IODA alerts and event windows are measured anomalies. Cloudflare Radar annotations are a
         separate provider assessment. Neither feed establishes that a disruption is ongoing or
         caused by an attack. Country markers indicate reported scope, not an outage location.

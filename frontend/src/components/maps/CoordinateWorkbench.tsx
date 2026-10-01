@@ -150,7 +150,7 @@ export function CoordinateWorkbench({ onNavigate }: { onNavigate: (position: Pos
         Convert coordinates
       </button>
       {error && (
-        <p role="alert" className="text-red-300">
+        <p role="alert" className="text-critical">
           {error}
         </p>
       )}

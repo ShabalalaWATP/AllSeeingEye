@@ -50,19 +50,19 @@ export function RfTerrainQuality({ analysis }: { analysis: TerrainAnalysis }) {
         </p>
       )}
       {maximumGapM !== null && maximumGapM > elevations.resolution_m * 2 && (
-        <p className="rf-result-next-step text-xs text-amber-200">
+        <p className="rf-result-next-step text-xs text-amber">
           Sample gaps exceed the terrain grid spacing. Reduce the survey radius or analyse a
           point-to-point path through an area of interest for closer screening.
         </p>
       )}
       {terrain.missingSamples > 0 && (
-        <p className="rf-result-next-step text-xs text-amber-200">
+        <p className="rf-result-next-step text-xs text-amber">
           {terrain.missingSamples} missing terrain samples. Affected paths are unknown; retry or
           choose another site before relying on this screen.
         </p>
       )}
       {terrain.belowSeaLevelSamples > 0 && (
-        <p className="rf-result-next-step text-xs text-amber-200">
+        <p className="rf-result-next-step text-xs text-amber">
           Negative elevations may include bathymetry. Water-surface heights are unverified, so check
           over-water paths separately.
         </p>

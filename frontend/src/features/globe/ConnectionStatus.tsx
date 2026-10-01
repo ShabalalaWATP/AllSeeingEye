@@ -8,10 +8,10 @@ const LABELS: Record<StreamStatus, string> = {
 };
 
 const DOTS: Record<StreamStatus, string> = {
-  connecting: 'bg-amber-400 animate-pulse',
-  live: 'bg-emerald-400',
-  reconnecting: 'bg-amber-400 animate-pulse',
-  offline: 'bg-zinc-500',
+  connecting: 'bg-amber animate-pulse',
+  live: 'bg-good',
+  reconnecting: 'bg-amber animate-pulse',
+  offline: 'bg-muted',
 };
 
 /** Stream state as a coloured dot and a word, for the layer panel header. */
