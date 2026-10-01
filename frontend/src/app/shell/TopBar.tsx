@@ -31,7 +31,7 @@ function UtcClock() {
     <time
       dateTime={new Date(now).toISOString()}
       aria-label="Current time, UTC"
-      className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums md:inline-flex"
+      className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-2xs text-muted tabular-nums md:inline-flex"
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
       {UTC_CLOCK.format(now)} <span className="text-muted">UTC</span>

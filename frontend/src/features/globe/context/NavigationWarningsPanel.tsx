@@ -39,7 +39,7 @@ export function NavigationWarningsPanel({ country, onSelect }: ContextPanelProps
       snapshot={snapshot}
       scope={`Worldwide NAVAREA / HYDROARC broadcasts relayed by NGA.${country ? ` The ${country} nation filter does not apply to maritime warning areas.` : ''}`}
     >
-      <p className="rounded-lg border border-line bg-white/[0.03] p-3 text-[11px] leading-relaxed text-muted">
+      <p className="rounded-lg border border-line bg-white/[0.03] p-3 text-2xs leading-relaxed text-muted">
         The feed requests active broadcasts, but this is a dated snapshot. Read the source for
         validity and cancellations. A map marker is the first reported position, not an
         exclusion-zone boundary or the centre of a warning area.
@@ -107,11 +107,11 @@ export function NavigationWarningsPanel({ country, onSelect }: ContextPanelProps
               {event.title}
             </SourceText>
             <p className="mt-1 text-2xs text-muted">Issued: {utcDate(event.published_at)}</p>
-            <p className="mt-2 text-[11px] text-muted">
+            <p className="mt-2 text-2xs text-muted">
               Authority: {attribute(event, 'authority')} · Source status:{' '}
               {attribute(event, 'status')}
             </p>
-            <p className="mt-1 text-[11px] text-muted">
+            <p className="mt-1 text-2xs text-muted">
               Reported positions: {attribute(event, 'positions')}
               {event.point ? '. Only the first position is mapped.' : '. No parsed map position.'}
             </p>

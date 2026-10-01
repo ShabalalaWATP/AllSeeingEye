@@ -113,7 +113,7 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                         <span className="text-sm font-medium">{source.name}</span>
                         {detail == null ? null : (
                           <span
-                            className="block w-full truncate font-mono text-[11px] text-muted"
+                            className="block w-full truncate font-mono text-2xs text-muted"
                             title={detail}
                           >
                             {detail}

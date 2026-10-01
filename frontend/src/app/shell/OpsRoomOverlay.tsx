@@ -38,7 +38,7 @@ export function OpsRoomOverlay() {
             </div>
           ))}
           {total > SHOWN && (
-            <div className="px-1 font-mono text-[11px] text-muted">
+            <div className="px-1 font-mono text-2xs text-muted">
               {total - SHOWN} more on the warning page
             </div>
           )}
@@ -65,7 +65,7 @@ export function OpsRoomOverlay() {
         <Button
           variant="ghost"
           onClick={() => setOpsRoom(false)}
-          className="min-h-11 font-mono text-[11px] uppercase tracking-[0.2em] text-muted"
+          className="min-h-11 font-mono text-2xs uppercase tracking-[0.2em] text-muted"
         >
           Ops room · Esc to exit
         </Button>

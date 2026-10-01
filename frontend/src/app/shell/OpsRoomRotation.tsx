@@ -42,7 +42,7 @@ export default function OpsRoomRotation() {
       {shown ? (
         <>
           <p className="text-lg font-medium leading-snug">{shown.caption}</p>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+          <p className="font-mono text-2xs uppercase tracking-[0.2em] text-muted">
             {`${String(shown.index + 1)} of ${String(shown.total)}`}
           </p>
         </>

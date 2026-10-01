@@ -2,6 +2,7 @@
  * Page scaffolding shared by administration pages: one scroll container, a page
  * header with a single h1, and section cards with a clear heading hierarchy.
  */
+import { PageHeader } from '@/components/ui/PageHeader';
 import type { ReactNode } from 'react';
 
 import { AdminIcon, type AdminGlyph } from './AdminIcon';
@@ -39,23 +40,15 @@ export function AdminPage({
       <div
         className={`relative mx-auto w-full ${WIDTHS[width]} px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-9`}
       >
-        <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-b border-line/70 pb-6">
-          <div className="min-w-0 max-w-3xl">
-            <p className="font-mono text-2xs tracking-[0.22em] text-ember uppercase">
-              {eyebrow}
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              {title}
-            </h1>
-            {description === undefined ? null : (
-              <div className="mt-2 text-sm leading-6 text-muted">{description}</div>
-            )}
-            {meta === undefined ? null : <div className="mt-3">{meta}</div>}
-          </div>
-          {actions === undefined ? null : (
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
-          )}
-        </header>
+        <PageHeader
+          className="border-b border-line/70 pb-6"
+          title={title}
+          eyebrow={eyebrow}
+          description={description}
+          actions={actions}
+        >
+          {meta === undefined ? null : <div className="mt-1">{meta}</div>}
+        </PageHeader>
         <div className="mt-6 space-y-6">{children}</div>
       </div>
     </section>

@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { describeError } from '@/lib/api/errors';
 import type { PendingMfa } from '@/lib/api/mfa';
 
@@ -35,19 +36,19 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
         if (ready) void mfa.run('verify');
       }}
     >
-      <header className="mb-2">
-        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Account security
-        </p>
-        <h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold tracking-tight">
-          {challenge.enrollment_required ? 'Secure your account' : 'Verify your sign-in'}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          {challenge.enrollment_required
+      <PageHeader
+        className="mb-2"
+        title={challenge.enrollment_required ? 'Secure your account' : 'Verify your sign-in'}
+        headingRef={heading}
+        focusable
+        eyebrow="Account security"
+        eyebrowTone="muted"
+        description={
+          challenge.enrollment_required
             ? 'Administrators must enable multi-factor authentication before continuing. Choose a method to get started.'
-            : 'Your password is verified. Complete the security check to continue.'}
-        </p>
-      </header>
+            : 'Your password is verified. Complete the security check to continue.'
+        }
+      />
       {mfa.error === null ? null : (
         <Alert tone="error">
           {mfa.error.code === 'invalid_credentials'

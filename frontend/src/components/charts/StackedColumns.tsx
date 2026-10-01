@@ -134,7 +134,7 @@ export function StackedColumns({
         </div>
         <CategoryAxisLabels ticks={dayTicks} />
       </div>
-      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
+      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-2xs text-muted">
         {series.length > 1 &&
           series.map((row) => (
             <span key={row.key} className="inline-flex items-center gap-1.5">

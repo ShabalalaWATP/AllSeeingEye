@@ -92,7 +92,7 @@ export function LayerPanel({
           Connection and coverage
         </summary>
         {stats !== null && (
-          <p className="mt-1 font-mono text-[11px] text-muted">
+          <p className="mt-1 font-mono text-2xs text-muted">
             Retained on server: <span>{formatBudget(stats)}</span>
           </p>
         )}

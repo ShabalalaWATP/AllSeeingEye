@@ -109,8 +109,8 @@ function SessionContext() {
         <AdminIcon name="shield" size={14} />
       </span>
       <span className="hidden flex-col text-left leading-tight lg:flex">
-        <span className="text-[11px] text-good">Verified session</span>
-        <span className="text-[11px]">Administrator</span>
+        <span className="text-2xs text-good">Verified session</span>
+        <span className="text-2xs">Administrator</span>
       </span>
     </Link>
   );

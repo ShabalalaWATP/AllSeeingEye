@@ -39,7 +39,7 @@ export function BarList({
                 {row.label}
                 {row.note && <span className="ml-2 text-muted">{row.note}</span>}
               </span>
-              <span className="shrink-0 font-mono text-[11px] text-muted tabular-nums">
+              <span className="shrink-0 font-mono text-2xs text-muted tabular-nums">
                 {formatCount(row.value)}
               </span>
             </span>

@@ -138,7 +138,7 @@ export function ResearchInput({ onChange, onBusyChange, disabled = false }: Rese
                 <li key={index}>{limit}</li>
               ))}
             </ul>
-            <p className="mt-3 break-all font-mono text-[11px]">SHA-256: {receipt.sha256}</p>
+            <p className="mt-3 break-all font-mono text-2xs">SHA-256: {receipt.sha256}</p>
           </details>
         </div>
       )}

@@ -3,24 +3,24 @@
  */
 import { Link } from 'react-router';
 
-import { geolocationTabs, SectionTabs } from '@/components/research/SectionTabs';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Tabs } from '@/components/ui/Tabs';
+import { geolocationTabs } from '@/lib/workspaceNavigation';
 
 import { SavedReports } from './SavedReports';
 
 export default function SavedAssessmentsPage() {
   return (
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <SectionTabs tabs={geolocationTabs} label="Geolocation" />
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Saved assessments</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Photograph assessments and the candidate locations each one considered, with the evidence
-          frozen as it was read.
-        </p>
-        <Link to="/reports/saved" className="text-sm text-muted underline hover:text-text">
+      <Tabs links={geolocationTabs} label="Geolocation" />
+      <PageHeader
+        title="Saved assessments"
+        description="Photograph assessments and the candidate locations each one considered, with the evidence frozen as it was read."
+      >
+        <Link to="/reports/saved" className="w-fit text-sm text-muted underline hover:text-text">
           All saved reports
         </Link>
-      </header>
+      </PageHeader>
       <SavedReports
         origin="geolocation"
         caption="Saved geolocation assessments"

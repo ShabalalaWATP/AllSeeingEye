@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -111,19 +112,15 @@ export default function SourcesPage({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-ember)_12%,transparent),transparent_70%)]"
           />
-          <div className="relative">
-            <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-              Collection directory
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Sources and connections
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
-              Every feed, research capability, camera provider, map layer and dataset this
-              deployment uses, with what each one is doing right now. Values are never shown; a
-              missing key names the server setting that unlocks it.
-            </p>
-            <p className="mt-2 max-w-3xl text-xs leading-5 text-muted">
+          <PageHeader
+            as="div"
+            className="relative"
+            title="Sources and connections"
+            eyebrow="Collection directory"
+            eyebrowTone="cyan"
+            description="Every feed, research capability, camera provider, map layer and dataset this deployment uses, with what each one is doing right now. Values are never shown; a missing key names the server setting that unlocks it."
+          >
+            <p className="text-xs leading-5 text-muted">
               Read only. Grades are editorial context with a recorded basis, not measured accuracy.
               A feed counts as live only after a successful collection on this server; a key or
               registration alone shows as not yet confirmed.
@@ -131,12 +128,12 @@ export default function SourcesPage({
             {workspace === 'admin' && (
               <Link
                 to="/admin/sources"
-                className="mt-3 inline-flex min-h-11 items-center text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+                className="inline-flex min-h-11 w-fit items-center text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
               >
                 Open source controls
               </Link>
             )}
-          </div>
+          </PageHeader>
         </header>
         {loading && !data && <LoadingNote label="Loading source catalogue" />}
         {error !== null && (

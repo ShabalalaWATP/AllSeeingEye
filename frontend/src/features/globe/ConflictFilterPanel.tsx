@@ -52,7 +52,7 @@ export function ConflictFilterPanel({
             />
             <span>Unreviewed media signals ({unreviewedCount.toLocaleString()} loaded)</span>
           </label>
-          <p className="text-[11px] leading-relaxed text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             Off by default. Automated news coding can mistake court cases or accidents for conflict.
             Titles may be machine-generated; matched source text may be unavailable. This includes
             pending or uncertain screening, but never reports assessed as unrelated or context only.
@@ -68,7 +68,7 @@ export function ConflictFilterPanel({
         />
         <span>Historical baseline ({historicalCount.toLocaleString()} loaded)</span>
       </label>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Monthly UCDP releases describe earlier periods and are hidden by default. Enabling the
         historical baseline does not make these reports live incidents; release and occurrence dates
         appear in details.
@@ -121,7 +121,7 @@ export function ConflictFilterPanel({
         </label>
       )}
       {setPrecision && (
-        <p className="text-[11px] leading-relaxed text-muted">
+        <p className="text-2xs leading-relaxed text-muted">
           Precision reflects the source's location label, not independent verification. Approximate
           locations can be city, region or country centres. Unlocated reports appear only under All.
         </p>
@@ -160,17 +160,17 @@ export function ConflictFilterPanel({
           </label>
         ))}
       </fieldset>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Counts follow screening, search, source, location, nation and time filters. They are loaded
         reports, not verified conflicts or unique incidents. Several sources may report the same
         event.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Types follow relevance screening where available; original provider types remain in details.
         Protests, force movements and other incidents do not establish armed conflict. The main
         conflict layer switch still controls visibility.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Symbols match individual map reports. Outlined rings indicate approximate locations. At
         wider zoom levels, clusters can group several reports; zoom in to see their types.
       </p>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -110,28 +111,24 @@ function TeamsWorkspace({ user }: { user: User }) {
   return (
     <section className={`h-full overflow-y-auto p-4 sm:p-6 ${LAUNCHER_SCROLL_PADDING}`}>
       <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-28">
-        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line/70 pb-6">
-          <div>
-            <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">
-              Shared workspaces
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Teams</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              Keep collaboration focused: shared research, a lightweight team board, and access
-              controls in one workspace.
-            </p>
-          </div>
-          {user.is_active && teams?.length !== 0 ? (
-            <Button
-              variant="secondary"
-              onClick={() => setCreating((value) => !value)}
-              aria-expanded={creating}
-              aria-controls="create-team-panel"
-            >
-              {creating ? 'Close create form' : 'Create a team'}
-            </Button>
-          ) : null}
-        </header>
+        <PageHeader
+          className="border-b border-line/70 pb-6"
+          title="Teams"
+          eyebrow="Shared workspaces"
+          description="Keep collaboration focused: shared research, a lightweight team board, and access controls in one workspace."
+          actions={
+            user.is_active && teams?.length !== 0 ? (
+              <Button
+                variant="secondary"
+                onClick={() => setCreating((value) => !value)}
+                aria-expanded={creating}
+                aria-controls="create-team-panel"
+              >
+                {creating ? 'Close create form' : 'Create a team'}
+              </Button>
+            ) : undefined
+          }
+        />
         <TeamInvitationInbox onAccepted={resource.reload} />
         {action.error ? <Alert tone="error">{action.error}</Alert> : null}
         {action.notice ? (

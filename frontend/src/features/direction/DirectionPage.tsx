@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
@@ -46,7 +47,7 @@ export default function DirectionPage() {
   );
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Plans and areas</h1>
+      <PageHeader type="record" title="Plans and areas" />
       <p className="text-sm text-muted">
         Save reusable geographic areas and structured questions for more detailed research. Open
         saved areas on the map, or reuse them in{' '}

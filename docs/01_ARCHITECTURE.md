@@ -163,6 +163,42 @@ explicit exception list remains for subscription read projections, and some
 subscription coordination lives in the composition package. The enforced
 contracts are the source of truth, rather than file size or a SOLID score.
 
+### Accessibility checks in the frontend tests
+
+- **axe-core** runs on representative pages through the real route table and on the
+  shared primitives (`frontend/src/test/a11y/`, `components/ui/primitives.a11y.test.tsx`).
+  Any violation fails CI with the rule, the element and a link to the fix. The helper,
+  `src/test/axe.ts`, also fails when an axe check throws, so a rule cannot be skipped silently.
+- **jsdom limits.** jsdom has no layout or paint, so `color-contrast`, `link-in-text-block`
+  and `target-size` are off there. Contrast is measured from the theme tokens instead
+  (`styles/paletteClasses.test.ts`, `styles/readability.test.ts`) for every palette.
+  Text tokens must reach 4.5:1. The focus ring, accent borders, control borders and
+  chart marks must reach 3:1.
+- A browser pass is still needed for contrast over imagery, zoom, reflow and screen reader
+  behaviour. Passing these tests is not a WCAG conformance claim.
+
+### Shared interface primitives and design tokens
+
+- **Primitives** live in `frontend/src/components/ui`. Every route page names itself
+  through `PageHeader`, which has one heading size per page type: workspace and sign-in
+  pages, records and tools, and status pages. `Tabs` is the one tab strip. Route tabs are a
+  labelled navigation of links; panel tabs are WAI-ARIA tabs. `Skeleton` draws
+  placeholders beside a status message. Confirmations use `ConfirmButton` and
+  `ConfirmDialog`; empty lists use `EmptyState`.
+- **One type scale.** `styles/theme.css` resets Tailwind's font sizes and declares the
+  scale (`text-2xs` to `text-4xl`, plus a display `text-6xl`) in rem, so text follows the
+  reader's font size. `styles/typeScale.test.ts` rejects arbitrary sizes such as
+  `text-[11px]`, undeclared steps and any `h1` outside `PageHeader`. The listed exceptions
+  are the paper report reader, the globe's visually hidden heading and, until its pending
+  rewrite lands, the alerts page.
+- **Colours come from tokens.** Theme-dependent colours use the `--color-*` tokens. Fixed
+  palettes are named once at the top of their stylesheet: the paper report, the sign-in
+  screen and the radio planner instrument. `styles/featureColours.test.ts` rejects a hex
+  colour outside a custom property declaration and any hex colour in a component class.
+- Some globe stylesheets and panels are temporarily exempt from the type-scale and
+  colour checks while the globe is being refactored. Each exemption fails its own test once
+  it is no longer needed.
+
 ## What is stored
 
 | Data | Lifetime and location |

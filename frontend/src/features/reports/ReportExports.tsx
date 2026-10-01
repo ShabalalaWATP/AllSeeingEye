@@ -159,7 +159,7 @@ export function ReportExports({
           }}
         >
           <div className="px-2 pb-2 pt-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">
+            <p className="text-2xs font-medium uppercase tracking-[0.16em] text-muted">
               Report version {version}
             </p>
             <p className="mt-1 text-xs leading-5 text-muted">

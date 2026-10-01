@@ -67,7 +67,7 @@ export function EquipmentCard({
             type="button"
             onClick={() => setExpanded((value) => !value)}
             aria-expanded={expanded}
-            className="w-fit text-[11px] text-text underline-offset-2 hover:underline"
+            className="w-fit text-2xs text-text underline-offset-2 hover:underline"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -88,7 +88,7 @@ export function EquipmentCard({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-ember hover:underline"
+                className="text-2xs text-ember hover:underline"
               >
                 {link.label}
               </a>

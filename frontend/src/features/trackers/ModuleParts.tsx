@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Tally } from '@/lib/api/modules';
@@ -12,7 +13,7 @@ import { BackToTrackers, ShowOnGlobe } from './TrackerParts';
 export function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-card border border-line bg-surface px-3 py-2">
-      <div className="font-mono text-[11px] uppercase tracking-wide text-muted">{label}</div>
+      <div className="font-mono text-2xs uppercase tracking-wide text-muted">{label}</div>
       <div className="text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
@@ -78,7 +79,7 @@ export function ModulePage({
     <article className="flex h-full flex-col gap-5 overflow-y-auto p-6">
       <header className="flex flex-col gap-2">
         <BackToTrackers />
-        <h1 className="text-xl font-semibold">{title}</h1>
+        <PageHeader as="div" type="record" title={title} />
         <p className="text-sm text-muted">{blurb}</p>
         <div className="flex flex-wrap gap-2">
           <ShowOnGlobe country={null} />

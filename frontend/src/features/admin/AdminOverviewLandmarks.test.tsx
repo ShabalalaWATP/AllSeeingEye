@@ -1,11 +1,12 @@
 /**
  * The administration overview keeps all content inside landmarks and its headings in order
- * (KAN-67). There is no axe dependency, so this mirrors axe's `region` and `heading-order`
- * rules on the rendered page, including the shell around it.
+ * (KAN-67). The explicit checks below name the expectations; axe (KAN-61) then runs every
+ * rule jsdom can evaluate on the same rendered page, including the shell around it.
  */
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { expectNoAxeViolations } from '@/test/axe';
 import { renderApp } from '@/test/render';
 
 const LANDMARKS = [
@@ -61,5 +62,6 @@ describe('administration overview structure', () => {
     expect(levels[0]).toBe(1);
     const skips = levels.filter((level, index) => index > 0 && level > levels[index - 1]! + 1);
     expect(skips).toEqual([]);
+    await expectNoAxeViolations();
   });
 });

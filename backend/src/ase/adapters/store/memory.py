@@ -54,6 +54,8 @@ class InMemoryEventStore:
         self._pending_expiry: set[str] = set()
         self._pending_evictions = 0
         self._pending_overflow = False
+        # Increases with every content change, so shared reads can tell a result is current.
+        self._generation = 0
 
     def upsert(self, events: Iterable[Event]) -> UpsertResult:
         result = self._upsert_batch(events)
@@ -155,6 +157,10 @@ class InMemoryEventStore:
                 await asyncio.sleep(0)
         finally:
             self._capture_evictions()
+
+    @property
+    def generation(self) -> int:
+        return self._generation
 
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
@@ -316,6 +322,7 @@ class InMemoryEventStore:
 
     def _insert(self, event: Event) -> None:
         self._stats_cache = None
+        self._generation += 1
         self._pending_expiry.discard(event.id)
         self._events[event.id] = event
         size = estimate_bytes(event)
@@ -331,6 +338,7 @@ class InMemoryEventStore:
         if event is None:
             return
         self._stats_cache = None
+        self._generation += 1
         self._estimated_bytes -= self._sizes.pop(event_id, 0)
         self._by_category.get(event.category, set()).discard(event_id)
         self._by_source.get(event.source_id, set()).discard(event_id)

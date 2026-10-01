@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField, TextField } from '@/components/ui/Field';
@@ -27,7 +28,7 @@ export function RequestAccountPage() {
   if (message !== null) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Request received</h1>
+        <PageHeader title="Request received" />
         <Alert tone="success">{message}</Alert>
         <Link to="/login" className="text-sm text-muted hover:text-text">
           Back to sign in
@@ -46,7 +47,7 @@ export function RequestAccountPage() {
         void run();
       }}
     >
-      <h1 className="text-lg font-semibold">Request an account</h1>
+      <PageHeader title="Request an account" />
       <p className="text-sm text-muted">
         An administrator reviews every request. You will receive an activation link if it is
         approved.

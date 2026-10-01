@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -64,15 +65,15 @@ export default function ReportJobsPage() {
   return (
     <section className="report-jobs-page">
       <div className="report-jobs-workspace">
-        <header className="job-list-heading">
-          <div>
-            <h1>Research progress</h1>
-            <p>Follow ongoing research, review partial sections and return to completed reports.</p>
-          </div>
-          <Link to="/research" className="job-report-link">
-            New research →
-          </Link>
-        </header>
+        <PageHeader
+          title="Research progress"
+          description="Follow ongoing research, review partial sections and return to completed reports."
+          actions={
+            <Link to="/research" className="job-report-link">
+              New research →
+            </Link>
+          }
+        />
         <ResearchNavigation />
         <OwnershipScopeControl state={list.ownership} noun="research runs" />
         <ReportJobFilters list={list} />

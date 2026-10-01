@@ -4,6 +4,7 @@
  */
 import { Link, useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
@@ -38,13 +39,10 @@ export default function SavedReportsPage() {
   const listed = reports.data?.items ?? null;
   return (
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Saved reports</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Research, subscription updates and geolocation assessments you can open, newest first.
-          Automatic workspace briefings are not part of requested work.
-        </p>
-      </header>
+      <PageHeader
+        title="Saved reports"
+        description="Research, subscription updates and geolocation assessments you can open, newest first. Automatic workspace briefings are not part of requested work."
+      />
       <div className="max-w-xs">
         <SelectField
           label="Show"

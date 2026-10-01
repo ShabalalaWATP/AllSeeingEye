@@ -67,7 +67,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
           Three-hour index. Observation: {utcDate(kp?.attributes.time_tag)}.
         </p>
       </div>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         These measurements do not establish local GPS jamming, HF coverage or a forecast. Check the
         dated bulletin for its stated validity and cancellations.
       </p>

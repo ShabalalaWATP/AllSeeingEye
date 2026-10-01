@@ -19,7 +19,7 @@ export function ConnectionStatus({ status }: { status: StreamStatus }) {
   return (
     <span
       role="status"
-      className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted"
+      className="inline-flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wider text-muted"
     >
       <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${DOTS[status]}`} />
       {LABELS[status]}

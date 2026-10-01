@@ -12,7 +12,7 @@ export function LiveCoverage({ filteredCount }: { filteredCount: number }) {
   const reload = useEventsStore((state) => state.load);
   return (
     <div
-      className="mt-2 space-y-1 border-t border-line px-1 pt-2 text-[11px] text-muted"
+      className="mt-2 space-y-1 border-t border-line px-1 pt-2 text-2xs text-muted"
       aria-label="Live event coverage"
     >
       <p>

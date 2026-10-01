@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { Alert as Notice } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
 import type { IndicatorRequest } from '@/lib/alertRules';
 import { clearReportWatchDraft, useReportWatchDraft } from '@/lib/alertRuleDraft';
 import type { ReportWatchSource } from '@/lib/alertRuleDraft';
@@ -148,7 +149,7 @@ export default function WarningPage() {
 
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Alerts</h1>
+      <PageHeader type="record" title="Alerts" />
       <Link to="/annotation-monitors" className="text-sm text-ember underline">
         Annotation monitors and their change history
       </Link>

@@ -43,7 +43,7 @@ export function ReplayControls({ replay }: { replay: LiveReplay }) {
         </>
       ) : (
         <>
-          <p className="text-[13px]">
+          <p className="text-sm">
             <span className="map-tool-state" data-active="true">
               Replay, not live
             </span>{' '}

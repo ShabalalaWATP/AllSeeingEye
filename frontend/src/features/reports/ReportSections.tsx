@@ -89,7 +89,7 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
           {advocacy.argument}
           <Labels labels={advocacy.evidence} />
         </p>
-        <p className="mt-2 text-[0.82rem] opacity-85">
+        <p className="mt-2 text-sm opacity-85">
           {lowered
             ? `Confidence on ${advocacy.target} lowered from ${advocacy.confidence_before ?? ''} to ${advocacy.confidence_after ?? ''}.`
             : 'Confidence unchanged.'}{' '}

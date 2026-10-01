@@ -78,7 +78,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       <div className="flex items-start justify-between gap-2 border-b border-line p-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-text"
+            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-2xs uppercase tracking-wider text-text"
             style={{ backgroundColor: `${style.css}1f` }}
           >
             <span
@@ -89,12 +89,12 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
             {style.label}
           </span>
           <span
-            className="rounded border border-line px-1.5 py-0.5 font-mono text-[11px] text-text"
+            className="rounded border border-line px-1.5 py-0.5 font-mono text-2xs text-text"
             title={event.grade_rationale}
           >
             Grade {event.grade}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
+          <span className="font-mono text-2xs uppercase tracking-wider text-muted">
             {event.subtype}
           </span>
         </div>
@@ -210,7 +210,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
             {event.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted"
+                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs text-muted"
               >
                 {tag}
               </span>

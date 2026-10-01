@@ -29,6 +29,11 @@
   --paper-caution-ink: #6b3f10;
   --paper-caution-ground: #fdf4e2;
   --paper-caution-rule: #cf9736;
+  --paper-failed-ink: #6f2b24;
+  --paper-failed-ground: #fdefec;
+  --paper-failed-rule: #b7554b;
+  --paper-brand: #ff6f37;
+  --paper-brand-rule: #24211d;
 
   /*
    * Signal tones. Every one of these is rendered beside a label and the recorded
@@ -69,7 +74,7 @@
   content: '';
   display: block;
   height: 3px;
-  background: linear-gradient(90deg, #ff6f37 0 7rem, #24211d 7rem 100%);
+  background: linear-gradient(90deg, var(--paper-brand) 0 7rem, var(--paper-brand-rule) 7rem 100%);
 }
 
 .report-reader-content {
@@ -205,7 +210,7 @@
   padding: 0.1rem 0.4rem;
   background: var(--paper-accent);
   border-radius: 0.25rem;
-  color: #fff;
+  color: var(--color-white);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
@@ -423,7 +428,7 @@
 
 .report-reader-paper a[aria-label^='View evidence']:hover,
 .report-reader-paper a[aria-label^='View evidence']:focus-visible {
-  background: #fff;
+  background: var(--color-white);
   border-color: var(--paper-accent);
 }
 
@@ -520,7 +525,7 @@
 .report-reader-figure {
   margin-top: 2rem;
   padding: 1rem 1.1rem 1.1rem;
-  background: #fff;
+  background: var(--color-white);
   border: 1px solid var(--paper-rule);
   border-radius: 0.4rem;
 }
@@ -611,7 +616,7 @@
 
 @media print {
   .report-reader-shell {
-    background: #ffffff;
+    background: var(--color-white);
     overflow: visible;
   }
 

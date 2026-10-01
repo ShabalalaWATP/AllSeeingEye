@@ -15,9 +15,9 @@ export function CyberKpis({ data }: { data: CyberSnapshot }) {
           key={kpi.key}
           className="rounded-xl border border-line/70 bg-surface/60 p-4 transition-colors hover:border-line"
         >
-          <p className="text-[11px] text-muted">{kpi.label}</p>
+          <p className="text-2xs text-muted">{kpi.label}</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">{formatCount(kpi.value)}</p>
-          <p className="mt-0.5 truncate text-[11px] text-muted">{kpi.caption}</p>
+          <p className="mt-0.5 truncate text-2xs text-muted">{kpi.caption}</p>
           <div className="mt-3">
             <Sparkline values={kpi.series} slot={kpi.slot} label={`${kpi.label} per day`} />
           </div>

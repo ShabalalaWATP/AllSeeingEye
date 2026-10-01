@@ -113,7 +113,7 @@ export function EvaluationStartForm({
                   />
                   <span className="grid">
                     {item.title}
-                    <span className="font-mono text-[11px] text-muted">{item.id}</span>
+                    <span className="font-mono text-2xs text-muted">{item.id}</span>
                   </span>
                 </label>
               ))}

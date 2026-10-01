@@ -58,7 +58,7 @@ function FigureCard({
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium text-text">{figure.name}</span>
           <span className="block truncate text-xs text-muted">{figure.office}</span>
-          <span className="mt-1 block font-mono text-[11px] uppercase text-muted">
+          <span className="mt-1 block font-mono text-2xs uppercase text-muted">
             {BASIS_LABELS[figure.placement.basis]} · {figure.mentions}{' '}
             {figure.mentions === 1 ? 'mention' : 'mentions'}
           </span>
@@ -73,7 +73,7 @@ function FigureCard({
           <p className="leading-relaxed text-muted">{figure.placement.detail}</p>
           <EventList label={`Reporting naming ${figure.name}`} events={figure.latest} />
           {figure.portrait && (
-            <p className="text-[11px] text-muted">
+            <p className="text-2xs text-muted">
               Portrait: {figure.portrait.credit}, {figure.portrait.licence}, via{' '}
               <a
                 href={figure.portrait.source_url}
