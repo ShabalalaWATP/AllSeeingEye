@@ -22,7 +22,14 @@ export class AssistantBoundary extends Component<{ children: ReactNode }, Bounda
           className="eye-restart"
           onClick={() => this.setState({ failed: false })}
         >
-          <img src="/brand/eye-512.png" alt="" aria-hidden="true" width="64" height="42" />
+          <img
+            src="/brand/eye-128.webp"
+            alt=""
+            aria-hidden="true"
+            width="64"
+            height="42"
+            decoding="async"
+          />
           <span>
             Restart Eye assistant
             <small>Clear this chat and try again.</small>
