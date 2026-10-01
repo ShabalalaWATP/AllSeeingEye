@@ -45,6 +45,8 @@ export interface RuleFields {
   categories: string[];
   keywords: string;
   threshold: string;
+  ratio: string;
+  baselineDays: string;
   window: string;
   cooldown: string;
   severityFloor: string;
@@ -60,6 +62,8 @@ export type RuleProblemField =
   | 'categories'
   | 'keywords'
   | 'threshold'
+  | 'baseline_ratio'
+  | 'baseline_days'
   | 'cooldown_minutes'
   | 'severity_floor';
 
@@ -74,6 +78,8 @@ export function emptyRuleFields(): RuleFields {
     categories: [],
     keywords: '',
     threshold: '1',
+    ratio: '',
+    baselineDays: '30',
     window: '360',
     cooldown: '60',
     severityFloor: '0',
@@ -100,6 +106,8 @@ export function ruleFieldsFromIndicator(rule: Indicator): RuleFields {
     categories: [...rule.categories],
     keywords: rule.keywords.join(', '),
     threshold: String(rule.threshold),
+    ratio: rule.baseline_ratio == null ? '' : String(rule.baseline_ratio),
+    baselineDays: String(rule.baseline_days ?? 30),
     window: String(rule.window_minutes),
     cooldown: String(rule.cooldown_minutes),
     severityFloor: String(rule.severity_floor),
@@ -165,6 +173,11 @@ export function ruleProblems(
     problems.keywords = `Shorten each keyword to ${String(MAX_KEYWORD_LENGTH)} characters or fewer (${String(long)} ${long === 1 ? 'is' : 'are'} longer).`;
   if (!inRange(fields.threshold, 1, MAX_THRESHOLD, true))
     problems.threshold = 'Enter a whole number from 1 to 10000.';
+  const ratio = fields.ratio ?? '';
+  if (ratio !== '' && (!inRange(ratio, 1, 100, false) || Number(ratio) <= 1))
+    problems.baseline_ratio = 'Enter a ratio above 1 and no greater than 100, or leave it empty.';
+  if (!inRange(fields.baselineDays ?? '30', 7, 30, true))
+    problems.baseline_days = 'Enter whole days from 7 to 30.';
   if (!inRange(fields.cooldown, COOLDOWN_RANGE.min, COOLDOWN_RANGE.max, true))
     problems.cooldown_minutes = 'Enter whole minutes from 1 to 1440 (24 hours).';
   if (!inRange(fields.severityFloor, 0, 1, false))
@@ -195,7 +208,9 @@ export function ruleRequest(fields: RuleFields, scope: RuleScope): IndicatorRequ
         : [],
     keywords: splitKeywords(fields.keywords),
     threshold: Number(fields.threshold),
-    window_minutes: Number(fields.window),
+    baseline_ratio: fields.ratio ? Number(fields.ratio) : null,
+    baseline_days: Number(fields.baselineDays ?? '30'),
+    window_minutes: fields.ratio ? 60 : Number(fields.window),
     cooldown_minutes: Number(fields.cooldown),
     severity_floor: Number(fields.severityFloor),
     report_template: shape || fields.template === '' ? null : fields.template,
@@ -265,7 +280,18 @@ export function ruleSummary(
       label: 'Threshold',
       text: `${fields.threshold} or more matching items`,
     },
-    { label: 'Time window', text: `The last ${windowLabel(Number(fields.window))}` },
+    ...(fields.ratio
+      ? [
+          {
+            label: 'Baseline ratio',
+            text: `At least ${fields.ratio} times the ${fields.baselineDays ?? '30'}-day sampled hourly mean; requires seven days and 168 sampled hours, with a positive mean`,
+          },
+        ]
+      : []),
+    {
+      label: 'Time window',
+      text: `The last ${windowLabel(fields.ratio ? 60 : Number(fields.window))}`,
+    },
     {
       label: 'Severity floor',
       text:

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { ForecastWatches } from '@/components/reports/ForecastWatches';
 
 import { Alert as Notice } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -172,6 +173,7 @@ export default function WarningPage() {
         </Notice>
       )}
       {draft && !editing && form}
+      <ForecastWatches workspaces={workspaces} />
       <AlertsSection workspaces={workspaces} />
       <AlertRulesSection
         rules={indicators.data}

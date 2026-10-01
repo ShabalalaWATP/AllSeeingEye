@@ -11,6 +11,8 @@ import type { ConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { RuleDeletion } from './RuleDeletion';
+import { RuleBaseline } from './RuleBaseline';
+import { RuleFeedback } from './RuleFeedback';
 
 export function describeScope(rule: Indicator): string {
   if (rule.research_area) return `exact shape · ${rule.research_area.sha256.slice(0, 12)}`;
@@ -20,6 +22,8 @@ export function describeScope(rule: Indicator): string {
 }
 
 export function describeRule(rule: Indicator): string {
+  if (rule.baseline_ratio != null)
+    return `${rule.baseline_ratio} times the ${rule.baseline_days ?? 30}-day hourly mean, at least ${rule.threshold} items`;
   const what = [
     rule.categories.length > 0 ? rule.categories.join('/') : 'any category',
     rule.keywords.length > 0 ? `with ${rule.keywords.join(', ')}` : '',
@@ -99,7 +103,11 @@ export function AlertRulesSection({
                     {rule.enabled ? 'Active' : 'Paused: not evaluated, raises no alerts'}
                   </Td>
                   <Td className="font-mono text-xs text-muted">{describeScope(rule)}</Td>
-                  <Td className="text-xs">{describeRule(rule)}</Td>
+                  <Td className="text-xs">
+                    {describeRule(rule)}
+                    <RuleFeedback ruleId={rule.id} />
+                    {rule.baseline_ratio != null && <RuleBaseline ruleId={rule.id} />}
+                  </Td>
                   <Td className="font-mono text-xs text-muted">{rule.report_template ?? 'none'}</Td>
                   <Td>
                     <div className="flex flex-wrap gap-2">

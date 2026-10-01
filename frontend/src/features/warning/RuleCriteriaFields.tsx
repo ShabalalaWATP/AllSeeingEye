@@ -20,6 +20,8 @@ export type RuleFieldKey =
   | 'categories'
   | 'keywords'
   | 'threshold'
+  | 'baseline_ratio'
+  | 'baseline_days'
   | 'window_minutes'
   | 'cooldown_minutes'
   | 'severity_floor'
@@ -76,9 +78,31 @@ export function RuleCriteriaFields({
           label="Window"
           {...errors.field('window_minutes')}
           hint="How far back matching items are counted."
-          value={fields.window}
+          value={fields.ratio ? '60' : fields.window}
+          disabled={Boolean(fields.ratio)}
           onChange={(event) => change({ window: event.target.value })}
           options={windows}
+        />
+        <TextField
+          label="Ratio to hourly mean (optional)"
+          {...errors.field('baseline_ratio')}
+          hint="Requires seven days and 168 sampled hours with a positive mean. Threshold remains the minimum count."
+          type="number"
+          min={1}
+          max={100}
+          step="any"
+          value={fields.ratio ?? ''}
+          onChange={(event) => change({ ratio: event.target.value })}
+        />
+        <TextField
+          label="Baseline window (days)"
+          {...errors.field('baseline_days')}
+          hint="The sampled hourly mean uses 7 to 30 days, excluding the current hour."
+          type="number"
+          min={7}
+          max={30}
+          value={fields.baselineDays ?? '30'}
+          onChange={(event) => change({ baselineDays: event.target.value })}
         />
         <TextField
           label="Cooldown (minutes)"

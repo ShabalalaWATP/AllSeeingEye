@@ -93,12 +93,13 @@ it('creates an hourly ratio rule with an explicit warm-up explanation', async ()
     }),
   );
   const { user } = renderApp('/warning', 'user');
-  const form = await screen.findByRole('form', { name: 'New indicator' });
-  await user.type(within(form).getByLabelText('Indicator name'), 'Unusual activity');
+  const form = await screen.findByRole('form', { name: 'New alert rule' });
+  await user.type(within(form).getByLabelText('Alert rule name'), 'Unusual activity');
+  await user.selectOptions(within(form).getByLabelText('Location scope'), 'worldwide');
   await user.type(within(form).getByLabelText('Ratio to hourly mean (optional)'), '2');
   expect(within(form).getByLabelText('Window')).toBeDisabled();
-  expect(within(form).getByText(/Requires at least seven days and 168 hours/)).toBeVisible();
-  await user.click(within(form).getByRole('button', { name: 'Add indicator' }));
+  expect(within(form).getByText(/Requires seven days and 168 sampled hours/)).toBeVisible();
+  await user.click(within(form).getByRole('button', { name: 'Add alert rule' }));
   await waitFor(() =>
     expect(submitted).toMatchObject({ baseline_ratio: 2, baseline_days: 30, window_minutes: 60 }),
   );

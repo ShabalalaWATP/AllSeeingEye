@@ -16,6 +16,8 @@ export function savedRuleRequest(rule: Indicator): IndicatorRequest {
     categories: [...rule.categories] as IndicatorRequest['categories'] & string[],
     keywords: [...rule.keywords],
     threshold: rule.threshold,
+    baseline_ratio: rule.baseline_ratio ?? null,
+    baseline_days: rule.baseline_days ?? 30,
     window_minutes: rule.window_minutes,
     cooldown_minutes: rule.cooldown_minutes,
     severity_floor: rule.severity_floor,

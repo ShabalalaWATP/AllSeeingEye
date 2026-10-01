@@ -1,8 +1,8 @@
 /** Warning: indicators over the live picture and the alerts they raise. */
 import { z } from 'zod';
 import { frozenAreaSchema } from './areaSchemas';
-
 import type { OwnershipScope } from '@/lib/ownershipScope';
+
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
 
@@ -55,7 +55,6 @@ export const alertSchema = z.object({
   baseline_ratio: z.number().nullable().optional(),
   report_id: z.string().nullable(),
   created_by: z.string().nullable().default(null),
-  // The personal owner's name on list views; null for team alerts.
   owner_name: z.string().nullable().default(null),
 });
 export type Alert = z.infer<typeof alertSchema>;
@@ -85,7 +84,10 @@ export function createIndicator(request: IndicatorRequest): Promise<Indicator> {
   );
 }
 
-export function updateIndicator(id: string, request: IndicatorRequest): Promise<Indicator> {
+export function updateIndicator(
+  id: string,
+  request: components['schemas']['IndicatorUpdateIn'],
+): Promise<Indicator> {
   return scopedMutation(() =>
     apiCall(`/api/warning/indicators/${encodeURIComponent(id)}`, {
       method: 'PUT',
@@ -101,7 +103,6 @@ export function deleteIndicator(id: string): Promise<void> {
   );
 }
 
-/** Without a scope the server returns the caller's personal and current-team alerts. */
 export function fetchAlerts(
   hours?: number,
   signal?: AbortSignal,
