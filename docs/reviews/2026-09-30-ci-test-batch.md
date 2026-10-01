@@ -215,3 +215,33 @@ no frontend coverage artefact. Additional behaviour-test commits will follow;
 the global 92%, eligible-file 70%, auth 95% and existing global 90% gates and all
 coverage exclusions remain unchanged. Earlier timing and coverage measurements
 do not establish acceptance on this expanded source tree.
+
+### Integrated frontend coverage and compatibility repairs
+
+The first complete Linux run used the exact tracked tree at `d7accf7b`, a fresh
+frozen pnpm installation, Node 24.21.0, two workers and a container limited to
+two CPUs and 6 GiB. All 5,403 tracked files matched their archived hashes before
+and after execution. Raw V8 JSON, LCOV, coverage summary, test JSON and the Vitest
+blob remain outside Git under `main-integration-20261001/frontend-d7accf7bcbc3`.
+
+That run is diagnostic, not a passing suite: 4,280 cases passed, five failed and
+one was skipped. Independent raw JSON and LCOV counts agree on 22,742 of 24,694
+covered branches (92.09%). Authentication passed its 95% floor. The only eligible
+module below 70% was `useLiveViewOpening.ts`, at 18 of 28 branches.
+
+Both failing files contained assertions predating main's accessibility changes.
+Four copy-button cases expected native `disabled`; the repaired tests retain
+duplicate-submission and cancellation checks while asserting `aria-disabled`,
+`aria-busy` and preserved focus. One figures case expected the old sparkline
+name; it now asserts the complete accessible period, values and range. These
+failures were reproduced before the test-only fixes. The corrected suites and
+their form, button and figures consumers passed 20 and 10 tests respectively,
+with scoped ESLint and Prettier passing. Production behaviour is unchanged.
+
+Seven new live-view opening cases exercise real router/store behaviour around
+rotation area cleanup, manual area preservation, dismiss/access/unmount
+cancellation, late responses and repeated reads of the same ID. Together with
+four existing round-trip cases, they pass with all 28 branches, 51 lines,
+65 statements and 18 functions covered. The full current-head suite and gates
+must still pass after these changes; these focused results do not relabel the
+earlier failed run.
