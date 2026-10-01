@@ -67,7 +67,7 @@ describe('LoginPage', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('prevents credential edits and duplicate submission while signing in', async () => {
+  it('keeps focus on the sign-in button and prevents duplicate submission', async () => {
     let release: (() => void) | undefined;
     let requests = 0;
     const pending = new Promise<void>((resolve) => {
@@ -83,17 +83,47 @@ describe('LoginPage', () => {
     const { user } = renderApp('/login', 'anonymous');
     await user.type(screen.getByLabelText('Email'), plainUser.email);
     await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeDisabled();
-    expect(screen.getByLabelText('Email')).toBeDisabled();
-    expect(screen.getByLabelText('Password')).toBeDisabled();
-    const form = screen.getByLabelText('Email').closest('form');
+    const button = screen.getByRole('button', { name: 'Sign in' });
+    await user.click(button);
+    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBe(button);
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveFocus();
+    expect(screen.getByLabelText('Email')).toBeEnabled();
+    expect(screen.getByLabelText('Password')).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Show password' })).toBeEnabled();
+    const form = button.closest('form');
     if (form === null) throw new Error('Expected the login form');
     fireEvent.submit(form);
+    await user.click(button);
+    await user.keyboard('{Enter}');
     expect(requests).toBe(1);
     release?.();
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
-    expect(screen.getByLabelText('Password')).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBe(button);
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(button).toHaveFocus();
+  });
+
+  it('keeps focus in the password field when signing in with Enter', async () => {
+    let release: (() => void) | undefined;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post('/api/auth/login', async () => {
+        await pending;
+        return apiError(401, 'invalid_credentials', 'Incorrect email or password.');
+      }),
+    );
+    const { user } = renderApp('/login', 'anonymous');
+    await user.type(screen.getByLabelText('Email'), plainUser.email);
+    const password = screen.getByLabelText('Password');
+    await user.type(password, `${USER_PASSWORD}{Enter}`);
+    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeInTheDocument();
+    expect(password).toHaveFocus();
+    release?.();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
+    expect(password).toHaveFocus();
   });
 
   it('stops the brand motion when hidden and honours reduced motion', () => {

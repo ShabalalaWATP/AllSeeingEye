@@ -142,7 +142,6 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
             pattern={isRecovery ? '(?:[A-Fa-f0-9]|-){32,39}' : '[0-9]{6}'}
             maxLength={isRecovery ? 39 : 6}
             required
-            disabled={mfa.busy}
             className="min-h-12 font-mono tracking-widest"
             value={mfa.code}
             onChange={(event) => {

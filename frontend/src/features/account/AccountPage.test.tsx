@@ -121,7 +121,9 @@ describe('account settings', () => {
     await fill(user);
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
-    expect(await screen.findByRole('button', { name: 'Please wait...' })).toBeDisabled();
+    const busy = await screen.findByRole('button', { name: 'Please wait...' });
+    expect(busy).toHaveAttribute('aria-disabled', 'true');
+    expect(busy).toHaveFocus();
     expect(screen.getByLabelText('Current password')).toBeDisabled();
     fireEvent.submit(screen.getByRole('form', { name: 'Change password' }));
     await waitFor(() => expect(bodies).toHaveLength(1));

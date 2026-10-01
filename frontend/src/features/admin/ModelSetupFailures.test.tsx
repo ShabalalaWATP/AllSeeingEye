@@ -157,7 +157,10 @@ it('discards an assignment completion after navigation has closed the popup', as
       }),
   );
   await view.user.click(screen.getByRole('button', { name: 'Save and close' }));
-  expect(screen.getByRole('button', { name: 'Saving assignment…' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Saving assignment…' })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
   view.unmount();
   await act(async () => {
     complete();
