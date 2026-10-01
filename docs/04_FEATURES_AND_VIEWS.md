@@ -12,18 +12,29 @@ Ordinary users start on the globe. Administrators normally start in the separate
 Administration workspace after completing MFA and can return to research from
 there. A requested page can take precedence over that default destination.
 
+The desktop rail, the mobile navigation menu and **Find anything** (Ctrl K) use
+the same names. Research, Watches, Monitoring and Teams group the destinations,
+and indented entries sit beneath the destination that summarises them. Older
+addresses such as `/warning`, `/direction` and `/trackers` still open the same pages.
+
 | Workspace | Use it for |
 | --- | --- |
 | Map | Explore the globe or flat map, inspect observations and layers, select an area |
-| Research | Ask a question, use a Research Brief, follow progress and read saved research |
-| Subscriptions | Set up recurring research and review saved editions |
-| Geolocation | Analyse supplied photos for possible locations and verification leads |
-| Live monitor | Browse observations by subject and inspect specialist trackers |
+| Research | Ask a question, use a Research Brief and read saved research (tabs: New research, Saved research, Research progress) |
+| Research progress | Follow queued, running and finished research; listed under Research |
+| Geolocation | Analyse supplied photos for possible locations and keep saved assessments |
+| Watches | See every standing watch in one place, with a card for each kind of watch |
+| Subscriptions | Set up recurring research and review saved updates; listed under Watches |
+| Alerts | Read raised alerts and manage the alert rules and area watches behind them; listed under Watches |
+| Plans and areas | Keep collection plans and saved areas of interest; listed under Watches |
+| Annotation monitors | Watch selected claims, identities or relationships in a saved report version; listed under Watches |
+| Live monitor | Read the daily briefing and browse conflicts, disasters and the specialist trackers |
 | Ukraine war | Explore the conflict workspace and its dated source/reference material |
 | Cyber intelligence | Review advisories, vulnerability and connectivity signals with source context |
 | Economy | Explore economic series and supporting explanations |
 | Teams | Manage membership and shared work within your authority |
-| Administration | Approve accounts and manage users, sources, AI connections and audit activity |
+| Administration | Approve accounts and manage users, sources, AI connections and audit activity (administrators only) |
+| Help and guide | Read the in-app guide and reopen the Start here card; reached from the account controls or Find anything |
 
 The floating **Ask Eye** assistant is for shorter questions within the context and
 tools available to it. A full research run has its own collection, saved evidence
@@ -110,6 +121,6 @@ Team membership controls shared access. Archived teams retain readable work whil
 ordinary writes stop. Reactivation requires an active manager; the administrator
 recovery control can appoint an eligible manager as part of that action.
 
-Use **Settings** for personal defaults and **Account security** for MFA and sessions.
+Use **Your settings** (the settings icon) for personal defaults and **Account security** for MFA and sessions.
 Use the source and AI administration screens for the installation's current state,
 rather than treating any documentation screenshot as a live status report.

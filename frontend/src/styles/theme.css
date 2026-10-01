@@ -1,6 +1,7 @@
 /*
  * Theme tokens for The All Seeing Eye. Obsidian is the public/default theme;
- * authenticated accounts can choose a personal slate or light workspace.
+ * authenticated accounts can choose one of eight personal themes: Obsidian, Slate,
+ * Daylight (the light theme), Midnight, Aurora, Phosphor, Crimson and Graphite.
  * Fonts are self-hosted through Fontsource; nothing is fetched at runtime.
  */
 @import 'tailwindcss';
