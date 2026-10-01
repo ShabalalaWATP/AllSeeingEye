@@ -38,7 +38,7 @@ export function CyberFocusAreas({
                 <Sparkline
                   values={view.daily}
                   slot={view.slot}
-                  label={`${view.label} matches per day: ${view.daily.join(', ')}`}
+                  label={`${view.label} matches per day`}
                 />
               </div>
             </div>

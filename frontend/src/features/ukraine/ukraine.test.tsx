@@ -66,6 +66,11 @@ describe('Ukraine war page', () => {
     expect(cards).toHaveLength(10);
     expect(within(cards[1]!).getByText('12,344')).toBeInTheDocument();
     expect(within(cards[1]!).getByText('+2 claimed on 2026-09-13')).toBeInTheDocument();
+    expect(
+      within(cards[1]!).getByRole('img', {
+        name: /^Daily claimed .+: .*\(lowest [\d,]+, highest [\d,]+\)$/,
+      }),
+    ).toBeInTheDocument();
     expect(within(figures).getAllByText('Claimed')).toHaveLength(6);
     expect(within(cards[6]!).getByText('5,892')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Original post' })).toHaveAttribute(
