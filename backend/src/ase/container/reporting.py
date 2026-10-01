@@ -60,7 +60,12 @@ if TYPE_CHECKING:
 log = structlog.get_logger(__name__)
 
 
-class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring, MapWorkspaceWiring):
+class ReportWiring(
+    ReportGenerationWiring,
+    ReportJobWiring,
+    WebResearchWiring,
+    MapWorkspaceWiring,
+):
     """Session-scoped report production, export and search factories."""
 
     def access_policy(self, session: AsyncSession) -> AccessPolicy:

@@ -31,6 +31,12 @@ describe('confirmed and documented figures', () => {
     expect(screen.getByText('24,066')).toBeInTheDocument();
     expect(screen.getByText('12,097')).toBeInTheDocument();
     expect(screen.getAllByText('Visually confirmed')).toHaveLength(2);
+    // The sparkline's accessible name carries its values, not just its subject.
+    expect(
+      screen.getByRole('img', {
+        name: 'Russia cumulative confirmed losses, last month: 24,000, 24,030, 24,066 (lowest 24,000, highest 24,066)',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Civilians killed, July 2026')).toBeInTheDocument();
     expect(screen.getByText('437')).toBeInTheDocument();
     expect(screen.getByText('Documented')).toBeInTheDocument();

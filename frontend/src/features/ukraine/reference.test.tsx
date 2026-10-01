@@ -90,6 +90,8 @@ describe('Ukraine reference sections', () => {
     expect(within(recon).getByText('Orlan-10')).not.toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Expand all' }));
     expect(within(recon).getByText('Orlan-10')).toBeVisible();
+    // The search keeps the global focus-visible outline rather than a 1px border change.
+    expect(screen.getByRole('searchbox', { name: 'Search' }).className).not.toMatch(/outline-none/);
     await user.click(within(specialities).getByRole('button', { name: 'Tanks (1)' }));
     expect(screen.getByText('T-90M Proryv')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Compare as a table' }));
@@ -97,6 +99,24 @@ describe('Ukraine reference sections', () => {
     expect(
       within(table).getByText('Oryx documents over a hundred T-90M losses.'),
     ).toBeInTheDocument();
+  });
+
+  it('keeps heading levels in order on the page, including equipment cards', async () => {
+    renderApp('/conflicts/ukraine', 'user');
+    const recon = await screen.findByRole(
+      'region',
+      { name: 'Drones: Reconnaissance' },
+      { timeout: 5000 },
+    );
+    expect(within(recon).getByRole('heading', { name: 'Orlan-10', level: 4 })).toBeInTheDocument();
+    // The page scroller leaves room below for the fixed Eye launcher when focus moves.
+    const page = screen.getByRole('heading', { level: 1, name: 'Ukraine war' }).closest('article');
+    expect(page).toHaveClass('overflow-y-auto', 'scroll-pb-28', 'pb-28');
+    const levels = screen.getAllByRole('heading').map((heading) => Number(heading.tagName[1]));
+    levels.forEach((level, index) => {
+      const previous = index === 0 ? 1 : levels[index - 1]!;
+      expect(level, `heading ${index + 1} follows h${previous}`).toBeLessThanOrEqual(previous + 1);
+    });
   });
 
   it('keeps the rest of the page when the reference notes are missing', async () => {

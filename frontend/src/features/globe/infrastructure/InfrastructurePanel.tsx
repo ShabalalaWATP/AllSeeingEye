@@ -73,7 +73,7 @@ export function InfrastructurePanel({
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-medium">Connectivity signals</span>
-            <span className="mt-1 block text-[11px] leading-relaxed text-muted">
+            <span className="mt-1 block text-2xs leading-relaxed text-muted">
               IODA and Cloudflare Radar country-level network signals /{' '}
               {connectivityCount.toLocaleString('en-GB')} countries mapped
             </span>
@@ -131,7 +131,7 @@ export function InfrastructurePanel({
         </div>
       )}
       {state.nuclearEnabled && (
-        <p className="text-[11px] text-muted">
+        <p className="text-2xs text-muted">
           Historical public power-plant inventory. Not a current operational status or radiation
           alert.
         </p>
@@ -151,7 +151,7 @@ export function InfrastructurePanel({
       )}
       {state.data && (
         <>
-          <p className="my-3 text-[11px] text-muted">
+          <p className="my-3 text-2xs text-muted">
             Snapshot: {state.data.snapshot_date}. {state.data.cables.length} route segments ·{' '}
             {state.data.ground_stations.length} ground stations ·{' '}
             {state.data.nuclear_facilities.length} historical nuclear facilities ·{' '}

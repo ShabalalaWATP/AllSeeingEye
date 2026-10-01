@@ -1,11 +1,15 @@
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { Map as MapLibreMap, setWorkerUrl } from 'maplibre-gl';
 import type { RequestParameters } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import workerUrl from 'virtual:maplibre-worker-url';
 
 import type { EngineOptions } from './MapEngine';
 import { isApiRequest } from './baseLayers';
 import { CAMERA_MAX_PITCH, CAMERA_MAX_ZOOM } from './camera';
 import { ATTRIBUTION_OPTIONS, collapseInitialAttribution } from './mapAttribution';
+
+// Production builds share one hashed MapLibre module between this thread and the worker.
+if (workerUrl !== '') setWorkerUrl(workerUrl);
 
 export const INITIAL_CENTER: [number, number] = [10, 30];
 export const INITIAL_ZOOM = 1.6;

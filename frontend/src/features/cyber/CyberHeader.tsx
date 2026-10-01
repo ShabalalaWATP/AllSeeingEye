@@ -1,4 +1,6 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
+import { AutomaticBriefingNote } from '@/components/research/AutomaticBriefingNote';
 import { CYBER_PERIODS, type CyberDays, type CyberSnapshot } from '@/lib/api/cyber';
 import { formatUtc } from '@/lib/format';
 
@@ -25,20 +27,15 @@ export function CyberHeader({
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-cyan)_14%,transparent),transparent_70%)]"
       />
       <div className="relative flex flex-wrap items-end justify-between gap-5">
-        <div className="max-w-3xl">
-          <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-            Cyber intelligence
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Cyber threat intelligence
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            Collected reporting, exploitation, criminal claims and connectivity signals from public
-            sources, read through themed lenses and an AI assessment that cites its evidence. Counts
-            describe collected reporting, never total attacks.
-          </p>
+        <PageHeader
+          as="div"
+          title="Cyber intelligence"
+          eyebrow="Monitoring"
+          eyebrowTone="cyan"
+          description="Collected reporting, exploitation, criminal claims and connectivity signals from public sources, read through themed lenses and an AI assessment that cites its evidence. Counts describe collected reporting, never total attacks."
+        >
           {data && (
-            <dl className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
+            <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
               <div className="inline-flex items-center gap-2">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
                 <dt className="sr-only">Snapshot time</dt>
@@ -58,7 +55,7 @@ export function CyberHeader({
               </div>
             </dl>
           )}
-        </div>
+        </PageHeader>
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <div
             role="group"
@@ -81,6 +78,10 @@ export function CyberHeader({
               </button>
             ))}
           </div>
+          <AutomaticBriefingNote
+            subject="Choosing a period"
+            className="max-w-sm text-xs leading-5 text-muted sm:text-right"
+          />
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onRefresh} busy={loading}>
               Refresh sources

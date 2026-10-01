@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { EventTitle } from '@/components/events/EventTitle';
 import { BASIS_LABELS, ROLE_LABELS, type PublicFigure } from '@/lib/api/figures';
 import { formatUtc } from '@/lib/format';
 
@@ -71,7 +72,7 @@ export function FigureInspector({
       <p className="mt-3 text-xs font-medium text-cyan">{BASIS_LABELS[placement.basis]}</p>
       <p className="mt-1 text-xs leading-relaxed text-muted">{placement.detail}</p>
       {placement.published_at && (
-        <p className="mt-1 font-mono text-[11px] text-muted">
+        <p className="mt-1 font-mono text-2xs text-muted">
           Report published {formatUtc(placement.published_at)}
         </p>
       )}
@@ -90,10 +91,10 @@ export function FigureInspector({
               <li key={event.id} className="leading-snug">
                 {event.url ? (
                   <a href={event.url} target="_blank" rel="noreferrer" className="underline">
-                    {event.title_en ?? event.title}
+                    <EventTitle event={event} />
                   </a>
                 ) : (
-                  <span>{event.title_en ?? event.title}</span>
+                  <EventTitle event={event} />
                 )}
                 <span className="ml-1 font-mono text-2xs text-muted">
                   {event.grade}
@@ -105,7 +106,7 @@ export function FigureInspector({
         )}
       </section>
       {figure.portrait && (
-        <p className="mt-3 text-[11px] leading-relaxed text-muted">
+        <p className="mt-3 text-2xs leading-relaxed text-muted">
           Portrait: {figure.portrait.credit}, {figure.portrait.licence}, via{' '}
           <a
             href={figure.portrait.source_url}

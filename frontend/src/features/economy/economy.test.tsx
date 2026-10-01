@@ -5,6 +5,8 @@ import { economyNews, economySnapshot } from '@/test/fixtures.economy';
 import { economyDepthSnapshot } from '@/test/fixtures.economyDepth';
 import { report } from '@/test/fixtures';
 import { reportJob } from '@/test/reportJobFixture';
+import { resetVisibility, setVisibility } from '@/test/env';
+import { untilReal } from '@/test/realTime';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -186,8 +188,9 @@ it('retains a usable economy page when the news feed is empty or unavailable', a
   expect(screen.getByRole('heading', { name: 'Economic fundamentals' })).toBeInTheDocument();
 });
 
-it('does not refresh panels in a hidden tab and cleans up periodic work', async () => {
-  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+it('does not refresh panels in a hidden tab, catches up when it returns and cleans up', async () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+  setVisibility('visible');
   const reads = vi.fn();
   server.use(
     http.get('/api/economy', () => {
@@ -196,19 +199,24 @@ it('does not refresh panels in a hidden tab and cleans up periodic work', async 
     }),
   );
   const { unmount } = renderApp('/economy', 'user');
-  await screen.findByRole('region', { name: 'Worldwide economic indicators' });
-  const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(300_000);
-  });
+  await untilReal(() =>
+    expect(
+      screen.getByRole('region', { name: 'Worldwide economic indicators' }),
+    ).toBeInTheDocument(),
+  );
+  act(() => setVisibility('hidden'));
+  await act(() => vi.advanceTimersByTimeAsync(600_000));
   expect(reads).toHaveBeenCalledTimes(1);
-  visibility.mockReturnValue('visible');
-  await act(() => vi.advanceTimersByTimeAsync(300_000));
-  await waitFor(() => expect(reads).toHaveBeenCalledTimes(2));
+  // The hidden spell outlasted the interval, so showing the tab refreshes at once.
+  act(() => setVisibility('visible'));
+  await untilReal(() => expect(reads).toHaveBeenCalledTimes(2));
+  await act(() => vi.advanceTimersByTimeAsync(299_000));
+  expect(reads).toHaveBeenCalledTimes(2);
   unmount();
-  await act(() => vi.advanceTimersByTimeAsync(300_000));
+  await act(() => vi.advanceTimersByTimeAsync(600_000));
   expect(reads).toHaveBeenCalledTimes(2);
   vi.useRealTimers();
+  resetVisibility();
 });
 
 it('says how many headlines were judged and why each one was kept', async () => {

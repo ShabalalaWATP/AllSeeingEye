@@ -18,6 +18,7 @@ import {
 } from '@/lib/assistantReportContext';
 import { followUpAvailability } from '@/lib/followUpScope';
 
+import { CopyToTeam } from './CopyToTeam';
 import { EvidenceNavigation } from './EvidenceLinks';
 import { LegacyReportReferences } from './LegacyReportReferences';
 import { MobileReportContents, ReportContentsRail } from './ReportContentsNav';
@@ -30,6 +31,7 @@ import { ReportBodyView } from './ReportSections';
 import { ReportWorkspaceDrawer } from './ReportWorkspaceDrawer';
 import './reportReader.css';
 import { savedPathFor } from './savedReportOrigin';
+import { TeamCopyNote } from './TeamCopyNote';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -159,9 +161,16 @@ export default function ReportPage() {
                   title={report.title}
                   status={version.status}
                 />
+                <CopyToTeam
+                  report={report}
+                  version={version.number}
+                  status={version.status}
+                  workspaces={workspaces}
+                />
               </>
             }
           />
+          {report.team_id && <TeamCopyNote reportId={id} />}
 
           <MobileReportContents contents={contents} />
 
@@ -193,7 +202,7 @@ export default function ReportPage() {
             </article>
           </div>
 
-          <ReportPageFooter reportId={id} version={version} followUp={followUp} />
+          <ReportPageFooter reportId={id} version={version} followUp={followUp} report={report} />
         </div>
       </section>
       <ReportWorkspaceDrawer

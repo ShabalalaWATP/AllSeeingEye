@@ -28,7 +28,7 @@ export function CameraMediaFilter({
           </label>
         ))}
       </div>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Filters the list and map. Clips are recordings; streams may be delayed or offline. Provider
         links have no approved in-app media. Previews load only when requested.
       </p>

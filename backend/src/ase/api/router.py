@@ -9,10 +9,12 @@ from ase.api.routers import (
     account_sessions,
     admin_ai_usage,
     admin_audit,
+    admin_evaluations,
     admin_firms_credentials,
     admin_llm,
     admin_llm_discovery,
     admin_requests,
+    admin_research_quality,
     admin_runtime,
     admin_sources,
     admin_subscription_diagnostics,
@@ -23,8 +25,10 @@ from ase.api.routers import (
     assistant,
     assistant_history,
     auth,
+    bell,
     cameras,
     capabilities,
+    citation_verdicts,
     claims,
     countries,
     cyber,
@@ -57,6 +61,7 @@ from ase.api.routers import (
     report_ledgers,
     report_methodology,
     report_search,
+    report_team_copies,
     reports,
     research_briefs,
     research_inputs,
@@ -69,6 +74,7 @@ from ase.api.routers import (
     sec_filings,
     social,
     source_reviews,
+    source_track_record,
     sources,
     stream,
     subscription_usage,
@@ -104,6 +110,7 @@ api_router.include_router(mfa.router)
 api_router.include_router(teams.router)
 api_router.include_router(team_board.router)
 api_router.include_router(team_dashboard.router)
+api_router.include_router(bell.router)
 api_router.include_router(team_invitations.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)
@@ -130,6 +137,7 @@ api_router.include_router(capabilities.router)
 api_router.include_router(cameras.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
+api_router.include_router(report_team_copies.router)
 api_router.include_router(research_briefs.router)
 api_router.include_router(research_preflight.router)
 api_router.include_router(research_presets.router)
@@ -141,7 +149,9 @@ api_router.include_router(report_methodology.router)
 api_router.include_router(report_search.router)
 api_router.include_router(social.router)
 api_router.include_router(sources.router)
+api_router.include_router(source_track_record.router)
 api_router.include_router(source_reviews.router)
+api_router.include_router(citation_verdicts.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
@@ -156,7 +166,9 @@ api_router.include_router(admin_sources.router)
 api_router.include_router(admin_subscription_diagnostics.router)
 api_router.include_router(admin_llm.router)
 api_router.include_router(admin_llm_discovery.router)
+api_router.include_router(admin_evaluations.router)
 api_router.include_router(admin_ai_usage.router)
+api_router.include_router(admin_research_quality.router)
 
 
 api_router.include_router(admin_firms_credentials.router)

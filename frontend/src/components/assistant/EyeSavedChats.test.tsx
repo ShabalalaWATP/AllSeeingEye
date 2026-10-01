@@ -93,7 +93,7 @@ it('saves explicitly, resumes a labelled snapshot, omits old evidence tokens and
     </MemoryRouter>,
   );
   const user = userEvent.setup();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.type(screen.getByLabelText('Ask the Eye'), 'Summarise harbour observations{Enter}');
   await screen.findByText('Two recent vessel observations are available.');
   expect(savedBody).toBeNull();

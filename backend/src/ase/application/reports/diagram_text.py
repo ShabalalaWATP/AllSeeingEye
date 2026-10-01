@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ase.application.reports.export_text import plain_markdown
 from ase.domain.report_diagrams import DiagramKind, ReportDiagram
 
 SOURCE_COLUMN = "Source"
@@ -83,16 +82,3 @@ def _name(label: str, detail: str) -> str:
 
 def _number(value: float) -> str:
     return f"{value:g}"
-
-
-def diagram_lines(diagram: ReportDiagram) -> list[str]:
-    """The diagram as Markdown: heading, text alternative, then the equivalent table."""
-    projection = project_diagram(diagram)
-    lines = [f"### {plain_markdown(projection.title)}", "", plain_markdown(diagram.alt_text), ""]
-    lines.append("| " + " | ".join(plain_markdown(value) for value in projection.columns) + " |")
-    lines.append("| " + " | ".join("---" for _ in projection.columns) + " |")
-    for cells, evidence in projection.rows:
-        values = (*cells, ", ".join(evidence))
-        lines.append("| " + " | ".join(plain_markdown(value) for value in values) + " |")
-    lines.extend(("", f"*{plain_markdown(projection.caption)}*", ""))
-    return lines

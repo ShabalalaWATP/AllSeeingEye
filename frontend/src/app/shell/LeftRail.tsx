@@ -1,57 +1,20 @@
-import { Link, useLocation } from 'react-router';
+import { useId } from 'react';
+import { Link } from 'react-router';
 
 import { BrandMark } from '@/components/brand/BrandMark';
+import { MotionToggle } from '@/components/brand/MotionToggle';
 import { Wordmark } from '@/components/brand/Wordmark';
 import {
-  isWorkspacePath,
+  administrationDestination,
   workspaceHome,
   workspaceSections,
-  type WorkspaceDestination,
 } from '@/lib/workspaceNavigation';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import { useShellStore } from '@/stores/shell';
 
+import { RailItem } from './RailLinks';
 import { ChevronIcon, RailIcon } from './railIcons';
-
-const ADMIN_ITEM: WorkspaceDestination = {
-  to: '/admin',
-  label: 'Administration',
-  description: 'The separate administration workspace.',
-  icon: 'admin',
-};
-
-function RailLink({
-  item,
-  collapsed,
-  onNavigate,
-}: {
-  item: WorkspaceDestination;
-  collapsed: boolean;
-  onNavigate?: (() => void) | undefined;
-}) {
-  const { pathname } = useLocation();
-  const active = isWorkspacePath(item.to, pathname);
-  return (
-    <Link
-      to={item.to}
-      onClick={onNavigate}
-      aria-current={active ? 'page' : undefined}
-      title={collapsed ? item.label : undefined}
-      className={`group relative flex min-h-10 items-center gap-3 rounded-lg text-sm transition-colors ${collapsed ? 'justify-center px-0' : 'px-3'} ${
-        active
-          ? 'bg-surface-2 text-text before:absolute before:top-2 before:bottom-2 before:left-0 before:w-0.5 before:rounded-full before:bg-ember'
-          : 'text-muted hover:bg-surface hover:text-text'
-      }`}
-    >
-      <RailIcon
-        name={item.icon}
-        className={active ? 'text-ember' : 'text-muted group-hover:text-text'}
-      />
-      <span className={collapsed ? 'sr-only' : 'min-w-0 leading-tight'}>{item.label}</span>
-    </Link>
-  );
-}
 
 export function LeftRail({
   mobile = false,
@@ -66,9 +29,11 @@ export function LeftRail({
   const toggleRail = useShellStore((state) => state.toggleRail);
   const openPalette = useShellStore((state) => state.openPalette);
   const collapsed = railCollapsed && !mobile;
+  const railId = useId();
 
   return (
     <aside
+      id={railId}
       data-collapsed={collapsed ? 'true' : undefined}
       className={`flex min-h-0 flex-col bg-ground ${
         mobile
@@ -82,9 +47,11 @@ export function LeftRail({
         title={collapsed ? 'The All Seeing Eye' : undefined}
         className={`flex items-center gap-3 py-3.5 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
       >
-        <BrandMark size={collapsed ? 34 : 38} still={lite} />
+        {/* The wordmark names the link, so the mark itself stays silent. */}
+        <BrandMark size={collapsed ? 34 : 38} still={lite} decorative />
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
+      <MotionToggle compact={collapsed} className="px-2 pb-2" />
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
         <button
           type="button"
@@ -105,25 +72,49 @@ export function LeftRail({
             </span>
           )}
         </button>
-        <RailLink item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
-        {workspaceSections.map((section) => (
-          <div key={section.title} className="mt-3 flex flex-col gap-0.5">
-            {collapsed ? (
-              <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
-            ) : (
-              <p className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted uppercase">
-                {section.title}
-              </p>
-            )}
-            {section.items.map((item) => (
-              <RailLink key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
-            ))}
-          </div>
-        ))}
+        <ul className="flex flex-col gap-0.5">
+          <RailItem item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
+        </ul>
+        {workspaceSections.map((section, index) => {
+          // A section of one destination is named by that destination, not a heading.
+          const headingId = section.items.length > 1 ? `${railId}-section-${index}` : undefined;
+          return (
+            <div key={section.title} className="mt-3 flex flex-col gap-0.5">
+              {collapsed || headingId === undefined ? (
+                <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
+              ) : (
+                <p
+                  id={headingId}
+                  className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted uppercase"
+                >
+                  {section.title}
+                </p>
+              )}
+              <ul
+                aria-labelledby={collapsed ? undefined : headingId}
+                aria-label={collapsed || headingId === undefined ? section.title : undefined}
+                className="flex flex-col gap-0.5"
+              >
+                {section.items.map((item) => (
+                  <RailItem
+                    key={item.to}
+                    item={item}
+                    collapsed={collapsed}
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
         {isAdmin && (
-          <div className="mt-3 border-t border-line/70 pt-3">
-            <RailLink item={ADMIN_ITEM} collapsed={collapsed} onNavigate={onNavigate} />
-          </div>
+          <ul className="mt-3 border-t border-line/70 pt-3">
+            <RailItem
+              item={administrationDestination}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
+          </ul>
         )}
       </nav>
       {!mobile && (
@@ -131,7 +122,8 @@ export function LeftRail({
           <button
             type="button"
             onClick={toggleRail}
-            aria-pressed={collapsed}
+            aria-expanded={!collapsed}
+            aria-controls={railId}
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
             title={`${collapsed ? 'Expand' : 'Collapse'} navigation ([)`}
             className={`flex min-h-10 w-full items-center gap-3 rounded-lg text-xs text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center' : 'px-3'}`}

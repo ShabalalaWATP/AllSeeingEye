@@ -30,7 +30,7 @@ function EventEntry({
     >
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex flex-wrap items-baseline gap-2">
-          <time dateTime={event.on} className="font-mono text-[11px] text-muted">
+          <time dateTime={event.on} className="font-mono text-2xs text-muted">
             {stop.date}
           </time>
           <ThemeChip label={reference.themes[event.theme] ?? event.theme} />
@@ -85,7 +85,7 @@ export function TimelineReadingList({
             style={{ borderColor: phase.colour }}
           >
             <h3 className="text-sm font-semibold text-text">{phase.label}</h3>
-            <p className="font-mono text-[11px] text-muted">
+            <p className="font-mono text-2xs text-muted">
               {phase.start} to {phase.end ?? 'now'}
             </p>
             <p className="max-w-3xl text-sm text-muted">{phase.summary}</p>

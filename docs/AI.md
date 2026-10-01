@@ -125,6 +125,45 @@ budgets still apply to every level.
 The app's monetary figures are estimates at configured prices, not provider bills.
 See [AI cost controls](AI_COST_CONTROLS.md).
 
+## Checking a model with the evaluation casebook
+
+**Administration, Evaluations** (`/admin/evaluations`) runs a chosen subset of
+the packaged synthetic cases (eight core failure modes and twelve regional seeds)
+against a saved AI connection configured for assessment. It suits a quick check of
+a new model or prompt change without copying an endpoint or key into a file. Only
+administrators with an MFA-verified session can open it or call its API under
+`/api/admin/llm/evaluations`.
+
+- Before starting, the page shows the expected usage as an estimate: selected
+  cases multiplied by four calls per case (up to two drafting calls, one analysis
+  call and one entailment check). The call cap defaults to that estimate and can
+  be changed from 1 to 200.
+- Each call first takes one slot of the run's cap in the database. Failed and
+  retried calls keep their slot, so the cap is never exceeded. The call then goes
+  through the normal gateway and the AI allowance ledger, charged to the
+  administrator who started the run with the purpose `evaluation:...`. A policy
+  refusal stops the run.
+- One run can be active at a time, enforced by a unique database slot. A run can
+  be cancelled; the cancellation is stored, so it also stops a run owned by another
+  application process before its next call. A run abandoned by a stopped process is
+  released when its lease expires.
+- After each case the administrator's access and the connection settings are
+  checked again before the case summary is saved. A changed connection or ended
+  access stops the run and keeps no further output.
+- Each run keeps a small summary: case fingerprints, report status, call and token
+  usage and deterministic structural checks. The last 20 runs are kept.
+- The download is a zip with `results.json`, an unlabelled `review.json` and one
+  Markdown report per case, in the same shape as the offline harness, so the
+  existing `score` command can be used after human review. It never contains the
+  connection's base URL or key, and provider error text is replaced by a fixed
+  label.
+
+These results are structural checks on assistant-authored synthetic cases. They are
+not accuracy, factual correctness or a release gate, and a run in the app does not
+replace the recorded real-model run and human labels described in the
+[evaluation harness guide](../backend/evaluations/README.md). Research replay cases
+and the V01 contract corpus remain command-line only.
+
 ## Design boundaries
 
 AI integration follows the same pragmatic SOLID approach as the rest of the app.

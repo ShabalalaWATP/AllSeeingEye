@@ -8,6 +8,7 @@ import { BritishGridTool } from './BritishGridTool';
 import { CameraPanel } from './cameras/CameraPanel';
 import { FigurePanel } from './figures/FigurePanel';
 import { MapDisplaySettings } from './MapDisplaySettings';
+import { DailyImageryControls } from './imagery/DailyImageryControls';
 
 /** Direct panel elements allow the rail to maintain one active inspector. */
 export function mapReferencePanels(props: {
@@ -23,6 +24,7 @@ export function mapReferencePanels(props: {
   return [
     <ControlPanel key="style" side="right" label="Map style" icon="layers">
       <BaseLayerToolbar {...props.base} embedded />
+      <DailyImageryControls />
       <MapDisplaySettings {...props.display} />
     </ControlPanel>,
     <ControlPanel key="nation" label="Find nation" icon="nation">

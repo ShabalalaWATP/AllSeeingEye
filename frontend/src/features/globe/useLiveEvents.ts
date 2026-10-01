@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
 
 import { streamHelloSchema } from '@/lib/api/eventSchemas';
+import { isBellFrame, signalBellChanged } from '@/lib/bellSignal';
 import { EventStreamClient, type SseMessage } from '@/lib/sse';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
@@ -64,6 +65,10 @@ export function useLiveEvents(enabled = true): void {
         // snapshot that hello started is already newer, so a second load is wasted.
         if (duplicate) return;
         if (message.event === 'access.changed') invalidateWorkspaceAccess();
+        if (isBellFrame(message.event)) {
+          signalBellChanged();
+          return;
+        }
         batch.receive(message);
       },
       onStatus: (status) => {

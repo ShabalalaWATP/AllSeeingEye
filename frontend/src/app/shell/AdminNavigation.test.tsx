@@ -25,9 +25,7 @@ describe('administration shell chrome', () => {
   it('links the verified session indicator to security settings', async () => {
     const { user, router } = renderApp('/admin/audit', 'admin');
     await screen.findByRole('heading', { name: 'Audit log', level: 1 });
-    await user.click(
-      screen.getByRole('link', { name: 'Verified administrator session: security settings' }),
-    );
+    await user.click(screen.getByRole('link', { name: /^Verified session Administrator/ }));
     expect(router.state.location.pathname).toBe('/admin/security');
   });
 
@@ -35,12 +33,18 @@ describe('administration shell chrome', () => {
     const { user } = renderApp('/admin/sources', 'admin');
     await screen.findByRole('heading', { name: 'Sources', level: 1 });
     const toggle = screen.getByRole('button', { name: 'Collapse navigation' });
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    // One state signal per control: the name changes, so nothing is also "pressed".
+    expect(toggle).not.toHaveAttribute('aria-pressed');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await user.click(toggle);
 
     const expand = screen.getByRole('button', { name: 'Expand navigation' });
-    expect(expand).toHaveAttribute('aria-pressed', 'true');
+    expect(expand).not.toHaveAttribute('aria-pressed');
+    expect(expand).toHaveAttribute('aria-expanded', 'false');
     const nav = screen.getByRole('navigation', { name: 'Administration' });
+    const rail = nav.closest('aside');
+    expect(rail?.id).toBeTruthy();
+    expect(expand).toHaveAttribute('aria-controls', rail?.id);
     expect(within(nav).getByRole('link', { name: 'Sources' })).toHaveAttribute(
       'aria-current',
       'page',

@@ -2,6 +2,9 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { manager, roster, setupTeams } from '@/test/fixtures.teams';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 
 let compact = true;
 const listeners = new Set<() => void>();
@@ -57,10 +60,15 @@ describe('compact team roster', () => {
     const userRow = await member('Uma User');
     await user.click(userRow.getByRole('button', { name: 'Remove member' }));
     expect(writes).toHaveLength(0);
-    await user.click(userRow.getByRole('button', { name: 'Cancel' }));
+    const dialog = within(await screen.findByRole('alertdialog'));
+    await user.click(dialog.getByRole('button', { name: 'Cancel' }));
     expect(writes).toHaveLength(0);
     await user.click(userRow.getByRole('button', { name: 'Remove member' }));
-    await user.click(userRow.getByRole('button', { name: 'Confirm remove member' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', {
+        name: 'Confirm remove member',
+      }),
+    );
     await waitFor(() => {
       expect(writes).toEqual([{ method: 'DELETE', userId: roster.members[1]?.user_id }]);
     });

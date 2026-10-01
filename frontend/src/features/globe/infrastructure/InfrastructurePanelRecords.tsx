@@ -20,7 +20,7 @@ export function InfrastructureLayerSwitch({ choice }: { choice: InfrastructureCh
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-medium">{choice.label}</span>
-        <span className="mt-1 block text-[11px] leading-relaxed text-muted">
+        <span className="mt-1 block text-2xs leading-relaxed text-muted">
           {choice.description}
           {choice.count !== undefined ? ` / ${choice.count.toLocaleString('en-GB')} loaded` : ''}
         </span>

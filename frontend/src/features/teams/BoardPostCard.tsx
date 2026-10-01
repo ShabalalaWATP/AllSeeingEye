@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
 import type { TeamBoardPost } from '@/lib/api/teamBoard';
 
+import { BoardSubjectCard } from './BoardSubjectCard';
 import type { BoardAction } from './useTeamBoard';
 
 const REASON_MIN = 3;
@@ -79,6 +80,7 @@ export function BoardPostCard({
   canModerate,
   canWrite,
   busy,
+  highlighted = false,
   onEdit,
   onReply,
   onModerate,
@@ -88,6 +90,8 @@ export function BoardPostCard({
   canModerate: boolean;
   canWrite: boolean;
   busy: boolean;
+  /** The thread a team discussion link points to. */
+  highlighted?: boolean;
   onEdit: (post: TeamBoardPost) => void;
   onReply: (post: TeamBoardPost) => void;
   onModerate: (post: TeamBoardPost, action: BoardAction, reason?: string) => Promise<boolean>;
@@ -100,8 +104,11 @@ export function BoardPostCard({
 
   return (
     <article
+      id={`board-post-${post.id}`}
       aria-label={`Post by ${post.author_name}`}
-      className={`border p-4 ${post.is_pinned ? 'border-amber/50 bg-amber/5' : 'border-line bg-surface/40'}`}
+      aria-current={highlighted ? 'true' : undefined}
+      tabIndex={highlighted ? -1 : undefined}
+      className={`border p-4 ${post.is_pinned ? 'border-amber/50 bg-amber/5' : 'border-line bg-surface/40'} ${highlighted ? 'outline outline-2 outline-cyan/70' : ''}`}
     >
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -126,6 +133,7 @@ export function BoardPostCard({
       >
         {post.text}
       </p>
+      {!removed && post.subject ? <BoardSubjectCard subject={post.subject} /> : null}
       {!removed && pending === null ? (
         <div className="mt-4 flex flex-wrap gap-1">
           {canWrite && isAuthor ? (

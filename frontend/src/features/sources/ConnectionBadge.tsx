@@ -17,7 +17,7 @@ export function ConnectionBadge({
   const tone = optional && meta.group === 'setup' ? 'muted' : meta.tone;
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap ${TONE_CLASSES[tone]}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-2xs font-medium whitespace-nowrap ${TONE_CLASSES[tone]}`}
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
       {label}

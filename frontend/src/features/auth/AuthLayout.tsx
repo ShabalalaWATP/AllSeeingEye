@@ -1,7 +1,10 @@
 /** Public account pages: a live brand plane beside a quiet, opaque form. */
 import { NavLink, Outlet } from 'react-router';
 
+import { PublicRouteFocus } from '@/app/shell/PublicRouteFocus';
 import EvilEye from '@/components/brand/EvilEye';
+import { MotionToggle } from '@/components/brand/MotionToggle';
+import { useMotionPause } from '@/components/brand/useMotionPause';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 
 import './auth.css';
@@ -9,12 +12,14 @@ import './auth.css';
 export function AuthLayout() {
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
+  const { chosenPause } = useMotionPause();
 
   return (
     <div className="auth-shell">
       <section className="auth-brand" aria-label="The All Seeing Eye">
         <div className="auth-grid" aria-hidden="true" />
         <p className="auth-eyebrow">Open-source intelligence</p>
+        <MotionToggle tone="auth" className="absolute top-8 right-8 flex flex-col items-end" />
         <div className="auth-identity">
           <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
             <EvilEye
@@ -23,7 +28,8 @@ export function AuthLayout() {
               maxFps={reducedMotion ? 1 : 24}
               flameSpeed={reducedMotion ? 0 : 1}
               pupilFollow={reducedMotion ? 0 : 1}
-              paused={!visible}
+              paused={!visible || chosenPause}
+              fallbackSizes="(max-width: 480px) 180px, (max-width: 899px) 240px, 480px"
             />
           </div>
           <div className="auth-brand-copy">
@@ -39,6 +45,7 @@ export function AuthLayout() {
         </div>
       </section>
       <main className="auth-access" id="account-access">
+        <PublicRouteFocus />
         <div className="auth-access-inner">
           <nav className="auth-navigation" aria-label="Account access">
             <NavLink to="/login">Sign in</NavLink>

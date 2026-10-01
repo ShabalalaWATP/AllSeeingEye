@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useAccountRequest } from '@/components/account/useAccountRequest';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { TextAreaField, TextField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
 import {
@@ -83,7 +84,6 @@ function LibraryEditor({
   const [favourite, setFavourite] = useState(initial.favourite);
   const [tags, setTags] = useState(initial.tags.join(', '));
   const [note, setNote] = useState(initial.note ?? '');
-  const [removing, setRemoving] = useState(false);
   const begin = useAccountRequest();
   const action = useAsyncAction(async (remove: boolean) => {
     const signal = begin();
@@ -147,22 +147,22 @@ function LibraryEditor({
           Save to my library
         </Button>
         {initial.updated_at && (
-          <Button variant="ghost" disabled={action.busy} onClick={() => setRemoving(true)}>
-            Remove from my library
-          </Button>
+          <ConfirmButton
+            label="Remove from my library"
+            variant="ghost"
+            busy={action.busy}
+            title="Remove this report from your library?"
+            confirmLabel="Confirm removal"
+            busyLabel="Removing…"
+            onConfirm={() => void action.run(true)}
+          >
+            <p>
+              Your tags, favourite and note for this report are removed. The report will remain
+              available wherever you have access.
+            </p>
+          </ConfirmButton>
         )}
       </div>
-      {removing && (
-        <div className="space-y-2 border-t border-line pt-3">
-          <p className="text-sm">
-            Remove your tags, favourite and note? The report will remain available wherever you have
-            access.
-          </p>
-          <Button variant="danger" busy={action.busy} onClick={() => void action.run(true)}>
-            Confirm removal
-          </Button>
-        </div>
-      )}
     </form>
   );
 }

@@ -9,10 +9,13 @@ import pytest
 
 from ase.application.reports.analysis import run_analysis
 from ase.application.reports.diagram_svg import render_diagram_svg
-from ase.application.reports.diagram_text import diagram_lines, project_diagram
+from ase.application.reports.diagram_text import project_diagram
+from ase.application.reports.document_builder import DocumentBuilder
+from ase.application.reports.publication_markdown import render_document_markdown
 from ase.application.reports.templates import template_for
 from ase.domain.report_diagram_schema import parse_diagram
 from ase.domain.report_diagrams import DiagramKind, DiagramRejected
+from ase.domain.report_documents import ReportDocument
 from report_analysis_helpers import (
     ACTOR_MAP,
     CAUSAL_CHAIN,
@@ -115,7 +118,10 @@ def test_the_equivalent_table_carries_everything_the_picture_shows() -> None:
     assert projection.columns == ("From", "Relationship", "To", "Source")
     assert projection.rows[0][0] == ("Advancing force", "attacks", "City garrison (holding)")
     assert projection.rows[0][1] == ("E1",)
-    lines = diagram_lines(parse_diagram(MATRIX, LABELS))
+    builder = DocumentBuilder()
+    builder.diagram(parse_diagram(MATRIX, LABELS))
+    document = ReportDocument("Diagram", "Report fixture | version 1", tuple(builder.blocks))
+    lines = render_document_markdown(document).splitlines()
     assert lines[2].startswith("Two accounts compared")
     assert "| Ground advance | One agency | City centre | E1 |" in lines
 

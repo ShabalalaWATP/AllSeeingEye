@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
 import { DrawingStorageControls } from './DrawingStorageControls';
 import type { DrawingWorkspace } from './useDrawingWorkspace';
@@ -98,4 +99,34 @@ it('offers save, discard and cancel decisions, requiring applied sketch geometry
   rerender(<DrawingStorageControls storage={{ ...storage, pendingEdits: true }} />);
   expect(screen.getByRole('button', { name: 'Save and open' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Discard and open' })).toBeEnabled();
+});
+it('offers a team discussion only for a saved, unchanged team collection', () => {
+  const team = { ...saved, team_id: '6f1c2c1e-6b1f-4a43-9a43-0b0e7f0c9a11' };
+  const { rerender } = render(
+    <MemoryRouter>
+      <DrawingStorageControls storage={{ ...state(), active: saved }} />
+    </MemoryRouter>,
+  );
+  expect(screen.queryByRole('link', { name: 'Discuss with team' })).not.toBeInTheDocument();
+  rerender(
+    <MemoryRouter>
+      <DrawingStorageControls storage={{ ...state(), active: team }} />
+    </MemoryRouter>,
+  );
+  const link = screen.getByRole('link', { name: 'Discuss with team' });
+  const params = new URL(link.getAttribute('href') ?? '', 'http://x').searchParams;
+  expect(Object.fromEntries(params)).toEqual({
+    team: team.team_id,
+    board: 'thread',
+    subject: 'drawing_collection',
+    subject_id: 'saved',
+  });
+  // Leaving with unsaved drawings would lose them, so the link waits for a save.
+  rerender(
+    <MemoryRouter>
+      <DrawingStorageControls storage={{ ...state(), active: team, dirty: true }} />
+    </MemoryRouter>,
+  );
+  expect(screen.queryByRole('link', { name: 'Discuss with team' })).not.toBeInTheDocument();
+  expect(screen.getByText(/Save the collection before discussing it/)).toBeInTheDocument();
 });

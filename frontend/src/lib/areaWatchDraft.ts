@@ -34,7 +34,7 @@ export function readAreaWatchDraft(): AreaWatchDraft | null {
 }
 export function prepareAreaWatch(input: WatchAreaInput) {
   const actor = actorKey();
-  if (!actor) throw new Error('Sign in before preparing an area indicator.');
+  if (!actor) throw new Error('Sign in before preparing an area alert rule.');
   const bounds = validateAreaBounds(input.bounds);
   if (!['rectangle', 'sketch-envelope', 'viewport', 'shape'].includes(input.source))
     throw new Error('Choose a supported area.');
@@ -63,6 +63,10 @@ function subscribe(listener: () => void) {
   };
 }
 export const useAreaWatchDraft = () => useSyncExternalStore(subscribe, readAreaWatchDraft);
+/** Told about every change, so another hand-off can give way to a newer area draft. */
+export function subscribeAreaWatchDraft(onChange: (draft: AreaWatchDraft | null) => void) {
+  return subscribe(() => onChange(pending));
+}
 
 subscribeWorkspaceAccess(() => clearAreaWatchDraft());
 useAuthStore.subscribe((state, previous) => {

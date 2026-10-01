@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { Td } from '@/components/ui/Table';
 import type { Schedule } from '@/lib/api/schedules';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
@@ -32,20 +33,9 @@ export function ScheduleRow({
   onDuplicate: (item: Schedule, trigger: HTMLButtonElement) => void;
   onBriefCopied: () => void;
 }) {
-  const [confirming, setConfirming] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [copyBrief, setCopyBrief] = useState(false);
-  const confirm = useRef<HTMLDivElement>(null);
-  const removeButton = useRef<HTMLSpanElement>(null);
   const duplicateButton = useRef<HTMLSpanElement>(null);
-  const requested = useRef(false);
-  useEffect(() => {
-    if (confirming) confirm.current?.querySelector('button')?.focus();
-    else if (requested.current) removeButton.current?.querySelector('button')?.focus();
-  }, [confirming]);
-  const cancelRemove = () => {
-    setConfirming(false);
-  };
   return (
     <>
       <tr className={item.enabled ? '' : 'opacity-60'}>
@@ -196,41 +186,21 @@ export function ScheduleRow({
                 its questions or sources.
               </p>
             )}
-            {confirming ? (
-              <div
-                ref={confirm}
-                role="group"
-                aria-label={`Archive ${item.name}`}
-                className="space-y-2 text-xs"
-              >
-                <p>Archive {item.name}? Future runs stop. Existing reports remain available.</p>
-                <div className="flex gap-2">
-                  <Button
-                    disabled={!workspaces.canManage(item) || busy}
-                    variant="danger"
-                    onClick={() => onRemove(item.id)}
-                  >
-                    Confirm archive
-                  </Button>
-                  <Button variant="secondary" disabled={busy} onClick={cancelRemove}>
-                    Cancel archiving
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <span ref={removeButton}>
-                <Button
-                  disabled={!workspaces.canManage(item) || busy}
-                  variant="danger"
-                  onClick={() => {
-                    requested.current = true;
-                    setConfirming(true);
-                  }}
-                >
-                  Archive
-                </Button>
-              </span>
-            )}
+            <ConfirmButton
+              label="Archive"
+              disabled={!workspaces.canManage(item)}
+              busy={busy}
+              title={`Archive subscription “${item.name}”?`}
+              confirmLabel="Confirm archive"
+              busyLabel="Archiving…"
+              onConfirm={() => onRemove(item.id)}
+            >
+              <p>
+                <span className="font-medium text-text">Workspace:</span>{' '}
+                {workspaces.label(item.team_id)}
+              </p>
+              <p>Future runs stop. Existing reports remain available.</p>
+            </ConfirmButton>
           </div>
         </Td>
       </tr>

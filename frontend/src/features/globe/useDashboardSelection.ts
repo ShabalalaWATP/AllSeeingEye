@@ -4,16 +4,24 @@ import { subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { useEventsStore } from '@/stores/events';
 
-/** Validate picks against all visible records, including the separate news snapshot. */
-export function useDashboardSelection(events: readonly LiveEvent[]) {
+/**
+ * Validate picks against all visible records, including the separate news snapshot.
+ * `shown` is the mirror list these records derive from. While it lags the store, a stream
+ * transition is pending, so a just-arrived selection is kept until that view commits.
+ */
+export function useDashboardSelection(
+  events: readonly LiveEvent[],
+  shown: readonly LiveEvent[] = useEventsStore.getState().list,
+) {
   const requestedId = useEventsStore((state) => state.selectedId);
   const storeSelect = useEventsStore((state) => state.select);
   const select = useCallback((id: string | null) => storeSelect(id, 'view'), [storeSelect]);
   const selected = events.find((event) => event.id === requestedId) ?? null;
   useEffect(() => {
-    if (requestedId && !selected && useEventsStore.getState().selectedId === requestedId)
+    const current = useEventsStore.getState();
+    if (requestedId && !selected && current.selectedId === requestedId && current.list === shown)
       select(null);
-  }, [requestedId, selected, select]);
+  }, [requestedId, selected, select, shown]);
   useEffect(() => {
     const clear = () => {
       if (useEventsStore.getState().selectionOwner === 'view') storeSelect(null);

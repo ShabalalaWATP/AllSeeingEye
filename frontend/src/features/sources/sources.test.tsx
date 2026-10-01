@@ -124,7 +124,7 @@ describe('source catalogue', () => {
     expect(router.state.location.pathname).toBe('/login');
   });
 
-  it('is an administrator page: an analyst is refused the catalogue', async () => {
+  it('keeps the administration copy guarded: an analyst reads the catalogue at /sources instead', async () => {
     renderApp('/admin/catalogue', 'user');
     expect(await screen.findByText('Admin access required')).toBeVisible();
     expect(screen.queryByRole('heading', { name: 'BBC World' })).toBeNull();

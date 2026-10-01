@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { EconomyRegion } from '@/lib/api/economy';
 import { SourceLink } from '@/components/ui/SourceLink';
 import { EconomicChart } from './EconomicChart';
@@ -17,6 +17,8 @@ export function CountryEconomy({
   explainer?: RegionExplainerView;
 }) {
   const [choice, setChoice] = useState<string | null>(null);
+  // Each side note is a named complementary landmark, so several on one page stay distinct.
+  const asideHeading = useId();
   if (!region)
     return (
       <p className="text-sm text-muted">
@@ -68,9 +70,11 @@ export function CountryEconomy({
       {series && (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_240px]">
           <EconomicChart key={`${region.id}:${series.id}`} series={series} />
-          <aside className="space-y-4 text-sm leading-6 text-muted">
+          <aside aria-labelledby={asideHeading} className="space-y-4 text-sm leading-6 text-muted">
             {/* The plain-English meaning sits with the indicator card, not twice. */}
-            <h4 className="font-semibold text-text">{series.name}</h4>
+            <h4 id={asideHeading} className="font-semibold text-text">
+              {series.name}
+            </h4>
             <p>{series.note}</p>
             <dl className="space-y-3 text-xs">
               <div>

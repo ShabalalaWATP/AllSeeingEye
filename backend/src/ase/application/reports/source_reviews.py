@@ -29,6 +29,7 @@ from ase.domain.source_review_records import SourceReviewSnapshot, encode_source
 from ase.domain.source_reviews import (
     MAX_SCOPE_REVIEW_BYTES,
     MAX_SCOPE_REVIEW_HEADS,
+    MAX_SOURCE_REVIEW_HISTORY,
     MAX_VERSION_SOURCE_SNAPSHOTS,
     SourceReviewKind,
     SourceReviewRevision,
@@ -138,6 +139,11 @@ class ReportSourceReviews:
                 str(value.previous_id) if value.previous_id else None
             ):
                 raise Conflict("This source assessment has a newer revision. Reload its history.")
+            if len(history) >= MAX_SOURCE_REVIEW_HISTORY:
+                raise InvalidRequest(
+                    "This review history has reached its revision limit. "
+                    "No further corrections can be recorded for this target."
+                )
             now = self.clock.now()
             review = RatingReview(
                 str(uuid4()),
@@ -245,6 +251,22 @@ class ReportSourceReviews:
         )
         await self._commit(claims)
         return snapshot
+
+    async def snapshots(
+        self, claims: AccessClaims, report_id: UUID, number: int
+    ) -> tuple[SourceReviewSnapshot, ...]:
+        """Snapshots of this exact version in the report's own scope, newest first."""
+        access = await self._context(claims)
+        record, version = await self._version(access, report_id, number)
+        rows = await self.reviews.snapshots(version.id, MAX_VERSION_SOURCE_SNAPSHOTS)
+        result = tuple(
+            row
+            for row in rows
+            if row.report_id == report_id
+            and (row.scope.owner_id, row.scope.team_id) == (record.created_by, record.team_id)
+        )
+        await self._commit(claims)
+        return result
 
     async def _commit(self, claims: AccessClaims) -> None:
         await validate_current_session(claims, self.users, self.refresh, self.clock)

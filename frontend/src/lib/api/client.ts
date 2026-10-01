@@ -9,6 +9,7 @@
 import type { ZodType } from 'zod';
 
 import { ApiError } from './errors';
+import { parseRetryAfter, unexpectedResponseError } from './errorResponses';
 import { errorEnvelopeSchema } from './schemas';
 
 export interface SessionBridge {
@@ -188,13 +189,7 @@ async function toApiError(response: Response): Promise<ApiError> {
       requestId ?? null,
     );
   }
-  return new ApiError(
-    response.status,
-    'unknown_error',
-    `The request failed with status ${response.status}.`,
-    {},
-    retryAfter,
-  );
+  return unexpectedResponseError(response.status, retryAfter);
 }
 
 function safeDownloadFilename(disposition: string | null): string | null {
@@ -204,10 +199,4 @@ function safeDownloadFilename(disposition: string | null): string | null {
   return filename !== undefined && /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(filename)
     ? filename
     : null;
-}
-
-function parseRetryAfter(value: string | null): number | null {
-  if (value === null) return null;
-  const seconds = Number.parseInt(value, 10);
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
 }

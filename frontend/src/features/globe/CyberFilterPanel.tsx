@@ -68,8 +68,8 @@ function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
           </label>
         )}
         {radar?.active && (
-          <p role="status" className="mb-3 text-[11px] leading-5 text-muted">
-            <span className="inline-block h-2 w-2 rounded-sm bg-violet-400" aria-hidden="true" />{' '}
+          <p role="status" className="mb-3 text-2xs leading-5 text-muted">
+            <span className="inline-block h-2 w-2 rounded-sm bg-chart-6" aria-hidden="true" />{' '}
             Purple CF labels: Cloudflare-observed mitigated traffic shares by target billing
             country. L3/4 is bytes; L7 is requests.{' '}
             {radar.loading ? 'Loading…' : `${radar.rows.length} countries mapped.`}
@@ -91,7 +91,7 @@ function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
             {radar?.data ? (
               <RadarAttackResults data={radar.data} compact />
             ) : (
-              <p className="text-[11px] text-muted">
+              <p className="text-2xs text-muted">
                 {radar?.loading
                   ? 'Loading Cloudflare Radar…'
                   : 'Enable Cyber and the map layer to load the current distribution.'}
@@ -102,7 +102,7 @@ function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
                 Retry Cloudflare Radar
               </button>
             )}
-            <p className="text-[11px] leading-5 text-muted">
+            <p className="text-2xs leading-5 text-muted">
               Provider-wide shares by billing country, not map incidents or attacker locations.
             </p>
           </div>

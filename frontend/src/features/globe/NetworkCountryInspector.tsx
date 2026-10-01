@@ -33,7 +33,7 @@ export function NetworkCountryInspector({
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-2xs uppercase tracking-wider text-amber-300">Network signals</p>
+          <p className="text-2xs uppercase tracking-wider text-amber">Network signals</p>
           <h2 className="mt-1 text-sm font-medium">{group.country.name}</h2>
         </div>
         <button

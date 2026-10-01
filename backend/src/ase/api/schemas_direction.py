@@ -11,7 +11,15 @@ from pydantic import BaseModel, Field
 from ase.api.schemas_events import EventOut
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.direction.areas import AoiInput
-from ase.application.direction.plans import PirInput, PlanEvidence, PlanInput, SirInput
+from ase.application.direction.plan_map_matches import WINDOW_HOURS, PlanMapMatches
+from ase.application.direction.plans import (
+    PER_SIR,
+    POOL,
+    PirInput,
+    PlanEvidence,
+    PlanInput,
+    SirInput,
+)
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
 from ase.domain.events import Category
 
@@ -114,6 +122,12 @@ class PlanIn(BaseModel):
         )
 
 
+class PlanUpdateIn(PlanIn):
+    """An edit names the revision (`updated_at`) it was made from; stale edits get 409."""
+
+    expected_updated_at: datetime
+
+
 class SirOut(BaseModel):
     code: str
     text: str
@@ -199,5 +213,37 @@ class PlanEvidenceOut(BaseModel):
                     events=[EventOut.from_event(event) for event in sir.events],
                 )
                 for sir in evidence.sirs
+            ],
+        )
+
+
+class EventMatchOut(BaseModel):
+    event_id: str
+    codes: list[str]
+
+
+class PlanMapMatchesOut(BaseModel):
+    """A bounded sample: the window, pool and per-requirement cap say how it was drawn."""
+
+    plan: PlanOut
+    window_hours: int
+    pool_limit: int
+    per_requirement_limit: int
+    considered: int
+    truncated: bool
+    matches: list[EventMatchOut]
+
+    @classmethod
+    def from_matches(cls, result: PlanMapMatches) -> Self:
+        return cls(
+            plan=PlanOut.from_plan(result.plan),
+            window_hours=WINDOW_HOURS,
+            pool_limit=POOL,
+            per_requirement_limit=PER_SIR,
+            considered=result.considered,
+            truncated=result.truncated,
+            matches=[
+                EventMatchOut(event_id=match.event_id, codes=list(match.codes))
+                for match in result.matches
             ],
         )

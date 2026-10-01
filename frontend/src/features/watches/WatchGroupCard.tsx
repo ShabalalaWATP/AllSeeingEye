@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { describeError } from '@/lib/api/errors';
 
 import type { WatchGroupState } from './useWatches';
@@ -26,6 +27,7 @@ export function WatchGroupCard({ group }: { group: WatchGroupState }) {
         </div>
         <p className="text-sm leading-6 text-muted">{group.explanation}</p>
         {group.loading && <LoadingNote label={`Loading ${name}`} />}
+        {group.loading && !group.summary && <Skeleton lines={2} />}
         {group.error && (
           <Alert tone="error">
             {describeError(group.error)}{' '}

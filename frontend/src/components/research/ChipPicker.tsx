@@ -35,7 +35,7 @@ export function ChipPicker<T extends string>({
       {/* The count is hidden from the name so the group reads as its label alone. */}
       <legend className="flex w-full items-baseline justify-between gap-3 text-sm font-medium">
         <span>{label}</span>
-        <span aria-hidden="true" className="font-mono text-[11px] text-muted">
+        <span aria-hidden="true" className="font-mono text-2xs text-muted">
           {value.length} / {max}
         </span>
       </legend>

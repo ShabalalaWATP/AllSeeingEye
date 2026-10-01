@@ -1,7 +1,10 @@
 import type { EvidenceItem, Finding } from '@/lib/api/reports';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
+import { glossaryPath } from '@/lib/glossary';
+
 import { EvidenceItemDetails } from './EvidenceItemDetails';
+import type { SourceReviewContext } from './SourceReviewPanel';
 import './evidenceSignals.css';
 
 /**
@@ -13,11 +16,14 @@ export function EvidenceAnnex({
   findings,
   status,
   assessment,
+  review,
 }: {
   evidence: readonly EvidenceItem[];
   findings: readonly Finding[];
   status: string;
   assessment?: ReportAssessment | null | undefined;
+  /** Saved-report context for recording human source reviews; omitted in previews. */
+  review?: SourceReviewContext | undefined;
 }) {
   const warnings = findings.filter((finding) => finding.severity === 'warning');
   return (
@@ -50,8 +56,26 @@ export function EvidenceAnnex({
           </p>
           <p className="mt-2 max-w-prose text-xs leading-5 text-muted">
             Each saved grade separates source reliability (A to F) from information credibility (1
-            to 6). F6 means there was not enough basis to judge, not that the report was false. Open
-            the Assessment tab for confidence limits and the UK probability yardstick.
+            to 6). F6 means there was not enough basis to judge, not that the report was false. A
+            grade is not proof that a claim is true.{' '}
+            <a
+              href={glossaryPath('source-grades')}
+              className="text-ember underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+            >
+              What source grades mean
+            </a>
+            . Open the Assessment tab for confidence limits and the UK probability yardstick.
+          </p>
+          <p className="mt-2 max-w-prose text-xs leading-5 text-muted">
+            Saved grades are frozen with this version. A source's current grade basis, coverage and
+            limitations are in the read-only catalogue.{' '}
+            {/* A plain link: the annex also renders outside the router, in previews and tests. */}
+            <a
+              href="/sources"
+              className="text-ember underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+            >
+              Compare current grades in the source catalogue
+            </a>
           </p>
         </header>
         {evidence.length === 0 ? (
@@ -63,6 +87,7 @@ export function EvidenceAnnex({
                 key={item.label}
                 item={item}
                 assessment={assessment?.evidence.find((row) => row.label === item.label)}
+                review={review}
               />
             ))}
           </div>

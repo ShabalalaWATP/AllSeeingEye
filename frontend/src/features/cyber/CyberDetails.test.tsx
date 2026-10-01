@@ -87,6 +87,7 @@ it('shows no-matching-reference state and paginates the actor directory', async 
   expect(screen.getByText('Profile association: North Korea')).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Show more actors' }));
   expect(screen.queryByRole('button', { name: 'Show more actors' })).not.toBeInTheDocument();
+  expect(screen.getByRole('searchbox').className).not.toMatch(/outline-none/);
   await user.type(screen.getByRole('searchbox'), 'not present');
   expect(screen.getByText(/No reference profiles match/)).toBeVisible();
 });

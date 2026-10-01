@@ -47,6 +47,8 @@ class Indicator:
     updated_at: datetime
     team_id: UUID | None = None
     research_area: ResearchArea | None = None
+    # Set when a paused rule is resumed: activity from before then is never counted.
+    resumed_at: datetime | None = None
 
     @property
     def window(self) -> timedelta:
@@ -125,12 +127,17 @@ def evaluate(
     now: datetime,
     last_fired: datetime | None,
 ) -> Firing | None:
-    """Count known publication times in the closed interval [now - window, now]."""
+    """Count known publication times in the closed interval [now - window, now].
+
+    A resumed rule starts counting at its resume instant, so the paused period is not replayed.
+    """
     if not indicator.enabled:
         return None
     if last_fired is not None and now - last_fired < indicator.cooldown:
         return None
     since = now - indicator.window
+    if indicator.resumed_at is not None and indicator.resumed_at > since:
+        since = indicator.resumed_at
     count = 0
     evidence: list[tuple[datetime, str, int, Event]] = []
     country_latest: dict[str, tuple[datetime, str]] = {}
