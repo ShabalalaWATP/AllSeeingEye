@@ -1,8 +1,7 @@
+import { Tabs } from '@/components/ui/Tabs';
 import { researchTabs } from '@/lib/workspaceNavigation';
-
-import { SectionTabs } from './SectionTabs';
 
 /** Research's own tabs, the same list and name on every research page. */
 export function ResearchNavigation() {
-  return <SectionTabs tabs={researchTabs} label="Research" />;
+  return <Tabs links={researchTabs} label="Research" />;
 }

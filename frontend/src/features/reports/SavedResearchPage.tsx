@@ -7,7 +7,8 @@ import { Link, useSearchParams } from 'react-router';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ResearchLibrary } from '@/components/library/ResearchLibrary';
-import { researchTabs, SectionTabs } from '@/components/research/SectionTabs';
+import { Tabs } from '@/components/ui/Tabs';
+import { researchTabs } from '@/lib/workspaceNavigation';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 
@@ -35,7 +36,7 @@ export default function SavedResearchPage() {
     showComposer || (Object.keys(initial).length > 0 && closedContext !== params.toString());
   return (
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <SectionTabs tabs={researchTabs} label="Research" />
+      <Tabs links={researchTabs} label="Research" />
       <PageHeader
         title="Saved research"
         description="Questions you have asked, their frozen evidence, comparisons and exports."

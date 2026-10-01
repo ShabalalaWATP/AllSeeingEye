@@ -4,14 +4,15 @@
 import { Link } from 'react-router';
 
 import { PageHeader } from '@/components/ui/PageHeader';
-import { geolocationTabs, SectionTabs } from '@/components/research/SectionTabs';
+import { Tabs } from '@/components/ui/Tabs';
+import { geolocationTabs } from '@/lib/workspaceNavigation';
 
 import { SavedReports } from './SavedReports';
 
 export default function SavedAssessmentsPage() {
   return (
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <SectionTabs tabs={geolocationTabs} label="Geolocation" />
+      <Tabs links={geolocationTabs} label="Geolocation" />
       <PageHeader
         title="Saved assessments"
         description="Photograph assessments and the candidate locations each one considered, with the evidence frozen as it was read."

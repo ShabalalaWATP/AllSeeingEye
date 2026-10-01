@@ -9,7 +9,8 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { useSearchParams } from 'react-router';
 
-import { SectionTabs, subscriptionTabs } from '@/components/research/SectionTabs';
+import { Tabs } from '@/components/ui/Tabs';
+import { subscriptionTabs } from '@/lib/workspaceNavigation';
 import { ResearchAllowanceSummary } from '@/components/research/ResearchAllowanceSummary';
 
 import { SchedulesSection } from './SchedulesSection';
@@ -46,7 +47,7 @@ export default function RecurringResearchPage() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-7xl space-y-8 pb-24">
-        <SectionTabs tabs={subscriptionTabs} label="Subscriptions" />
+        <Tabs links={subscriptionTabs} label="Subscriptions" />
         <header className="relative overflow-hidden rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7">
           <div
             aria-hidden="true"

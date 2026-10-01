@@ -6,6 +6,7 @@
  */
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import { describe, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/errors';
@@ -19,7 +20,10 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { SelectField, TextAreaField, TextField } from './Field';
 import { FormErrors } from './FormErrors';
+import { PageHeader } from './PageHeader';
+import { Skeleton } from './Skeleton';
 import { Table, Td, Th } from './Table';
+import { Tabs } from './Tabs';
 
 installDialogStub();
 
@@ -118,6 +122,31 @@ describe('shared primitives have no axe violations', () => {
           </tbody>
         </Table>
       </Page>,
+    );
+    await expectNoAxeViolations();
+  });
+
+  it('a page header with route tabs and a loading skeleton', async () => {
+    render(
+      <MemoryRouter initialEntries={['/research/saved']}>
+        <main>
+          <PageHeader
+            title="Saved research"
+            eyebrow="Research"
+            description="Questions you have asked."
+            actions={<Button>New research</Button>}
+          />
+          <Tabs
+            label="Research"
+            links={[
+              { to: '/research', label: 'New research' },
+              { to: '/research/saved', label: 'Saved research' },
+            ]}
+          />
+          <LoadingNote label="Loading reports" />
+          <Skeleton lines={4} />
+        </main>
+      </MemoryRouter>,
     );
     await expectNoAxeViolations();
   });

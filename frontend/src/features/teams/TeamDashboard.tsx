@@ -1,24 +1,23 @@
 import type { ReactNode } from 'react';
 
+import { Tabs, tabPanelProps, type PanelTab } from '@/components/ui/Tabs';
 import type { User } from '@/lib/api/schemas';
 import type { TeamDetail } from '@/lib/api/teams';
 import type { BoardLink } from '@/lib/teamBoardLinks';
 
 import { TeamBoard } from './TeamBoard';
-import { TeamDashboardTabs } from './TeamDashboardTabs';
 import { TeamOverview } from './TeamOverview';
 import type { TeamCapabilities } from './teamCapabilities';
-import { panelId, tabId, type DashboardTab } from './teamTabs';
 
 export type TeamDashboardTab = 'overview' | 'research' | 'board' | 'members';
 
-const TABS: readonly DashboardTab<TeamDashboardTab>[] = [
+const TABS: readonly PanelTab<TeamDashboardTab>[] = [
   { id: 'overview', label: 'Overview', detail: 'Team pulse and quick actions' },
   { id: 'research', label: 'Research', detail: 'Shared analysis workspace' },
   { id: 'board', label: 'Board', detail: 'Short team updates' },
   { id: 'members', label: 'Members', detail: 'People and access' },
 ];
-const DEFAULT_TAB: DashboardTab<TeamDashboardTab> = {
+const DEFAULT_TAB: PanelTab<TeamDashboardTab> = {
   id: 'overview',
   label: 'Overview',
   detail: 'Team pulse and quick actions',
@@ -127,18 +126,14 @@ export function TeamDashboard({
           {actions}
         </div>
       </header>
-      <TeamDashboardTabs
+      <Tabs
         label="Team workspace sections"
         tabs={TABS}
         activeTab={selectedTab.id}
         onTabChange={onTabChange}
+        idPrefix="team"
       />
-      <div
-        id={panelId(selectedTab.id)}
-        role="tabpanel"
-        aria-labelledby={tabId(selectedTab.id)}
-        className="min-w-0 pb-8"
-      >
+      <div {...tabPanelProps('team', selectedTab.id)} className="min-w-0 pb-8">
         {activeTab === 'overview' ? (
           <TeamOverview
             teamId={detail.team.id}
