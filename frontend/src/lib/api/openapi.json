@@ -8534,6 +8534,55 @@
         }
       }
     },
+    "/api/reports/{report_id}/team-discussion": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Report Team Discussion",
+        "description": "Board threads about this team report, for its current readers; no titles or text.",
+        "operationId": "report_team_discussion_api_reports__report_id__team_discussion_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDiscussionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/markdown": {
       "get": {
         "tags": [
@@ -18033,6 +18082,16 @@
           "reference"
         ],
         "title": "BlockKind"
+      },
+      "BoardSubjectKind": {
+        "type": "string",
+        "enum": [
+          "report_version",
+          "saved_area",
+          "drawing_collection"
+        ],
+        "title": "BoardSubjectKind",
+        "description": "Team work a top-level post may discuss. The board never becomes evidence."
       },
       "BriefJobCreateIn": {
         "properties": {
@@ -37192,6 +37251,51 @@
         ],
         "title": "ReportCreateIn"
       },
+      "ReportDiscussionOut": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "latest_post_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Post Id"
+          },
+          "can_post": {
+            "type": "boolean",
+            "title": "Can Post"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "count",
+          "latest_post_id",
+          "can_post"
+        ],
+        "title": "ReportDiscussionOut",
+        "description": "Live board threads about any version of a team report; personal reports have none."
+      },
       "ReportEvidenceOut": {
         "properties": {
           "label": {
@@ -45929,6 +46033,16 @@
               }
             ],
             "title": "Parent Id"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -46031,6 +46145,16 @@
           "revision": {
             "type": "integer",
             "title": "Revision"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -46115,6 +46239,94 @@
         ],
         "title": "TeamBoardRemoveIn",
         "description": "Moderators must give a reason for removing someone else's post; it is audited only."
+      },
+      "TeamBoardSubjectIn": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BoardSubjectKind"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "TeamBoardSubjectIn",
+        "description": "A same-team report version, saved area or drawing collection; checked server-side."
+      },
+      "TeamBoardSubjectOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BoardSubjectKind"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "version",
+          "available",
+          "title"
+        ],
+        "title": "TeamBoardSubjectOut",
+        "description": "Only an available subject carries its identifier and title."
       },
       "TeamBoardUnreadOut": {
         "properties": {

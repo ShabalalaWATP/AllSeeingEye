@@ -10,13 +10,16 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from ase.adapters.persistence.map_workspace import SqlMapWorkspaceRepository
 from ase.adapters.persistence.session import create_session_factory
 from ase.adapters.persistence.team_board import SqlTeamBoardRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
+from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.teams.board import TeamBoardService
 from ase.application.teams.board_moderation import TeamBoardModerationService
+from ase.application.teams.board_subjects import BoardSubjects
 from ase.container.repositories import build_repositories
 from ase.domain.errors import Conflict
 from ase.domain.team_board import TeamBoardPost
@@ -77,7 +80,13 @@ def _services(session: AsyncSession) -> tuple[TeamBoardService, TeamBoardModerat
         Auditor(repos.audit, clock),
         repos.uow,
     )
-    return TeamBoardService(*arguments), TeamBoardModerationService(*arguments)
+    subjects = BoardSubjects(
+        AccessPolicy(repos.users, SqlTeamRepository(session)),
+        repos.reports,
+        repos.aois,
+        SqlMapWorkspaceRepository(session),
+    )
+    return TeamBoardService(*arguments, subjects), TeamBoardModerationService(*arguments)
 
 
 async def test_file_backed_conditional_update_refuses_the_stale_writer(tmp_path: Path) -> None:

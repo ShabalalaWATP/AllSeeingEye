@@ -2267,6 +2267,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/team-discussion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report Team Discussion
+         * @description Board threads about this team report, for its current readers; no titles or text.
+         */
+        get: operations["report_team_discussion_api_reports__report_id__team_discussion_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/markdown": {
         parameters: {
             query?: never;
@@ -5437,6 +5457,12 @@ export interface components {
          * @enum {string}
          */
         BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "diagram" | "reference";
+        /**
+         * BoardSubjectKind
+         * @description Team work a top-level post may discuss. The board never becomes evidence.
+         * @enum {string}
+         */
+        BoardSubjectKind: "report_version" | "saved_area" | "drawing_collection";
         /** BriefJobCreateIn */
         BriefJobCreateIn: {
             /**
@@ -12118,6 +12144,20 @@ export interface components {
             research_until?: string | null;
             research_time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
         };
+        /**
+         * ReportDiscussionOut
+         * @description Live board threads about any version of a team report; personal reports have none.
+         */
+        ReportDiscussionOut: {
+            /** Team Id */
+            team_id: string | null;
+            /** Count */
+            count: number;
+            /** Latest Post Id */
+            latest_post_id: string | null;
+            /** Can Post */
+            can_post: boolean;
+        };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {
             /** Label */
@@ -15171,6 +15211,7 @@ export interface components {
             text: string;
             /** Parent Id */
             parent_id?: string | null;
+            subject?: components["schemas"]["TeamBoardSubjectIn"] | null;
         };
         /** TeamBoardPostOut */
         TeamBoardPostOut: {
@@ -15215,6 +15256,7 @@ export interface components {
             removal: ("author" | "moderator") | null;
             /** Revision */
             revision: number;
+            subject?: components["schemas"]["TeamBoardSubjectOut"] | null;
         };
         /** TeamBoardPostUpdateIn */
         TeamBoardPostUpdateIn: {
@@ -15240,6 +15282,35 @@ export interface components {
             expected_revision: number;
             /** Reason */
             reason?: string | null;
+        };
+        /**
+         * TeamBoardSubjectIn
+         * @description A same-team report version, saved area or drawing collection; checked server-side.
+         */
+        TeamBoardSubjectIn: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version?: number | null;
+        };
+        /**
+         * TeamBoardSubjectOut
+         * @description Only an available subject carries its identifier and title.
+         */
+        TeamBoardSubjectOut: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /** Id */
+            id: string | null;
+            /** Version */
+            version: number | null;
+            /** Available */
+            available: boolean;
+            /** Title */
+            title: string | null;
         };
         /** TeamBoardUnreadOut */
         TeamBoardUnreadOut: {
@@ -21121,6 +21192,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_team_discussion_api_reports__report_id__team_discussion_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDiscussionOut"];
+                };
             };
             /** @description Validation Error */
             422: {

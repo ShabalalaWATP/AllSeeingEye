@@ -10,6 +10,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
 
+# Shared with migration 0075: only top-level posts name a subject, and only a report
+# version carries a version number.
+SUBJECT_SHAPE = (
+    "(subject_kind IS NULL AND subject_id IS NULL AND subject_version IS NULL)"
+    " OR (subject_kind IS NOT NULL AND subject_id IS NOT NULL AND parent_id IS NULL AND ("
+    "(subject_kind = 'report_version' AND subject_version IS NOT NULL AND subject_version >= 1)"
+    " OR (subject_kind IN ('saved_area', 'drawing_collection') AND subject_version IS NULL)))"
+)
+
 
 class TeamBoardPostRow(Base):
     __tablename__ = "team_board_posts"
@@ -19,12 +28,14 @@ class TeamBoardPostRow(Base):
         CheckConstraint(
             "removal IS NULL OR removal IN ('author', 'moderator')", name="ck_board_removal"
         ),
-        # Mirrors migration 0048 exactly, including its composite listing indexes.
+        CheckConstraint(SUBJECT_SHAPE, name="ck_board_subject"),
+        # Mirrors migrations 0048 and 0075 exactly, including the composite indexes.
         Index("ix_team_board_posts_team", "team_id"),
         Index("ix_team_board_posts_author", "author_id"),
         Index("ix_team_board_posts_created", "team_id", "created_at"),
         Index("ix_team_board_posts_parent", "parent_id"),
         Index("ix_team_board_posts_pinned", "team_id", "is_pinned"),
+        Index("ix_team_board_posts_subject", "team_id", "subject_kind", "subject_id"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
@@ -41,6 +52,11 @@ class TeamBoardPostRow(Base):
     revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     edited_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     removal: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # A typed reference with no foreign key: the subject may later move or be deleted,
+    # so every read resolves it again under the reader's current access.
+    subject_kind: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    subject_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    subject_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class TeamBoardReadCursorRow(Base):

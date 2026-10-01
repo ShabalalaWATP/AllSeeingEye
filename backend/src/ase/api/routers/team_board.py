@@ -20,14 +20,20 @@ from ase.api.schemas_team_board import (
 )
 from ase.container import Container
 from ase.domain.team_board import TeamBoardPost
+from ase.domain.users import User
 
 router = APIRouter(prefix="/teams/{team_id}/board", tags=["team-board"])
 NO_STORE = {"Cache-Control": "no-store"}
 
 
-async def _out(container: Container, session: SessionDep, post: TeamBoardPost) -> TeamBoardPostOut:
+async def _out(
+    container: Container, session: SessionDep, user: User, post: TeamBoardPost
+) -> TeamBoardPostOut:
     author = await container.repositories(session).users.get_by_id(post.author_id)
-    return TeamBoardPostOut.from_post(post, author.display_name if author else "Unknown operator")
+    subject = await container.team_board(session).subject_for(user, post)
+    return TeamBoardPostOut.from_post(
+        post, author.display_name if author else "Unknown operator", subject
+    )
 
 
 @router.get("/posts")
@@ -55,9 +61,14 @@ async def create_post(
     context: ContextDep,
 ) -> TeamBoardPostOut:
     post = await container.team_board(session).create(
-        user, team_id, body.text, body.parent_id, context
+        user,
+        team_id,
+        body.text,
+        body.parent_id,
+        context,
+        body.subject.to_subject() if body.subject else None,
     )
-    return await _out(container, session, post)
+    return await _out(container, session, user, post)
 
 
 @router.patch("/posts/{post_id}")
@@ -73,7 +84,7 @@ async def edit_post(
     post = await container.team_board(session).edit(
         user, team_id, post_id, body.text, body.expected_revision, context
     )
-    return await _out(container, session, post)
+    return await _out(container, session, user, post)
 
 
 @router.delete("/posts/{post_id}", status_code=204, response_class=Response)
@@ -106,7 +117,7 @@ async def remove_post(
     post = await container.team_board_moderation(session).remove(
         user, team_id, post_id, body.expected_revision, body.reason, context
     )
-    return await _out(container, session, post)
+    return await _out(container, session, user, post)
 
 
 @router.post("/posts/{post_id}/pin")
@@ -122,7 +133,7 @@ async def pin_post(
     post = await container.team_board_moderation(session).pin(
         user, team_id, post_id, body.pinned, body.expected_revision, body.reason, context
     )
-    return await _out(container, session, post)
+    return await _out(container, session, user, post)
 
 
 @router.post("/read")
