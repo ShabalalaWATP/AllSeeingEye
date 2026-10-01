@@ -176,9 +176,12 @@ describe('one navigation definition', () => {
     await user.keyboard('{Enter}');
     const dialog = screen.getByRole('dialog', { name: 'Navigation' });
     expect(within(dialog).getByRole('button', { name: 'Close navigation' })).toHaveFocus();
-    // Close, then the home link, Find anything and the first destination, in reading order.
+    // Close, then the home link, the animation pause, Find anything and the first destination,
+    // in reading order.
     await user.tab();
     expect(within(dialog).getByRole('link', { name: 'The All Seeing Eye' })).toHaveFocus();
+    await user.tab();
+    expect(within(dialog).getByRole('button', { name: 'Pause animation' })).toHaveFocus();
     await user.tab();
     expect(within(dialog).getByRole('button', { name: /Find anything/ })).toHaveFocus();
     await user.tab();
