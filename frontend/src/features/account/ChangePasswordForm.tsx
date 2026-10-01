@@ -128,7 +128,6 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
         />
         <button
           type="button"
-          aria-pressed={visible}
           className="min-h-11 w-fit rounded text-sm text-muted hover:text-text"
           onClick={() => setVisible((value) => !value)}
         >

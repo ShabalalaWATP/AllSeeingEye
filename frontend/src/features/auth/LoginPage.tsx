@@ -111,7 +111,6 @@ export function LoginPage() {
           type="button"
           className="absolute right-1 top-7 min-h-11 min-w-16 rounded px-3 text-xs font-medium text-muted hover:text-text"
           aria-label={showPassword ? 'Hide password' : 'Show password'}
-          aria-pressed={showPassword}
           onClick={() => {
             setShowPassword((shown) => !shown);
           }}

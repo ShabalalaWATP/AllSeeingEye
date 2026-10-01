@@ -46,11 +46,16 @@ describe('LoginPage', () => {
     const { user } = renderApp('/login', 'anonymous');
     const password = screen.getByLabelText('Password');
     await user.type(password, 'Example password');
-    await user.click(screen.getByRole('button', { name: 'Show password' }));
+    const toggle = screen.getByRole('button', { name: 'Show password' });
+    // The name carries the state, so the toggle must not also expose a pressed state.
+    expect(toggle).not.toHaveAttribute('aria-pressed');
+    await user.click(toggle);
     expect(password).toHaveAttribute('type', 'text');
     expect(password).toHaveValue('Example password');
     expect(useAuthStore.getState().status).toBe('anonymous');
-    await user.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(toggle).toHaveAccessibleName('Hide password');
+    expect(toggle).not.toHaveAttribute('aria-pressed');
+    await user.click(toggle);
     expect(password).toHaveAttribute('type', 'password');
   });
 

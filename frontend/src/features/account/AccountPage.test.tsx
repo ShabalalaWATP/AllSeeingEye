@@ -231,9 +231,13 @@ describe('account settings', () => {
     await user.tab();
     const show = screen.getByRole('button', { name: 'Show passwords' });
     expect(show).toHaveFocus();
+    // The name carries the state, so the toggle must not also expose a pressed state.
+    expect(show).not.toHaveAttribute('aria-pressed');
     await user.keyboard('{Enter}');
     const form = screen.getByRole('form', { name: 'Change password' });
     expect(within(form).getByLabelText('New password')).toHaveAttribute('type', 'text');
+    expect(show).toHaveAccessibleName('Hide passwords');
+    expect(show).not.toHaveAttribute('aria-pressed');
     await user.keyboard('{Enter}');
     expect(within(form).getByLabelText('New password')).toHaveAttribute('type', 'password');
     expect(useAuthStore.getState().status).toBe('authenticated');
