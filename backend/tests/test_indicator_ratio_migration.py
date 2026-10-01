@@ -14,7 +14,7 @@ from test_scope_migration import _insert
 def _ratio_database(tmp_path, mean, ratio):
     database = tmp_path / "ratio-history.db"
     config = alembic_config(f"sqlite+aiosqlite:///{database.as_posix()}")
-    command.upgrade(config, "0070")
+    command.upgrade(config, "0085")
     engine = sa.create_engine(f"sqlite:///{database.as_posix()}")
     try:
         metadata = sa.MetaData()
@@ -62,17 +62,17 @@ def test_downgrade_refuses_frozen_alert_values_before_ddl(tmp_path, rule_state, 
         )
     before = _snapshot(database)
     with pytest.raises(RuntimeError, match="retained alert baseline"):
-        command.downgrade(config, "0069")
+        command.downgrade(config, "0084")
     assert _snapshot(database) == before
     with closing(sqlite3.connect(database)) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0070",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0085",)
 
 
 def test_downgrade_still_refuses_configured_ratio_rule_before_ddl(tmp_path):
     config, database = _ratio_database(tmp_path, None, None)
     before = _snapshot(database)
     with pytest.raises(RuntimeError, match="ratio rules"):
-        command.downgrade(config, "0069")
+        command.downgrade(config, "0084")
     assert _snapshot(database) == before
 
 
@@ -81,10 +81,10 @@ def test_downgrade_without_ratios_preserves_other_alert_fields(tmp_path):
     with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute("UPDATE indicators SET baseline_ratio=NULL")
         before = connection.execute("SELECT id,title,summary,count FROM alerts").fetchall()
-    command.downgrade(config, "0069")
+    command.downgrade(config, "0084")
     with closing(sqlite3.connect(database)) as connection:
         assert connection.execute("SELECT id,title,summary,count FROM alerts").fetchall() == before
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0069",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0084",)
         assert not {"baseline_mean", "baseline_ratio"} & {
             row[1] for row in connection.execute("PRAGMA table_info(alerts)")
         }
