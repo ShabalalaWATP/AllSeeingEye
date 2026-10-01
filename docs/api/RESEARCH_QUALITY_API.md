@@ -1,8 +1,9 @@
 # Research quality read models
 
-Read-only views computed on request from saved reports. Nothing new is stored, no
-migration is involved and no score, percentage or reliability number is derived from
-the counts. Both views describe what was saved; neither measures research accuracy.
+Read-only views computed on request from saved reports, plus the human citation
+verdicts reviewers record on saved versions (KAN-114, the only stored addition). No
+score, percentage or reliability number is derived from the counts. These views
+describe what was saved and what reviewers said; neither measures research accuracy.
 
 ## Source track record (KAN-116)
 
@@ -41,7 +42,7 @@ the counts. Both views describe what was saved; neither measures research accura
 | `reliability`, `credibility` | Frozen item counts per recorded grade letter and digit. |
 | `entries` | Up to 25 citing reports, newest first; `entries_total` gives the full count. |
 | `reviews` | Up to 25 current reviewer decisions; `reviews_total` gives the full count. |
-| `citation_verdicts` | Always `available: false` until citation verdicts exist (KAN-114). |
+| `citation_verdicts` | Each reviewer's latest verdict on this source's key-judgement citations in the considered versions: counts per verdict, `current_verdicts`, `superseded_verdicts`, `reviewers`, and `citations_with_verdicts` out of `citations`. At most 5,000 visible verdicts are scanned. |
 
 Reviews are the latest revision of each visible source-review history whose target is
 this source on one of the considered reports. Only the kind, the recorded decision,
@@ -104,8 +105,47 @@ configured".
 - Model usage: total prompt and completion tokens and the rounded mean per version, out
   of versions with recorded token counts.
 - Job statuses per group and up to five failure codes out of failed jobs.
-- Citation-check outcomes: always `available: false` until citation verdicts exist
-  (KAN-114).
+- Citation-check outcomes: human citation verdicts recorded in the window (newest
+  5,000, with `in_window`, `counted` and `bound_reached`), each reviewer's latest
+  verdict per citation counted by value out of `current_verdicts`, plus
+  `citations_with_verdicts` and `superseded_verdicts`. Reviewer notes are dropped
+  before counting and never returned.
 
 No accuracy figure, quality percentage or single rating is computed, and nothing is
 persisted (the optional weekly aggregate was not built).
+
+## Human citation verdicts (KAN-114)
+
+Base path: `/api/reports/{report_id}/versions/{number}/citation-verdicts`. Every route
+takes the release fence and responds with `Cache-Control: private, no-store`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET ""` | Verdicts on this exact version (oldest first, at most 500), `can_record`, `note_limit` and the human-opinion notice. |
+| `POST ""` | Record one verdict. Body: `judgement_id`, `label`, `relation` (`supporting` or `contradicting`), `verdict` (`supports`, `partly_supports`, `does_not_support`, `cannot_tell`) and an optional `note` of 1 to 300 characters. Unknown fields return 422. |
+| `GET /export` | `application/x-ndjson` labelled set for this version. |
+
+- A verdict is anchored to the exact saved version, judgement id, citation label and
+  the relation the model assigned. The citation must exist in the frozen judgement,
+  otherwise 422. Regeneration creates a new version and leaves earlier verdicts on
+  their own version.
+- Verdicts are append-only. A later verdict by the same reviewer on the same citation
+  supersedes the earlier one for counting; both are kept. At most 50 verdicts per
+  citation and 500 per version are stored; further attempts return 422.
+- Reading needs current read access to the report (owner, current team member or
+  administrator). Recording also needs the existing write authority for the report's
+  scope: the personal owner, a current member of an active team, or an administrator
+  (manual override, including archived teams). Archived-team members can read but not
+  record (403). Other accounts receive 404. Verdicts whose stored scope no longer
+  matches the report are not released.
+- Verdicts never change the frozen report, its grades, confidence or citation checks.
+  Each write is audited as `citation_verdict_recorded` with the report id, version
+  number and verdict value only; the note is never written to the audit log.
+- The export starts with a header row (`record: "header"`, dataset
+  `ase-report-citation-verdicts-v1`, version identity, row count and notice). Each
+  verdict row repeats the frozen judgement statement, the citation's source and event
+  identifiers, the frozen excerpt and its hash when a citation check recorded one, the
+  reviewer id, whether the row is current, and `binding_sha256` over the exact-version
+  and excerpt fields. Read it with
+  `uv run python -m evaluations verdicts --export <file.jsonl> --out <metrics.json>`
+  (see `backend/evaluations/README.md`).

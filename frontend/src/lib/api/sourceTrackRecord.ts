@@ -57,7 +57,19 @@ export const sourceTrackRecordSchema = z.object({
     }),
   ),
   reviews_total: z.number().int().nonnegative(),
-  citation_verdicts: z.object({ available: z.boolean(), note: z.string().max(500) }),
+  citation_verdicts: z.object({
+    available: z.boolean(),
+    note: z.string().max(500),
+    citations: z.number().int().nonnegative(),
+    citations_with_verdicts: z.number().int().nonnegative(),
+    current_verdicts: z.number().int().nonnegative(),
+    superseded_verdicts: z.number().int().nonnegative(),
+    supports: z.number().int().nonnegative(),
+    partly_supports: z.number().int().nonnegative(),
+    does_not_support: z.number().int().nonnegative(),
+    cannot_tell: z.number().int().nonnegative(),
+    reviewers: z.number().int().nonnegative(),
+  }),
 }) satisfies z.ZodType<components['schemas']['SourceTrackRecordOut']>;
 
 export type SourceTrackRecord = components['schemas']['SourceTrackRecordOut'];

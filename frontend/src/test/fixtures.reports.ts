@@ -56,6 +56,7 @@ export const reportSummary: ReportSummary = {
   created_by: '22222222-2222-4222-8222-222222222222',
   created_at: '2026-09-05T01:00:00Z',
   latest_version: 1,
+  origin: 'research',
 };
 
 export const report: Report = {

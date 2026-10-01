@@ -1,7 +1,8 @@
-import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
+import { draftForms, useDraftState, useHasDraft } from '@/lib/formDrafts';
+import { useUnloadWarning } from '@/lib/hooks/useUnloadWarning';
 import type { CollectionPlan } from '@/lib/api/direction';
 import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
@@ -65,21 +66,24 @@ export function IndicatorForm({
   workspaces,
   draft = null,
 }: IndicatorFormProps) {
-  const scope = useWorkspaceSelection(workspaces);
-  const [planId, setPlanId] = useState('');
+  // Unsent rule fields are kept in memory per account; the area itself has its own draft.
+  const form = draftForms.alertRule(draft?.id);
+  const scope = useWorkspaceSelection(workspaces, form);
+  useUnloadWarning(useHasDraft(form));
+  const [planId, setPlanId] = useDraftState(form, 'planId', '');
   const matchingPlans = plans.filter(
     (plan) => plan.enabled && (plan.team_id ?? '') === scope.teamId,
   );
   const selectedPlan = matchingPlans.some((plan) => plan.id === planId) ? planId : '';
   const invalidPlan = planId !== '' && selectedPlan === '';
-  const [name, setName] = useState('');
-  const [countries, setCountries] = useState('');
+  const [name, setName] = useDraftState(form, 'name', '');
+  const [countries, setCountries] = useDraftState(form, 'countries', '');
   const area = useIndicatorArea(draft);
-  const [keywords, setKeywords] = useState('');
-  const [categories, setCategories] = useState('');
-  const [threshold, setThreshold] = useState('1');
-  const [window, setWindow] = useState('360');
-  const [template, setTemplate] = useState('');
+  const [keywords, setKeywords] = useDraftState(form, 'keywords', '');
+  const [categories, setCategories] = useDraftState(form, 'categories', '');
+  const [threshold, setThreshold] = useDraftState(form, 'threshold', '1');
+  const [window, setWindow] = useDraftState(form, 'window', '360');
+  const [template, setTemplate] = useDraftState(form, 'template', '');
   const errors = useFieldErrors(error, INDICATOR_FIELDS);
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {

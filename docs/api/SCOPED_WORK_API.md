@@ -56,7 +56,7 @@ does not persist a separate raw feed per team.
 |---|---|---|
 | `GET /api/reports/templates` | None | Available report templates |
 | `GET /api/report-methodology` | None | Current versioned contribution matrix, rules, grade labels, PHIA bands and doctrine references |
-| `GET /api/reports` | `limit=1..200` (default 50), `offset>=0`, optional `origin=research/subscription/geolocation` | `{items, limit, offset, has_more}`; current access and origin filters apply before pagination. Missing or unrecognised legacy origins use the report's original classification fallback. |
+| `GET /api/reports` | `limit=1..200` (default 50), `offset>=0`, optional `origin=research/subscription/geolocation/briefing` or `group=requested` (not both) | `{items, limit, offset, has_more}`; each item carries its effective `origin`. Current access and origin filters apply in SQL before pagination. Missing or unrecognised legacy origins use the report's original classification fallback. `briefing` marks daily, economy and cyber briefings prepared automatically by a workspace visit; the server assigns it and its `scope.briefing` kind, and request bodies cannot. `group=requested` lists research, subscription and geolocation reports only (never briefings) and covers only the caller's latest 1,000 matching reports. |
 | `POST /api/reports` | Template, optional `team_id`, `plan`, country/question and supported template options | 201 report and saved version |
 | `POST /api/reports/{id}/versions` | None | 201 regenerated version in the original report scope |
 | `GET /api/reports/{id}` | Optional positive `version` | Current or requested historical version, subject to current report access |
@@ -65,6 +65,9 @@ does not persist a separate raw feed per team.
 | `GET /api/reports/{id}/export/docx` | Optional positive `version` | Local DOCX download |
 | `GET /api/reports/{id}/diff` | Positive `from_version` and `to_version` | Structural comparison of two versions of that report |
 | `DELETE /api/reports/{id}` | None | 204 after authorised deletion |
+| `GET /api/reports/{id}/versions/{n}/team-copy-preview` | `team_id` | Disclosure preview: private-input evidence, omitted references, linked personal records not copied, content digest and any existing copy |
+| `POST /api/reports/{id}/versions/{n}/team-copies` | `{team_id, disclosed_evidence_labels}` | 201 new team report, or 200 with the existing copy on retry |
+| `GET /api/reports/{id}/team-copy-provenance` | None | Who copied this team report, from which version and when; 404 when it is not a copy |
 
 Report production validates the linked plan/AOI both before outbound model work
 and before the final save. It ends read snapshots before the external call,
@@ -72,6 +75,21 @@ reacquires the shared authority guard afterwards and refuses a changed plan,
 lost membership or conflicting regeneration. PDF/DOCX rendering happens off the
 event loop and rechecks current report access before releasing its bytes.
 Historical exports inherit current access, not membership at creation time.
+
+A team copy publishes one finished personal version to an active team without a
+model call or research allowance. Only the report's owner may copy it, and only to
+a team they currently belong to; administrators have no override, because a copy
+widens access to personal work. The copy keeps the body and figures, findings,
+frozen evidence with its content hashes, quality and assessment values under new
+report and version identities, and rebinds the frozen source assessment to the new
+version (or records it as unavailable if it cannot be rebound exactly). The Research
+Brief link, claim generation receipt, retained original passages and identity-bearing
+scope keys are omitted; claims, retained originals, reviewed snapshots and saved map
+views stay with the personal version. Evidence from uploaded inputs is copied only
+when the request confirms exactly the listed labels. Access is checked again under
+the administration guard before the copy, its provenance and the audit entry commit
+together. One copy exists per source version and team. The provenance endpoint
+reveals the personal original's identifier only to its owner or an administrator.
 
 New versions expose their own `period_from`, `period_to` and `data_cutoff`.
 Older versions without saved period metadata return null for those fields; the
@@ -93,6 +111,36 @@ methodology endpoint describes current policy without changing historical values
 Its PHIA bands include `range_description`, preserving approximate wording and
 the exclusive 0/50/100 boundaries. Numerical bounds remain descriptive vocabulary,
 not calculated report probabilities. See [the policy](../REPORT_EVIDENCE_SCORING.md).
+
+## Source reviews and reviewed snapshots
+
+Base path: `/api/reports/{report_id}/versions/{number}`. Responses use
+`Cache-Control: private, no-store`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /source-reviews?label&judgement_id&subject&kind` | Bounded history (at most 100 revisions) for one exact target. |
+| `POST /source-reviews` | Record a review or a correction (`previous_id` must name the current revision). |
+| `GET /source-assessment-snapshots` | Snapshots of this exact version in the report's scope, newest first, at most 20. Release-fenced. |
+| `POST /source-assessment-snapshots` | Freeze current reviews for this version; `subjects` names one subject per key judgement. |
+| `GET /source-assessment-snapshots/{id}` | One snapshot, only for its own version and scope. |
+
+- Each kind has its own identity: reliability applies to a source and subject across the
+  personal or team scope; credibility to one capture and one judgement's claim;
+  authenticity to one capture and its issuer. A credibility review of one claim is never
+  shown as a source-wide grade.
+- Reading needs current read access. Recording needs write access to the report (owner,
+  team manager or administrator) in an active team; a correction to another reviewer's
+  history needs that reviewer, a team manager or an administrator. Archived teams are
+  read-only.
+- A stale `previous_id` returns 409. A full 100-revision history returns 422 with an
+  explicit limit message; no revision is discarded and there is no continuation cursor.
+- Report reads and exports (`GET /api/reports/{id}`, `/markdown`, `/export/{format}`)
+  apply a snapshot only when `version` and `source_snapshot_id` are both given. Without
+  one, the original frozen report, grading, likelihood and export content are returned.
+- The report reader offers these reviews inside each evidence item and lists snapshots
+  in the Sources view. Nothing is selected automatically: the reader chooses a snapshot
+  before viewing its reviewed grades or exporting with it.
 
 ## Semantic search
 

@@ -64,6 +64,7 @@ from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
+from ase.container.citation_verdicts import CitationVerdictWiring
 from ase.container.conflict_screening import build_conflict_screening
 from ase.container.cyber import CyberWiring
 from ase.container.direction_plans import DirectionPlanWiring
@@ -78,6 +79,7 @@ from ase.container.map_services import MapWiring
 from ase.container.private_records import PrivateRecordWiring
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
+from ase.container.report_team_copies import ReportTeamCopyWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -107,6 +109,7 @@ class Container(
     SecFilingWiring,
     AdminWiring,
     EvaluationWiring,
+    CitationVerdictWiring,
     AuthWiring,
     AssistantWiring,
     EconomyWiring,
@@ -118,6 +121,7 @@ class Container(
     ReferenceWiring,
     UkraineWiring,
     TeamBoardWiring,
+    ReportTeamCopyWiring,
 ):
     def __init__(
         self,

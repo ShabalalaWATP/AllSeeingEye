@@ -120,8 +120,19 @@ const scorecard: ResearchQuality = {
     by_model: [jobGroup('not_recorded', 'Not recorded')],
   },
   citation_checks: {
-    available: false,
-    note: 'Citation verdicts are not recorded yet, so no outcomes are counted. Their absence is not a passed check.',
+    available: true,
+    note: 'Citation verdicts are human opinions recorded by reviewers. They are not ground truth.',
+    bound: 5000,
+    in_window: 3,
+    counted: 3,
+    bound_reached: false,
+    current_verdicts: 2,
+    superseded_verdicts: 1,
+    citations_with_verdicts: 2,
+    supports: 1,
+    partly_supports: 0,
+    does_not_support: 1,
+    cannot_tell: 0,
   },
 };
 
@@ -167,7 +178,13 @@ describe('AdminResearchQualityPage', () => {
     const jobRow = within(jobs).getByRole('row', { name: /All report jobs/ });
     expect(jobRow).toHaveTextContent('2');
     expect(screen.getByText('model.timeout: 2 of 2 failed jobs')).toBeVisible();
-    expect(screen.getByText(/Citation verdicts are not recorded yet/)).toBeVisible();
+    expect(screen.getByText(/Citation verdicts are human opinions/)).toBeVisible();
+    expect(
+      screen.getByText(
+        '3 of 3 verdicts recorded in the last 90 days: 2 current verdicts on 2 citations (1 superseded).',
+      ),
+    ).toBeVisible();
+    expect(screen.getByText('Does not support: 1 of 2 current verdicts')).toBeVisible();
     expect(screen.getByRole('main').textContent).not.toMatch(/%|score|accuracy/i);
 
     await user.click(screen.getByRole('button', { name: '30 days' }));

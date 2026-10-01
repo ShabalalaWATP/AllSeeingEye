@@ -16,6 +16,7 @@ from ase.application.reports.templates import TEMPLATES
 from ase.domain.errors import InvalidRequest
 from ase.domain.research_quality import (
     MAX_QUALITY_JOBS,
+    MAX_QUALITY_VERDICTS,
     MAX_QUALITY_VERSIONS,
     QUALITY_WINDOWS,
     ResearchQualityScorecard,
@@ -48,6 +49,9 @@ class ResearchQualityService:
         since = now - timedelta(days=window_days)
         versions = await self._reader.versions(access.visibility, since, MAX_QUALITY_VERSIONS)
         jobs = await self._reader.jobs(access.visibility, since, MAX_QUALITY_JOBS)
+        verdicts = await self._reader.citation_verdicts(
+            access.visibility, since, MAX_QUALITY_VERDICTS
+        )
         names = {str(profile.id): profile.name for profile in await self._profiles.list_all()}
         connections = {row.connection for row in versions[1] if row.connection}
         return build_scorecard(
@@ -58,4 +62,5 @@ class ResearchQualityService:
             jobs=jobs,
             template_labels={key: row.title for key, row in TEMPLATES.items()},
             connection_labels={key: names.get(key, REMOVED_CONNECTION) for key in connections},
+            verdicts=verdicts,
         )

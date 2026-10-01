@@ -12,14 +12,14 @@ import type { SavedMapView } from '@/lib/api/mapViews';
 import type { ReportSummary, ReportVersion } from '@/lib/api/reports';
 import { formatUtc } from '@/lib/format';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
+import { useAuthStore } from '@/stores/auth';
 
 import { AnnotationMonitorsSection } from './AnnotationMonitorsSection';
-import { CitationCheckMethod, JudgementCitationChecks } from './CitationChecks';
+import { AssessmentReview } from './AssessmentReview';
 import { DirectionView } from './ReportSections';
 import { EvidenceAnnex } from './EvidenceAnnex';
 import { FreshWebContext } from './FreshWebContext';
 import { ReportAssessmentSummary } from './ReportAssessmentSummary';
-import { JudgementEvidence } from './JudgementEvidence';
 import { ReportChallengeView } from './ReportChallenge';
 import { ReportDiff } from './ReportDiff';
 import { ReportManagement } from './ReportManagement';
@@ -28,6 +28,9 @@ import { AdvocacyView } from './ReportSections';
 import { ReportedRelationships } from './ReportedRelationships';
 import { ResearchContextView } from './ResearchContext';
 import { ResearchCoverage } from './ResearchCoverage';
+import { ReviewedSnapshots } from './ReviewedSnapshots';
+import { reviewerName } from './reviewerNames';
+import type { SourceReviewContext } from './SourceReviewPanel';
 
 const ReportEvidenceMap = lazy(() => import('@/components/maps/ReportEvidenceMap'));
 
@@ -74,6 +77,16 @@ export default function ReportSupportingWorkspace({
   const [view, setView] = useState<WorkspaceView>(() => (actionError ? 'review' : 'sources'));
   const [pendingEvidenceId, setPendingEvidenceId] = useState<string | null>(null);
   const canAcknowledge = mapWritable && workspaces.canAcknowledge(report.team_id);
+  const actorId = useAuthStore((state) => state.user?.id);
+  const reviewer = (id: string) => reviewerName(id, actorId, workspaces.teams);
+  const sourceReview: SourceReviewContext = {
+    reportId,
+    version: version.number,
+    judgements: version.body.key_judgements,
+    canWrite: canEdit && mapWritable,
+    scopeLabel: workspaces.label(report.team_id),
+    reviewer,
+  };
   useEffect(() => {
     if (view !== 'sources' || !pendingEvidenceId) return;
     const target = document.getElementById(pendingEvidenceId);
@@ -123,6 +136,16 @@ export default function ReportSupportingWorkspace({
               findings={version.findings}
               status={version.status}
               assessment={version.assessment}
+              review={sourceReview}
+            />
+            <ReviewedSnapshots
+              key={`snapshots:${reportId}:${String(version.number)}`}
+              reportId={reportId}
+              version={version.number}
+              title={report.title}
+              judgements={version.body.key_judgements}
+              canWrite={sourceReview.canWrite}
+              reviewer={reviewer}
             />
             <ClaimLedgerView ledger={version.claim_ledger} />
             <OriginalAssets
@@ -144,24 +167,7 @@ export default function ReportSupportingWorkspace({
           <>
             <ReportMethodology savedMethod={version.assessment?.method_version} />
             <ReportAssessmentSummary assessment={version.assessment} />
-            {version.body.key_judgements.map((judgement) => {
-              const assessment = version.assessment?.judgements.find(
-                (item) => item.judgement_id === judgement.id,
-              );
-              const citationCheck = version.citation_checks?.judgements.find(
-                (item) => item.judgement_id === judgement.id,
-              );
-              if (!assessment && !citationCheck) return null;
-              return (
-                <section key={judgement.id} aria-label={`Technical review for ${judgement.id}`}>
-                  <h2 className="text-sm font-semibold">{judgement.id}</h2>
-                  <p className="mt-1 text-xs leading-5 text-muted">{judgement.statement}</p>
-                  {assessment && <JudgementEvidence assessment={assessment} />}
-                  <JudgementCitationChecks check={citationCheck} />
-                </section>
-              );
-            })}
-            <CitationCheckMethod checks={version.citation_checks} />
+            <AssessmentReview reportId={reportId} version={version} teams={workspaces.teams} />
             {version.challenge ? (
               <ReportChallengeView challenge={version.challenge} />
             ) : (

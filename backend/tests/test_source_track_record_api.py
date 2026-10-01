@@ -79,7 +79,8 @@ async def test_roles_grades_and_statuses_come_from_each_latest_saved_version(
     assert (opposing["supporting_judgements"], opposing["contradicting_judgements"]) == (0, 1)
     assert opposing["grades"] == ["C4"]
     assert body["entries_total"] == 4
-    assert body["citation_verdicts"]["available"] is False
+    assert body["citation_verdicts"]["available"] is True
+    assert body["citation_verdicts"]["current_verdicts"] == 0
     assert "KAN-114" not in body["citation_verdicts"]["note"]
     assert body["reviews"] == [] and body["reviews_total"] == 0
     forbidden = {"score", "percentage", "rate", "reliability_score", "accuracy"}

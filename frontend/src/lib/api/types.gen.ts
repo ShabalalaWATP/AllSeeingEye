@@ -205,7 +205,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Jobs */
+        /**
+         * List Jobs
+         * @description Scope, status and origin filters apply before the page; see application listing.
+         */
         get: operations["list_jobs_api_report_jobs_get"];
         put?: never;
         /** Create Job */
@@ -2221,7 +2224,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Reports */
+        /**
+         * List Reports
+         * @description Saved reports by one origin, or one named group of origins such as requested work.
+         */
         get: operations["list_reports_api_reports_get"];
         put?: never;
         /** Create Report */
@@ -2296,6 +2302,57 @@ export interface paths {
         };
         /** Report Markdown */
         get: operations["report_markdown_api_reports__report_id__markdown_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/team-copy-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Team Copy */
+        get: operations["preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/team-copies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Copy To Team */
+        post: operations["copy_to_team_api_reports__report_id__versions__number__team_copies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/team-copy-provenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Team Copy Provenance */
+        get: operations["team_copy_provenance_api_reports__report_id__team_copy_provenance_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2841,7 +2898,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Snapshots
+         * @description Snapshots of this exact version, newest first, for an explicit reader choice.
+         */
+        get: operations["snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get"];
         put?: never;
         /** Freeze */
         post: operations["freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post"];
@@ -2860,6 +2921,41 @@ export interface paths {
         };
         /** Snapshot */
         get: operations["snapshot_api_reports__report_id__versions__number__source_assessment_snapshots__snapshot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Verdicts */
+        get: operations["list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get"];
+        put?: never;
+        /** Record Verdict */
+        post: operations["record_verdict_api_reports__report_id__versions__number__citation_verdicts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Verdicts */
+        get: operations["export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5977,12 +6073,113 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CitationVerdictIn */
+        CitationVerdictIn: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note?: string | null;
+        };
+        /** CitationVerdictListOut */
+        CitationVerdictListOut: {
+            /** Verdicts */
+            verdicts: components["schemas"]["CitationVerdictOut"][];
+            /** Can Record */
+            can_record: boolean;
+            /** Limit */
+            limit: number;
+            /**
+             * Note Limit
+             * @default 300
+             */
+            note_limit: number;
+            /**
+             * Notice
+             * @default Citation verdicts are human opinions recorded by reviewers. They are not ground truth, and they never change the frozen report, its grades or its confidence.
+             */
+            notice: string;
+        };
+        /** CitationVerdictOut */
+        CitationVerdictOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note: string | null;
+            /**
+             * Reviewer Id
+             * Format: uuid
+             */
+            reviewer_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+        };
+        /**
+         * CitationVerdictValue
+         * @enum {string}
+         */
+        CitationVerdictValue: "supports" | "partly_supports" | "does_not_support" | "cannot_tell";
         /** CitationVerdictsOut */
         CitationVerdictsOut: {
             /** Available */
             available: boolean;
             /** Note */
             note: string;
+            /** Citations */
+            citations: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
+            /** Reviewers */
+            reviewers: number;
         };
         /** CivilianHarmMonthOut */
         CivilianHarmMonthOut: {
@@ -9812,6 +10009,22 @@ export interface components {
             /** Updated At */
             updated_at: string | null;
         };
+        /**
+         * LinkedArtefactsOut
+         * @description Records attached to the personal version that stay with it and are not copied.
+         */
+        LinkedArtefactsOut: {
+            /** Claims */
+            claims: number;
+            /** Original Files */
+            original_files: number;
+            /** Original Passages */
+            original_passages: number;
+            /** Reviewed Snapshots */
+            reviewed_snapshots: number;
+            /** Map Views */
+            map_views: number;
+        };
         /** LlmConnectionIn */
         LlmConnectionIn: {
             /** User Id */
@@ -11735,6 +11948,15 @@ export interface components {
             /** Limitations */
             limitations: string[];
         };
+        /** PrivateInputOut */
+        PrivateInputOut: {
+            /** Label */
+            label: string;
+            /** Title */
+            title: string;
+            /** Source Id */
+            source_id: string;
+        };
         /**
          * Probability
          * @enum {string}
@@ -11883,6 +12105,28 @@ export interface components {
             available: boolean;
             /** Note */
             note: string;
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
         };
         /** QualityFailureCodeOut */
         QualityFailureCodeOut: {
@@ -12747,6 +12991,12 @@ export interface components {
             /** Corroboration */
             corroboration?: components["schemas"]["CorroborationMemberOut"][];
         };
+        /**
+         * ReportGroup
+         * @description Named sets of origins. Requested work never includes automatic briefings.
+         * @enum {string}
+         */
+        ReportGroup: "requested";
         /** ReportJobCreateIn */
         ReportJobCreateIn: {
             /**
@@ -12771,6 +13021,8 @@ export interface components {
             revision: number;
             /** Title */
             title: string;
+            /** @default research */
+            origin: components["schemas"]["ReportOrigin"];
             /**
              * Status
              * @enum {string}
@@ -12852,6 +13104,8 @@ export interface components {
         ReportJobsOut: {
             /** Items */
             items: components["schemas"]["ReportJobOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         };
         /** ReportLedger */
         ReportLedger: {
@@ -12930,7 +13184,7 @@ export interface components {
          * ReportOrigin
          * @enum {string}
          */
-        ReportOrigin: "research" | "subscription" | "geolocation";
+        ReportOrigin: "research" | "subscription" | "geolocation" | "briefing";
         /** ReportOut */
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -13099,6 +13353,7 @@ export interface components {
             latest_version: number;
             /** Team Id */
             team_id: string | null;
+            origin: components["schemas"]["ReportOrigin"];
         };
         /** ReportVersionOut */
         ReportVersionOut: {
@@ -15367,6 +15622,53 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** SourceSnapshotListOut */
+        SourceSnapshotListOut: {
+            /** Snapshots */
+            snapshots: components["schemas"]["SourceSnapshotSummaryOut"][];
+            /**
+             * Limit
+             * @default 20
+             */
+            limit: number;
+        };
+        /**
+         * SourceSnapshotSummaryOut
+         * @description Enough to choose a snapshot deliberately; the full projection is read separately.
+         */
+        SourceSnapshotSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decisions */
+            decisions: number;
+            /** Subjects */
+            subjects: {
+                [key: string]: string;
+            };
+        };
         /**
          * SourceStatus
          * @enum {string}
@@ -15882,6 +16184,101 @@ export interface components {
         TeamBoardUnreadOut: {
             /** Unread Count */
             unread_count: number;
+        };
+        /** TeamCopyIn */
+        TeamCopyIn: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Disclosed Evidence Labels */
+            disclosed_evidence_labels?: string[];
+        };
+        /**
+         * TeamCopyOmission
+         * @enum {string}
+         */
+        TeamCopyOmission: "research_brief" | "claim_generation" | "original_passages" | "source_assessment" | "scope_references";
+        /** TeamCopyOut */
+        TeamCopyOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Copied At
+             * Format: date-time
+             */
+            copied_at: string;
+            /** Created */
+            created: boolean;
+        };
+        /** TeamCopyPreviewOut */
+        TeamCopyPreviewOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Team Name */
+            team_name: string;
+            /** Source Version Number */
+            source_version_number: number;
+            /** Private Inputs */
+            private_inputs: components["schemas"]["PrivateInputOut"][];
+            /** Omissions */
+            omissions: components["schemas"]["TeamCopyOmission"][];
+            /** Omitted Scope Keys */
+            omitted_scope_keys: string[];
+            not_copied: components["schemas"]["LinkedArtefactsOut"];
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Existing Report Id */
+            existing_report_id: string | null;
+        };
+        /** TeamCopyProvenanceOut */
+        TeamCopyProvenanceOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Copied By
+             * Format: uuid
+             */
+            copied_by: string;
+            /** Copied By Name */
+            copied_by_name: string | null;
+            /**
+             * Copied At
+             * Format: date-time
+             */
+            copied_at: string;
+            /** Source Version Number */
+            source_version_number: number;
+            /** Source Report Id */
+            source_report_id: string | null;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Disclosed Private Inputs */
+            disclosed_private_inputs: number;
+            /** Omissions */
+            omissions: components["schemas"]["TeamCopyOmission"][];
         };
         /** TeamDashboardActionOut */
         TeamDashboardActionOut: {
@@ -17069,6 +17466,9 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                status?: "all" | "running" | "attention" | "finished";
+                include_briefings?: boolean;
+                cursor?: string | null;
             };
             header?: never;
             path?: never;
@@ -21691,6 +22091,7 @@ export interface operations {
                 limit?: number;
                 offset?: number;
                 origin?: components["schemas"]["ReportOrigin"] | null;
+                group?: components["schemas"]["ReportGroup"] | null;
             };
             header?: never;
             path?: never;
@@ -21902,6 +22303,107 @@ export interface operations {
                 content: {
                     "text/markdown": string;
                     "application/zip": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get: {
+        parameters: {
+            query: {
+                team_id: string;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    copy_to_team_api_reports__report_id__versions__number__team_copies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamCopyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    team_copy_provenance_api_reports__report_id__team_copy_provenance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyProvenanceOut"];
                 };
             };
             /** @description Validation Error */
@@ -22963,6 +23465,38 @@ export interface operations {
             };
         };
     };
+    snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSnapshotListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post: {
         parameters: {
             query?: never;
@@ -23019,6 +23553,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceReviewSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_verdict_api_reports__report_id__versions__number__citation_verdicts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CitationVerdictIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": string;
                 };
             };
             /** @description Validation Error */

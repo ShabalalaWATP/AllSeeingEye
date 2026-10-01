@@ -34,13 +34,18 @@ export function fetchReportComparison(
   );
 }
 
+/** `sourceSnapshotId` exports with an explicitly selected reviewed source snapshot. */
 export function fetchReportFile(
   id: string,
   version: number,
   format: ReportExportFormat,
+  sourceSnapshotId?: string,
 ): Promise<Blob> {
+  const snapshot = sourceSnapshotId
+    ? `&source_snapshot_id=${encodeURIComponent(sourceSnapshotId)}`
+    : '';
   return apiBlob(
-    `/api/reports/${encodeURIComponent(id)}/export/${format}?version=${String(version)}`,
+    `/api/reports/${encodeURIComponent(id)}/export/${format}?version=${String(version)}${snapshot}`,
   );
 }
 

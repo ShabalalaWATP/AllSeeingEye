@@ -25,6 +25,7 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     profile,
     recovery_models,
     report_search,
+    report_team_copy_models,
     source_control_models,
     team_board_models,
     team_invitation_models,

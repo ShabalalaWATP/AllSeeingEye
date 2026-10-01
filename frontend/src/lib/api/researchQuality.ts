@@ -79,7 +79,21 @@ export const researchQualitySchema = z.object({
     by_depth: z.array(jobGroupSchema),
     by_model: z.array(jobGroupSchema),
   }),
-  citation_checks: z.object({ available: z.boolean(), note: z.string().max(500) }),
+  citation_checks: z.object({
+    available: z.boolean(),
+    note: z.string().max(500),
+    bound: z.number().int().nonnegative(),
+    in_window: z.number().int().nonnegative(),
+    counted: z.number().int().nonnegative(),
+    bound_reached: z.boolean(),
+    current_verdicts: z.number().int().nonnegative(),
+    superseded_verdicts: z.number().int().nonnegative(),
+    citations_with_verdicts: z.number().int().nonnegative(),
+    supports: z.number().int().nonnegative(),
+    partly_supports: z.number().int().nonnegative(),
+    does_not_support: z.number().int().nonnegative(),
+    cannot_tell: z.number().int().nonnegative(),
+  }),
 }) satisfies z.ZodType<Schemas['ResearchQualityOut']>;
 
 export type ResearchQuality = Schemas['ResearchQualityOut'];

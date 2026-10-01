@@ -6,6 +6,7 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.source_track_record import (
     MAX_REVIEW_SCAN,
     MAX_TRACK_RECORD_REPORTS,
+    MAX_VERDICT_SCAN,
     SourceTrackRecord,
     build_track_record,
     valid_source_id,
@@ -28,4 +29,9 @@ class SourceTrackRecordService:
         reviews = await self._reader.reviews(
             visibility, source_id, population.report_ids, MAX_REVIEW_SCAN
         )
-        return build_track_record(source_id, population, reviews)
+        verdicts = await self._reader.verdicts(
+            visibility,
+            frozenset((row.report_id, row.version_number) for row in population.versions),
+            MAX_VERDICT_SCAN,
+        )
+        return build_track_record(source_id, population, reviews, verdicts)

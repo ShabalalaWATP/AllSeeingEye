@@ -56,8 +56,17 @@ const record: SourceTrackRecord = {
   ],
   reviews_total: 1,
   citation_verdicts: {
-    available: false,
-    note: 'Citation verdicts are not recorded yet, so none are shown. Their absence is not a passed check.',
+    available: true,
+    note: 'Citation verdicts are human opinions recorded by reviewers. They are not ground truth.',
+    citations: 6,
+    citations_with_verdicts: 2,
+    current_verdicts: 3,
+    superseded_verdicts: 1,
+    supports: 1,
+    partly_supports: 1,
+    does_not_support: 1,
+    cannot_tell: 0,
+    reviewers: 2,
   },
 };
 
@@ -103,7 +112,14 @@ describe('source track record', () => {
     expect(within(panel).getByText(/Showing 1 of 4 citing reports/)).toBeVisible();
     expect(within(panel).getByText(/Reliability A/)).toBeVisible();
     expect(within(panel).getByText(/Team review/)).toBeVisible();
-    expect(within(panel).getByText(/Citation verdicts are not recorded yet/)).toBeVisible();
+    expect(within(panel).getByText(/Citation verdicts are human opinions/)).toBeVisible();
+    expect(
+      within(panel).getByText(
+        '3 current verdicts from 2 reviewers on 2 of 6 key-judgement citations (1 superseded).',
+      ),
+    ).toBeVisible();
+    expect(within(panel).getByText('Does not support: 1 of 3 current verdicts')).toBeVisible();
+    expect(within(panel).getByText('Cannot tell: 0 of 3 current verdicts')).toBeVisible();
     expect(panel.textContent).not.toMatch(/%|score/i);
     expect(panel.querySelector('b')).toBeNull();
 

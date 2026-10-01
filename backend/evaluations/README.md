@@ -79,6 +79,29 @@ uv run python -m evaluations score --results evaluations/runs/first-check/result
 
 Scoring rejects mismatched run, case or statement fingerprints, duplicate labels and non-boolean semantic values. Its outputs are explicitly attributed to **self-declared human review**. The harness cannot authenticate the reviewer or turn assistant-written references into human labels. Unsupported-statement rates and citation relationship correctness remain separate from structural checks, with no aggregate “accuracy” number.
 
+## Human citation verdicts from saved reports
+
+Reviewers can record whether each model citation in a saved report supports its
+judgement ("supports", "partly supports", "does not support" or "cannot tell") from the
+report reader, and download that version's verdicts as JSONL. This is a different
+dataset from the `review.json` labels above: those label synthetic evaluation runs,
+while these come from real saved application reports. Both are human opinions, not
+ground truth, and neither is authenticated beyond the application account that
+recorded it.
+
+```powershell
+uv run python -m evaluations verdicts --export verdicts-a.jsonl --export verdicts-b.jsonl --out evaluations/runs/verdict-metrics.json
+```
+
+The reader refuses a file whose header is not `ase-report-citation-verdicts-v1`, whose
+row count differs from its header, whose rows belong to another report version, whose
+excerpt hash or offsets do not match the excerpt text, or whose `binding_sha256` no
+longer matches the exact-version, judgement and excerpt fields. The same verdict
+exported twice is merged by its id; conflicting copies are refused. It counts each
+reviewer's latest verdict per citation, overall and by relation, every count with its
+denominator, plus citations with a "does not support" verdict and citations where
+reviewers disagree. No single accuracy figure is computed.
+
 ## Automated research replay
 
 An optional replay mode exercises the production private collector, request

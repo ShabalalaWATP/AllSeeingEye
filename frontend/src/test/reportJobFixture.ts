@@ -11,6 +11,7 @@ export function reportJob(overrides: Partial<ReportJob> = {}): ReportJob {
     id: jobId,
     revision: 1,
     title: 'Researching the available evidence',
+    origin: 'research',
     status: 'running',
     stage: 'drafting',
     created_at: '2026-09-11T10:00:00Z',
