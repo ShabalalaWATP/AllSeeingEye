@@ -59,13 +59,16 @@ async def test_shutdown_records_an_interrupted_run_with_its_partial_artefact(
     container, admin
 ) -> None:
     profile = await evaluation_profile(container)
+    calling = asyncio.Event()
 
     async def wait_forever(count: int) -> None:
+        calling.set()
         await asyncio.Event().wait()
 
     container.llm = ScriptedRunGateway(hook=wait_forever)
     run = await start_run(container, admin, profile)
-    await asyncio.sleep(0.05)
+    # Shut down mid-call, not before the run reaches the model, however busy the host is.
+    await asyncio.wait_for(calling.wait(), timeout=30)
     container.evaluation_tasks.cancel_all()
     done = await finished(container, admin, run.id)
     assert done.status is EvaluationRunStatus.STOPPED
