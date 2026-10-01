@@ -6,6 +6,8 @@ import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
+import { fillWorldwideRule } from './ruleTestSteps';
+
 async function submitRule(fields: Record<string, string>) {
   server.use(
     http.post('/api/warning/indicators', () =>
@@ -13,9 +15,9 @@ async function submitRule(fields: Record<string, string>) {
     ),
   );
   const view = renderApp('/warning', 'user');
-  const form = within(await screen.findByRole('form', { name: 'New indicator' }));
-  await view.user.type(form.getByLabelText('Indicator name'), 'Sumy strikes');
-  await view.user.click(form.getByRole('button', { name: 'Add indicator' }));
+  const form = within(await screen.findByRole('form', { name: 'New alert rule' }));
+  await fillWorldwideRule(view.user, form, 'Sumy strikes');
+  await view.user.click(form.getByRole('button', { name: 'Add alert rule' }));
   return { ...view, form };
 }
 
@@ -26,14 +28,14 @@ it('marks the rejected name field and links the reason from a focused summary', 
   });
   const summary = await form.findByRole('alert', { name: 'Check these fields and try again:' });
   expect(summary).toHaveFocus();
-  const name = form.getByLabelText('Indicator name');
+  const name = form.getByLabelText('Alert rule name');
   expect(name).toHaveAttribute('aria-invalid', 'true');
   expect(name).toHaveAccessibleDescription('Choose a different name.');
   expect(name).toHaveValue('Sumy strikes');
-  expect(summary).toHaveTextContent('Cooldown minutes: Input should be greater than 0.');
+  expect(summary).toHaveTextContent('Cooldown: Input should be greater than 0.');
   expect(screen.queryByText('The request is invalid.')).not.toBeInTheDocument();
 
-  await user.click(within(summary).getByRole('link', { name: /Indicator name/ }));
+  await user.click(within(summary).getByRole('link', { name: /Alert rule name/ }));
   expect(name).toHaveFocus();
 });
 
@@ -47,8 +49,8 @@ it('moves focus to the area controls for a rejected nation list', async () => {
 });
 
 it('keeps the generic message when no reason matches a field on the form', async () => {
-  const { form } = await submitRule({ severity_floor: 'Input should be less than 100.' });
+  const { form } = await submitRule({ priority: 'Input should be less than 100.' });
   const summary = await form.findByRole('alert', { name: 'The request is invalid.' });
-  expect(summary).toHaveTextContent('Severity floor: Input should be less than 100.');
-  expect(form.getByLabelText('Indicator name')).not.toHaveAttribute('aria-invalid');
+  expect(summary).toHaveTextContent('Priority: Input should be less than 100.');
+  expect(form.getByLabelText('Alert rule name')).not.toHaveAttribute('aria-invalid');
 });

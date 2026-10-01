@@ -4,7 +4,7 @@ import { prepareAreaWatch } from '@/lib/areaWatchDraft';
 import type { WatchAreaInput } from '@/lib/map/areaWatchGeometry';
 import { useAuthStore } from '@/stores/auth';
 
-/** Explicit handoff only. This creates no indicator, network request or model job. */
+/** Explicit handoff only. This creates no alert rule, network request or model job. */
 export function WatchAreaButton({
   area,
   disabled = false,
@@ -39,7 +39,7 @@ export function WatchAreaButton({
       </button>
       <p className="text-xs leading-relaxed text-muted">
         {hint ??
-          'Review an editable area indicator in Alerts. Nothing is created until you choose Add indicator.'}
+          'Review an editable area alert rule in Alerts. Nothing is created until you choose Add alert rule.'}
       </p>
       {error && (
         <p role="alert" className="text-xs text-critical">

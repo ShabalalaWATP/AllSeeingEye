@@ -7,6 +7,8 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { installDialogStub } from '@/test/dialogStub';
 
+import { fillWorldwideRule } from './ruleTestSteps';
+
 installDialogStub();
 
 const failure = (message: string) =>
@@ -20,7 +22,8 @@ describe('warning states', () => {
     );
     renderApp('/warning', 'user');
     expect(await screen.findAllByText('Alerts boom')).not.toHaveLength(0);
-    expect(await screen.findByText('No indicators yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No alert rules yet')).toBeInTheDocument();
+    expect(screen.getByText(/An alert rule watches connected feeds/)).toBeVisible();
     server.use(
       http.get('/api/warning/alerts', () => HttpResponse.json({ items: [], unacknowledged: 0 })),
       http.get('/api/warning/indicators', () => failure('Indicators boom')),
@@ -30,7 +33,7 @@ describe('warning states', () => {
     expect(await screen.findByText('Indicators boom')).toBeInTheDocument();
   });
 
-  it('describes box and bare rules, bare alerts, and deletes an indicator', async () => {
+  it('describes box and bare rules, bare alerts, and deletes an alert rule', async () => {
     let deleted: string | null = null;
     server.use(
       http.get('/api/warning/indicators', () =>
@@ -67,16 +70,17 @@ describe('warning states', () => {
       http.post('/api/warning/alerts/:id/ack', () => failure('Ack boom')),
     );
     const { user } = renderApp('/warning', 'user');
-    const table = await screen.findByRole('table', { name: 'Indicators' });
+    const table = await screen.findByRole('table', { name: 'Alert rules' });
     expect(within(table).getByText('box 30.0, 44.0, 41.0, 53.0')).toBeInTheDocument();
-    expect(within(table).getByText('2 or more any category in 6 h')).toBeInTheDocument();
-    expect(within(table).getByText('anywhere')).toBeInTheDocument();
+    expect(within(table).getByText('2 or more any category in 6 hours')).toBeInTheDocument();
+    expect(within(table).getByText('worldwide')).toBeInTheDocument();
+    expect(within(table).getByText('Paused: not evaluated, raises no alerts')).toBeVisible();
     expect(within(table).getByText('none')).toBeInTheDocument();
     const list = screen.getByRole('list', { name: 'Alerts' });
     expect(within(list).queryByRole('link', { name: 'Report' })).not.toBeInTheDocument();
     await user.click(within(list).getByRole('button', { name: 'Acknowledge' }));
     expect(await screen.findByText('Ack boom')).toBeInTheDocument();
-    await user.click(within(table).getAllByRole('button', { name: 'Delete' })[0]!);
+    await user.click(within(table).getAllByRole('button', { name: /^Delete/ })[0]!);
     await user.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete rule' }),
     );
@@ -85,7 +89,7 @@ describe('warning states', () => {
     });
   });
 
-  it('falls back to a threshold of one when the field is blank', async () => {
+  it('blocks a blank threshold with an inline problem and sends nothing', async () => {
     let captured: unknown = null;
     server.use(
       http.post('/api/warning/indicators', async ({ request }) => {
@@ -94,14 +98,23 @@ describe('warning states', () => {
       }),
     );
     const { user } = renderApp('/warning', 'user');
-    const form = await screen.findByRole('form', { name: 'New indicator' });
-    await user.type(within(form).getByLabelText('Indicator name'), 'Blank threshold');
+    const form = await screen.findByRole('form', { name: 'New alert rule' });
+    await fillWorldwideRule(user, within(form), 'Blank threshold');
     await user.clear(within(form).getByLabelText('Threshold'));
-    await user.click(within(form).getByRole('button', { name: 'Add indicator' }));
+    await user.click(within(form).getByRole('button', { name: 'Add alert rule' }));
+    const summary = await within(form).findByRole('alert', {
+      name: 'Check these fields and try again:',
+    });
+    expect(summary).toHaveTextContent('Threshold: Enter a whole number from 1 to 10000.');
+    expect(within(form).getByLabelText('Threshold')).toHaveAttribute('aria-invalid', 'true');
+    expect(captured).toBeNull();
+    await user.type(within(form).getByLabelText('Threshold'), '1');
+    await user.click(within(form).getByRole('button', { name: 'Add alert rule' }));
     await waitFor(() => {
       expect(captured).toMatchObject({
         name: 'Blank threshold',
         threshold: 1,
+        countries: [],
         report_template: null,
       });
     });

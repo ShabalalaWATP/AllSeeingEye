@@ -11,15 +11,26 @@ export function CountryMultiSelect({
   onChange,
   disabled = false,
   label: title = 'Countries',
+  max = MAX_RESEARCH_COUNTRIES,
+  hint = 'Choose up to eight. Leave empty for worldwide research.',
+  allowWorldwide = true,
+  error,
 }: {
   countries: readonly Country[];
   value: string[];
   onChange: (countries: string[]) => void;
   disabled?: boolean;
   label?: string;
+  /** How many may be chosen; research allows eight. */
+  max?: number;
+  hint?: string;
+  /** False where an empty choice must not read as worldwide, such as alert rules. */
+  allowWorldwide?: boolean;
+  error?: string | undefined;
 }) {
   const [search, setSearch] = useState('');
   const hintId = useId();
+  const errorId = useId();
   const query = search.trim().toLocaleLowerCase();
   const matches = countries.filter((country) =>
     `${country.name} ${country.iso2}`.toLocaleLowerCase().includes(query),
@@ -27,14 +38,25 @@ export function CountryMultiSelect({
   const label = (code: string) =>
     countries.find((country) => country.iso2 === code)?.name ?? `Unavailable country: ${code}`;
   return (
-    <fieldset disabled={disabled} className="min-w-0 space-y-3" aria-describedby={hintId}>
+    <fieldset
+      disabled={disabled}
+      className="min-w-0 space-y-3"
+      aria-describedby={error === undefined ? hintId : `${hintId} ${errorId}`}
+    >
       <legend className="text-sm font-medium">{title}</legend>
       <p id={hintId} className="text-xs text-muted">
-        Choose up to eight. Leave empty for worldwide research.
+        {hint}
       </p>
+      {error !== undefined && (
+        <p id={errorId} className="text-sm text-critical">
+          {error}
+        </p>
+      )}
       <div className="flex min-h-9 flex-wrap items-center gap-2" aria-label="Selected countries">
         {selected.length === 0 ? (
-          <span className="text-sm text-text">Worldwide</span>
+          <span className="text-sm text-text">
+            {allowWorldwide ? 'Worldwide' : 'No countries chosen'}
+          </span>
         ) : (
           selected.map((code) => (
             <button
@@ -51,7 +73,7 @@ export function CountryMultiSelect({
             </button>
           ))
         )}
-        {selected.length > 0 && (
+        {selected.length > 0 && allowWorldwide && (
           <button
             type="button"
             onClick={() => onChange([])}
@@ -65,7 +87,7 @@ export function CountryMultiSelect({
         <summary className="cursor-pointer px-3 py-3 text-sm">
           Choose countries{' '}
           <span className="ml-2 text-xs text-muted">
-            {selected.length} / {MAX_RESEARCH_COUNTRIES}
+            {selected.length} / {max}
           </span>
         </summary>
         <div className="space-y-3 border-t border-line p-3">
@@ -88,9 +110,7 @@ export function CountryMultiSelect({
                 <input
                   type="checkbox"
                   checked={selected.includes(country.iso2)}
-                  disabled={
-                    !selected.includes(country.iso2) && selected.length >= MAX_RESEARCH_COUNTRIES
-                  }
+                  disabled={!selected.includes(country.iso2) && selected.length >= max}
                   onChange={(event) =>
                     onChange(
                       event.target.checked
@@ -108,9 +128,10 @@ export function CountryMultiSelect({
               <p className="py-3 text-sm text-muted">No matching countries.</p>
             )}
           </div>
-          {selected.length >= MAX_RESEARCH_COUNTRIES && (
+          {selected.length >= max && (
             <p role="status" className="text-xs text-muted">
-              Eight countries selected. Remove one to add another.
+              {max === MAX_RESEARCH_COUNTRIES ? 'Eight' : String(max)} countries selected. Remove
+              one to add another.
             </p>
           )}
         </div>

@@ -82,7 +82,7 @@ export function useHasDraft(form: string | null): boolean {
 export const draftForms = {
   research: (search: string) => `research${search}`,
   subscription: (question: string, country: string) => `subscription:new:${country}:${question}`,
-  alertRule: (areaDraft: number | undefined) => `alert-rule:${areaDraft ?? 'new'}`,
+  alertRule: (handoff: number | string | undefined) => `alert-rule:${handoff ?? 'new'}`,
 };
 
 /** For tests and diagnostics: how many forms currently hold a draft. */
