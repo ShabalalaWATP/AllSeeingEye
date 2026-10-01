@@ -40,6 +40,25 @@ describe('direction', () => {
     });
   });
 
+  it('links a team area to a new team thread and keeps personal areas private', async () => {
+    const teamId = 'c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3';
+    server.use(
+      http.get('/api/direction/aois', () =>
+        HttpResponse.json({
+          items: [aoi, { ...aoi, id: 'd4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4', team_id: teamId }],
+        }),
+      ),
+    );
+    renderApp('/direction', 'user');
+    const areas = await screen.findByRole('table', { name: 'Areas of interest' });
+    const links = within(areas).getAllByRole('link', { name: 'Discuss with team' });
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute(
+      'href',
+      `/teams?team=${teamId}&board=thread&subject=saved_area&subject_id=d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4`,
+    );
+  });
+
   it('shows a plan with the evidence per requirement, and deletes it', async () => {
     const { user } = renderApp(`/direction/plans/${plan.id}`, 'user');
     expect(await screen.findByRole('heading', { name: 'Kharkiv axis' })).toBeInTheDocument();

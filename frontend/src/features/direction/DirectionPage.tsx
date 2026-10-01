@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router';
 
+import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -98,6 +99,11 @@ export default function DirectionPage() {
                     >
                       Open on map
                     </Link>
+                    <DiscussWithTeamLink
+                      teamId={area.team_id}
+                      subject={{ kind: 'saved_area', id: area.id }}
+                      className="mr-3 text-sm text-ember hover:underline"
+                    />
                     <Button
                       disabled={!workspaces.canManage(area)}
                       variant="danger"

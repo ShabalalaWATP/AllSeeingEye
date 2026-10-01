@@ -66,6 +66,7 @@ from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
 from ase.container.conflict_screening import build_conflict_screening
 from ase.container.cyber import CyberWiring
+from ase.container.direction_plans import DirectionPlanWiring
 from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.economy_explainer import EconomyExplainerWiring
@@ -101,6 +102,7 @@ class Container(
     MapWiring,
     PrivateRecordWiring,
     FeatureWiring,
+    DirectionPlanWiring,
     ResearchInputWiring,
     SecFilingWiring,
     AdminWiring,

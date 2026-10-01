@@ -3,8 +3,6 @@
 Plan creation, editing, listing, deletion and evidence remain in `features.py`.
 """
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.application.direction.plan_handoff import RequireReviewedPlan
@@ -12,9 +10,6 @@ from ase.application.direction.plan_map_matches import PlanMapMatchesUseCase
 from ase.application.direction.plan_updates import GetPlanUseCase
 from ase.application.direction.plans import PlanEvidenceUseCase
 from ase.container.core import ContainerCore
-
-if TYPE_CHECKING:
-    pass
 
 
 class DirectionPlanWiring(ContainerCore):
