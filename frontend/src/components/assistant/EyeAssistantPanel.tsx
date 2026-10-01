@@ -90,7 +90,14 @@ export function EyeAssistantPanel({
       style={style}
     >
       <header className="eye-assistant-heading">
-        <img src="/brand/eye-512.png" alt="" aria-hidden="true" width="42" height="30" />
+        <img
+          src="/brand/eye-128.webp"
+          alt=""
+          aria-hidden="true"
+          width="42"
+          height="30"
+          decoding="async"
+        />
         <div>
           <h2>The Eye</h2>
           <p>{chat.report ? 'Ask this report edition' : 'Ask your map sources'}</p>

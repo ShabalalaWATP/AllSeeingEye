@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Link, useLocation } from 'react-router';
 
 import { BrandMark } from '@/components/brand/BrandMark';
+import { MotionToggle } from '@/components/brand/MotionToggle';
 import { Wordmark } from '@/components/brand/Wordmark';
 import {
   isWorkspacePath,
@@ -89,6 +90,7 @@ export function LeftRail({
         <BrandMark size={collapsed ? 34 : 38} still={lite} decorative />
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
+      <MotionToggle compact={collapsed} className="px-2 pb-2" />
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
         <button
           type="button"
