@@ -33,9 +33,6 @@ function sizeUtilities(source: string): string[] {
     .filter((utility) => !NOT_A_SIZE.test(utility));
 }
 
-// Deferred until the globe refactor (KAN-10) lands, so the two changes do not collide. The
-// codemod is `text-[11px]` to `text-2xs`; delete this exemption once the folder is clean.
-const PENDING_GLOBE = 'features/globe/';
 const ARBITRARY_SIZE = /\btext-\[\d*\.?\d+(?:px|rem|em)\]/g;
 
 describe('type scale', () => {
@@ -67,18 +64,9 @@ describe('type scale', () => {
 
   it('never sets an arbitrary font size', () => {
     const offenders = Object.entries(sources).flatMap(([file, source]) =>
-      file.startsWith(PENDING_GLOBE)
-        ? []
-        : [...source.matchAll(ARBITRARY_SIZE)].map((match) => `${file} ${match[0]}`),
+      [...source.matchAll(ARBITRARY_SIZE)].map((match) => `${file} ${match[0]}`),
     );
     expect(offenders).toEqual([]);
-  });
-
-  it('keeps the globe exemption only while the globe still needs it', () => {
-    const pending = Object.entries(sources).filter(
-      ([file, source]) => file.startsWith(PENDING_GLOBE) && source.match(ARBITRARY_SIZE) !== null,
-    );
-    expect(pending.length, 'The globe is clean: delete PENDING_GLOBE').toBeGreaterThan(0);
   });
 
   it('finds the sizes it guards', () => {
@@ -98,8 +86,6 @@ const OWN_HEADINGS: Record<string, string> = {
     'report document: paper reader title (reportReader.css)',
   'app/dev/ReportPreviewPage.tsx': 'report document: paper reader title (reportReader.css)',
   'features/globe/GlobeHeading.tsx': 'visually hidden heading over the map canvas',
-  // Deferred to avoid colliding with an open draft PR that rewrites this page.
-  'features/warning/WarningPage.tsx': 'pending migration to PageHeader',
 };
 
 describe('page headings', () => {

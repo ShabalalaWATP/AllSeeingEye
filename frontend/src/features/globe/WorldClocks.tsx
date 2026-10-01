@@ -42,7 +42,7 @@ export const WorldClocks = memo(function WorldClocks() {
                 dateTime={new Date(now).toISOString()}
                 title={`${formatters[index]?.date.format(now)} · ${clock.zone}`}
                 aria-label={`${clock.city}: ${formatters[index]?.time.format(now)}, ${formatters[index]?.date.format(now)}`}
-                className="font-mono text-[11px] sm:text-xs text-text/85 tabular-nums"
+                className="font-mono text-2xs sm:text-xs text-text/85 tabular-nums"
               >
                 {formatters[index]?.time.format(now)}
               </time>

@@ -53,7 +53,7 @@ export function CyberCountryInspector({
         {group.events.length} collected source-attributed records. It does not locate attackers or
         establish attack paths.
       </p>
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Claims remain unverified; connectivity signal drops do not establish cyberattack causation
         or current outage status. Multiple records may describe the same event.
       </p>

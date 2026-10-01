@@ -34,7 +34,7 @@ export function SatelliteResults({
                 className="min-h-14 w-full border-b border-line px-2 py-3 text-left text-xs hover:bg-white/5 aria-pressed:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-cyan disabled:cursor-default"
               >
                 <span className="block font-medium">{event.title}</span>
-                <span className="mt-1 block font-mono text-[11px] text-muted">
+                <span className="mt-1 block font-mono text-2xs text-muted">
                   {satelliteIdentifiers(event) || 'Catalogue identifier unavailable'}
                 </span>
               </button>

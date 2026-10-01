@@ -289,7 +289,10 @@ describe('form control borders', () => {
       // Map tool panels float over the map, so only the dashboard palette sits behind them.
       if (name === 'map dashboard') {
         backgrounds.push(
-          paint(declaration(mapToolShellCss, '.map-tool-panel {', 'background'), palette),
+          paint(declaration(mapToolShellCss, '.map-tool-panel {', 'background'), {
+            ...palette,
+            ...namedColours(mapToolShellCss, ':root {'),
+          }),
         );
       }
       for (const background of backgrounds) {

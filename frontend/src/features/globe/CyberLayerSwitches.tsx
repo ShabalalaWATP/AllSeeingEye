@@ -51,7 +51,7 @@ export function CyberLayerSwitches({
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-medium">{row.label}</span>
-            <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">
+            <span className="mt-0.5 block text-2xs leading-relaxed text-muted">
               {row.description} · {row.count.toLocaleString('en-GB')} loaded
             </span>
           </span>

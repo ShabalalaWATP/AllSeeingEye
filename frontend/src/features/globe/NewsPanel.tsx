@@ -145,7 +145,7 @@ export function NewsPanel({
         </button>
       </div>
       {!filters.enabled && (
-        <p className="text-[11px] text-muted">News map layer is off. Headlines remain readable.</p>
+        <p className="text-2xs text-muted">News map layer is off. Headlines remain readable.</p>
       )}
       {snapshot.loading && (
         <p role="status" className="map-tool-help">

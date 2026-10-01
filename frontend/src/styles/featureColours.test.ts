@@ -11,13 +11,6 @@ import { files, read } from '@/test/themeContrast';
 
 const HEX = /#[0-9a-f]{3,8}\b/i;
 
-// Deferred until the globe refactor (KAN-10) lands, so the two changes do not collide.
-const PENDING = new Set([
-  'features/globe/dashboard.css',
-  'features/globe/mapToolShell.css',
-  'features/globe/referenceTools.css',
-]);
-
 /** Each `property: value` declaration in `css`, comments removed and whitespace collapsed. */
 function declarations(css: string): { property: string; value: string }[] {
   const found: { property: string; value: string }[] = [];
@@ -41,7 +34,7 @@ function declarations(css: string): { property: string; value: string }[] {
 describe('feature colours', () => {
   it('paints stylesheets with named colours only', () => {
     const offenders = files
-      .filter((file) => file.endsWith('.css') && file !== 'styles/theme.css' && !PENDING.has(file))
+      .filter((file) => file.endsWith('.css') && file !== 'styles/theme.css')
       .flatMap((file) =>
         declarations(read(file))
           .filter(({ property, value }) => !property.startsWith('--') && HEX.test(value))
@@ -57,16 +50,6 @@ describe('feature colours', () => {
         [...read(file).matchAll(/\b[a-z-]+-\[#[0-9a-f]{3,8}\]/gi)].map((m) => `${file} ${m[0]}`),
       );
     expect(offenders).toEqual([]);
-  });
-
-  it('keeps each deferred stylesheet listed only while it still needs it', () => {
-    const clean = [...PENDING].filter(
-      (file) =>
-        !declarations(read(file)).some(
-          ({ property, value }) => !property.startsWith('--') && HEX.test(value),
-        ),
-    );
-    expect(clean).toEqual([]);
   });
 
   it('reads declarations the way the stylesheet does', () => {

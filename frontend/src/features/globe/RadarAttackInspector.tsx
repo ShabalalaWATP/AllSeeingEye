@@ -65,7 +65,7 @@ export function RadarAttackInspector({
         layer’s stated period. The marker is a country reference, not an attack location, attacker
         origin, incident count or national risk score.
       </p>
-      <ul className="mt-3 space-y-1 text-[11px] text-muted">
+      <ul className="mt-3 space-y-1 text-2xs text-muted">
         {snapshot.layers.map((layer) => (
           <li key={layer.layer}>
             {layer.layer === 'layer3' ? 'L3/4' : 'L7'}:{' '}
