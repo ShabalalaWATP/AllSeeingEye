@@ -70,4 +70,5 @@ def cyber_briefing_request(days: CyberWindowDays = CyberWindowDays.TWO) -> Repor
             "jamming",
         ),
         report_style="assessment",
+        briefing="cyber",
     )

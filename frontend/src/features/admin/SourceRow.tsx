@@ -57,7 +57,7 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
           <p className="mt-1 max-w-xs text-xs text-amber">{health.warning}</p>
         )}
         {!onDemand && !stopped && health.consecutive_failures > 0 && (
-          <span className="mt-1 block text-[11px] text-muted">
+          <span className="mt-1 block text-2xs text-muted">
             {health.consecutive_failures} failed in a row
           </span>
         )}

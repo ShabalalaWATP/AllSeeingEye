@@ -79,16 +79,13 @@ it.each(['globe', 'map'] as const)(
     act(() => {
       useEventsStore.getState().toggleCategory('aviation');
     });
-    expect(screen.getByRole('switch', { name: /^Fires / })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
-    expect(screen.queryByRole('switch', { name: /^FIRMS / })).not.toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Fires' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.queryByRole('switch', { name: /^FIRMS/ })).not.toBeInTheDocument();
     expect(iconIds()).toEqual(['fire-plane']);
     expect(useEventsStore.getState().hidden).toContain('disaster');
-    await user.click(screen.getByRole('switch', { name: /^Fires / }));
+    await user.click(screen.getByRole('switch', { name: 'Fires' }));
     await waitFor(() => expect(iconIds()).toEqual(['fire-plane', 'fire-report', 'fire-thermal']));
-    expect(screen.getByRole('switch', { name: /^Natural hazards / })).toHaveAttribute(
+    expect(screen.getByRole('switch', { name: 'Natural hazards' })).toHaveAttribute(
       'aria-checked',
       'false',
     );
@@ -102,11 +99,11 @@ it.each(['globe', 'map'] as const)(
     await waitFor(() => expect(iconIds()).toEqual(['fire-plane', 'fire-thermal']));
     await user.click(within(panel).getByRole('checkbox', { name: /^Reported wildfires:/ }));
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
-    await user.click(screen.getByRole('switch', { name: /^Natural hazards / }));
+    await user.click(screen.getByRole('switch', { name: 'Natural hazards' }));
     await waitFor(() =>
       expect(iconIds()).toEqual(['fire-plane', 'fire-report', 'fire-thermal', 'other-volcano']),
     );
-    await user.click(screen.getByRole('switch', { name: /^Natural hazards / }));
+    await user.click(screen.getByRole('switch', { name: 'Natural hazards' }));
     await waitFor(() => expect(iconIds()).toEqual(['fire-plane', 'fire-report', 'fire-thermal']));
     const layers = MapboxOverlay.instances[0]?.props.layers as {
       id: string;
@@ -117,7 +114,7 @@ it.each(['globe', 'map'] as const)(
     );
     expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
     expect(useEventsStore.getState().selectedId).toBe('fire-report');
-    await user.click(screen.getByRole('switch', { name: /^Fires / }));
+    await user.click(screen.getByRole('switch', { name: 'Fires' }));
     await waitFor(() => expect(iconIds()).toEqual(['fire-plane']));
     expect(useEventsStore.getState().selectedId).toBeNull();
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();

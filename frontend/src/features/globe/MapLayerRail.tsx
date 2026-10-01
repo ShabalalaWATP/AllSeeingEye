@@ -35,6 +35,8 @@ function LayerButton({
   onClick: () => void;
   caption?: string;
 }) {
+  // Streaming counts stay out of the switch's name and description, so a focused control is
+  // not re-announced as events arrive; the count is readable on demand beside it instead.
   return (
     <MapControlLabel
       label={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
@@ -43,8 +45,7 @@ function LayerButton({
         type="button"
         role="switch"
         aria-checked={active}
-        aria-label={count === undefined ? label : `${label} ${count}`}
-        title={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
+        aria-label={label}
         className={`map-icon-button ${caption ? 'map-style-button' : ''}`}
         onClick={onClick}
       >
@@ -56,6 +57,7 @@ function LayerButton({
           </span>
         )}
       </button>
+      {count !== undefined && <span className="sr-only">{`${label}: ${count} loaded`}</span>}
     </MapControlLabel>
   );
 }

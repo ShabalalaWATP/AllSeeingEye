@@ -1,3 +1,4 @@
+import { AutomaticBriefingNote } from '@/components/research/AutomaticBriefingNote';
 import { ECONOMY_PERIODS, type EconomyDays } from '@/lib/api/economyBriefing';
 
 export function EconomyPeriodPicker({
@@ -18,6 +19,10 @@ export function EconomyPeriodPicker({
           Choose how far back the news and research summary should look. Annual indicators keep
           their own observation dates.
         </p>
+        <AutomaticBriefingNote
+          subject="Choosing a period"
+          className="mt-1 max-w-2xl text-xs leading-5 text-muted"
+        />
       </div>
       <div
         role="group"

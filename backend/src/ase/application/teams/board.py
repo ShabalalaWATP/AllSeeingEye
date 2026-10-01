@@ -17,12 +17,16 @@ from ase.application.teams.board_access import (
     board_actor,
     require_revision,
 )
+from ase.application.teams.board_mentions import BoardMentions, BoardWrite
+from ase.application.teams.board_subjects import BoardSubjects
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.team_board import (
     MAX_PAGE_SIZE,
     MAX_REPLIES_PER_POST,
     UNREAD_COUNT_CAP,
+    BoardSubject,
+    BoardSubjectView,
     TeamBoardPage,
     TeamBoardPost,
     TeamBoardReadCursor,
@@ -40,7 +44,11 @@ class TeamBoardService:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        subjects: BoardSubjects,
+        mentions: BoardMentions,
     ) -> None:
+        self._subjects = subjects
+        self._mentions = mentions
         self._board = board
         self._teams = teams
         self._users = users
@@ -69,7 +77,21 @@ class TeamBoardService:
             raise InvalidRequest("Invalid board page bounds.")
         access = await self._actor(actor, team_id, write=False)
         page = await self._board.list_posts(team_id, limit, offset)
+        if any(item.post.subject for item in page.items):
+            # Resolved per request against current access; never cached with the page.
+            context = await self._subjects.context(access.user)
+            items = [
+                replace(item, subject=await self._subjects.view(context, item.post))
+                for item in page.items
+            ]
+            page = replace(page, items=tuple(items))
         return replace(page, unread_count=await self.unread_for(access))
+
+    async def subject_for(self, actor: User, post: TeamBoardPost) -> BoardSubjectView | None:
+        """A written post's subject as the caller may see it now."""
+        if post.subject is None or post.deleted_at is not None:
+            return None
+        return await self._subjects.view(await self._subjects.context(actor), post)
 
     async def mark_read(self, actor: User, team_id: UUID, last_seen_post_id: UUID) -> int:
         """Advance the caller's cursor to a post they have loaded, then return unread."""
@@ -101,12 +123,19 @@ class TeamBoardService:
         text: str,
         parent_id: UUID | None,
         context: RequestContext,
-    ) -> TeamBoardPost:
+        subject: BoardSubject | None = None,
+    ) -> BoardWrite:
         access = await self._actor(actor, team_id, write=True)
         try:
             value = clean_text(text, reply=parent_id is not None)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
+        handles = self._mentions.parse(value)
+        if subject is not None:
+            if parent_id is not None:
+                raise InvalidRequest("Only a new post can link a report, area or drawing.")
+            access_context = await self._subjects.context(access.user)
+            await self._subjects.require_linkable(access_context, team_id, subject)
         if parent_id is not None:
             parent = await self._board.get(parent_id)
             if parent is None or parent.team_id != team_id or parent.parent_id is not None:
@@ -118,17 +147,30 @@ class TeamBoardService:
                     f"A post can receive up to {MAX_REPLIES_PER_POST} replies. Start a new post."
                 )
         now = self._clock.now()
-        post = TeamBoardPost(uuid4(), team_id, access.user.id, value, now, now, parent_id)
+        post = TeamBoardPost(
+            uuid4(), team_id, access.user.id, value, now, now, parent_id, subject=subject
+        )
         await self._board.add(post)
+        # Same transaction as the post: a failed write leaves no notice behind.
+        mentions = await self._mentions.record(post, handles, now)
+        details: dict[str, object] = {
+            "team_id": str(team_id),
+            "reply": parent_id is not None,
+            "mentions": len(mentions.notified),
+        }
+        if subject is not None:
+            # The kind and identifier only; a title can change scope and is never audited.
+            details |= {"subject_kind": subject.kind.value, "subject_id": str(subject.id)}
         await self._auditor.record(
             AuditAction.TEAM_BOARD_POST_CREATED,
             actor=access.user.id,
             subject=str(post.id),
             ip=context.ip,
-            details={"team_id": str(team_id), "reply": parent_id is not None},
+            details=details,
         )
         await self._uow.commit()
-        return post
+        await self._mentions.announce(mentions.affected)
+        return BoardWrite(post, mentions.notified)
 
     async def edit(
         self,
@@ -138,7 +180,7 @@ class TeamBoardService:
         text: str,
         expected_revision: int,
         context: RequestContext,
-    ) -> TeamBoardPost:
+    ) -> BoardWrite:
         access = await self._actor(actor, team_id, write=True)
         post = await self._board.get(post_id)
         if post is None or post.team_id != team_id:
@@ -154,6 +196,7 @@ class TeamBoardService:
             value = clean_text(text, reply=post.parent_id is not None)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
+        handles = self._mentions.parse(value)
         now = self._clock.now()
         updated = replace(
             post, text=value, updated_at=now, edited_at=now, revision=post.revision + 1
@@ -161,12 +204,14 @@ class TeamBoardService:
         if not await self._board.save_if_revision(updated, expected_revision):
             await self._uow.rollback()
             raise Conflict(STALE_POST)
+        mentions = await self._mentions.record(updated, handles, now)
         await self._auditor.record(
             AuditAction.TEAM_BOARD_POST_EDITED,
             actor=access.user.id,
             subject=str(post.id),
             ip=context.ip,
-            details={"team_id": str(team_id)},
+            details={"team_id": str(team_id), "mentions": len(mentions.notified)},
         )
         await self._uow.commit()
-        return updated
+        await self._mentions.announce(mentions.affected)
+        return BoardWrite(updated, mentions.notified)

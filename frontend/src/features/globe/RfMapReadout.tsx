@@ -25,7 +25,7 @@ export const RfMapReadout = memo(function RfMapReadout({
       : '360° terrain estimate';
   return (
     <details className="absolute bottom-24 left-1/2 z-10 w-max max-w-[calc(100%-9rem)] -translate-x-1/2 rounded-lg border border-white/20 bg-black/90 p-2 text-text">
-      <summary className="cursor-pointer text-[11px] marker:text-cyan">
+      <summary className="cursor-pointer text-2xs marker:text-cyan">
         <span className="font-mono">RF · {label}</span>
       </summary>
       <div className="mt-2 max-w-72 border-t border-line pt-2">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_TITLE, documentTitle, pageTitle } from './pageTitles';
+import { APP_TITLE, NOT_FOUND_TITLE, documentTitle, pageTitle, withAppTitle } from './pageTitles';
 
 describe('page titles', () => {
   it.each([
@@ -32,6 +32,11 @@ describe('page titles', () => {
     ['/admin', 'Administration'],
     ['/admin/users', 'Users · Administration'],
     ['/admin/nowhere', 'Administration'],
+    ['/login', 'Sign in'],
+    ['/request-account', 'Request an account'],
+    ['/forgot-password', 'Forgotten password'],
+    ['/set-password', 'Set your password'],
+    ['/set-password/', 'Set your password'],
     ['/elsewhere', APP_TITLE],
   ])('names %s as %s', (path, title) => {
     expect(pageTitle(path)).toBe(title);
@@ -40,5 +45,20 @@ describe('page titles', () => {
   it('prefixes the application name only for known pages', () => {
     expect(documentTitle('/watches')).toBe('Watches · The All Seeing Eye');
     expect(documentTitle('/elsewhere')).toBe('The All Seeing Eye');
+  });
+
+  it('gives every public page and the not-found page a distinct title', () => {
+    const titles = [
+      ...['/login', '/request-account', '/forgot-password', '/set-password'].map(documentTitle),
+      withAppTitle(NOT_FOUND_TITLE),
+    ];
+    expect(titles).toEqual([
+      'Sign in · The All Seeing Eye',
+      'Request an account · The All Seeing Eye',
+      'Forgotten password · The All Seeing Eye',
+      'Set your password · The All Seeing Eye',
+      'Page not found · The All Seeing Eye',
+    ]);
+    expect(new Set([...titles, APP_TITLE]).size).toBe(titles.length + 1);
   });
 });

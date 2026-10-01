@@ -1,6 +1,4 @@
-import { LivePictureExport } from './LivePictureExport';
-import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
-import { MapAreaResearchPanel } from '@/components/maps/MapAreaResearchPanel';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
 import { RoutePlannerPanel } from '@/components/maps/RoutePlannerPanel';
 import { TerrainAnalysisPanel } from '@/components/maps/TerrainAnalysisPanel';
@@ -17,19 +15,35 @@ import { MapDrawingPanel } from './MapDrawingPanel';
 import { MapResearchDrawingControls } from './MapResearchDrawingControls';
 import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
 
+// These panels load when their tool opens, keeping them out of the globe route's download.
+const MapMeasurementPanel = lazy(() =>
+  import('@/components/maps/MapMeasurementPanel').then((module) => ({
+    default: module.MapMeasurementPanel,
+  })),
+);
+const MapAreaResearchPanel = lazy(() =>
+  import('@/components/maps/MapAreaResearchPanel').then((module) => ({
+    default: module.MapAreaResearchPanel,
+  })),
+);
+
+function ToolLoading({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<p className="map-tool-help">Loading this tool.</p>}>{children}</Suspense>
+  );
+}
+
 /** Direct panel children allow the shared rail to manage one active tool. */
 export function mapPlanningPanels(
   tools: ReturnType<typeof useMapWorkspaceTools>,
   {
     open = () => undefined,
     events = [],
-    exportEvents = [],
     onHighlight = () => undefined,
     onNavigate = () => undefined,
   }: {
     open?: OpenPanel;
     events?: readonly LiveEvent[];
-    exportEvents?: readonly LiveEvent[];
     onHighlight?: (event: LiveEvent) => void;
     onNavigate?: (position: Position) => void;
   } = {},
@@ -59,30 +73,31 @@ export function mapPlanningPanels(
   return [
     <ControlPanel key="workspace" label="On this map" icon="layers" size="medium">
       <MapWorkspacePanel tools={tools} open={open} />
-      <LivePictureExport events={exportEvents} area={tools.research.area} />
     </ControlPanel>,
     <ControlPanel key="research" side="right" label="Research area" icon="research" size="medium">
-      <MapAreaResearchPanel
-        area={tools.research.area}
-        areaError={tools.research.areaError}
-        picking={tools.research.drawing.picking}
-        onStopDrawing={() => tools.research.drawing.setPicking(false)}
-        events={events}
-        onHighlight={onHighlight}
-      >
-        {tools.research.imported ? (
-          <div className="map-tool-section">
-            <p className="map-tool-help">
-              Using the selected boundary. Research keeps its exact geometry.
-            </p>
-            <button type="button" className="map-tool-secondary" onClick={tools.research.clear}>
-              Clear boundary and draw another
-            </button>
-          </div>
-        ) : (
-          <MapResearchDrawingControls value={tools.research.drawing} />
-        )}
-      </MapAreaResearchPanel>
+      <ToolLoading>
+        <MapAreaResearchPanel
+          area={tools.research.area}
+          areaError={tools.research.areaError}
+          picking={tools.research.drawing.picking}
+          onStopDrawing={() => tools.research.drawing.setPicking(false)}
+          events={events}
+          onHighlight={onHighlight}
+        >
+          {tools.research.imported ? (
+            <div className="map-tool-section">
+              <p className="map-tool-help">
+                Using the selected boundary. Research keeps its exact geometry.
+              </p>
+              <button type="button" className="map-tool-secondary" onClick={tools.research.clear}>
+                Clear boundary and draw another
+              </button>
+            </div>
+          ) : (
+            <MapResearchDrawingControls value={tools.research.drawing} />
+          )}
+        </MapAreaResearchPanel>
+      </ToolLoading>
     </ControlPanel>,
     <ControlPanel
       key="drawing"
@@ -165,7 +180,9 @@ export function mapPlanningPanels(
       icon="measure"
       size="medium"
     >
-      <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
+      <ToolLoading>
+        <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
+      </ToolLoading>
     </ControlPanel>,
     <ControlPanel key="terrain" label="Terrain profile and visibility" icon="measure" size="medium">
       <TerrainAnalysisPanel points={selectedPoints} study={tools.terrainStudy} />

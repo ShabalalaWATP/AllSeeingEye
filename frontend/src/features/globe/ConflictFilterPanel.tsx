@@ -42,17 +42,17 @@ export function ConflictFilterPanel({
   return (
     <section aria-label="Conflict report filters" className="space-y-3 p-3">
       {setIncludeUnreviewed && (
-        <div className="space-y-2 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3">
+        <div className="space-y-2 rounded-lg border border-amber/20 bg-amber/5 p-3">
           <label className="flex min-h-10 items-center gap-2 text-xs">
             <input
               type="checkbox"
               checked={includeUnreviewed}
               onChange={(event) => setIncludeUnreviewed(event.target.checked)}
-              className="accent-amber-400"
+              className="accent-amber"
             />
             <span>Unreviewed media signals ({unreviewedCount.toLocaleString()} loaded)</span>
           </label>
-          <p className="text-[11px] leading-relaxed text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             Off by default. Automated news coding can mistake court cases or accidents for conflict.
             Titles may be machine-generated; matched source text may be unavailable. This includes
             pending or uncertain screening, but never reports assessed as unrelated or context only.
@@ -68,7 +68,7 @@ export function ConflictFilterPanel({
         />
         <span>Historical baseline ({historicalCount.toLocaleString()} loaded)</span>
       </label>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Monthly UCDP releases describe earlier periods and are hidden by default. Enabling the
         historical baseline does not make these reports live incidents; release and occurrence dates
         appear in details.
@@ -121,7 +121,7 @@ export function ConflictFilterPanel({
         </label>
       )}
       {setPrecision && (
-        <p className="text-[11px] leading-relaxed text-muted">
+        <p className="text-2xs leading-relaxed text-muted">
           Precision reflects the source's location label, not independent verification. Approximate
           locations can be city, region or country centres. Unlocated reports appear only under All.
         </p>
@@ -133,7 +133,7 @@ export function ConflictFilterPanel({
         {CONFLICT_GROUPS.map((choice) => (
           <label
             key={choice.value}
-            className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs ${group === choice.value ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200' : 'border-white/10 text-muted hover:bg-white/5'}`}
+            className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs ${group === choice.value ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-white/10 text-muted hover:bg-white/5'}`}
           >
             <input
               type="radio"
@@ -160,17 +160,17 @@ export function ConflictFilterPanel({
           </label>
         ))}
       </fieldset>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Counts follow screening, search, source, location, nation and time filters. They are loaded
         reports, not verified conflicts or unique incidents. Several sources may report the same
         event.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Types follow relevance screening where available; original provider types remain in details.
         Protests, force movements and other incidents do not establish armed conflict. The main
         conflict layer switch still controls visibility.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Symbols match individual map reports. Outlined rings indicate approximate locations. At
         wider zoom levels, clusters can group several reports; zoom in to see their types.
       </p>

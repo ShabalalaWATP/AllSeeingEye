@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
 from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
+
+CountryCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z]{2}$")]
+Keyword = Annotated[str, StringConstraints(max_length=60)]
 
 
 class IndicatorIn(BaseModel):
@@ -20,11 +24,11 @@ class IndicatorIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=1000)
     plan_id: UUID | None = None
-    countries: list[str] = Field(default_factory=list, max_length=50)
+    countries: list[CountryCode] = Field(default_factory=list, max_length=50)
     bbox: tuple[float, float, float, float] | None = None
     research_area: ResearchAreaIn | None = None
     categories: list[Category] = Field(default_factory=list, max_length=20)
-    keywords: list[str] = Field(default_factory=list, max_length=20)
+    keywords: list[Keyword] = Field(default_factory=list, max_length=20)
     threshold: int = Field(default=1, ge=1, le=10_000)
     baseline_ratio: float | None = Field(default=None, gt=1, le=100)
     baseline_days: int = Field(default=30, ge=7, le=30)
@@ -40,11 +44,11 @@ class IndicatorIn(BaseModel):
             name=self.name,
             description=self.description,
             plan_id=self.plan_id,
-            countries=[code[:2] for code in self.countries],
+            countries=list(self.countries),
             bbox=self.bbox,
             research_area=self.research_area.to_domain() if self.research_area else None,
             categories=self.categories,
-            keywords=[word[:60] for word in self.keywords],
+            keywords=list(self.keywords),
             threshold=self.threshold,
             baseline_ratio=self.baseline_ratio,
             baseline_days=self.baseline_days,
@@ -55,6 +59,13 @@ class IndicatorIn(BaseModel):
             enabled=self.enabled,
             team_id=self.team_id,
         )
+
+
+class IndicatorUpdateIn(IndicatorIn):
+    """Edits identify their original revision and explicitly confirm removing restrictions."""
+
+    expected_updated_at: datetime
+    confirm_wider_scope: bool = False
 
 
 class IndicatorOut(BaseModel):
@@ -142,9 +153,10 @@ class AlertOut(BaseModel):
     report_id: UUID | None
     created_by: UUID | None
     team_id: UUID | None
+    owner_name: str | None = None
 
     @classmethod
-    def from_alert(cls, alert: Alert) -> AlertOut:
+    def from_alert(cls, alert: Alert, owner_name: str | None = None) -> AlertOut:
         return cls(
             id=alert.id,
             indicator_id=alert.indicator_id,
@@ -167,6 +179,7 @@ class AlertOut(BaseModel):
             report_id=alert.report_id,
             created_by=alert.created_by,
             team_id=alert.team_id,
+            owner_name=owner_name,
         )
 
 

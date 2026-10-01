@@ -1,4 +1,6 @@
 import { Link } from 'react-router';
+import { EventTitle } from '@/components/events/EventTitle';
+import { englishTitle } from '@/components/events/sourceLanguage';
 import { HistoricalBaselineNote } from '@/components/reports/HistoricalBaselineNote';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { conflictReportLabel } from '@/lib/conflicts';
@@ -17,10 +19,11 @@ function occurrence(event: LiveEvent): string {
 
 export function ConflictEvidenceRow({ event }: { event: LiveEvent }) {
   const precision = event.attributes.geo_precision;
+  const english = englishTitle(event);
   return (
     <article className="space-y-2 py-3">
       <HistoricalBaselineNote event={event} />
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-2xs text-muted">
         <span className="text-cyan">{conflictReportLabel(event)}</span>
         <span>{event.source_id}</span>
         <span title={event.grade_rationale}>
@@ -36,10 +39,10 @@ export function ConflictEvidenceRow({ event }: { event: LiveEvent }) {
             rel="noopener noreferrer"
             className="hover:text-cyan hover:underline"
           >
-            {event.title_en ?? event.title}
+            <EventTitle event={event} />
           </a>
         ) : (
-          <span>{event.title_en ?? event.title}</span>
+          <EventTitle event={event} />
         )}
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
@@ -62,7 +65,7 @@ export function ConflictEvidenceRow({ event }: { event: LiveEvent }) {
       <ConflictSourceProvenance event={event} />
       <Link
         to={eventResearchHref(event)}
-        aria-label={`Research this report: ${event.title}`}
+        aria-label={english === null ? 'Research this report' : `Research this report: ${english}`}
         className="inline-flex min-h-9 items-center text-xs text-ember hover:underline"
       >
         Research this

@@ -50,6 +50,8 @@ class Indicator:
     research_area: ResearchArea | None = None
     baseline_ratio: float | None = None
     baseline_days: int = 30
+    # A resumed rule excludes activity published during its pause.
+    resumed_at: datetime | None = None
 
     @property
     def window(self) -> timedelta:
@@ -138,6 +140,8 @@ def evaluate(
     if last_fired is not None and now - last_fired < indicator.cooldown:
         return None
     since = now - indicator.window
+    if indicator.resumed_at is not None and indicator.resumed_at > since:
+        since = indicator.resumed_at
     count = 0
     evidence: list[tuple[datetime, str, int, Event]] = []
     country_latest: dict[str, tuple[datetime, str]] = {}

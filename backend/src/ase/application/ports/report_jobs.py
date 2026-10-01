@@ -1,5 +1,6 @@
 """Transactional storage for resumable report checkpoints, without provider calls."""
 
+from collections.abc import Sequence
 from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
@@ -14,6 +15,15 @@ class ReportJobRepository(Protocol):
     async def get_by_request(self, owner_id: UUID, request_key: UUID) -> ReportJob | None: ...
     async def list_visible(
         self, visibility: Visibility, limit: int = 50, offset: int = 0
+    ) -> list[ReportJob]: ...
+    async def list_page(
+        self,
+        visibility: Visibility,
+        *,
+        limit: int,
+        statuses: Sequence[str] | None = None,
+        include_briefings: bool = False,
+        after: tuple[datetime, UUID] | None = None,
     ) -> list[ReportJob]: ...
     async def count_active(self, owner_id: UUID | None = None) -> int: ...
     async def count_open(self, owner_id: UUID | None = None) -> int: ...

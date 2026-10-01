@@ -51,7 +51,7 @@ def prepared(tmp_path):
 
 
 def metadata_0031():
-    # Alert dispositions and fired ratios arrive later, in 0069 and 0070.
+    # Alert dispositions and fired ratios arrive later, in 0084 and 0085.
     metadata = sa.MetaData()
     for table in Base.metadata.sorted_tables:
         table.to_metadata(metadata)

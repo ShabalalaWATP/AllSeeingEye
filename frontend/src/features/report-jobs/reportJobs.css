@@ -20,14 +20,6 @@
 .job-back:hover {
   color: var(--color-cyan);
 }
-.job-heading h1,
-.job-list-heading h1 {
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
 .job-eyebrow {
   display: flex;
   flex-wrap: wrap;
@@ -48,8 +40,7 @@
   font-size: 12px;
   overflow-wrap: anywhere;
 }
-.job-continuity,
-.job-list-heading p {
+.job-continuity {
   color: var(--color-muted);
   margin-top: 10px;
   font-size: 13px;
@@ -118,12 +109,6 @@
 .job-report-link:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
-}
-.job-list-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
 }
 .job-list-caption {
   display: flex;
@@ -227,7 +212,6 @@
   .report-jobs-page {
     padding: 20px 16px 112px;
   }
-  .job-list-heading,
   .job-progress-label {
     align-items: flex-start;
     flex-direction: column;

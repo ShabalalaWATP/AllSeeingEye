@@ -1,7 +1,8 @@
 # Forecast and alert feedback: KAN-125 to KAN-129
 
-Recorded 30 September 2026. Branch: `codex/KAN-125-forecast-feedback`.
-Integrated parent: `d72c9237b644fbb6d3276c6eb890d08989ffa8fd`, performance PR #93.
+Updated 1 October 2026. Branch: `codex/KAN-125-forecast-feedback`.
+Integrated parent: `e3ef726ea57885100f3331924ada7e876c4e6b3a`, performance PR #93,
+including main `9ae40e3d` and its alert-rule, bell, citation and team-copy workflows.
 This batch is a draft for review;
 release, email delivery and research accuracy require their own evidence.
 
@@ -25,14 +26,59 @@ in-app reminders work independently of email configuration.
 
 The parent provides all-kind 30-day baseline retention and the activity hour/ID
 index. The evaluator retains both its worker-health wrapper and the new rule
-sampler. Migration `0069` follows `0068`, then `0070` follows `0069` and `0073`
-follows `0070`. The resulting graph has one head, `0073`.
+sampler. This batch now uses `0084` after parent `0083`, then `0085` and `0086`.
+The resulting graph has one head, `0086`. These replace the unpublished revision
+identifiers `0069`, `0070` and `0073`; the shipped main chain through `0081` is
+unchanged. An installation already at `0081` therefore executes every new revision.
 
 The API schema and TypeScript contracts are regenerated from the combined source.
-The PostgreSQL SQL-rendering check starts at `0068` because the parent's earlier
+The PostgreSQL SQL-rendering check starts at `0083` because the parent's earlier
 checkpoint reconciliation requires actual database reads. SQLite tests execute
 the combined chain and check existing alert preservation, feedback downgrade
 refusal and reminder-table round trips.
+
+## Current main compatibility checks
+
+The rule update path retains main's optimistic revision guard and scope-widening
+confirmation. Baseline samples reset only after its conditional write succeeds,
+inside the same transaction. Pause/resume retains the ratio configuration and
+`resumed_at` excludes paused activity. The bell treats a conflict as one failed
+item and retains successful acknowledgements; the first shared acknowledgement
+still owns any feedback. The UI preserves mine/all views, other-owner confirmation,
+rule drafts, ratio settings, frozen alert explanations and saved forecasts.
+
+Report composition retains team-copy provenance, map links and citation verdicts.
+Citation verdicts do not review a proposed claim or rewrite an issued forecast.
+Copying a personal report to a team preserves its evidence timestamps, but creates
+no claim roots, forecast ledgers or reminder receipts in the destination scope.
+
+The combined source passed 256 backend cases in three non-overlapping groups
+(32, 150 and 74), using private in-memory or temporary SQLite databases and
+`--no-cov`. This includes actual `0084`–`0086` migrations, retained-history downgrade
+refusals, conditional-write loss and rollback, pause/resume sampling, bell partial
+failure, exact claim binding, late alert-access rechecks and historical `0030`
+metadata projection. The warning and report-reader groups passed 100 frontend
+tests across 20 files using MSW and Node 24.19.0. Two existing exact request-body
+assertions were extended for `baseline_ratio: null` and `baseline_days: 30`; their
+previous assertions remain. No coverage thresholds changed. A final 23-case ratio, edit, pause and report-draft
+rerun passed after removing type-redundant form fallbacks.
+
+Both frozen dependency installs and OpenAPI/client regeneration succeeded. Full
+mypy passed for 1,502 source files, both TypeScript projects passed, full Ruff and
+formatting passed for 2,644 Python files, all three import contracts held and the
+file-length gate passed. Full frontend lint (including eight tooling tests) and a
+second check of both TypeScript projects also passed. The targeted warning/bell Bandit scan reported no
+medium/high findings. Changed frontend files pass Prettier. The full frontend
+format check still reports 12 files with no Git diff from parent `e3ef726e`;
+these are recorded for the parent-wide integration rather than reformatted in this
+feature batch. These focused checks do not measure combined coverage; that remains
+part of the parent-coordinated integration gate.
+
+Independent final read-only review found no actionable issues in the combined
+rule, bell, router and container composition. All 322 parent OpenAPI operations
+remain (328 total); current ownership, revision and scope-widening checks survive.
+The final rule state/reset and retained-context implementations match the reviewed
+candidate. Feature-commit Gitleaks scans reported no leaks.
 
 ## Security review
 
@@ -80,9 +126,8 @@ databases and its labelled container. No production database was involved.
 
 Local checks use the worktree's private Python environment, node_modules, scratch
 SQLite databases, fake providers and MSW. No production database, real model or
-mail provider was used. Frontend checks used Node 22.20.0, which reports the
-repository's Node >=22.22.0 engine warning; runtime verification must use the
-supported version before release.
+mail provider was used. The earlier checks below used Node 22.20.0; the current
+main compatibility checks above use supported Node 24.19.0.
 
 Full mypy passed for 1,425 source files; full TypeScript checking, Ruff, all three
 import contracts, changed frontend ESLint checks and the file-length gate passed.

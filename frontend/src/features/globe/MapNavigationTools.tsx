@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { MapControlLabel } from './MapControlLabel';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 
 /** Small explicit controls for operators who cannot use map gestures. */
-export function MapNavigationTools({
+export const MapNavigationTools = memo(function MapNavigationTools({
   engine,
   enabled,
 }: {
@@ -83,11 +83,11 @@ export function MapNavigationTools({
       ))}
       {document.fullscreenEnabled && (
         <MapControlLabel label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+          {/* The name states the next action, so it carries no pressed state as well. */}
           <button
             type="button"
             aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            aria-pressed={fullscreen}
             onClick={() => {
               void toggleFullscreen();
             }}
@@ -117,4 +117,4 @@ export function MapNavigationTools({
       )}
     </div>
   );
-}
+});

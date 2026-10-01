@@ -222,7 +222,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Jobs */
+        /**
+         * List Jobs
+         * @description Scope, status and origin filters apply before the page; see application listing.
+         *
+         *     ``mine`` (the default) is the caller's personal and current-team work; only
+         *     administrators may request ``all``.
+         */
         get: operations["list_jobs_api_report_jobs_get"];
         put?: never;
         /** Create Job */
@@ -1057,6 +1063,129 @@ export interface paths {
         get: operations["team_dashboard_api_teams__team_id__dashboard_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Bell */
+        get: operations["read_bell_api_bell_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/alerts/{alert_id}/destination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alert Destination */
+        get: operations["alert_destination_api_bell_alerts__alert_id__destination_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/alerts/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge Shown */
+        post: operations["acknowledge_shown_api_bell_alerts_acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Bell Preferences */
+        put: operations["set_bell_preferences_api_bell_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/muted-rules/{indicator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Mute Rule */
+        put: operations["mute_rule_api_bell_muted_rules__indicator_id__put"];
+        post?: never;
+        /** Unmute Rule */
+        delete: operations["unmute_rule_api_bell_muted_rules__indicator_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/mentions/{post_id}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open Mention
+         * @description Re-check the post against current membership and mark the caller's notice read.
+         */
+        post: operations["open_mention_api_bell_mentions__post_id__open_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/mentions/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read Mentions */
+        post: operations["read_mentions_api_bell_mentions_read_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2306,7 +2435,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Reports */
+        /**
+         * List Reports
+         * @description Saved reports by one origin, or one named group of origins such as requested work.
+         */
         get: operations["list_reports_api_reports_get"];
         put?: never;
         /** Create Report */
@@ -2352,6 +2484,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/team-discussion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report Team Discussion
+         * @description Board threads about this team report, for its current readers; no titles or text.
+         */
+        get: operations["report_team_discussion_api_reports__report_id__team_discussion_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/markdown": {
         parameters: {
             query?: never;
@@ -2361,6 +2513,57 @@ export interface paths {
         };
         /** Report Markdown */
         get: operations["report_markdown_api_reports__report_id__markdown_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/team-copy-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Team Copy */
+        get: operations["preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/team-copies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Copy To Team */
+        post: operations["copy_to_team_api_reports__report_id__versions__number__team_copies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/team-copy-provenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Team Copy Provenance */
+        get: operations["team_copy_provenance_api_reports__report_id__team_copy_provenance_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2881,6 +3084,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sources/{source_id}/track-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Track Record */
+        get: operations["get_track_record_api_sources__source_id__track_record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/versions/{number}/source-reviews": {
         parameters: {
             query?: never;
@@ -2906,7 +3126,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Snapshots
+         * @description Snapshots of this exact version, newest first, for an explicit reader choice.
+         */
+        get: operations["snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get"];
         put?: never;
         /** Freeze */
         post: operations["freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post"];
@@ -2925,6 +3149,41 @@ export interface paths {
         };
         /** Snapshot */
         get: operations["snapshot_api_reports__report_id__versions__number__source_assessment_snapshots__snapshot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Verdicts */
+        get: operations["list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get"];
+        put?: never;
+        /** Record Verdict */
+        post: operations["record_verdict_api_reports__report_id__versions__number__citation_verdicts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/citation-verdicts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Verdicts */
+        get: operations["export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3192,6 +3451,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/direction/plans/{plan_id}/definition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Definition
+         * @description The plan's requirements and revision without gathering live evidence.
+         */
+        get: operations["get_plan_definition_api_direction_plans__plan_id__definition_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans/{plan_id}/map-matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Map Matches
+         * @description Event ids and SIR codes for one reader's map filter; never cached or streamed.
+         */
+        get: operations["get_plan_map_matches_api_direction_plans__plan_id__map_matches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/warning/indicators": {
         parameters: {
             query?: never;
@@ -3218,7 +3517,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Indicator */
+        /**
+         * Update Indicator
+         * @description Edit, pause or resume one rule from the revision the caller read.
+         */
         put: operations["update_indicator_api_warning_indicators__indicator_id__put"];
         post?: never;
         /** Delete Indicator */
@@ -3235,7 +3537,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Alerts */
+        /**
+         * List Alerts
+         * @description Defaults to the caller's personal and current-team alerts; only admins may ask for all.
+         */
         get: operations["list_alerts_api_warning_alerts_get"];
         put?: never;
         post?: never;
@@ -3947,6 +4252,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/evaluations/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluation Catalogue */
+        get: operations["evaluation_catalogue_api_admin_llm_evaluations_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Evaluation Runs */
+        get: operations["list_evaluation_runs_api_admin_llm_evaluations_get"];
+        put?: never;
+        /** Start Evaluation Run */
+        post: operations["start_evaluation_run_api_admin_llm_evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evaluation Run */
+        get: operations["get_evaluation_run_api_admin_llm_evaluations__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Evaluation Run */
+        post: operations["cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/artefact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Evaluation Artefact */
+        get: operations["download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/ai-usage/policies": {
         parameters: {
             query?: never;
@@ -4073,6 +4464,23 @@ export interface paths {
          * @description Create every missing policy in the set. Existing policies are never overwritten.
          */
         post: operations["apply_default_policies_api_admin_ai_usage_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/research-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Research Quality */
+        get: operations["get_research_quality_api_admin_research_quality_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4420,6 +4828,16 @@ export interface components {
             items: components["schemas"]["AccountSessionOut"][];
             /** Truncated */
             truncated: boolean;
+        };
+        /** AcknowledgeFailureOut */
+        AcknowledgeFailureOut: {
+            /**
+             * Alert Id
+             * Format: uuid
+             */
+            alert_id: string;
+            /** Message */
+            message: string;
         };
         /** ActivityOut */
         ActivityOut: {
@@ -4797,6 +5215,20 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** AlertDestinationOut */
+        AlertDestinationOut: {
+            kind: components["schemas"]["DestinationKind"];
+            /** Available */
+            available: boolean;
+            /** Report Id */
+            report_id: string | null;
+            /** Monitor Id */
+            monitor_id: string | null;
+            /** Transition Id */
+            transition_id: string | null;
+            /** Message */
+            message: string | null;
+        };
         /**
          * AlertDisposition
          * @enum {string}
@@ -4889,6 +5321,8 @@ export interface components {
             created_by: string | null;
             /** Team Id */
             team_id: string | null;
+            /** Owner Name */
+            owner_name?: string | null;
         };
         /** AlertsOut */
         AlertsOut: {
@@ -5662,11 +6096,144 @@ export interface components {
             /** Jam Updated At */
             jam_updated_at: string | null;
         };
+        /** BellAcknowledgeIn */
+        BellAcknowledgeIn: {
+            /** Alert Ids */
+            alert_ids: string[];
+        };
+        /** BellAcknowledgeOut */
+        BellAcknowledgeOut: {
+            /** Acknowledged */
+            acknowledged: string[];
+            /** Failed */
+            failed: components["schemas"]["AcknowledgeFailureOut"][];
+        };
+        /** BellAlertOut */
+        BellAlertOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Fired At
+             * Format: date-time
+             */
+            fired_at: string;
+            /** Indicator Id */
+            indicator_id: string | null;
+            /** Report Id */
+            report_id: string | null;
+            /** Annotation Monitor Id */
+            annotation_monitor_id: string | null;
+            /** Team Id */
+            team_id: string | null;
+            /** Team Name */
+            team_name: string | null;
+            /** Can Acknowledge */
+            can_acknowledge: boolean;
+        };
+        /** BellAlertSectionOut */
+        BellAlertSectionOut: {
+            /** Items */
+            items: components["schemas"]["BellAlertOut"][];
+            /** Total */
+            total: number;
+            /** Muted */
+            muted: boolean;
+        };
+        /**
+         * BellKind
+         * @description In-app notification kinds a viewer may mute.
+         * @enum {string}
+         */
+        BellKind: "alerts" | "research" | "mentions";
+        /**
+         * BellMentionOut
+         * @description A plain-text snippet of a post the recipient can still read; never markup.
+         */
+        BellMentionOut: {
+            /**
+             * Post Id
+             * Format: uuid
+             */
+            post_id: string;
+            /**
+             * Thread Id
+             * Format: uuid
+             */
+            thread_id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Team Name */
+            team_name: string;
+            /** Author Name */
+            author_name: string;
+            /** Snippet */
+            snippet: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** BellMentionSectionOut */
+        BellMentionSectionOut: {
+            /** Items */
+            items: components["schemas"]["BellMentionOut"][];
+            /** Unread */
+            unread: number;
+            /** Muted */
+            muted: boolean;
+        };
+        /** BellMentionsReadIn */
+        BellMentionsReadIn: {
+            /** Post Ids */
+            post_ids: string[];
+        };
+        /** BellMentionsReadOut */
+        BellMentionsReadOut: {
+            /** Unread */
+            unread: number;
+        };
+        /** BellOut */
+        BellOut: {
+            /** Window Days */
+            window_days: number;
+            alerts: components["schemas"]["BellAlertSectionOut"];
+            mentions: components["schemas"]["BellMentionSectionOut"];
+            preferences: components["schemas"]["BellPreferencesOut"];
+        };
+        /** BellPreferencesIn */
+        BellPreferencesIn: {
+            /** Muted Kinds */
+            muted_kinds: components["schemas"]["BellKind"][];
+        };
+        /** BellPreferencesOut */
+        BellPreferencesOut: {
+            /** Muted Kinds */
+            muted_kinds: components["schemas"]["BellKind"][];
+            /** Muted Rules */
+            muted_rules: components["schemas"]["MutedRuleOut"][];
+        };
         /**
          * BlockKind
          * @enum {string}
          */
         BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "diagram" | "reference";
+        /**
+         * BoardSubjectKind
+         * @description Team work a top-level post may discuss. The board never becomes evidence.
+         * @enum {string}
+         */
+        BoardSubjectKind: "report_version" | "saved_area" | "drawing_collection";
         /** BriefJobCreateIn */
         BriefJobCreateIn: {
             /**
@@ -5681,6 +6248,8 @@ export interface components {
             brief_id: string;
             /** Revision */
             revision: number;
+            /** Expected Plan Updated At */
+            expected_plan_updated_at?: string | null;
         };
         /**
          * BriefLimits
@@ -6019,6 +6588,114 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CitationVerdictIn */
+        CitationVerdictIn: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note?: string | null;
+        };
+        /** CitationVerdictListOut */
+        CitationVerdictListOut: {
+            /** Verdicts */
+            verdicts: components["schemas"]["CitationVerdictOut"][];
+            /** Can Record */
+            can_record: boolean;
+            /** Limit */
+            limit: number;
+            /**
+             * Note Limit
+             * @default 300
+             */
+            note_limit: number;
+            /**
+             * Notice
+             * @default Citation verdicts are human opinions recorded by reviewers. They are not ground truth, and they never change the frozen report, its grades or its confidence.
+             */
+            notice: string;
+        };
+        /** CitationVerdictOut */
+        CitationVerdictOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            verdict: components["schemas"]["CitationVerdictValue"];
+            /** Note */
+            note: string | null;
+            /**
+             * Reviewer Id
+             * Format: uuid
+             */
+            reviewer_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+        };
+        /**
+         * CitationVerdictValue
+         * @enum {string}
+         */
+        CitationVerdictValue: "supports" | "partly_supports" | "does_not_support" | "cannot_tell";
+        /** CitationVerdictsOut */
+        CitationVerdictsOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+            /** Citations */
+            citations: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
+            /** Reviewers */
+            reviewers: number;
+        };
         /** CivilianHarmMonthOut */
         CivilianHarmMonthOut: {
             /**
@@ -7354,6 +8031,11 @@ export interface components {
          * @enum {string}
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
+        /**
+         * DestinationKind
+         * @enum {string}
+         */
+        DestinationKind: "report" | "transition" | "alerts";
         /** DigestChangeOut */
         DigestChangeOut: {
             /** Text */
@@ -7927,6 +8609,161 @@ export interface components {
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: components["schemas"]["ErrorDetail"];
+        };
+        /** EvaluationCaseOut */
+        EvaluationCaseOut: {
+            /** Id */
+            id: string;
+            /**
+             * Casebook
+             * @enum {string}
+             */
+            casebook: "core" | "regional";
+            /** Title */
+            title: string;
+            /** Fingerprint */
+            fingerprint: string;
+        };
+        /** EvaluationCaseResultOut */
+        EvaluationCaseResultOut: {
+            /** Case Id */
+            case_id: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Report Status */
+            report_status: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /**
+             * Checks
+             * @description Deterministic structural checks only; never accuracy.
+             */
+            checks: {
+                [key: string]: number | boolean | null;
+            };
+        };
+        /** EvaluationCatalogueOut */
+        EvaluationCatalogueOut: {
+            /** Cases */
+            cases: components["schemas"]["EvaluationCaseOut"][];
+            /**
+             * Calls Per Case
+             * @default 4
+             */
+            calls_per_case: number;
+            /**
+             * Max Calls
+             * @default 200
+             */
+            max_calls: number;
+            /**
+             * Max Cases
+             * @default 40
+             */
+            max_cases: number;
+            /**
+             * Estimate Notice
+             * @default Estimate only: selected cases multiplied by the usual calls per case. The call cap is enforced; failed and retried calls count towards it.
+             */
+            estimate_notice: string;
+            /**
+             * Result Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            result_notice: string;
+        };
+        /** EvaluationRunOut */
+        EvaluationRunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Name */
+            profile_name: string;
+            /** Model */
+            model: string;
+            status: components["schemas"]["EvaluationRunStatus"];
+            stop_reason: components["schemas"]["EvaluationStopReason"] | null;
+            /** Cancel Requested */
+            cancel_requested: boolean;
+            /** Case Ids */
+            case_ids: string[];
+            /** Case Fingerprints */
+            case_fingerprints: {
+                [key: string]: string;
+            };
+            /** Max Calls */
+            max_calls: number;
+            /** Estimated Calls */
+            estimated_calls: number;
+            /** Calls Reserved */
+            calls_reserved: number;
+            /** Calls Failed */
+            calls_failed: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /** Results */
+            results: components["schemas"]["EvaluationCaseResultOut"][];
+            /** Has Artefact */
+            has_artefact: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            notice: string;
+        };
+        /**
+         * EvaluationRunStatus
+         * @enum {string}
+         */
+        EvaluationRunStatus: "running" | "completed" | "cancelled" | "stopped";
+        /** EvaluationRunsOut */
+        EvaluationRunsOut: {
+            /** Items */
+            items: components["schemas"]["EvaluationRunOut"][];
+        };
+        /** EvaluationStartIn */
+        EvaluationStartIn: {
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Case Ids */
+            case_ids: string[];
+            /** Max Calls */
+            max_calls: number;
+        };
+        /**
+         * EvaluationStopReason
+         * @enum {string}
+         */
+        EvaluationStopReason: "call_cap" | "allowance_limit" | "connection_changed" | "access_revoked" | "interrupted" | "failed";
+        /** EventMatchOut */
+        EventMatchOut: {
+            /** Event Id */
+            event_id: string;
+            /** Codes */
+            codes: string[];
         };
         /** EventOut */
         EventOut: {
@@ -9393,6 +10230,81 @@ export interface components {
             /** Corrects Reading Id */
             corrects_reading_id?: string | null;
         };
+        /**
+         * IndicatorUpdateIn
+         * @description Edits identify their original revision and explicitly confirm removing restrictions.
+         */
+        IndicatorUpdateIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Bbox */
+            bbox?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+            /** Keywords */
+            keywords?: string[];
+            /**
+             * Threshold
+             * @default 1
+             */
+            threshold: number;
+            /** Baseline Ratio */
+            baseline_ratio?: number | null;
+            /**
+             * Baseline Days
+             * @default 30
+             */
+            baseline_days: number;
+            /**
+             * Window Minutes
+             * @default 60
+             */
+            window_minutes: number;
+            /**
+             * Cooldown Minutes
+             * @default 60
+             */
+            cooldown_minutes: number;
+            /**
+             * Severity Floor
+             * @default 0
+             */
+            severity_floor: number;
+            /** Report Template */
+            report_template?: string | null;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Team Id */
+            team_id?: string | null;
+            /**
+             * Expected Updated At
+             * Format: date-time
+             */
+            expected_updated_at: string;
+            /**
+             * Confirm Wider Scope
+             * @default false
+             */
+            confirm_wider_scope: boolean;
+        };
         /** IndicatorVersion */
         IndicatorVersion: {
             /** Indicator Id */
@@ -9922,6 +10834,22 @@ export interface components {
             note: string | null;
             /** Updated At */
             updated_at: string | null;
+        };
+        /**
+         * LinkedArtefactsOut
+         * @description Records attached to the personal version that stay with it and are not copied.
+         */
+        LinkedArtefactsOut: {
+            /** Claims */
+            claims: number;
+            /** Original Files */
+            original_files: number;
+            /** Original Passages */
+            original_passages: number;
+            /** Reviewed Snapshots */
+            reviewed_snapshots: number;
+            /** Map Views */
+            map_views: number;
         };
         /** LlmConnectionIn */
         LlmConnectionIn: {
@@ -10492,7 +11420,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "drawings" | "radio";
+            kind: "drawings" | "radio" | "live_view" | "ops_playlist";
             /** Title */
             title: string;
             /** Payload */
@@ -10513,7 +11441,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "drawings" | "radio";
+            kind: "drawings" | "radio" | "live_view" | "ops_playlist";
             /** Title */
             title: string;
             /** Payload */
@@ -10639,6 +11567,24 @@ export interface components {
          * @enum {string}
          */
         MembershipRole: "member" | "manager";
+        /** MentionOpenOut */
+        MentionOpenOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Post Id
+             * Format: uuid
+             */
+            post_id: string;
+            /**
+             * Thread Id
+             * Format: uuid
+             */
+            thread_id: string;
+        };
         /** MessageOut */
         MessageOut: {
             /** Message */
@@ -10770,6 +11716,21 @@ export interface components {
             policy_version: string;
             used: components["schemas"]["UsageCountsOut"];
             limit: components["schemas"]["UsageCountsOut"];
+        };
+        /** MutedRuleOut */
+        MutedRuleOut: {
+            /**
+             * Indicator Id
+             * Format: uuid
+             */
+            indicator_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Muted At
+             * Format: date-time
+             */
+            muted_at: string;
         };
         /** NavigationCapabilitiesOut */
         NavigationCapabilitiesOut: {
@@ -11480,6 +12441,25 @@ export interface components {
              */
             enabled: boolean;
         };
+        /**
+         * PlanMapMatchesOut
+         * @description A bounded sample: the window, pool and per-requirement cap say how it was drawn.
+         */
+        PlanMapMatchesOut: {
+            plan: components["schemas"]["PlanOut"];
+            /** Window Hours */
+            window_hours: number;
+            /** Pool Limit */
+            pool_limit: number;
+            /** Per Requirement Limit */
+            per_requirement_limit: number;
+            /** Considered */
+            considered: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Matches */
+            matches: components["schemas"]["EventMatchOut"][];
+        };
         /** PlanOut */
         PlanOut: {
             /** Team Id */
@@ -11516,6 +12496,37 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * PlanUpdateIn
+         * @description An edit names the revision (`updated_at`) it was made from; stale edits get 409.
+         */
+        PlanUpdateIn: {
+            /** Team Id */
+            team_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Aoi Id */
+            aoi_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Pirs */
+            pirs: components["schemas"]["PirIn"][];
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Expected Updated At
+             * Format: date-time
+             */
+            expected_updated_at: string;
         };
         /** PlannedQueryTaskIn */
         PlannedQueryTaskIn: {
@@ -11817,6 +12828,15 @@ export interface components {
             /** Limitations */
             limitations: string[];
         };
+        /** PrivateInputOut */
+        PrivateInputOut: {
+            /** Label */
+            label: string;
+            /** Title */
+            title: string;
+            /** Source Id */
+            source_id: string;
+        };
         /**
          * Probability
          * @enum {string}
@@ -11958,6 +12978,171 @@ export interface components {
             implementation_year: number | null;
             /** Completion Year */
             completion_year: number | null;
+        };
+        /** QualityCitationChecksOut */
+        QualityCitationChecksOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            /** Current Verdicts */
+            current_verdicts: number;
+            /** Superseded Verdicts */
+            superseded_verdicts: number;
+            /** Citations With Verdicts */
+            citations_with_verdicts: number;
+            /** Supports */
+            supports: number;
+            /** Partly Supports */
+            partly_supports: number;
+            /** Does Not Support */
+            does_not_support: number;
+            /** Cannot Tell */
+            cannot_tell: number;
+        };
+        /** QualityFailureCodeOut */
+        QualityFailureCodeOut: {
+            /** Code */
+            code: string;
+            /** Jobs */
+            jobs: number;
+        };
+        /** QualityFindingOut */
+        QualityFindingOut: {
+            /** Key */
+            key: string;
+            /** Rule */
+            rule: string;
+            /** Severity */
+            severity: string;
+            /** Versions */
+            versions: number;
+            /** Occurrences */
+            occurrences: number;
+        };
+        /** QualityJobGroupOut */
+        QualityJobGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Jobs */
+            jobs: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
+            /** Paused */
+            paused: number;
+            /** Completed */
+            completed: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Failed Without Version */
+            failed_without_version: number;
+            /** Failed With Version */
+            failed_with_version: number;
+            /** Failure Codes */
+            failure_codes: components["schemas"]["QualityFailureCodeOut"][];
+        };
+        /** QualityJobPopulationOut */
+        QualityJobPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityJobGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityJobGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityJobGroupOut"][];
+            /** By Model */
+            by_model: components["schemas"]["QualityJobGroupOut"][];
+        };
+        /** QualityReceiptsOut */
+        QualityReceiptsOut: {
+            /** Versions With Receipts */
+            versions_with_receipts: number;
+            /** Versions Without Receipts */
+            versions_without_receipts: number;
+            /** Attempts */
+            attempts: number;
+            /** Completed */
+            completed: number;
+            /** Empty */
+            empty: number;
+            /** Unavailable */
+            unavailable: number;
+            /** Other Unsuccessful */
+            other_unsuccessful: number;
+            /** Versions With Empty Or Unavailable */
+            versions_with_empty_or_unavailable: number;
+        };
+        /** QualityUsageOut */
+        QualityUsageOut: {
+            /** Versions With Usage */
+            versions_with_usage: number;
+            /** Versions Without Usage */
+            versions_without_usage: number;
+            /** Prompt Tokens */
+            prompt_tokens: number;
+            /** Completion Tokens */
+            completion_tokens: number;
+            /** Prompt Tokens Per Version */
+            prompt_tokens_per_version: number | null;
+            /** Completion Tokens Per Version */
+            completion_tokens_per_version: number | null;
+        };
+        /** QualityVersionGroupOut */
+        QualityVersionGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Versions */
+            versions: number;
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Findings */
+            findings: components["schemas"]["QualityFindingOut"][];
+            receipts: components["schemas"]["QualityReceiptsOut"];
+            usage: components["schemas"]["QualityUsageOut"];
+        };
+        /** QualityVersionPopulationOut */
+        QualityVersionPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityVersionGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Connection */
+            by_connection: components["schemas"]["QualityVersionGroupOut"][];
         };
         /** QueryTransformationOut */
         QueryTransformationOut: {
@@ -12600,6 +13785,20 @@ export interface components {
             research_until?: string | null;
             research_time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
         };
+        /**
+         * ReportDiscussionOut
+         * @description Live board threads about any version of a team report; personal reports have none.
+         */
+        ReportDiscussionOut: {
+            /** Team Id */
+            team_id: string | null;
+            /** Count */
+            count: number;
+            /** Latest Post Id */
+            latest_post_id: string | null;
+            /** Can Post */
+            can_post: boolean;
+        };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {
             /** Label */
@@ -12672,6 +13871,12 @@ export interface components {
             /** Corroboration */
             corroboration?: components["schemas"]["CorroborationMemberOut"][];
         };
+        /**
+         * ReportGroup
+         * @description Named sets of origins. Requested work never includes automatic briefings.
+         * @enum {string}
+         */
+        ReportGroup: "requested";
         /** ReportJobCreateIn */
         ReportJobCreateIn: {
             /**
@@ -12696,6 +13901,8 @@ export interface components {
             revision: number;
             /** Title */
             title: string;
+            /** @default research */
+            origin: components["schemas"]["ReportOrigin"];
             /**
              * Status
              * @enum {string}
@@ -12715,6 +13922,13 @@ export interface components {
             updated_at: string;
             /** Team Id */
             team_id: string | null;
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Owner Name */
+            owner_name?: string | null;
             /** Report Id */
             report_id: string | null;
             /** Model */
@@ -12777,6 +13991,8 @@ export interface components {
         ReportJobsOut: {
             /** Items */
             items: components["schemas"]["ReportJobOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         };
         /** ReportLedger */
         ReportLedger: {
@@ -12866,7 +14082,7 @@ export interface components {
          * ReportOrigin
          * @enum {string}
          */
-        ReportOrigin: "research" | "subscription" | "geolocation";
+        ReportOrigin: "research" | "subscription" | "geolocation" | "briefing";
         /** ReportOut */
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -13035,6 +14251,7 @@ export interface components {
             latest_version: number;
             /** Team Id */
             team_id: string | null;
+            origin: components["schemas"]["ReportOrigin"];
         };
         /** ReportVersionOut */
         ReportVersionOut: {
@@ -13892,6 +15109,24 @@ export interface components {
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
             planning?: components["schemas"]["PlanningTraceOut"] | null;
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
+        };
+        /** ResearchQualityOut */
+        ResearchQualityOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Window Days */
+            window_days: number;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            versions: components["schemas"]["QualityVersionPopulationOut"];
+            jobs: components["schemas"]["QualityJobPopulationOut"];
+            citation_checks: components["schemas"]["QualityCitationChecksOut"];
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
@@ -15314,6 +16549,53 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** SourceSnapshotListOut */
+        SourceSnapshotListOut: {
+            /** Snapshots */
+            snapshots: components["schemas"]["SourceSnapshotSummaryOut"][];
+            /**
+             * Limit
+             * @default 20
+             */
+            limit: number;
+        };
+        /**
+         * SourceSnapshotSummaryOut
+         * @description Enough to choose a snapshot deliberately; the full projection is read separately.
+         */
+        SourceSnapshotSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decisions */
+            decisions: number;
+            /** Subjects */
+            subjects: {
+                [key: string]: string;
+            };
+        };
         /**
          * SourceStatus
          * @enum {string}
@@ -15365,6 +16647,37 @@ export interface components {
             capped: boolean;
             /** Message */
             message: string;
+        };
+        /** SourceTrackRecordOut */
+        SourceTrackRecordOut: {
+            /** Source Id */
+            source_id: string;
+            /** Report Bound */
+            report_bound: number;
+            /** Reports Considered */
+            reports_considered: number;
+            /** Visible Reports */
+            visible_reports: number;
+            /** Reports Citing */
+            reports_citing: number;
+            /** Frozen Items */
+            frozen_items: number;
+            roles: components["schemas"]["TrackRecordRolesOut"];
+            reports_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            judgements_by_status: components["schemas"]["TrackRecordStatusesOut"];
+            /** Reliability */
+            reliability: components["schemas"]["TrackRecordValueOut"][];
+            /** Credibility */
+            credibility: components["schemas"]["TrackRecordValueOut"][];
+            /** Entries */
+            entries: components["schemas"]["TrackRecordEntryOut"][];
+            /** Entries Total */
+            entries_total: number;
+            /** Reviews */
+            reviews: components["schemas"]["TrackRecordReviewOut"][];
+            /** Reviews Total */
+            reviews_total: number;
+            citation_verdicts: components["schemas"]["CitationVerdictsOut"];
         };
         /** SpaceBoardOut */
         SpaceBoardOut: {
@@ -15666,6 +16979,16 @@ export interface components {
             members: components["schemas"]["AiMemberUsageOut"][] | null;
             prices: components["schemas"]["AiTokenPricesOut"];
         };
+        /** TeamBoardMentionedOut */
+        TeamBoardMentionedOut: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+        };
         /** TeamBoardPageOut */
         TeamBoardPageOut: {
             /** Items */
@@ -15698,6 +17021,7 @@ export interface components {
             text: string;
             /** Parent Id */
             parent_id?: string | null;
+            subject?: components["schemas"]["TeamBoardSubjectIn"] | null;
         };
         /** TeamBoardPostOut */
         TeamBoardPostOut: {
@@ -15742,6 +17066,7 @@ export interface components {
             removal: ("author" | "moderator") | null;
             /** Revision */
             revision: number;
+            subject: components["schemas"]["TeamBoardSubjectOut"] | null;
         };
         /** TeamBoardPostUpdateIn */
         TeamBoardPostUpdateIn: {
@@ -15768,10 +17093,184 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /**
+         * TeamBoardSubjectIn
+         * @description A same-team report version, saved area or drawing collection; checked server-side.
+         */
+        TeamBoardSubjectIn: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version?: number | null;
+        };
+        /**
+         * TeamBoardSubjectOut
+         * @description Only an available subject carries its identifier and title.
+         */
+        TeamBoardSubjectOut: {
+            kind: components["schemas"]["BoardSubjectKind"];
+            /** Id */
+            id: string | null;
+            /** Version */
+            version: number | null;
+            /** Available */
+            available: boolean;
+            /** Title */
+            title: string | null;
+        };
         /** TeamBoardUnreadOut */
         TeamBoardUnreadOut: {
             /** Unread Count */
             unread_count: number;
+        };
+        /**
+         * TeamBoardWriteOut
+         * @description A saved post plus the teammates this write newly notified (never outsiders).
+         */
+        TeamBoardWriteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Author Id
+             * Format: uuid
+             */
+            author_id: string;
+            /** Author Name */
+            author_name: string;
+            /** Text */
+            text: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Edited At */
+            edited_at: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Is Pinned */
+            is_pinned: boolean;
+            /** Deleted At */
+            deleted_at: string | null;
+            /** Removal */
+            removal: ("author" | "moderator") | null;
+            /** Revision */
+            revision: number;
+            subject: components["schemas"]["TeamBoardSubjectOut"] | null;
+            /** Notified */
+            notified: components["schemas"]["TeamBoardMentionedOut"][];
+        };
+        /** TeamCopyIn */
+        TeamCopyIn: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Disclosed Evidence Labels */
+            disclosed_evidence_labels?: string[];
+        };
+        /**
+         * TeamCopyOmission
+         * @enum {string}
+         */
+        TeamCopyOmission: "research_brief" | "claim_generation" | "original_passages" | "source_assessment" | "scope_references";
+        /** TeamCopyOut */
+        TeamCopyOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Copied At
+             * Format: date-time
+             */
+            copied_at: string;
+            /** Created */
+            created: boolean;
+        };
+        /** TeamCopyPreviewOut */
+        TeamCopyPreviewOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Team Name */
+            team_name: string;
+            /** Source Version Number */
+            source_version_number: number;
+            /** Private Inputs */
+            private_inputs: components["schemas"]["PrivateInputOut"][];
+            /** Omissions */
+            omissions: components["schemas"]["TeamCopyOmission"][];
+            /** Omitted Scope Keys */
+            omitted_scope_keys: string[];
+            not_copied: components["schemas"]["LinkedArtefactsOut"];
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Existing Report Id */
+            existing_report_id: string | null;
+        };
+        /** TeamCopyProvenanceOut */
+        TeamCopyProvenanceOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Copied By
+             * Format: uuid
+             */
+            copied_by: string;
+            /** Copied By Name */
+            copied_by_name: string | null;
+            /**
+             * Copied At
+             * Format: date-time
+             */
+            copied_at: string;
+            /** Source Version Number */
+            source_version_number: number;
+            /** Source Report Id */
+            source_report_id: string | null;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Disclosed Private Inputs */
+            disclosed_private_inputs: number;
+            /** Omissions */
+            omissions: components["schemas"]["TeamCopyOmission"][];
         };
         /** TeamDashboardActionOut */
         TeamDashboardActionOut: {
@@ -16250,6 +17749,85 @@ export interface components {
             enabled: boolean;
             /** Available */
             available: boolean;
+        };
+        /** TrackRecordEntryOut */
+        TrackRecordEntryOut: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Title */
+            title: string;
+            /** Version Number */
+            version_number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "needs_review" | "failed";
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Items */
+            items: number;
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Grades */
+            grades: string[];
+        };
+        /** TrackRecordReviewOut */
+        TrackRecordReviewOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reliability" | "credibility" | "authenticity";
+            /** Decision */
+            decision: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Team Scoped */
+            team_scoped: boolean;
+        };
+        /** TrackRecordRolesOut */
+        TrackRecordRolesOut: {
+            /** Supporting Judgements */
+            supporting_judgements: number;
+            /** Contradicting Judgements */
+            contradicting_judgements: number;
+            /** Items Cited Elsewhere */
+            items_cited_elsewhere: number;
+            /** Items Not Cited */
+            items_not_cited: number;
+        };
+        /** TrackRecordStatusesOut */
+        TrackRecordStatusesOut: {
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+        };
+        /** TrackRecordValueOut */
+        TrackRecordValueOut: {
+            /** Value */
+            value: string;
+            /** Items */
+            items: number;
         };
         /** UkraineBoardOut */
         UkraineBoardOut: {
@@ -17081,6 +18659,10 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                status?: "all" | "running" | "attention" | "finished";
+                include_briefings?: boolean;
+                cursor?: string | null;
+                scope?: "mine" | "all";
             };
             header?: never;
             path?: never;
@@ -19242,7 +20824,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamBoardPostOut"];
+                    "application/json": components["schemas"]["TeamBoardWriteOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -19328,7 +20910,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamBoardPostOut"];
+                    "application/json": components["schemas"]["TeamBoardWriteOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -19503,6 +21085,330 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamDashboardOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    read_bell_api_bell_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    alert_destination_api_bell_alerts__alert_id__destination_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDestinationOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    acknowledge_shown_api_bell_alerts_acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellAcknowledgeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellAcknowledgeOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    set_bell_preferences_api_bell_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellPreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    mute_rule_api_bell_muted_rules__indicator_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    unmute_rule_api_bell_muted_rules__indicator_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    open_mention_api_bell_mentions__post_id__open_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentionOpenOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    read_mentions_api_bell_mentions_read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellMentionsReadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellMentionsReadOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -20921,7 +22827,7 @@ export interface operations {
     list_documents_api_map_workspaces_get: {
         parameters: {
             query: {
-                kind: "drawings" | "radio";
+                kind: "drawings" | "radio" | "live_view" | "ops_playlist";
                 limit?: number;
                 offset?: number;
             };
@@ -23471,6 +25377,7 @@ export interface operations {
                 limit?: number;
                 offset?: number;
                 origin?: components["schemas"]["ReportOrigin"] | null;
+                group?: components["schemas"]["ReportGroup"] | null;
             };
             header?: never;
             path?: never;
@@ -23674,6 +25581,46 @@ export interface operations {
             };
         };
     };
+    report_team_discussion_api_reports__report_id__team_discussion_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDiscussionOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     report_markdown_api_reports__report_id__markdown_get: {
         parameters: {
             query?: {
@@ -23696,6 +25643,134 @@ export interface operations {
                 content: {
                     "text/markdown": string;
                     "application/zip": string;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_team_copy_api_reports__report_id__versions__number__team_copy_preview_get: {
+        parameters: {
+            query: {
+                team_id: string;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyPreviewOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    copy_to_team_api_reports__report_id__versions__number__team_copies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamCopyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    team_copy_provenance_api_reports__report_id__team_copy_provenance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCopyProvenanceOut"];
                 };
             };
             /** @description Unprocessable Content */
@@ -25037,6 +27112,46 @@ export interface operations {
             };
         };
     };
+    get_track_record_api_sources__source_id__track_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTrackRecordOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     history_api_reports__report_id__versions__number__source_reviews_get: {
         parameters: {
             query: {
@@ -25128,6 +27243,47 @@ export interface operations {
             };
         };
     };
+    snapshots_api_reports__report_id__versions__number__source_assessment_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSnapshotListOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post: {
         parameters: {
             query?: never;
@@ -25193,6 +27349,133 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceReviewSnapshot"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_verdicts_api_reports__report_id__versions__number__citation_verdicts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictListOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    record_verdict_api_reports__report_id__versions__number__citation_verdicts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CitationVerdictIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationVerdictOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_verdicts_api_reports__report_id__versions__number__citation_verdicts_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": string;
                 };
             };
             /** @description Unprocessable Content */
@@ -25891,7 +28174,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PlanIn"];
+                "application/json": components["schemas"]["PlanUpdateIn"];
             };
         };
         responses: {
@@ -25941,6 +28224,86 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_plan_definition_api_direction_plans__plan_id__definition_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_plan_map_matches_api_direction_plans__plan_id__map_matches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanMapMatchesOut"];
+                };
             };
             /** @description Unprocessable Content */
             422: {
@@ -26053,7 +28416,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["IndicatorIn"];
+                "application/json": components["schemas"]["IndicatorUpdateIn"];
             };
         };
         responses: {
@@ -26129,6 +28492,7 @@ export interface operations {
             query?: {
                 hours?: number | null;
                 limit?: number;
+                scope?: "mine" | "all";
             };
             header?: never;
             path?: never;
@@ -28038,6 +30402,244 @@ export interface operations {
             };
         };
     };
+    evaluation_catalogue_api_admin_llm_evaluations_catalogue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCatalogueOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_evaluation_runs_api_admin_llm_evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunsOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    start_evaluation_run_api_admin_llm_evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvaluationStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_evaluation_run_api_admin_llm_evaluations__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_policies_api_admin_ai_usage_policies_get: {
         parameters: {
             query?: never;
@@ -28460,6 +31062,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppliedDefaultsOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_research_quality_api_admin_research_quality_get: {
+        parameters: {
+            query?: {
+                /** @description Days to look back: 7, 30, 90 or 365. */
+                window_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchQualityOut"];
                 };
             };
             /** @description Unprocessable Content */

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 
+import { Tabs, tabPanelProps, type PanelTab } from '@/components/ui/Tabs';
 import type { User } from '@/lib/api/schemas';
 import type { TeamDetail } from '@/lib/api/teams';
+import type { BoardLink } from '@/lib/teamBoardLinks';
 
 import { TeamBoard } from './TeamBoard';
 import { TeamOverview } from './TeamOverview';
@@ -9,13 +11,13 @@ import type { TeamCapabilities } from './teamCapabilities';
 
 export type TeamDashboardTab = 'overview' | 'research' | 'board' | 'members';
 
-const TABS: readonly { id: TeamDashboardTab; label: string; detail: string }[] = [
+const TABS: readonly PanelTab<TeamDashboardTab>[] = [
   { id: 'overview', label: 'Overview', detail: 'Team pulse and quick actions' },
   { id: 'research', label: 'Research', detail: 'Shared analysis workspace' },
   { id: 'board', label: 'Board', detail: 'Short team updates' },
   { id: 'members', label: 'Members', detail: 'People and access' },
 ];
-const DEFAULT_TAB: (typeof TABS)[number] = {
+const DEFAULT_TAB: PanelTab<TeamDashboardTab> = {
   id: 'overview',
   label: 'Overview',
   detail: 'Team pulse and quick actions',
@@ -91,6 +93,7 @@ export function TeamDashboard({
   onTabChange,
   actions,
   members,
+  boardLink,
 }: {
   detail: TeamDetail;
   user: User;
@@ -99,6 +102,8 @@ export function TeamDashboard({
   onTabChange: (tab: TeamDashboardTab) => void;
   actions?: ReactNode;
   members: ReactNode;
+  /** A thread or new subject opened from a team discussion link. */
+  boardLink?: BoardLink | null;
 }) {
   const selectedTab = TABS.find((tab) => tab.id === activeTab) ?? DEFAULT_TAB;
   return (
@@ -121,39 +126,14 @@ export function TeamDashboard({
           {actions}
         </div>
       </header>
-      <nav
-        aria-label="Team workspace sections"
-        className="-mb-px flex gap-1 overflow-x-auto border-b border-line/70"
-      >
-        {TABS.map((tab) => {
-          const selected = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              id={`team-${tab.id}-tab`}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              aria-controls={`team-panel-${tab.id}`}
-              onClick={() => onTabChange(tab.id)}
-              className={`min-h-12 shrink-0 border-b-2 px-3 text-left text-sm transition-colors ${
-                selected
-                  ? 'border-ember text-text'
-                  : 'border-transparent text-muted hover:border-line hover:text-text'
-              }`}
-            >
-              <span className="block font-medium">{tab.label}</span>
-              <span className="mt-0.5 hidden text-[11px] text-muted lg:block">{tab.detail}</span>
-            </button>
-          );
-        })}
-      </nav>
-      <div
-        id={`team-panel-${selectedTab.id}`}
-        role="tabpanel"
-        aria-labelledby={`team-${selectedTab.id}-tab`}
-        className="min-w-0 pb-8"
-      >
+      <Tabs
+        label="Team workspace sections"
+        tabs={TABS}
+        activeTab={selectedTab.id}
+        onTabChange={onTabChange}
+        idPrefix="team"
+      />
+      <div {...tabPanelProps('team', selectedTab.id)} className="min-w-0 pb-8">
         {activeTab === 'overview' ? (
           <TeamOverview
             teamId={detail.team.id}
@@ -168,6 +148,9 @@ export function TeamDashboard({
             teamName={detail.team.name}
             userId={user.id}
             capabilities={capabilities}
+            focusPostId={boardLink?.postId}
+            initialSubject={boardLink?.subject}
+            members={detail.members}
           />
         ) : null}
         {activeTab === 'members' ? members : null}

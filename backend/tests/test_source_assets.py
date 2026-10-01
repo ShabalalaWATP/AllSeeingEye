@@ -77,6 +77,7 @@ async def test_assets_cover_cameras_maps_ukraine_and_reference_without_secrets(
         "map:nuclear_facilities",
         "map:ground_stations",
         "map:military_source_index",
+        "map:nasa_gibs_daily",
         "ukraine:viina_control",
         "ukraine:oryx_losses",
         "ukraine:hrmmu_casualties",
@@ -87,6 +88,9 @@ async def test_assets_cover_cameras_maps_ukraine_and_reference_without_secrets(
     for item in assets.values():
         assert item["organisation"] and item["licence_note"] and item["coverage_note"]
         assert "url" not in item and "last_error" not in item
+    gibs = assets["map:nasa_gibs_daily"]
+    assert gibs["delivery"] == "browser_direct" and gibs["state"] == "on_demand"
+    assert "NASA" in gibs["licence_note"] and "250 m" in gibs["coverage_note"]
     assert assets["camera:tfl"]["delivery"] == "official_index"
     assert assets["camera:tfl"]["state"] == "on_demand"  # nothing is fetched to describe it
     assert assets["camera:uk-live"]["delivery"] == "curated_catalogue"

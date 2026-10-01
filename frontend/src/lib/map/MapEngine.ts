@@ -4,6 +4,7 @@
  */
 import type { Layer } from '@deck.gl/core';
 import type { BaseLayer } from './baseLayers';
+import type { DailyImagery } from './dailyImagery';
 
 export type Projection = 'globe' | 'mercator';
 
@@ -75,6 +76,8 @@ export interface MapEngine extends MapFocus {
   mount(container: HTMLElement): void;
   setProjection(projection: Projection): void;
   setBaseLayer(layer: BaseLayer): void;
+  /** Dated imagery over the base raster and beneath labels, or null for none. */
+  setDailyImagery?(imagery: DailyImagery | null): void;
   /** Lite mode drops the atmosphere and animated camera moves. */
   setLite(lite: boolean): void;
   /** Subscribes to cursor positions over the map and returns the unsubscribe function. */

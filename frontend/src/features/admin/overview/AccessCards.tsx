@@ -45,7 +45,7 @@ export function RequestsCard() {
                       </span>
                       <span className="block truncate text-xs text-muted">{request.email}</span>
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] text-muted">
+                    <span className="shrink-0 font-mono text-2xs text-muted">
                       {formatAgo(request.created_at, now)}
                     </span>
                   </li>

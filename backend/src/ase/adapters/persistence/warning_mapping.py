@@ -30,6 +30,7 @@ def _indicator_from_row(row: IndicatorRow) -> Indicator:
         severity_floor=row.severity_floor,
         report_template=row.report_template,
         enabled=row.enabled,
+        resumed_at=row.resumed_at,
         created_by=row.created_by,
         created_at=row.created_at,
         updated_at=row.updated_at,
@@ -57,6 +58,7 @@ def _fill_indicator(row: IndicatorRow, indicator: Indicator) -> None:
     row.severity_floor = indicator.severity_floor
     row.report_template = indicator.report_template
     row.enabled = indicator.enabled
+    row.resumed_at = indicator.resumed_at
     row.created_by = indicator.created_by
     row.created_at = indicator.created_at
     row.updated_at = indicator.updated_at

@@ -19,6 +19,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.routers.events import parse_categories
+from ase.api.stream_bell import bell_payload
 from ase.api.stream_encoding import PUBLIC_KINDS, StreamEncoder, dumps, serialise
 from ase.api.stream_session import LiveStream
 from ase.application.access import AccessContext
@@ -26,6 +27,7 @@ from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
+from ase.domain.bell import BELL_CHANGED
 from ase.domain.errors import NotFound, RateLimited, Unauthenticated
 from ase.domain.events import Category
 from ase.domain.warning import Alert
@@ -54,6 +56,10 @@ async def _stream_access(claims: AccessClaims, container: Container) -> AccessCo
 async def _authorised_payload(
     message: BusMessage, wanted: frozenset[Category], claims: AccessClaims, container: Container
 ) -> dict[str, Any] | None:
+    if message.kind == BELL_CHANGED:
+        return await bell_payload(
+            message, claims.user_id, lambda: _stream_access(claims, container)
+        )
     if message.kind == "alert":
         alert = message.payload.get("alert")
         if not isinstance(alert, Alert):

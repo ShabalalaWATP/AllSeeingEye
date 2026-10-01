@@ -71,8 +71,8 @@ export function FrontlineSourcesPanel() {
           <li key={source.name} className="rounded-lg border border-line p-3">
             <h4 className="font-medium text-text">{source.name}</h4>
             <p className="mt-1 text-muted">{source.coverage}</p>
-            <p className="mt-2 text-[11px] text-amber-200">{source.access}</p>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted">{source.description}</p>
+            <p className="mt-2 text-2xs text-amber">{source.access}</p>
+            <p className="mt-2 text-2xs leading-relaxed text-muted">{source.description}</p>
             <div className="mt-2 flex flex-col items-start gap-1">
               <a
                 href={source.mapUrl}
@@ -94,7 +94,7 @@ export function FrontlineSourcesPanel() {
           </li>
         ))}
       </ul>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Sources reviewed 9 September 2026. This is an access directory, not a live-status check.
         Frontline assessments can be delayed, disputed or incomplete; any future layer must show its
         publisher and assessment date separately from the time it was downloaded.

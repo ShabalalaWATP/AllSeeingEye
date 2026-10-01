@@ -40,7 +40,7 @@ export function ShareBar({ parts, label }: { parts: readonly SharePart[]; label:
                 />
                 <span className="truncate">{part.label}</span>
               </span>
-              <span className="shrink-0 font-mono text-[11px] text-muted tabular-nums">
+              <span className="shrink-0 font-mono text-2xs text-muted tabular-nums">
                 {formatCount(part.value)} · {Math.round((part.value / total) * 100)}%
               </span>
             </li>

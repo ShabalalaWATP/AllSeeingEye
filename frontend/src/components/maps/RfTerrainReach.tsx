@@ -96,12 +96,12 @@ export function RfTerrainReach({ terrain }: { terrain: RfTerrainAnalysis }) {
         <p className="mt-1 text-xs">
           {passingBearings} of {terrain.radials.length} bearings have a passing target.
         </p>
-        <p className="mt-1 text-[11px] text-muted">
+        <p className="mt-1 text-2xs text-muted">
           Each bearing stops at its first failed or unknown target. A zero means no target passed.
           The survey limit is not a confirmed signal limit.
         </p>
         {passingBearings === 0 && (
-          <p className="rf-result-next-step mt-2 text-xs text-amber-200">
+          <p className="rf-result-next-step mt-2 text-xs text-amber">
             No sampled target passed. Reduce the survey radius to examine nearby coverage, or place
             a receiver at a specific site and analyse that path. Review antenna heights and the
             selected reserve before changing them.

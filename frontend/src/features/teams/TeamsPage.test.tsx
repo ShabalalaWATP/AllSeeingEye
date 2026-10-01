@@ -6,8 +6,16 @@ import { useAuthStore } from '@/stores/auth';
 import { adminUser, plainUser, tokenFor } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
 
 import { manager, roster, setupTeams, team } from '@/test/fixtures.teams';
+
+installDialogStub();
+
+/** The open confirmation: decisions are made in the dialog, not beside the trigger. */
+async function confirmation() {
+  return within(await screen.findByRole('alertdialog'));
+}
 
 async function memberRow(name: string) {
   const table = await screen.findByRole('table', { name: 'Team members' });
@@ -23,6 +31,13 @@ describe('TeamsPage', () => {
     expect(screen.getByText(/You can view this roster/)).toBeInTheDocument();
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Remove|Make|reset/i })).not.toBeInTheDocument();
+  });
+
+  it('leaves room below the page for the fixed Eye launcher when focus scrolls', async () => {
+    setupTeams();
+    await memberRow('Uma User');
+    const page = screen.getByRole('heading', { level: 1, name: 'Teams' }).closest('section');
+    expect(page).toHaveClass('overflow-y-auto', 'scroll-pb-28');
   });
 
   it('grants team-manager controls from membership, regardless of account role', async () => {
@@ -63,10 +78,10 @@ describe('TeamsPage', () => {
     const { user, writes } = setupTeams(plainUser);
     await memberRow('Uma User');
     await user.click(screen.getByRole('button', { name: 'Leave team' }));
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Cancel' }));
     expect(writes).toEqual([]);
     await user.click(screen.getByRole('button', { name: 'Leave team' }));
-    await user.click(screen.getByRole('button', { name: 'Confirm leave team' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Confirm leave team' }));
     await waitFor(() => {
       expect(writes).toEqual([{ method: 'LEAVE' }]);
     });
@@ -85,7 +100,7 @@ describe('TeamsPage', () => {
     await memberRow('Uma User');
     expect(screen.getByText(/The last active manager cannot leave/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Leave team' }));
-    await user.click(screen.getByRole('button', { name: 'Confirm leave team' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Confirm leave team' }));
     expect(
       await screen.findByText('Each active team must retain at least one active Manager.'),
     ).toBeInTheDocument();
@@ -95,10 +110,10 @@ describe('TeamsPage', () => {
     const { user, writes } = setupTeams(manager);
     const row = await memberRow('Uma User');
     await user.click(row.getByRole('button', { name: 'Remove member' }));
-    await user.click(row.getByRole('button', { name: 'Cancel' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Cancel' }));
     expect(writes).toEqual([]);
     await user.click(row.getByRole('button', { name: 'Remove member' }));
-    await user.click(row.getByRole('button', { name: 'Confirm remove member' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Confirm remove member' }));
     await waitFor(() => {
       expect(screen.queryByText('Uma User')).not.toBeInTheDocument();
     });
@@ -193,7 +208,7 @@ describe('TeamsPage', () => {
     await user.click(screen.getByText('Team settings'));
     await user.click(screen.getByRole('button', { name: 'Archive team' }));
     expect(writes).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: 'Confirm archive team' }));
+    await user.click((await confirmation()).getByRole('button', { name: 'Confirm archive team' }));
     await screen.findByText(/This team is archived/);
     expect(screen.queryByRole('form', { name: 'Add team member' })).not.toBeInTheDocument();
     await user.click(screen.getByText('Team settings'));

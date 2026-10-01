@@ -50,7 +50,7 @@
 .rf-result-quality > summary {
   cursor: pointer;
   font-weight: 500;
-  color: #dce7e3;
+  color: var(--rf-quality-text);
 }
 .rf-result-quality p {
   color: var(--rf-muted);
@@ -58,25 +58,25 @@
 }
 .rf-result-next-step {
   border: 0;
-  border-left: 2px solid #75978b;
+  border-left: 2px solid var(--rf-next-line);
   border-radius: 0;
   padding: 5px 0 5px 13px;
   background: none;
-  color: #c0d2ca;
+  color: var(--rf-next-text);
   font-size: 12px;
   line-height: 1.65;
 }
 .rf-profile {
   border: 1px solid var(--rf-line);
   border-radius: 9px;
-  background: #080e12;
+  background: var(--rf-profile-ground);
   padding: 16px;
   margin: 0;
 }
 .rf-profile figcaption {
   margin-bottom: 12px;
   font-size: 12px;
-  color: #dce5e5;
+  color: var(--rf-caption);
 }
 .rf-engineering-controls {
   display: flex;

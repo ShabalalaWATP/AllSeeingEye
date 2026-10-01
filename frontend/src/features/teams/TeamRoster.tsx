@@ -1,6 +1,5 @@
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { Table, Td, Th } from '@/components/ui/Table';
 import type { User } from '@/lib/api/schemas';
 import type { TeamMember } from '@/lib/api/teams';
@@ -8,48 +7,34 @@ import type { TeamMember } from '@/lib/api/teams';
 import { memberCapabilities } from './teamCapabilities';
 import { useCompactRoster } from './useCompactRoster';
 
+/** A consequential team action behind the shared confirmation; the panel reports the outcome. */
 export function ConfirmAction({
   label,
   question,
+  consequence,
+  busyLabel,
   busy,
   onConfirm,
 }: {
   label: string;
   question: string;
+  consequence: string;
+  busyLabel: string;
   busy: boolean;
   onConfirm: () => void;
 }) {
-  const [confirming, setConfirming] = useState(false);
-  if (!confirming)
-    return (
-      <Button
-        variant="danger"
-        className="min-h-11"
-        disabled={busy}
-        onClick={() => {
-          setConfirming(true);
-        }}
-      >
-        {label}
-      </Button>
-    );
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={question}>
-      <p className="w-full text-sm">{question}</p>
-      <Button variant="danger" className="min-h-11" busy={busy} onClick={onConfirm}>
-        Confirm {label.toLowerCase()}
-      </Button>
-      <Button
-        variant="ghost"
-        className="min-h-11"
-        disabled={busy}
-        onClick={() => {
-          setConfirming(false);
-        }}
-      >
-        Cancel
-      </Button>
-    </div>
+    <ConfirmButton
+      label={label}
+      className="min-h-11"
+      busy={busy}
+      title={question}
+      confirmLabel={`Confirm ${label.toLowerCase()}`}
+      busyLabel={busyLabel}
+      onConfirm={onConfirm}
+    >
+      <p>{consequence}</p>
+    </ConfirmButton>
   );
 }
 
@@ -90,6 +75,8 @@ function MemberActions({
         <ConfirmAction
           label="Remove member"
           question={`Remove ${member.display_name} from this team?`}
+          busyLabel="Removing member…"
+          consequence={`${member.display_name} loses access to this team's research and board until a manager adds them again.`}
           busy={busy}
           onConfirm={() => onRemove(member)}
         />

@@ -44,7 +44,7 @@ export function SatelliteFilterPanel({
             onClick={() => setGroup(choice.value)}
             className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-xs ${
               group === choice.value
-                ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200'
+                ? 'border-cyan/40 bg-cyan/10 text-cyan'
                 : 'border-white/10 text-muted hover:bg-white/5'
             }`}
           >
@@ -69,7 +69,7 @@ export function SatelliteFilterPanel({
           ? 'Updating satellite results…'
           : `${results.length.toLocaleString('en-GB')} matching satellites`}
       </p>
-      <p className="text-[11px] text-muted">
+      <p className="text-2xs text-muted">
         Search filters both the map and this list. Select a result to locate it.
       </p>
       <SatelliteResults
@@ -78,11 +78,11 @@ export function SatelliteFilterPanel({
         onSelect={onSelect}
         selectedId={selectedId}
       />
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Positions are predicted from public orbital elements, not live observations. Element age is
         shown in details; older elements are labelled stale.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Catalogue counts reflect loaded objects before search. Military coverage is incomplete.
         Skynet includes historical spacecraft and does not imply current service.
       </p>

@@ -24,8 +24,10 @@ const AdminOverviewPage = lazy(() => import('@/features/admin/AdminOverviewPage'
 const AdminRequestsPage = lazy(() => import('@/features/admin/AdminRequestsPage'));
 const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
+const AdminResearchQualityPage = lazy(() => import('@/features/admin/AdminResearchQualityPage'));
 const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'));
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
+const AdminEvaluationsPage = lazy(() => import('@/features/admin/AdminEvaluationsPage'));
 const TotpSettingsPage = lazy(() => import('@/features/auth/TotpSettingsPage'));
 const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
 const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
@@ -36,6 +38,7 @@ const CyberIntelligencePage = lazy(() => import('@/features/cyber/CyberPage'));
 const SavedResearchPage = lazy(() => import('@/features/reports/SavedResearchPage'));
 const SavedUpdatesPage = lazy(() => import('@/features/reports/SavedUpdatesPage'));
 const SavedAssessmentsPage = lazy(() => import('@/features/reports/SavedAssessmentsPage'));
+const SavedReportsPage = lazy(() => import('@/features/reports/SavedReportsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
 const ReportJobsPage = lazy(() => import('@/features/report-jobs/ReportJobsPage'));
 const ReportJobPage = lazy(() => import('@/features/report-jobs/ReportJobPage'));
@@ -62,6 +65,7 @@ const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
+const HelpPage = lazy(() => import('@/app/help/HelpPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -113,7 +117,6 @@ const pages: RouteObject[] = [
       { path: '/set-password', element: <SetPasswordPage /> },
     ]),
   },
-  { path: '/sources', element: <RedirectWithQuery to="/admin/catalogue" /> },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
   { path: '/reset-password', element: <RedirectWithQuery to="/set-password" /> },
   {
@@ -135,6 +138,7 @@ const pages: RouteObject[] = [
           { path: 'geolocation/saved', element: <SavedAssessmentsPage /> },
           // Each section keeps its own saved reports; this link still opens one.
           { path: 'reports', element: <RedirectWithQuery to="/research/saved" /> },
+          { path: 'reports/saved', element: <SavedReportsPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
           { path: 'annotation-monitors', element: <AnnotationMonitorsPage /> },
           { path: 'annotation-monitors/:monitorId', element: <AnnotationMonitorPage /> },
@@ -157,11 +161,13 @@ const pages: RouteObject[] = [
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
           { path: 'watches', element: <WatchesPage /> },
+          { path: 'help', element: <HelpPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'economy', element: <EconomyPage /> },
           { path: 'cyber', element: <CyberIntelligencePage /> },
+          { path: 'sources', element: <SourcesPage /> },
           { path: 'account/security', element: <TotpSettingsPage /> },
         ]),
       },
@@ -181,8 +187,10 @@ const pages: RouteObject[] = [
                   { path: 'teams', element: <TeamsPage /> },
                   { path: 'audit', element: <AdminAuditPage /> },
                   { path: 'sources', element: <AdminSourcesPage /> },
-                  { path: 'catalogue', element: <SourcesPage /> },
+                  { path: 'catalogue', element: <SourcesPage workspace="admin" /> },
+                  { path: 'quality', element: <AdminResearchQualityPage /> },
                   { path: 'llm', element: <AdminLlmPage /> },
+                  { path: 'evaluations', element: <AdminEvaluationsPage /> },
                   { path: 'security', element: <TotpSettingsPage /> },
                 ]),
               },

@@ -80,7 +80,9 @@ class SqlMapWorkspaceRepository:
         )
         return [_document(row) for row in rows]
 
-    async def scope_count(self, owner: UUID, team_id: UUID | None) -> int:
+    async def scope_count(
+        self, owner: UUID, team_id: UUID | None, kinds: tuple[WorkspaceKind, ...]
+    ) -> int:
         scope = (
             MapWorkspaceRow.team_id == team_id
             if team_id
@@ -88,7 +90,9 @@ class SqlMapWorkspaceRepository:
         )
         return int(
             await self.session.scalar(
-                select(func.count()).select_from(MapWorkspaceRow).where(scope)
+                select(func.count())
+                .select_from(MapWorkspaceRow)
+                .where(scope, MapWorkspaceRow.kind.in_(kinds))
             )
             or 0
         )

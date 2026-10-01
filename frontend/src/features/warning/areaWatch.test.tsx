@@ -12,6 +12,7 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import WarningPage from './WarningPage';
 import { researchAreaGeometry } from '@/lib/map/researchAreaGeometry';
+import { chooseCountry } from './ruleTestSteps';
 
 const area = {
   source: 'rectangle' as const,
@@ -33,12 +34,12 @@ it('keeps an exact shape through review and submission without an envelope or re
     }),
   );
   const { user } = renderApp('/warning', 'user');
-  const form = await screen.findByRole('form', { name: 'New indicator' });
+  const form = await screen.findByRole('form', { name: 'New alert rule' });
   expect(within(form).getByLabelText('Location scope')).toHaveValue('shape');
   expect(within(form).getByLabelText('Report when it fires')).toBeDisabled();
   expect(within(form).queryByLabelText('West bound')).not.toBeInTheDocument();
-  await user.type(within(form).getByLabelText('Indicator name'), 'Triangle watch');
-  await user.click(within(form).getByRole('button', { name: 'Add indicator' }));
+  await user.type(within(form).getByLabelText('Alert rule name'), 'Triangle watch');
+  await user.click(within(form).getByRole('button', { name: 'Add alert rule' }));
   await waitFor(() =>
     expect(submitted).toMatchObject({
       research_area: { geometry },
@@ -48,7 +49,7 @@ it('keeps an exact shape through review and submission without an envelope or re
   );
   expect(submitted).not.toHaveProperty('bbox');
 });
-it('hands off a map area, edits its bounds and creates nothing until Add indicator', async () => {
+it('hands off a map area, edits its bounds and creates nothing until Add alert rule', async () => {
   const requests: unknown[] = [];
   server.use(
     http.post('/api/warning/indicators', async ({ request }) => {
@@ -66,15 +67,15 @@ it('hands off a map area, edits its bounds and creates nothing until Add indicat
   await user.click(screen.getByRole('button', { name: 'Watch this area' }));
   expect(router.state.location.pathname).toBe('/warning');
   expect(router.state.location.search).toBe('');
-  const form = await screen.findByRole('form', { name: 'New indicator' });
+  const form = await screen.findByRole('form', { name: 'New alert rule' });
   expect(within(form).getByLabelText('West bound')).toHaveValue(170);
   expect(within(form).getByLabelText('East bound')).toHaveValue(-170);
-  expect(within(form).queryByLabelText('Nations')).not.toBeInTheDocument();
+  expect(within(form).queryByRole('group', { name: 'Countries to watch' })).not.toBeInTheDocument();
   expect(within(form).getByLabelText('Report when it fires')).toHaveValue('');
   expect(requests).toHaveLength(0);
-  await user.type(within(form).getByLabelText('Indicator name'), 'Pacific watch');
+  await user.type(within(form).getByLabelText('Alert rule name'), 'Pacific watch');
   fireEvent.change(within(form).getByLabelText('West bound'), { target: { value: '175' } });
-  await user.click(within(form).getByRole('button', { name: 'Add indicator' }));
+  await user.click(within(form).getByRole('button', { name: 'Add alert rule' }));
   await waitFor(() => expect(requests).toHaveLength(1));
   expect(requests[0]).toMatchObject({
     name: 'Pacific watch',
@@ -84,7 +85,7 @@ it('hands off a map area, edits its bounds and creates nothing until Add indicat
   });
   await waitFor(() => expect(readAreaWatchDraft()).toBeNull());
 });
-it('requires valid area coordinates and keeps nation and area criteria exclusive', async () => {
+it('requires valid area coordinates and keeps country and area criteria exclusive', async () => {
   let submitted: unknown;
   server.use(
     http.post('/api/warning/indicators', async ({ request }) => {
@@ -93,20 +94,22 @@ it('requires valid area coordinates and keeps nation and area criteria exclusive
     }),
   );
   const { user } = renderApp('/warning', 'user');
-  const form = await screen.findByRole('form', { name: 'New indicator' });
-  await user.type(within(form).getByLabelText('Indicator name'), 'Scope check');
-  await user.type(within(form).getByLabelText('Nations'), 'GB');
+  const form = await screen.findByRole('form', { name: 'New alert rule' });
+  await user.type(within(form).getByLabelText('Alert rule name'), 'Scope check');
+  await chooseCountry(user, within(form), 'United Kingdom');
   await user.selectOptions(within(form).getByLabelText('Location scope'), 'area');
-  const submit = within(form).getByRole('button', { name: 'Add indicator' });
-  expect(submit).toBeDisabled();
+  const submit = within(form).getByRole('button', { name: 'Add alert rule' });
   fireEvent.submit(form);
   expect(submitted).toBeUndefined();
+  expect(
+    await within(form).findByRole('alert', { name: 'Check these fields and try again:' }),
+  ).toHaveTextContent('Watch location: Enter all four bounds.');
   for (const [label, value] of Object.entries({ West: '0', East: '2', South: '50', North: '49' }))
     fireEvent.change(within(form).getByLabelText(`${label} bound`), { target: { value } });
-  expect(submit).toBeDisabled();
+  fireEvent.submit(form);
+  expect(submitted).toBeUndefined();
   fireEvent.change(within(form).getByLabelText('North bound'), { target: { value: '51' } });
-  expect(submit).toBeEnabled();
-  await user.selectOptions(within(form).getByLabelText('Location scope'), 'nations');
+  await user.selectOptions(within(form).getByLabelText('Location scope'), 'countries');
   await user.click(submit);
   await waitFor(() => expect(submitted).toMatchObject({ countries: ['GB'] }));
   expect(submitted).not.toHaveProperty('bbox');
@@ -115,11 +118,11 @@ it('discards drafts explicitly and removes both draft and edited form on access 
   useAuthStore.getState().setSession(tokenFor(plainUser));
   prepareAreaWatch(area);
   const { user } = renderApp('/warning', 'user');
-  let form = await screen.findByRole('form', { name: 'New indicator' });
-  await user.type(within(form).getByLabelText('Indicator name'), 'Private location');
+  let form = await screen.findByRole('form', { name: 'New alert rule' });
+  await user.type(within(form).getByLabelText('Alert rule name'), 'Private location');
   act(() => invalidateWorkspaceAccess());
-  form = screen.getByRole('form', { name: 'New indicator' });
-  expect(within(form).getByLabelText('Indicator name')).toHaveValue('');
+  form = screen.getByRole('form', { name: 'New alert rule' });
+  expect(within(form).getByLabelText('Alert rule name')).toHaveValue('');
   expect(within(form).queryByLabelText('West bound')).not.toBeInTheDocument();
   act(() => prepareAreaWatch({ ...area, source: 'sketch-envelope' }));
   expect(screen.getByText(/approximate bounding rectangle includes areas outside/)).toBeVisible();

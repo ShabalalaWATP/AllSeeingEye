@@ -3,8 +3,9 @@
 Usage: python scripts/check_web_image.py http://localhost:8080
 
 Checks what only the real Caddy build can show: the security policy is sent,
-pre-compressed files are served, content-hashed assets are immutable, the shell and
-fixed-name files revalidate, and a missing asset answers 404 rather than the shell.
+pre-compressed files are served, content-hashed assets (the MapLibre worker included)
+are immutable, the shell revalidates, no fixed-name MapLibre worker is served, and a
+missing asset answers 404 rather than the shell.
 """
 
 from __future__ import annotations
@@ -16,6 +17,9 @@ import urllib.request
 from email.message import Message
 
 MISSING_ASSET = "/assets/index-Missing0.js"
+# Static, dynamic and URL references between built chunks, all within /assets.
+CHUNK_REFERENCE = re.compile(rb"[\"'`](?:\./|/assets/)([\w-]+\.js)[\"'`]")
+WORKER_CHUNK = re.compile(r"maplibre-gl-worker-[\w-]{8}\.js$")
 
 
 def fetch(
@@ -27,6 +31,25 @@ def fetch(
             return response.status, response.headers, response.read()
     except urllib.error.HTTPError as error:
         return error.code, error.headers, b""
+
+
+def maplibre_worker(base: str, entry: str, limit: int = 400) -> str | None:
+    """Follows chunk references from the entry to the hashed worker the map starts."""
+    pending, seen = [entry], set()
+    while pending and len(seen) < limit:
+        chunk = pending.pop()
+        if chunk in seen:
+            continue
+        seen.add(chunk)
+        status, _, body = fetch(base, chunk)
+        if status != 200:
+            continue
+        for match in CHUNK_REFERENCE.finditer(body):
+            name = match.group(1).decode()
+            if WORKER_CHUNK.match(name):
+                return f"/assets/{name}"
+            pending.append(f"/assets/{name}")
+    return None
 
 
 def problems(base: str) -> list[str]:
@@ -61,12 +84,17 @@ def problems(base: str) -> list[str]:
             "hashed asset not immutable",
         )
 
-    status, headers, _ = fetch(base, "/assets/maplibre-gl-worker.mjs")
-    expect(status == 200, f"the MapLibre worker answered {status}")
-    expect(
-        headers.get("Cache-Control") == "no-cache",
-        "fixed-name asset is not revalidated",
-    )
+    worker = maplibre_worker(base, entry.group(1).decode()) if entry else None
+    expect(worker is not None, "no hashed MapLibre worker chunk is reachable")
+    if worker is not None:
+        status, headers, _ = fetch(base, worker)
+        expect(status == 200, f"the MapLibre worker answered {status}")
+        expect(
+            "immutable" in headers.get("Cache-Control", ""),
+            "the hashed MapLibre worker is not immutable",
+        )
+    status, _, _ = fetch(base, "/assets/maplibre-gl-worker.mjs")
+    expect(status == 404, f"a fixed-name MapLibre worker answered {status}")
 
     status, headers, _ = fetch(base, MISSING_ASSET)
     expect(status == 404, f"a missing asset answered {status}, not 404")

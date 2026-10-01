@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { PersonCell } from '@/components/admin/PersonCell';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { Alert } from '@/components/ui/Alert';
@@ -7,17 +9,25 @@ import { Td } from '@/components/ui/Table';
 import { issueResetLink, updateUser } from '@/lib/api/admin';
 import type { UserPatch } from '@/lib/api/admin';
 import { describeError } from '@/lib/api/errors';
+import type { ApiError } from '@/lib/api/errors';
 import { roleSchema } from '@/lib/api/schemas';
 import type { ResetLinkResponse, User } from '@/lib/api/schemas';
 import type { ResearchUsagePage, UserResearchAllowance } from '@/lib/api/researchUsage';
 import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 
 import { roleOptions } from './roleOptions';
+import { UserAccessChange, type AccessChange } from './UserAccessChange';
 import { UserResearchTier } from './UserResearchTier';
 
 export const SELF_MODIFICATION_MESSAGE =
   'You cannot change your own role or active status. Ask another administrator to do it.';
+
+function explain(error: ApiError | null): string | null {
+  if (error === null) return null;
+  return error.code === 'self_modification' ? SELF_MODIFICATION_MESSAGE : describeError(error);
+}
 
 export interface UserRowProps {
   user: User;
@@ -40,20 +50,22 @@ export function UserRow({
   onAllowanceUpdated,
   onAllowanceReload,
 }: UserRowProps) {
-  const update = useAsyncAction(async (patch: UserPatch) => {
-    onUpdated(await updateUser(user.id, patch));
-  });
+  // Role and access changes wait for an explicit confirmation; the server still decides.
+  const change = useConfirmedAction(
+    useCallback(
+      async (next: AccessChange) => {
+        const patch: UserPatch =
+          next.kind === 'role' ? { role: next.role } : { is_active: next.active };
+        onUpdated(await updateUser(user.id, patch));
+      },
+      [onUpdated, user.id],
+    ),
+  );
   const reset = useAsyncAction(async () => {
     onResetLink(await issueResetLink(user.id));
   });
-  const busy = update.busy || reset.busy;
-  const error = update.error ?? reset.error;
-  const message =
-    error === null
-      ? null
-      : error.code === 'self_modification'
-        ? SELF_MODIFICATION_MESSAGE
-        : describeError(error);
+  const busy = change.busy || reset.busy;
+  const message = explain(reset.error);
   const options =
     user.role === 'manager'
       ? [{ value: 'manager', label: 'Legacy manager' }, ...roleOptions]
@@ -72,7 +84,9 @@ export function UserRow({
           value={user.role}
           disabled={busy}
           className="w-36"
-          onChange={(event) => void update.run({ role: roleSchema.parse(event.target.value) })}
+          onChange={(event) => {
+            change.ask({ kind: 'role', role: roleSchema.parse(event.target.value) });
+          }}
         />
       </Td>
       <Td className="py-3">
@@ -83,7 +97,9 @@ export function UserRow({
               checked={user.is_active}
               disabled={busy}
               className="size-4 accent-ember"
-              onChange={(event) => void update.run({ is_active: event.target.checked })}
+              onChange={(event) => {
+                change.ask({ kind: 'active', active: event.target.checked });
+              }}
             />
             <span>Active</span>
           </label>
@@ -115,6 +131,14 @@ export function UserRow({
           </Button>
           {message === null ? null : <Alert tone="error">{message}</Alert>}
         </div>
+        <UserAccessChange
+          user={user}
+          change={change.target}
+          busy={change.busy}
+          error={explain(change.error)}
+          onCancel={change.cancel}
+          onConfirm={change.confirm}
+        />
       </Td>
     </tr>
   );

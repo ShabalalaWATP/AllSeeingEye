@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { parseCyberDays, type CyberDays, type CyberTheme } from '@/lib/api/cyber';
@@ -26,7 +27,7 @@ import { cyberCountry, filterCyberItems } from './cyberPresentation';
 import { useCyberWorkspace } from './useCyberWorkspace';
 
 const field =
-  'min-h-11 rounded-md border border-control-border bg-surface px-3 text-sm text-text focus:border-ember focus:outline-none';
+  'min-h-11 rounded-md border border-control-border bg-surface px-3 text-sm text-text focus:border-ember';
 
 export default function CyberPage() {
   const [params, setParams] = useSearchParams();
@@ -86,7 +87,10 @@ export default function CyberPage() {
   };
   const filtered = Boolean(query || country || actor || theme || kind !== 'all');
   return (
-    <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
+    // Focus scrolling leaves room for the sticky section bar above and the Eye launcher below.
+    <section
+      className={`h-full min-w-0 scroll-pt-16 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10 ${LAUNCHER_SCROLL_PADDING}`}
+    >
       <div className="mx-auto max-w-[1500px] space-y-8 pb-28">
         <CyberHeader
           days={days}

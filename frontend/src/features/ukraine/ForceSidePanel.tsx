@@ -99,7 +99,7 @@ export function ForceSidePanel({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-text">
           {SIDE_LABELS[side]}{' '}
-          <span className="font-mono text-[11px] font-normal text-muted">({total} entries)</span>
+          <span className="font-mono text-2xs font-normal text-muted">({total} entries)</span>
         </h3>
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-xs text-muted">

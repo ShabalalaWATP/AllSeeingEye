@@ -21,6 +21,7 @@ from ase.adapters.persistence.original_passages import SqlOriginalPassageReposit
 from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
 from ase.adapters.persistence.report_ledgers import delete_report_ledgers
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
+from ase.adapters.persistence.report_team_copies import delete_team_copy_provenance
 from ase.adapters.persistence.source_reviews import delete_source_snapshots_for_report
 from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
@@ -215,11 +216,12 @@ class SqlReportRepository:
         *,
         origin: ReportOrigin | None = None,
         offset: int = 0,
+        origins: tuple[ReportOrigin, ...] | None = None,
     ) -> list[ReportRecord]:
         query = select(ReportRow).where(
             visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility)
         )
-        if origin is not None:
+        if origin is not None or origins is not None:
             # Recognised explicit origins win. Older or unrecognised scopes retain
             # the same media/research classification used by saved report links.
             stated = ReportRow.scope["origin"].as_string()
@@ -228,7 +230,10 @@ class SqlReportRepository:
                 (ReportRow.scope["research_focus"].as_string() == "media", "geolocation"),
                 else_="research",
             )
-            query = query.where(effective == origin.value)
+            if origin is not None:
+                query = query.where(effective == origin.value)
+            if origins is not None:
+                query = query.where(effective.in_([value.value for value in origins]))
         rows = await self._session.scalars(
             query.order_by(ReportRow.created_at.desc(), ReportRow.id)
             .offset(offset)
@@ -242,6 +247,7 @@ class SqlReportRepository:
         # Explicit cleanup also supports SQLite connections without FK enforcement.
         await delete_source_snapshots_for_report(self._session, report_id)
         await delete_report_ledgers(self._session, report_id)
+        await delete_team_copy_provenance(self._session, report_id)
         await SqlOriginalAssetRepository(self._session).delete_for_report(report_id)
         await SqlOriginalPassageRepository(self._session).delete_for_report(report_id)
         await SqlClaimRepository(self._session).delete_for_report(report_id)

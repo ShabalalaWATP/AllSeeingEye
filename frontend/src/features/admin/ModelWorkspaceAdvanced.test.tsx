@@ -91,7 +91,10 @@ it('keeps the advanced panel and policy form locked while suggested policies are
   await waitFor(() => expect(started).toBe(true));
   try {
     expect(screen.getByRole('button', { name: 'Done with advanced settings' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Add policy' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add policy' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   } finally {
     await act(() => {
       response.release();

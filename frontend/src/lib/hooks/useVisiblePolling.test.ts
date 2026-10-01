@@ -64,7 +64,8 @@ it('never overlaps a request that is still in flight', async () => {
   start(poll);
   await advance(30_000);
   expect(poll).toHaveBeenCalledTimes(1);
-  act(() => setVisibility('hidden'));
+  // A repeated visible event must not start a second request beside the open one.
+  act(() => setVisibility('visible'));
   act(() => setVisibility('visible'));
   await advance(120_000);
   expect(poll).toHaveBeenCalledTimes(1);
@@ -161,6 +162,26 @@ it('aborts in-flight work and clears timers on unmount', async () => {
   expect(signals[0]?.aborted).toBe(true);
   await advance(600_000);
   expect(poll).toHaveBeenCalledTimes(1);
+});
+
+it('aborts the in-flight request when the tab is hidden and refreshes on return', async () => {
+  const signals: AbortSignal[] = [];
+  const poll = vi.fn((signal: AbortSignal) => {
+    signals.push(signal);
+    return signals.length === 1
+      ? new Promise<PollOutcome>(() => undefined)
+      : Promise.resolve<PollOutcome>('ok');
+  });
+  start(poll);
+  await advance(30_000);
+  act(() => setVisibility('hidden'));
+  expect(signals[0]?.aborted).toBe(true);
+  await advance(300_000);
+  expect(poll).toHaveBeenCalledTimes(1);
+  act(() => setVisibility('visible'));
+  await advance(0);
+  expect(poll).toHaveBeenCalledTimes(2);
+  expect(signals[1]?.aborted).toBe(false);
 });
 
 it('measures staleness from an explicit load', async () => {
