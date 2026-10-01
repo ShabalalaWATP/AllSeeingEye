@@ -1,8 +1,7 @@
 /** Shared presentation of AI allowances and observed usage for account, team and admin views. */
 import type { AiScope, AiTokenPrices, AiUsageSummary, AiUsageTotals } from '@/lib/api/aiUsage';
 import { formatPersonalDate } from '@/lib/format';
-import { useAuthStore } from '@/stores/auth';
-import { useProfileStore } from '@/stores/profile';
+import { usePersonalPreferences } from '@/lib/hooks/usePersonalPreferences';
 
 import { SPEND_CAVEAT, spendOf } from './spend';
 
@@ -16,14 +15,6 @@ const SCOPE_LABELS: Record<AiScope, string> = {
 /** Counts read the same in every browser, whatever locale it reports. */
 const COUNT = new Intl.NumberFormat('en-GB');
 const count = (value: number) => COUNT.format(value);
-
-/** The signed-in account's own loaded preferences; never fetched here, never another account's. */
-function usePersonalPreferences() {
-  const actorId = useAuthStore((state) => state.user?.id);
-  return useProfileStore((state) =>
-    actorId !== undefined && state.owner === actorId ? state.profile : null,
-  );
-}
 
 export function scopeLabel(scope: AiScope): string {
   return SCOPE_LABELS[scope];
