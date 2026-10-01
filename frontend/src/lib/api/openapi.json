@@ -3213,6 +3213,266 @@
         }
       }
     },
+    "/api/bell": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Bell",
+        "operationId": "read_bell_api_bell_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/alerts/{alert_id}/destination": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Alert Destination",
+        "operationId": "alert_destination_api_bell_alerts__alert_id__destination_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDestinationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/alerts/acknowledge": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Acknowledge Shown",
+        "operationId": "acknowledge_shown_api_bell_alerts_acknowledge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellAcknowledgeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellAcknowledgeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/preferences": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Set Bell Preferences",
+        "operationId": "set_bell_preferences_api_bell_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/muted-rules/{indicator_id}": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Mute Rule",
+        "operationId": "mute_rule_api_bell_muted_rules__indicator_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Unmute Rule",
+        "operationId": "unmute_rule_api_bell_muted_rules__indicator_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/team-invitations": {
       "get": {
         "tags": [
@@ -15689,6 +15949,25 @@
         ],
         "title": "AccountSessionsOut"
       },
+      "AcknowledgeFailureOut": {
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Alert Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alert_id",
+          "message"
+        ],
+        "title": "AcknowledgeFailureOut"
+      },
       "ActivityOut": {
         "properties": {
           "last_24h": {
@@ -16680,6 +16959,74 @@
         ],
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
+      },
+      "AlertDestinationOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/DestinationKind"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Id"
+          },
+          "transition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transition Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "available",
+          "report_id",
+          "monitor_id",
+          "transition_id",
+          "message"
+        ],
+        "title": "AlertDestinationOut"
       },
       "AlertOut": {
         "properties": {
@@ -19030,6 +19377,249 @@
           "jam_updated_at"
         ],
         "title": "AviationBoardOut"
+      },
+      "BellAcknowledgeIn": {
+        "properties": {
+          "alert_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Alert Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "alert_ids"
+        ],
+        "title": "BellAcknowledgeIn"
+      },
+      "BellAcknowledgeOut": {
+        "properties": {
+          "acknowledged": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Acknowledged"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/AcknowledgeFailureOut"
+            },
+            "type": "array",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acknowledged",
+          "failed"
+        ],
+        "title": "BellAcknowledgeOut"
+      },
+      "BellAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "fired_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fired At"
+          },
+          "indicator_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indicator Id"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "annotation_monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation Monitor Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "can_acknowledge": {
+            "type": "boolean",
+            "title": "Can Acknowledge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "fired_at",
+          "indicator_id",
+          "report_id",
+          "annotation_monitor_id",
+          "team_id",
+          "team_name",
+          "can_acknowledge"
+        ],
+        "title": "BellAlertOut"
+      },
+      "BellAlertSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellAlertOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "muted"
+        ],
+        "title": "BellAlertSectionOut"
+      },
+      "BellKind": {
+        "type": "string",
+        "enum": [
+          "alerts",
+          "research",
+          "mentions"
+        ],
+        "title": "BellKind",
+        "description": "In-app notification kinds a viewer may mute."
+      },
+      "BellOut": {
+        "properties": {
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "alerts": {
+            "$ref": "#/components/schemas/BellAlertSectionOut"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/BellPreferencesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window_days",
+          "alerts",
+          "preferences"
+        ],
+        "title": "BellOut"
+      },
+      "BellPreferencesIn": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Muted Kinds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "muted_kinds"
+        ],
+        "title": "BellPreferencesIn"
+      },
+      "BellPreferencesOut": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "title": "Muted Kinds"
+          },
+          "muted_rules": {
+            "items": {
+              "$ref": "#/components/schemas/MutedRuleOut"
+            },
+            "type": "array",
+            "title": "Muted Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "muted_kinds",
+          "muted_rules"
+        ],
+        "title": "BellPreferencesOut"
       },
       "BlockKind": {
         "type": "string",
@@ -24075,6 +24665,15 @@
           "clock"
         ],
         "title": "DecisionMethod"
+      },
+      "DestinationKind": {
+        "type": "string",
+        "enum": [
+          "report",
+          "transition",
+          "alerts"
+        ],
+        "title": "DestinationKind"
       },
       "DigestChangeOut": {
         "properties": {
@@ -33807,6 +34406,31 @@
           "limit"
         ],
         "title": "MonthlyUsageOut"
+      },
+      "MutedRuleOut": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "muted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Muted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "name",
+          "muted_at"
+        ],
+        "title": "MutedRuleOut"
       },
       "NavigationCapabilitiesOut": {
         "properties": {

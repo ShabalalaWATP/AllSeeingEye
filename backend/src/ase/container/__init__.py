@@ -64,6 +64,7 @@ from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
+from ase.container.bell import BellWiring
 from ase.container.citation_verdicts import CitationVerdictWiring
 from ase.container.conflict_screening import build_conflict_screening
 from ase.container.cyber import CyberWiring
@@ -122,6 +123,7 @@ class Container(
     UkraineWiring,
     TeamBoardWiring,
     ReportTeamCopyWiring,
+    BellWiring,
 ):
     def __init__(
         self,

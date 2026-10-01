@@ -2,6 +2,7 @@
 import { http, HttpResponse } from 'msw';
 
 import { acknowledgedAlert, alert, indicator } from './fixtures.warning';
+import { bellHandlers } from './handlers.bell';
 
 interface IndicatorBody {
   name: string;
@@ -78,4 +79,6 @@ export const warningHandlers = [
         })
       : notFound('Alert'),
   ),
+  // The bell reads the same alerts through its own scoped summary.
+  ...bellHandlers,
 ];

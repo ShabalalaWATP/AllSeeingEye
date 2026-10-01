@@ -24,6 +24,7 @@ from ase.api.routers import (
     assistant,
     assistant_history,
     auth,
+    bell,
     cameras,
     capabilities,
     citation_verdicts,
@@ -108,6 +109,7 @@ api_router.include_router(mfa.router)
 api_router.include_router(teams.router)
 api_router.include_router(team_board.router)
 api_router.include_router(team_dashboard.router)
+api_router.include_router(bell.router)
 api_router.include_router(team_invitations.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)

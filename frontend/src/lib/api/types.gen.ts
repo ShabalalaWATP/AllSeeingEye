@@ -1052,6 +1052,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Bell */
+        get: operations["read_bell_api_bell_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/alerts/{alert_id}/destination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alert Destination */
+        get: operations["alert_destination_api_bell_alerts__alert_id__destination_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/alerts/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge Shown */
+        post: operations["acknowledge_shown_api_bell_alerts_acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Bell Preferences */
+        put: operations["set_bell_preferences_api_bell_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/muted-rules/{indicator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Mute Rule */
+        put: operations["mute_rule_api_bell_muted_rules__indicator_id__put"];
+        post?: never;
+        /** Unmute Rule */
+        delete: operations["unmute_rule_api_bell_muted_rules__indicator_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/team-invitations": {
         parameters: {
             query?: never;
@@ -4553,6 +4639,16 @@ export interface components {
             /** Truncated */
             truncated: boolean;
         };
+        /** AcknowledgeFailureOut */
+        AcknowledgeFailureOut: {
+            /**
+             * Alert Id
+             * Format: uuid
+             */
+            alert_id: string;
+            /** Message */
+            message: string;
+        };
         /** ActivityOut */
         ActivityOut: {
             /** Last 24H */
@@ -4922,6 +5018,20 @@ export interface components {
              * @description Estimated spend from recorded tokens at the configured prices.
              */
             estimated_cost: string | null;
+        };
+        /** AlertDestinationOut */
+        AlertDestinationOut: {
+            kind: components["schemas"]["DestinationKind"];
+            /** Available */
+            available: boolean;
+            /** Report Id */
+            report_id: string | null;
+            /** Monitor Id */
+            monitor_id: string | null;
+            /** Transition Id */
+            transition_id: string | null;
+            /** Message */
+            message: string | null;
         };
         /** AlertOut */
         AlertOut: {
@@ -5718,6 +5828,81 @@ export interface components {
             jam_red: number;
             /** Jam Updated At */
             jam_updated_at: string | null;
+        };
+        /** BellAcknowledgeIn */
+        BellAcknowledgeIn: {
+            /** Alert Ids */
+            alert_ids: string[];
+        };
+        /** BellAcknowledgeOut */
+        BellAcknowledgeOut: {
+            /** Acknowledged */
+            acknowledged: string[];
+            /** Failed */
+            failed: components["schemas"]["AcknowledgeFailureOut"][];
+        };
+        /** BellAlertOut */
+        BellAlertOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Fired At
+             * Format: date-time
+             */
+            fired_at: string;
+            /** Indicator Id */
+            indicator_id: string | null;
+            /** Report Id */
+            report_id: string | null;
+            /** Annotation Monitor Id */
+            annotation_monitor_id: string | null;
+            /** Team Id */
+            team_id: string | null;
+            /** Team Name */
+            team_name: string | null;
+            /** Can Acknowledge */
+            can_acknowledge: boolean;
+        };
+        /** BellAlertSectionOut */
+        BellAlertSectionOut: {
+            /** Items */
+            items: components["schemas"]["BellAlertOut"][];
+            /** Total */
+            total: number;
+            /** Muted */
+            muted: boolean;
+        };
+        /**
+         * BellKind
+         * @description In-app notification kinds a viewer may mute.
+         * @enum {string}
+         */
+        BellKind: "alerts" | "research" | "mentions";
+        /** BellOut */
+        BellOut: {
+            /** Window Days */
+            window_days: number;
+            alerts: components["schemas"]["BellAlertSectionOut"];
+            preferences: components["schemas"]["BellPreferencesOut"];
+        };
+        /** BellPreferencesIn */
+        BellPreferencesIn: {
+            /** Muted Kinds */
+            muted_kinds: components["schemas"]["BellKind"][];
+        };
+        /** BellPreferencesOut */
+        BellPreferencesOut: {
+            /** Muted Kinds */
+            muted_kinds: components["schemas"]["BellKind"][];
+            /** Muted Rules */
+            muted_rules: components["schemas"]["MutedRuleOut"][];
         };
         /**
          * BlockKind
@@ -7512,6 +7697,11 @@ export interface components {
          * @enum {string}
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
+        /**
+         * DestinationKind
+         * @enum {string}
+         */
+        DestinationKind: "report" | "transition" | "alerts";
         /** DigestChangeOut */
         DigestChangeOut: {
             /** Text */
@@ -10954,6 +11144,21 @@ export interface components {
             policy_version: string;
             used: components["schemas"]["UsageCountsOut"];
             limit: components["schemas"]["UsageCountsOut"];
+        };
+        /** MutedRuleOut */
+        MutedRuleOut: {
+            /**
+             * Indicator Id
+             * Format: uuid
+             */
+            indicator_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Muted At
+             * Format: date-time
+             */
+            muted_at: string;
         };
         /** NavigationCapabilitiesOut */
         NavigationCapabilitiesOut: {
@@ -19324,6 +19529,185 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamDashboardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_bell_api_bell_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellOut"];
+                };
+            };
+        };
+    };
+    alert_destination_api_bell_alerts__alert_id__destination_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDestinationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_shown_api_bell_alerts_acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellAcknowledgeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellAcknowledgeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_bell_preferences_api_bell_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellPreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mute_rule_api_bell_muted_rules__indicator_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unmute_rule_api_bell_muted_rules__indicator_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellPreferencesOut"];
                 };
             };
             /** @description Validation Error */
