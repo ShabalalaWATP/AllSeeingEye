@@ -64,8 +64,8 @@
 		}
 		rewrite @spa_route /index.html
 		# Vite names build output by content hash, so those files never change in place.
-		# Everything else, index.html and the fixed-name MapLibre worker included, must
-		# revalidate so a deploy reaches returning visitors. Only 200 responses are cached,
+		# The MapLibre worker is a hashed build entry too. Everything else, index.html
+		# included, must revalidate so a deploy reaches returning visitors. Only 200 responses are cached,
 		# so a 404 for a chunk that a rollback later restores is never pinned.
 		@hashed_asset path_regexp ^/assets/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css|woff2?)$
 		header @hashed_asset {
