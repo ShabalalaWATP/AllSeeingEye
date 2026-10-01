@@ -1,13 +1,23 @@
 /**
- * The two faces of one section: the work itself, and what that work has saved. Each
- * section keeps its own saved reports, so an analyst looks for a past answer where
- * they asked the question.
+ * The faces of one section: the work itself, what that work has saved and, for research,
+ * its progress. Each section keeps its own saved reports, so an analyst looks for a past
+ * answer where they asked the question. The tab lists live with the rest of the
+ * navigation definition in `@/lib/workspaceNavigation`.
  */
 import { NavLink } from 'react-router';
 
-export interface SectionTab {
-  readonly to: string;
-  readonly label: string;
+import type { WorkspaceView } from '@/lib/workspaceNavigation';
+
+export type SectionTab = WorkspaceView;
+
+export { geolocationTabs, researchTabs, subscriptionTabs } from '@/lib/workspaceNavigation';
+
+/**
+ * A tab that is the start of another tab's address matches only exactly; any other tab
+ * also stays current on its detail pages, such as one research job under progress.
+ */
+function exactOnly(tab: SectionTab, tabs: readonly SectionTab[]): boolean {
+  return tabs.some((other) => other !== tab && other.to.startsWith(`${tab.to}/`));
 }
 
 export function SectionTabs({ tabs, label }: { tabs: readonly SectionTab[]; label: string }) {
@@ -17,7 +27,7 @@ export function SectionTabs({ tabs, label }: { tabs: readonly SectionTab[]; labe
         <NavLink
           key={tab.to}
           to={tab.to}
-          end
+          end={exactOnly(tab, tabs)}
           className={({ isActive }) =>
             `border-b-2 py-3 text-sm transition-colors ${
               isActive
@@ -32,18 +42,3 @@ export function SectionTabs({ tabs, label }: { tabs: readonly SectionTab[]; labe
     </nav>
   );
 }
-
-export const researchTabs: readonly SectionTab[] = [
-  { to: '/research', label: 'New research' },
-  { to: '/research/saved', label: 'Saved research' },
-];
-
-export const subscriptionTabs: readonly SectionTab[] = [
-  { to: '/subscriptions', label: 'Subscriptions' },
-  { to: '/subscriptions/saved', label: 'Saved updates' },
-];
-
-export const geolocationTabs: readonly SectionTab[] = [
-  { to: '/geolocation', label: 'New assessment' },
-  { to: '/geolocation/saved', label: 'Saved assessments' },
-];

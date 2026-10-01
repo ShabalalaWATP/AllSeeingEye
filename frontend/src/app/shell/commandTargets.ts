@@ -1,14 +1,13 @@
 /**
- * Everything the palette can jump to: workspace pages grouped as the rail groups
- * them, specialist trackers, map layers and tools, and, for an administrator, the
- * source catalogue by family. The rest of administration is absent on purpose; it
- * keeps its own guarded navigation, and the catalogue is offered only to the people
- * who can open it.
+ * Everything the palette can jump to: the rail's own entries with the rail's labels and
+ * groups, each section's saved work, specialist trackers, map layers and tools, and, for
+ * an administrator, the Administration entry and the source catalogue by family. The
+ * rest of administration keeps its own guarded navigation.
  */
 import { FAMILIES, FAMILY_LABELS } from '@/features/sources/catalogueEntries';
 import { catalogueHref } from '@/features/sources/catalogueFilters';
 import { MAP_GUIDE_PANEL, mapLayerEntries, mapPanelHref } from '@/lib/mapLayerDirectory';
-import { trackerModules, workspaceHome, workspaceSections } from '@/lib/workspaceNavigation';
+import { navigationEntries, savedViews, trackerModules } from '@/lib/workspaceNavigation';
 
 export interface CommandTarget {
   readonly id: string;
@@ -20,15 +19,8 @@ export interface CommandTarget {
 
 export function commandTargets(options: { admin?: boolean } = {}): readonly CommandTarget[] {
   return [
-    ...[{ title: 'Pages', items: [workspaceHome] }, ...workspaceSections].flatMap((section) =>
-      section.items.map((page) => ({
-        id: `page:${page.to}`,
-        label: page.label,
-        group: section.title,
-        description: page.description,
-        to: page.to,
-      })),
-    ),
+    ...navigationEntries(options).map((page) => ({ id: `page:${page.to}`, ...page })),
+    ...savedViews().map((view) => ({ id: `view:${view.to}`, ...view })),
     ...trackerModules.map((tracker) => ({
       id: `tracker:${tracker.to}`,
       label: tracker.label,

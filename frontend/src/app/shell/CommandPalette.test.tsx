@@ -129,11 +129,11 @@ it('offers Watches first for watch searches and groups pages as the rail does', 
   expect(matchTargets(targets, 'watches')[0]).toMatchObject({
     label: 'Watches',
     to: '/watches',
-    group: 'Standing watches',
+    group: 'Watches',
   });
   expect(matchTargets(targets, 'alerts')[0]).toMatchObject({ to: '/warning', label: 'Alerts' });
   expect(targets.find((target) => target.to === '/')?.group).toBe('Pages');
-  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Collaboration');
+  expect(targets.find((target) => target.to === '/teams')?.group).toBe('Teams');
 });
 
 it('offers the source catalogue by family only to an administrator', () => {

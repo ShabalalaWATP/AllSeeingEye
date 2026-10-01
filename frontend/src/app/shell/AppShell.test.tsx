@@ -54,10 +54,13 @@ describe('AppShell', () => {
       'Economy',
       'Teams',
     ]);
-    for (const group of ['Standing watches', 'Monitoring', 'Collaboration']) {
-      expect(within(nav).getByText(group)).toBeInTheDocument();
+    // Sections of several destinations carry a heading; Watches and Teams name themselves.
+    for (const group of ['Research', 'Monitoring']) {
+      expect(within(nav).getByRole('list', { name: group })).toBeInTheDocument();
     }
-    expect(within(nav).queryByText('Standing desks')).not.toBeInTheDocument();
+    for (const retired of ['Standing watches', 'Collaboration', 'Standing desks']) {
+      expect(within(nav).queryByText(retired)).not.toBeInTheDocument();
+    }
     expect(screen.getByRole('link', { name: 'Your profile: Uma User' })).toHaveAttribute(
       'href',
       '/account',
