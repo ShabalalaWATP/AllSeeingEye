@@ -62,6 +62,24 @@ in order.
 - Replay applies to the live event layers, counts and lists. GNSS, CCTV,
   infrastructure and other catalogue layers keep their own coverage.
 
+## Daily satellite imagery
+
+**Map style** includes an off-by-default **Daily satellite imagery** switch for
+NASA GIBS true-colour composites (MODIS Terra, MODIS Aqua or VIIRS Suomi NPP) on
+a chosen UTC date, to compare clouds, smoke plumes, floods or burn scars with FIRMS
+detections. The base map stays underneath and borders and labels stay on top.
+
+- The date picker is limited to each product's first published date and today;
+  it defaults to yesterday, the last complete day. An invalid date draws nothing.
+- Resolution is roughly 250 m to 1 km per pixel. Tiles stop at zoom 9 and are
+  enlarged beyond it. Swath gaps, cloud and today's partial coverage are normal.
+- It works on both the globe and the flat map, ending near 85 degrees latitude
+  like other web map imagery.
+- The product, date and NASA GIBS credit stay visible on the map while it is on.
+  If tiles fail, a notice says so and the base map remains.
+
+See [Sources and evidence](02_DATA_SOURCES.md) for licence and privacy notes.
+
 ## Tools and the inspector
 
 The right-hand **Tools** menu groups controls as **Draw and measure**, **Research**,

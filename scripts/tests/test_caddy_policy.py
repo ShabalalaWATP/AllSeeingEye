@@ -75,6 +75,52 @@ class CameraPolicyTests(unittest.TestCase):
             self.assertNotIn("*", " ".join(sources), directive)
 
 
+MAP_SOURCES = ROOT / "frontend" / "src" / "lib" / "map"
+
+
+def declared_origin(module: str, constant: str) -> str:
+    """The host of a tile origin or template constant declared in a map module."""
+    text = (MAP_SOURCES / module).read_text(encoding="utf-8")
+    declaration = text.find(f"export const {constant} =")
+    if declaration == -1:
+        raise AssertionError(f"{constant} is not declared in {module}")
+    # The value may wrap onto the next line after the equals sign.
+    value = text[declaration:].split("=", 1)[1].lstrip()
+    if not value.startswith("'https://"):
+        raise AssertionError(f"{constant} in {module} is not an https:// string")
+    host = value.removeprefix("'https://")
+    return host.split("/", 1)[0].split("'", 1)[0]
+
+
+class MapImageryPolicyTests(unittest.TestCase):
+    """MapLibre fetches raster tiles, so imagery hosts need img-src and connect-src."""
+
+    def setUp(self) -> None:
+        self.policy = spa_policy()
+
+    def assert_tile_host_admitted(self, host: str) -> None:
+        for directive in ("img-src", "connect-src"):
+            self.assertIn(
+                host, https_hosts(self.policy.get(directive, [])), directive
+            )
+
+    def test_base_satellite_imagery_host_is_admitted(self) -> None:
+        self.assert_tile_host_admitted(declared_origin("baseLayers.ts", "EOX_TILES"))
+
+    def test_dated_gibs_imagery_host_is_admitted(self) -> None:
+        host = declared_origin("dailyImagery.ts", "GIBS_ORIGIN")
+        self.assertEqual(host, "gibs.earthdata.nasa.gov")
+        self.assert_tile_host_admitted(host)
+
+    def test_gibs_is_admitted_for_tiles_only(self) -> None:
+        for directive in ("media-src", "frame-src", "worker-src", "script-src"):
+            self.assertNotIn(
+                "gibs.earthdata.nasa.gov",
+                https_hosts(self.policy.get(directive, [])),
+                directive,
+            )
+
+
 class StaticCachingTests(unittest.TestCase):
     def test_only_content_hashed_assets_are_immutable(self) -> None:
         text = CADDYFILE.read_text(encoding="utf-8")

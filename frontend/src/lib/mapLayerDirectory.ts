@@ -159,6 +159,14 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         panel: 'Map style',
       },
       {
+        id: 'imagery',
+        label: 'Daily satellite imagery',
+        description:
+          'Dated NASA true-colour imagery, roughly 250 m to 1 km, for clouds, smoke and floods.',
+        // Listed after Map style so that tool keeps its own description and route id.
+        panel: 'Map style',
+      },
+      {
         id: 'time',
         label: 'Event time',
         description:

@@ -19,6 +19,7 @@ import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { useMapRecovery } from './useMapRecovery';
 import type { MapRenderState } from './useMapRecovery';
 import { areaClickPoint } from '@/lib/map/areaGeometry';
+import { isDailyImageryError, type DailyImagery } from '@/lib/map/dailyImagery';
 
 export function projectionFor(mode: ViewMode): Projection {
   return mode === 'globe' ? 'globe' : 'mercator';
@@ -52,6 +53,10 @@ export interface GlobeEngineOptions {
   baseLayer?: BaseLayer;
   lite?: boolean;
   createEngine?: MapEngineFactory;
+  /** Dated imagery over the base map; null or omitted draws none. */
+  dailyImagery?: DailyImagery | null;
+  /** Called when a dated imagery tile fails; the base map is unaffected. */
+  onImageryError?: () => void;
 }
 
 /**
@@ -62,7 +67,15 @@ export interface GlobeEngineOptions {
  */
 export function useGlobeEngine(
   containerRef: RefObject<HTMLDivElement | null>,
-  { enabled, mode, baseLayer = 'dark', lite = false, createEngine }: GlobeEngineOptions,
+  {
+    enabled,
+    mode,
+    baseLayer = 'dark',
+    lite = false,
+    createEngine,
+    dailyImagery = null,
+    onImageryError,
+  }: GlobeEngineOptions,
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
   const cursorHandlers = useRef(new Set<CursorHandler>());
@@ -72,6 +85,10 @@ export function useGlobeEngine(
   const viewHandlers = useRef(new Set<ViewHandler>());
   const latestLayers = useRef<readonly DataLayer[]>([]);
   const spinning = useRef(false);
+  const imageryError = useRef(onImageryError);
+  useEffect(() => {
+    imageryError.current = onImageryError;
+  }, [onImageryError]);
   const factory = createEngine ?? createMapLibreEngine;
   const { renderState, revision, reload, onRenderStatus, restoreReloadCamera } =
     useMapRecovery(engineRef);
@@ -108,6 +125,9 @@ export function useGlobeEngine(
       const view = { zoom: engine.getZoom() };
       for (const handler of viewHandlers.current) handler(view);
     });
+    const offImageryError = engine.on('error', (payload) => {
+      if (isDailyImageryError(payload)) imageryError.current?.();
+    });
     const offClick = engine.on('click', (event) => {
       const point = areaClickPoint(event);
       if (point)
@@ -118,6 +138,7 @@ export function useGlobeEngine(
       active = false;
       offMove();
       offClick();
+      offImageryError();
       offCursor();
       engine.destroy();
       offDrag?.();
@@ -132,6 +153,10 @@ export function useGlobeEngine(
   useEffect(() => {
     engineRef.current?.setBaseLayer(baseLayer);
   }, [baseLayer, enabled, factory, containerRef, revision]);
+
+  useEffect(() => {
+    engineRef.current?.setDailyImagery?.(dailyImagery);
+  }, [dailyImagery, enabled, factory, containerRef, revision]);
 
   useEffect(() => {
     engineRef.current?.setLite(lite);
