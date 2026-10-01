@@ -7,7 +7,8 @@ type Scope = BoundFunctions<typeof queries>;
 /** Opens the country checklist and ticks one country by name. */
 export async function chooseCountry(user: UserEvent, form: Scope, name: string) {
   await user.click(form.getByText('Choose countries'));
-  await user.click(await form.findByRole('checkbox', { name: new RegExp(`^${name}`) }));
+  const startsWithName = (accessible: string) => accessible.startsWith(name);
+  await user.click(await form.findByRole('checkbox', { name: startsWithName }));
 }
 
 /** The smallest valid rule: a name and an explicit worldwide scope. */
