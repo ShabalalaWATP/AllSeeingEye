@@ -46171,7 +46171,8 @@
           "is_pinned",
           "deleted_at",
           "removal",
-          "revision"
+          "revision",
+          "subject"
         ],
         "title": "TeamBoardPostOut"
       },

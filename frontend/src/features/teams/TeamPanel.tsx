@@ -12,6 +12,7 @@ import {
   setMember,
   updateTeam,
 } from '@/lib/api/teams';
+import type { BoardLink } from '@/lib/teamBoardLinks';
 
 import { AddMemberForm, TeamNameForm } from './TeamForms';
 import { ConfirmAction, TeamRoster } from './TeamRoster';
@@ -25,10 +26,12 @@ export function TeamPanel({
   id,
   user,
   refreshList,
+  boardLink = null,
 }: {
   id: string;
   user: User;
   refreshList: () => Promise<void>;
+  boardLink?: BoardLink | null;
 }) {
   const load = useCallback(() => getTeam(id), [id]);
   const resource = useTeamsResource(load);
@@ -41,7 +44,8 @@ export function TeamPanel({
   // Keep the roster as the landing view so existing team workflows remain one
   // click from the team selector. Overview, Research, and Board are available
   // alongside it in the dashboard tabs.
-  const [activeTab, setActiveTab] = useState<TeamDashboardTab>('members');
+  // A team discussion link opens the board instead.
+  const [activeTab, setActiveTab] = useState<TeamDashboardTab>(boardLink ? 'board' : 'members');
   const reload = resource.reload;
   const accessRevoked =
     resource.error?.status === 401 ||
@@ -83,6 +87,7 @@ export function TeamPanel({
           capabilities={capabilities}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          boardLink={boardLink}
           actions={
             <Button
               variant="ghost"

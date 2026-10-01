@@ -8,6 +8,7 @@ import {
   markBoardRead,
   pinBoardPost,
   removeBoardPost,
+  type BoardSubjectInput,
   type TeamBoardPost,
 } from '@/lib/api/teamBoard';
 import { useVisiblePolling, type PollOutcome } from '@/lib/hooks/useVisiblePolling';
@@ -28,7 +29,7 @@ function notifyNew(count: number): string | null {
  * Board state, including a draft that survives refreshes and revision conflicts.
  * The server remains the authority for every permission and revision check.
  */
-export function useTeamBoard(teamId: string) {
+export function useTeamBoard(teamId: string, initialSubject?: BoardSubjectInput) {
   const [posts, setPosts] = useState<TeamBoardPost[]>([]);
   const [replies, setReplies] = useState<TeamBoardPost[]>([]);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -40,6 +41,8 @@ export function useTeamBoard(teamId: string) {
   const [accessLost, setAccessLost] = useState(false);
   const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  // Work a new top-level post will discuss; the server re-checks its team on posting.
+  const [subject, setSubject] = useState<BoardSubjectInput | null>(initialSubject ?? null);
   const [replyTo, setReplyTo] = useState<TeamBoardPost | null>(null);
   const [editing, setEditing] = useState<TeamBoardPost | null>(null);
   const editingRef = useRef<TeamBoardPost | null>(null);
@@ -172,7 +175,11 @@ export function useTeamBoard(teamId: string) {
     activeRequests.current += 1;
     try {
       if (editing) await editBoardPost(teamId, editing.id, text, editing.revision);
-      else await createBoardPost(teamId, text, replyTo?.id);
+      else if (replyTo) await createBoardPost(teamId, text, replyTo.id);
+      else {
+        await createBoardPost(teamId, text, undefined, subject ?? undefined);
+        setSubject(null);
+      }
       setConflict(null);
       setDraft('');
       setReplyTo(null);
@@ -242,6 +249,8 @@ export function useTeamBoard(teamId: string) {
     draft,
     replyTo,
     editing,
+    subject,
+    clearSubject: () => setSubject(null),
     setDraft,
     load,
     loadMore,

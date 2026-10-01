@@ -15256,7 +15256,7 @@ export interface components {
             removal: ("author" | "moderator") | null;
             /** Revision */
             revision: number;
-            subject?: components["schemas"]["TeamBoardSubjectOut"] | null;
+            subject: components["schemas"]["TeamBoardSubjectOut"] | null;
         };
         /** TeamBoardPostUpdateIn */
         TeamBoardPostUpdateIn: {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
@@ -7,6 +8,7 @@ import { SelectField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
 import { createTeam, listTeams } from '@/lib/api/teams';
+import { parseBoardLink } from '@/lib/teamBoardLinks';
 import { useAuthStore } from '@/stores/auth';
 
 import { TeamNameForm } from './TeamForms';
@@ -82,7 +84,10 @@ function EmptyTeams({ onCreate }: { onCreate: () => void }) {
 function TeamsWorkspace({ user }: { user: User }) {
   const resource = useTeamsResource(listTeams);
   const action = useTeamAction();
-  const [selected, setSelected] = useState('');
+  const [params] = useSearchParams();
+  // Read once: a team discussion link selects its team and opens the board.
+  const [boardLink] = useState(() => parseBoardLink(params));
+  const [selected, setSelected] = useState(boardLink?.teamId ?? '');
   const [creating, setCreating] = useState(false);
   const teams = resource.data;
   const teamId = teams?.find((team) => team.id === selected)?.id ?? teams?.[0]?.id;
@@ -191,7 +196,13 @@ function TeamsWorkspace({ user }: { user: User }) {
               }}
             />
             {teamId ? (
-              <TeamPanel key={teamId} id={teamId} user={user} refreshList={resource.reload} />
+              <TeamPanel
+                key={teamId}
+                id={teamId}
+                user={user}
+                refreshList={resource.reload}
+                boardLink={boardLink?.teamId === teamId ? boardLink : null}
+              />
             ) : null}
           </>
         ) : null}

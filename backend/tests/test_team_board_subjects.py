@@ -278,7 +278,10 @@ async def test_report_team_discussion_counts_live_threads_for_readers(
     other = await _other_team(client, desk, with_user=False)
     hidden = await seed_report(container, admin.id, other)
     refused = await client.get(f"/api/reports/{hidden}/team-discussion", headers=desk.user)
-    assert refused.status_code == 404
+    missing = await client.get(f"/api/reports/{desk.team_id}/team-discussion", headers=desk.user)
+    # An unreadable report and a missing one give the same answer.
+    assert refused.status_code == missing.status_code == 404
+    assert refused.json() == missing.json()
     archived = await client.patch(
         f"/api/teams/{desk.team_id}", json={"is_active": False}, headers=desk.admin
     )

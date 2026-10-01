@@ -115,7 +115,7 @@ class TeamBoardPostOut(BaseModel):
     deleted_at: datetime | None
     removal: Literal["author", "moderator"] | None
     revision: int
-    subject: TeamBoardSubjectOut | None = None
+    subject: TeamBoardSubjectOut | None
 
     @classmethod
     def from_post(

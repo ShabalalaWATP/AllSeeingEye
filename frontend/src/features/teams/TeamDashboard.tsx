@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { User } from '@/lib/api/schemas';
 import type { TeamDetail } from '@/lib/api/teams';
+import type { BoardLink } from '@/lib/teamBoardLinks';
 
 import { TeamBoard } from './TeamBoard';
 import { TeamDashboardTabs } from './TeamDashboardTabs';
@@ -93,6 +94,7 @@ export function TeamDashboard({
   onTabChange,
   actions,
   members,
+  boardLink,
 }: {
   detail: TeamDetail;
   user: User;
@@ -101,6 +103,8 @@ export function TeamDashboard({
   onTabChange: (tab: TeamDashboardTab) => void;
   actions?: ReactNode;
   members: ReactNode;
+  /** A thread or new subject opened from a team discussion link. */
+  boardLink?: BoardLink | null;
 }) {
   const selectedTab = TABS.find((tab) => tab.id === activeTab) ?? DEFAULT_TAB;
   return (
@@ -149,6 +153,8 @@ export function TeamDashboard({
             teamName={detail.team.name}
             userId={user.id}
             capabilities={capabilities}
+            focusPostId={boardLink?.postId}
+            initialSubject={boardLink?.subject}
           />
         ) : null}
         {activeTab === 'members' ? members : null}
