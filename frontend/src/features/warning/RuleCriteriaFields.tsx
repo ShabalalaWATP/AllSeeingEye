@@ -91,7 +91,7 @@ export function RuleCriteriaFields({
           min={1}
           max={100}
           step="any"
-          value={fields.ratio ?? ''}
+          value={fields.ratio}
           onChange={(event) => change({ ratio: event.target.value })}
         />
         <TextField
@@ -101,7 +101,7 @@ export function RuleCriteriaFields({
           type="number"
           min={7}
           max={30}
-          value={fields.baselineDays ?? '30'}
+          value={fields.baselineDays}
           onChange={(event) => change({ baselineDays: event.target.value })}
         />
         <TextField

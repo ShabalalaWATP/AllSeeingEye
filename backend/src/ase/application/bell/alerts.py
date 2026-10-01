@@ -5,13 +5,20 @@ from __future__ import annotations
 from collections.abc import Sequence
 from uuid import UUID
 
+from ase.application.access import AccessContext, AccessPolicy
 from ase.application.bell.scope import (
     BellSignals,
     bell_visibility,
     can_acknowledge,
     in_bell_scope,
 )
+from ase.application.dto import RequestContext
+from ase.application.ports import Clock, UnitOfWork
+from ase.application.ports.annotation_monitors import AnnotationMonitorRepository
 from ase.application.ports.bell import BellAlertQueries
+from ase.application.ports.reports import ReportRepository
+from ase.application.ports.warning import AlertRepository
+from ase.application.warning.alerts import AcknowledgeAlertUseCase
 from ase.domain.bell import (
     BELL_ALERT_WINDOW,
     BELL_SHOWN,
@@ -25,14 +32,6 @@ from ase.domain.bell import (
     BellPreferences,
     DestinationKind,
 )
-
-from ase.application.access import AccessContext, AccessPolicy
-from ase.application.dto import RequestContext
-from ase.application.ports import Clock, UnitOfWork
-from ase.application.ports.annotation_monitors import AnnotationMonitorRepository
-from ase.application.ports.reports import ReportRepository
-from ase.application.ports.warning import AlertRepository
-from ase.application.warning.alerts import AcknowledgeAlertUseCase
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.users import User
 from ase.domain.warning import Alert

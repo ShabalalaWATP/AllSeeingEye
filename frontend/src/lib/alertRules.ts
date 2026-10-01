@@ -173,10 +173,10 @@ export function ruleProblems(
     problems.keywords = `Shorten each keyword to ${String(MAX_KEYWORD_LENGTH)} characters or fewer (${String(long)} ${long === 1 ? 'is' : 'are'} longer).`;
   if (!inRange(fields.threshold, 1, MAX_THRESHOLD, true))
     problems.threshold = 'Enter a whole number from 1 to 10000.';
-  const ratio = fields.ratio ?? '';
+  const ratio = fields.ratio;
   if (ratio !== '' && (!inRange(ratio, 1, 100, false) || Number(ratio) <= 1))
     problems.baseline_ratio = 'Enter a ratio above 1 and no greater than 100, or leave it empty.';
-  if (!inRange(fields.baselineDays ?? '30', 7, 30, true))
+  if (!inRange(fields.baselineDays, 7, 30, true))
     problems.baseline_days = 'Enter whole days from 7 to 30.';
   if (!inRange(fields.cooldown, COOLDOWN_RANGE.min, COOLDOWN_RANGE.max, true))
     problems.cooldown_minutes = 'Enter whole minutes from 1 to 1440 (24 hours).';
@@ -209,7 +209,7 @@ export function ruleRequest(fields: RuleFields, scope: RuleScope): IndicatorRequ
     keywords: splitKeywords(fields.keywords),
     threshold: Number(fields.threshold),
     baseline_ratio: fields.ratio ? Number(fields.ratio) : null,
-    baseline_days: Number(fields.baselineDays ?? '30'),
+    baseline_days: Number(fields.baselineDays),
     window_minutes: fields.ratio ? 60 : Number(fields.window),
     cooldown_minutes: Number(fields.cooldown),
     severity_floor: Number(fields.severityFloor),
@@ -284,7 +284,7 @@ export function ruleSummary(
       ? [
           {
             label: 'Baseline ratio',
-            text: `At least ${fields.ratio} times the ${fields.baselineDays ?? '30'}-day sampled hourly mean; requires seven days and 168 sampled hours, with a positive mean`,
+            text: `At least ${fields.ratio} times the ${fields.baselineDays}-day sampled hourly mean; requires seven days and 168 sampled hours, with a positive mean`,
           },
         ]
       : []),

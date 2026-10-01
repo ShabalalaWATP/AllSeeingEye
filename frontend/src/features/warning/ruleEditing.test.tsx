@@ -68,6 +68,8 @@ describe('editing, pausing and resuming alert rules', () => {
         categories: ['conflict'],
         keywords: ['Kharkiv', 'shelling'],
         threshold: 5,
+        baseline_ratio: null,
+        baseline_days: 30,
         window_minutes: 360,
         cooldown_minutes: 90,
         severity_floor: 0.4,
