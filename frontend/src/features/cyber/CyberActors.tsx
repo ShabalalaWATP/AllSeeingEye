@@ -121,7 +121,7 @@ export function CyberActors({
         </div>
         <aside
           aria-label="Selected threat actor"
-          className="border-l-2 border-cyan/60 pl-5 xl:sticky xl:top-6"
+          className="border-l-2 border-cyan/60 pl-5 xl:sticky xl:top-16"
         >
           {selected ? (
             <div className="space-y-5">

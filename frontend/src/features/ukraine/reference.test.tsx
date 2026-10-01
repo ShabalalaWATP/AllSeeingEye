@@ -109,6 +109,9 @@ describe('Ukraine reference sections', () => {
       { timeout: 5000 },
     );
     expect(within(recon).getByRole('heading', { name: 'Orlan-10', level: 4 })).toBeInTheDocument();
+    // The page scroller leaves room below for the fixed Eye launcher when focus moves.
+    const page = screen.getByRole('heading', { level: 1, name: 'Ukraine war' }).closest('article');
+    expect(page).toHaveClass('overflow-y-auto', 'scroll-pb-28', 'pb-28');
     const levels = screen.getAllByRole('heading').map((heading) => Number(heading.tagName[1]));
     levels.forEach((level, index) => {
       const previous = index === 0 ? 1 : levels[index - 1]!;

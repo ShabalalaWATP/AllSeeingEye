@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
@@ -102,8 +103,8 @@ function TeamsWorkspace({ user }: { user: User }) {
     resource.error !== null && isAccessError(resource.error.status, resource.error.code);
 
   return (
-    <section className="h-full overflow-y-auto p-4 sm:p-6">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-8">
+    <section className={`h-full overflow-y-auto p-4 sm:p-6 ${LAUNCHER_SCROLL_PADDING}`}>
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-28">
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line/70 pb-6">
           <div>
             <p className="font-mono text-2xs uppercase tracking-[0.22em] text-ember">

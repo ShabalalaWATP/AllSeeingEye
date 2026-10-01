@@ -52,4 +52,6 @@ it('keeps the page header inside a landmark named by the page heading', async ()
   const heading = await screen.findByRole('heading', { level: 1, name: 'Economy' });
   const page = screen.getByRole('region', { name: 'Economy' });
   expect(page).toContainElement(heading.closest('header'));
+  // Focus scrolling in the page keeps controls clear of the fixed Eye launcher.
+  expect(page).toHaveClass('overflow-y-auto', 'scroll-pb-28');
 });

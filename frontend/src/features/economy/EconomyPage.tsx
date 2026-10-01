@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router';
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -32,7 +33,7 @@ export default function EconomyPage() {
   return (
     <section
       aria-labelledby="economy-page-heading"
-      className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10"
+      className={`h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10 ${LAUNCHER_SCROLL_PADDING}`}
     >
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
         <header className="flex flex-wrap items-end justify-between gap-4">
