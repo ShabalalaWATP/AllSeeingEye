@@ -990,6 +990,57 @@
         ]
       }
     },
+    "/api/admin/research-quality": {
+      "get": {
+        "tags": [
+          "research-usage",
+          "admin"
+        ],
+        "summary": "Get Research Quality",
+        "operationId": "get_research_quality_api_admin_research_quality_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Days to look back: 7, 30, 90 or 365.",
+              "default": 90,
+              "title": "Window Days"
+            },
+            "description": "Days to look back: 7, 30, 90 or 365."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchQualityOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/research-usage/me": {
       "get": {
         "tags": [
@@ -35453,6 +35504,412 @@
         ],
         "title": "ProjectOut"
       },
+      "QualityCitationChecksOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "note"
+        ],
+        "title": "QualityCitationChecksOut"
+      },
+      "QualityFailureCodeOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "jobs": {
+            "type": "integer",
+            "title": "Jobs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "jobs"
+        ],
+        "title": "QualityFailureCodeOut"
+      },
+      "QualityFindingOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "versions": {
+            "type": "integer",
+            "title": "Versions"
+          },
+          "occurrences": {
+            "type": "integer",
+            "title": "Occurrences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "rule",
+          "severity",
+          "versions",
+          "occurrences"
+        ],
+        "title": "QualityFindingOut"
+      },
+      "QualityJobGroupOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "jobs": {
+            "type": "integer",
+            "title": "Jobs"
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued"
+          },
+          "running": {
+            "type": "integer",
+            "title": "Running"
+          },
+          "paused": {
+            "type": "integer",
+            "title": "Paused"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "failed_without_version": {
+            "type": "integer",
+            "title": "Failed Without Version"
+          },
+          "failed_with_version": {
+            "type": "integer",
+            "title": "Failed With Version"
+          },
+          "failure_codes": {
+            "items": {
+              "$ref": "#/components/schemas/QualityFailureCodeOut"
+            },
+            "type": "array",
+            "title": "Failure Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "jobs",
+          "queued",
+          "running",
+          "paused",
+          "completed",
+          "needs_review",
+          "failed",
+          "failed_without_version",
+          "failed_with_version",
+          "failure_codes"
+        ],
+        "title": "QualityJobGroupOut"
+      },
+      "QualityJobPopulationOut": {
+        "properties": {
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/QualityJobGroupOut"
+          },
+          "by_template": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Template"
+          },
+          "by_depth": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Depth"
+          },
+          "by_model": {
+            "items": {
+              "$ref": "#/components/schemas/QualityJobGroupOut"
+            },
+            "type": "array",
+            "title": "By Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "overall",
+          "by_template",
+          "by_depth",
+          "by_model"
+        ],
+        "title": "QualityJobPopulationOut"
+      },
+      "QualityReceiptsOut": {
+        "properties": {
+          "versions_with_receipts": {
+            "type": "integer",
+            "title": "Versions With Receipts"
+          },
+          "versions_without_receipts": {
+            "type": "integer",
+            "title": "Versions Without Receipts"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "empty": {
+            "type": "integer",
+            "title": "Empty"
+          },
+          "unavailable": {
+            "type": "integer",
+            "title": "Unavailable"
+          },
+          "other_unsuccessful": {
+            "type": "integer",
+            "title": "Other Unsuccessful"
+          },
+          "versions_with_empty_or_unavailable": {
+            "type": "integer",
+            "title": "Versions With Empty Or Unavailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versions_with_receipts",
+          "versions_without_receipts",
+          "attempts",
+          "completed",
+          "empty",
+          "unavailable",
+          "other_unsuccessful",
+          "versions_with_empty_or_unavailable"
+        ],
+        "title": "QualityReceiptsOut"
+      },
+      "QualityUsageOut": {
+        "properties": {
+          "versions_with_usage": {
+            "type": "integer",
+            "title": "Versions With Usage"
+          },
+          "versions_without_usage": {
+            "type": "integer",
+            "title": "Versions Without Usage"
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens"
+          },
+          "prompt_tokens_per_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens Per Version"
+          },
+          "completion_tokens_per_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens Per Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versions_with_usage",
+          "versions_without_usage",
+          "prompt_tokens",
+          "completion_tokens",
+          "prompt_tokens_per_version",
+          "completion_tokens_per_version"
+        ],
+        "title": "QualityUsageOut"
+      },
+      "QualityVersionGroupOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "versions": {
+            "type": "integer",
+            "title": "Versions"
+          },
+          "ready": {
+            "type": "integer",
+            "title": "Ready"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/QualityFindingOut"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "receipts": {
+            "$ref": "#/components/schemas/QualityReceiptsOut"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/QualityUsageOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "versions",
+          "ready",
+          "needs_review",
+          "failed",
+          "findings",
+          "receipts",
+          "usage"
+        ],
+        "title": "QualityVersionGroupOut"
+      },
+      "QualityVersionPopulationOut": {
+        "properties": {
+          "bound": {
+            "type": "integer",
+            "title": "Bound"
+          },
+          "in_window": {
+            "type": "integer",
+            "title": "In Window"
+          },
+          "counted": {
+            "type": "integer",
+            "title": "Counted"
+          },
+          "bound_reached": {
+            "type": "boolean",
+            "title": "Bound Reached"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/QualityVersionGroupOut"
+          },
+          "by_template": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Template"
+          },
+          "by_depth": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Depth"
+          },
+          "by_connection": {
+            "items": {
+              "$ref": "#/components/schemas/QualityVersionGroupOut"
+            },
+            "type": "array",
+            "title": "By Connection"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bound",
+          "in_window",
+          "counted",
+          "bound_reached",
+          "overall",
+          "by_template",
+          "by_depth",
+          "by_connection"
+        ],
+        "title": "QualityVersionPopulationOut"
+      },
       "QueryTransformationOut": {
         "properties": {
           "original_terms": {
@@ -40923,6 +41380,43 @@
           "country_iso"
         ],
         "title": "ResearchPreviewOut"
+      },
+      "ResearchQualityOut": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "versions": {
+            "$ref": "#/components/schemas/QualityVersionPopulationOut"
+          },
+          "jobs": {
+            "$ref": "#/components/schemas/QualityJobPopulationOut"
+          },
+          "citation_checks": {
+            "$ref": "#/components/schemas/QualityCitationChecksOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "window_days",
+          "since",
+          "versions",
+          "jobs",
+          "citation_checks"
+        ],
+        "title": "ResearchQualityOut"
       },
       "ResearchReceiptOut": {
         "properties": {

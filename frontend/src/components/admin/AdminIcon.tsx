@@ -32,6 +32,7 @@ const PATHS: Record<AdminGlyph, string> = {
   ai: 'M9 3v3m6-3v3M9 18v3m6-3v3M3 9h3m-3 6h3m12-6h3m-3 6h3M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm3 4h4v4h-4v-4Z',
   sources:
     'M5 12.5a7 7 0 0 1 14 0M8 12.5a4 4 0 0 1 8 0M12 13.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 0V21M2 12.5a10 10 0 0 1 20 0',
+  quality: 'M4 20V10m5 10V4m5 16v-7m5 7V8M3 20h18',
   audit:
     'M8 4h8m-8 0a2 2 0 0 0-2 2v13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a2 2 0 0 0-2-2m-8 0a1.5 1.5 0 0 0 1.5 1.5h5A1.5 1.5 0 0 0 16 4M9 11h6M9 15h4',
   security:

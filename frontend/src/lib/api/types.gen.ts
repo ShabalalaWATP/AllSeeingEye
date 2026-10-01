@@ -341,6 +341,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/research-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Research Quality */
+        get: operations["get_research_quality_api_admin_research_quality_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/research-usage/me": {
         parameters: {
             query?: never;
@@ -11527,6 +11544,149 @@ export interface components {
             /** Completion Year */
             completion_year: number | null;
         };
+        /** QualityCitationChecksOut */
+        QualityCitationChecksOut: {
+            /** Available */
+            available: boolean;
+            /** Note */
+            note: string;
+        };
+        /** QualityFailureCodeOut */
+        QualityFailureCodeOut: {
+            /** Code */
+            code: string;
+            /** Jobs */
+            jobs: number;
+        };
+        /** QualityFindingOut */
+        QualityFindingOut: {
+            /** Key */
+            key: string;
+            /** Rule */
+            rule: string;
+            /** Severity */
+            severity: string;
+            /** Versions */
+            versions: number;
+            /** Occurrences */
+            occurrences: number;
+        };
+        /** QualityJobGroupOut */
+        QualityJobGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Jobs */
+            jobs: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
+            /** Paused */
+            paused: number;
+            /** Completed */
+            completed: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Failed Without Version */
+            failed_without_version: number;
+            /** Failed With Version */
+            failed_with_version: number;
+            /** Failure Codes */
+            failure_codes: components["schemas"]["QualityFailureCodeOut"][];
+        };
+        /** QualityJobPopulationOut */
+        QualityJobPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityJobGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityJobGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityJobGroupOut"][];
+            /** By Model */
+            by_model: components["schemas"]["QualityJobGroupOut"][];
+        };
+        /** QualityReceiptsOut */
+        QualityReceiptsOut: {
+            /** Versions With Receipts */
+            versions_with_receipts: number;
+            /** Versions Without Receipts */
+            versions_without_receipts: number;
+            /** Attempts */
+            attempts: number;
+            /** Completed */
+            completed: number;
+            /** Empty */
+            empty: number;
+            /** Unavailable */
+            unavailable: number;
+            /** Other Unsuccessful */
+            other_unsuccessful: number;
+            /** Versions With Empty Or Unavailable */
+            versions_with_empty_or_unavailable: number;
+        };
+        /** QualityUsageOut */
+        QualityUsageOut: {
+            /** Versions With Usage */
+            versions_with_usage: number;
+            /** Versions Without Usage */
+            versions_without_usage: number;
+            /** Prompt Tokens */
+            prompt_tokens: number;
+            /** Completion Tokens */
+            completion_tokens: number;
+            /** Prompt Tokens Per Version */
+            prompt_tokens_per_version: number | null;
+            /** Completion Tokens Per Version */
+            completion_tokens_per_version: number | null;
+        };
+        /** QualityVersionGroupOut */
+        QualityVersionGroupOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Versions */
+            versions: number;
+            /** Ready */
+            ready: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Failed */
+            failed: number;
+            /** Findings */
+            findings: components["schemas"]["QualityFindingOut"][];
+            receipts: components["schemas"]["QualityReceiptsOut"];
+            usage: components["schemas"]["QualityUsageOut"];
+        };
+        /** QualityVersionPopulationOut */
+        QualityVersionPopulationOut: {
+            /** Bound */
+            bound: number;
+            /** In Window */
+            in_window: number;
+            /** Counted */
+            counted: number;
+            /** Bound Reached */
+            bound_reached: boolean;
+            overall: components["schemas"]["QualityVersionGroupOut"];
+            /** By Template */
+            by_template: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Depth */
+            by_depth: components["schemas"]["QualityVersionGroupOut"][];
+            /** By Connection */
+            by_connection: components["schemas"]["QualityVersionGroupOut"][];
+        };
         /** QueryTransformationOut */
         QueryTransformationOut: {
             /** Original Terms */
@@ -13463,6 +13623,24 @@ export interface components {
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
             planning?: components["schemas"]["PlanningTraceOut"] | null;
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
+        };
+        /** ResearchQualityOut */
+        ResearchQualityOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Window Days */
+            window_days: number;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            versions: components["schemas"]["QualityVersionPopulationOut"];
+            jobs: components["schemas"]["QualityJobPopulationOut"];
+            citation_checks: components["schemas"]["QualityCitationChecksOut"];
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
@@ -16910,6 +17088,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiUsageSummaryPageOut"];
+                };
+            };
+        };
+    };
+    get_research_quality_api_admin_research_quality_get: {
+        parameters: {
+            query?: {
+                /** @description Days to look back: 7, 30, 90 or 365. */
+                window_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchQualityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

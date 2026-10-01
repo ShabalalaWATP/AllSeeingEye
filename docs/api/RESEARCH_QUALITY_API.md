@@ -54,3 +54,58 @@ not. At most 2,000 candidate review histories are scanned per request.
 saved version and twelve frozen items each on in-memory SQLite. On the development
 machine on 1 October 2026 the service median was about 200 ms (target: under one
 second). The test asserts only a loose five second regression ceiling.
+
+## Administrator research-quality scorecard (KAN-117)
+
+`GET /api/admin/research-quality?window_days=90`
+
+- Authorisation: administrators only. Like every administrator route, the session must
+  be MFA verified: a password-only administrator session is rejected as unauthenticated
+  (401) by the current-session check, and other roles receive 403. The route takes the
+  release fence with `admin_only`, and the service checks the administrator role again
+  in the application layer. Responses use `Cache-Control: private, no-store`.
+- `window_days`: 7, 30, 90 (default) or 365. Other values return 422.
+- Page: `/admin/quality`, listed as "Research quality" under Research services in the
+  administration navigation. It is not part of the overview page.
+
+### Authorised population
+
+Existing rules already let an administrator read every report and every report job
+(`AccessContext.require_read` returns early for administrators and the visibility
+predicate is unrestricted). The scorecard therefore grants no new right to private
+report content. It still releases counts, status values, template identifiers and
+titles, research depth values, model connection names, validator rule codes and
+severities, collection receipt statuses, token counts and safe job failure codes only.
+It never returns report or job titles, report identifiers, report text, finding
+messages, reviewer text or anything that drills down to a single record.
+
+### Populations, bounds and missing values
+
+| Population | Membership | Bound | Dimensions |
+| --- | --- | --- | --- |
+| Saved versions | Every saved report version whose save time falls in the window. Each version counts once, by its own saved status. | Newest 1,000 (`counted`), with `in_window` and `bound_reached`. | Report template, research depth (`scope.research_mode`), model connection (`profile_id`). |
+| Report jobs | Every report job created in the window, counted once by job status. Failed jobs are split into `failed_without_version` and `failed_with_version`, so failures that never saved a version are not omitted. | Newest 1,000, reported the same way. | Frozen template, frozen research depth and recorded model name. |
+
+The populations are never added together: a run that saved a version appears once in
+each, as a version outcome and as a job outcome. A missing or overlong template, a
+missing or unrecognised depth, and a missing connection or model are grouped under
+`not_recorded` ("Not recorded"). A model
+connection whose profile has since been deleted is labelled "Connection no longer
+configured".
+
+### Metrics and denominators
+
+- Ready, Needs review and Failed counts per group, out of the group's version count.
+- Up to five commonest validator findings per group, as versions affected out of the
+  group's versions plus total occurrences.
+- Collection receipts: attempts by status (completed, empty, unavailable, other
+  unsuccessful), versions with an empty or unavailable receipt out of versions with
+  receipts, and versions without a research receipt.
+- Model usage: total prompt and completion tokens and the rounded mean per version, out
+  of versions with recorded token counts.
+- Job statuses per group and up to five failure codes out of failed jobs.
+- Citation-check outcomes: always `available: false` until citation verdicts exist
+  (KAN-114).
+
+No accuracy figure, quality percentage or single rating is computed, and nothing is
+persisted (the optional weekly aggregate was not built).
