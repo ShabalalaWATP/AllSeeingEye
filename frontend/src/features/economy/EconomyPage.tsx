@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -36,22 +37,17 @@ export default function EconomyPage() {
       className={`h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10 ${LAUNCHER_SCROLL_PADDING}`}
     >
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="mb-2 font-mono text-2xs uppercase tracking-[0.22em] text-ember">
-              Economic intelligence
-            </p>
-            <h1 id="economy-page-heading" className="text-3xl font-semibold tracking-tight">
-              Economy
-            </h1>
-            <p className="mt-2 text-sm text-muted">
-              Markets, economic signals and the stories behind them.
-            </p>
-          </div>
-          <Button variant="secondary" busy={refreshing} onClick={() => void refresh()}>
-            Refresh news & indicators
-          </Button>
-        </header>
+        <PageHeader
+          title="Economy"
+          headingId="economy-page-heading"
+          eyebrow="Economic intelligence"
+          description="Markets, economic signals and the stories behind them."
+          actions={
+            <Button variant="secondary" busy={refreshing} onClick={() => void refresh()}>
+              Refresh news & indicators
+            </Button>
+          }
+        />
         <EconomyPeriodPicker
           days={days}
           onChange={(value) =>

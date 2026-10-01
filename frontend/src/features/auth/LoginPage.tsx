@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -60,15 +61,13 @@ export function LoginPage() {
         void run();
       }}
     >
-      <header className="mb-2">
-        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Account access
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          Use your approved account to continue.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-2"
+        title="Sign in"
+        eyebrow="Account access"
+        eyebrowTone="muted"
+        description="Use your approved account to continue."
+      />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       {passwordChanged ? (
         <Alert tone="success">Your password has changed. Sign in with your new password.</Alert>

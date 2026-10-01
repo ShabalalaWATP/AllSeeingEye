@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -77,7 +78,7 @@ export default function PlanPage() {
         <Link to="/direction" className="text-xs text-muted hover:underline">
           Direction
         </Link>
-        <h1 className="text-xl font-semibold">{plan.name}</h1>
+        <PageHeader as="div" type="record" title={plan.name} />
         <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
         {plan.description !== '' && <p className="text-sm text-muted">{plan.description}</p>}
         <p className="font-mono text-xs text-muted">

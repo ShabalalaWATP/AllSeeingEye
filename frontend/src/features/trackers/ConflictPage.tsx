@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Link, useParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchConflictDetail } from '@/lib/api/trackers';
@@ -32,7 +33,7 @@ export default function ConflictPage() {
       <header className="flex flex-col gap-2">
         <BackToTrackers />
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold">{conflict.name}</h1>
+          <PageHeader as="div" type="record" title={conflict.name} />
           <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs uppercase text-muted">
             {conflict.status}
           </span>

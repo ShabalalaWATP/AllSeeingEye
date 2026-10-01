@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -38,7 +39,7 @@ export default function ReportJobPage() {
                 Research job <span>{jobStatus[job.status]}</span>
                 {job.origin === 'briefing' && <span>Automatic briefing</span>}
               </p>
-              <h1>{job.title}</h1>
+              <PageHeader as="div" type="record" title={job.title} />
               <p className="job-connection">
                 {job.model} · Thinking: {job.reasoning_effort ?? 'provider default'}
               </p>

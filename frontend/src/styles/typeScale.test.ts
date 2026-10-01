@@ -89,3 +89,29 @@ describe('type scale', () => {
     expect(Object.keys(sources).length).toBeGreaterThan(300);
   });
 });
+
+// Pages that name themselves without PageHeader, each with its reason.
+const OWN_HEADINGS: Record<string, string> = {
+  'components/ui/PageHeader.tsx': 'the primitive itself',
+  'features/reports/ReportPage.tsx': 'report document: paper reader title (reportReader.css)',
+  'features/reports/ReportPublication.tsx':
+    'report document: paper reader title (reportReader.css)',
+  'app/dev/ReportPreviewPage.tsx': 'report document: paper reader title (reportReader.css)',
+  'features/globe/GlobeHeading.tsx': 'visually hidden heading over the map canvas',
+  // Deferred to avoid colliding with an open draft PR that rewrites this page.
+  'features/warning/WarningPage.tsx': 'pending migration to PageHeader',
+};
+
+describe('page headings', () => {
+  it('names every page through PageHeader, one heading size per page type', () => {
+    const offenders = Object.entries(sources)
+      .filter(([file, source]) => /<h1\b/.test(source) && OWN_HEADINGS[file] === undefined)
+      .map(([file]) => file);
+    expect(offenders).toEqual([]);
+  });
+
+  it('keeps each own-heading exemption only while it is needed', () => {
+    const stale = Object.keys(OWN_HEADINGS).filter((file) => !/<h1\b/.test(sources[file] ?? ''));
+    expect(stale).toEqual([]);
+  });
+});

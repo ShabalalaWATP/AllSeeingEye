@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
@@ -88,7 +89,7 @@ export default function UkrainePage({
     >
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold">Ukraine war</h1>
+          <PageHeader as="div" type="record" title="Ukraine war" />
           {data ? (
             <span
               className="rounded bg-surface-2 px-2 py-0.5 font-mono text-xs text-text"

@@ -7,6 +7,7 @@
 import { useEffect, useId, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { workspaceDestinations, workspaceHome } from '@/lib/workspaceNavigation';
 
@@ -63,14 +64,10 @@ export default function HelpPage() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-3xl space-y-8 pb-24">
-        <header>
-          <h1 className="text-3xl font-semibold tracking-tight">Help and guide</h1>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            The app connects a live picture to research you can revisit. Notice something on the
-            map, research a question, inspect the answer&apos;s evidence, then save, repeat or watch
-            the work when it is useful.
-          </p>
-        </header>
+        <PageHeader
+          title="Help and guide"
+          description="The app connects a live picture to research you can revisit. Notice something on the map, research a question, inspect the answer's evidence, then save, repeat or watch the work when it is useful."
+        />
 
         <Section title="Start here">
           <StartHereSteps headingLevel="h3" />

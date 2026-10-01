@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { fetchPlans } from '@/lib/api/direction';
@@ -52,16 +53,13 @@ export default function RecurringResearchPage() {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_0%,color-mix(in_srgb,var(--color-ember)_12%,transparent),transparent_70%)]"
           />
           <div className="relative grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end">
-            <div>
-              <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-                Standing research
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Subscriptions</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-                Follow a topic, conflict, disaster or area. Receive cited updates that prioritise
-                what has changed, produced on the server as you at the hour you choose.
-              </p>
-            </div>
+            <PageHeader
+              as="div"
+              title="Subscriptions"
+              eyebrow="Standing research"
+              eyebrowTone="cyan"
+              description="Follow a topic, conflict, disaster or area. Receive cited updates that prioritise what has changed, produced on the server as you at the hour you choose."
+            />
             <ol className="grid gap-2 text-xs sm:grid-cols-3 lg:grid-cols-1">
               {STEPS.map((step, index) => (
                 <li

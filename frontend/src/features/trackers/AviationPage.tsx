@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { fetchAviationBoard } from '@/lib/api/aviation';
@@ -98,7 +99,7 @@ export default function AviationPage() {
     <article className="flex h-full flex-col gap-5 overflow-y-auto p-6">
       <header className="flex flex-col gap-2">
         <BackToTrackers />
-        <h1 className="text-xl font-semibold">Aviation</h1>
+        <PageHeader as="div" type="record" title="Aviation" />
         <p className="text-sm text-muted">
           Military and unusual flying tracked now against the last month, from volunteer ADS-B
           receivers, with emergencies and where satellite positioning looks degraded.
