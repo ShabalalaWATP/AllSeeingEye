@@ -5,6 +5,8 @@ import type { Category, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
 
 import { ConnectionStatus } from './ConnectionStatus';
+import { ReplayControls } from './replay/ReplayControls';
+import type { LiveReplay } from './replay/useLiveReplay';
 export interface LayerPanelProps {
   counts: Partial<Record<Category, number>>;
   stats: StoreStats | null;
@@ -12,6 +14,8 @@ export interface LayerPanelProps {
   error: string | null;
   windowHours: number | null;
   onWindow: (hours: number | null) => void;
+  /** Replay of the retained window; omitted where the panel is shown without the map. */
+  replay?: LiveReplay;
 }
 
 const MEBIBYTE = 1_048_576;
@@ -40,6 +44,7 @@ export function LayerPanel({
   error,
   windowHours,
   onWindow,
+  replay,
 }: LayerPanelProps) {
   const windowName = useId();
   return (
@@ -81,6 +86,7 @@ export function LayerPanel({
           </label>
         ))}
       </div>
+      {replay && <ReplayControls replay={replay} />}
       <details className="map-tool-disclosure">
         <summary className="min-h-9 cursor-pointer py-2 font-medium">
           Connection and coverage

@@ -15,6 +15,7 @@ import { useMapNewsFeed } from './useMapNewsFeed';
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
 import { mergeSnapshots } from '@/stores/events.coverage';
 import { usePlanMapFilter } from './usePlanMapFilter';
+import { useLiveReplay } from './replay/useLiveReplay';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -41,10 +42,13 @@ export function useDashboardEvents(now: number) {
     [list, newsSnapshot.data],
   );
   const countryEvents = useMemo(() => filterByCountry(combined, country), [combined, country]);
-  const scoped = useMemo(
+  const windowed = useMemo(
     () => filterMapWindow(countryEvents, windowHours, now),
     [countryEvents, windowHours, now],
   );
+  // Replay narrows the same scope in memory; every count and layer below follows it.
+  const replay = useLiveReplay(windowed);
+  const scoped = replay.events;
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   // Fires and News have independent UI ownership while keeping source categories intact.
   const categoryScope = useMemo(
@@ -104,5 +108,6 @@ export function useDashboardEvents(now: number) {
     conflicts,
     quality,
     storySize,
+    replay,
   };
 }

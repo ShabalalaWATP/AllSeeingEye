@@ -161,7 +161,8 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
       {
         id: 'time',
         label: 'Event time',
-        description: 'How far back the map reaches, from one hour to everything collected.',
+        description:
+          'How far back the map reaches, and an hour-by-hour replay of the events still retained.',
         panel: 'Event time',
       },
       {
