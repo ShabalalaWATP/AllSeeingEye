@@ -162,7 +162,8 @@ describe('GlobePage', () => {
         screen.queryByRole('complementary', { name: 'Event details' }),
       ).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('Natural hazards: 1 loaded')).toBeInTheDocument();
+    // The selection clears at once; counts follow in the stream's own transition.
+    expect(await screen.findByText('Natural hazards: 1 loaded')).toBeInTheDocument();
 
     unmount();
     expect(client.stop).toHaveBeenCalledTimes(1);

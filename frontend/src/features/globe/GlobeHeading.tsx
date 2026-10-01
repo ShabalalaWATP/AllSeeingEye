@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { RefObject } from 'react';
 
 import { mapPanelHref } from '@/lib/mapLayerDirectory';
@@ -12,7 +13,7 @@ const VIEW_TITLES: Record<ViewMode, string> = { globe: 'Globe view', map: 'Map v
  * The page heading and a direct, canvas-free route to the loaded-event list. Both are
  * visually hidden; the link appears when it receives keyboard focus.
  */
-export function GlobeHeading({
+export const GlobeHeading = memo(function GlobeHeading({
   mode,
   showRef,
 }: {
@@ -39,4 +40,4 @@ export function GlobeHeading({
       )}
     </>
   );
-}
+});

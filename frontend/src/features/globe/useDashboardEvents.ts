@@ -16,6 +16,7 @@ import { usePageVisible } from '@/components/brand/useMotionPreferences';
 import { mergeSnapshots } from '@/stores/events.coverage';
 import { usePlanMapFilter } from './usePlanMapFilter';
 import { useLiveReplay } from './replay/useLiveReplay';
+import { useStreamedEventList } from './useStreamedEventList';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -26,7 +27,7 @@ export function useDashboardEvents(now: number) {
   const error = useEventsStore((state) => state.error);
   const setCountry = useEventsStore((state) => state.setCountry);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
-  const list = useEventsStore((state) => state.list);
+  const list = useStreamedEventList();
   const windowHours = useEventsStore((state) => state.windowHours);
   const setWindow = useEventsStore((state) => state.setWindow);
   const coverageBounds = useEventsStore((state) => state.coverageBounds);
@@ -73,7 +74,7 @@ export function useDashboardEvents(now: number) {
   // A selected collection plan narrows what every other filter already allows.
   const planned = usePlanMapFilter(cyberFiltered);
   const quality = useLocationQuality(planned, renderHidden);
-  const { selected, select } = useDashboardSelection(quality.filtered);
+  const { selected, select } = useDashboardSelection(quality.filtered, list);
   const storySize = useMemo(
     () =>
       selected?.story_id == null

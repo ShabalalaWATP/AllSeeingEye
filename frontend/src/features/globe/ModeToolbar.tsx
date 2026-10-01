@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ViewMode } from '@/stores/globe';
 
 export interface ModeToolbarProps {
@@ -11,7 +12,7 @@ const options: { value: ViewMode; label: string; shortcut: string }[] = [
 ];
 
 /** Segmented Globe / Map toggle floating over the view. */
-export function ModeToolbar({ mode, onChange }: ModeToolbarProps) {
+export const ModeToolbar = memo(function ModeToolbar({ mode, onChange }: ModeToolbarProps) {
   return (
     <div
       role="group"
@@ -39,4 +40,4 @@ export function ModeToolbar({ mode, onChange }: ModeToolbarProps) {
       })}
     </div>
   );
-}
+});

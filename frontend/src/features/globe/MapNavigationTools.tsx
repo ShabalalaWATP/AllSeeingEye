@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { MapControlLabel } from './MapControlLabel';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 
 /** Small explicit controls for operators who cannot use map gestures. */
-export function MapNavigationTools({
+export const MapNavigationTools = memo(function MapNavigationTools({
   engine,
   enabled,
 }: {
@@ -117,4 +117,4 @@ export function MapNavigationTools({
       )}
     </div>
   );
-}
+});
