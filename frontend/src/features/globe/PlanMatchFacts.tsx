@@ -1,3 +1,4 @@
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { usePlanMapFilterStore } from '@/stores/planMapFilter';
 
 /** Every SIR of the selected map plan that this event satisfies, from the latest sample. */
@@ -11,6 +12,7 @@ export function PlanMatchFacts({ eventId }: { eventId: string }) {
   return (
     <section aria-label="Plan matches" className="mt-3 text-xs">
       <p className="text-muted">Matches {result.plan.name}</p>
+      <RequirementCodesNote codes={['SIR']} />
       <ul className="mt-1 space-y-1">
         {codes.map((code) => (
           <li key={code}>

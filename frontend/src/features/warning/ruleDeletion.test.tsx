@@ -26,8 +26,8 @@ function trackDeletes(respond: () => Response | Promise<Response>) {
 
 async function openRule() {
   const { user } = renderApp('/warning', 'user');
-  const table = await screen.findByRole('table', { name: 'Indicators' });
-  const trigger = within(table).getByRole('button', { name: 'Delete' });
+  const table = await screen.findByRole('table', { name: 'Alert rules' });
+  const trigger = within(table).getByRole('button', { name: `Delete ${indicator.name}` });
   await user.click(trigger);
   const dialog = await screen.findByRole('alertdialog', { name: TITLE });
   return { user, trigger, dialog };
@@ -48,7 +48,7 @@ describe('alert rule deletion', () => {
     await screen.findByRole('alertdialog', { name: TITLE });
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('table', { name: 'Indicators' })).toHaveTextContent(indicator.name);
+    expect(screen.getByRole('table', { name: 'Alert rules' })).toHaveTextContent(indicator.name);
     expect(calls.count).toBe(0);
   });
 
@@ -62,7 +62,7 @@ describe('alert rule deletion', () => {
     const confirm = within(dialog).getByRole('button', { name: 'Delete rule' });
     await user.click(confirm);
     await user.click(confirm);
-    expect(await screen.findByText('No indicators yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No alert rules yet')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(calls.count).toBe(1);
     await waitFor(() => {
@@ -77,7 +77,7 @@ describe('alert rule deletion', () => {
     expect(await within(dialog).findByRole('alert')).toHaveTextContent(
       'You cannot change this rule.',
     );
-    expect(await screen.findByRole('table', { name: 'Indicators' })).toHaveTextContent(
+    expect(await screen.findByRole('table', { name: 'Alert rules' })).toHaveTextContent(
       indicator.name,
     );
     expect(within(dialog).getByRole('button', { name: 'Delete rule' })).toBeEnabled();

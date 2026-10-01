@@ -62,19 +62,19 @@ describe('form drafts survive in-app navigation within one session', () => {
 
   it('restores a new alert rule and clears it for another account', async () => {
     const { user, router } = renderApp('/warning', 'user');
-    const form = await screen.findByRole('form', { name: 'New indicator' });
-    await user.type(within(form).getByLabelText('Indicator name'), 'Border crossings');
+    const form = await screen.findByRole('form', { name: 'New alert rule' });
+    await user.type(within(form).getByLabelText('Alert rule name'), 'Border crossings');
     await user.type(within(form).getByLabelText('Keywords'), 'checkpoint, queue');
     await leaveAndReturn(router, '/warning');
-    const restored = await screen.findByRole('form', { name: 'New indicator' });
-    expect(within(restored).getByLabelText('Indicator name')).toHaveValue('Border crossings');
+    const restored = await screen.findByRole('form', { name: 'New alert rule' });
+    expect(within(restored).getByLabelText('Alert rule name')).toHaveValue('Border crossings');
     expect(within(restored).getByLabelText('Keywords')).toHaveValue('checkpoint, queue');
     act(() => applySession('admin'));
     await leaveAndReturn(router, '/warning');
     await waitFor(() =>
       expect(
-        within(screen.getByRole('form', { name: 'New indicator' })).getByLabelText(
-          'Indicator name',
+        within(screen.getByRole('form', { name: 'New alert rule' })).getByLabelText(
+          'Alert rule name',
         ),
       ).toHaveValue(''),
     );

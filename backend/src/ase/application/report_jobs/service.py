@@ -223,7 +223,7 @@ class ReportJobService:
         try:
             access = await self._access.context(actor)
             jobs = await self._repo.list_page(
-                access.visibility,
+                access.scoped_visibility(query.scope),
                 limit=query.limit + 1,
                 statuses=query.statuses,
                 include_briefings=query.include_briefings,
@@ -242,6 +242,14 @@ class ReportJobService:
             access_policy=self._access,
             check_session=check_session,
         )
+        personal = [job.owner_id for job in jobs if job.team_id is None]
+        try:
+            names = await self._access.owner_names(actor, personal)
+        finally:
+            await self._uow.rollback()
+        for value in result:
+            if value["team_id"] is None:
+                value["owner_name"] = names.get(value["owner_id"])
         return result, after
 
     async def list(

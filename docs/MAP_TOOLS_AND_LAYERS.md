@@ -308,8 +308,8 @@ personal area research and explains that plan requirements are not transferred.
 The backend rejects incompatible plan assessment requests rather than widening
 scope.
 
-**Watch this area** prepares an indicator in Warning; **Add indicator** is the
-explicit save action. Exact-shape indicators use precisely located observations,
+**Watch this area** prepares an alert rule in Alerts; **Add alert rule** is the
+explicit save action. Exact-shape alert rules use precisely located observations,
 including polygon boundaries and excluding hole interiors. They create alerts
 only. Research subscriptions provide recurring area reports. Choosing a
 rectangle explicitly switches to the enclosing bounds, which can include space

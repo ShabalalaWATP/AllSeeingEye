@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react';
 
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
+import { TermExplainer } from '@/components/ui/TermExplainer';
+import { GLOSSARY_PATH } from '@/lib/glossary';
+import type { RequirementCode } from '@/lib/glossary';
+import { loadedBands, useYardstick } from '@/lib/hooks/useYardstick';
+import type { Yardstick } from '@/lib/hooks/useYardstick';
+
 import type { DevilsAdvocacy, Direction, ReportBody } from '@/lib/api/reports';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
@@ -47,8 +54,14 @@ export function DirectionView({ direction }: { direction: Direction | null }) {
     ...direction.sirs.map((text, index) => [`SIR-${String(index + 1)}`, text]),
     ...direction.eeis.map((text, index) => [`EEI-${String(index + 1)}`, text]),
   ];
+  const codes: RequirementCode[] = [
+    'PIR',
+    ...(direction.sirs.length > 0 ? (['SIR'] as const) : []),
+    ...(direction.eeis.length > 0 ? (['EEI'] as const) : []),
+  ];
   return (
     <Section title="Direction">
+      <RequirementCodesNote codes={codes} />
       <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
         {rows.map(([id, text]) => (
           <div key={id} className="contents">
@@ -87,12 +100,38 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
   );
 }
 
+/** How to read the likelihood and confidence chips, with the configured bands. */
+function ReadingKey({ yardstick }: { yardstick: Yardstick }) {
+  return (
+    <TermExplainer label="How to read likelihood and confidence">
+      <p>
+        Likelihood uses the UK Probability Yardstick: each word stands for an approximate band, not
+        a measured probability. Confidence (high, moderate or low) describes how strong the basis
+        for the judgement is, separately from its likelihood.
+      </p>
+      {loadedBands(yardstick).length > 0 && (
+        <ul className="mt-2 list-disc pl-5">
+          {loadedBands(yardstick).map((band) => (
+            <li key={band.probability}>{`${band.term}: ${band.range_description}`}</li>
+          ))}
+        </ul>
+      )}
+      {yardstick === 'unavailable' && <p className="mt-2">The configured bands are unavailable.</p>}
+      <a href={GLOSSARY_PATH} className="mt-2 inline-block text-ember underline">
+        Glossary of terms
+      </a>
+    </TermExplainer>
+  );
+}
+
 function KeyJudgement({
   judgement,
   index,
+  yardstick,
 }: {
   judgement: ReportBody['key_judgements'][number];
   index: number;
+  yardstick: Yardstick;
 }) {
   return (
     <li className="report-reader-judgement">
@@ -103,7 +142,7 @@ function KeyJudgement({
           <Labels labels={judgement.supporting_evidence} />
         </p>
         <div className="report-reader-facts">
-          <LikelihoodChip probability={judgement.probability} />
+          <LikelihoodChip probability={judgement.probability} yardstick={yardstick} />
           <ConfidenceChip confidence={judgement.confidence} />
         </div>
         <p className="report-reader-note">{judgement.confidence_statement}</p>
@@ -128,13 +167,20 @@ export function ReportBodyView({
   assessment?: ReportAssessment | null | undefined;
   citationChecks?: CitationChecks | null | undefined;
 }) {
+  const yardstick = useYardstick();
   return (
     <div>
       {body.key_judgements.length > 0 && (
         <Section title="Executive summary" index={1} lead>
+          <ReadingKey yardstick={yardstick} />
           <ol className="mt-3">
             {body.key_judgements.map((judgement, index) => (
-              <KeyJudgement key={judgement.id} judgement={judgement} index={index} />
+              <KeyJudgement
+                key={judgement.id}
+                judgement={judgement}
+                index={index}
+                yardstick={yardstick}
+              />
             ))}
           </ol>
         </Section>

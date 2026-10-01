@@ -155,6 +155,7 @@ export function TeamDashboard({
             capabilities={capabilities}
             focusPostId={boardLink?.postId}
             initialSubject={boardLink?.subject}
+            members={detail.members}
           />
         ) : null}
         {activeTab === 'members' ? members : null}

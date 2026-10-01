@@ -37,13 +37,28 @@ downloaded by a previously authorised user.
 |---|---|---|
 | AOIs | `GET/POST /api/direction/aois`; `DELETE /api/direction/aois/{id}` | Country or bounding-box area; list is scoped |
 | Plans | `GET/POST /api/direction/plans`; `GET/PUT/DELETE /api/direction/plans/{id}` | Creation/update validates linked AOI scope; direct read includes matched live evidence |
-| Indicators | `GET/POST /api/warning/indicators`; `PUT/DELETE /api/warning/indicators/{id}` | Linked plans must share scope; background evaluation rechecks eligibility |
+| Indicators (alert rules) | `GET/POST /api/warning/indicators`; `PUT/DELETE /api/warning/indicators/{id}` | Linked plans must share scope; background evaluation rechecks eligibility. `PUT` edits, pauses or resumes and needs `expected_updated_at` (409 when stale, one conditional update); removing every location, category or keyword restriction needs `confirm_wider_scope`; country codes and keywords over 60 characters are rejected, never truncated. A resumed rule counts only items published after it resumed (`resumed_at`, migration 0079) |
 | Alerts | `GET /api/warning/alerts`; `POST /api/warning/alerts/{id}/ack` | Persisted creator/team scope survives indicator deletion; acknowledgement is authorised separately |
 | Schedules | `GET/POST /api/schedules`; `PUT/DELETE /api/schedules/{id}` | Linked plans must share scope; generated reports retain the originating scope |
 
 Alert listing accepts `hours` from 1 to 720 and `limit` from 1 to 200, defaulting
 to seven days and 50 results. `unacknowledged` counts the returned visible page,
-not all alerts in the system. Any current member of an active team may acknowledge
+not all alerts in the system.
+
+### Ownership scope for alert and research progress lists
+
+`GET /api/warning/alerts` and `GET /api/report-jobs` take `scope=mine|all`. The
+default, `mine`, is the caller's personal records plus records of teams they
+currently belong to, for every role, administrators included. Only administrators
+may request `all` (others receive 403); it restores the broad administrative view.
+The scope is a SQL filter applied before limits, cursors and counts, so another
+person's records cannot displace the caller's. It selects a view and grants
+nothing: direct reads and acknowledgement keep the existing object-level checks.
+List rows for personal records carry `owner_name`, the owner's display name, and
+research jobs carry `owner_id`; team rows are identified by `team_id`. The shell's
+notification bell never requests `all`. In the interface, the administrator's
+choice is kept in the address as `?scope=all`, and acknowledging another user's
+personal alert first names the owner and explains that acknowledgement is shared. Any current member of an active team may acknowledge
 its alerts; this shared triage action does not require ownership or leadership.
 Personal alerts require the owner or administrator. Archived teams remain
 read-only for ordinary users. Missing-indicator legacy alerts with no known owner

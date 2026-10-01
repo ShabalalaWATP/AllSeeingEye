@@ -1,11 +1,21 @@
-"""SQL rows for team board posts, replies and per-membership read cursors."""
+"""SQL rows for team board posts, replies, per-membership read cursors and mentions."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Index, Integer, String, Text, Uuid
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
@@ -72,3 +82,34 @@ class TeamBoardReadCursorRow(Base):
     last_read_at: Mapped[datetime] = mapped_column(UTCDateTime)
     last_read_post_id: Mapped[UUID] = mapped_column(Uuid)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class TeamBoardMentionRow(Base):
+    """One recipient of one post's mention (migration 0081); at most ten per post.
+
+    The recipient's stable id and the handle as written are kept together, so a later
+    handle change or reuse never redirects the notice. Rows go with the post or account.
+    """
+
+    __tablename__ = "team_board_mentions"
+    __table_args__ = (
+        UniqueConstraint("post_id", "handle", name="uq_board_mention_handle"),
+        Index("ix_board_mentions_recipient", "recipient_id", "read_at"),
+    )
+
+    post_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("team_board_posts.id", ondelete="CASCADE", name="fk_board_mentions_post"),
+        primary_key=True,
+    )
+    recipient_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE", name="fk_board_mentions_recipient"),
+        primary_key=True,
+    )
+    team_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("teams.id", ondelete="CASCADE", name="fk_board_mentions_team")
+    )
+    handle: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    read_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)

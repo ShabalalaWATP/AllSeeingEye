@@ -4,7 +4,9 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
 import type { BoardSubjectInput, TeamBoardPost } from '@/lib/api/teamBoard';
+import type { TeamMember } from '@/lib/api/teams';
 
+import { BoardMentionPicker, tooManyMentions } from './BoardMentionPicker';
 import { BoardPostCard } from './BoardPostCard';
 import { subjectLabel } from './BoardSubjectCard';
 import type { TeamCapabilities } from './teamCapabilities';
@@ -17,6 +19,7 @@ export function TeamBoard({
   capabilities,
   focusPostId,
   initialSubject,
+  members = [],
 }: {
   teamId: string;
   teamName: string;
@@ -26,6 +29,8 @@ export function TeamBoard({
   focusPostId?: string | null | undefined;
   /** Work a new thread was started from, such as a report version. */
   initialSubject?: BoardSubjectInput | null | undefined;
+  /** The authorised roster, offered for @mentions. */
+  members?: readonly TeamMember[] | undefined;
 }) {
   const board = useTeamBoard(teamId, initialSubject ?? undefined);
   const focused = useRef(false);
@@ -93,6 +98,9 @@ export function TeamBoard({
       <p aria-live="polite" className={board.refreshNotice ? 'text-xs text-muted' : 'sr-only'}>
         {board.refreshNotice}
       </p>
+      <p aria-live="polite" className={board.notified ? 'text-xs text-muted' : 'sr-only'}>
+        {board.notified}
+      </p>
       {board.accessLost ? (
         <Alert tone="warning" title="Team access changed">
           This board is no longer available to your account, so automatic refresh has stopped. Any
@@ -134,6 +142,13 @@ export function TeamBoard({
             onChange={(event) => board.setDraft(event.target.value)}
             disabled={board.busy}
           />
+          <BoardMentionPicker
+            members={members}
+            userId={userId}
+            draft={board.draft}
+            disabled={board.busy}
+            onDraftChange={board.setDraft}
+          />
           {board.subject && !board.editing && !board.replyTo ? (
             <div
               role="group"
@@ -153,7 +168,7 @@ export function TeamBoard({
           ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
-              disabled={board.busy || board.draft.trim() === ''}
+              disabled={board.busy || board.draft.trim() === '' || tooManyMentions(board.draft)}
               onClick={() => void board.save()}
             >
               {board.editing ? 'Save changes' : board.replyTo ? 'Post reply' : 'Post update'}

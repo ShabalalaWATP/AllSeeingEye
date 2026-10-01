@@ -90,6 +90,8 @@ Follow the research job's progress, then open the report. Read the main findings
 alongside the citations, evidence annex, collection gaps and confidence limits.
 Source reliability, information credibility, likelihood and analytical confidence
 are separate concepts, explained in [reporting and assessment](03_DOCTRINE_AND_REPORTING.md).
+The report reader shows each likelihood term with its configured band, expands
+PIR, SIR and EEI codes where they appear, and links to a glossary in **Help**.
 
 A saved version keeps the selected evidence used for that assessment even after
 live observations expire. It does not prove that the source was truthful or that
@@ -111,6 +113,23 @@ Pause a subscription to stop future work. Inspect the edition status when decidi
 whether to retry or resume failed work; a provider error does not establish that
 no model call was billed. Timing, source availability, provider limits and usage
 allowances can affect delivery. See [subscription operations](SUBSCRIPTIONS_OPERATIONS.md).
+
+In **Alerts**, an alert rule watches connected feeds and raises an alert when
+enough matching items arrive within its time window. Choose specific countries or
+an explicit **Worldwide** scope, and specific event categories or **All event
+categories**; an empty choice never quietly becomes unrestricted. Check the
+summary before saving. Edit, pause or resume a rule from its row. A paused rule is
+not evaluated and raises nothing; on resuming it counts only activity published
+after it resumed, so the paused period is not replayed. Removing a location,
+category or keyword restriction needs an explicit confirmation, and an edit made
+from an out-of-date copy is refused so it cannot overwrite someone else's change.
+Pausing a rule is separate from muting notifications.
+
+A report's **Watch for these indicators** action opens an editable alert rule
+draft with the judgement's original wording, the report's countries and any saved
+area it can represent, in the report's own workspace. Nothing is saved until
+**Add alert rule**. Alert rules match keywords literally; they do not monitor the
+meaning of an indicator. The API and saved data keep the name `indicator`.
 
 ## 5. Manage access and connections
 

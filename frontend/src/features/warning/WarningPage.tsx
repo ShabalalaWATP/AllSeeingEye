@@ -1,118 +1,109 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
-import { Alert as Notice, LoadingNote } from '@/components/ui/Alert';
+import { Alert as Notice } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Table, Td, Th } from '@/components/ui/Table';
-import { describeError } from '@/lib/api/errors';
+import type { IndicatorRequest } from '@/lib/alertRules';
+import { clearReportWatchDraft, useReportWatchDraft } from '@/lib/alertRuleDraft';
+import type { ReportWatchSource } from '@/lib/alertRuleDraft';
+import { fetchPlans } from '@/lib/api/direction';
+import { fetchCountries } from '@/lib/api/geo';
 import { fetchTemplates } from '@/lib/api/reports';
 import {
-  acknowledgeAlert,
   createIndicator,
   deleteIndicator,
-  fetchAlerts,
   fetchIndicators,
+  updateIndicator,
 } from '@/lib/api/warning';
-import type { Alert, Indicator, IndicatorRequest } from '@/lib/api/warning';
-import { formatAgo } from '@/lib/format';
+import type { Indicator } from '@/lib/api/warning';
+import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
+import { clearDraft, draftForms } from '@/lib/formDrafts';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
-import { useNow } from '@/lib/hooks/useNow';
 import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
-import { fetchPlans } from '@/lib/api/direction';
-import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
-import { clearDraft, draftForms } from '@/lib/formDrafts';
 
-import { AlertDestination } from './AlertDestination';
-import { IndicatorForm, describeWindow } from './IndicatorForm';
-import { RuleDeletion } from './RuleDeletion';
+import { AlertsSection } from './AlertsSection';
+import { AlertRulesSection } from './AlertRulesSection';
+import { IndicatorForm } from './IndicatorForm';
+import { reportVersionPath } from './RuleDraftNotice';
+import { ruleUpdate } from './ruleUpdates';
 
-function describeScope(indicator: Indicator): string {
-  if (indicator.research_area)
-    return `exact shape · ${indicator.research_area.sha256.slice(0, 12)}`;
-  if (indicator.bbox !== null) return `box ${indicator.bbox.map((n) => n.toFixed(1)).join(', ')}`;
-  if (indicator.countries.length > 0) return indicator.countries.join(', ');
-  return 'anywhere';
-}
-
-function describeRule(indicator: Indicator): string {
-  const what = [
-    indicator.categories.length > 0 ? indicator.categories.join('/') : 'any category',
-    indicator.keywords.length > 0 ? `with ${indicator.keywords.join(', ')}` : '',
-  ]
-    .filter((part) => part !== '')
-    .join(' ');
-  return `${String(indicator.threshold)} or more ${what} in ${describeWindow(indicator.window_minutes)}`;
-}
-
-function AlertItem({
-  alert,
-  onAcknowledge,
-  workspace,
-  canAcknowledge,
-}: {
-  alert: Alert;
-  onAcknowledge: () => void;
-  workspace: string;
-  canAcknowledge: boolean;
-}) {
-  const now = useNow();
-  return (
-    <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">
-          {alert.title}
-          <span className="ml-2 text-xs text-muted">{workspace}</span>
-        </span>
-        <span className="font-mono text-xs text-muted">{formatAgo(alert.fired_at, now)}</span>
-      </div>
-      {alert.summary !== '' && <p className="text-xs text-muted">{alert.summary}</p>}
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        {alert.countries.length > 0 && (
-          <span className="font-mono text-muted">{alert.countries.join(', ')}</span>
-        )}
-        <AlertDestination
-          monitorId={alert.annotation_monitor_id}
-          transitionId={alert.annotation_transition_id}
-          reportId={alert.report_id}
-        />
-        {alert.acknowledged_at === null ? (
-          <Button variant="secondary" disabled={!canAcknowledge} onClick={onAcknowledge}>
-            Acknowledge
-          </Button>
-        ) : (
-          <span className="text-muted">acknowledged</span>
-        )}
-      </div>
-    </li>
-  );
+interface Saved {
+  message: string;
+  source?: ReportWatchSource | undefined;
 }
 
 export default function WarningPage() {
-  const draft = useAreaWatchDraft();
-  const draftId = draft?.id;
+  const reportDraft = useReportWatchDraft();
+  const areaDraft = useAreaWatchDraft();
+  const draft = reportDraft ?? areaDraft;
   const workspaces = useWorkspaces();
   const plans = useScopedResource(fetchPlans);
-  const alerts = useScopedResource(fetchAlerts);
   const indicators = useScopedResource(fetchIndicators);
   const templates = useResource(fetchTemplates);
+  const countries = useResource(fetchCountries);
   const reloadIndicators = indicators.reload;
-  const setAlerts = alerts.setData;
+  // The rule being edited is read from the latest list, so a reload re-opens its newest revision.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editing = editingId
+    ? (indicators.data?.find((rule) => rule.id === editingId) ?? null)
+    : null;
+  const [saved, setSaved] = useState<Saved | null>(null);
+  const [toggling, setToggling] = useState<string | null>(null);
+  const rulesHeading = useRef<HTMLHeadingElement>(null);
+
+  const discardDraft = useCallback(() => {
+    if (reportDraft) clearReportWatchDraft(reportDraft.id);
+    else if (areaDraft) clearAreaWatchDraft(areaDraft.id);
+  }, [reportDraft, areaDraft]);
 
   const create = useAsyncAction(
     useCallback(
       async (request: IndicatorRequest) => {
-        await createIndicator(request);
-        clearDraft(draftForms.alertRule(draftId));
-        if (draftId !== undefined) clearAreaWatchDraft(draftId);
+        const rule = await createIndicator(request);
+        // Only a confirmed save clears the draft and reports success.
+        clearDraft(
+          draftForms.alertRule(reportDraft ? `report-${String(reportDraft.id)}` : areaDraft?.id),
+        );
+        discardDraft();
+        setSaved({ message: `Alert rule “${rule.name}” added.`, source: reportDraft?.source });
         await reloadIndicators();
       },
-      [reloadIndicators, draftId],
+      [reloadIndicators, reportDraft, areaDraft, discardDraft],
     ),
   );
-  const rulesHeading = useRef<HTMLHeadingElement>(null);
+  const edit = useAsyncAction(
+    useCallback(
+      async (rule: Indicator, request: IndicatorRequest, confirmWider: boolean) => {
+        const updated = await updateIndicator(rule.id, ruleUpdate(rule, request, confirmWider));
+        setEditingId(null);
+        setSaved({ message: `Changes to “${updated.name}” saved.` });
+        await reloadIndicators();
+      },
+      [reloadIndicators],
+    ),
+  );
+  const toggle = useAsyncAction(
+    useCallback(
+      async (rule: Indicator) => {
+        setToggling(rule.id);
+        try {
+          const updated = await updateIndicator(rule.id, ruleUpdate(rule, null, false));
+          setSaved({
+            message: updated.enabled
+              ? `“${updated.name}” resumed. It counts only activity from now on.`
+              : `“${updated.name}” paused. It is not evaluated and raises no alerts until resumed.`,
+          });
+          await reloadIndicators();
+        } finally {
+          setToggling(null);
+        }
+      },
+      [reloadIndicators],
+    ),
+  );
   const remove = useConfirmedAction(
     useCallback(
       async (rule: Indicator) => {
@@ -122,35 +113,38 @@ export default function WarningPage() {
       [reloadIndicators],
     ),
   );
-  const acknowledge = useAsyncAction(
-    useCallback(
-      async (id: string) => {
-        const updated = await acknowledgeAlert(id);
-        setAlerts((page) =>
-          page === null
-            ? page
-            : {
-                items: page.items.map((item) => (item.id === updated.id ? updated : item)),
-                unacknowledged: Math.max(0, page.unacknowledged - 1),
-              },
-        );
-      },
-      [setAlerts],
-    ),
-  );
-
-  const form = (
+  const shared = {
+    workspaces,
+    plans: plans.data ?? [],
+    templates: templates.data ?? [],
+    countries: countries.data,
+  };
+  const form = editing ? (
     <IndicatorForm
-      key={`${workspaces.key}:${draftId ?? ''}`}
-      draft={draft}
-      workspaces={workspaces}
-      plans={plans.data ?? []}
-      templates={templates.data ?? []}
+      key={`edit:${editing.id}:${editing.updated_at}`}
+      {...shared}
+      mode={{ kind: 'edit', rule: editing }}
+      busy={edit.busy}
+      error={edit.error}
+      onSubmit={(request, { confirmWider }) => void edit.run(editing, request, confirmWider)}
+      onDiscardDraft={discardDraft}
+      onCancel={() => {
+        edit.clearError();
+        setEditingId(null);
+      }}
+    />
+  ) : (
+    <IndicatorForm
+      key={`${workspaces.key}:${reportDraft ? `report-${String(reportDraft.id)}` : String(areaDraft?.id ?? '')}`}
+      {...shared}
+      mode={{ kind: 'create', areaDraft: reportDraft ? null : areaDraft, reportDraft }}
       busy={create.busy}
       error={create.error}
       onSubmit={(request) => void create.run(request)}
+      onDiscardDraft={discardDraft}
     />
   );
+  const stale = edit.error?.status === 409 || toggle.error?.status === 409;
 
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
@@ -159,97 +153,57 @@ export default function WarningPage() {
         Annotation monitors and their change history
       </Link>
       <p className="text-sm text-muted">
-        Review changes that need attention and set rules for activity in connected feeds. For a
-        question answered every week or month, set up a{' '}
+        Review changes that need attention and set alert rules for activity in connected feeds. For
+        a question answered every week or month, set up a{' '}
         <Link to="/subscriptions" className="text-text underline">
           subscription
         </Link>
         .
       </p>
-      {draft && form}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Alerts</h2>
-        {alerts.error === null ? null : <Notice tone="error">{describeError(alerts.error)}</Notice>}
-        {acknowledge.error === null ? null : (
-          <Notice tone="error">{describeError(acknowledge.error)}</Notice>
+      {saved && (
+        <Notice tone="success">
+          {saved.message}{' '}
+          {saved.source && (
+            <Link to={reportVersionPath(saved.source)} className="underline">
+              Back to “{saved.source.title}”, version {saved.source.version}
+            </Link>
+          )}
+        </Notice>
+      )}
+      {draft && !editing && form}
+      <AlertsSection workspaces={workspaces} />
+      <AlertRulesSection
+        rules={indicators.data}
+        loading={indicators.loading}
+        error={indicators.error ?? toggle.error}
+        workspaces={workspaces}
+        heading={rulesHeading}
+        remove={remove}
+        toggling={toggling}
+        onEdit={(rule) => {
+          setSaved(null);
+          edit.clearError();
+          setEditingId(rule.id);
+        }}
+        onToggle={(rule) => {
+          setSaved(null);
+          void toggle.run(rule);
+        }}
+      >
+        {stale && (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              edit.clearError();
+              toggle.clearError();
+              void reloadIndicators();
+            }}
+          >
+            Reload the latest alert rules
+          </Button>
         )}
-        {alerts.data === null ? (
-          alerts.loading ? (
-            <LoadingNote label="Loading alerts" />
-          ) : null
-        ) : alerts.data.items.length === 0 ? (
-          <p className="text-sm text-muted">Nothing has fired in the last week.</p>
-        ) : (
-          <ul aria-label="Alerts" className="flex flex-col gap-2">
-            {alerts.data.items.map((item) => (
-              <AlertItem
-                key={item.id}
-                alert={item}
-                workspace={workspaces.label(item.team_id)}
-                canAcknowledge={workspaces.canAcknowledge(item.team_id)}
-                onAcknowledge={() => void acknowledge.run(item.id)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="flex flex-col gap-3">
-        <h2 ref={rulesHeading} className="text-base font-semibold">
-          Alert rules
-        </h2>
-        {indicators.error === null ? null : (
-          <Notice tone="error">{describeError(indicators.error)}</Notice>
-        )}
-        {indicators.data === null ? (
-          indicators.loading ? (
-            <LoadingNote label="Loading indicators" />
-          ) : null
-        ) : indicators.data.length === 0 ? (
-          <p className="text-sm text-muted">No indicators yet.</p>
-        ) : (
-          <Table caption="Indicators">
-            <thead>
-              <tr>
-                <Th>Indicator</Th>
-                <Th>Scope</Th>
-                <Th>Rule</Th>
-                <Th>Report</Th>
-                <Th />
-              </tr>
-            </thead>
-            <tbody>
-              {indicators.data.map((item) => (
-                <tr key={item.id} className={item.enabled ? '' : 'opacity-60'}>
-                  <Td className="font-medium">
-                    {item.name}
-                    <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
-                  </Td>
-                  <Td className="font-mono text-xs text-muted">{describeScope(item)}</Td>
-                  <Td className="text-xs">{describeRule(item)}</Td>
-                  <Td className="font-mono text-xs text-muted">{item.report_template ?? 'none'}</Td>
-                  <Td>
-                    <Button
-                      disabled={!workspaces.canManage(item)}
-                      variant="danger"
-                      aria-haspopup="dialog"
-                      onClick={() => remove.ask(item)}
-                    >
-                      Delete
-                    </Button>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-        <RuleDeletion
-          action={remove}
-          workspaceLabel={workspaces.label}
-          describe={describeRule}
-          returnFocus={rulesHeading}
-        />
-        {!draft && form}
-      </div>
+        {(editing !== null || !draft) && form}
+      </AlertRulesSection>
     </section>
   );
 }

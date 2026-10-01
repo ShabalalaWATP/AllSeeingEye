@@ -2,7 +2,8 @@
 
 from dataclasses import replace
 from datetime import timedelta
-from uuid import uuid4
+from typing import Any
+from uuid import UUID, uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -16,6 +17,15 @@ from helpers import USER_PASSWORD, bearer, login_token
 from team_helpers import CONTEXT, team_service
 from warning_scope_helpers import WarningActors, create_indicator
 from warning_scope_helpers import warning_actors as warning_actors  # noqa: PLC0414
+
+
+async def _revision(container: Container, resource: str, item_id: str) -> dict[str, Any]:
+    """Alert rule edits name the revision they were made from; schedules have no guard."""
+    if resource != "/warning/indicators":
+        return {}
+    async with container.session_factory() as session:
+        rule = await container.repositories(session).indicators.get(UUID(item_id))
+    return {} if rule is None else {"expected_updated_at": rule.updated_at.isoformat()}
 
 
 @pytest.mark.parametrize("resource", ["/warning/indicators", "/schedules"])
@@ -49,7 +59,11 @@ async def test_scope_lists_and_current_team_write_permissions(
     assert (
         await client.put(
             f"/api{resource}/{foreign.json()['id']}",
-            json={**body, "team_id": str(actors.other.id)},
+            json={
+                **body,
+                "team_id": str(actors.other.id),
+                **await _revision(container, resource, foreign.json()["id"]),
+            },
             headers=bearer(tokens[actors.manager.id]),
         )
     ).status_code == 403
@@ -70,13 +84,15 @@ async def test_scope_lists_and_current_team_write_permissions(
     assert [item["id"] for item in outsider_list.json()["items"]] == [foreign.json()["id"]]
     for actor, status in ((actors.peer, 403), (actors.outsider, 404), (actors.manager, 200)):
         changed = await client.put(
-            f"/api{resource}/{identity}", json=body, headers=bearer(tokens[actor.id])
+            f"/api{resource}/{identity}",
+            json={**body, **await _revision(container, resource, identity)},
+            headers=bearer(tokens[actor.id]),
         )
         assert changed.status_code == status, changed.text
     assert (
         await client.put(
             f"/api{resource}/{identity}",
-            json={**body, "team_id": None},
+            json={**body, "team_id": None, **await _revision(container, resource, identity)},
             headers=bearer(tokens[actors.owner.id]),
         )
     ).status_code == 422
@@ -84,7 +100,9 @@ async def test_scope_lists_and_current_team_write_permissions(
         await service.remove_member(admin, actors.team.id, actors.owner.id, CONTEXT)
     assert (
         await client.put(
-            f"/api{resource}/{identity}", json=body, headers=bearer(tokens[actors.owner.id])
+            f"/api{resource}/{identity}",
+            json={**body, **await _revision(container, resource, identity)},
+            headers=bearer(tokens[actors.owner.id]),
         )
     ).status_code == 404
     remaining = await client.get(f"/api{resource}", headers=bearer(tokens[actors.owner.id]))
@@ -92,7 +110,9 @@ async def test_scope_lists_and_current_team_write_permissions(
     async with team_service(container) as service:
         await service.update(admin, actors.team.id, name=None, is_active=False, context=CONTEXT)
     archived = await client.put(
-        f"/api{resource}/{identity}", json=body, headers=bearer(tokens[actors.manager.id])
+        f"/api{resource}/{identity}",
+        json={**body, **await _revision(container, resource, identity)},
+        headers=bearer(tokens[actors.manager.id]),
     )
     assert archived.status_code == 403
     assert (

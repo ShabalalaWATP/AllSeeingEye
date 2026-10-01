@@ -5,6 +5,7 @@ import {
   type ReportJobPage,
   type ReportJobStatusGroup,
 } from '@/lib/api/reportJobs';
+import { useOwnershipScope } from '@/lib/hooks/useOwnershipScope';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { jobRunning } from './jobLabels';
@@ -17,16 +18,19 @@ export const parseStatusGroup = (value: string | null): ReportJobStatusGroup =>
   GROUPS.find((group) => group === value) ?? 'all';
 
 /**
- * Filters live in the address so workspace links can open a view; the cursor trail does
- * not. It belongs to one filter and one account/access state, and resets when either changes.
+ * Filters, including an administrator's explicit "All users" scope, live in the address so
+ * links can open a view; the cursor trail does not. It belongs to one filter, ownership scope
+ * and account/access state, and resets when any of them changes.
  */
 export function useReportJobList() {
   const [params, setParams] = useSearchParams();
   const status = parseStatusGroup(params.get('status'));
   const includeBriefings = params.get('briefings') === '1';
+  const ownership = useOwnershipScope();
+  const owners = ownership.scope;
   const actor = useAuthStore((state) => `${state.user?.id}:${state.user?.role}`);
   const revision = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
-  const scope = `${status}:${includeBriefings}:${actor}:${revision}`;
+  const scope = `${status}:${includeBriefings}:${owners}:${actor}:${revision}`;
   const [trail, setTrail] = useState<{ scope: string; cursors: string[] }>({
     scope,
     cursors: [],
@@ -34,8 +38,9 @@ export function useReportJobList() {
   const cursors = trail.scope === scope ? trail.cursors : [];
   const cursor = cursors.at(-1) ?? null;
   const loader = useCallback(
-    (signal: AbortSignal) => fetchReportJobPage({ status, includeBriefings, cursor }, signal),
-    [status, includeBriefings, cursor],
+    (signal: AbortSignal) =>
+      fetchReportJobPage({ status, includeBriefings, cursor, scope: owners }, signal),
+    [status, includeBriefings, cursor, owners],
   );
   const resource = useJobPolling(loader, pageRunning);
   const nextCursor = resource.data?.next_cursor ?? null;
@@ -57,6 +62,7 @@ export function useReportJobList() {
     ...resource,
     status,
     includeBriefings,
+    ownership,
     page: cursors.length + 1,
     setStatus: (value: ReportJobStatusGroup) => changeFilter({ status: value }),
     setBriefings: (value: boolean) => changeFilter({ briefings: value }),

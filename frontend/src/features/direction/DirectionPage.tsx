@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { DiscussWithTeamLink } from '@/components/teams/DiscussWithTeamLink';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -143,23 +144,27 @@ export default function DirectionPage() {
             action="Write your first plan with the form below."
           />
         ) : (
-          <ul aria-label="Collection plans" className="flex flex-col gap-2">
-            {plans.data.map((plan) => (
-              <li key={plan.id} className="rounded-card border border-line bg-surface p-3">
-                <Link
-                  to={`/direction/plans/${plan.id}`}
-                  className="font-medium text-text hover:underline"
-                >
-                  {plan.name}
-                </Link>
-                <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
-                <p className="mt-1 text-xs text-muted">
-                  {plan.pirs.length} PIR, {plan.pirs.reduce((n, pir) => n + pir.sirs.length, 0)} SIR
-                  {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <RequirementCodesNote codes={['PIR', 'SIR']} />
+            <ul aria-label="Collection plans" className="flex flex-col gap-2">
+              {plans.data.map((plan) => (
+                <li key={plan.id} className="rounded-card border border-line bg-surface p-3">
+                  <Link
+                    to={`/direction/plans/${plan.id}`}
+                    className="font-medium text-text hover:underline"
+                  >
+                    {plan.name}
+                  </Link>
+                  <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {plan.pirs.length} PIR, {plan.pirs.reduce((n, pir) => n + pir.sirs.length, 0)}{' '}
+                    SIR
+                    {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
         <PlanForm
           key={workspaces.key}

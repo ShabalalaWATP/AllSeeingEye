@@ -125,12 +125,13 @@ describe('Personal and team creation', () => {
     await act(async () => {
       await router.navigate('/warning');
     });
-    const indicator = await screen.findByRole('form', { name: 'New indicator' });
+    const indicator = await screen.findByRole('form', { name: 'New alert rule' });
     await within(indicator).findByRole('option', { name: 'Team: Northern desk' });
     await user.selectOptions(within(indicator).getByLabelText('Workspace'), team.id);
     await user.selectOptions(within(indicator).getByLabelText('Collection plan'), teamPlan.id);
-    await user.type(within(indicator).getByLabelText('Indicator name'), 'Desk indicator');
-    await user.click(within(indicator).getByRole('button', { name: 'Add indicator' }));
+    await user.type(within(indicator).getByLabelText('Alert rule name'), 'Desk alert rule');
+    await user.selectOptions(within(indicator).getByLabelText('Location scope'), 'worldwide');
+    await user.click(within(indicator).getByRole('button', { name: 'Add alert rule' }));
     await waitFor(() => expect(writes).toHaveLength(3));
     expect(writes[2]).toMatchObject({ team_id: team.id, plan_id: teamPlan.id });
   });

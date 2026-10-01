@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ase.domain.board_mentions import Mentioned
 from ase.domain.team_board import (
     MAX_REASON_LENGTH,
     BoardSubject,
@@ -141,6 +142,27 @@ class TeamBoardPostOut(BaseModel):
     @classmethod
     def from_view(cls, view: TeamBoardPostView) -> Self:
         return cls.from_post(view.post, view.author_name, view.subject)
+
+
+class TeamBoardMentionedOut(BaseModel):
+    user_id: UUID
+    display_name: str
+
+
+class TeamBoardWriteOut(TeamBoardPostOut):
+    """A saved post plus the teammates this write newly notified (never outsiders)."""
+
+    notified: list[TeamBoardMentionedOut]
+
+    @classmethod
+    def extend(cls, base: TeamBoardPostOut, notified: tuple[Mentioned, ...]) -> Self:
+        return cls(
+            **base.model_dump(),
+            notified=[
+                TeamBoardMentionedOut(user_id=item.user_id, display_name=item.display_name)
+                for item in notified
+            ],
+        )
 
 
 class TeamBoardPageOut(BaseModel):

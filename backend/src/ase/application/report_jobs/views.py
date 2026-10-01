@@ -297,6 +297,7 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
         "created_at": job.created_at,
         "updated_at": job.updated_at,
         "team_id": job.team_id,
+        "owner_id": job.owner_id,
         "report_id": job.report_id if job.status in {"completed", "needs_review"} else None,
         "model": _text(summary.get("model")),
         "reasoning_effort": None if effort is None else _text(effort, 40),

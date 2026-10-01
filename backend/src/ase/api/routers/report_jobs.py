@@ -1,6 +1,6 @@
 """Start, inspect and control authorised durable report work."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response
@@ -117,15 +117,20 @@ async def list_jobs(
     status: Annotated[JobStatusGroup, Query()] = "all",
     include_briefings: Annotated[bool, Query()] = False,
     cursor: Annotated[str | None, Query(min_length=1, max_length=MAX_CURSOR_CHARS)] = None,
+    scope: Annotated[Literal["mine", "all"], Query()] = "mine",
 ) -> ReportJobsOut:
-    """Scope, status and origin filters apply before the page; see application listing."""
+    """Scope, status and origin filters apply before the page; see application listing.
+
+    ``mine`` (the default) is the caller's personal and current-team work; only
+    administrators may request ``all``.
+    """
     try:
         after = decode_job_cursor(cursor) if cursor is not None else None
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     values, last = await container.report_jobs(session).page(
         user,
-        JobListQuery(limit, status, include_briefings, after),
+        JobListQuery(limit, status, include_briefings, after, scope),
         check_session=lambda: fence.confirm(session=session),
     )
     response.headers["Cache-Control"] = "private, no-store"

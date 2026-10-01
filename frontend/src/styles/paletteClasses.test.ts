@@ -10,16 +10,13 @@ import { AA, SURFACES, contrast, files, palettes, read } from '@/test/themeContr
 const DEFAULT_PALETTE =
   /\b(?:text|bg|border|ring|accent|fill|stroke|outline|decoration|divide|placeholder|caret|from|to|via)-(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d{2,3}\b/g;
 
-// Being changed in another open pull request; migrate it once that lands (KAN-62).
-const PENDING = new Set(['components/maps/RfTerrainProfileChart.tsx']);
-
 // The accent tokens that status text uses in place of the default palette.
 const STATUS_TEXT = ['amber', 'critical', 'good', 'cyan'] as const;
 
 describe('theme palette classes', () => {
   it('never uses a Tailwind default-palette colour class', () => {
     const offenders = files
-      .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file) && !PENDING.has(file))
+      .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
       .flatMap((file) => [...read(file).matchAll(DEFAULT_PALETTE)].map((m) => `${file} ${m[0]}`));
     expect(offenders).toEqual([]);
   });

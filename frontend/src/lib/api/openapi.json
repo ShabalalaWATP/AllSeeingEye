@@ -518,7 +518,7 @@
           "report-jobs"
         ],
         "summary": "List Jobs",
-        "description": "Scope, status and origin filters apply before the page; see application listing.",
+        "description": "Scope, status and origin filters apply before the page; see application listing.\n\n``mine`` (the default) is the caller's personal and current-team work; only\nadministrators may request ``all``.",
         "operationId": "list_jobs_api_report_jobs_get",
         "security": [
           {
@@ -580,6 +580,20 @@
                 }
               ],
               "title": "Cursor"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -2811,7 +2825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -2879,7 +2893,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -3197,6 +3211,361 @@
             }
           }
         }
+      }
+    },
+    "/api/bell": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Bell",
+        "operationId": "read_bell_api_bell_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/alerts/{alert_id}/destination": {
+      "get": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Alert Destination",
+        "operationId": "alert_destination_api_bell_alerts__alert_id__destination_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDestinationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/alerts/acknowledge": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Acknowledge Shown",
+        "operationId": "acknowledge_shown_api_bell_alerts_acknowledge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellAcknowledgeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellAcknowledgeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/preferences": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Set Bell Preferences",
+        "operationId": "set_bell_preferences_api_bell_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/bell/muted-rules/{indicator_id}": {
+      "put": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Mute Rule",
+        "operationId": "mute_rule_api_bell_muted_rules__indicator_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Unmute Rule",
+        "operationId": "unmute_rule_api_bell_muted_rules__indicator_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/mentions/{post_id}/open": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Open Mention",
+        "description": "Re-check the post against current membership and mark the caller's notice read.",
+        "operationId": "open_mention_api_bell_mentions__post_id__open_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentionOpenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/mentions/read": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Mentions",
+        "operationId": "read_mentions_api_bell_mentions_read_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellMentionsReadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellMentionsReadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/me/team-invitations": {
@@ -11960,6 +12329,7 @@
           "warning"
         ],
         "summary": "Update Indicator",
+        "description": "Edit, pause or resume one rule from the revision the caller read.",
         "operationId": "update_indicator_api_warning_indicators__indicator_id__put",
         "security": [
           {
@@ -11983,7 +12353,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IndicatorIn"
+                "$ref": "#/components/schemas/IndicatorUpdateIn"
               }
             }
           }
@@ -12057,6 +12427,7 @@
           "warning"
         ],
         "summary": "List Alerts",
+        "description": "Defaults to the caller's personal and current-team alerts; only admins may ask for all.",
         "operationId": "list_alerts_api_warning_alerts_get",
         "security": [
           {
@@ -12092,6 +12463,20 @@
               "minimum": 1,
               "default": 50,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -15659,6 +16044,25 @@
         ],
         "title": "AccountSessionsOut"
       },
+      "AcknowledgeFailureOut": {
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Alert Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "alert_id",
+          "message"
+        ],
+        "title": "AcknowledgeFailureOut"
+      },
       "ActivityOut": {
         "properties": {
           "last_24h": {
@@ -16651,6 +17055,74 @@
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
+      "AlertDestinationOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/DestinationKind"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Id"
+          },
+          "transition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transition Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "available",
+          "report_id",
+          "monitor_id",
+          "transition_id",
+          "message"
+        ],
+        "title": "AlertDestinationOut"
+      },
       "AlertOut": {
         "properties": {
           "id": {
@@ -16800,6 +17272,17 @@
               }
             ],
             "title": "Team Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
           }
         },
         "type": "object",
@@ -18989,6 +19472,360 @@
           "jam_updated_at"
         ],
         "title": "AviationBoardOut"
+      },
+      "BellAcknowledgeIn": {
+        "properties": {
+          "alert_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Alert Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "alert_ids"
+        ],
+        "title": "BellAcknowledgeIn"
+      },
+      "BellAcknowledgeOut": {
+        "properties": {
+          "acknowledged": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Acknowledged"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/AcknowledgeFailureOut"
+            },
+            "type": "array",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acknowledged",
+          "failed"
+        ],
+        "title": "BellAcknowledgeOut"
+      },
+      "BellAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "fired_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fired At"
+          },
+          "indicator_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indicator Id"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "annotation_monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation Monitor Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "can_acknowledge": {
+            "type": "boolean",
+            "title": "Can Acknowledge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "fired_at",
+          "indicator_id",
+          "report_id",
+          "annotation_monitor_id",
+          "team_id",
+          "team_name",
+          "can_acknowledge"
+        ],
+        "title": "BellAlertOut"
+      },
+      "BellAlertSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellAlertOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "muted"
+        ],
+        "title": "BellAlertSectionOut"
+      },
+      "BellKind": {
+        "type": "string",
+        "enum": [
+          "alerts",
+          "research",
+          "mentions"
+        ],
+        "title": "BellKind",
+        "description": "In-app notification kinds a viewer may mute."
+      },
+      "BellMentionOut": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "thread_id",
+          "team_id",
+          "team_name",
+          "author_name",
+          "snippet",
+          "created_at"
+        ],
+        "title": "BellMentionOut",
+        "description": "A plain-text snippet of a post the recipient can still read; never markup."
+      },
+      "BellMentionSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellMentionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread",
+          "muted"
+        ],
+        "title": "BellMentionSectionOut"
+      },
+      "BellMentionsReadIn": {
+        "properties": {
+          "post_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Post Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "post_ids"
+        ],
+        "title": "BellMentionsReadIn"
+      },
+      "BellMentionsReadOut": {
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unread"
+        ],
+        "title": "BellMentionsReadOut"
+      },
+      "BellOut": {
+        "properties": {
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "alerts": {
+            "$ref": "#/components/schemas/BellAlertSectionOut"
+          },
+          "mentions": {
+            "$ref": "#/components/schemas/BellMentionSectionOut"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/BellPreferencesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window_days",
+          "alerts",
+          "mentions",
+          "preferences"
+        ],
+        "title": "BellOut"
+      },
+      "BellPreferencesIn": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Muted Kinds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "muted_kinds"
+        ],
+        "title": "BellPreferencesIn"
+      },
+      "BellPreferencesOut": {
+        "properties": {
+          "muted_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/BellKind"
+            },
+            "type": "array",
+            "title": "Muted Kinds"
+          },
+          "muted_rules": {
+            "items": {
+              "$ref": "#/components/schemas/MutedRuleOut"
+            },
+            "type": "array",
+            "title": "Muted Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "muted_kinds",
+          "muted_rules"
+        ],
+        "title": "BellPreferencesOut"
       },
       "BlockKind": {
         "type": "string",
@@ -24034,6 +24871,15 @@
           "clock"
         ],
         "title": "DecisionMethod"
+      },
+      "DestinationKind": {
+        "type": "string",
+        "enum": [
+          "report",
+          "transition",
+          "alerts"
+        ],
+        "title": "DestinationKind"
       },
       "DigestChangeOut": {
         "properties": {
@@ -29513,7 +30359,8 @@
           },
           "countries": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
             },
             "type": "array",
             "maxItems": 50,
@@ -29566,7 +30413,8 @@
           },
           "keywords": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 60
             },
             "type": "array",
             "maxItems": 20,
@@ -29907,6 +30755,172 @@
           "verification_reference"
         ],
         "title": "IndicatorReading"
+      },
+      "IndicatorUpdateIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Description",
+            "default": ""
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Countries"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Categories"
+          },
+          "keywords": {
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Keywords"
+          },
+          "threshold": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Threshold",
+            "default": 1
+          },
+          "window_minutes": {
+            "type": "integer",
+            "maximum": 10080.0,
+            "minimum": 5.0,
+            "title": "Window Minutes",
+            "default": 60
+          },
+          "cooldown_minutes": {
+            "type": "integer",
+            "maximum": 1440.0,
+            "minimum": 1.0,
+            "title": "Cooldown Minutes",
+            "default": 60
+          },
+          "severity_floor": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Severity Floor",
+            "default": 0.0
+          },
+          "report_template": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Template"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Updated At"
+          },
+          "confirm_wider_scope": {
+            "type": "boolean",
+            "title": "Confirm Wider Scope",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "expected_updated_at"
+        ],
+        "title": "IndicatorUpdateIn",
+        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409.\n\nRemoving every location, category or keyword restriction needs `confirm_wider_scope`.\nPause and resume are edits of `enabled` that send the rule's other values unchanged."
       },
       "IndicatorVersion": {
         "properties": {
@@ -33234,6 +34248,32 @@
         ],
         "title": "MembershipRole"
       },
+      "MentionOpenOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "post_id",
+          "thread_id"
+        ],
+        "title": "MentionOpenOut"
+      },
       "MessageOut": {
         "properties": {
           "message": {
@@ -33598,6 +34638,31 @@
           "limit"
         ],
         "title": "MonthlyUsageOut"
+      },
+      "MutedRuleOut": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "muted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Muted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "name",
+          "muted_at"
+        ],
+        "title": "MutedRuleOut"
       },
       "NavigationCapabilitiesOut": {
         "properties": {
@@ -39911,6 +40976,22 @@
             ],
             "title": "Team Id"
           },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
           "report_id": {
             "anyOf": [
               {
@@ -39982,6 +41063,7 @@
           "created_at",
           "updated_at",
           "team_id",
+          "owner_id",
           "report_id",
           "model",
           "reasoning_effort",
@@ -48372,6 +49454,25 @@
         ],
         "title": "TeamAiUsageOut"
       },
+      "TeamBoardMentionedOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name"
+        ],
+        "title": "TeamBoardMentionedOut"
+      },
       "TeamBoardPageOut": {
         "properties": {
           "items": {
@@ -48787,6 +49888,139 @@
           "unread_count"
         ],
         "title": "TeamBoardUnreadOut"
+      },
+      "TeamBoardWriteOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Author Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "edited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "title": "Is Pinned"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "author",
+                  "moderator"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notified": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardMentionedOut"
+            },
+            "type": "array",
+            "title": "Notified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "author_id",
+          "author_name",
+          "text",
+          "created_at",
+          "updated_at",
+          "edited_at",
+          "parent_id",
+          "is_pinned",
+          "deleted_at",
+          "removal",
+          "revision",
+          "subject",
+          "notified"
+        ],
+        "title": "TeamBoardWriteOut",
+        "description": "A saved post plus the teammates this write newly notified (never outsiders)."
       },
       "TeamCopyIn": {
         "properties": {

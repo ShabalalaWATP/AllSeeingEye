@@ -8,7 +8,7 @@ const SHOWN = 3;
 /** What the wall screen carries over the turning globe: the brand, an exit hint and live alerts. */
 export function OpsRoomOverlay() {
   const lite = useGlobeStore((state) => state.lite);
-  const alerts = useShellAlerts()?.items.filter((item) => item.acknowledged_at === null) ?? [];
+  const { items: alerts, total } = useShellAlerts();
   const setOpsRoom = useGlobeStore((state) => state.setOpsRoom);
 
   return (
@@ -29,9 +29,9 @@ export function OpsRoomOverlay() {
               )}
             </div>
           ))}
-          {alerts.length > SHOWN && (
+          {total > SHOWN && (
             <div className="px-1 font-mono text-[11px] text-muted">
-              {alerts.length - SHOWN} more on the warning page
+              {total - SHOWN} more on the warning page
             </div>
           )}
         </aside>

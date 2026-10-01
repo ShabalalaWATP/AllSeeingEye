@@ -5,6 +5,8 @@ import { apiCall, apiSend } from './client';
 import type { components } from './types.gen';
 
 export type TeamBoardPost = components['schemas']['TeamBoardPostOut'];
+/** A saved post plus the teammates that write newly notified. */
+export type TeamBoardWrite = components['schemas']['TeamBoardWriteOut'];
 export type TeamBoardPage = components['schemas']['TeamBoardPageOut'];
 export type TeamBoardUnread = components['schemas']['TeamBoardUnreadOut'];
 export type TeamDashboard = components['schemas']['TeamDashboardOut'];
@@ -45,6 +47,10 @@ const postSchema = z.object({
   revision: z.number().int().min(1),
   subject: subjectSchema.nullable(),
 }) satisfies z.ZodType<TeamBoardPost>;
+const writeSchema = postSchema.extend({
+  // Absent from a server without mentions; nobody was notified then.
+  notified: z.array(z.object({ user_id: z.uuid(), display_name: z.string() })).default([]),
+}) satisfies z.ZodType<TeamBoardWrite>;
 const pageSchema = z.object({
   items: z.array(postSchema),
   replies: z.array(postSchema),
@@ -123,7 +129,7 @@ export function createBoardPost(
   text: string,
   parentId?: string,
   subject?: BoardSubjectInput,
-): Promise<TeamBoardPost> {
+): Promise<TeamBoardWrite> {
   return apiCall(`${team(teamId)}/board/posts`, {
     method: 'POST',
     body: {
@@ -131,7 +137,7 @@ export function createBoardPost(
       ...(parentId === undefined ? {} : { parent_id: parentId }),
       ...(subject === undefined ? {} : { subject }),
     },
-    schema: postSchema,
+    schema: writeSchema,
   });
 }
 
@@ -140,11 +146,11 @@ export function editBoardPost(
   postId: string,
   text: string,
   expectedRevision: number,
-): Promise<TeamBoardPost> {
+): Promise<TeamBoardWrite> {
   return apiCall(post(teamId, postId), {
     method: 'PATCH',
     body: { text, expected_revision: expectedRevision },
-    schema: postSchema,
+    schema: writeSchema,
   });
 }
 

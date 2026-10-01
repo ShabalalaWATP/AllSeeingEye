@@ -17,6 +17,7 @@ from ase.application.teams.board_access import (
     board_actor,
     require_revision,
 )
+from ase.application.teams.board_mentions import BoardMentions, BoardWrite
 from ase.application.teams.board_subjects import BoardSubjects
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
@@ -44,8 +45,10 @@ class TeamBoardService:
         auditor: Auditor,
         uow: UnitOfWork,
         subjects: BoardSubjects,
+        mentions: BoardMentions,
     ) -> None:
         self._subjects = subjects
+        self._mentions = mentions
         self._board = board
         self._teams = teams
         self._users = users
@@ -121,12 +124,13 @@ class TeamBoardService:
         parent_id: UUID | None,
         context: RequestContext,
         subject: BoardSubject | None = None,
-    ) -> TeamBoardPost:
+    ) -> BoardWrite:
         access = await self._actor(actor, team_id, write=True)
         try:
             value = clean_text(text, reply=parent_id is not None)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
+        handles = self._mentions.parse(value)
         if subject is not None:
             if parent_id is not None:
                 raise InvalidRequest("Only a new post can link a report, area or drawing.")
@@ -147,7 +151,13 @@ class TeamBoardService:
             uuid4(), team_id, access.user.id, value, now, now, parent_id, subject=subject
         )
         await self._board.add(post)
-        details: dict[str, object] = {"team_id": str(team_id), "reply": parent_id is not None}
+        # Same transaction as the post: a failed write leaves no notice behind.
+        mentions = await self._mentions.record(post, handles, now)
+        details: dict[str, object] = {
+            "team_id": str(team_id),
+            "reply": parent_id is not None,
+            "mentions": len(mentions.notified),
+        }
         if subject is not None:
             # The kind and identifier only; a title can change scope and is never audited.
             details |= {"subject_kind": subject.kind.value, "subject_id": str(subject.id)}
@@ -159,7 +169,8 @@ class TeamBoardService:
             details=details,
         )
         await self._uow.commit()
-        return post
+        await self._mentions.announce(mentions.affected)
+        return BoardWrite(post, mentions.notified)
 
     async def edit(
         self,
@@ -169,7 +180,7 @@ class TeamBoardService:
         text: str,
         expected_revision: int,
         context: RequestContext,
-    ) -> TeamBoardPost:
+    ) -> BoardWrite:
         access = await self._actor(actor, team_id, write=True)
         post = await self._board.get(post_id)
         if post is None or post.team_id != team_id:
@@ -185,6 +196,7 @@ class TeamBoardService:
             value = clean_text(text, reply=post.parent_id is not None)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
+        handles = self._mentions.parse(value)
         now = self._clock.now()
         updated = replace(
             post, text=value, updated_at=now, edited_at=now, revision=post.revision + 1
@@ -192,12 +204,14 @@ class TeamBoardService:
         if not await self._board.save_if_revision(updated, expected_revision):
             await self._uow.rollback()
             raise Conflict(STALE_POST)
+        mentions = await self._mentions.record(updated, handles, now)
         await self._auditor.record(
             AuditAction.TEAM_BOARD_POST_EDITED,
             actor=access.user.id,
             subject=str(post.id),
             ip=context.ip,
-            details={"team_id": str(team_id)},
+            details={"team_id": str(team_id), "mentions": len(mentions.notified)},
         )
         await self._uow.commit()
-        return updated
+        await self._mentions.announce(mentions.affected)
+        return BoardWrite(updated, mentions.notified)

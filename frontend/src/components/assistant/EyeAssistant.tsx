@@ -43,7 +43,8 @@ function EyeSession() {
     setOpen(true);
   }, [reportContext.launch, chat]);
   return (
-    <div className="eye-assistant" data-dragging={placement.dragging}>
+    // A labelled complementary landmark, so the floating launcher is never stray page content.
+    <aside aria-label="Eye assistant" className="eye-assistant" data-dragging={placement.dragging}>
       <button
         ref={launcher}
         type="button"
@@ -106,7 +107,7 @@ function EyeSession() {
           style={panelPlacement(placement.position, expanded)}
         />
       )}
-    </div>
+    </aside>
   );
 }
 

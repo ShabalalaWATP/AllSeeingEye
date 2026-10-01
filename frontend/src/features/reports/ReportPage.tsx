@@ -202,7 +202,7 @@ export default function ReportPage() {
             </article>
           </div>
 
-          <ReportPageFooter reportId={id} version={version} followUp={followUp} />
+          <ReportPageFooter reportId={id} version={version} followUp={followUp} report={report} />
         </div>
       </section>
       <ReportWorkspaceDrawer

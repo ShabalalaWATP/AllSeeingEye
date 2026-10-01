@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { deletePlan, fetchAois, fetchPlanEvidence } from '@/lib/api/direction';
@@ -144,6 +145,7 @@ export default function PlanPage() {
         {confirmation}
       </header>
       {editor}
+      <RequirementCodesNote codes={['PIR', 'SIR']} />
       {plan.pirs.map((pir) => (
         <section key={pir.code} aria-label={pir.code} className="flex flex-col gap-3">
           <h2 className="text-base font-semibold">

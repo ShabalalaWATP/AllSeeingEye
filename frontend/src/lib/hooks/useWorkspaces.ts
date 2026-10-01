@@ -48,10 +48,15 @@ export type Workspaces = ReturnType<typeof useWorkspaces>;
  * Selection cannot survive an identity or access invalidation. A form draft may keep it for
  * the same account and access state, so a restored draft returns to its own workspace.
  */
-export function useWorkspaceSelection(workspaces: Workspaces, draftForm: string | null = null) {
+export function useWorkspaceSelection(
+  workspaces: Workspaces,
+  draftForm: string | null = null,
+  /** A starting team, such as the source report's own, instead of Personal. */
+  initial = '',
+) {
   const [choice, setChoice] = useDraftState(draftForm, 'workspace', {
     key: workspaces.key,
-    id: '',
+    id: initial,
   });
   const selected = choice.key === workspaces.key ? choice.id : '';
   const valid = !selected || workspaces.teams.some((entry) => entry.team.id === selected);

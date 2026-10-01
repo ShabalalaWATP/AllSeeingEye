@@ -1,4 +1,8 @@
-"""Personal and team indicators governed by current membership and write authority."""
+"""Personal and team alert rules governed by current membership and write authority.
+
+The domain and API keep the historical name "indicator"; people see "alert rule".
+Editing, pausing and resuming live in `indicator_updates`.
+"""
 
 from __future__ import annotations
 
@@ -14,7 +18,7 @@ from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import PlanRepository
 from ase.application.ports.warning import IndicatorRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import InvalidRequest, NotFound
+from ase.domain.errors import Forbidden, InvalidRequest, NotFound
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import ResearchArea, validate_direct_area
 from ase.domain.users import User
@@ -59,7 +63,7 @@ def _validate_area(data: IndicatorInput) -> None:
             )
         if data.report_template is not None:
             raise InvalidRequest(
-                "Exact-shape indicators support alerts only. "
+                "Exact-shape alert rules support alerts only. "
                 "Use an area research subscription for reports."
             )
 
@@ -72,10 +76,11 @@ def build_indicator(
     owner: UUID,
     created: datetime,
     now: datetime,
+    resumed_at: datetime | None = None,
 ) -> Indicator:
     name = " ".join(data.name.split())
     if not name:
-        raise InvalidRequest("An indicator needs a name.")
+        raise InvalidRequest("An alert rule needs a name.", fields={"name": "Enter a name."})
     _validate_area(data)
     bbox: BoundingBox | None = None
     if data.bbox is not None:
@@ -112,11 +117,18 @@ def build_indicator(
         severity_floor=data.severity_floor,
         report_template=data.report_template,
         enabled=data.enabled,
+        resumed_at=resumed_at,
         created_by=owner,
         created_at=created,
         updated_at=now,
         team_id=data.team_id,
     )
+
+
+PLAN_UNAVAILABLE = (
+    "The linked collection plan is no longer available to this alert rule. "
+    "Choose another plan in the same workspace, or choose No plan."
+)
 
 
 class _IndicatorUseCase:
@@ -139,18 +151,23 @@ class _IndicatorUseCase:
         self._access = access
 
     async def _check_plan(self, data: IndicatorInput, owner: UUID, access: AccessContext) -> None:
+        """A linked plan must exist, be visible and share the rule's exact owner or team."""
         if data.plan_id is None:
             return
         plan = await self._plans.get(data.plan_id)
-        if plan is None:
-            raise InvalidRequest("Unknown collection plan.")
-        access.require_same_scope(owner, data.team_id, plan.created_by, plan.team_id)
+        try:
+            if plan is None:
+                raise NotFound()
+            access.require_same_scope(owner, data.team_id, plan.created_by, plan.team_id)
+        except (Forbidden, InvalidRequest, NotFound) as exc:
+            # One message for missing, hidden and mismatched plans reveals nothing about them.
+            raise InvalidRequest(PLAN_UNAVAILABLE, fields={"plan_id": PLAN_UNAVAILABLE}) from exc
 
     async def _existing(self, actor: User, indicator_id: UUID) -> Indicator:
         access = await self._access.context(actor, for_update=True)
         indicator = await self._indicators.get(indicator_id)
         if indicator is None:
-            raise NotFound("Indicator not found.")
+            raise NotFound("Alert rule not found.")
         access.require_write(indicator.created_by, indicator.team_id)
         return indicator
 
@@ -171,28 +188,6 @@ class CreateIndicatorUseCase(_IndicatorUseCase):
         await self._auditor.record(
             AuditAction.INDICATOR_CREATED, actor=actor.id, subject=str(indicator.id),
             ip=context.ip, details={"name": indicator.name},
-        )  # fmt: skip
-        await self._uow.commit()
-        return indicator
-
-
-class UpdateIndicatorUseCase(_IndicatorUseCase):
-    async def execute(
-        self, actor: User, indicator_id: UUID, data: IndicatorInput, context: RequestContext
-    ) -> Indicator:
-        existing = await self._existing(actor, indicator_id)
-        if data.team_id != existing.team_id:
-            raise InvalidRequest("An indicator's personal or team scope cannot be changed.")
-        access = await self._access.context(actor)
-        await self._check_plan(data, existing.created_by, access)
-        indicator = build_indicator(
-            data, templates=self._templates, indicator_id=existing.id,
-            owner=existing.created_by, created=existing.created_at, now=self._clock.now(),
-        )  # fmt: skip
-        await self._indicators.save(indicator)
-        await self._auditor.record(
-            AuditAction.INDICATOR_UPDATED, actor=actor.id, subject=str(indicator.id),
-            ip=context.ip, details={"name": indicator.name, "enabled": indicator.enabled},
         )  # fmt: skip
         await self._uow.commit()
         return indicator
