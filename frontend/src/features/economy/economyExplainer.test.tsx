@@ -32,16 +32,14 @@ const useExplainer = (body: EconomyExplainer) =>
 
 it('leads with a plain-English world summary, its short lists and its provenance', async () => {
   renderApp('/economy', 'user');
-  const panel = within(
-    await screen.findByRole('region', { name: 'The world economy right now' }),
-  );
+  const panel = within(await screen.findByRole('region', { name: 'The world economy right now' }));
   expect(
     await panel.findByText('The world economy is growing slowly while price rises keep easing.'),
   ).toBeVisible();
   expect(panel.getByText(/Output grew by 2.4% in 2024/)).toBeVisible();
-  const drivers = within(panel.getByRole('region', { name: 'What is driving it' }));
+  const drivers = within(panel.getByRole('list', { name: 'What is driving it' }));
   expect(drivers.getAllByRole('listitem')).toHaveLength(2);
-  const watch = within(panel.getByRole('region', { name: 'What to watch' }));
+  const watch = within(panel.getByRole('list', { name: 'What to watch' }));
   expect(watch.getByText('Whether price rises keep easing next year.')).toBeVisible();
   expect(panel.getByText(/The figures are the source of truth/)).toBeVisible();
   expect(panel.getByText(/Model plain-english-fixture/)).toBeVisible();
@@ -53,9 +51,7 @@ it('places the country summary beside that country figures and keeps the takeawa
   const panel = within(
     await screen.findByRole('region', { name: 'United Kingdom in plain English' }),
   );
-  expect(
-    panel.getByText(/The United Kingdom took a knock and is now edging back/),
-  ).toBeVisible();
+  expect(panel.getByText(/The United Kingdom took a knock and is now edging back/)).toBeVisible();
   const more = panel.getByText('Read the rest');
   expect(panel.getByText(/that part of the picture is missing/)).not.toBeVisible();
   await user.click(more);
@@ -84,9 +80,7 @@ it('explains each indicator through a keyboard reachable disclosure, careful not
 it('says nothing has been written yet without hiding the figures', async () => {
   useExplainer(explainerState('empty', 'No plain-English summary has been written yet.'));
   renderApp('/economy?region=GB', 'user');
-  const panel = within(
-    await screen.findByRole('region', { name: 'The world economy right now' }),
-  );
+  const panel = within(await screen.findByRole('region', { name: 'The world economy right now' }));
   expect(panel.getByRole('status')).toHaveTextContent(
     'No plain-English summary has been written yet.',
   );
@@ -99,13 +93,9 @@ it('says nothing has been written yet without hiding the figures', async () => {
 });
 
 it('shows an updating state while a fresh summary is being written', async () => {
-  useExplainer(
-    explainerState('generating', 'A fresh plain-English summary is being written.'),
-  );
+  useExplainer(explainerState('generating', 'A fresh plain-English summary is being written.'));
   renderApp('/economy', 'user');
-  const panel = within(
-    await screen.findByRole('region', { name: 'The world economy right now' }),
-  );
+  const panel = within(await screen.findByRole('region', { name: 'The world economy right now' }));
   expect(panel.getByTestId('explainer-badge')).toHaveTextContent('Updating');
   expect(panel.getByRole('status')).toHaveTextContent('being written');
 });
@@ -113,9 +103,7 @@ it('shows an updating state while a fresh summary is being written', async () =>
 it('keeps a stale summary visible and says the figures have moved on', async () => {
   useExplainer(explainerState('stale', null));
   renderApp('/economy', 'user');
-  const panel = within(
-    await screen.findByRole('region', { name: 'The world economy right now' }),
-  );
+  const panel = within(await screen.findByRole('region', { name: 'The world economy right now' }));
   expect(panel.getByTestId('explainer-badge')).toHaveTextContent('Figures moved on');
   expect(panel.getByText(/The world economy is growing slowly/)).toBeVisible();
   expect(panel.getByText(/The figures have moved on since this was written/)).toBeVisible();
@@ -129,9 +117,7 @@ it('reports a spent allowance as an honest empty state, never an error page', as
     ),
   );
   renderApp('/economy', 'user');
-  const panel = within(
-    await screen.findByRole('region', { name: 'The world economy right now' }),
-  );
+  const panel = within(await screen.findByRole('region', { name: 'The world economy right now' }));
   expect(panel.getByRole('status')).toHaveTextContent('The AI usage allowance is spent');
   expect(panel.queryByText(/The world economy is growing slowly/)).not.toBeInTheDocument();
 });

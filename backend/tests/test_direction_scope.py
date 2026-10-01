@@ -54,7 +54,9 @@ async def test_direct_plan_and_mutation_ids_do_not_disclose_other_scopes(
             ).status_code == 404
             assert (
                 await client.put(
-                    f"/api/direction/plans/{plan_id}", json=plan(team=team), headers=headers
+                    f"/api/direction/plans/{plan_id}",
+                    json={**plan(team=team), "expected_updated_at": created.json()["updated_at"]},
+                    headers=headers,
                 )
             ).status_code == 404
             assert (
@@ -76,21 +78,21 @@ async def test_member_reads_but_only_creator_or_designated_manager_edits(
     response = await client.post(
         "/api/direction/plans", json=plan(team=actors.team), headers=actors.owner
     )
-    plan_id = response.json()["id"]
+    plan_id, revision = response.json()["id"], response.json()["updated_at"]
     assert (
         await client.get(f"/api/direction/plans/{plan_id}", headers=actors.member)
     ).status_code == 200
     assert (
         await client.put(
             f"/api/direction/plans/{plan_id}",
-            json=plan("Denied", actors.team),
+            json={**plan("Denied", actors.team), "expected_updated_at": revision},
             headers=actors.member,
         )
     ).status_code == 403
     assert (
         await client.put(
             f"/api/direction/plans/{plan_id}",
-            json=plan("Manager edit", actors.team),
+            json={**plan("Manager edit", actors.team), "expected_updated_at": revision},
             headers=actors.manager,
         )
     ).status_code == 200
@@ -187,7 +189,11 @@ async def test_revoked_member_loses_authored_team_work_and_cannot_change_scope(
     )
     plan_id = response.json()["id"]
     assert (
-        await client.put(f"/api/direction/plans/{plan_id}", json=plan(), headers=actors.owner)
+        await client.put(
+            f"/api/direction/plans/{plan_id}",
+            json={**plan(), "expected_updated_at": response.json()["updated_at"]},
+            headers=actors.owner,
+        )
     ).status_code == 422
     assert (
         await client.delete(f"/api/teams/{actors.team}/members/{user.id}", headers=actors.admin)

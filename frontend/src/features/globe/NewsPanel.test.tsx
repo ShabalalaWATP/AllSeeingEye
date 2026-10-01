@@ -119,7 +119,8 @@ it('shows related publications as one story without presenting them as independe
   expect(screen.getByText(/2 related reports/)).toBeInTheDocument();
   const row = screen.getByRole('heading', { name: 'Headline latest' }).closest('li')!;
   fireEvent.click(within(row).getByText('Source assessment · F6'));
-  const related = within(row).getByText('bbc world: Headline first').closest('li')!;
+  const related = within(row).getByText('Headline first').closest('li')!;
+  expect(related).toHaveTextContent('bbc world: Headline first');
   expect(within(related).getByRole('link', { name: 'Read source' })).toHaveAttribute(
     'href',
     first.url,
@@ -140,7 +141,9 @@ it.each([null, 'javascript:alert(1)', 'https://name:password@example.com/news'])
     const headline = await screen.findByRole('heading', { name: 'Headline plain' });
     const row = headline.closest('li')!;
     fireEvent.click(within(row).getByText('Source assessment · F6'));
-    expect(within(row).getByText('bbc world: Headline related')).toBeVisible();
+    const related = within(row).getByText('Headline related');
+    expect(related).toBeVisible();
+    expect(related.closest('li')).toHaveTextContent('bbc world: Headline related');
     expect(within(row).queryByRole('link', { name: 'Read source' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Inspect evidence' })).toBeEnabled();
   },

@@ -174,17 +174,32 @@ class SqlSourceReviewRepository:
         row = await self.session.get(SourceReviewSnapshotRow, snapshot_id, populate_existing=True)
         if row is None:
             return None
-        value = decode_review_snapshot(row.payload, row.payload_sha256, row.payload_bytes)
-        if (
-            value.id != row.id
-            or value.report_id != row.report_id
-            or value.report_version_id != row.report_version_id
-            or value.created_at != row.created_at
-            or value.scope.owner_id != row.owner_id
-            or value.scope.team_id != row.team_id
-        ):
-            raise ValueError("Source review snapshot indexes do not match saved content.")
-        return value
+        return _checked_snapshot(row)
+
+    async def snapshots(
+        self, report_version_id: UUID, limit: int
+    ) -> tuple[SourceReviewSnapshot, ...]:
+        rows = await self.session.scalars(
+            select(SourceReviewSnapshotRow)
+            .where(SourceReviewSnapshotRow.report_version_id == report_version_id)
+            .order_by(SourceReviewSnapshotRow.created_at.desc(), SourceReviewSnapshotRow.id)
+            .limit(limit)
+        )
+        return tuple(_checked_snapshot(row) for row in rows)
+
+
+def _checked_snapshot(row: SourceReviewSnapshotRow) -> SourceReviewSnapshot:
+    value = decode_review_snapshot(row.payload, row.payload_sha256, row.payload_bytes)
+    if (
+        value.id != row.id
+        or value.report_id != row.report_id
+        or value.report_version_id != row.report_version_id
+        or value.created_at != row.created_at
+        or value.scope.owner_id != row.owner_id
+        or value.scope.team_id != row.team_id
+    ):
+        raise ValueError("Source review snapshot indexes do not match saved content.")
+    return value
 
 
 async def delete_source_snapshots_for_report(session: AsyncSession, report_id: UUID) -> None:

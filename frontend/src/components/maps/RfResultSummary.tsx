@@ -2,10 +2,10 @@ import type { RfResultExplanation } from '@/lib/map/rfResultExplanation';
 
 const colours = {
   pass: 'text-cyan',
-  caution: 'text-amber-200',
-  blocked: 'text-red-300',
+  caution: 'text-amber',
+  blocked: 'text-critical',
   unknown: 'text-muted',
-  scenario: 'text-indigo-200',
+  scenario: 'text-cyan',
 };
 
 /** A common reading order across models, without turning an estimate into a promise. */

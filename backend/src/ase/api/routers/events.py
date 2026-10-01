@@ -11,6 +11,7 @@ from ase.api.deps import ContainerDep, CurrentUser
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_events import EventOut, EventsOut, StoreStatsOut
 from ase.api.session_fence import FenceDep
+from ase.api.shared_event_reads import read_events
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import NotFound
@@ -84,11 +85,16 @@ async def list_events(
         items = [EventOut.from_event(event) for event in events]
         return EventsOut(items=items, count=len(items))
 
-    result = (
-        await container.store.read_cooperatively(query, project, admission_key=f"user:{user.id}")
-        if isinstance(container.store, CooperativeEventReader)
-        else project(container.store.query(query))
-    )
+    store = container.store
+    actor = f"user:{user.id}"
+
+    async def load() -> EventsOut:
+        if isinstance(store, CooperativeEventReader):
+            return await store.read_cooperatively(query, project, admission_key=actor)
+        return project(store.query(query))
+
+    # Identical concurrent reads of an unchanged store share one selection and build.
+    result = await read_events(store, query, load, actor=actor)
     await fence.confirm()
     fence.assert_live()
     return result

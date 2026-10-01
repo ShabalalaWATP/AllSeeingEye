@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import {
@@ -63,7 +64,7 @@ function Contents({ id }: { id: string }) {
       <Link to="/annotation-monitors" className="text-ember underline">
         All annotation monitors
       </Link>
-      <h1 className="text-xl font-semibold">{monitor?.name ?? 'Annotation monitor'}</h1>
+      <PageHeader type="record" title={monitor?.name ?? 'Annotation monitor'} />
       {resource.loading && <LoadingNote label="Loading monitor" />}
       {resource.error && <Alert tone="error">{describeError(resource.error)}</Alert>}
       <Button

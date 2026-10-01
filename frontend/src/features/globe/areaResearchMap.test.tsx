@@ -42,9 +42,9 @@ it.each(['Globe', 'Map'])(
     act(() => map.fire('style.load'));
     if (mode === 'Map') await user.click(screen.getByRole('button', { name: /^Map$/ }));
     await user.click(screen.getByRole('button', { name: 'Research area' }));
-    expect(
-      screen.getByRole('form', { name: 'Research this area' }).closest('.map-tool-panel'),
-    ).toHaveAttribute('data-side', 'right');
+    // The panel loads when its tool opens.
+    const form = await screen.findByRole('form', { name: 'Research this area' });
+    expect(form.closest('.map-tool-panel')).toHaveAttribute('data-side', 'right');
     expect(screen.getByRole('button', { name: 'Check sources' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Draw boundary' }));
     act(() => {

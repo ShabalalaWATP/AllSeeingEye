@@ -5,6 +5,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useGlobeStore } from '@/stores/globe';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 import { PersonalAppearance } from '@/components/account/PersonalAppearance';
+import { StartHereCard } from '@/app/help/StartHereCard';
 
 import { useShellStore } from '@/stores/shell';
 
@@ -43,7 +44,7 @@ export function AppShell() {
       </a>
       <p ref={announcer} aria-live="polite" aria-atomic="true" className="sr-only" />
       {!opsRoom && !narrow && <LeftRail />}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         {!opsRoom && (narrow ? <MobileHeader /> : <TopBar />)}
         <main id="main-content" ref={mainRef} tabIndex={-1} className="relative min-h-0 flex-1">
           <Suspense fallback={<LoadingScreen />}>
@@ -51,6 +52,8 @@ export function AppShell() {
           </Suspense>
           {opsRoom && <OpsRoomOverlay />}
         </main>
+        {/* Orientation sits beside the map, outside the page, and only on the map home. */}
+        {pathname === '/' && !opsRoom && <StartHereCard />}
       </div>
       {paletteOpen && (
         <Suspense fallback={null}>

@@ -113,7 +113,7 @@ async def test_legacy_cross_owner_plan_aoi_is_retained_but_not_used(
             user, PlanInput("Legacy", pirs=(PirInput("Question"),)), CONTEXT
         )
         repository = container.repositories(session).plans
-        await repository.save(replace(plan, aoi_id=aoi.id))
+        assert await repository.save_if_unchanged(replace(plan, aoi_id=aoi.id), plan.updated_at)
         await session.commit()
         with pytest.raises(NotFound):
             await container.plan_evidence(session).execute(user, plan.id)

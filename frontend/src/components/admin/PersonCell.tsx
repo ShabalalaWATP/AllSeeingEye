@@ -21,7 +21,7 @@ export function PersonCell({
     <div className="flex min-w-0 items-center gap-3">
       <span
         aria-hidden="true"
-        className={`flex size-9 shrink-0 items-center justify-center rounded-full border font-mono text-[11px] font-semibold ${muted ? 'border-line bg-surface-2 text-muted' : 'border-ember/40 bg-ember/10 text-ember'}`}
+        className={`flex size-9 shrink-0 items-center justify-center rounded-full border font-mono text-2xs font-semibold ${muted ? 'border-line bg-surface-2 text-muted' : 'border-ember/40 bg-ember/10 text-ember'}`}
       >
         {initials(name)}
       </span>

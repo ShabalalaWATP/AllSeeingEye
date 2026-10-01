@@ -111,11 +111,11 @@ export function EconomyNewsPanel({
               <div className="text-sm font-medium leading-6">
                 <SourceLink url={item.url}>{item.title}</SourceLink>
               </div>
-              <div className="text-[11px] leading-5 text-muted">
+              <div className="text-2xs leading-5 text-muted">
                 <span>{item.source_name}</span>
                 <span className="mx-2">·</span>
                 <time dateTime={item.published_at}>{newsDate(item.published_at)}</time>
-                <p className="mt-1 text-[11px] text-muted">{item.relevance}</p>
+                <p className="mt-1 text-2xs text-muted">{item.relevance}</p>
                 <p className={item.viewpoint === 'state_aligned' ? 'text-amber' : ''}>
                   {viewpoints[item.viewpoint]}
                 </p>

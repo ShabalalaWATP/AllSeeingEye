@@ -28,7 +28,7 @@ export function AttentionList({ entries }: { entries: readonly CatalogueEntry[] 
           <li key={entry.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
             <ConnectionBadge state={entry.state} />
             <span className="font-medium">{entry.name}</span>
-            <span className="text-[11px] text-muted">{FAMILY_LABELS[entry.family]}</span>
+            <span className="text-2xs text-muted">{FAMILY_LABELS[entry.family]}</span>
             <span className="min-w-0 basis-full text-xs leading-5 text-muted">
               {attentionReason(entry)}
             </span>

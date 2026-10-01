@@ -20,7 +20,8 @@ export function FigurePanel({
   const { setEnabled } = figures;
   useEffect(() => setEnabled(true), [setEnabled]);
   return (
-    <section aria-label="Public figures" className="space-y-4 p-1 text-xs">
+    // A plain container: the tool panel around it is already the "Public figures" region.
+    <div className="space-y-4 p-1 text-xs">
       <button
         type="button"
         role="switch"
@@ -124,6 +125,6 @@ export function FigurePanel({
           </ul>
         </>
       )}
-    </section>
+    </div>
   );
 }

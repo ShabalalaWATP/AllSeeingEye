@@ -1,5 +1,6 @@
 import { Link, useRouteError } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { Button } from '@/components/ui/Button';
 import { isStaleBuildError, reloadPage } from '@/lib/pageRecovery';
@@ -28,9 +29,11 @@ function Recovery() {
   const stale = isStaleBuildError(useRouteError());
   return (
     <>
-      <h1 className="text-2xl font-semibold">
-        {stale ? 'A newer version is available' : 'This page could not load'}
-      </h1>
+      <PageHeader
+        as="div"
+        type="status"
+        title={stale ? 'A newer version is available' : 'This page could not load'}
+      />
       <p className="max-w-md text-sm text-muted">
         {stale
           ? 'The app was updated while this page was open. Reload to continue with the latest version.'

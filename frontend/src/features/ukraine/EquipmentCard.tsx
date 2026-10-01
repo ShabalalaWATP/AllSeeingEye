@@ -40,7 +40,7 @@ export function EquipmentCard({
       ) : null}
       <div className="flex flex-1 flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
-          <h5 className="text-sm leading-tight font-semibold text-text">{entry.name}</h5>
+          <h4 className="text-sm leading-tight font-semibold text-text">{entry.name}</h4>
           <span className="flex shrink-0 flex-wrap justify-end gap-1">
             {showSide ? (
               <span
@@ -67,7 +67,7 @@ export function EquipmentCard({
             type="button"
             onClick={() => setExpanded((value) => !value)}
             aria-expanded={expanded}
-            className="w-fit text-[11px] text-text underline-offset-2 hover:underline"
+            className="w-fit text-2xs text-text underline-offset-2 hover:underline"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -88,7 +88,7 @@ export function EquipmentCard({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-ember hover:underline"
+                className="text-2xs text-ember hover:underline"
               >
                 {link.label}
               </a>

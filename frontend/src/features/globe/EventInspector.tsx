@@ -1,5 +1,6 @@
 import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
 import { HistoricalBaselineNote } from '@/components/reports/HistoricalBaselineNote';
+import { SourceText } from '@/components/events/SourceText';
 import { Fragment, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
@@ -16,6 +17,7 @@ import { conflictKind, conflictReportLabel } from '@/lib/conflicts';
 import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
 import { SelectedEventFacts } from './SelectedEventFacts';
 import { ReferenceNotes } from './ReferenceNotes';
+import { PlanMatchFacts } from './PlanMatchFacts';
 import { eventTimeLabel } from './eventFacts';
 
 export interface EventInspectorProps {
@@ -76,7 +78,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       <div className="flex items-start justify-between gap-2 border-b border-line p-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-text"
+            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-2xs uppercase tracking-wider text-text"
             style={{ backgroundColor: `${style.css}1f` }}
           >
             <span
@@ -87,12 +89,12 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
             {style.label}
           </span>
           <span
-            className="rounded border border-line px-1.5 py-0.5 font-mono text-[11px] text-text"
+            className="rounded border border-line px-1.5 py-0.5 font-mono text-2xs text-text"
             title={event.grade_rationale}
           >
             Grade {event.grade}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
+          <span className="font-mono text-2xs uppercase tracking-wider text-muted">
             {event.subtype}
           </span>
         </div>
@@ -107,7 +109,13 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
-        <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
+        <SourceText
+          as="h2"
+          language={event.language}
+          className="text-base leading-snug font-semibold text-text"
+        >
+          {event.title}
+        </SourceText>
         {kind && (
           <p className="mt-2 flex items-center gap-2 text-xs text-text">
             <ConflictSymbol kind={kind} />
@@ -167,9 +175,16 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           </p>
         )}
         <SelectedEventFacts event={event} />
+        <PlanMatchFacts eventId={event.id} />
         <ReferenceNotes event={event} />
         {event.summary !== null && (
-          <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
+          <SourceText
+            as="p"
+            language={event.language}
+            className="mt-3 whitespace-pre-line text-text"
+          >
+            {event.summary}
+          </SourceText>
         )}
         <SourceProvenanceDetails
           transformations={event.transformations}
@@ -195,7 +210,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
             {event.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted"
+                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-2xs text-muted"
               >
                 {tag}
               </span>

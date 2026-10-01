@@ -15,11 +15,9 @@ from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.api.schemas_reports import ReportVersionOut
 from ase.application.reports.archiving import archive_evidence
-from ase.application.reports.assessment_export import assessment_sections
 from ase.application.reports.comparison import compare_versions
 from ase.application.reports.document import build_document
 from ase.application.reports.production import Producer
-from ase.application.reports.render import render_markdown
 from ase.container import Container
 from ase.domain.evidence_matrix import evidence_policy_metadata
 from ase.domain.judgement_assessment import build_report_assessment
@@ -30,7 +28,7 @@ from ase.domain.reports import ReportStatus
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from production_integration_helpers import RecordingUsage, StageGateway, production_job
-from report_documents_helpers import document_records
+from report_documents_helpers import document_records, downloaded_markdown, package_file
 from report_helpers import ScriptedGateway, filled_store
 
 
@@ -140,39 +138,28 @@ def test_reader_exports_hide_frozen_assessment_diagnostics() -> None:
     assessment = build_report_assessment(version.body, version.evidence, version.findings)
     assessment = replace(assessment, method_version="saved-policy-v0")
     version = replace(version, assessment=assessment)
-    markdown = render_markdown(
-        record.header,
-        version.body,
-        version.evidence,
-        version.quality,
-        assessment=assessment,
-    )
     document = build_document(record, version)
     renderer = ReportDocumentRenderer()
     word = Document(io.BytesIO(renderer.render(document, ExportFormat.DOCX)))
     pdf = PdfReader(io.BytesIO(renderer.render(document, ExportFormat.PDF)))
     reader_texts = [
+        downloaded_markdown(record, version),
         "\n".join(p.text for p in word.paragraphs),
         " ".join(page.extract_text() for page in pdf.pages),
     ]
-    operational = " ".join(markdown.split())
-    assert "saved-policy-v0" in operational
-    assert "not an accuracy percentage" in operational
-    assert "does not verify that citations support the claims" in operational
     for text in reader_texts:
         normal = " ".join(text.split())
         assert "saved-policy-v0" not in normal
         assert "Source contributions:" not in normal
         assert "support groups (model-assigned):" not in normal
-    assert not any(
-        paragraph in [block.text for block in document.blocks]
-        for _, paragraphs in assessment_sections(assessment)
-        for paragraph in paragraphs
-    )
-    paragraphs = [paragraph for _, rows in assessment_sections(assessment) for paragraph in rows]
-    for limitation in assessment.limitations:
-        assert paragraphs.count(f"Limitation: {limitation}") == 1
-    assert not any("Balance: support_only" in paragraph for paragraph in paragraphs)
+        assert "Balance: support_only" not in normal
+        assert all(f"Limitation: {item}" not in normal for item in assessment.limitations)
+    # The frozen assessment and each of its limitations stay in the supporting data, once.
+    saved = json.loads(package_file(record, version, "analysis.json"))["assessment"]
+    assert saved == json.loads(json.dumps(assessment_to_dict(assessment)))
+    assert saved["method_version"] == "saved-policy-v0"
+    assert saved["limitations"] == list(assessment.limitations)
+    assert len(set(saved["limitations"])) == len(saved["limitations"])
 
 
 async def test_late_archive_preserves_the_saved_assessment_and_version_comparison() -> None:

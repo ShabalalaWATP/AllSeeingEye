@@ -331,8 +331,16 @@ export function regenerateReport(id: string): Promise<Report> {
   );
 }
 
-export function fetchReportMarkdown(id: string, version?: number): Promise<DownloadedFile> {
-  const suffix = version === undefined ? '' : `?version=${String(version)}`;
+export function fetchReportMarkdown(
+  id: string,
+  version?: number,
+  sourceSnapshotId?: string,
+): Promise<DownloadedFile> {
+  const query = new URLSearchParams();
+  if (version !== undefined) query.set('version', String(version));
+  if (version !== undefined && sourceSnapshotId) query.set('source_snapshot_id', sourceSnapshotId);
+  const encoded = query.toString();
+  const suffix = encoded ? `?${encoded}` : '';
   return apiFile(`/api/reports/${encodeURIComponent(id)}/markdown${suffix}`, {
     headers: { Accept: 'application/zip, text/markdown;q=0.9' },
   });

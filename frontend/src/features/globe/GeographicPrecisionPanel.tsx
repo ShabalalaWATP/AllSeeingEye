@@ -1,6 +1,7 @@
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
+import { useSettledAnnouncement } from '@/lib/hooks/useSettledAnnouncement';
 import {
   locationQuality,
   precisionLabel,
@@ -41,6 +42,7 @@ export function GeographicPrecisionPanel({
   const id = useId();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const searchField = useRef<HTMLInputElement>(null);
   const visible = useMemo(
     () => events.filter((event) => !hidden.includes(event.category)),
     [events, hidden],
@@ -68,6 +70,11 @@ export function GeographicPrecisionPanel({
   }, [visible, filter, search]);
   const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
   const current = Math.min(page, pages - 1);
+  // Streamed records keep the visible summary current but never speak on their own; only a
+  // user's search, filter or page change announces its settled result.
+  const { announcement, announce } = useSettledAnnouncement(
+    `${matches.length} matching loaded records, page ${current + 1} of ${pages}.`,
+  );
   return (
     <section aria-label="Location quality" className="map-tool-workspace">
       <MapToolIntro
@@ -83,6 +90,7 @@ export function GeographicPrecisionPanel({
           onChange={(event) => {
             onFilterChange(event.target.value as LocationQualityFilter);
             setPage(0);
+            announce();
           }}
           aria-describedby={`${id}-quality-help`}
           className="map-tool-input"
@@ -105,6 +113,7 @@ export function GeographicPrecisionPanel({
       <label htmlFor={`${id}-search`} className="map-tool-field">
         Search loaded records
         <input
+          ref={searchField}
           id={`${id}-search`}
           type="search"
           maxLength={200}
@@ -112,6 +121,7 @@ export function GeographicPrecisionPanel({
           onChange={(event) => {
             setSearch(event.target.value);
             setPage(0);
+            announce();
           }}
           aria-describedby={`${id}-search-help`}
           placeholder="Title, country code, source or record ID"
@@ -121,11 +131,34 @@ export function GeographicPrecisionPanel({
       <p id={`${id}-search-help`} className="map-tool-help">
         Searches this list only. The location-quality selection above filters the map.
       </p>
-      <p role="status" className="map-tool-help">
+      <p className="map-tool-help">
         {matches.length} matching loaded records · page {current + 1} of {pages}
       </p>
+      <p role="status" aria-atomic="true" className="sr-only">
+        <span key={announcement.id}>{announcement.text}</span>
+      </p>
       {matches.length === 0 ? (
-        <p className="map-tool-notice">No records match these filters.</p>
+        <div className="map-tool-notice">
+          <p>
+            {visible.length === 0
+              ? 'No records are loaded for the current layers, nation and time window. Turn on a layer or widen the window to load some.'
+              : 'No records match these filters.'}
+          </p>
+          {search !== '' && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setPage(0);
+                announce();
+                searchField.current?.focus();
+              }}
+              className="map-tool-secondary"
+            >
+              Clear search
+            </button>
+          )}
+        </div>
       ) : (
         <ul className="map-reference-results">
           {matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map((event) => (
@@ -145,7 +178,10 @@ export function GeographicPrecisionPanel({
           <button
             type="button"
             disabled={current === 0}
-            onClick={() => setPage(current - 1)}
+            onClick={() => {
+              setPage(current - 1);
+              announce();
+            }}
             className="map-tool-secondary"
           >
             Previous
@@ -156,7 +192,10 @@ export function GeographicPrecisionPanel({
           <button
             type="button"
             disabled={current === pages - 1}
-            onClick={() => setPage(current + 1)}
+            onClick={() => {
+              setPage(current + 1);
+              announce();
+            }}
             className="map-tool-secondary"
           >
             Next

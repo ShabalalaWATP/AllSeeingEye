@@ -1,5 +1,7 @@
 /** Shared presentation of AI allowances and observed usage for account, team and admin views. */
 import type { AiScope, AiTokenPrices, AiUsageSummary, AiUsageTotals } from '@/lib/api/aiUsage';
+import { formatPersonalDate } from '@/lib/format';
+import { usePersonalPreferences } from '@/lib/hooks/usePersonalPreferences';
 
 import { SPEND_CAVEAT, spendOf } from './spend';
 
@@ -9,6 +11,10 @@ const SCOPE_LABELS: Record<AiScope, string> = {
   user: 'Personal',
   team: 'Team',
 };
+
+/** Counts read the same in every browser, whatever locale it reports. */
+const COUNT = new Intl.NumberFormat('en-GB');
+const count = (value: number) => COUNT.format(value);
 
 export function scopeLabel(scope: AiScope): string {
   return SCOPE_LABELS[scope];
@@ -39,8 +45,8 @@ export function UsageBar({
           {blocked
             ? 'Blocked'
             : limit === null
-              ? `${used.toLocaleString()} used`
-              : `${used.toLocaleString()} / ${limit.toLocaleString()}`}
+              ? `${count(used)} used`
+              : `${count(used)} / ${count(limit)}`}
         </span>
       </div>
       {progress === null ? null : (
@@ -65,6 +71,7 @@ export function UsageBar({
 export function AllowanceCard({ item }: { item: AiUsageSummary }) {
   const requests = item.used_requests + item.reserved_requests;
   const tokens = item.used_tokens + item.reserved_tokens;
+  const preferences = usePersonalPreferences();
   const near =
     [percentage(requests, item.request_limit), percentage(tokens, item.token_limit)].some(
       (value) => value !== null && value >= 80,
@@ -77,12 +84,12 @@ export function AllowanceCard({ item }: { item: AiUsageSummary }) {
           allowance
         </h3>
         <span className="text-xs text-muted">
-          Resets {new Date(item.period_end).toLocaleString()}
+          Resets {formatPersonalDate(item.period_end, preferences)}
         </span>
       </div>
       {item.override ? (
         <p className="mt-2 text-xs text-amber">
-          Temporary override until {new Date(item.override.expires_at).toLocaleString()}
+          Temporary override until {formatPersonalDate(item.override.expires_at, preferences)}
         </p>
       ) : null}
       {near ? (
@@ -111,11 +118,13 @@ export function ObservedTotals({
   return (
     <div className="text-sm text-muted">
       <p>
-        <span className="font-medium text-text">{label}:</span>{' '}
-        {totals.used_requests.toLocaleString()} requests, {totals.used_tokens.toLocaleString()}{' '}
-        tokens this month ({totals.used_input_tokens.toLocaleString()} in,{' '}
-        {totals.used_output_tokens.toLocaleString()} out)
-        {totals.unknown_requests > 0 ? `, ${totals.unknown_requests} with unconfirmed usage` : ''}.
+        <span className="font-medium text-text">{label}:</span> {count(totals.used_requests)}{' '}
+        requests, {count(totals.used_tokens)} tokens this month ({count(totals.used_input_tokens)}{' '}
+        in, {count(totals.used_output_tokens)} out)
+        {totals.unknown_requests > 0
+          ? `, ${count(totals.unknown_requests)} with unconfirmed usage`
+          : ''}
+        .
       </p>
       {spend ? (
         <p className="mt-1">

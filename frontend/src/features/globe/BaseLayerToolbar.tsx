@@ -1,4 +1,4 @@
-import { Fragment, useId, useRef, useState } from 'react';
+import { Fragment, memo, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import type { BaseLayer } from '@/stores/globe';
@@ -21,7 +21,7 @@ export interface BaseLayerToolbarProps {
 }
 
 /** A compact disclosure keeps the globe clear while making every map choice discoverable. */
-export function BaseLayerToolbar({
+export const BaseLayerToolbar = memo(function BaseLayerToolbar({
   value,
   osAvailable,
   osChecking = false,
@@ -236,4 +236,4 @@ export function BaseLayerToolbar({
       </div>
     </div>
   );
-}
+});

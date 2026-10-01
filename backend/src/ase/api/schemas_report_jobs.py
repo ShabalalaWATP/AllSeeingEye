@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from ase.api.schemas_reports import ReportCreateIn
+from ase.domain.reports import ReportOrigin
 
 
 class ReportJobCreateIn(BaseModel):
@@ -20,6 +21,8 @@ class BriefJobCreateIn(BaseModel):
     request_id: UUID
     brief_id: UUID
     revision: int = Field(ge=1, strict=True)
+    # The collection-plan revision the author reviewed; required when the brief names a plan.
+    expected_plan_updated_at: datetime | None = None
 
 
 class ReportJobUsageOut(BaseModel):
@@ -48,11 +51,16 @@ class ReportJobOut(BaseModel):
     brief_revision: int | None = None
     revision: int
     title: str
+    # Server-classified; automatic workspace briefings are "briefing".
+    origin: ReportOrigin = ReportOrigin.RESEARCH
     status: Literal["queued", "running", "paused", "completed", "needs_review", "failed"]
     stage: str
     created_at: datetime
     updated_at: datetime
     team_id: UUID | None
+    owner_id: UUID
+    # The personal owner's display name on list views; null for team work and detail reads.
+    owner_name: str | None = None
     report_id: UUID | None
     model: str
     reasoning_effort: str | None
@@ -66,6 +74,8 @@ class ReportJobOut(BaseModel):
 
 class ReportJobsOut(BaseModel):
     items: list[ReportJobOut]
+    # Opaque position after the last item; null when no further matching job exists.
+    next_cursor: str | None = None
 
 
 def public_job(value: dict[str, Any]) -> ReportJobOut:

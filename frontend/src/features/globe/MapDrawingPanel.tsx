@@ -233,9 +233,9 @@ export function MapDrawingPanel({
         disabled={value.picking}
         hint={
           value.picking
-            ? 'Finish drawing or moving before preparing an area indicator.'
+            ? 'Finish drawing or moving before preparing an area alert rule.'
             : (watch.error ??
-              'Watch the same straight-edged boundary used by area research. Review precise-location rules in Warning before adding an indicator.')
+              'Watch the same straight-edged boundary used by area research. Review precise-location rules in Alerts before adding an alert rule.')
         }
       />
       <details className="map-tool-disclosure">

@@ -5,11 +5,10 @@ import json
 from contextlib import asynccontextmanager
 from dataclasses import replace
 
-from ase.application.reports.markdown_annex import annex_lines
 from ase.application.research.source_admission import ControlledResearchProvider
 from ase.container.research import research_service
 from ase.container.research_sources import research_source_specs
-from ase.domain.evidence import EvidenceItem, quality_of_information
+from ase.domain.evidence import EvidenceItem
 from ase.domain.report_records import evidence_from_list, evidence_to_list
 from ase.domain.research import CollectionStatus
 from ase.infrastructure.settings import Settings
@@ -89,7 +88,9 @@ async def test_disable_during_request_discards_evidence_at_release(monkeypatch):
     await feed.http.aclose()
 
 
-async def test_licence_original_units_dates_and_credit_survive_freezing_and_markdown(monkeypatch):
+async def test_licence_original_units_dates_and_credit_survive_freezing_and_supporting_data(
+    monkeypatch,
+):
     feed = OpenAqFeed(monkeypatch)
     event = (await feed.provider().collect(QUERY)).items[0]
     frozen = EvidenceItem.from_event(
@@ -99,10 +100,12 @@ async def test_licence_original_units_dates_and_credit_survive_freezing_and_mark
     assert restored.summary == event.summary and restored.observation == event.observation
     attributes = {row.key: row.value for row in restored.attributes}
     assert attributes["units"] == "µg/m³" and attributes["licence_1_attribution"] == "Station owner"
-    markdown = "\n".join(annex_lines((restored,), quality_of_information((restored,)), ()))
-    assert "Station owner" in markdown and "µg/m³" in markdown
-    assert "opendatacommons.org/licenses/by/1.0/" in markdown
-    assert "owner.example" in markdown and event.observation.acquired_at.isoformat() in markdown
+    # The evidence package's evidence.json is encoded this way and keeps the credit verbatim.
+    supporting = json.dumps(evidence_to_list((restored,)), ensure_ascii=False)
+    assert "Station owner" in supporting and "µg/m³" in supporting
+    assert "opendatacommons.org/licenses/by/1.0/" in supporting
+    assert "owner.example" in supporting
+    assert event.observation.acquired_at.isoformat() in supporting
     await feed.http.aclose()
 
 

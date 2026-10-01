@@ -73,19 +73,19 @@ records; saving one does not automatically create the others.
 
 ## Watch an area
 
-**Watch this area** prepares an editable indicator draft in Warning. Nothing is
-saved until **Add indicator** is selected. Exact-shape indicators use the same
+**Watch this area** prepares an editable alert rule draft in Alerts. Nothing is
+saved until **Add alert rule** is selected. Exact-shape alert rules use the same
 straight-edged canonical boundary as area research. Geodesic sketch strokes can
 look different on the globe; the research boundary defines membership.
 
 Only precisely located incident or site points count towards an exact-shape
-indicator. Country centres, approximate points, unrelated footprints and unknown
+alert rule. Country centres, approximate points, unrelated footprints and unknown
 locations do not become inside evidence. Polygon holes exclude their interiors;
 outer and hole boundaries are included. Exact membership is applied before the
 candidate result limit.
 
-Exact-shape indicators create alerts only. Use an area research subscription for
-recurring reports. The ordinary rectangle and nation indicators keep their own
+Exact-shape alert rules create alerts only. Use an area research subscription for
+recurring reports. The ordinary rectangle and country alert rules keep their own
 supported report choices. Switching an exact shape to **Map area (rectangle)**
 is an explicit choice to use its enclosing bounds, and may include space outside
 the shape. This is a count of matching published items, not an arrival or

@@ -102,7 +102,7 @@ export function CameraPanel({
                   className="min-h-16 w-full border-b border-line px-2 py-3 text-left hover:bg-white/5 aria-pressed:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-cyan"
                 >
                   <span className="block font-medium">{camera.title}</span>
-                  <span className="mt-1 block text-[11px] text-muted">
+                  <span className="mt-1 block text-2xs text-muted">
                     {cameras.catalogue?.providers.find(
                       (provider) => provider.id === camera.provider,
                     )?.name ?? camera.provider}

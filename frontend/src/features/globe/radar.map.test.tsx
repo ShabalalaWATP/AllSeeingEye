@@ -78,7 +78,8 @@ it.each(['globe', 'map'] as const)(
       }),
     );
     const { user } = renderApp('/', 'user');
-    const cyber = await screen.findByRole('switch', { name: 'Cyber 0' });
+    await screen.findByText('Cyber: 0 loaded');
+    const cyber = screen.getByRole('switch', { name: 'Cyber' });
     expect(reads).toBe(0);
     expect(layer()).toBeUndefined();
     await user.click(cyber);
@@ -114,7 +115,7 @@ it.each(['globe', 'map'] as const)(
       within(panel).getByRole('checkbox', { name: 'Show Cloudflare observed traffic on map' }),
     );
     await waitFor(() => expect(layer()?.props.data).toHaveLength(1));
-    await user.click(screen.getByRole('switch', { name: /^Cyber \d+/ }));
+    await user.click(screen.getByRole('switch', { name: 'Cyber' }));
     expect(layer()).toBeUndefined();
   },
 );

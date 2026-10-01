@@ -7,6 +7,7 @@ import { figureBoard, publicFigure } from '@/test/fixtures.figures';
 import { applySession } from '@/test/render';
 import { server } from '@/test/server';
 
+import { MapToolInspector } from '../MapToolInspector';
 import { FigureInspector } from './FigureInspector';
 import { FigurePanel } from './FigurePanel';
 import { buildFigureLayers } from './figureLayers';
@@ -171,6 +172,28 @@ describe('public figures layer', () => {
     expect(screen.getByRole('switch', { name: 'Show public figures' })).not.toBeChecked();
     expect(screen.queryByRole('list', { name: 'Figures on the map' })).not.toBeInTheDocument();
     expect(screen.getByText(/Nothing here is a confirmed position/)).toBeVisible();
+  });
+
+  it('gives every landmark in the collapsible figures rail panel a unique name', () => {
+    render(
+      <MapToolInspector
+        id="figures"
+        label="Public figures"
+        icon="figure"
+        side="left"
+        onClose={vi.fn()}
+        onCollapse={vi.fn()}
+      >
+        <FigurePanel figures={state()} />
+      </MapToolInspector>,
+    );
+    const landmarks = ['region', 'navigation', 'complementary', 'form', 'search'].flatMap((role) =>
+      screen
+        .queryAllByRole(role)
+        .map((element) => `${role}:${element.getAttribute('aria-label') ?? ''}`),
+    );
+    expect(landmarks).toContain('region:Public figures');
+    expect(new Set(landmarks).size).toBe(landmarks.length);
   });
 
   it('explains the placement basis, lists reporting and credits the portrait', async () => {

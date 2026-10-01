@@ -8,6 +8,7 @@ import {
   markBoardRead,
   pinBoardPost,
   removeBoardPost,
+  type BoardSubjectInput,
   type TeamBoardPost,
 } from '@/lib/api/teamBoard';
 import { useVisiblePolling, type PollOutcome } from '@/lib/hooks/useVisiblePolling';
@@ -19,6 +20,14 @@ export type BoardAction = 'remove' | 'pin';
 
 export const BOARD_REFRESH_INTERVAL = 30_000;
 
+/** What a save told the author about who it notified; never anyone outside the team. */
+export function describeNotified(names: readonly string[]): string {
+  if (names.length === 0) return '';
+  const list =
+    names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1) ?? ''}`;
+  return `Notified ${String(list)} in their notifications.`;
+}
+
 function notifyNew(count: number): string | null {
   if (count === 0) return null;
   return count === 1 ? '1 new post added' : `${count} new posts added`;
@@ -28,7 +37,7 @@ function notifyNew(count: number): string | null {
  * Board state, including a draft that survives refreshes and revision conflicts.
  * The server remains the authority for every permission and revision check.
  */
-export function useTeamBoard(teamId: string) {
+export function useTeamBoard(teamId: string, initialSubject?: BoardSubjectInput) {
   const [posts, setPosts] = useState<TeamBoardPost[]>([]);
   const [replies, setReplies] = useState<TeamBoardPost[]>([]);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -39,7 +48,10 @@ export function useTeamBoard(teamId: string) {
   const [conflict, setConflict] = useState<string | null>(null);
   const [accessLost, setAccessLost] = useState(false);
   const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
+  const [notified, setNotified] = useState('');
   const [draft, setDraft] = useState('');
+  // Work a new top-level post will discuss; the server re-checks its team on posting.
+  const [subject, setSubject] = useState<BoardSubjectInput | null>(initialSubject ?? null);
   const [replyTo, setReplyTo] = useState<TeamBoardPost | null>(null);
   const [editing, setEditing] = useState<TeamBoardPost | null>(null);
   const editingRef = useRef<TeamBoardPost | null>(null);
@@ -169,10 +181,17 @@ export function useTeamBoard(teamId: string) {
     if (!text || busy) return;
     setBusy(true);
     setError(null);
+    setNotified('');
     activeRequests.current += 1;
     try {
-      if (editing) await editBoardPost(teamId, editing.id, text, editing.revision);
-      else await createBoardPost(teamId, text, replyTo?.id);
+      let written;
+      if (editing) written = await editBoardPost(teamId, editing.id, text, editing.revision);
+      else if (replyTo) written = await createBoardPost(teamId, text, replyTo.id);
+      else {
+        written = await createBoardPost(teamId, text, undefined, subject ?? undefined);
+        setSubject(null);
+      }
+      setNotified(describeNotified(written.notified.map((item) => item.display_name)));
       setConflict(null);
       setDraft('');
       setReplyTo(null);
@@ -239,9 +258,12 @@ export function useTeamBoard(teamId: string) {
     conflict,
     accessLost,
     refreshNotice,
+    notified,
     draft,
     replyTo,
     editing,
+    subject,
+    clearSubject: () => setSubject(null),
     setDraft,
     load,
     loadMore,

@@ -105,7 +105,9 @@ export function BriefRunSummary({ draft }: { draft: BriefDraft }) {
             'Scope',
             scope.area || scope.map_view_id || scope.map_origin
               ? 'Pinned saved area'
-              : scope.country_isos.join(', ') || 'Worldwide',
+              : scope.plan_id
+                ? `Collection plan scope${scope.country_isos.length > 0 ? ` and ${scope.country_isos.join(', ')}` : ''}`
+                : scope.country_isos.join(', ') || 'Worldwide',
           ],
           ['Subject', scope.subject ?? 'No additional subject'],
           ['Observation', period],

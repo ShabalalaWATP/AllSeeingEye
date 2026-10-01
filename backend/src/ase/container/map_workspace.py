@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.map_workspace import SqlMapWorkspaceRepository
 from ase.application.map_workspace import MapWorkspace
+from ase.application.map_workspace_links import MapWorkspaceLinks
 from ase.container.core import ContainerCore
 
 if TYPE_CHECKING:
@@ -15,12 +16,14 @@ if TYPE_CHECKING:
 class MapWorkspaceWiring(ContainerCore):
     def map_workspace(self, session: AsyncSession) -> MapWorkspace:
         repos = self.repositories(session)
+        documents = SqlMapWorkspaceRepository(session)
         return MapWorkspace(
             repos.users,
             repos.refresh_tokens,
-            SqlMapWorkspaceRepository(session),
+            documents,
             self.access_policy(session),
             self.clock,
             self._auditor(repos),
             repos.uow,
+            MapWorkspaceLinks(documents, repos.aois, repos.plans),
         )

@@ -80,7 +80,7 @@ describe('Eye assistant', () => {
       </MemoryRouter>,
     );
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
     return user;
   }
 

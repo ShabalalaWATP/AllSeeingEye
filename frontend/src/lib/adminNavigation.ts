@@ -1,6 +1,15 @@
 /** Shared administration destinations. This directory does not fetch operational data. */
 export type AdminIconName =
-  'overview' | 'requests' | 'users' | 'teams' | 'ai' | 'sources' | 'audit' | 'security';
+  | 'overview'
+  | 'requests'
+  | 'users'
+  | 'teams'
+  | 'ai'
+  | 'evaluations'
+  | 'sources'
+  | 'quality'
+  | 'audit'
+  | 'security';
 
 export interface AdminDestination {
   readonly to: string;
@@ -56,6 +65,13 @@ export const adminSections: readonly AdminSection[] = [
         icon: 'ai',
       },
       {
+        to: '/admin/evaluations',
+        label: 'Evaluations',
+        description:
+          'Run selected synthetic cases against a saved connection, with a call cap and estimate.',
+        icon: 'evaluations',
+      },
+      {
         to: '/admin/sources',
         label: 'Sources',
         description: 'Inspect collector health, review polling failures and reset failed sources.',
@@ -67,6 +83,13 @@ export const adminSections: readonly AdminSection[] = [
         description:
           'Every feed, research capability, camera index, map layer and dataset this deployment uses.',
         icon: 'sources',
+      },
+      {
+        to: '/admin/quality',
+        label: 'Research quality',
+        description:
+          'Counts of saved report outcomes and report jobs by template, depth and model connection.',
+        icon: 'quality',
       },
     ],
   },

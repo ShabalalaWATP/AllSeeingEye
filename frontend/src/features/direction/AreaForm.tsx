@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
-import { describeError } from '@/lib/api/errors';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { createAoi } from '@/lib/api/direction';
 import type { AoiRequest } from '@/lib/api/direction';
 import { parseBox, parseCountries } from './planText';
+
+/** Form fields for the API paths an area request can reject. */
+const AREA_FIELDS = {
+  team_id: 'Workspace',
+  name: 'Area name',
+  kind: 'Kind',
+  bbox: 'West, south, east, north',
+  countries: 'Nations',
+} as const;
 
 export function AreaForm({
   onCreated,
@@ -31,6 +40,7 @@ export function AreaForm({
     setCountries('');
     await onCreated();
   });
+  const errors = useFieldErrors(create.error, AREA_FIELDS);
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!scope.ready) return;
@@ -54,10 +64,13 @@ export function AreaForm({
       aria-label="New area of interest"
       className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
     >
-      <WorkspaceField workspaces={workspaces} value={scope.teamId} onChange={scope.select} />
+      <div id={errors.id('team_id')}>
+        <WorkspaceField workspaces={workspaces} value={scope.teamId} onChange={scope.select} />
+      </div>
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Area name"
+          {...errors.field('name')}
           value={name}
           onChange={(event) => {
             setName(event.target.value);
@@ -67,6 +80,7 @@ export function AreaForm({
         />
         <SelectField
           label="Kind"
+          {...errors.field('kind')}
           value={kind}
           onChange={(event) => {
             setKind(event.target.value === 'countries' ? 'countries' : 'bbox');
@@ -79,6 +93,7 @@ export function AreaForm({
         {kind === 'bbox' ? (
           <TextField
             label="West, south, east, north"
+            {...errors.field('bbox')}
             hint="Degrees, comma separated."
             value={box}
             onChange={(event) => {
@@ -89,6 +104,7 @@ export function AreaForm({
         ) : (
           <TextField
             label="Nations"
+            {...errors.field('countries')}
             hint="ISO codes, comma separated."
             value={countries}
             onChange={(event) => {
@@ -98,7 +114,7 @@ export function AreaForm({
           />
         )}
       </div>
-      {create.error === null ? null : <Alert tone="error">{describeError(create.error)}</Alert>}
+      <FormErrors errors={errors} />
       <div>
         <Button type="submit" busy={create.busy} disabled={!scope.ready}>
           Add area

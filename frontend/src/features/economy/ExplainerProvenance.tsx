@@ -46,7 +46,7 @@ export function ExplainerProvenanceNote({
   // "Ready" says nothing the source-of-truth line has not already said.
   const state = status === 'ready' ? '' : ` ${STATUS_NOTES[status]}`;
   return (
-    <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line pt-3 text-[11px] leading-5 text-muted">
+    <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line pt-3 text-2xs leading-5 text-muted">
       <p className="max-w-[100ch] min-w-0 flex-1">
         {WRITTEN_BY}
         {written(provenance)}

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { AuthenticatorQr } from '@/components/account/AuthenticatorQr';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -26,18 +27,13 @@ export function TotpSettingsPage() {
   return (
     <section className="h-full overflow-y-auto p-4 sm:p-6" aria-labelledby="mfa-title">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <header>
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            Personal security
-          </p>
-          <h1 id="mfa-title" className="mt-2 text-2xl font-semibold">
-            Multi-factor authentication
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted">
-            Add a second check after your password. Choose an authenticator app, email codes, or
-            both.
-          </p>
-        </header>
+        <PageHeader
+          title="Multi-factor authentication"
+          headingId="mfa-title"
+          eyebrow="Personal security"
+          eyebrowTone="muted"
+          description="Add a second check after your password. Choose an authenticator app, email codes, or both."
+        />
         {resource.loading ? <p role="status">Loading security settings...</p> : null}
         {resource.error !== null ? (
           <Alert tone="error">{describeError(resource.error)}</Alert>
