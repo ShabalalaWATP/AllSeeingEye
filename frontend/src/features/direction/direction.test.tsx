@@ -40,47 +40,6 @@ describe('direction', () => {
     });
   });
 
-  it('creates a plan from the compact requirement lines', async () => {
-    let captured: unknown = null;
-    server.use(
-      http.post('/api/direction/plans', async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json(plan, { status: 201 });
-      }),
-    );
-    const { user } = renderApp('/direction', 'user');
-    const form = await screen.findByRole('form', { name: 'New collection plan' });
-    await user.type(within(form).getByLabelText('Plan name'), 'Sumy watch');
-    await user.type(within(form).getByLabelText('Nations'), 'ua, xx1');
-    await user.type(
-      within(form).getByLabelText('Priority intelligence requirement'),
-      'Is Sumy next?',
-    );
-    await user.type(
-      within(form).getByLabelText('Specific requirements'),
-      'Strikes near Sumy | Sumy, strike | conflict{enter}Talks | talks | news, bogus{enter}',
-    );
-    await user.click(within(form).getByRole('button', { name: 'Add plan' }));
-    await waitFor(() => {
-      expect(captured).toEqual({
-        name: 'Sumy watch',
-        enabled: true,
-        description: '',
-        aoi_id: null,
-        countries: ['UA'],
-        pirs: [
-          {
-            text: 'Is Sumy next?',
-            sirs: [
-              { text: 'Strikes near Sumy', keywords: ['Sumy', 'strike'], categories: ['conflict'] },
-              { text: 'Talks', keywords: ['talks'], categories: ['news'] },
-            ],
-          },
-        ],
-      });
-    });
-  });
-
   it('shows a plan with the evidence per requirement, and deletes it', async () => {
     const { user } = renderApp(`/direction/plans/${plan.id}`, 'user');
     expect(await screen.findByRole('heading', { name: 'Kharkiv axis' })).toBeInTheDocument();

@@ -11279,7 +11279,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PlanIn"
+                "$ref": "#/components/schemas/PlanUpdateIn"
               }
             }
           }
@@ -11333,6 +11333,55 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/direction/plans/{plan_id}/definition": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Get Plan Definition",
+        "description": "The plan's requirements and revision without gathering live evidence.",
+        "operationId": "get_plan_definition_api_direction_plans__plan_id__definition_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -34713,6 +34762,81 @@
           "updated_at"
         ],
         "title": "PlanOut"
+      },
+      "PlanUpdateIn": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "aoi_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aoi Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Countries"
+          },
+          "pirs": {
+            "items": {
+              "$ref": "#/components/schemas/PirIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Pirs"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "pirs",
+          "expected_updated_at"
+        ],
+        "title": "PlanUpdateIn",
+        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409."
       },
       "PlannedQueryTaskIn": {
         "properties": {
