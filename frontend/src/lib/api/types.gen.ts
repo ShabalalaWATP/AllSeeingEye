@@ -3831,6 +3831,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/evaluations/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluation Catalogue */
+        get: operations["evaluation_catalogue_api_admin_llm_evaluations_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Evaluation Runs */
+        get: operations["list_evaluation_runs_api_admin_llm_evaluations_get"];
+        put?: never;
+        /** Start Evaluation Run */
+        post: operations["start_evaluation_run_api_admin_llm_evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evaluation Run */
+        get: operations["get_evaluation_run_api_admin_llm_evaluations__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Evaluation Run */
+        post: operations["cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/evaluations/{run_id}/artefact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Evaluation Artefact */
+        get: operations["download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/llm/models/discover": {
         parameters: {
             query?: never;
@@ -7724,6 +7810,154 @@ export interface components {
             /** Links */
             links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
         };
+        /** EvaluationCaseOut */
+        EvaluationCaseOut: {
+            /** Id */
+            id: string;
+            /**
+             * Casebook
+             * @enum {string}
+             */
+            casebook: "core" | "regional";
+            /** Title */
+            title: string;
+            /** Fingerprint */
+            fingerprint: string;
+        };
+        /** EvaluationCaseResultOut */
+        EvaluationCaseResultOut: {
+            /** Case Id */
+            case_id: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Report Status */
+            report_status: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /**
+             * Checks
+             * @description Deterministic structural checks only; never accuracy.
+             */
+            checks: {
+                [key: string]: number | boolean | null;
+            };
+        };
+        /** EvaluationCatalogueOut */
+        EvaluationCatalogueOut: {
+            /** Cases */
+            cases: components["schemas"]["EvaluationCaseOut"][];
+            /**
+             * Calls Per Case
+             * @default 4
+             */
+            calls_per_case: number;
+            /**
+             * Max Calls
+             * @default 200
+             */
+            max_calls: number;
+            /**
+             * Max Cases
+             * @default 40
+             */
+            max_cases: number;
+            /**
+             * Estimate Notice
+             * @default Estimate only: selected cases multiplied by the usual calls per case. The call cap is enforced; failed and retried calls count towards it.
+             */
+            estimate_notice: string;
+            /**
+             * Result Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            result_notice: string;
+        };
+        /** EvaluationRunOut */
+        EvaluationRunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Name */
+            profile_name: string;
+            /** Model */
+            model: string;
+            status: components["schemas"]["EvaluationRunStatus"];
+            stop_reason: components["schemas"]["EvaluationStopReason"] | null;
+            /** Cancel Requested */
+            cancel_requested: boolean;
+            /** Case Ids */
+            case_ids: string[];
+            /** Case Fingerprints */
+            case_fingerprints: {
+                [key: string]: string;
+            };
+            /** Max Calls */
+            max_calls: number;
+            /** Estimated Calls */
+            estimated_calls: number;
+            /** Calls Reserved */
+            calls_reserved: number;
+            /** Calls Failed */
+            calls_failed: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /** Results */
+            results: components["schemas"]["EvaluationCaseResultOut"][];
+            /** Has Artefact */
+            has_artefact: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Notice
+             * @default Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication.
+             */
+            notice: string;
+        };
+        /**
+         * EvaluationRunStatus
+         * @enum {string}
+         */
+        EvaluationRunStatus: "running" | "completed" | "cancelled" | "stopped";
+        /** EvaluationRunsOut */
+        EvaluationRunsOut: {
+            /** Items */
+            items: components["schemas"]["EvaluationRunOut"][];
+        };
+        /** EvaluationStartIn */
+        EvaluationStartIn: {
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Case Ids */
+            case_ids: string[];
+            /** Max Calls */
+            max_calls: number;
+        };
+        /**
+         * EvaluationStopReason
+         * @enum {string}
+         */
+        EvaluationStopReason: "call_cap" | "allowance_limit" | "connection_changed" | "access_revoked" | "interrupted" | "failed";
         /** EventOut */
         EventOut: {
             /** Id */
@@ -24622,6 +24856,172 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluation_catalogue_api_admin_llm_evaluations_catalogue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationCatalogueOut"];
+                };
+            };
+        };
+    };
+    list_evaluation_runs_api_admin_llm_evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunsOut"];
+                };
+            };
+        };
+    };
+    start_evaluation_run_api_admin_llm_evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvaluationStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evaluation_run_api_admin_llm_evaluations__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
             };
             /** @description Validation Error */
             422: {
