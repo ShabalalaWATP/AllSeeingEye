@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { adminUser, plainUser } from '@/test/fixtures';
 import { alert } from '@/test/fixtures.warning';
+import { bellSummary } from '@/test/fixtures.bell';
 import { installDialogStub } from '@/test/dialogStub';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -39,8 +40,13 @@ const deskAlert = {
 
 function stubAlerts(ack: (id: string) => Response | Promise<Response> = okAck) {
   const lists: URL[] = [];
+  const bells: URL[] = [];
   const acks: string[] = [];
   server.use(
+    http.get('/api/bell', ({ request }) => {
+      bells.push(new URL(request.url));
+      return HttpResponse.json(bellSummary());
+    }),
     http.get('/api/teams', () => HttpResponse.json({ items: [desk] })),
     http.get('/api/teams/:id', () => HttpResponse.json({ team: desk, members: [] })),
     http.get('/api/warning/alerts', ({ request }) => {
@@ -55,7 +61,7 @@ function stubAlerts(ack: (id: string) => Response | Promise<Response> = okAck) {
       return ack(String(params.id));
     }),
   );
-  return { lists, acks };
+  return { lists, bells, acks };
 }
 
 function okAck(id: string) {
@@ -72,7 +78,7 @@ const pageRequests = (urls: URL[]) => urls.filter((url) => !url.searchParams.has
 
 describe('alert ownership scope', () => {
   it('defaults administrators to their own work and widens only by explicit choice', async () => {
-    const { lists } = stubAlerts();
+    const { lists, bells } = stubAlerts();
     const { user, router } = renderApp('/warning', 'admin');
     const list = await screen.findByRole('list', { name: 'Alerts' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(1);
@@ -99,10 +105,9 @@ describe('alert ownership scope', () => {
     expect(within(rows[1]!).getByText('Personal: Uma User')).toBeVisible();
     expect(within(rows[2]!).getByText('Team: Northern desk')).toBeVisible();
     expect(pageRequests(lists).at(-1)?.searchParams.get('scope')).toBe('all');
-    // The bell keeps polling Mine and my teams while the page browses All users.
-    const bell = lists.filter((url) => url.searchParams.has('hours'));
-    expect(bell.length).toBeGreaterThan(0);
-    expect(bell.every((url) => !url.searchParams.has('scope'))).toBe(true);
+    // The bell keeps reading Mine and my teams (KAN-98) while the page browses All users.
+    expect(bells.length).toBeGreaterThan(0);
+    expect(bells.every((url) => !url.searchParams.has('scope'))).toBe(true);
   });
 
   it('keeps the administrative view in the address', async () => {
