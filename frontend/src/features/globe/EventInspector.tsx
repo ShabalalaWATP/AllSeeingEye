@@ -17,6 +17,7 @@ import { conflictKind, conflictReportLabel } from '@/lib/conflicts';
 import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
 import { SelectedEventFacts } from './SelectedEventFacts';
 import { ReferenceNotes } from './ReferenceNotes';
+import { PlanMatchFacts } from './PlanMatchFacts';
 import { eventTimeLabel } from './eventFacts';
 
 export interface EventInspectorProps {
@@ -174,6 +175,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           </p>
         )}
         <SelectedEventFacts event={event} />
+        <PlanMatchFacts eventId={event.id} />
         <ReferenceNotes event={event} />
         {event.summary !== null && (
           <SourceText

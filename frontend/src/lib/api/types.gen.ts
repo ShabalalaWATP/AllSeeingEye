@@ -341,23 +341,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/admin/research-quality": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Research Quality */
-        get: operations["get_research_quality_api_admin_research_quality_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/research-usage/me": {
         parameters: {
             query?: never;
@@ -2782,23 +2765,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/sources/{source_id}/track-record": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Track Record */
-        get: operations["get_track_record_api_sources__source_id__track_record_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/sources": {
         parameters: {
             query?: never;
@@ -2825,6 +2791,23 @@ export interface paths {
         };
         /** List Connections */
         get: operations["list_connections_api_sources_connections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sources/{source_id}/track-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Track Record */
+        get: operations["get_track_record_api_sources__source_id__track_record_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3156,6 +3139,26 @@ export interface paths {
          * @description The plan's requirements and revision without gathering live evidence.
          */
         get: operations["get_plan_definition_api_direction_plans__plan_id__definition_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans/{plan_id}/map-matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Map Matches
+         * @description Event ids and SIR codes for one reader's map filter; never cached or streamed.
+         */
+        get: operations["get_plan_map_matches_api_direction_plans__plan_id__map_matches_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3851,6 +3854,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/models/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discover Draft Models */
+        post: operations["discover_draft_models_api_admin_llm_models_discover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/llm/evaluations/catalogue": {
         parameters: {
             query?: never;
@@ -3931,23 +3951,6 @@ export interface paths {
         get: operations["download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/llm/models/discover": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Discover Draft Models */
-        post: operations["discover_draft_models_api_admin_llm_models_discover_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4080,6 +4083,23 @@ export interface paths {
          * @description Create every missing policy in the set. Existing policies are never overwritten.
          */
         post: operations["apply_default_policies_api_admin_ai_usage_defaults_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/research-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Research Quality */
+        get: operations["get_research_quality_api_admin_research_quality_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7980,6 +8000,13 @@ export interface components {
          * @enum {string}
          */
         EvaluationStopReason: "call_cap" | "allowance_limit" | "connection_changed" | "access_revoked" | "interrupted" | "failed";
+        /** EventMatchOut */
+        EventMatchOut: {
+            /** Event Id */
+            event_id: string;
+            /** Codes */
+            codes: string[];
+        };
         /** EventOut */
         EventOut: {
             /** Id */
@@ -11320,6 +11347,25 @@ export interface components {
              * @default true
              */
             enabled: boolean;
+        };
+        /**
+         * PlanMapMatchesOut
+         * @description A bounded sample: the window, pool and per-requirement cap say how it was drawn.
+         */
+        PlanMapMatchesOut: {
+            plan: components["schemas"]["PlanOut"];
+            /** Window Hours */
+            window_hours: number;
+            /** Pool Limit */
+            pool_limit: number;
+            /** Per Requirement Limit */
+            per_requirement_limit: number;
+            /** Considered */
+            considered: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Matches */
+            matches: components["schemas"]["EventMatchOut"][];
         };
         /** PlanOut */
         PlanOut: {
@@ -17379,38 +17425,6 @@ export interface operations {
             };
         };
     };
-    get_research_quality_api_admin_research_quality_get: {
-        parameters: {
-            query?: {
-                /** @description Days to look back: 7, 30, 90 or 365. */
-                window_days?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ResearchQualityOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     my_allowance_api_research_usage_me_get: {
         parameters: {
             query?: never;
@@ -22805,37 +22819,6 @@ export interface operations {
             };
         };
     };
-    get_track_record_api_sources__source_id__track_record_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                source_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SourceTrackRecordOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_sources_api_sources_get: {
         parameters: {
             query?: never;
@@ -22872,6 +22855,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlatformConnectionsOut"];
+                };
+            };
+        };
+    };
+    get_track_record_api_sources__source_id__track_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTrackRecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -23522,6 +23536,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_map_matches_api_direction_plans__plan_id__map_matches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanMapMatchesOut"];
                 };
             };
             /** @description Validation Error */
@@ -24952,6 +24997,39 @@ export interface operations {
             };
         };
     };
+    discover_draft_models_api_admin_llm_models_discover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftModelDiscoveryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmModelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     evaluation_catalogue_api_admin_llm_evaluations_catalogue_get: {
         parameters: {
             query?: never;
@@ -25105,39 +25183,6 @@ export interface operations {
                 };
                 content: {
                     "application/zip": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    discover_draft_models_api_admin_llm_models_discover_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DraftModelDiscoveryIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LlmModelsOut"];
                 };
             };
             /** @description Validation Error */
@@ -25465,6 +25510,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppliedDefaultsOut"];
+                };
+            };
+        };
+    };
+    get_research_quality_api_admin_research_quality_get: {
+        parameters: {
+            query?: {
+                /** @description Days to look back: 7, 30, 90 or 365. */
+                window_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchQualityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

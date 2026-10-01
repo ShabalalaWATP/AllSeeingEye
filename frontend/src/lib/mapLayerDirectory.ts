@@ -165,6 +165,12 @@ export const MAP_LAYER_GROUPS: readonly MapLayerGroup[] = [
         panel: 'Event time',
       },
       {
+        id: 'plan',
+        label: 'Collection plan',
+        description: "Show only events matching one of your collection plans' requirements.",
+        panel: 'Collection plan',
+      },
+      {
         id: 'nation',
         label: 'Find nation',
         description: 'Move to a country and scope the map to it.',

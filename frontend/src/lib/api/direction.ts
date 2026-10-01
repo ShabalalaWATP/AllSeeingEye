@@ -128,3 +128,22 @@ export function deletePlan(id: string): Promise<void> {
     apiSend(`/api/direction/plans/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   );
 }
+
+export const planMapMatchesSchema = z.object({
+  plan: planSchema,
+  window_hours: z.number().int(),
+  pool_limit: z.number().int(),
+  per_requirement_limit: z.number().int(),
+  considered: z.number().int(),
+  truncated: z.boolean(),
+  matches: z.array(z.object({ event_id: z.string(), codes: z.array(z.string()) })),
+});
+export type PlanMapMatches = z.infer<typeof planMapMatchesSchema>;
+
+/** A bounded, on-demand sample of live events matching one readable plan; never streamed. */
+export function fetchPlanMapMatches(id: string, signal?: AbortSignal): Promise<PlanMapMatches> {
+  return apiCall(`/api/direction/plans/${encodeURIComponent(id)}/map-matches`, {
+    schema: planMapMatchesSchema,
+    ...(signal ? { signal } : {}),
+  });
+}

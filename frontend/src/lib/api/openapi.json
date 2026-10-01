@@ -990,57 +990,6 @@
         ]
       }
     },
-    "/api/admin/research-quality": {
-      "get": {
-        "tags": [
-          "research-usage",
-          "admin"
-        ],
-        "summary": "Get Research Quality",
-        "operationId": "get_research_quality_api_admin_research_quality_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "window_days",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "description": "Days to look back: 7, 30, 90 or 365.",
-              "default": 90,
-              "title": "Window Days"
-            },
-            "description": "Days to look back: 7, 30, 90 or 365."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResearchQualityOut"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/research-usage/me": {
       "get": {
         "tags": [
@@ -10239,57 +10188,6 @@
         ]
       }
     },
-    "/api/sources/{source_id}/track-record": {
-      "get": {
-        "tags": [
-          "sources",
-          "sources"
-        ],
-        "summary": "Get Track Record",
-        "operationId": "get_track_record_api_sources__source_id__track_record_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "source_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120,
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-              "title": "Source Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SourceTrackRecordOut"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/sources": {
       "get": {
         "tags": [
@@ -10340,6 +10238,56 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/sources/{source_id}/track-record": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Get Track Record",
+        "operationId": "get_track_record_api_sources__source_id__track_record_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceTrackRecordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/reports/{report_id}/versions/{number}/source-reviews": {
@@ -11379,6 +11327,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/direction/plans/{plan_id}/map-matches": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Get Plan Map Matches",
+        "description": "Event ids and SIR codes for one reader's map filter; never cached or streamed.",
+        "operationId": "get_plan_map_matches_api_direction_plans__plan_id__map_matches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanMapMatchesOut"
                 }
               }
             }
@@ -13628,10 +13625,55 @@
         }
       }
     },
+    "/api/admin/llm/models/discover": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Discover Draft Models",
+        "operationId": "discover_draft_models_api_admin_llm_models_discover_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftModelDiscoveryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmModelsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/admin/llm/evaluations/catalogue": {
       "get": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "Evaluation Catalogue",
@@ -13658,7 +13700,6 @@
     "/api/admin/llm/evaluations": {
       "get": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "List Evaluation Runs",
@@ -13683,7 +13724,6 @@
       },
       "post": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "Start Evaluation Run",
@@ -13730,7 +13770,6 @@
     "/api/admin/llm/evaluations/{run_id}": {
       "get": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "Get Evaluation Run",
@@ -13779,7 +13818,6 @@
     "/api/admin/llm/evaluations/{run_id}/cancel": {
       "post": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "Cancel Evaluation Run",
@@ -13828,7 +13866,6 @@
     "/api/admin/llm/evaluations/{run_id}/artefact": {
       "get": {
         "tags": [
-          "admin",
           "admin"
         ],
         "summary": "Download Evaluation Artefact",
@@ -13868,52 +13905,6 @@
             }
           }
         }
-      }
-    },
-    "/api/admin/llm/models/discover": {
-      "post": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Discover Draft Models",
-        "operationId": "discover_draft_models_api_admin_llm_models_discover_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DraftModelDiscoveryIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LlmModelsOut"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
       }
     },
     "/api/admin/ai-usage/policies": {
@@ -14422,6 +14413,56 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/admin/research-quality": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Research Quality",
+        "operationId": "get_research_quality_api_admin_research_quality_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Days to look back: 7, 30, 90 or 365.",
+              "default": 90,
+              "title": "Window Days"
+            },
+            "description": "Days to look back: 7, 30, 90 or 365."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchQualityOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/admin/sources/firms_viirs_noaa20/connection": {
@@ -25357,6 +25398,27 @@
         ],
         "title": "EvaluationStopReason"
       },
+      "EventMatchOut": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "codes"
+        ],
+        "title": "EventMatchOut"
+      },
       "EventOut": {
         "properties": {
           "id": {
@@ -34685,6 +34747,52 @@
           "pirs"
         ],
         "title": "PlanIn"
+      },
+      "PlanMapMatchesOut": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "window_hours": {
+            "type": "integer",
+            "title": "Window Hours"
+          },
+          "pool_limit": {
+            "type": "integer",
+            "title": "Pool Limit"
+          },
+          "per_requirement_limit": {
+            "type": "integer",
+            "title": "Per Requirement Limit"
+          },
+          "considered": {
+            "type": "integer",
+            "title": "Considered"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/EventMatchOut"
+            },
+            "type": "array",
+            "title": "Matches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "window_hours",
+          "pool_limit",
+          "per_requirement_limit",
+          "considered",
+          "truncated",
+          "matches"
+        ],
+        "title": "PlanMapMatchesOut",
+        "description": "A bounded sample: the window, pool and per-requirement cap say how it was drawn."
       },
       "PlanOut": {
         "properties": {

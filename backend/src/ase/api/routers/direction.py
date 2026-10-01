@@ -13,6 +13,7 @@ from ase.api.schemas_direction import (
     AoisOut,
     PlanEvidenceOut,
     PlanIn,
+    PlanMapMatchesOut,
     PlanOut,
     PlansOut,
     PlanUpdateIn,
@@ -91,6 +92,21 @@ async def get_plan_definition(
     plan = await container.plan_definition(session).execute(user, plan_id)
     response.headers["Cache-Control"] = "private, no-store"
     return await fence.release(PlanOut.from_plan(plan), session=session)
+
+
+@router.get("/plans/{plan_id}/map-matches")
+async def get_plan_map_matches(
+    plan_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    fence: FenceDep,
+    container: ContainerDep,
+    response: Response,
+) -> PlanMapMatchesOut:
+    """Event ids and SIR codes for one reader's map filter; never cached or streamed."""
+    result = await container.plan_map_matches(session).execute(user, plan_id)
+    response.headers["Cache-Control"] = "private, no-store"
+    return await fence.release(PlanMapMatchesOut.from_matches(result), session=session)
 
 
 @router.put("/plans/{plan_id}")
