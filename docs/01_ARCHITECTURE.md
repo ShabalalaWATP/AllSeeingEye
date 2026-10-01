@@ -189,7 +189,8 @@ contracts are the source of truth, rather than file size or a SOLID score.
   scale (`text-2xs` to `text-4xl`, plus a display `text-6xl`) in rem, so text follows the
   reader's font size. `styles/typeScale.test.ts` rejects arbitrary sizes such as
   `text-[11px]`, undeclared steps and any `h1` outside `PageHeader`. The listed exceptions
-  are the paper report reader and the globe's visually hidden heading.
+  are the paper report reader, the globe's visually hidden heading and, until its pending
+  rewrite lands, the alerts page.
 - **Colours come from tokens.** Theme-dependent colours use the `--color-*` tokens. Fixed
   palettes are named once at the top of their stylesheet: the paper report, the sign-in
   screen and the radio planner instrument. `styles/featureColours.test.ts` rejects a hex
