@@ -24,11 +24,9 @@ MAX_ALERTS = 200
 @dataclass(frozen=True, slots=True)
 class AlertListing:
     items: list[Alert]
-    # Display names for the owners of personal alerts in ``items``.
     owner_names: dict[UUID, str] = field(default_factory=dict)
 
     def owner_name(self, alert: Alert) -> str | None:
-        """Team alerts are identified by their workspace, so only personal ones carry a name."""
         if alert.team_id is not None or alert.created_by is None:
             return None
         return self.owner_names.get(alert.created_by)
@@ -52,7 +50,6 @@ class ListAlertsUseCase:
         limit: int = 50,
         scope: OwnershipScope = "mine",
     ) -> AlertListing:
-        """Every role defaults to its own personal and current-team alerts (KAN-90)."""
         span = DEFAULT_SPAN if hours is None else timedelta(hours=max(1, min(hours, 24 * 30)))
         access = await self._access.context(actor)
         items = await self._alerts.list_recent(
@@ -61,7 +58,9 @@ class ListAlertsUseCase:
             access.scoped_visibility(scope),
         )
         personal = (item.created_by for item in items if item.team_id is None)
-        owners = await self._access.owner_names(actor, (o for o in personal if o is not None))
+        owners = await self._access.owner_names(
+            actor, (owner for owner in personal if owner is not None)
+        )
         return AlertListing(items, owners)
 
 

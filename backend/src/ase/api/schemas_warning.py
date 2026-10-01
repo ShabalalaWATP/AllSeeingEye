@@ -1,4 +1,4 @@
-"""Schemas for alert rules (historically "indicators") and the alerts they raise."""
+"""Schemas for indicators and alerts."""
 
 from __future__ import annotations
 
@@ -14,8 +14,6 @@ from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
 
-# Values are rejected rather than truncated: a shortened country code or keyword would
-# silently change what the rule watches.
 CountryCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z]{2}$")]
 Keyword = Annotated[str, StringConstraints(max_length=60)]
 
@@ -64,11 +62,7 @@ class IndicatorIn(BaseModel):
 
 
 class IndicatorUpdateIn(IndicatorIn):
-    """An edit names the revision (`updated_at`) it was made from; stale edits get 409.
-
-    Removing every location, category or keyword restriction needs `confirm_wider_scope`.
-    Pause and resume are edits of `enabled` that send the rule's other values unchanged.
-    """
+    """Edits identify their original revision and explicitly confirm removing restrictions."""
 
     expected_updated_at: datetime
     confirm_wider_scope: bool = False
@@ -159,7 +153,6 @@ class AlertOut(BaseModel):
     report_id: UUID | None
     created_by: UUID | None
     team_id: UUID | None
-    # The personal owner's display name on list views; null for team alerts.
     owner_name: str | None = None
 
     @classmethod

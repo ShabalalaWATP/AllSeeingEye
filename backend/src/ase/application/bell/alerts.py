@@ -5,20 +5,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from uuid import UUID
 
-from ase.application.access import AccessContext, AccessPolicy
 from ase.application.bell.scope import (
     BellSignals,
     bell_visibility,
     can_acknowledge,
     in_bell_scope,
 )
-from ase.application.dto import RequestContext
-from ase.application.ports import Clock, UnitOfWork
-from ase.application.ports.annotation_monitors import AnnotationMonitorRepository
 from ase.application.ports.bell import BellAlertQueries
-from ase.application.ports.reports import ReportRepository
-from ase.application.ports.warning import AlertRepository
-from ase.application.warning.alerts import AcknowledgeAlertUseCase
 from ase.domain.bell import (
     BELL_ALERT_WINDOW,
     BELL_SHOWN,
@@ -32,7 +25,15 @@ from ase.domain.bell import (
     BellPreferences,
     DestinationKind,
 )
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound
+
+from ase.application.access import AccessContext, AccessPolicy
+from ase.application.dto import RequestContext
+from ase.application.ports import Clock, UnitOfWork
+from ase.application.ports.annotation_monitors import AnnotationMonitorRepository
+from ase.application.ports.reports import ReportRepository
+from ase.application.ports.warning import AlertRepository
+from ase.application.warning.alerts import AcknowledgeAlertUseCase
+from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.users import User
 from ase.domain.warning import Alert
 
@@ -151,7 +152,7 @@ class BellAcknowledgements:
                 # The shared use case re-checks under the administration guard, audits once
                 # and returns an already acknowledged alert unchanged.
                 acknowledged = await self._acknowledge.execute(actor, alert_id, context)
-            except (NotFound, Forbidden) as exc:
+            except (NotFound, Forbidden, Conflict) as exc:
                 await self._uow.rollback()
                 failed.append(AcknowledgeFailure(alert_id, exc.message))
                 continue
