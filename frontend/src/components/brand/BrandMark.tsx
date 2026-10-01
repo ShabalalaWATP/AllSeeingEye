@@ -38,6 +38,7 @@ export function BrandMark({ size = 40, decorative = false, still = false }: Bran
         maxFps={reducedMotion ? 1 : 24}
         flameSpeed={reducedMotion ? 0 : 1}
         paused={!visible || chosenPause}
+        fallbackSizes={`${size}px`}
       />
     </div>
   );

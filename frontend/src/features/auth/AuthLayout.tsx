@@ -29,6 +29,7 @@ export function AuthLayout() {
               flameSpeed={reducedMotion ? 0 : 1}
               pupilFollow={reducedMotion ? 0 : 1}
               paused={!visible || chosenPause}
+              fallbackSizes="(max-width: 480px) 180px, (max-width: 899px) 240px, 480px"
             />
           </div>
           <div className="auth-brand-copy">
