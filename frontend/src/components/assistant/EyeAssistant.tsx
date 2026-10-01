@@ -46,7 +46,8 @@ function EyeSession() {
         ref={launcher}
         type="button"
         className="eye-launcher"
-        aria-label={open ? 'Minimise Eye assistant' : 'Open Eye assistant'}
+        // The name matches the visible "ASK EYE" text; aria-expanded carries open or minimised.
+        aria-label="Ask Eye"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-describedby={helpId}

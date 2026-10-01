@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 
+import { EventTitle } from '@/components/events/EventTitle';
 import { researchHref } from '@/lib/researchNavigation';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
@@ -76,7 +77,7 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
                   style={{ backgroundColor: CATEGORY_STYLES[event.category].css }}
                 />
                 <span className="min-w-0 flex-1 text-text">
-                  {event.title_en ?? event.title}{' '}
+                  <EventTitle event={event} />{' '}
                   <span className="mt-1 block text-[11px] text-muted">
                     {CATEGORY_STYLES[event.category].label} · {formatAgo(event.published_at, now)}
                   </span>

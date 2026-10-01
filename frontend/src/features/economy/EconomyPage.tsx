@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { fetchEconomy, fetchEconomyNews } from '@/lib/api/economy';
 import { describeError } from '@/lib/api/errors';
-import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useAuthStore } from '@/stores/auth';
 import { REGIONS } from './economyPresentation';
 import { EconomyNewsPanel } from './EconomyNewsPanel';
@@ -18,6 +16,7 @@ import { parseEconomyDays } from '@/lib/api/economyBriefing';
 import { EconomyPeriodPicker } from './EconomyPeriodPicker';
 import { useEconomyBriefing } from './useEconomyBriefing';
 import { useEconomyExplainer } from './useEconomyExplainer';
+import { useEconomyFeeds } from './useEconomyFeeds';
 import { WorldExplainer } from './WorldExplainer';
 import { regionExplainer } from './explainerModel';
 
@@ -25,41 +24,26 @@ export default function EconomyPage() {
   const [params, setParams] = useSearchParams();
   const days = parseEconomyDays(params.get('days'));
   const focus = REGIONS.find((item) => item.id === params.get('region')) ?? REGIONS[0];
-  const data = useScopedResource(fetchEconomy);
-  const loadNews = useCallback(() => fetchEconomyNews(days), [days]);
-  const news = useScopedResource(loadNews);
-  const currentNews = news.data?.window_hours === days * 24 ? news.data : null;
+  const { data, news, currentNews, refreshing, refresh } = useEconomyFeeds(days);
   const briefingState = useEconomyBriefing(days);
   const explainerState = useEconomyExplainer();
   const worldExplainer = regionExplainer(explainerState.data, 'WORLD');
   const focusExplainer = regionExplainer(explainerState.data, focus.id);
-  const [refreshing, setRefreshing] = useState(false);
   const owner = useAuthStore((state) => state.user?.id);
-  const refreshData = data.refresh;
-  const refreshNews = news.refresh;
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') void Promise.all([refreshData(), refreshNews()]);
-    }, 300_000);
-    return () => clearInterval(timer);
-  }, [refreshData, refreshNews]);
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([data.reload(), news.reload()]);
-    } finally {
-      setRefreshing(false);
-    }
-  };
   return (
-    <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
+    <section
+      aria-labelledby="economy-page-heading"
+      className={`h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10 ${LAUNCHER_SCROLL_PADDING}`}
+    >
       <div className="mx-auto max-w-[1500px] space-y-8 pb-24">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 font-mono text-2xs uppercase tracking-[0.22em] text-ember">
               Economic intelligence
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight">Economy</h1>
+            <h1 id="economy-page-heading" className="text-3xl font-semibold tracking-tight">
+              Economy
+            </h1>
             <p className="mt-2 text-sm text-muted">
               Markets, economic signals and the stories behind them.
             </p>

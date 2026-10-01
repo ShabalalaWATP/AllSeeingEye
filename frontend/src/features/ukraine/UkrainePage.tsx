@@ -1,3 +1,4 @@
+import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import {
@@ -82,7 +83,9 @@ export default function UkrainePage({
   const data = loaded?.board ?? null;
   const now = loaded?.loadedAt ?? 0;
   return (
-    <article className="flex h-full flex-col gap-6 overflow-y-auto p-6">
+    <article
+      className={`flex h-full flex-col gap-6 overflow-y-auto p-6 pb-28 ${LAUNCHER_SCROLL_PADDING}`}
+    >
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold">Ukraine war</h1>

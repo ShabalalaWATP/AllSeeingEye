@@ -1,13 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-/** A viewport label escapes the rails' scroll clipping and works with keyboard focus. */
+/** Long enough to cross the gap between a rail button and its label (WCAG 1.4.13 hoverable). */
+export const TOOLTIP_CLOSE_DELAY_MS = 200;
+
+/**
+ * A viewport label escapes the rails' scroll clipping and works with keyboard focus. It stays
+ * open while the pointer is over the control or the label, and closes on Escape or blur.
+ */
 export function MapControlLabel({ label, children }: { label: string; children: ReactNode }) {
   const [anchor, setAnchor] = useState<{ x: number; y: number; right: boolean } | null>(null);
+  const closeTimer = useRef<number | null>(null);
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+  }, []);
+  const hide = useCallback(() => {
+    cancelClose();
+    setAnchor(null);
+  }, [cancelClose]);
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(hide, TOOLTIP_CLOSE_DELAY_MS);
+  };
+  useEffect(() => cancelClose, [cancelClose]);
   useEffect(() => {
     if (!anchor) return;
-    const hide = () => setAnchor(null);
     const key = (event: KeyboardEvent) => {
       if (event.key === 'Escape') hide();
     };
@@ -19,8 +38,9 @@ export function MapControlLabel({ label, children }: { label: string; children: 
       window.removeEventListener('resize', hide);
       window.removeEventListener('keydown', key);
     };
-  }, [anchor]);
+  }, [anchor, hide]);
   const show = (element: HTMLElement) => {
+    cancelClose();
     const bounds = element.getBoundingClientRect();
     const right = bounds.left < window.innerWidth / 2;
     setAnchor({
@@ -33,10 +53,15 @@ export function MapControlLabel({ label, children }: { label: string; children: 
     <span
       role="presentation"
       className="map-labelled-control"
-      onMouseEnter={(event) => show(event.currentTarget)}
-      onMouseLeave={() => setAnchor(null)}
+      // React delivers enter and leave events through the portal by component tree, so these
+      // handlers also cover the label: entering it cancels the close, leaving it schedules one.
+      onMouseEnter={(event) => {
+        if (event.currentTarget.contains(event.target as Node)) show(event.currentTarget);
+        else cancelClose();
+      }}
+      onMouseLeave={scheduleClose}
       onFocus={(event) => show(event.currentTarget)}
-      onBlur={() => setAnchor(null)}
+      onBlur={hide}
     >
       {children}
       {anchor &&

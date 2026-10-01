@@ -212,7 +212,7 @@
 .map-control-label {
   position: fixed;
   z-index: 1000;
-  pointer-events: none;
+  /* Hoverable (WCAG 1.4.13): the pointer can move onto the label without it closing. */
   width: max-content;
   max-width: min(260px, calc(100vw - 90px));
   padding: 7px 10px;
@@ -239,7 +239,7 @@
 }
 
 @media (max-width: 1023px) {
-  .globe-dashboard [aria-label='Copy coordinates'] {
+  .globe-dashboard .map-coordinate-readout {
     max-width: calc(100% - 7.5rem);
     white-space: normal;
   }

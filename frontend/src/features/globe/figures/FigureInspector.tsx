@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { EventTitle } from '@/components/events/EventTitle';
 import { BASIS_LABELS, ROLE_LABELS, type PublicFigure } from '@/lib/api/figures';
 import { formatUtc } from '@/lib/format';
 
@@ -90,10 +91,10 @@ export function FigureInspector({
               <li key={event.id} className="leading-snug">
                 {event.url ? (
                   <a href={event.url} target="_blank" rel="noreferrer" className="underline">
-                    {event.title_en ?? event.title}
+                    <EventTitle event={event} />
                   </a>
                 ) : (
-                  <span>{event.title_en ?? event.title}</span>
+                  <EventTitle event={event} />
                 )}
                 <span className="ml-1 font-mono text-2xs text-muted">
                   {event.grade}

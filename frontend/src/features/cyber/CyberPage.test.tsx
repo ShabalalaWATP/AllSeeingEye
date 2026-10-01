@@ -26,6 +26,19 @@ beforeEach(() => {
   );
 });
 
+it('keeps focused controls clear of the sticky section bar and the Eye launcher', async () => {
+  renderApp('/cyber', 'user');
+  const nav = await screen.findByRole('navigation', { name: 'Cyber workspace sections' });
+  expect(nav).toHaveClass('sticky', 'top-0');
+  // Focus scrolling inside the page's own scroll container leaves room for both overlays.
+  const scroller = nav.closest('.overflow-y-auto');
+  expect(scroller).toHaveClass('scroll-pt-16', 'scroll-pb-28');
+  // The sticky actor inspector stops below the section bar instead of sliding under it.
+  const inspector = await screen.findByRole('complementary', { name: 'Selected threat actor' });
+  expect(inspector).toHaveClass('xl:top-16');
+  expect(inspector).not.toHaveClass('xl:top-6');
+});
+
 it('opens one scrolling CTI workspace with figures, lenses, GNSS, activity and coverage', async () => {
   renderApp('/cyber', 'user');
   expect(await screen.findByRole('heading', { name: 'Cyber threat intelligence' })).toBeVisible();
@@ -91,6 +104,13 @@ it('filters returned activity by kind, country, lens and keyword and restores it
   ).toHaveLength(1);
   await user.click(screen.getByRole('button', { name: 'Clear filters' }));
   await user.type(screen.getByRole('searchbox', { name: 'Search returned reports' }), 'APT29');
+  // Filters keep the global focus-visible outline rather than a 1px border change.
+  for (const name of ['Evidence type', 'Country context', 'Lens']) {
+    expect(screen.getByRole('combobox', { name }).className).not.toMatch(/outline-none/);
+  }
+  expect(screen.getByRole('searchbox', { name: 'Search returned reports' }).className).not.toMatch(
+    /outline-none/,
+  );
   expect(
     within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
   ).toHaveLength(1);

@@ -31,7 +31,11 @@ function ClaimCard({
       <span className="text-xs text-muted">
         +{increase.toLocaleString('en-GB')} claimed on {latest.reported_on}
       </span>
-      <Sparkline values={series} slot={2} label={`Daily claimed ${label.toLowerCase()}`} />
+      <Sparkline
+        values={series}
+        slot={2}
+        label={`Daily claimed ${label.toLowerCase()}, last ${series.length} days`}
+      />
     </li>
   );
 }

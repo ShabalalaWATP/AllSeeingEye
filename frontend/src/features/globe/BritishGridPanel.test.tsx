@@ -31,7 +31,7 @@ it('copies approximate BNG coordinates and clearly falls back outside its extent
   Object.assign(navigator, { clipboard: { writeText } });
   render(<CoordinateReadout engine={engine} bng />);
   act(() => cursor({ lon: -0.1278, lat: 51.5074 }));
-  const button = screen.getByRole('button', { name: 'Copy coordinates' });
+  const button = screen.getByRole('button', { name: /^Copy coordinates BNG ≈ E/ });
   expect(button).toHaveTextContent('BNG ≈ E');
   await userEvent.click(button);
   expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^BNG ≈ E/));

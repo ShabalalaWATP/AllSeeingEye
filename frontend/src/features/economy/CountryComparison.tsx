@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { SelectField } from '@/components/ui/Field';
 import { SourceLink } from '@/components/ui/SourceLink';
 import type { EconomyRegion } from '@/lib/api/economy';
@@ -13,6 +13,8 @@ export function CountryComparison({
   focus: string;
 }) {
   const [metric, setMetric] = useState('growth');
+  // Each side note is a named complementary landmark, so several on one page stay distinct.
+  const asideHeading = useId();
   const [year, setYear] = useState('');
   const options = [
     ...new Map(
@@ -96,8 +98,10 @@ export function CountryComparison({
             </div>
           ))}
         </div>
-        <aside className="space-y-3 text-sm leading-6 text-muted">
-          <h3 className="font-semibold text-text">What the comparison shows</h3>
+        <aside aria-labelledby={asideHeading} className="space-y-3 text-sm leading-6 text-muted">
+          <h3 id={asideHeading} className="font-semibold text-text">
+            What the comparison shows
+          </h3>
           {highest && lowest && ranked.length > 1 ? (
             <p>
               {highest.value === lowest.value ? (
