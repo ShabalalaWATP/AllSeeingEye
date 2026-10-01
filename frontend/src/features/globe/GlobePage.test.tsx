@@ -277,7 +277,7 @@ describe('GlobePage', () => {
     act(() => {
       map.fire('mousemove', { lngLat: { lng: -0.1278, lat: 51.5074 } });
     });
-    expect(screen.getByRole('button', { name: 'Copy coordinates' })).toHaveTextContent(
+    expect(screen.getByRole('button', { name: /^Copy coordinates/ })).toHaveTextContent(
       '51.5074° N, 0.1278° W',
     );
   });

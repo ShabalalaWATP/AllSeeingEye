@@ -239,7 +239,7 @@
 }
 
 @media (max-width: 1023px) {
-  .globe-dashboard [aria-label='Copy coordinates'] {
+  .globe-dashboard .map-coordinate-readout {
     max-width: calc(100% - 7.5rem);
     white-space: normal;
   }

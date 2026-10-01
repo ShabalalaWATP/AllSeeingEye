@@ -39,6 +39,7 @@ export function CoordinateReadout({
   if (position === null) return null;
   const grid = bng ? formatBritishGrid(position) : null;
   const text = grid ?? formatCoordinate(position);
+  const outside = bng && grid === null;
 
   const copy = async () => {
     try {
@@ -49,16 +50,24 @@ export function CoordinateReadout({
     }
   };
 
+  // The name contains the visible value in the same order (WCAG 2.5.3). The brief "Copied" mark
+  // is a visual state; the status region announces the copy instead.
   return (
-    <button
-      type="button"
-      aria-label="Copy coordinates"
-      title={bng ? `${BNG_NOTE} Click to copy.` : 'Click to copy'}
-      onClick={() => void copy()}
-      className="map-coordinate-readout absolute left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:min-h-0"
-    >
-      {copied ? 'Copied' : text}
-      {bng && grid === null && <span className="ml-2 text-muted">Outside BNG extent</span>}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={`Copy coordinates ${text}${outside ? ', outside BNG extent' : ''}`}
+        title={bng ? `${BNG_NOTE} Click to copy.` : 'Click to copy'}
+        onClick={() => void copy()}
+        className="map-coordinate-readout absolute left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:min-h-0"
+      >
+        {text}
+        {outside && <span className="ml-2 text-muted">Outside BNG extent</span>}
+        {copied && <span className="ml-2 text-text">Copied</span>}
+      </button>
+      <span role="status" className="sr-only">
+        {copied ? 'Coordinates copied' : ''}
+      </span>
+    </>
   );
 }
