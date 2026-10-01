@@ -5,6 +5,8 @@ import { useResearchForm, type ResearchFormProps } from './useResearchForm';
  * period. The rarely changed settings sit folded at the end, before the start button.
  */
 
+import { Link } from 'react-router';
+
 import { ReportOptions } from '@/components/reports/ReportOptions';
 import { ChipPicker } from '@/components/research/ChipPicker';
 import { CountryMultiSelect } from '@/components/research/CountryMultiSelect';
@@ -171,6 +173,16 @@ export function ResearchForm(props: ResearchFormProps) {
                 }
                 id="research-sources"
               >
+                <p className="text-xs leading-5 text-muted">
+                  Each source's grade basis, coverage and limitations are recorded in the read-only
+                  catalogue.{' '}
+                  <Link
+                    to="/sources"
+                    className="text-ember underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+                  >
+                    Browse the source catalogue
+                  </Link>
+                </p>
                 {!privateFocus && (
                   <Toggle
                     checked={draft.webSearch}

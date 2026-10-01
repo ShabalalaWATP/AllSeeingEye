@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -61,7 +61,16 @@ function Section({
   );
 }
 
-export default function SourcesPage() {
+/**
+ * The read-only catalogue. Every signed-in account reads the same contract at /sources;
+ * the administration workspace mounts it at /admin/catalogue with a way back to the
+ * source controls, which stay under /admin and are checked again on the server.
+ */
+export default function SourcesPage({
+  workspace = 'research',
+}: {
+  workspace?: 'research' | 'admin';
+}) {
   const { data, error, loading, reload } = useScopedResource(fetchSourceCatalogue);
   const platform = useScopedResource(fetchPlatformConnections);
   const [params, setParams] = useSearchParams();
@@ -114,6 +123,19 @@ export default function SourcesPage() {
               deployment uses, with what each one is doing right now. Values are never shown; a
               missing key names the server setting that unlocks it.
             </p>
+            <p className="mt-2 max-w-3xl text-xs leading-5 text-muted">
+              Read only. Grades are editorial context with a recorded basis, not measured accuracy.
+              A feed counts as live only after a successful collection on this server; a key or
+              registration alone shows as not yet confirmed.
+            </p>
+            {workspace === 'admin' && (
+              <Link
+                to="/admin/sources"
+                className="mt-3 inline-flex min-h-11 items-center text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+              >
+                Open source controls
+              </Link>
+            )}
           </div>
         </header>
         {loading && !data && <LoadingNote label="Loading source catalogue" />}
@@ -172,6 +194,13 @@ export default function SourcesPage() {
             <div className="py-10 text-center">
               <p className="text-sm text-muted">No sources match your search.</p>
               <p className="mt-2 text-xs text-muted">Try a broader search or clear the filters.</p>
+              <Button
+                variant="secondary"
+                className="mt-4"
+                onClick={() => setFilters(EMPTY_FILTERS)}
+              >
+                Clear all filters
+              </Button>
             </div>
           )}
           <div className="space-y-8">

@@ -101,7 +101,7 @@ export function RfTerrainReach({ terrain }: { terrain: RfTerrainAnalysis }) {
           The survey limit is not a confirmed signal limit.
         </p>
         {passingBearings === 0 && (
-          <p className="rf-result-next-step mt-2 text-xs text-amber-200">
+          <p className="rf-result-next-step mt-2 text-xs text-amber">
             No sampled target passed. Reduce the survey radius to examine nearby coverage, or place
             a receiver at a specific site and analyse that path. Review antenna heights and the
             selected reserve before changing them.

@@ -1,8 +1,9 @@
 import { Link } from 'react-router';
 
+import { helpDestination } from '@/lib/workspaceNavigation';
 import { useAuthStore } from '@/stores/auth';
 
-import { ProfileIcon, SettingsIcon } from './accountIcons';
+import { HelpIcon, ProfileIcon, SettingsIcon } from './accountIcons';
 import { useMenuButton } from './useMenuButton';
 import { useSignOut } from './useSignOut';
 
@@ -59,6 +60,12 @@ export function AccountMenu() {
               <Link to="/settings" onClick={close} className={itemClass}>
                 <SettingsIcon />
                 Your settings
+              </Link>
+            </li>
+            <li>
+              <Link to={helpDestination.to} onClick={close} className={itemClass}>
+                <HelpIcon />
+                {helpDestination.label}
               </Link>
             </li>
             <li className="mt-1 border-t border-line/70 pt-1">

@@ -31,11 +31,11 @@ export function RadarAttackInspector({
   return (
     <aside
       aria-label="Cloudflare traffic country details"
-      className="map-details-inspector absolute bottom-16 right-16 z-20 max-h-[calc(100%-8rem)] w-80 max-w-[calc(100%-5rem)] overflow-y-auto rounded-lg border border-violet-400/50 bg-ground p-4 shadow-xl"
+      className="map-details-inspector absolute bottom-16 right-16 z-20 max-h-[calc(100%-8rem)] w-80 max-w-[calc(100%-5rem)] overflow-y-auto rounded-lg border border-chart-6/50 bg-ground p-4 shadow-xl"
     >
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-2xs uppercase tracking-wider text-violet-300">
+          <p className="text-2xs uppercase tracking-wider text-muted">
             Cloudflare observed traffic
           </p>
           <h2 className="mt-1 text-sm font-medium">{row.country.name}</h2>
@@ -52,11 +52,11 @@ export function RadarAttackInspector({
       </header>
       <dl className="mt-4 grid grid-cols-[1fr_auto] gap-2 text-xs">
         <dt>Network layer (L3/4), mitigated bytes</dt>
-        <dd className="font-mono text-violet-200">
+        <dd className="font-mono text-text">
           {row.layer3 === null ? 'Not in top 10' : `${row.layer3.toFixed(1)}%`}
         </dd>
         <dt>Application layer (L7), mitigated requests</dt>
-        <dd className="font-mono text-violet-200">
+        <dd className="font-mono text-text">
           {row.layer7 === null ? 'Not in top 10' : `${row.layer7.toFixed(1)}%`}
         </dd>
       </dl>
@@ -75,7 +75,7 @@ export function RadarAttackInspector({
         ))}
       </ul>
       {snapshot.status === 'stale' && (
-        <p className="mt-2 text-xs text-amber-200">Previously collected data; refresh failed.</p>
+        <p className="mt-2 text-xs text-amber">Previously collected data; refresh failed.</p>
       )}
       {isHttpUrl(snapshot.source_url) && (
         <a

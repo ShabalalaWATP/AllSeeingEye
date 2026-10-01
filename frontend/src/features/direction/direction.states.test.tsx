@@ -17,7 +17,7 @@ describe('direction states', () => {
     );
     renderApp('/direction', 'user');
     expect(await screen.findByText('Areas boom')).toBeInTheDocument();
-    expect(await screen.findByText('No plans yet.')).toBeInTheDocument();
+    expect(await screen.findByText('No collection plans yet')).toBeInTheDocument();
     server.use(
       http.get('/api/direction/aois', () =>
         HttpResponse.json({

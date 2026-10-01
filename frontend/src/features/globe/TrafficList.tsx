@@ -80,7 +80,7 @@ export function TrafficList({
         non-position records; this is not worldwide coverage.
       </p>
       {selectionDisabled && (
-        <p className="text-xs text-amber-300">Finish measuring to select a position.</p>
+        <p className="text-xs text-amber">Finish measuring to select a position.</p>
       )}
       <ul
         className="max-h-64 divide-y divide-line overflow-y-auto"
@@ -99,7 +99,7 @@ export function TrafficList({
                 <EventTitle event={event} className="block truncate text-xs font-medium" />
                 {military && (
                   <span
-                    className={`block text-2xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}
+                    className={`block text-2xs ${kind === 'aircraft' ? 'text-amber' : 'text-cyan'}`}
                   >
                     {military}
                   </span>

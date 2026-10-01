@@ -69,7 +69,7 @@ function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
         )}
         {radar?.active && (
           <p role="status" className="mb-3 text-[11px] leading-5 text-muted">
-            <span className="inline-block h-2 w-2 rounded-sm bg-violet-400" aria-hidden="true" />{' '}
+            <span className="inline-block h-2 w-2 rounded-sm bg-chart-6" aria-hidden="true" />{' '}
             Purple CF labels: Cloudflare-observed mitigated traffic shares by target billing
             country. L3/4 is bytes; L7 is requests.{' '}
             {radar.loading ? 'Loading…' : `${radar.rows.length} countries mapped.`}

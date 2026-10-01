@@ -1,10 +1,13 @@
 /**
- * One name per route, shared by the top bar and the document title. Rail and tracker
- * destinations name themselves; detail pages without a rail entry are listed here.
+ * One name per route, shared by the top bar and the document title. Rail destinations,
+ * saved views and trackers name themselves from the navigation definition; detail pages
+ * without an entry there are listed here.
  */
 import { adminLocation } from '@/lib/adminNavigation';
 import {
   activeWorkspacePath,
+  helpDestination,
+  savedViews,
   trackerModules,
   workspaceDestinations,
 } from '@/lib/workspaceNavigation';
@@ -23,10 +26,7 @@ const PUBLIC_PAGES: ReadonlyMap<string, string> = new Map([
 
 /** Pages reached from another page rather than the rail, most specific first. */
 const DETAIL_PAGES: readonly (readonly [RegExp, string])[] = [
-  [/^\/research\/saved$/, 'Saved research'],
   [/^\/research\/jobs\/[^/]+$/, 'Research job'],
-  [/^\/subscriptions\/saved$/, 'Saved updates'],
-  [/^\/geolocation\/saved$/, 'Saved assessments'],
   [/^\/reports\/[^/]+$/, 'Report'],
   [/^\/annotation-monitors\/[^/]+\/transitions\/[^/]+$/, 'Annotation change'],
   [/^\/annotation-monitors\/[^/]+$/, 'Annotation monitor'],
@@ -52,6 +52,9 @@ export function pageTitle(pathname: string): string {
   if (publicPage !== undefined) return publicPage;
   const detail = DETAIL_PAGES.find(([pattern]) => pattern.test(path));
   if (detail !== undefined) return detail[1];
+  if (path === helpDestination.to) return helpDestination.label;
+  const saved = savedViews().find((view) => view.to === path);
+  if (saved !== undefined) return saved.label;
   const tracker = trackerModules.find((module) => module.to === path);
   if (tracker !== undefined) return tracker.label;
   const active = activeWorkspacePath(path);

@@ -62,6 +62,7 @@ const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
+const HelpPage = lazy(() => import('@/app/help/HelpPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -113,7 +114,6 @@ const pages: RouteObject[] = [
       { path: '/set-password', element: <SetPasswordPage /> },
     ]),
   },
-  { path: '/sources', element: <RedirectWithQuery to="/admin/catalogue" /> },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
   { path: '/reset-password', element: <RedirectWithQuery to="/set-password" /> },
   {
@@ -157,11 +157,13 @@ const pages: RouteObject[] = [
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
           { path: 'watches', element: <WatchesPage /> },
+          { path: 'help', element: <HelpPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'settings', element: <SettingsPage /> },
           { path: 'economy', element: <EconomyPage /> },
           { path: 'cyber', element: <CyberIntelligencePage /> },
+          { path: 'sources', element: <SourcesPage /> },
           { path: 'account/security', element: <TotpSettingsPage /> },
         ]),
       },
@@ -181,7 +183,7 @@ const pages: RouteObject[] = [
                   { path: 'teams', element: <TeamsPage /> },
                   { path: 'audit', element: <AdminAuditPage /> },
                   { path: 'sources', element: <AdminSourcesPage /> },
-                  { path: 'catalogue', element: <SourcesPage /> },
+                  { path: 'catalogue', element: <SourcesPage workspace="admin" /> },
                   { path: 'llm', element: <AdminLlmPage /> },
                   { path: 'security', element: <TotpSettingsPage /> },
                 ]),

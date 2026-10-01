@@ -42,7 +42,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
             (typeof value === 'string' || typeof value === 'number') &&
             /^[0-5]$/.test(String(value));
           return (
-            <div key={key} className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] p-2">
+            <div key={key} className="rounded-lg border border-cyan/15 bg-cyan/[0.04] p-2">
               <p className="text-2xs leading-snug text-muted">{label}</p>
               <p className="mt-2 font-mono text-xl text-cyan">
                 {known ? `${key.toUpperCase()}${value}` : 'Unknown'}

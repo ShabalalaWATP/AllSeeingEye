@@ -45,7 +45,7 @@ export function ConflictSourceCoverage() {
             <li key={source.id} className="space-y-1 py-3 text-xs">
               <div className="flex flex-wrap justify-between gap-2">
                 <span className="font-medium">{source.name}</span>
-                <span className={source.status === 'healthy' ? 'text-emerald-300' : 'text-muted'}>
+                <span className={source.status === 'healthy' ? 'text-good' : 'text-muted'}>
                   {labels[source.status]}
                 </span>
               </div>

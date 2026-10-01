@@ -44,7 +44,7 @@ export function SatelliteFilterPanel({
             onClick={() => setGroup(choice.value)}
             className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-xs ${
               group === choice.value
-                ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200'
+                ? 'border-cyan/40 bg-cyan/10 text-cyan'
                 : 'border-white/10 text-muted hover:bg-white/5'
             }`}
           >

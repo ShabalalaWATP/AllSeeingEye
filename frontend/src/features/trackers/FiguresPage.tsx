@@ -17,7 +17,7 @@ import { EventList, ModulePage, Stat } from './ModuleParts';
 
 const RING: Record<PublicFigure['placement']['basis'], string> = {
   reported_place: 'ring-cyan',
-  reported_country: 'ring-amber-300',
+  reported_country: 'ring-amber',
   seat: 'ring-muted/50',
 };
 

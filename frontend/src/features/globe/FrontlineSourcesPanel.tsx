@@ -71,7 +71,7 @@ export function FrontlineSourcesPanel() {
           <li key={source.name} className="rounded-lg border border-line p-3">
             <h4 className="font-medium text-text">{source.name}</h4>
             <p className="mt-1 text-muted">{source.coverage}</p>
-            <p className="mt-2 text-[11px] text-amber-200">{source.access}</p>
+            <p className="mt-2 text-[11px] text-amber">{source.access}</p>
             <p className="mt-2 text-[11px] leading-relaxed text-muted">{source.description}</p>
             <div className="mt-2 flex flex-col items-start gap-1">
               <a

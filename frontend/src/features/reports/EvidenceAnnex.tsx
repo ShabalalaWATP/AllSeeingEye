@@ -53,6 +53,17 @@ export function EvidenceAnnex({
             to 6). F6 means there was not enough basis to judge, not that the report was false. Open
             the Assessment tab for confidence limits and the UK probability yardstick.
           </p>
+          <p className="mt-2 max-w-prose text-xs leading-5 text-muted">
+            Saved grades are frozen with this version. A source's current grade basis, coverage and
+            limitations are in the read-only catalogue.{' '}
+            {/* A plain link: the annex also renders outside the router, in previews and tests. */}
+            <a
+              href="/sources"
+              className="text-ember underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+            >
+              Compare current grades in the source catalogue
+            </a>
+          </p>
         </header>
         {evidence.length === 0 ? (
           <p className="mt-4 text-sm text-muted">No frozen evidence was saved for this version.</p>

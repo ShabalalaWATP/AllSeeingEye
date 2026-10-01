@@ -80,10 +80,9 @@ describe('schedule states', () => {
     expect(await screen.findByText('Schedules boom')).toBeInTheDocument();
     server.use(http.get('/api/schedules', () => HttpResponse.json({ items: [] })));
     renderApp('/research/recurring', 'user');
+    expect(await screen.findByText('No subscriptions yet')).toBeInTheDocument();
     expect(
-      await screen.findByText(
-        'No subscriptions yet. Choose a topic and create your first update below.',
-      ),
+      screen.getByText('Choose a topic and create your first update below.'),
     ).toBeInTheDocument();
   });
 

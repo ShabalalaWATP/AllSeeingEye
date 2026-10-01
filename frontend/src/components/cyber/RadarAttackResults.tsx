@@ -35,7 +35,7 @@ export function RadarAttackResults({
   return (
     <div className="space-y-3">
       {data.status !== 'ready' && (
-        <p className="text-xs text-amber-200">
+        <p className="text-xs text-amber">
           {data.status === 'stale'
             ? 'Previously collected data. The latest Radar refresh failed.'
             : 'Only one Radar attack layer is available.'}

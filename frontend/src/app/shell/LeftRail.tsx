@@ -1,59 +1,20 @@
 import { useId } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link } from 'react-router';
 
 import { BrandMark } from '@/components/brand/BrandMark';
 import { MotionToggle } from '@/components/brand/MotionToggle';
 import { Wordmark } from '@/components/brand/Wordmark';
 import {
-  isWorkspacePath,
+  administrationDestination,
   workspaceHome,
   workspaceSections,
-  type WorkspaceDestination,
 } from '@/lib/workspaceNavigation';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import { useShellStore } from '@/stores/shell';
 
+import { RailItem } from './RailLinks';
 import { ChevronIcon, RailIcon } from './railIcons';
-
-const ADMIN_ITEM: WorkspaceDestination = {
-  to: '/admin',
-  label: 'Administration',
-  description: 'The separate administration workspace.',
-  icon: 'admin',
-};
-
-function RailLink({
-  item,
-  collapsed,
-  onNavigate,
-}: {
-  item: WorkspaceDestination;
-  collapsed: boolean;
-  onNavigate?: (() => void) | undefined;
-}) {
-  const { pathname } = useLocation();
-  const active = isWorkspacePath(item.to, pathname);
-  return (
-    <Link
-      to={item.to}
-      onClick={onNavigate}
-      aria-current={active ? 'page' : undefined}
-      title={collapsed ? item.label : undefined}
-      className={`group relative flex min-h-10 items-center gap-3 rounded-lg text-sm transition-colors ${collapsed ? 'justify-center px-0' : 'px-3'} ${
-        active
-          ? 'bg-surface-2 text-text before:absolute before:top-2 before:bottom-2 before:left-0 before:w-0.5 before:rounded-full before:bg-ember'
-          : 'text-muted hover:bg-surface hover:text-text'
-      }`}
-    >
-      <RailIcon
-        name={item.icon}
-        className={active ? 'text-ember' : 'text-muted group-hover:text-text'}
-      />
-      <span className={collapsed ? 'sr-only' : 'min-w-0 leading-tight'}>{item.label}</span>
-    </Link>
-  );
-}
 
 export function LeftRail({
   mobile = false,
@@ -111,25 +72,49 @@ export function LeftRail({
             </span>
           )}
         </button>
-        <RailLink item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
-        {workspaceSections.map((section) => (
-          <div key={section.title} className="mt-3 flex flex-col gap-0.5">
-            {collapsed ? (
-              <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
-            ) : (
-              <p className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted uppercase">
-                {section.title}
-              </p>
-            )}
-            {section.items.map((item) => (
-              <RailLink key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
-            ))}
-          </div>
-        ))}
+        <ul className="flex flex-col gap-0.5">
+          <RailItem item={workspaceHome} collapsed={collapsed} onNavigate={onNavigate} />
+        </ul>
+        {workspaceSections.map((section, index) => {
+          // A section of one destination is named by that destination, not a heading.
+          const headingId = section.items.length > 1 ? `${railId}-section-${index}` : undefined;
+          return (
+            <div key={section.title} className="mt-3 flex flex-col gap-0.5">
+              {collapsed || headingId === undefined ? (
+                <span aria-hidden="true" className="mx-3 mb-1 border-t border-line/70" />
+              ) : (
+                <p
+                  id={headingId}
+                  className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-muted uppercase"
+                >
+                  {section.title}
+                </p>
+              )}
+              <ul
+                aria-labelledby={collapsed ? undefined : headingId}
+                aria-label={collapsed || headingId === undefined ? section.title : undefined}
+                className="flex flex-col gap-0.5"
+              >
+                {section.items.map((item) => (
+                  <RailItem
+                    key={item.to}
+                    item={item}
+                    collapsed={collapsed}
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
         {isAdmin && (
-          <div className="mt-3 border-t border-line/70 pt-3">
-            <RailLink item={ADMIN_ITEM} collapsed={collapsed} onNavigate={onNavigate} />
-          </div>
+          <ul className="mt-3 border-t border-line/70 pt-3">
+            <RailItem
+              item={administrationDestination}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
+          </ul>
         )}
       </nav>
       {!mobile && (

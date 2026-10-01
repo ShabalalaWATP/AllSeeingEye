@@ -79,7 +79,7 @@ export function ContextShell({
       {snapshot.failures > 0 && (
         <p
           role="alert"
-          className="rounded-lg border border-amber-300/20 bg-amber-300/5 p-3 text-amber-200"
+          className="rounded-lg border border-amber/20 bg-amber/5 p-3 text-amber"
         >
           Some source records could not be loaded. Refresh to retry. Other available records remain
           below.

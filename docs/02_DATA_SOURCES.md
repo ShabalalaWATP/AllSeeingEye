@@ -5,8 +5,8 @@ layers. These have different jobs: a feed supplies recent observations, a resear
 provider answers a bounded query, and a reference layer supplies context. A catalogue
 entry does not mean that the source is live or that its claims have been verified.
 
-Open **Settings > Sources and connections** to see the installation's current
-catalogue, requirements and connection states. Administrators can inspect collection
+Open the read-only **Source catalogue** (`/sources`, linked from Settings) to see the
+installation's current catalogue, grade basis, requirements and connection states. Administrators can inspect collection
 health and enable or disable sources under **Administration > Sources**. Use these
 screens for current availability rather than a fixed source count in this document.
 

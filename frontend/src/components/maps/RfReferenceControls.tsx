@@ -20,7 +20,7 @@ export function RfReferenceControls({
         <p className="text-muted">Place a transmitter to show the estimate on the map.</p>
       )}
       {error && (
-        <p role="status" className="text-amber-300">
+        <p role="status" className="text-amber">
           {error}
         </p>
       )}
