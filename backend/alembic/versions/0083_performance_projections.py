@@ -14,8 +14,8 @@ from ase.application.report_jobs.budget import JobInterrupted
 from ase.domain.report_jobs import canonical_job_payload
 from ase.domain.report_search import checked_vector
 
-revision = "0068"
-down_revision = "0067"
+revision = "0083"
+down_revision = "0082"
 branch_labels = None
 depends_on = None
 log = logging.getLogger("alembic.runtime.migration")
@@ -80,7 +80,7 @@ def _validated(row):
     except (ValueError, TypeError, UnicodeError, RecursionError, JobInterrupted) as exc:
         # Fail closed rather than silently undercount an owner's budget.
         log.error("Cannot reconcile report job %s during monthly usage migration", row["id"])
-        raise RuntimeError("Repair the reported checkpoint before retrying migration 0068") from exc
+        raise RuntimeError("Repair the reported checkpoint before retrying migration 0083") from exc
 
 
 def _backfill() -> None:

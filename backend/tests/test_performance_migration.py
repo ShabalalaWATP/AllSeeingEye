@@ -1,4 +1,4 @@
-"""Migration 0068 preserves audit payloads and backfills small projections."""
+"""Migration 0083 preserves audit payloads and backfills small projections."""
 
 import hashlib
 import json
@@ -14,7 +14,7 @@ from test_mfa_migration import prepare
 
 def seeded_checkpoint(tmp_path):
     config, database, owner = prepare(tmp_path)
-    command.upgrade(config, "0067")
+    command.upgrade(config, "0082")
     job_id = uuid4().hex
     payload = json.dumps(
         {
@@ -54,7 +54,7 @@ def seeded_checkpoint(tmp_path):
 
 def test_upgrade_backfills_usage_summary_and_downgrade_keeps_audit(tmp_path):
     config, database, payload = seeded_checkpoint(tmp_path)
-    command.upgrade(config, "0068")
+    command.upgrade(config, "0083")
     with closing(sqlite3.connect(database)) as connection:
         summary, retained = connection.execute("SELECT summary,payload FROM report_jobs").fetchone()
         assert json.loads(summary) == {"completed_sections": 7} and retained == payload
@@ -65,10 +65,10 @@ def test_upgrade_backfills_usage_summary_and_downgrade_keeps_audit(tmp_path):
         assert "ix_activity_samples_hour" in {
             row[1] for row in connection.execute("PRAGMA index_list(activity_samples)")
         }
-    command.downgrade(config, "0067")
+    command.downgrade(config, "0082")
     with closing(sqlite3.connect(database)) as connection:
         assert connection.execute("SELECT payload FROM report_jobs").fetchone() == (payload,)
-    command.upgrade(config, "0068")
+    command.upgrade(config, "0083")
 
 
 @pytest.mark.parametrize("corruption", ["digest", "calls"])
@@ -88,9 +88,9 @@ def test_bad_checkpoint_stops_migration_before_sqlite_schema_changes(tmp_path, c
                 (raw, len(raw), hashlib.sha256(raw.encode()).hexdigest()),
             )
     with pytest.raises(RuntimeError, match="Repair the reported checkpoint"):
-        command.upgrade(config, "0068")
+        command.upgrade(config, "0083")
     with closing(sqlite3.connect(database)) as connection, connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0067",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0082",)
         assert "summary" not in {
             row[1] for row in connection.execute("PRAGMA table_info(report_jobs)")
         }
@@ -101,4 +101,4 @@ def test_bad_checkpoint_stops_migration_before_sqlite_schema_changes(tmp_path, c
             "UPDATE report_jobs SET payload=?,payload_bytes=?,payload_sha256=?",
             (original, len(original), hashlib.sha256(original.encode()).hexdigest()),
         )
-    command.upgrade(config, "0068")
+    command.upgrade(config, "0083")
