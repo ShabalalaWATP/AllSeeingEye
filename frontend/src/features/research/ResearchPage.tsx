@@ -108,6 +108,7 @@ export default function ResearchPage() {
             fromReportId={params.get('from_report') ?? undefined}
             fromReportVersion={fromReportVersion}
             intent={params.get('intent') === 'subscribe' ? 'subscribe' : undefined}
+            planId={briefId === 'new' ? (params.get('plan') ?? undefined) : undefined}
           />
         )}
         {!briefId && !mapDraftRequested && (

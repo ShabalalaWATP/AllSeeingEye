@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { aoi, plan, report, reportSummary } from '@/test/fixtures';
+import { aoi, plan } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -51,39 +51,9 @@ describe('direction', () => {
     expect(within(pir).getByText('Nothing gathered in the last week.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Generate assessment' })).toHaveAttribute(
       'href',
-      `/reports?template=ask&plan=${plan.id}`,
+      `/research?brief=new&plan=${plan.id}`,
     );
     await user.click(screen.getByRole('button', { name: 'Delete plan' }));
     expect(await screen.findByRole('heading', { name: 'Plans and areas' })).toBeInTheDocument();
-  });
-
-  it('generates a plan-scoped ask without typing a question', async () => {
-    let captured: unknown = null;
-    server.use(
-      http.post('/api/reports', async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json(
-          { ...report, report: { ...reportSummary, id: '99999999-9999-4999-8999-999999999999' } },
-          { status: 201 },
-        );
-      }),
-    );
-    const { user } = renderApp(`/reports?template=ask&plan=${plan.id}`, 'user');
-    const form = await screen.findByRole('form', { name: 'Generate a report' });
-    expect(within(form).getByText(/Scoped by a collection plan/)).toBeInTheDocument();
-    expect(within(form).getByLabelText('Question')).not.toBeRequired();
-    await user.click(within(form).getByRole('button', { name: 'Generate' }));
-    await waitFor(() => {
-      expect(captured).toEqual({
-        disclose_area_to_provider: false,
-        template: 'ask',
-        plan: plan.id,
-        research_focus: 'general',
-        research_web_search: false,
-        report_language: 'en',
-        report_style: 'assessment',
-        devils_advocacy: false,
-      });
-    });
   });
 });

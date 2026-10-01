@@ -7,11 +7,14 @@ import { Link, useSearchParams } from 'react-router';
 
 import { ResearchLibrary } from '@/components/library/ResearchLibrary';
 import { researchTabs, SectionTabs } from '@/components/research/SectionTabs';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 
 import { ReportSearch } from './ReportSearch';
 import { SavedReports } from './SavedReports';
 import { TemplateReportComposer } from './TemplateReportComposer';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function SavedResearchPage() {
   const [params] = useSearchParams();
@@ -19,8 +22,11 @@ export default function SavedResearchPage() {
   const libraryChanged = () => setLibraryRevision((revision) => revision + 1);
   const [showComposer, setShowComposer] = useState(false);
   const [closedContext, setClosedContext] = useState<string | null>(null);
+  // Old "Generate assessment" bookmarks pointed here; plan assessments now start in Research.
+  const legacyPlan = params.get('template') === 'ask' ? params.get('plan') : null;
   const initial = Object.fromEntries(
     ['template', 'country', 'conflict', 'hazard', 'plan']
+      .filter((key) => legacyPlan === null || (key !== 'template' && key !== 'plan'))
       .map((key) => [key, params.get(key)])
       .filter((entry): entry is [string, string] => entry[1] !== null),
   );
@@ -43,6 +49,22 @@ export default function SavedResearchPage() {
           New research
         </Link>
       </header>
+      {legacyPlan !== null && (
+        <Alert tone="info" title="Collection-plan assessments have moved to Research">
+          Review the plan&apos;s requirements and scope there, then start the research yourself.{' '}
+          {UUID.test(legacyPlan) ? (
+            <Link
+              className="text-ember underline"
+              to={`/research?brief=new&plan=${encodeURIComponent(legacyPlan)}`}
+            >
+              Continue in Research with this plan
+            </Link>
+          ) : (
+            'This link does not name a valid plan. Open the plan from Plans and areas instead.'
+          )}{' '}
+          Specialist report templates remain available below.
+        </Alert>
+      )}
       <div className="flex flex-wrap gap-4 text-sm">
         <Button
           variant="ghost"

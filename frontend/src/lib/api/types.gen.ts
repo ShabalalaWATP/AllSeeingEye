@@ -5617,6 +5617,8 @@ export interface components {
             brief_id: string;
             /** Revision */
             revision: number;
+            /** Expected Plan Updated At */
+            expected_plan_updated_at?: string | null;
         };
         /**
          * BriefLimits
