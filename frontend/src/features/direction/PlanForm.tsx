@@ -1,101 +1,157 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
-import { describeError } from '@/lib/api/errors';
+import { describeError, isApiError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
-import { createPlan } from '@/lib/api/direction';
-import type { AreaOfInterest, PlanRequest } from '@/lib/api/direction';
-import { parseCountries, parseSirLines } from './planText';
+import { createPlan, updatePlan } from '@/lib/api/direction';
+import type { AreaOfInterest, CollectionPlan } from '@/lib/api/direction';
 
+import { PlanConflict } from './PlanConflict';
+import { PlanRequirementsEditor } from './PlanRequirementsEditor';
+import {
+  draftFromPlan,
+  emptyPlanDraft,
+  PLAN_LIMITS,
+  planErrorsFromServer,
+  planRequest,
+  unplacedPlanErrors,
+  validatePlanDraft,
+  type PlanDraft,
+  type PlanErrors,
+} from './planDraft';
+
+/** Creates a plan, or edits one in place when `plan` is given; failures keep the draft. */
 export function PlanForm({
   areas,
   workspaces,
-  onCreated,
+  plan,
+  onSaved,
+  onCancel,
 }: {
   areas: readonly AreaOfInterest[];
   workspaces: Workspaces;
-  onCreated: () => Promise<void>;
+  plan?: CollectionPlan | undefined;
+  onSaved: (saved: CollectionPlan) => Promise<void> | void;
+  onCancel?: (() => void) | undefined;
 }) {
   const scope = useWorkspaceSelection(workspaces);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [areaId, setAreaId] = useState('');
-  const [countries, setCountries] = useState('');
-  const [pir, setPir] = useState('');
-  const [sirs, setSirs] = useState('');
-  const matchingAreas = areas.filter((area) => (area.team_id ?? '') === scope.teamId);
-  const selectedArea = matchingAreas.some((area) => area.id === areaId) ? areaId : '';
-  const invalidArea = areaId !== '' && selectedArea === '';
-  const create = useAsyncAction(async (request: PlanRequest) => {
-    await createPlan(request);
-    setName('');
-    setDescription('');
-    setPir('');
-    setSirs('');
-    await onCreated();
+  const teamId = plan ? (plan.team_id ?? '') : scope.teamId;
+  const [draft, setDraft] = useState<PlanDraft>(() =>
+    plan ? draftFromPlan(plan) : emptyPlanDraft(),
+  );
+  const [enabled, setEnabled] = useState(plan?.enabled ?? true);
+  const [revision, setRevision] = useState(plan?.updated_at ?? '');
+  const [errors, setErrors] = useState<PlanErrors>({});
+  const summary = useRef<HTMLDivElement>(null);
+  const matchingAreas = areas.filter((area) => (area.team_id ?? '') === teamId);
+  const areaAvailable = draft.areaId === '' || matchingAreas.some((a) => a.id === draft.areaId);
+  const ready = plan ? true : scope.ready;
+  const change = (next: PlanDraft) => {
+    setDraft(next);
+    if (Object.keys(errors).length > 0) setErrors(validatePlanDraft(next, true));
+  };
+  const persist = async (current: PlanDraft) => {
+    const body = planRequest(current, teamId === '' ? null : teamId, enabled);
+    if (plan) {
+      const saved = await updatePlan(plan.id, { ...body, expected_updated_at: revision });
+      setRevision(saved.updated_at);
+      await onSaved(saved);
+      return;
+    }
+    const saved = await createPlan(body);
+    setDraft(emptyPlanDraft());
+    await onSaved(saved);
+  };
+  const save = useAsyncAction(async (current: PlanDraft) => {
+    try {
+      await persist(current);
+    } catch (error) {
+      // The server's field reasons sit beside the controls that caused them (KAN-48).
+      if (isApiError(error) && Object.keys(error.fields).length > 0) {
+        setErrors(planErrorsFromServer(error.fields));
+        summary.current?.focus();
+      }
+      throw error;
+    }
   });
+  const unplaced = unplacedPlanErrors(errors);
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!scope.ready || invalidArea) return;
-    const request: PlanRequest = {
-      name: name.trim(),
-      enabled: true,
-      ...(scope.teamId ? { team_id: scope.teamId } : {}),
-      description: description.trim(),
-      aoi_id: selectedArea === '' ? null : selectedArea,
-      countries: parseCountries(countries),
-      pirs: [{ text: pir.trim(), sirs: parseSirLines(sirs) }],
-    };
-    void create.run(request);
+    const found = validatePlanDraft(draft, areaAvailable);
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      summary.current?.focus();
+      return;
+    }
+    if (ready) void save.run(draft);
   };
+  const conflict = plan !== undefined && save.error?.code === 'conflict';
   return (
     <form
       onSubmit={submit}
-      aria-label="New collection plan"
+      noValidate
+      aria-label={plan ? `Edit ${plan.name}` : 'New collection plan'}
       className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
     >
-      {invalidArea && (
+      <div ref={summary} tabIndex={-1} className="outline-offset-4">
+        {Object.keys(errors).length > 0 && (
+          <Alert tone="error">
+            Review the highlighted fields. Nothing has been saved and your draft is kept.
+            {unplaced.length > 0 && (
+              <ul className="mt-1 list-disc pl-5">
+                {unplaced.map(([key, reason]) => (
+                  <li key={key}>{reason}</li>
+                ))}
+              </ul>
+            )}
+          </Alert>
+        )}
+      </div>
+      {!areaAvailable && (
         <Alert tone="error">
           The linked area is no longer available. Choose an area in this workspace or select No
           area.
         </Alert>
       )}
-      {matchingAreas.find((area) => area.id === selectedArea)?.research_area && (
+      {matchingAreas.find((area) => area.id === draft.areaId)?.research_area && (
         <p className="text-sm text-muted">
           Exact-shape plans support evidence matching. For reports, start standalone area research
           from the saved area; collection-plan report templates cannot use this polygon.
         </p>
       )}
-      <WorkspaceField
-        workspaces={workspaces}
-        value={scope.teamId}
-        onChange={(value) => {
-          scope.select(value);
-          setAreaId('');
-        }}
-      />
+      {plan ? (
+        <p className="text-sm text-muted">
+          {workspaces.label(plan.team_id)}. A plan keeps its workspace, owner and links when edited.
+        </p>
+      ) : (
+        <WorkspaceField
+          workspaces={workspaces}
+          value={scope.teamId}
+          onChange={(value) => {
+            scope.select(value);
+            change({ ...draft, areaId: '' });
+          }}
+        />
+      )}
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Plan name"
-          value={name}
-          onChange={(event) => {
-            setName(event.target.value);
-          }}
+          value={draft.name}
+          error={errors.name}
+          onChange={(event) => change({ ...draft, name: event.target.value })}
           required
-          maxLength={120}
+          maxLength={PLAN_LIMITS.name}
         />
         <SelectField
           label="Area"
           hint="Optional; nations below apply when no area is chosen."
-          value={selectedArea}
-          onChange={(event) => {
-            setAreaId(event.target.value);
-          }}
+          value={areaAvailable ? draft.areaId : ''}
+          onChange={(event) => change({ ...draft, areaId: event.target.value })}
           options={[
             { value: '', label: 'No area' },
             ...matchingAreas.map((area) => ({ value: area.id, label: area.name })),
@@ -104,45 +160,62 @@ export function PlanForm({
         <TextField
           label="Nations"
           hint="ISO codes, comma separated."
-          value={countries}
-          onChange={(event) => {
-            setCountries(event.target.value);
-          }}
+          value={draft.countries}
+          error={errors.countries}
+          onChange={(event) => change({ ...draft, countries: event.target.value })}
         />
       </div>
-      <TextField
-        label="Priority intelligence requirement"
-        hint="The question the plan serves, as one sentence."
-        value={pir}
-        onChange={(event) => {
-          setPir(event.target.value);
-        }}
-        required
-        maxLength={300}
-      />
-      <TextAreaField
-        label="Specific requirements"
-        hint="One per line: text | keywords, comma separated | categories, comma separated"
-        value={sirs}
-        onChange={(event) => {
-          setSirs(event.target.value);
-        }}
-        required
+      <PlanRequirementsEditor
+        pirs={draft.pirs}
+        errors={errors}
+        onChange={(pirs) => change({ ...draft, pirs })}
       />
       <TextAreaField
         label="Background"
         hint="Context handed to the model with every report on this plan; never cited."
-        value={description}
-        onChange={(event) => {
-          setDescription(event.target.value);
-        }}
+        value={draft.description}
+        onChange={(event) => change({ ...draft, description: event.target.value })}
         maxLength={2000}
       />
-      {create.error === null ? null : <Alert tone="error">{describeError(create.error)}</Alert>}
-      <div>
-        <Button type="submit" busy={create.busy} disabled={!scope.ready || invalidArea}>
-          Add plan
+      {plan && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(event) => setEnabled(event.target.checked)}
+          />
+          Plan enabled for watchlists, map filters and new research
+        </label>
+      )}
+      {conflict ? (
+        <PlanConflict
+          planId={plan.id}
+          onUseLatest={(latest) => {
+            setDraft(draftFromPlan(latest));
+            setEnabled(latest.enabled);
+            setRevision(latest.updated_at);
+            setErrors({});
+            save.clearError();
+          }}
+          onKeepMine={(latest) => {
+            setRevision(latest.updated_at);
+            save.clearError();
+          }}
+        />
+      ) : save.error === null ? null : (
+        <Alert tone="error">
+          {describeError(save.error)} Your draft is kept; correct it or try again.
+        </Alert>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" busy={save.busy} disabled={!ready || conflict}>
+          {plan ? 'Save plan' : 'Add plan'}
         </Button>
+        {onCancel && (
+          <Button variant="ghost" disabled={save.busy} onClick={onCancel}>
+            Cancel editing
+          </Button>
+        )}
       </div>
     </form>
   );

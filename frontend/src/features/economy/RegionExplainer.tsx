@@ -31,7 +31,7 @@ export function RegionExplainer({ name, view }: { name: string; view: RegionExpl
       <p className="max-w-[50ch] border-l-2 border-ember pl-4 text-lg leading-8 font-medium text-balance">
         {section.takeaway}
       </p>
-      {lead && <p className="mt-3 max-w-[68ch] text-[15px] leading-7 text-text/90">{lead}</p>}
+      {lead && <p className="mt-3 max-w-[68ch] text-base leading-7 text-text/90">{lead}</p>}
       {rest.length > 0 && (
         <details className="group mt-3">
           <summary className="w-fit cursor-pointer text-sm font-medium text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-ember">
@@ -39,7 +39,7 @@ export function RegionExplainer({ name, view }: { name: string; view: RegionExpl
           </summary>
           <div className="mt-3 max-w-[68ch] space-y-4">
             {rest.map((paragraph) => (
-              <p key={paragraph} className="text-[15px] leading-7 text-text/90">
+              <p key={paragraph} className="text-base leading-7 text-text/90">
                 {paragraph}
               </p>
             ))}

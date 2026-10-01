@@ -1,11 +1,14 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
-import type { TeamBoardPost } from '@/lib/api/teamBoard';
+import type { BoardSubjectInput, TeamBoardPost } from '@/lib/api/teamBoard';
+import type { TeamMember } from '@/lib/api/teams';
 
+import { BoardMentionPicker, tooManyMentions } from './BoardMentionPicker';
 import { BoardPostCard } from './BoardPostCard';
+import { subjectLabel } from './BoardSubjectCard';
 import type { TeamCapabilities } from './teamCapabilities';
 import { useTeamBoard } from './useTeamBoard';
 
@@ -14,13 +17,32 @@ export function TeamBoard({
   teamName,
   userId,
   capabilities,
+  focusPostId,
+  initialSubject,
+  members = [],
 }: {
   teamId: string;
   teamName: string;
   userId: string;
   capabilities: TeamCapabilities;
+  /** A thread opened from a team discussion link. */
+  focusPostId?: string | null | undefined;
+  /** Work a new thread was started from, such as a report version. */
+  initialSubject?: BoardSubjectInput | null | undefined;
+  /** The authorised roster, offered for @mentions. */
+  members?: readonly TeamMember[] | undefined;
 }) {
-  const board = useTeamBoard(teamId);
+  const board = useTeamBoard(teamId, initialSubject ?? undefined);
+  const focused = useRef(false);
+  const focusLoaded = board.posts.some((post) => post.id === focusPostId);
+  useEffect(() => {
+    if (!focusPostId || !focusLoaded || focused.current) return;
+    focused.current = true;
+    const target = document.getElementById(`board-post-${focusPostId}`);
+    const scrollIntoView: unknown = target ? Reflect.get(target, 'scrollIntoView') : undefined;
+    if (typeof scrollIntoView === 'function') scrollIntoView.call(target, { block: 'center' });
+    target?.focus({ preventScroll: true });
+  }, [focusLoaded, focusPostId]);
   const canWrite = capabilities.teamIsActive && (capabilities.isMember || capabilities.isAdmin);
   const canModerate = capabilities.canManageMembers;
 
@@ -40,6 +62,7 @@ export function TeamBoard({
       canModerate={canModerate}
       canWrite={canWrite}
       busy={board.busy}
+      highlighted={post.id === focusPostId}
       onEdit={board.startEdit}
       onReply={board.startReply}
       onModerate={board.moderate}
@@ -74,6 +97,9 @@ export function TeamBoard({
       {/* The live region stays mounted so screen readers announce later updates. */}
       <p aria-live="polite" className={board.refreshNotice ? 'text-xs text-muted' : 'sr-only'}>
         {board.refreshNotice}
+      </p>
+      <p aria-live="polite" className={board.notified ? 'text-xs text-muted' : 'sr-only'}>
+        {board.notified}
       </p>
       {board.accessLost ? (
         <Alert tone="warning" title="Team access changed">
@@ -116,9 +142,33 @@ export function TeamBoard({
             onChange={(event) => board.setDraft(event.target.value)}
             disabled={board.busy}
           />
+          <BoardMentionPicker
+            members={members}
+            userId={userId}
+            draft={board.draft}
+            disabled={board.busy}
+            onDraftChange={board.setDraft}
+          />
+          {board.subject && !board.editing && !board.replyTo ? (
+            <div
+              role="group"
+              aria-label="Linked work"
+              className="mt-3 flex flex-wrap items-center justify-between gap-2 border-l-2 border-cyan/60 bg-surface-2/50 px-3 py-2 text-sm"
+            >
+              <span>
+                Discussing: <span className="font-medium">{subjectLabel(board.subject)}</span>
+                <span className="block text-xs text-muted">
+                  The board checks that it belongs to this team when you post.
+                </span>
+              </span>
+              <Button variant="ghost" disabled={board.busy} onClick={board.clearSubject}>
+                Remove link
+              </Button>
+            </div>
+          ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
-              disabled={board.busy || board.draft.trim() === ''}
+              disabled={board.busy || board.draft.trim() === '' || tooManyMentions(board.draft)}
               onClick={() => void board.save()}
             >
               {board.editing ? 'Save changes' : board.replyTo ? 'Post reply' : 'Post update'}

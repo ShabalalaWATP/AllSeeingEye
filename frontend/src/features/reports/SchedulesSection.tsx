@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import type { Country } from '@/lib/api/geoSchemas';
@@ -27,6 +28,7 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import { useScheduleRefresh } from './useScheduleRefresh';
 import { SubscriptionUsage } from './SubscriptionUsage';
 import { runSubscriptionNow } from '@/lib/api/subscriptionControls';
+import { clearDraft, draftForms } from '@/lib/formDrafts';
 import { retainSubscriptionRequest, subscriptionRunNotice } from './subscriptionRunNotice';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
@@ -77,6 +79,7 @@ export function SchedulesSection({
       async (request: ScheduleRequest) => {
         if (editing && !copying) await updateSchedule(editing.id, request);
         else await createSchedule(request);
+        if (!editing) clearDraft(draftForms.subscription(draftQuestion, draftCountry));
         setNotice(
           editing && !copying
             ? 'Subscription updated.'
@@ -90,7 +93,7 @@ export function SchedulesSection({
         setRevision((value) => value + 1);
         await reload();
       },
-      [reload, editing, copying, restoreEditFocus],
+      [reload, editing, copying, restoreEditFocus, draftQuestion, draftCountry],
     ),
   );
   const remove = useAsyncAction(
@@ -144,7 +147,7 @@ export function SchedulesSection({
               key={figure.label}
               className="rounded-xl border border-line/70 bg-surface/60 px-4 py-3"
             >
-              <p className="text-[11px] text-muted">{figure.label}</p>
+              <p className="text-2xs text-muted">{figure.label}</p>
               <p className={`mt-1 truncate text-xl font-semibold tracking-tight ${figure.tone}`}>
                 {figure.value}
               </p>
@@ -231,9 +234,11 @@ export function SchedulesSection({
           <LoadingNote label="Loading subscriptions" />
         ) : null
       ) : schedules.data.length === 0 ? (
-        <p className="text-sm text-muted">
-          No subscriptions yet. Choose a topic and create your first update below.
-        </p>
+        <EmptyState
+          title="No subscriptions yet"
+          purpose="A subscription runs the same research again on a schedule and saves each update as a report you can compare with the last."
+          action="Choose a topic and create your first update below."
+        />
       ) : (
         <Table caption="Subscriptions">
           <thead>
@@ -321,7 +326,7 @@ export function SchedulesSection({
           templates={templates}
           countries={countries}
           busy={save.busy || toggle.busy || remove.busy || runNow.busy}
-          error={save.error === null ? null : describeError(save.error)}
+          error={save.error}
           onSubmit={(request) => void save.run(request)}
         />
       </div>

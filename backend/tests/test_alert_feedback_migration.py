@@ -32,7 +32,7 @@ def test_sqlite_upgrade_preserves_existing_alerts_and_downgrade_guards_feedback(
                 annotation_transition_id=None,
             )
             before = dict(connection.execute(sa.select(meta.tables["alerts"])).mappings().one())
-        command.upgrade(config, "0070")
+        command.upgrade(config, "0085")
         meta.clear()
         meta.reflect(engine)
         with engine.begin() as connection:
@@ -49,7 +49,7 @@ def test_sqlite_upgrade_preserves_existing_alerts_and_downgrade_guards_feedback(
                     count=1,
                 )
             )
-        command.downgrade(config, "0069")
+        command.downgrade(config, "0084")
         with pytest.raises(RuntimeError, match="retained alert feedback"):
             command.downgrade(config, "0066")
     finally:
@@ -61,7 +61,7 @@ def test_postgresql_upgrade_ddl_is_renderable_without_a_live_database():
     output = StringIO()
     config.output_buffer = output
     # The parent data migration reads retained jobs; render only this batch's DDL.
-    command.upgrade(config, "0068:0070", sql=True)
+    command.upgrade(config, "0083:0085", sql=True)
     sql = output.getvalue()
     assert "CREATE TABLE alert_feedback_days" in sql
     assert "ADD COLUMN baseline_ratio" in sql

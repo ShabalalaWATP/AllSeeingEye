@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
 import { fetchReportFile, fetchReportStix, type StixTlp } from '@/lib/api/reportDocuments';
 import { fetchReportMarkdown } from '@/lib/api/reports';
@@ -43,6 +44,7 @@ export function ReportExports({
 }) {
   const [open, setOpen] = useState(false);
   const [tlp, setTlp] = useState<StixTlp | ''>('');
+  const [preparing, setPreparing] = useState<ExportChoice | null>(null);
   const menuId = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -57,6 +59,20 @@ export function ReportExports({
     if (restoreFocus) trigger.current?.focus();
   };
   const download = useAsyncAction(async (format: ExportChoice) => {
+    setPreparing(format);
+    try {
+      await saveExport(format);
+    } finally {
+      // Done either way: any failure shows beside the trigger. Focus returns to the trigger
+      // only if the reader has not moved it elsewhere meanwhile.
+      setPreparing(null);
+      const focus = document.activeElement;
+      closeMenu(
+        focus === null || focus === document.body || root.current?.contains(focus) === true,
+      );
+    }
+  });
+  async function saveExport(format: ExportChoice) {
     if (format === 'stix') {
       if (!tlp) return;
       const blob = await fetchReportStix(id, version, tlp);
@@ -76,8 +92,7 @@ export function ReportExports({
       const blob = await fetchReportFile(id, version, format);
       saveBinaryFile(fileNameFor(`${title}-v${String(version)}`, format), blob);
     }
-    closeMenu(true);
-  });
+  }
 
   useEffect(() => {
     const container = root.current;
@@ -104,18 +119,19 @@ export function ReportExports({
     ...(['pdf', 'docx', 'md', 'stix'] as const).filter((format) => format !== preferred),
   ];
   return (
-    <div ref={root} className="relative" aria-label="Document exports">
-      <button
+    <div ref={root} role="group" className="relative" aria-label="Document exports">
+      <Button
         ref={trigger}
-        type="button"
-        className="inline-flex min-w-28 items-center justify-center gap-2 rounded-md bg-ember px-3 py-2 text-sm font-medium text-ground transition-colors hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
+        className="min-w-28 motion-reduce:transition-none"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
+        busy={download.busy}
+        busyLabel={`Preparing ${EXPORT_FORMATS[preparing ?? preferred].short}…`}
         onClick={() => setOpen((current) => !current)}
       >
         <span aria-hidden="true">↓</span> Export
-      </button>
+      </Button>
       {open && (
         <div
           id={menuId}
@@ -148,7 +164,7 @@ export function ReportExports({
           }}
         >
           <div className="px-2 pb-2 pt-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">
+            <p className="text-2xs font-medium uppercase tracking-[0.16em] text-muted">
               Report version {version}
             </p>
             <p className="mt-1 text-xs leading-5 text-muted">
@@ -182,12 +198,13 @@ export function ReportExports({
               />
             ))}
           </div>
-          {download.error === null ? null : (
-            <Alert tone="error" className="mt-2">
-              {describeError(download.error)}
-            </Alert>
-          )}
         </div>
+      )}
+      {/* Beside the trigger, so a failure outlives the menu closing. */}
+      {download.error === null ? null : (
+        <Alert tone="error" className="mt-2 max-w-xs">
+          {describeError(download.error)}
+        </Alert>
       )}
     </div>
   );

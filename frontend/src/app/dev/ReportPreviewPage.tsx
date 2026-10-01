@@ -39,7 +39,7 @@ export default function ReportPreviewPage() {
   const contents = view === 'annex' ? [] : publicationContents(reportPublication);
   return (
     <EvidenceNavigation evidence={report.version.evidence}>
-      <section
+      <main
         aria-label="Report reader"
         className="report-reader-shell h-full min-w-0 overflow-y-auto"
       >
@@ -123,7 +123,7 @@ export default function ReportPreviewPage() {
             )}
           </div>
         </div>
-      </section>
+      </main>
     </EvidenceNavigation>
   );
 }

@@ -8,6 +8,7 @@ import { MapboxOverlay } from '@/test/fakeDeck';
 import { FakeMap } from '@/test/fakeMap';
 import { FakeEventStreamClient } from '@/test/fakeStream';
 import { liveEvent } from '@/test/fixtures';
+import { openMapTool } from '@/test/mapTools';
 import { renderApp } from '@/test/render';
 // Load the real route after Vitest hoists its mocks, outside timed layer assertions.
 import './GlobePage';
@@ -17,6 +18,41 @@ vi.mock('@/lib/hooks/useNow', () => ({ useNow: () => clock.now }));
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
+
+// Count renders of representative stable controls. A memoised export stays memoised with its
+// own comparison, so the count reflects what the page really commits.
+const { renders, counted } = vi.hoisted(() => {
+  const renders = new Map<string, number>();
+  async function counted(actual: Record<string, unknown>, name: string) {
+    const React = await import('react');
+    type Props = Record<string, unknown>;
+    const original = actual[name] as
+      | React.FunctionComponent<Props>
+      | {
+          $$typeof: symbol;
+          type: React.FunctionComponent<Props>;
+          compare?: ((a: Props, b: Props) => boolean) | null;
+        };
+    const memoised = '$$typeof' in original && original.$$typeof === Symbol.for('react.memo');
+    const inner = memoised ? original.type : (original as React.FunctionComponent<Props>);
+    function Counted(props: Props) {
+      renders.set(name, (renders.get(name) ?? 0) + 1);
+      return React.createElement(inner, props);
+    }
+    return {
+      ...actual,
+      [name]: memoised ? React.memo(Counted, original.compare ?? undefined) : Counted,
+    };
+  }
+  return { renders, counted };
+});
+vi.mock('./ModeToolbar', async (load) => counted(await load(), 'ModeToolbar'));
+vi.mock('./MapCanvas', async (load) => counted(await load(), 'MapCanvas'));
+vi.mock('./MapNavigationTools', async (load) => counted(await load(), 'MapNavigationTools'));
+vi.mock('./WorldClocks', async (load) => counted(await load(), 'WorldClocks'));
+vi.mock('./GlobeHeading', async (load) => counted(await load(), 'GlobeHeading'));
+vi.mock('./MapDisplaySettings', async (load) => counted(await load(), 'MapDisplaySettings'));
+vi.mock('./BaseLayerToolbar', async (load) => counted(await load(), 'BaseLayerToolbar'));
 
 interface TestLayer {
   id: string;
@@ -32,7 +68,7 @@ function layer(id: string): TestLayer | undefined {
 
 async function mount() {
   const view = renderApp('/', 'user');
-  await screen.findByRole('switch', { name: 'Natural hazards 1' });
+  await screen.findByText('Natural hazards: 1 loaded');
   await waitFor(() => expect(layer('events-disaster')).toBeDefined());
   return view;
 }
@@ -92,6 +128,26 @@ describe('globe rendering and motion', () => {
     clock.now += 30_000;
     act(() => useEventsStore.getState().setStatus('offline'));
     expect(layer('events-disaster')).toBe(scoped);
+  });
+
+  it('commits no stable-control renders for an event batch, while event views update', async () => {
+    const { user } = await mount();
+    await openMapTool(user, 'Map style');
+    expect(renders.get('MapDisplaySettings')).toBeGreaterThan(0);
+    renders.clear();
+    act(() => {
+      useEventsStore
+        .getState()
+        .applyBatch(['e2'], [liveEvent({ id: 'fresh', point: { lon: 20, lat: 40 } })]);
+    });
+    expect(screen.getByText('Natural hazards: 2 loaded')).toBeInTheDocument();
+    expect(layer('events-disaster')!.props.data.map((event) => event.id)).toContain('fresh');
+    expect(Object.fromEntries(renders)).toEqual({});
+
+    // Relevant inputs still reach the stable controls.
+    act(() => useGlobeStore.getState().toggleTerminator());
+    expect(renders.get('MapDisplaySettings')).toBe(1);
+    expect(renders.get('ModeToolbar')).toBeUndefined();
   });
 
   it('still updates a time-filtered layer when an event leaves the selected window', async () => {

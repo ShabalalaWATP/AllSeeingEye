@@ -7,6 +7,7 @@ from ase.api.schemas_llm import LlmModelsOut
 from ase.api.schemas_llm_discovery import DraftModelDiscoveryIn
 
 router = APIRouter(prefix="/admin/llm", tags=["admin"])
+# Evaluation runs check a saved AI connection, so they share this prefix.
 
 
 @router.post("/models/discover")

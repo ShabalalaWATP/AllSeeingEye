@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { TextAreaField, TextField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
 import { searchDirectory } from '@/lib/api/directoryProfile';
+import { formatPersonalDate } from '@/lib/format';
+import { usePersonalPreferences } from '@/lib/hooks/usePersonalPreferences';
 import {
   listTeamInvitations,
   sendTeamInvitation,
@@ -14,11 +16,13 @@ import {
   type TeamInvitation,
 } from '@/lib/api/teamInvitations';
 
-function expiryLabel(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.valueOf())
+type Preferences = ReturnType<typeof usePersonalPreferences>;
+
+/** The app's date format in the account's time zone, whatever locale the browser reports. */
+function expiryLabel(value: string, preferences: Preferences): string {
+  return Number.isNaN(new Date(value).valueOf())
     ? 'expiry unavailable'
-    : `expires ${date.toLocaleDateString()}`;
+    : `expires ${formatPersonalDate(value, preferences)}`;
 }
 
 export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; canManage: boolean }) {
@@ -31,6 +35,7 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const preferences = usePersonalPreferences();
 
   if (!canManage) return null;
 
@@ -254,7 +259,9 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
                     <span>
                       {invitation.recipient_display_name ?? 'Private submission'}{' '}
                       {invitation.recipient_username ? `(@${invitation.recipient_username}) ` : ''}
-                      <span className="text-muted">{expiryLabel(invitation.expires_at)}</span>
+                      <span className="text-muted">
+                        {expiryLabel(invitation.expires_at, preferences)}
+                      </span>
                     </span>
                     <Button variant="ghost" busy={busy} onClick={() => void withdraw(invitation)}>
                       Withdraw

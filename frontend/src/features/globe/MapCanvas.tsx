@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import type { Ref } from 'react';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 import { WebGlFallback } from './WebGlFallback';
 
 /** Own the map host geometry independently of dashboard controls. */
-export function MapCanvas({
+export const MapCanvas = memo(function MapCanvas({
   containerRef,
   supported,
   mode,
@@ -47,4 +48,4 @@ export function MapCanvas({
   ) : (
     <WebGlFallback />
   );
-}
+});

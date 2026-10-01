@@ -70,4 +70,5 @@ def economy_briefing_request(days: EconomyWindowDays = EconomyWindowDays.TWO) ->
             "market",
         ),
         report_style="assessment",
+        briefing="economy",
     )

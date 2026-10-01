@@ -3,18 +3,22 @@
 | View | Purpose |
 | --- | --- |
 | Map | Explore spatial observations and start research for a drawn area. |
-| Research | Ask a question, open saved reports, read the daily briefing or reuse plans and areas. |
-| Subscriptions | Schedule repeated research on a topic, conflict, disaster or area. |
+| Research | Ask a question and open saved research; its tabs are New research, Saved research and Research progress. |
 | Geolocation | Compare up to six photos and assess candidate locations. |
+| Subscriptions | Under Watches: schedule repeated research on a topic, conflict, disaster or area. |
+| Plans and areas | Under Watches: keep collection plans and reusable areas of interest. |
+| Live monitor | Read the daily briefing and the conflict, disaster and specialist tracker boards. |
 | Economy | Explore markets, country indicators, economic news and daily cited analysis. |
 
-Administration remains separate and restricted to administrators. Teams define
-sharing and model destinations. Existing tracker/direction/warning routes and
-contextual report links remain usable.
+Every destination, with the name the navigation uses, is listed in
+[Using the app](04_FEATURES_AND_VIEWS.md). Administration remains separate and
+restricted to administrators. Teams define sharing and model destinations. Existing
+tracker/direction/warning routes and contextual report links remain usable.
 
 The top-bar profile icon opens identity, security and team sharing. Personal
-settings contain appearance, time and region, research/report defaults, and links
-to the source catalogue and alert rules. These preferences apply per user. See
+settings contain appearance, keyboard, time and region, research/report defaults
+and the AI allowance, and link to account security. Alert rules are in Alerts,
+under Watches. These preferences apply per user. See
 [Economy and personal workspace](ECONOMY_WORKSPACE.md).
 
 ## Questions and scope

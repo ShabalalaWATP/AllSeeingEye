@@ -76,3 +76,8 @@ The files under `public/brand/` (`eye-32.png`, `eye-48.png`, `eye-192.png`, `eye
 development-only `/brand/capture` page on 4 September 2026, downscaled without other edits.
 They exist so the favicon, PWA icons and print or export headers show the real eye rather
 than a redrawn imitation. They carry the same licence terms as the component.
+
+`eye-64.png`, `eye-128.png` and the WebP files (`eye-64.webp`, `eye-128.webp`, `eye-192.webp`,
+`eye-512.webp`) were added on 1 October 2026 as plain downscales and re-encodings of the
+`eye-512.png` capture above, with no other edits. They let small marks and the brief fallback
+shown before WebGL draws load a few kilobytes instead of the 512-pixel capture (KAN-83).

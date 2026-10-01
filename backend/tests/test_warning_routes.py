@@ -70,7 +70,10 @@ async def test_evaluator_fires_routes_and_cools_down(
     assert payload is not None and payload["title"] == "Kharkiv strikes: 1 item in the last 7 d"
     assert notifier.calls == [fired[0].id]
 
-    alerts = await client.get("/api/warning/alerts", headers=bearer(admin_token))
+    # The user's personal alert is outside the administrator's default view (KAN-90).
+    mine = await client.get("/api/warning/alerts", headers=bearer(admin_token))
+    assert mine.status_code == 200 and mine.json()["items"] == []
+    alerts = await client.get("/api/warning/alerts?scope=all", headers=bearer(admin_token))
     assert alerts.status_code == 200
     items = alerts.json()["items"]
     assert len(items) == 1 and alerts.json()["unacknowledged"] == 1

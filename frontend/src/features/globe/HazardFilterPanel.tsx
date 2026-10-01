@@ -120,11 +120,11 @@ export function HazardFilterPanel({
         />
         Keep records with unknown filter values
       </label>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Counts are loaded records, not unique disasters. Selecting a type does not turn its layer on
         or change the Fires layer.
       </p>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Time uses the source report or acquisition date, not necessarily the hazard onset. Magnitude
         applies only to earthquakes with an explicit magnitude; GDACS alert levels apply only to
         GDACS. Other sources keep their own scales.

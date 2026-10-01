@@ -1,5 +1,6 @@
 import { Link, Navigate, useSearchParams } from 'react-router';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ProfileSecurity } from '@/components/account/ProfileSecurity';
 import { useAuthStore } from '@/stores/auth';
 
@@ -44,11 +45,14 @@ export default function AccountPage() {
           >
             {initials}
           </span>
-          <div className="min-w-0">
-            <p className="font-mono text-xs uppercase tracking-widest text-muted">Your profile</p>
-            <h1 className="mt-1 text-2xl font-semibold">Account</h1>
-            <p className="mt-1 break-all text-sm text-muted">{user.email}</p>
-          </div>
+          <PageHeader
+            as="div"
+            className="min-w-0"
+            title="Account"
+            eyebrow="Your profile"
+            eyebrowTone="muted"
+            description={<p className="break-all">{user.email}</p>}
+          />
           <span className="ml-auto hidden text-xs capitalize text-muted sm:block">{user.role}</span>
         </header>
         <div className="grid gap-8 py-7 md:grid-cols-[210px_minmax(0,1fr)] md:gap-12">

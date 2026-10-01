@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import { Link } from 'react-router';
 
 import { LoadingNote } from '@/components/ui/Alert';
@@ -5,6 +6,10 @@ import { Button } from '@/components/ui/Button';
 import type { ReportJob } from '@/lib/api/reportJobs';
 import { formatUtc } from '@/lib/format';
 
+import { BellAlertList, headingClass } from './BellAlertList';
+import { BellMentionList } from './BellMentionList';
+import { BellSettings } from './BellSettings';
+import type { BellAlertActions } from './useBellAlertActions';
 import type { NotificationBellState } from './useNotificationBell';
 
 const JOB_OUTCOME: Partial<Record<ReportJob['status'], string>> = {
@@ -15,7 +20,6 @@ const JOB_OUTCOME: Partial<Record<ReportJob['status'], string>> = {
 
 const itemClass =
   'block rounded-md px-2 py-2 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember';
-const headingClass = 'px-2 font-mono text-xs tracking-widest text-muted uppercase';
 const footerLinkClass = 'text-sm text-ember underline-offset-2 hover:underline';
 
 export function jobHref(job: ReportJob): string {
@@ -24,9 +28,56 @@ export function jobHref(job: ReportJob): string {
     : `/research/jobs/${job.id}`;
 }
 
-/** The bell's contents: alerts to acknowledge and research that has finished. */
-export function NotificationPanel({ state }: { state: NotificationBellState }) {
-  const { alerts, jobs, close } = state;
+function FinishedResearch({ state }: { state: NotificationBellState }) {
+  const { jobs, close } = state;
+  return (
+    <section aria-label="Finished research">
+      <h3 className={headingClass}>Finished research</h3>
+      {jobs.error ? (
+        <p className="px-2 pt-1 text-sm text-muted">Research progress could not be loaded.</p>
+      ) : (
+        <ul className="mt-1">
+          {jobs.items.map(({ job, isNew }) => (
+            <li key={job.id}>
+              <Link to={jobHref(job)} onClick={close} className={itemClass}>
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-sm text-text">{job.title}</span>
+                  {isNew && (
+                    <span className="shrink-0 rounded border border-ember/60 px-1 font-mono text-xs text-ember uppercase">
+                      New
+                    </span>
+                  )}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  {JOB_OUTCOME[job.status]} · {formatUtc(job.updated_at)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** The bell's contents: alerts to act on and research that has finished, or the settings. */
+export function NotificationPanel({
+  state,
+  actions,
+  settings,
+  headingRef,
+  returnFocus,
+  keepFocus,
+}: {
+  state: NotificationBellState;
+  actions: BellAlertActions;
+  settings: boolean;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  returnFocus: RefObject<HTMLElement | null>;
+  keepFocus: () => void;
+}) {
+  const { alerts, mentions, jobs, close } = state;
+  if (settings) return <BellSettings state={state} />;
   if (state.loading && alerts.items.length === 0 && jobs.items.length === 0)
     return <LoadingNote label="Checking for notifications…" />;
   if (alerts.error && jobs.error)
@@ -38,68 +89,32 @@ export function NotificationPanel({ state }: { state: NotificationBellState }) {
         </Button>
       </div>
     );
-  const empty = alerts.total === 0 && jobs.total === 0 && !alerts.error && !jobs.error;
+  const showAlerts = !alerts.muted && (alerts.total > 0 || alerts.error !== null);
+  const showJobs = !jobs.muted && (jobs.total > 0 || jobs.error !== null);
+  const showMentions = !mentions.muted && (mentions.total > 0 || mentions.error !== null);
+  const listNotice = actions.notice?.alertId === null && !showAlerts;
+  const empty = !showAlerts && !showJobs && !showMentions;
+  const anyMuted = alerts.muted || jobs.muted || mentions.muted;
   return (
     <div className="space-y-4">
       {empty && (
         <p className="px-2 text-sm text-muted">
-          You are up to date. New alerts and finished research will appear here.
+          You are up to date.{' '}
+          {anyMuted
+            ? 'Some notification kinds are hidden by your settings.'
+            : 'New alerts, board mentions and finished research will appear here.'}
         </p>
       )}
-      {(alerts.total > 0 || alerts.error) && (
-        <section aria-label="Unacknowledged alerts">
-          <h3 className={headingClass}>Alerts to review</h3>
-          {alerts.error ? (
-            <p className="px-2 pt-1 text-sm text-muted">Alerts could not be loaded.</p>
-          ) : (
-            <ul className="mt-1">
-              {alerts.items.map((alert) => (
-                <li key={alert.id}>
-                  <Link to="/warning" onClick={close} className={itemClass}>
-                    <span className="block text-sm text-text">{alert.title}</span>
-                    <span className="mt-0.5 block text-xs text-muted">
-                      Fired {formatUtc(alert.fired_at)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          {alerts.total > alerts.items.length && (
-            <p className="px-2 pt-1 text-xs text-muted">
-              {alerts.total - alerts.items.length} more on the alerts page
-            </p>
-          )}
-        </section>
+      {(showAlerts || listNotice) && (
+        <BellAlertList
+          state={state}
+          actions={actions}
+          headingRef={headingRef}
+          returnFocus={returnFocus}
+        />
       )}
-      {(jobs.total > 0 || jobs.error) && (
-        <section aria-label="Finished research">
-          <h3 className={headingClass}>Finished research</h3>
-          {jobs.error ? (
-            <p className="px-2 pt-1 text-sm text-muted">Research progress could not be loaded.</p>
-          ) : (
-            <ul className="mt-1">
-              {jobs.items.map(({ job, isNew }) => (
-                <li key={job.id}>
-                  <Link to={jobHref(job)} onClick={close} className={itemClass}>
-                    <span className="flex items-baseline justify-between gap-2">
-                      <span className="text-sm text-text">{job.title}</span>
-                      {isNew && (
-                        <span className="shrink-0 rounded border border-ember/60 px-1 font-mono text-xs text-ember uppercase">
-                          New
-                        </span>
-                      )}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-muted">
-                      {JOB_OUTCOME[job.status]} · {formatUtc(job.updated_at)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+      {showMentions && <BellMentionList state={state} keepFocus={keepFocus} />}
+      {showJobs && <FinishedResearch state={state} />}
       {(alerts.error ?? jobs.error) && (
         <Button variant="ghost" className="min-h-11" onClick={state.retry}>
           Try again

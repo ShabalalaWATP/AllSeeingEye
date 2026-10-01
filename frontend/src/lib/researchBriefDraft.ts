@@ -1,3 +1,4 @@
+import type { CollectionPlan } from './api/direction';
 import { briefDraftSchema, type BriefDraft, type ResearchBrief } from './api/researchBriefSchema';
 
 export function validateBriefDraft(draft: BriefDraft): string | null {
@@ -143,4 +144,28 @@ export function briefCanRun(draft: BriefDraft, now: Date = new Date()): string |
   )
     return 'A private input has expired. Renew the input before starting research.';
   return null;
+}
+
+/**
+ * A new brief scoped by a collection plan: its workspace, name and PIRs become the draft's
+ * workspace, title and editable questions. SIR direction and scope stay on the server-side plan.
+ */
+export function seedDraftFromPlan(draft: BriefDraft, plan: CollectionPlan): BriefDraft {
+  const cap = { quick: 3, detailed: 6, advanced: 12 }[draft.output.depth];
+  return {
+    ...draft,
+    title: plan.name.slice(0, 120),
+    team_id: plan.team_id,
+    question: {
+      ...draft.question,
+      main: draft.question.main || (plan.pirs[0]?.text ?? plan.name),
+      requirements: plan.pirs.slice(0, 12).map((pir, index) => ({
+        id: pir.code,
+        question: pir.text.slice(0, 500),
+        required: index < cap,
+        priority: index + 1,
+      })),
+    },
+    scope: { ...draft.scope, plan_id: plan.id },
+  };
 }

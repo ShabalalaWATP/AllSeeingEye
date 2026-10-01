@@ -28,8 +28,10 @@ describe('AppShell', () => {
 
   it('shows the brand, the rail items and the user', async () => {
     renderApp('/', 'user');
-    expect(await screen.findByRole('img', { name: 'The All Seeing Eye' })).toBeInTheDocument();
-    expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
+    // The wordmark names the home link once; the brand mark beside it is decorative.
+    const home = await screen.findByRole('link', { name: 'The All Seeing Eye' });
+    expect(home).toHaveAttribute('href', '/');
+    expect(within(home).getByTestId('evil-eye')).toBeInTheDocument();
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
     expect(
@@ -41,6 +43,7 @@ describe('AppShell', () => {
       'Research',
       'Research progress',
       'Geolocation',
+      'Source catalogue',
       'Watches',
       'Subscriptions',
       'Alerts',
@@ -52,11 +55,17 @@ describe('AppShell', () => {
       'Economy',
       'Teams',
     ]);
-    for (const group of ['Standing watches', 'Monitoring', 'Collaboration']) {
-      expect(within(nav).getByText(group)).toBeInTheDocument();
+    // Sections of several destinations carry a heading; Watches and Teams name themselves.
+    for (const group of ['Research', 'Monitoring']) {
+      expect(within(nav).getByRole('list', { name: group })).toBeInTheDocument();
     }
-    expect(within(nav).queryByText('Standing desks')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
+    for (const retired of ['Standing watches', 'Collaboration', 'Standing desks']) {
+      expect(within(nav).queryByText(retired)).not.toBeInTheDocument();
+    }
+    expect(screen.getByRole('link', { name: 'Your profile: Uma User' })).toHaveAttribute(
+      'href',
+      '/account',
+    );
     expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',
       '/settings',

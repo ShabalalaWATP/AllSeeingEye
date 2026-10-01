@@ -35,7 +35,7 @@ export function RadarAttackResults({
   return (
     <div className="space-y-3">
       {data.status !== 'ready' && (
-        <p className="text-xs text-amber-200">
+        <p className="text-xs text-amber">
           {data.status === 'stale'
             ? 'Previously collected data. The latest Radar refresh failed.'
             : 'Only one Radar attack layer is available.'}
@@ -48,7 +48,7 @@ export function RadarAttackResults({
               <h3 className="text-sm font-semibold">{LABELS[layer.layer]}</h3>
               <span className="font-mono text-2xs text-muted">Top billing countries</span>
             </div>
-            <p className="mt-1 text-[11px] text-muted">
+            <p className="mt-1 text-2xs text-muted">
               {date(layer.period_from)} to {date(layer.period_to)} UTC
             </p>
             <ol className="mt-4 space-y-2" aria-label={`${LABELS[layer.layer]} distribution`}>
@@ -69,7 +69,7 @@ export function RadarAttackResults({
                 </li>
               ))}
             </ol>
-            <p className="mt-3 text-[11px] leading-5 text-muted">
+            <p className="mt-3 text-2xs leading-5 text-muted">
               Share of Cloudflare-observed mitigated {layer.unit} across all target countries in
               this period. Target country follows the attacked zone’s billing country, when
               available.

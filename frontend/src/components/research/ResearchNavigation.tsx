@@ -1,33 +1,7 @@
-import { NavLink } from 'react-router';
+import { Tabs } from '@/components/ui/Tabs';
+import { researchTabs } from '@/lib/workspaceNavigation';
 
-const destinations = [
-  ['/research', 'New research'],
-  ['/research/saved', 'Saved research'],
-] as const;
-
-/** Shared navigation keeps research tools together without coupling features. */
+/** Research's own tabs, the same list and name on every research page. */
 export function ResearchNavigation() {
-  return (
-    <nav
-      aria-label="Research tools"
-      className="flex flex-wrap gap-x-5 gap-y-1 border-b border-line"
-    >
-      {destinations.map(([to, label]) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={to === '/research'}
-          className={({ isActive }) =>
-            `border-b-2 py-3 text-sm transition-colors ${
-              isActive
-                ? 'border-ember text-text'
-                : 'border-transparent text-muted hover:border-line hover:text-text'
-            }`
-          }
-        >
-          {label}
-        </NavLink>
-      ))}
-    </nav>
-  );
+  return <Tabs links={researchTabs} label="Research" />;
 }

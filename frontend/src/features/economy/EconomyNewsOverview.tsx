@@ -45,7 +45,7 @@ export function EconomyNewsOverview({
   if (!sourced && (explainerLeads || items.length === 0)) return null;
   return (
     <div className="border-l-2 border-ember pl-4 py-1">
-      <p className="max-w-4xl text-[0.95rem] leading-7 text-text">
+      <p className="max-w-4xl text-base leading-7 text-text">
         {sourced ? (
           <>
             {text}
@@ -72,7 +72,7 @@ export function EconomyNewsOverview({
         )}
       </p>
       {sourced && briefing && (
-        <p className="mt-2 text-[11px] leading-5 text-muted">
+        <p className="mt-2 text-2xs leading-5 text-muted">
           From the {briefing.window_days}-day briefing: {formatUtc(briefing.period_from)} to{' '}
           {formatUtc(briefing.period_to)}.
           {report?.version.status !== 'ready' ? ' This assessment needs review.' : ''}

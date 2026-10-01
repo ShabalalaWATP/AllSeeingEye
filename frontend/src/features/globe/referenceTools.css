@@ -1,3 +1,24 @@
+/* Fixed map instrument palette (KAN-99): each colour is named once here and the
+   rules below paint with var(). */
+:root {
+  --map-reference-checkbox-border: #52616a;
+  --map-reference-checkbox-bg: #202930;
+  --map-reference-checkbox-before-bg: #c7d1d5;
+  --map-reference-checkbox-checked-before-bg: #081015;
+  --map-reference-choice-has-input-checked-border: #497e86;
+  --map-reference-choice-has-input-checked-bg: #102127;
+  --map-reference-swatch-border: #56626b;
+  --map-reference-swatch-bg: #121a20;
+  --map-reference-swatch-ink: #65818e;
+  --map-reference-swatch-data-style-streets-bg: #d1d8cc;
+  --map-reference-swatch-data-style-streets-ink: #4e7385;
+  --map-reference-swatch-data-style-light-bg: #e1e4e6;
+  --map-reference-swatch-data-style-light-ink: #919da3;
+  --map-reference-swatch-data-style-satellite-bg: #273d30;
+  --map-reference-swatch-data-style-satellite-ink: #91a37d;
+  --map-reference-results-button-hover-bg: #ffffff08;
+}
+
 .map-reference-switch {
   display: flex;
   align-items: center;
@@ -28,9 +49,9 @@
   width: 36px;
   height: 21px;
   flex: 0 0 36px;
-  border: 1px solid #52616a;
+  border: 1px solid var(--map-reference-checkbox-border);
   border-radius: 12px;
-  background: #202930;
+  background: var(--map-reference-checkbox-bg);
   cursor: pointer;
 }
 .map-reference-checkbox::before,
@@ -42,7 +63,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #c7d1d5;
+  background: var(--map-reference-checkbox-before-bg);
   transition: transform 140ms ease;
 }
 .map-reference-checkbox:checked,
@@ -53,7 +74,7 @@
 .map-reference-checkbox:checked::before,
 [aria-checked='true'] > .map-reference-toggle::before {
   transform: translateX(15px);
-  background: #081015;
+  background: var(--map-reference-checkbox-checked-before-bg);
 }
 .map-reference-checkbox:focus-visible,
 .map-reference-switch:focus-visible {
@@ -77,8 +98,8 @@
   cursor: pointer;
 }
 .map-reference-choice:has(input:checked) {
-  border-color: #497e86;
-  background: #102127;
+  border-color: var(--map-reference-choice-has-input-checked-border);
+  background: var(--map-reference-choice-has-input-checked-bg);
 }
 .map-reference-choice:has(input:disabled) {
   color: var(--color-muted);
@@ -106,26 +127,26 @@
   width: 42px;
   height: 30px;
   flex-shrink: 0;
-  border: 1px solid #56626b;
+  border: 1px solid var(--map-reference-swatch-border);
   border-radius: 4px;
-  background: #121a20;
-  color: #65818e;
+  background: var(--map-reference-swatch-bg);
+  color: var(--map-reference-swatch-ink);
 }
 .map-reference-swatch[data-style='streets'],
 .map-reference-swatch[data-style='os_road'] {
-  background: #d1d8cc;
-  color: #4e7385;
+  background: var(--map-reference-swatch-data-style-streets-bg);
+  color: var(--map-reference-swatch-data-style-streets-ink);
 }
 .map-reference-swatch[data-style='light'],
 .map-reference-swatch[data-style='os_light'] {
-  background: #e1e4e6;
-  color: #919da3;
+  background: var(--map-reference-swatch-data-style-light-bg);
+  color: var(--map-reference-swatch-data-style-light-ink);
 }
 .map-reference-swatch[data-style='satellite'],
 .map-reference-swatch[data-style='hybrid'],
 .map-reference-swatch[data-style='os_outdoor'] {
-  background: #273d30;
-  color: #91a37d;
+  background: var(--map-reference-swatch-data-style-satellite-bg);
+  color: var(--map-reference-swatch-data-style-satellite-ink);
 }
 .map-reference-results {
   border-top: 1px solid var(--color-line);
@@ -143,7 +164,7 @@
 }
 .map-reference-results button:hover,
 .map-reference-results button:focus-visible {
-  background: #ffffff08;
+  background: var(--map-reference-results-button-hover-bg);
   color: var(--color-cyan);
 }
 .map-reference-glossary > div {

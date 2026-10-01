@@ -2,7 +2,7 @@ import { portraitUrl, type PlacementBasis, type PublicFigure } from '@/lib/api/f
 
 const RING: Record<PlacementBasis, string> = {
   reported_place: 'ring-cyan',
-  reported_country: 'ring-amber-300',
+  reported_country: 'ring-amber',
   seat: 'ring-muted/60',
 };
 

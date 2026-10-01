@@ -37,7 +37,7 @@ export function CyberActivity({
             key={item.id}
             className="grid gap-4 rounded-xl border border-line/60 bg-surface/50 p-4 transition-colors hover:border-line lg:grid-cols-[11rem_1fr] lg:gap-7 lg:p-5"
           >
-            <div className="space-y-1.5 text-[11px] leading-5 text-muted">
+            <div className="space-y-1.5 text-2xs leading-5 text-muted">
               <p className="font-medium text-cyan">{CYBER_KIND_LABELS[item.kind]}</p>
               <time dateTime={item.published_at} className="block">
                 {formatUtc(item.published_at)}
@@ -64,7 +64,7 @@ export function CyberActivity({
                       type="button"
                       onClick={() => onTheme?.(theme)}
                       title={CYBER_THEME_META[theme].label}
-                      className="rounded-full border border-line/70 px-2.5 py-0.5 text-[11px] text-muted hover:border-cyan hover:text-text"
+                      className="rounded-full border border-line/70 px-2.5 py-0.5 text-2xs text-muted hover:border-cyan hover:text-text"
                     >
                       {CYBER_THEME_META[theme].short}
                     </button>

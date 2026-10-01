@@ -20,7 +20,8 @@ receipt cannot cancel another submission. All receipts consume the same team
 pending allowance; recipient declines cannot silently free capacity. The existing
 20-per-account-per-hour username limiter still applies.
 
-Migration 0067 retains recipient inboxes and accept/decline behaviour. Historical
+Migration 0082 follows the released history through 0081 and retains recipient
+inboxes and accept/decline behaviour. Historical
 unknown submissions were not recorded, and original submitted usernames cannot be
 reconstructed. Unaccepted historical deliveries are therefore absent from sender
 history. Managers can still withdraw a historical delivery using its previously

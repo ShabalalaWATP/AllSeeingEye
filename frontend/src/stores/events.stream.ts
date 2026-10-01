@@ -6,8 +6,7 @@ export const STREAM_BATCH_MS = 250;
 export const MAX_PENDING_EVENTS = 5_000;
 
 interface Sink {
-  applyUpsert: (events: LiveEvent[]) => void;
-  applyExpire: (ids: string[]) => void;
+  applyBatch: (expired: readonly string[], events: readonly LiveEvent[]) => void;
   handleStreamMessage: (message: SseMessage) => void;
 }
 
@@ -69,9 +68,8 @@ export class EventUpdateBatch {
       else events.push(event);
     }
     this.clear();
-    const sink = this.sink();
-    sink.applyExpire(expired);
-    sink.applyUpsert(events);
+    // One coherent mirror update: last update wins per id, expiries apply before upserts.
+    this.sink().applyBatch(expired, events);
   }
 
   clear(): void {

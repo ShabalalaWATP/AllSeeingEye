@@ -47,7 +47,7 @@ export function ConflictRegionInspector({
         </button>
       </header>
       <p className="mt-3 text-xs text-muted">{card.conflict.summary}</p>
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Curated catalogue context, not a live status assessment. The outline is a broad research
         area, not a frontline or an incident location.
       </p>

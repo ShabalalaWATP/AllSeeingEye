@@ -1,3 +1,18 @@
+/* Fixed map instrument palette (KAN-99): each colour is named once here and the
+   rules below paint with var(). */
+:root {
+  --map-tool-panel-bg: #0b0e12f8;
+  --map-tool-panel-shadow: #0007;
+  --map-tool-content-scrollbar: #4b535d;
+  --map-tool-resizer-hover-bg: #79d8eb60;
+  --map-tool-chooser-input-bg: #171a1e;
+  --map-tool-choice-border: #ffffff0a;
+  --map-tool-choice-button-hover-bg: #ffffff09;
+  --map-tool-map-navigation-rail-border: #ffffff12;
+  --map-tool-map-navigation-rail-bg: #080a0de8;
+  --map-tool-map-active-mode-bg: #0b0e12f8;
+}
+
 .map-tool-panel {
   position: absolute;
   z-index: 13;
@@ -9,8 +24,8 @@
   flex-direction: column;
   border: 1px solid var(--color-line);
   border-radius: 12px;
-  background: #0b0e12f8;
-  box-shadow: 0 12px 36px #0007;
+  background: var(--map-tool-panel-bg);
+  box-shadow: 0 12px 36px var(--map-tool-panel-shadow);
   animation: dashboard-arrive 120ms ease-out;
 }
 .map-tool-panel[hidden],
@@ -56,7 +71,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: #4b535d transparent;
+  scrollbar-color: var(--map-tool-content-scrollbar) transparent;
   border-radius: 0 0 12px 12px;
 }
 .map-tool-content > section,
@@ -81,7 +96,7 @@
 }
 .map-tool-resizer:hover,
 .map-tool-resizer:focus-visible {
-  background: #79d8eb60;
+  background: var(--map-tool-resizer-hover-bg);
   outline: 1px solid var(--color-ember);
 }
 .map-tool-chooser {
@@ -95,7 +110,7 @@
 }
 .map-tool-chooser input {
   width: 100%;
-  background: #171a1e;
+  background: var(--map-tool-chooser-input-bg);
   border: 1px solid var(--color-line);
   border-radius: 6px;
   min-height: 40px;
@@ -117,7 +132,7 @@
 }
 .map-tool-choice {
   display: flex;
-  border-top: 1px solid #ffffff0a;
+  border-top: 1px solid var(--map-tool-choice-border);
 }
 .map-tool-choice > button {
   display: flex;
@@ -132,7 +147,7 @@
   min-width: 0;
 }
 .map-tool-choice > button:hover {
-  background: #ffffff09;
+  background: var(--map-tool-choice-button-hover-bg);
 }
 .map-tool-choice > button:focus-visible {
   outline: 2px solid var(--color-ember);
@@ -168,9 +183,9 @@
   z-index: 12;
   top: 8px;
   right: 12px;
-  border: 1px solid #ffffff12;
+  border: 1px solid var(--map-tool-map-navigation-rail-border);
   border-radius: 10px;
-  background: #080a0de8;
+  background: var(--map-tool-map-navigation-rail-bg);
   padding: 2px;
 }
 .map-navigation-rail > [role='group'] {
@@ -191,7 +206,7 @@
   padding: 8px 12px;
   border: 1px solid var(--color-line);
   border-radius: 8px;
-  background: #0b0e12f8;
+  background: var(--map-tool-map-active-mode-bg);
   font-size: 12px;
 }
 .map-active-mode:empty {

@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import '@/components/maps/mapTool.css';
 import './referenceTools.css';
 
 /** Appearance has one owner, beside basemap choices on the right. */
-export function MapDisplaySettings({
+export const MapDisplaySettings = memo(function MapDisplaySettings({
   terminator,
   lite,
   onToggleTerminator,
@@ -53,4 +54,4 @@ export function MapDisplaySettings({
       )}
     </section>
   );
-}
+});

@@ -128,8 +128,9 @@ describe('MFA sign-in', () => {
     expect(screen.queryByLabelText('Authenticator code')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Set up authenticator app' }));
     expect(await screen.findByText('SYNTHETICSETUPKEY')).toBeVisible();
+    // The QR encoder loads on demand, so the code appears once its chunk resolves.
     expect(
-      screen.getByRole('img', { name: 'Scan this QR code with your authenticator app' }),
+      await screen.findByRole('img', { name: 'Scan this QR code with your authenticator app' }),
     ).toBeVisible();
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Enable MFA and continue' }));

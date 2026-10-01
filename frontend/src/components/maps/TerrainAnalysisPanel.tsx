@@ -147,7 +147,7 @@ export function TerrainAnalysisPanel({
         </button>
       </div>
       {(inputError ?? study.error) && (
-        <p role="alert" className="text-red-300">
+        <p role="alert" className="text-critical">
           {inputError ?? study.error}
         </p>
       )}

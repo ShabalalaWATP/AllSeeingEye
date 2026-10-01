@@ -22,7 +22,7 @@ function Citation({ citation }: { citation: UkraineDigestCitation }) {
         {citation.id}
       </span>
       <span
-        className="min-w-0 truncate text-[11px] text-muted"
+        className="min-w-0 truncate text-2xs text-muted"
         title={`${citation.source_id}: ${label}`}
       >
         {citation.url ? <SourceLink url={citation.url}>{label}</SourceLink> : label}

@@ -6,6 +6,7 @@
  */
 import { useSyncExternalStore } from 'react';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { LeftRail } from '@/app/shell/LeftRail';
 import { TopBar } from '@/app/shell/TopBar';
 import RecurringResearchPage from '@/features/reports/RecurringResearchPage';
@@ -57,14 +58,12 @@ function SourcesPreview() {
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-8 pb-24">
-        <header className="rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7">
-          <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-            Collection directory
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Sources and connections
-          </h1>
-        </header>
+        <PageHeader
+          className="rounded-2xl border border-line/70 bg-surface/50 px-5 py-6 sm:px-7"
+          title="Sources and connections"
+          eyebrow="Collection directory"
+          eyebrowTone="cyan"
+        />
         <ul aria-label="Connection totals" className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {(
             [
@@ -76,7 +75,7 @@ function SourcesPreview() {
             ] as const
           ).map(([label, value, tone]) => (
             <li key={label} className="rounded-xl border border-line/70 bg-surface/60 p-4">
-              <span className="text-[11px] text-muted">{label}</span>
+              <span className="text-2xs text-muted">{label}</span>
               <span className={`mt-1 block text-2xl font-semibold tracking-tight ${tone}`}>
                 {value}
               </span>

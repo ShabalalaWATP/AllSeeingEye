@@ -90,6 +90,7 @@ async def test_matching_edit_resets_samples_and_old_inflight_sample_is_rejected(
             user,
             indicator.id,
             replace(data, name="Renamed"),
+            indicator.updated_at,
             CONTEXT,
         )
     baselines = SqlIndicatorBaselines(container.session_factory, container.access_policy)
@@ -99,13 +100,14 @@ async def test_matching_edit_resets_samples_and_old_inflight_sample_is_rejected(
             user,
             indicator.id,
             replace(data, keywords=("changed",)),
+            renamed.updated_at,
             CONTEXT,
         )
     await baselines.record(indicator, container.clock.now(), 20)
     assert (await baselines.summary(changed, container.clock.now())).sample_hours == 0
     async with container.session_factory() as session:
         restored = await container.update_indicator(session).execute(
-            user, indicator.id, data, CONTEXT
+            user, indicator.id, data, changed.updated_at, CONTEXT, confirm_wider_scope=True
         )
     assert (await baselines.summary(restored, container.clock.now())).sample_hours == 0
 

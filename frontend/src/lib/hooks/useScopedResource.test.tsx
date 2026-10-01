@@ -103,6 +103,16 @@ describe('Scoped resources', () => {
   });
 });
 
+describe('Loader call shapes', () => {
+  it('calls plain loaders with no arguments, so optional parameters keep their defaults', async () => {
+    useAuthStore.getState().setSession(tokenFor(plainUser));
+    const loader = vi.fn((...args: unknown[]) => Promise.resolve(args.length));
+    const { result } = renderHook(() => useScopedResource(loader));
+    await waitFor(() => expect(result.current.data).toBe(0));
+    expect(loader).toHaveBeenCalledWith();
+  });
+});
+
 describe('Workspace authority', () => {
   it('lets designated managers manage every contribution in teams they currently lead', async () => {
     useAuthStore.getState().setSession(tokenFor(manager));

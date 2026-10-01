@@ -8,7 +8,7 @@ export function HistoricalBaselineNote({ event }: { event: LiveEvent }) {
     return typeof value === 'string' || typeof value === 'number' ? String(value) : 'Unknown';
   };
   return (
-    <p className="my-2 rounded-md border border-amber-400/25 bg-amber-400/5 p-2 text-xs text-amber-200">
+    <p className="my-2 rounded-md border border-amber/25 bg-amber/5 p-2 text-xs text-amber">
       Historical baseline, not a live incident. Provisional monthly dataset{' '}
       {text('dataset_version')}; coverage {text('coverage_start')} to {text('coverage_end')}.
       Occurred: {text('occurrence_start')}.

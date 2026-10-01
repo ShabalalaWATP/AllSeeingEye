@@ -63,6 +63,56 @@ The map eligibility review uses [USGS data licensing](https://www.usgs.gov/data-
 - Final repaired-parent check: all 20 tests in the LEI API, stream shutdown, stream connection-pool, stream revocation and session-fence files pass against `6d9a16fa` plus this source batch. The complete feature diff passes whitespace validation, including the authored schema provenance note normalised to LF. Independent source/export review has no unresolved confirmed findings.
 - The subsequent prerequisite delta to `13b140e0` contains the lockfile repair, evidence documentation and a reviewed historical PostgreSQL test-helper consolidation, with no production/schema/API changes. A local frozen frontend install succeeds and `pnpm audit --audit-level high` reports no known vulnerabilities. Backend suites were not repeated for this dependency/test-documentation delta.
 - KAN-44 overlap resolved: `cli_designations.py` imports dataset adapters lazily. The three source settings now enter through `container/feed_services.py`; `Container.__init__` is identical to the forecast prerequisite. Independent narrow review confirmed matching parameter types and preserved source-admission wiring. Source/allocation metadata was split to keep edited handwritten files below the normal size target. The existing HTTP adapter remains 354 lines because the scoped HAPI credential was added to its shared-header rejection list; the file-length hard gate accepts this narrow change.
-- Frontend tools warn that the installed Node 22.20.0 is older than the repository's required 22.22.0. CI or release validation should use the declared runtime.
+- The initial frontend checks used Node 22.20.0, below the repository minimum. The current integration checks below use supported Node 24.19.0.
+
+## Current main composition, 1 October 2026
+
+The checked forecast prerequisite `61f08c47` was normally merged at `3345b3ff`.
+The reviewed STIX and frontend compatibility candidates were applied as `78250203`
+and `ae9ab728`. Main's extracted map composition, team-copy reader controls,
+reviewed-source snapshot argument, report progress, persistent errors and focus
+behaviour are retained. The live export now receives `quality.filtered` through
+`GlobePageControls`, alongside the existing lazy planning panels. The merged
+dependency files retain `pyjwt>=2.15.0` (resolved to 2.15.1) and dev-only `jsonschema`.
+This batch adds no migration.
+
+Main's team-copy contract deliberately retains stored Markdown verbatim. Its
+canonical generated header can therefore still contain the personal original's
+report identity. The new STIX endpoint now rebinds only that anchored, generated
+UUID/version header to the authorised copy. Frozen narrative, explicit citations,
+later inline identities, legacy Markdown and stored bytes are unchanged. This is
+not a claim that existing raw-Markdown responses or evidence packages remove
+personal source identities; that historical retention is outside this STIX change.
+The original input/output bounds and exact-version release fence remain in force.
+
+Verification on the composed branch:
+
+- 50 backend report/export tests pass, including the actual team-copy STIX API,
+  hidden personal provenance, current copy identity, membership removal during
+  rendering, document release, reviewed-source projection and team-copy races.
+- 183 further backend tests pass for LEI release races, GLEIF candidates, XML
+  imports, HAPI credential isolation, partial KEV enrichment, publisher metadata,
+  catalogue composition and the unchanged 154-provider inventory limit.
+- 24 frontend tests in eleven files pass with two workers. The actual globe page
+  exports the current location-quality selection while retaining the other loaded
+  events in its local mirror. STIX marking, progress after dismissal, prevention
+  of duplicate activation, focus preservation, failure/retry, reviewed-source
+  query parameters, GLEIF lifecycle and KEV presentation are covered.
+- Frozen private backend/frontend installs succeed. The actual `ase export-openapi`
+  command and `pnpm gen:api` reproduce the merged contract artefacts unchanged.
+  Full mypy passes for 1,525 source files; both TypeScript configurations pass.
+  Full backend Ruff and formatting pass (2,680 files), all three import contracts
+  pass, and the file-length hard gate passes with the recorded baseline warnings.
+- Full frontend ESLint passes. Full Prettier checking reports twelve inherited
+  failures, each verified byte-identical to the checked prerequisite. No unrelated
+  formatting or threshold changes were made; the edited source/test files pass.
+- Focused Bandit checks pass for STIX, LEI, XML and HAPI boundaries. Gitleaks scans
+  the non-merge source commits above the checked prerequisite and finds
+  no leaks. The feature diff passes whitespace validation.
+
+These checks use SQLite and provider fixtures, not production databases or new
+live-provider acceptance. Full coverage and PostgreSQL testing are not claimed
+for this integration run. Independent review of the new identity-header boundary
+and publication remain with the orchestrator.
 
 No production release or merge into `main` is included. The orchestrator authorised draft publication after the repaired prerequisite and final focused checks. KAN-130 source-specific licence/access enabling, KAN-131 the genuine 24-hour measurement and KAN-134 live data-row validation remain explicit outstanding external acceptance, not fixture-test successes. KAN-133's published NVD terms and rate policy are verified, and its application non-endorsement notice is implemented and checked in the dated review.

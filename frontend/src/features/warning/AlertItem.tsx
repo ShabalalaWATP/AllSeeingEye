@@ -13,11 +13,13 @@ export function AlertItem({
   onAcknowledge,
   workspace,
   canAcknowledge,
+  confirms = false,
 }: {
   alert: Alert;
   onAcknowledge: (feedback: AlertAcknowledgementRequest) => void;
   workspace: string;
   canAcknowledge: boolean;
+  confirms?: boolean;
 }) {
   const now = useNow();
   const dispositionId = useId();
@@ -77,6 +79,7 @@ export function AlertItem({
           <Button
             variant="secondary"
             disabled={!canAcknowledge}
+            aria-haspopup={confirms ? 'dialog' : undefined}
             onClick={() =>
               onAcknowledge({
                 disposition:

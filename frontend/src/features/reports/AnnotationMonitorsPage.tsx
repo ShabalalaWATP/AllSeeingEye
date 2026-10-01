@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Link } from 'react-router';
 import { AnnotationMonitorList } from './AnnotationMonitorList';
 import { MonitorPrivacyBoundary } from './MonitorPrivacyBoundary';
@@ -5,7 +6,7 @@ export default function AnnotationMonitorsPage() {
   return (
     <MonitorPrivacyBoundary scope="monitor-list">
       <section className="space-y-6 overflow-y-auto p-6">
-        <h1 className="text-xl font-semibold">Annotation monitors</h1>
+        <PageHeader type="record" title="Annotation monitors" />
         <p className="text-sm text-muted">
           Optional monitoring of selected annotations or the whole claim, identity review and
           organisation relationship inventory within an exact saved report version. Initial

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SourceText } from '@/components/events/SourceText';
 import { useContextEvents } from './useContextEvents';
 import {
   ContextShell,
@@ -41,7 +42,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
             (typeof value === 'string' || typeof value === 'number') &&
             /^[0-5]$/.test(String(value));
           return (
-            <div key={key} className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] p-2">
+            <div key={key} className="rounded-lg border border-cyan/15 bg-cyan/[0.04] p-2">
               <p className="text-2xs leading-snug text-muted">{label}</p>
               <p className="mt-2 font-mono text-xl text-cyan">
                 {known ? `${key.toUpperCase()}${value}` : 'Unknown'}
@@ -66,7 +67,7 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
           Three-hour index. Observation: {utcDate(kp?.attributes.time_tag)}.
         </p>
       </div>
-      <p className="text-[11px] leading-relaxed text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         These measurements do not establish local GPS jamming, HF coverage or a forecast. Check the
         dated bulletin for its stated validity and cancellations.
       </p>
@@ -97,7 +98,13 @@ export function SpaceWeatherPanel({ country, onSelect }: ContextPanelProps) {
       <ul className="space-y-2">
         {bulletins.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
-            <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
+            <SourceText
+              as="h4"
+              language={event.language}
+              className="font-medium leading-relaxed text-text"
+            >
+              {event.title}
+            </SourceText>
             <p className="mt-1 text-2xs text-muted">Issued: {utcDate(event.published_at)}</p>
             <EventActions event={event} onSelect={onSelect} />
           </li>

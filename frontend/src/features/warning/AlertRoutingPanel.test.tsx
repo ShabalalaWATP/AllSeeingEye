@@ -31,7 +31,7 @@ async function openPanel(canManage = true) {
     http.get('/api/warning/webhook-destinations', () => HttpResponse.json({ items: [] })),
   );
   const rendered = renderApp('/warning', 'user');
-  const table = await screen.findByRole('table', { name: 'Indicators' });
+  const table = await screen.findByRole('table', { name: 'Alert rules' });
   await rendered.user.click(within(table).getByRole('button', { name: 'Notifications' }));
   const panel = await screen.findByRole('region', {
     name: `Notification routing for ${indicator.name}`,

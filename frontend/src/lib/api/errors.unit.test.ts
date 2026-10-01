@@ -22,7 +22,9 @@ describe('ApiError helpers', () => {
     expect(describeError(new ApiError(429, 'rate_limited', 'x', {}, 45))).toBe(
       'Too many attempts. Try again in 45 seconds.',
     );
-    expect(describeError(new ApiError(429, 'rate_limited', 'x'))).toBe('Too many attempts.');
+    expect(describeError(new ApiError(429, 'rate_limited', 'x'))).toBe(
+      'Too many attempts. Wait a few minutes before trying again.',
+    );
   });
 
   it.each(['research_usage_limit', 'ai_usage_limit'])(

@@ -14,7 +14,13 @@ describe('collapsible rail', () => {
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
     const rail = nav.closest('aside');
     expect(rail).not.toHaveAttribute('data-collapsed');
-    await user.click(screen.getByRole('button', { name: 'Collapse navigation' }));
+    const collapse = screen.getByRole('button', { name: 'Collapse navigation' });
+    // One state signal per control: the name changes, so nothing is also "pressed".
+    expect(collapse).not.toHaveAttribute('aria-pressed');
+    expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    expect(rail?.id).toBeTruthy();
+    expect(collapse).toHaveAttribute('aria-controls', rail?.id);
+    await user.click(collapse);
     expect(rail).toHaveAttribute('data-collapsed', 'true');
     expect(useShellStore.getState().railCollapsed).toBe(true);
     expect(within(nav).getByRole('link', { name: 'Cyber intelligence' })).toHaveAttribute(
@@ -22,7 +28,10 @@ describe('collapsible rail', () => {
       'Cyber intelligence',
     );
     expect(within(nav).getByRole('link', { name: 'Administration' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Expand navigation' }));
+    const expand = screen.getByRole('button', { name: 'Expand navigation' });
+    expect(expand).not.toHaveAttribute('aria-pressed');
+    expect(expand).toHaveAttribute('aria-expanded', 'false');
+    await user.click(expand);
     expect(rail).not.toHaveAttribute('data-collapsed');
   });
 

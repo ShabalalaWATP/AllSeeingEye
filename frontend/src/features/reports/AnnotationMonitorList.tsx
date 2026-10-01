@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Link } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { listAnnotationMonitors } from '@/lib/api/annotationMonitors';
 import { describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
@@ -39,7 +40,17 @@ export function AnnotationMonitorList({
       {resource.error && <Alert tone="error">{describeError(resource.error)}</Alert>}
       {resource.data && (
         <>
-          {resource.data.items.length === 0 ? (
+          {resource.data.items.length === 0 && scope === undefined && offset === 0 ? (
+            <EmptyState
+              title="No annotation monitors yet"
+              purpose="An annotation monitor watches selected claims, identities or relationships in a saved report version and records when they change."
+              action={
+                <Link to="/research/saved" className="text-ember underline">
+                  Choose a saved report
+                </Link>
+              }
+            />
+          ) : resource.data.items.length === 0 ? (
             <p className="text-sm text-muted">
               No monitors in this selection. Open an exact report version to choose annotations and
               create a silent baseline.
