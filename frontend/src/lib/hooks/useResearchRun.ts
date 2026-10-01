@@ -24,8 +24,11 @@ interface Submission {
   snapshot: ResearchProgressSnapshot | null;
 }
 
-/** Submission is brief. Accepted work belongs to the server, not this mounted page. */
-export function useResearchRun() {
+/**
+ * Submission is brief. Accepted work belongs to the server, not this mounted page.
+ * `onAccepted` runs once the server has accepted the job, before leaving for its progress.
+ */
+export function useResearchRun(onAccepted?: () => void) {
   const navigate = useNavigate();
   const actor = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
@@ -72,6 +75,7 @@ export function useResearchRun() {
       const job = await createReportJob(current.body, signal);
       if (isCurrent()) {
         setState({ key, busy: false, error: null, snapshot: null });
+        onAccepted?.();
         await navigate(`/research/jobs/${job.id}`);
       }
     } catch (caught) {

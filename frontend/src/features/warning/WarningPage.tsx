@@ -23,6 +23,7 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { fetchPlans } from '@/lib/api/direction';
 import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
+import { clearDraft, draftForms } from '@/lib/formDrafts';
 
 import { AlertDestination } from './AlertDestination';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
@@ -104,6 +105,7 @@ export default function WarningPage() {
     useCallback(
       async (request: IndicatorRequest) => {
         await createIndicator(request);
+        clearDraft(draftForms.alertRule(draftId));
         if (draftId !== undefined) clearAreaWatchDraft(draftId);
         await reloadIndicators();
       },

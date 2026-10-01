@@ -28,6 +28,7 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import { useScheduleRefresh } from './useScheduleRefresh';
 import { SubscriptionUsage } from './SubscriptionUsage';
 import { runSubscriptionNow } from '@/lib/api/subscriptionControls';
+import { clearDraft, draftForms } from '@/lib/formDrafts';
 import { retainSubscriptionRequest, subscriptionRunNotice } from './subscriptionRunNotice';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
@@ -78,6 +79,7 @@ export function SchedulesSection({
       async (request: ScheduleRequest) => {
         if (editing && !copying) await updateSchedule(editing.id, request);
         else await createSchedule(request);
+        if (!editing) clearDraft(draftForms.subscription(draftQuestion, draftCountry));
         setNotice(
           editing && !copying
             ? 'Subscription updated.'
@@ -91,7 +93,7 @@ export function SchedulesSection({
         setRevision((value) => value + 1);
         await reload();
       },
-      [reload, editing, copying, restoreEditFocus],
+      [reload, editing, copying, restoreEditFocus, draftQuestion, draftCountry],
     ),
   );
   const remove = useAsyncAction(

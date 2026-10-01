@@ -16,6 +16,7 @@ import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { FormErrors } from '@/components/ui/FormErrors';
+import { LeaveGuard } from '@/components/ui/LeaveGuard';
 import { useFieldErrors } from '@/lib/api/fieldErrors';
 import { MAX_REGIONS, REGIONS } from '@/lib/regions';
 import { MAX_THEMES, THEMES } from '@/lib/themes';
@@ -37,6 +38,9 @@ import { researchFieldSpecs } from './researchFieldErrors';
 import { ResearchScope } from './ResearchScope';
 import { ResearchTimeScope } from './ResearchTimeScope';
 
+const LEAVE_RESEARCH =
+  'Leave this research form? Your question and scope are kept for this session, but an attached file or edited collection plan settings will be lost.';
+
 export function ResearchForm(props: ResearchFormProps) {
   const {
     scope,
@@ -56,6 +60,7 @@ export function ResearchForm(props: ResearchFormProps) {
     changeFocus,
     submit,
     mode,
+    leave,
   } = useResearchForm(props);
   const { workspaces, countries, parent } = props;
   let step = 0;
@@ -72,6 +77,7 @@ export function ResearchForm(props: ResearchFormProps) {
       noValidate
       className="flex min-w-0 flex-col gap-5"
     >
+      <LeaveGuard {...leave} message={LEAVE_RESEARCH} />
       <fieldset disabled={action.busy} className="grid min-w-0 gap-10 disabled:opacity-70">
         {!mode.advanced && (
           <ResearchQuickSteps

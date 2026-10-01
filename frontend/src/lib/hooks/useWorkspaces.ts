@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
+import { useDraftState } from '@/lib/formDrafts';
 import { loadWorkspaces, subscribeWorkspaceRefresh } from '@/lib/workspaceAuthority';
 import { useAuthStore } from '@/stores/auth';
 
@@ -43,14 +44,20 @@ export function useWorkspaces() {
 
 export type Workspaces = ReturnType<typeof useWorkspaces>;
 
-/** Selection is local and cannot survive an identity or access invalidation. */
-export function useWorkspaceSelection(workspaces: Workspaces) {
-  const [choice, setChoice] = useState({ key: workspaces.key, id: '' });
+/**
+ * Selection cannot survive an identity or access invalidation. A form draft may keep it for
+ * the same account and access state, so a restored draft returns to its own workspace.
+ */
+export function useWorkspaceSelection(workspaces: Workspaces, draftForm: string | null = null) {
+  const [choice, setChoice] = useDraftState(draftForm, 'workspace', {
+    key: workspaces.key,
+    id: '',
+  });
   const selected = choice.key === workspaces.key ? choice.id : '';
   const valid = !selected || workspaces.teams.some((entry) => entry.team.id === selected);
   const select = useCallback(
     (id: string) => setChoice({ key: workspaces.key, id }),
-    [workspaces.key],
+    [workspaces.key, setChoice],
   );
   return {
     teamId: selected,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useDraftState } from '@/lib/formDrafts';
 
 import type { ResearchFocus } from './researchRequest';
 
@@ -12,12 +12,14 @@ export function useResearchFormMode({
   followUp,
   focus,
   historical,
+  form = null,
 }: {
   followUp: boolean;
   focus: ResearchFocus;
   historical: boolean;
+  form?: string | null;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useDraftState(form, 'advanced', false);
   const required = followUp || focus !== 'general' || historical;
   return {
     advanced: expanded || required,
