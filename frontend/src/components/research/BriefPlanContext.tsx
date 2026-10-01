@@ -1,3 +1,4 @@
+import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
@@ -33,6 +34,7 @@ export function BriefPlanContext({ state }: { state: BriefPlan }) {
               </dd>
             </div>
           </dl>
+          <RequirementCodesNote codes={['PIR', 'SIR']} />
           <ol className="space-y-2">
             {plan.pirs.map((pir) => (
               <li key={pir.code}>

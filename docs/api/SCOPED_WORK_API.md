@@ -37,7 +37,7 @@ downloaded by a previously authorised user.
 |---|---|---|
 | AOIs | `GET/POST /api/direction/aois`; `DELETE /api/direction/aois/{id}` | Country or bounding-box area; list is scoped |
 | Plans | `GET/POST /api/direction/plans`; `GET/PUT/DELETE /api/direction/plans/{id}` | Creation/update validates linked AOI scope; direct read includes matched live evidence |
-| Indicators | `GET/POST /api/warning/indicators`; `PUT/DELETE /api/warning/indicators/{id}` | Linked plans must share scope; background evaluation rechecks eligibility |
+| Indicators (alert rules) | `GET/POST /api/warning/indicators`; `PUT/DELETE /api/warning/indicators/{id}` | Linked plans must share scope; background evaluation rechecks eligibility. `PUT` edits, pauses or resumes and needs `expected_updated_at` (409 when stale, one conditional update); removing every location, category or keyword restriction needs `confirm_wider_scope`; country codes and keywords over 60 characters are rejected, never truncated. A resumed rule counts only items published after it resumed (`resumed_at`, migration 0079) |
 | Alerts | `GET /api/warning/alerts`; `POST /api/warning/alerts/{id}/ack` | Persisted creator/team scope survives indicator deletion; acknowledgement is authorised separately |
 | Schedules | `GET/POST /api/schedules`; `PUT/DELETE /api/schedules/{id}` | Linked plans must share scope; generated reports retain the originating scope |
 

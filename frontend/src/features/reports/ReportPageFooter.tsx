@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 
 import type { Report, ReportVersion } from '@/lib/api/reports';
 import type { followUpAvailability } from '@/lib/followUpScope';
+import { GLOSSARY_PATH } from '@/lib/glossary';
 
 import { ReportTeamDiscussion } from './ReportTeamDiscussion';
 import { WatchIndicators } from './WatchIndicators';
@@ -34,6 +35,9 @@ export function ReportPageFooter({
           {version.evidence.length} retained source item
           {version.evidence.length === 1 ? '' : 's'} · Exact version {version.number}
         </span>
+        <Link to={GLOSSARY_PATH} className="text-ember underline underline-offset-2">
+          Glossary of report terms
+        </Link>
         <ReportTeamDiscussion reportId={reportId} version={version.number} />
         {briefLink ? (
           <div className="flex flex-wrap gap-2">

@@ -4,11 +4,13 @@
  * as navigation does, and can show the Start here card again. It renders fixed React
  * text only; nothing here is HTML from data and nothing starts work.
  */
-import { useId, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useId, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/Button';
 import { workspaceDestinations, workspaceHome } from '@/lib/workspaceNavigation';
+
+import { Glossary } from './Glossary';
 
 import { StartHereSteps } from './StartHereCard';
 import { useStartHere } from './useStartHere';
@@ -36,10 +38,10 @@ const CORE_LOOP: readonly (readonly [title: string, detail: string])[] = [
   ],
 ];
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, children, id }: { title: string; children: ReactNode; id?: string }) {
   const headingId = useId();
   return (
-    <section aria-labelledby={headingId} className="space-y-3">
+    <section id={id} aria-labelledby={headingId} className="scroll-mt-6 space-y-3">
       <h2 id={headingId} className="text-lg font-semibold">
         {title}
       </h2>
@@ -51,6 +53,13 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function HelpPage() {
   const { reopen } = useStartHere();
   const navigate = useNavigate();
+  const { hash } = useLocation();
+  useEffect(() => {
+    // Links such as /help#glossary-source-grades land on the explanation they name.
+    const target = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+    const scroll: unknown = target ? Reflect.get(target, 'scrollIntoView') : undefined;
+    if (target && typeof scroll === 'function') scroll.call(target, { block: 'start' });
+  }, [hash]);
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
       <div className="mx-auto max-w-3xl space-y-8 pb-24">
@@ -101,6 +110,10 @@ export default function HelpPage() {
           <p className="text-sm text-muted">
             Administration is a separate workspace that only administrators see.
           </p>
+        </Section>
+
+        <Section title="Glossary" id="glossary">
+          <Glossary />
         </Section>
 
         <Section title="Getting around faster">

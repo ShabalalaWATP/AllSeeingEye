@@ -8,6 +8,8 @@ import { EvidenceAnnex } from './ReportSections';
 
 // The annex's own catalogue link is the only destination an untrusted item may leave behind.
 const CATALOGUE = '/sources';
+/** The annex's own fixed links: the grade explanation and the source catalogue. */
+const FIXED_LINKS = ['/help#glossary-source-grades', CATALOGUE];
 const linkTargets = () => screen.queryAllByRole('link').map((link) => link.getAttribute('href'));
 
 const rich = {
@@ -84,7 +86,7 @@ describe('frozen evidence reader', () => {
     );
     await user.click(screen.getByText(title));
     expect(container.querySelector('img')).toBeNull();
-    expect(linkTargets()).toEqual([CATALOGUE]);
+    expect(linkTargets()).toEqual(FIXED_LINKS);
     expect(screen.getByText(title)).toBeVisible();
   });
 
@@ -99,7 +101,7 @@ describe('frozen evidence reader', () => {
       const user = userEvent.setup();
       render(<EvidenceAnnex evidence={[{ ...rich, url }]} findings={[]} status="ready" />);
       await user.click(screen.getByText('Original headline'));
-      expect(linkTargets()).toEqual([CATALOGUE]);
+      expect(linkTargets()).toEqual(FIXED_LINKS);
     },
   );
 
