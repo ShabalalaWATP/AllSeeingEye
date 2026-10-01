@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { http, HttpResponse } from 'msw';
@@ -30,9 +30,11 @@ function mount(session: 'user' | 'anonymous' = 'user') {
 
 it('only renders for authenticated accounts and animates the original eye transparently', () => {
   mount('anonymous');
-  expect(screen.queryByRole('button', { name: 'Open Eye assistant' })).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole('button', { name: 'Ask Eye', expanded: false }),
+  ).not.toBeInTheDocument();
   act(() => applySession('user'));
-  expect(screen.getByRole('button', { name: 'Open Eye assistant' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Ask Eye', expanded: false })).toBeVisible();
   expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-transparent', 'true');
   expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-max-fps', '24');
   expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-pupil-follow', '1');
@@ -41,8 +43,12 @@ it('only renders for authenticated accounts and animates the original eye transp
 
 it('opens a compact non-modal panel and returns focus when Escape closes it', async () => {
   const user = mount();
-  const launcher = screen.getByRole('button', { name: 'Open Eye assistant' });
+  const launcher = screen.getByRole('button', { name: 'Ask Eye', expanded: false });
+  // The name matches the visible "ASK EYE" text; open or minimised state is aria-expanded.
+  expect(launcher).toHaveAccessibleName('Ask Eye');
   await user.click(launcher);
+  expect(launcher).toHaveAccessibleName('Ask Eye');
+  expect(launcher).toHaveAttribute('aria-expanded', 'true');
   const panel = screen.getByRole('dialog', { name: 'Eye assistant' });
   expect(panel).toHaveAttribute('aria-modal', 'false');
   expect(parseInt(panel.style.width)).toBeLessThanOrEqual(420);
@@ -54,7 +60,7 @@ it('opens a compact non-modal panel and returns focus when Escape closes it', as
 
 it('distinguishes pointer dragging from clicking and supports keyboard movement and reset', async () => {
   const user = mount();
-  const launcher = screen.getByRole('button', { name: 'Open Eye assistant' });
+  const launcher = screen.getByRole('button', { name: 'Ask Eye', expanded: false });
   const initial = launcher.style.left;
   fireEvent(
     launcher,
@@ -95,9 +101,9 @@ it('searches all retained sources regardless of display toggles and renders cite
   );
   const user = mount();
   useEventsStore.setState({ hidden: ['maritime', 'aviation'], country: 'GB', windowHours: 1 });
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.type(screen.getByLabelText('Ask the Eye'), 'Where are the ships?');
-  await user.click(screen.getByRole('button', { name: 'Ask Eye' }));
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Ask Eye' }));
   expect(await screen.findByText('Two recent vessel observations are available.')).toBeVisible();
   expect(body).toEqual({ question: 'Where are the ships?', prior_questions: [], scope: 'global' });
   await user.click(
@@ -126,7 +132,7 @@ it('captures current antimeridian bounds and selected catalogue identity only wh
     selected: { kind: 'camera', id: 'camera-7', title: 'Harbour camera' },
   }));
   const user = mount();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.selectOptions(screen.getByLabelText('Eye search scope'), 'viewport');
   await user.type(screen.getByLabelText('Ask the Eye'), 'What is here?{Enter}');
   await screen.findByText('Two recent vessel observations are available.');
@@ -166,7 +172,7 @@ it('applies an explicit publication window and carries interpreted country and d
     }),
   );
   const user = mount();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.selectOptions(screen.getByLabelText('Eye time period'), '168');
   await user.type(screen.getByLabelText('Ask the Eye'), 'Summarise UK conflict reporting{Enter}');
   await screen.findByText('Two recent vessel observations are available.');
@@ -198,7 +204,7 @@ it('narrows to selected source types while leaving automatic selection as the de
     }),
   );
   const user = mount();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.click(screen.getByText('Source types'));
   await user.click(screen.getByRole('checkbox', { name: 'CCTV' }));
   await user.click(screen.getByRole('checkbox', { name: 'Cyber' }));
@@ -225,7 +231,7 @@ it('does not silently widen a selected-item question when the map context disapp
     selected: { kind: 'event', id: 'one', title: 'Selected event' },
   }));
   const user = mount();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.selectOptions(screen.getByLabelText('Eye search scope'), 'selected');
   act(() => releaseMap());
   await user.type(screen.getByLabelText('Ask the Eye'), 'Explain this.{Enter}');
@@ -245,7 +251,7 @@ it('locates a cited source through the existing map engine bridge', async () => 
   );
   server.use(http.post('/api/assistant/answer', () => HttpResponse.json(eyeAnswer)));
   const user = mount();
-  await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Eye', expanded: false }));
   await user.type(screen.getByLabelText('Ask the Eye'), 'Locate a vessel.{Enter}');
   await screen.findByText('Two recent vessel observations are available.');
   await user.click(screen.getByText('Evidence and coverage'));

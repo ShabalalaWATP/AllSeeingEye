@@ -199,9 +199,9 @@ describe('the timeline journey with WebGL', () => {
     expect(scene.travelTo).toHaveBeenLastCalledWith(1);
     await user.click(screen.getByRole('button', { name: 'Pause motion' }));
     expect(scene.setPlaying).toHaveBeenLastCalledWith(false);
-    expect(screen.getByRole('button', { name: 'Resume motion' })).toHaveAttribute(
+    // One pattern per control: the name states the next action, so there is no pressed state.
+    expect(screen.getByRole('button', { name: 'Resume motion' })).not.toHaveAttribute(
       'aria-pressed',
-      'true',
     );
     setVisibility('hidden');
     expect(scene.setRunning).toHaveBeenLastCalledWith(false);

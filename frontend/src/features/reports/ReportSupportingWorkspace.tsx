@@ -113,7 +113,8 @@ export default function ReportSupportingWorkspace({
         ))}
       </nav>
 
-      <div className="mt-6 space-y-8">
+      {/* Keeps focused or cited content below the sticky view bar when scrolled into view. */}
+      <div className="mt-6 space-y-8 [&_*]:scroll-mt-16">
         {view === 'sources' && (
           <>
             <EvidenceAnnex

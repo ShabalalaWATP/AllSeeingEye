@@ -1,4 +1,5 @@
 import { useDeferredValue, useMemo, useState } from 'react';
+import { EventTitle } from '@/components/events/EventTitle';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { militaryTrafficLabel, trafficSearchText } from '@/lib/traffic';
 import { formatAgo } from '@/lib/format';
@@ -95,9 +96,7 @@ export function TrafficList({
                 onClick={() => onSelect(event)}
                 className="map-tool-list-button space-y-1 disabled:opacity-50"
               >
-                <span className="block truncate text-xs font-medium">
-                  {event.title_en ?? event.title}
-                </span>
+                <EventTitle event={event} className="block truncate text-xs font-medium" />
                 {military && (
                   <span
                     className={`block text-2xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}

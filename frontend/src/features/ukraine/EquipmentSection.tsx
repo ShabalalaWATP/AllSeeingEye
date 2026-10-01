@@ -149,7 +149,7 @@ export function EquipmentSection({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search name, origin or role"
-              className="min-h-9 w-52 rounded-full border border-control-border bg-surface px-3 text-xs text-text placeholder:text-muted focus:border-cyan focus:outline-none"
+              className="min-h-9 w-52 rounded-full border border-control-border bg-surface px-3 text-xs text-text placeholder:text-muted focus:border-cyan"
             />
           </label>
           <button

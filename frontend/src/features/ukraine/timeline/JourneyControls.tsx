@@ -59,12 +59,7 @@ export function JourneyControls({
         {stops.length === 0 ? '0 of 0' : `${index + 1} of ${stops.length}`}
       </span>
       {showPlay ? (
-        <button
-          type="button"
-          className={button}
-          aria-pressed={!playing}
-          onClick={() => onPlaying(!playing)}
-        >
+        <button type="button" className={button} onClick={() => onPlaying(!playing)}>
           {playing ? 'Pause motion' : 'Resume motion'}
         </button>
       ) : null}

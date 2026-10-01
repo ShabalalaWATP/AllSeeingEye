@@ -83,11 +83,11 @@ export function MapNavigationTools({
       ))}
       {document.fullscreenEnabled && (
         <MapControlLabel label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+          {/* The name states the next action, so it carries no pressed state as well. */}
           <button
             type="button"
             aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            aria-pressed={fullscreen}
             onClick={() => {
               void toggleFullscreen();
             }}

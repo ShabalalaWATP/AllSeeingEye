@@ -108,7 +108,6 @@ export function EyeAssistantPanel({
             className="eye-size-action"
             aria-label={expanded ? 'Restore compact chat' : 'Expand chat'}
             title={expanded ? 'Restore compact chat' : 'Expand chat'}
-            aria-pressed={expanded}
             onClick={onToggleExpanded}
           >
             <svg

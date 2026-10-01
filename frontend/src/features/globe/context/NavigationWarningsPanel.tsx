@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SourceText } from '@/components/events/SourceText';
 import { useContextEvents } from './useContextEvents';
 import {
   ContextShell,
@@ -98,7 +99,13 @@ export function NavigationWarningsPanel({ country, onSelect }: ContextPanelProps
       <ul className="space-y-2">
         {events.slice(0, 25).map((event) => (
           <li key={event.id} className="rounded-lg border border-line p-3">
-            <h4 className="font-medium leading-relaxed text-text">{event.title}</h4>
+            <SourceText
+              as="h4"
+              language={event.language}
+              className="font-medium leading-relaxed text-text"
+            >
+              {event.title}
+            </SourceText>
             <p className="mt-1 text-2xs text-muted">Issued: {utcDate(event.published_at)}</p>
             <p className="mt-2 text-[11px] text-muted">
               Authority: {attribute(event, 'authority')} · Source status:{' '}

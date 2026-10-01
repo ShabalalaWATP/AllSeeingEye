@@ -25,6 +25,13 @@ describe('TeamsPage', () => {
     expect(screen.queryByRole('button', { name: /Remove|Make|reset/i })).not.toBeInTheDocument();
   });
 
+  it('leaves room below the page for the fixed Eye launcher when focus scrolls', async () => {
+    setupTeams();
+    await memberRow('Uma User');
+    const page = screen.getByRole('heading', { level: 1, name: 'Teams' }).closest('section');
+    expect(page).toHaveClass('overflow-y-auto', 'scroll-pb-28');
+  });
+
   it('grants team-manager controls from membership, regardless of account role', async () => {
     setupTeams(plainUser, {
       ...roster,

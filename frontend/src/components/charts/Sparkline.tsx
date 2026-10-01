@@ -1,21 +1,29 @@
 import { SLOT_FILL, SLOT_STROKE, type ChartSlot } from './chartSlots';
+import { sparklineSummary } from './sparklineSummary';
 
 const WIDTH = 120;
 const HEIGHT = 34;
 const PAD = 4;
 
-/** A small trend line with a wash beneath it and the latest point marked. */
+/**
+ * A small trend line with a wash beneath it and the latest point marked. `label` names the
+ * subject; the accessible name adds the values (see `sparklineSummary`), so callers must
+ * not repeat them.
+ */
 export function Sparkline({
   values,
   slot = 1,
   label,
+  format,
   className = '',
 }: {
   values: readonly number[];
   slot?: ChartSlot;
   label: string;
+  format?: (value: number) => string;
   className?: string;
 }) {
+  const name = `${label}: ${sparklineSummary(values, format)}`;
   const max = Math.max(1, ...values);
   const step = values.length > 1 ? (WIDTH - PAD * 2) / (values.length - 1) : 0;
   const points = values.map((value, index) => ({
@@ -33,11 +41,11 @@ export function Sparkline({
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={label}
+      aria-label={name}
       preserveAspectRatio="none"
       className={`h-9 w-full overflow-visible ${className}`}
     >
-      <title>{label}</title>
+      <title>{name}</title>
       {values.length > 1 && (
         <>
           <path d={area} className={`${SLOT_FILL[slot]} opacity-10`} />

@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
 
+import { EventTitle } from '@/components/events/EventTitle';
+import { englishTitle } from '@/components/events/sourceLanguage';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { LENS_LABELS, type UkraineUpdate } from '@/lib/api/ukraine';
 import { formatUtc } from '@/lib/format';
@@ -13,7 +15,8 @@ function sourceLabel(event: LiveEvent): string {
 /** One retained item: source, grade, time, lens chips, a safe title link and a research link. */
 export function UpdateRow({ update }: { update: UkraineUpdate }) {
   const { event } = update;
-  const title = event.title_en ?? event.title;
+  const title = <EventTitle event={event} />;
+  const english = englishTitle(event);
   const state = event.tags.includes('state_controlled');
   return (
     <li className="flex flex-col gap-1 border-t border-line/60 py-2 text-sm">
@@ -50,7 +53,9 @@ export function UpdateRow({ update }: { update: UkraineUpdate }) {
         {event.summary ? <p className="text-xs text-muted">{event.summary}</p> : null}
         <Link
           to={eventResearchHref(event)}
-          aria-label={`Research this report: ${event.title}`}
+          aria-label={
+            english === null ? 'Research this report' : `Research this report: ${english}`
+          }
           className="text-xs text-ember hover:underline"
         >
           Research this

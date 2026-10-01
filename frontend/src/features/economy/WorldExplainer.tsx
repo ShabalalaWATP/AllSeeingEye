@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -17,22 +18,26 @@ export function PointList({
   items: readonly string[];
   tone: 'ember' | 'muted';
 }) {
+  const headingId = useId();
   if (items.length === 0) return null;
+  // A plain container: the world and country summaries both use these titles, so landmarks
+  // here would repeat the same names. The heading names the list instead.
   return (
-    <section aria-label={title} className="min-w-0">
+    <div className="min-w-0">
       <h3
+        id={headingId}
         className={`mb-2 font-mono text-2xs tracking-[0.18em] uppercase ${tone === 'ember' ? 'text-ember' : 'text-muted'}`}
       >
         {title}
       </h3>
-      <ul className="space-y-2">
+      <ul aria-labelledby={headingId} className="space-y-2">
         {items.map((item) => (
           <li key={item} className="border-l-2 border-line pl-3 text-[13px] leading-6 text-text/90">
             {item}
           </li>
         ))}
       </ul>
-    </section>
+    </div>
   );
 }
 
