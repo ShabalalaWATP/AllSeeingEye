@@ -208,6 +208,9 @@ export interface paths {
         /**
          * List Jobs
          * @description Scope, status and origin filters apply before the page; see application listing.
+         *
+         *     ``mine`` (the default) is the caller's personal and current-team work; only
+         *     administrators may request ``all``.
          */
         get: operations["list_jobs_api_report_jobs_get"];
         put?: never;
@@ -3306,7 +3309,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Alerts */
+        /**
+         * List Alerts
+         * @description Defaults to the caller's personal and current-team alerts; only admins may ask for all.
+         */
         get: operations["list_alerts_api_warning_alerts_get"];
         put?: never;
         post?: never;
@@ -4956,6 +4962,8 @@ export interface components {
             created_by: string | null;
             /** Team Id */
             team_id: string | null;
+            /** Owner Name */
+            owner_name?: string | null;
         };
         /** AlertsOut */
         AlertsOut: {
@@ -13042,6 +13050,13 @@ export interface components {
             updated_at: string;
             /** Team Id */
             team_id: string | null;
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Owner Name */
+            owner_name?: string | null;
             /** Report Id */
             report_id: string | null;
             /** Model */
@@ -17469,6 +17484,7 @@ export interface operations {
                 status?: "all" | "running" | "attention" | "finished";
                 include_briefings?: boolean;
                 cursor?: string | null;
+                scope?: "mine" | "all";
             };
             header?: never;
             path?: never;
@@ -24336,6 +24352,7 @@ export interface operations {
             query?: {
                 hours?: number | null;
                 limit?: number;
+                scope?: "mine" | "all";
             };
             header?: never;
             path?: never;

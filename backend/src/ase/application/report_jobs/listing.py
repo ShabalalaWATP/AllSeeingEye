@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 from uuid import UUID
 
+from ase.application.access import OwnershipScope
 from ase.domain.report_jobs import ReportJobStatus
 from ase.domain.reports import ReportOrigin
 
@@ -39,6 +40,8 @@ class JobListQuery:
     status: JobStatusGroup = "all"
     include_briefings: bool = False
     after: tuple[datetime, UUID] | None = None
+    # Every role defaults to its own personal and current-team work (KAN-90).
+    scope: OwnershipScope = "mine"
 
     @property
     def statuses(self) -> tuple[ReportJobStatus, ...] | None:

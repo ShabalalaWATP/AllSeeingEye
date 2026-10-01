@@ -17,6 +17,7 @@ export function reportJob(overrides: Partial<ReportJob> = {}): ReportJob {
     created_at: '2026-09-11T10:00:00Z',
     updated_at: '2026-09-11T10:01:00Z',
     team_id: null,
+    owner_id: '22222222-2222-4222-8222-222222222222',
     report_id: null,
     model: 'configured-research-model',
     reasoning_effort: 'high',

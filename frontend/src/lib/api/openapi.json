@@ -518,7 +518,7 @@
           "report-jobs"
         ],
         "summary": "List Jobs",
-        "description": "Scope, status and origin filters apply before the page; see application listing.",
+        "description": "Scope, status and origin filters apply before the page; see application listing.\n\n``mine`` (the default) is the caller's personal and current-team work; only\nadministrators may request ``all``.",
         "operationId": "list_jobs_api_report_jobs_get",
         "security": [
           {
@@ -580,6 +580,20 @@
                 }
               ],
               "title": "Cursor"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -12057,6 +12071,7 @@
           "warning"
         ],
         "summary": "List Alerts",
+        "description": "Defaults to the caller's personal and current-team alerts; only admins may ask for all.",
         "operationId": "list_alerts_api_warning_alerts_get",
         "security": [
           {
@@ -12092,6 +12107,20 @@
               "minimum": 1,
               "default": 50,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "all"
+              ],
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
             }
           }
         ],
@@ -16800,6 +16829,17 @@
               }
             ],
             "title": "Team Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
           }
         },
         "type": "object",
@@ -39911,6 +39951,22 @@
             ],
             "title": "Team Id"
           },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
           "report_id": {
             "anyOf": [
               {
@@ -39982,6 +40038,7 @@
           "created_at",
           "updated_at",
           "team_id",
+          "owner_id",
           "report_id",
           "model",
           "reasoning_effort",

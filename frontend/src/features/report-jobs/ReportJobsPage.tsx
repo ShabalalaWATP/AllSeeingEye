@@ -2,9 +2,12 @@ import { Link } from 'react-router';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { OwnershipScopeControl } from '@/components/workspace/OwnershipScopeControl';
 import type { ReportJob, ReportJobStatusGroup } from '@/lib/api/reportJobs';
 import { describeError } from '@/lib/api/errors';
 import { formatUtc } from '@/lib/format';
+import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+import { ownerLabel } from '@/lib/ownershipScope';
 import { jobStage, jobStatus } from './jobLabels';
 import { ReportJobFilters, ReportJobPager } from './ReportJobListControls';
 import { useReportJobList } from './useReportJobList';
@@ -22,7 +25,7 @@ function attention(job: ReportJob) {
   return job.can_resume ? 'Can resume' : 'Cannot resume';
 }
 
-function JobRow({ job }: { job: ReportJob }) {
+function JobRow({ job, owner }: { job: ReportJob; owner: string }) {
   const hint = attention(job);
   return (
     <li>
@@ -30,7 +33,7 @@ function JobRow({ job }: { job: ReportJob }) {
         <div className="job-row-main">
           <strong>{job.title}</strong>
           <span>
-            {jobStage(job.stage)} · {job.completed_sections}{' '}
+            {owner} · {jobStage(job.stage)} · {job.completed_sections}{' '}
             {job.completed_sections === 1 ? 'section' : 'sections'} saved
             {job.origin === 'briefing' && ' · Automatic briefing'}
           </span>
@@ -50,7 +53,14 @@ function JobRow({ job }: { job: ReportJob }) {
 
 export default function ReportJobsPage() {
   const list = useReportJobList();
+  const workspaces = useWorkspaces();
   const items = list.data?.items ?? null;
+  const owner = (job: ReportJob) =>
+    ownerLabel(
+      { team_id: job.team_id, ownerId: job.owner_id, ownerName: job.owner_name },
+      workspaces.label,
+      list.ownership.viewerId,
+    );
   return (
     <section className="report-jobs-page">
       <div className="report-jobs-workspace">
@@ -64,6 +74,7 @@ export default function ReportJobsPage() {
           </Link>
         </header>
         <ResearchNavigation />
+        <OwnershipScopeControl state={list.ownership} noun="research runs" />
         <ReportJobFilters list={list} />
         {list.loading && <LoadingNote label="Loading research progress" />}
         {list.error && (
@@ -101,7 +112,7 @@ export default function ReportJobsPage() {
             ) : (
               <ul className="job-list" aria-label="Research runs">
                 {items.map((job) => (
-                  <JobRow key={job.id} job={job} />
+                  <JobRow key={job.id} job={job} owner={owner(job)} />
                 ))}
               </ul>
             )}

@@ -6,18 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import { fetchTemplates } from '@/lib/api/reports';
-import {
-  acknowledgeAlert,
-  createIndicator,
-  deleteIndicator,
-  fetchAlerts,
-  fetchIndicators,
-} from '@/lib/api/warning';
-import type { Alert, Indicator, IndicatorRequest } from '@/lib/api/warning';
-import { formatAgo } from '@/lib/format';
+import { createIndicator, deleteIndicator, fetchIndicators } from '@/lib/api/warning';
+import type { Indicator, IndicatorRequest } from '@/lib/api/warning';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
-import { useNow } from '@/lib/hooks/useNow';
 import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
@@ -25,7 +17,7 @@ import { fetchPlans } from '@/lib/api/direction';
 import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 import { clearDraft, draftForms } from '@/lib/formDrafts';
 
-import { AlertDestination } from './AlertDestination';
+import { AlertsSection } from './AlertsSection';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 import { RuleDeletion } from './RuleDeletion';
 
@@ -47,59 +39,14 @@ function describeRule(indicator: Indicator): string {
   return `${String(indicator.threshold)} or more ${what} in ${describeWindow(indicator.window_minutes)}`;
 }
 
-function AlertItem({
-  alert,
-  onAcknowledge,
-  workspace,
-  canAcknowledge,
-}: {
-  alert: Alert;
-  onAcknowledge: () => void;
-  workspace: string;
-  canAcknowledge: boolean;
-}) {
-  const now = useNow();
-  return (
-    <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">
-          {alert.title}
-          <span className="ml-2 text-xs text-muted">{workspace}</span>
-        </span>
-        <span className="font-mono text-xs text-muted">{formatAgo(alert.fired_at, now)}</span>
-      </div>
-      {alert.summary !== '' && <p className="text-xs text-muted">{alert.summary}</p>}
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        {alert.countries.length > 0 && (
-          <span className="font-mono text-muted">{alert.countries.join(', ')}</span>
-        )}
-        <AlertDestination
-          monitorId={alert.annotation_monitor_id}
-          transitionId={alert.annotation_transition_id}
-          reportId={alert.report_id}
-        />
-        {alert.acknowledged_at === null ? (
-          <Button variant="secondary" disabled={!canAcknowledge} onClick={onAcknowledge}>
-            Acknowledge
-          </Button>
-        ) : (
-          <span className="text-muted">acknowledged</span>
-        )}
-      </div>
-    </li>
-  );
-}
-
 export default function WarningPage() {
   const draft = useAreaWatchDraft();
   const draftId = draft?.id;
   const workspaces = useWorkspaces();
   const plans = useScopedResource(fetchPlans);
-  const alerts = useScopedResource(fetchAlerts);
   const indicators = useScopedResource(fetchIndicators);
   const templates = useResource(fetchTemplates);
   const reloadIndicators = indicators.reload;
-  const setAlerts = alerts.setData;
 
   const create = useAsyncAction(
     useCallback(
@@ -120,22 +67,6 @@ export default function WarningPage() {
         await reloadIndicators();
       },
       [reloadIndicators],
-    ),
-  );
-  const acknowledge = useAsyncAction(
-    useCallback(
-      async (id: string) => {
-        const updated = await acknowledgeAlert(id);
-        setAlerts((page) =>
-          page === null
-            ? page
-            : {
-                items: page.items.map((item) => (item.id === updated.id ? updated : item)),
-                unacknowledged: Math.max(0, page.unacknowledged - 1),
-              },
-        );
-      },
-      [setAlerts],
     ),
   );
 
@@ -167,32 +98,7 @@ export default function WarningPage() {
         .
       </p>
       {draft && form}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Alerts</h2>
-        {alerts.error === null ? null : <Notice tone="error">{describeError(alerts.error)}</Notice>}
-        {acknowledge.error === null ? null : (
-          <Notice tone="error">{describeError(acknowledge.error)}</Notice>
-        )}
-        {alerts.data === null ? (
-          alerts.loading ? (
-            <LoadingNote label="Loading alerts" />
-          ) : null
-        ) : alerts.data.items.length === 0 ? (
-          <p className="text-sm text-muted">Nothing has fired in the last week.</p>
-        ) : (
-          <ul aria-label="Alerts" className="flex flex-col gap-2">
-            {alerts.data.items.map((item) => (
-              <AlertItem
-                key={item.id}
-                alert={item}
-                workspace={workspaces.label(item.team_id)}
-                canAcknowledge={workspaces.canAcknowledge(item.team_id)}
-                onAcknowledge={() => void acknowledge.run(item.id)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+      <AlertsSection workspaces={workspaces} />
       <div className="flex flex-col gap-3">
         <h2 ref={rulesHeading} className="text-base font-semibold">
           Alert rules

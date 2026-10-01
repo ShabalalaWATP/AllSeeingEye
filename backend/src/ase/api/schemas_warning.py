@@ -123,9 +123,11 @@ class AlertOut(BaseModel):
     report_id: UUID | None
     created_by: UUID | None
     team_id: UUID | None
+    # The personal owner's display name on list views; null for team alerts.
+    owner_name: str | None = None
 
     @classmethod
-    def from_alert(cls, alert: Alert) -> AlertOut:
+    def from_alert(cls, alert: Alert, owner_name: str | None = None) -> AlertOut:
         return cls(
             id=alert.id,
             indicator_id=alert.indicator_id,
@@ -144,6 +146,7 @@ class AlertOut(BaseModel):
             report_id=alert.report_id,
             created_by=alert.created_by,
             team_id=alert.team_id,
+            owner_name=owner_name,
         )
 
 

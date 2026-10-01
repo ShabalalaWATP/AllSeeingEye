@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { frozenAreaSchema } from './areaSchemas';
 
+import type { OwnershipScope } from '@/lib/ownershipScope';
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
 
@@ -47,6 +48,9 @@ export const alertSchema = z.object({
   acknowledged_at: z.string().nullable(),
   acknowledged_by: z.string().nullable(),
   report_id: z.string().nullable(),
+  created_by: z.string().nullable().default(null),
+  // The personal owner's name on list views; null for team alerts.
+  owner_name: z.string().nullable().default(null),
 });
 export type Alert = z.infer<typeof alertSchema>;
 
@@ -91,9 +95,17 @@ export function deleteIndicator(id: string): Promise<void> {
   );
 }
 
-export function fetchAlerts(hours?: number, signal?: AbortSignal): Promise<AlertsPage> {
-  const query = hours === undefined ? '' : `?hours=${String(hours)}`;
-  return apiCall(`/api/warning/alerts${query}`, {
+/** Without a scope the server returns the caller's personal and current-team alerts. */
+export function fetchAlerts(
+  hours?: number,
+  signal?: AbortSignal,
+  scope: OwnershipScope = 'mine',
+): Promise<AlertsPage> {
+  const params = new URLSearchParams();
+  if (hours !== undefined) params.set('hours', String(hours));
+  if (scope === 'all') params.set('scope', 'all');
+  const query = params.toString();
+  return apiCall(`/api/warning/alerts${query ? `?${query}` : ''}`, {
     schema: alertsPageSchema,
     ...(signal ? { signal } : {}),
   });

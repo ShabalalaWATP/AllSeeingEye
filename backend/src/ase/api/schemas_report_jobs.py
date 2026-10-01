@@ -58,6 +58,9 @@ class ReportJobOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     team_id: UUID | None
+    owner_id: UUID
+    # The personal owner's display name on list views; null for team work and detail reads.
+    owner_name: str | None = None
     report_id: UUID | None
     model: str
     reasoning_effort: str | None

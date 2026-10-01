@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
@@ -67,11 +67,15 @@ async def list_alerts(
     container: ContainerDep,
     hours: Annotated[int | None, Query(ge=1, le=720)] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    scope: Annotated[Literal["mine", "all"], Query()] = "mine",
 ) -> AlertsOut:
-    items = await container.list_alerts(session).execute(user, hours=hours, limit=limit)
+    """Defaults to the caller's personal and current-team alerts; only admins may ask for all."""
+    listing = await container.list_alerts(session).execute(
+        user, hours=hours, limit=limit, scope=scope
+    )
     return AlertsOut(
-        items=[AlertOut.from_alert(item) for item in items],
-        unacknowledged=sum(1 for item in items if item.acknowledged_at is None),
+        items=[AlertOut.from_alert(item, listing.owner_name(item)) for item in listing.items],
+        unacknowledged=listing.unacknowledged,
     )
 
 

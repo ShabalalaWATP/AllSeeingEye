@@ -43,7 +43,22 @@ downloaded by a previously authorised user.
 
 Alert listing accepts `hours` from 1 to 720 and `limit` from 1 to 200, defaulting
 to seven days and 50 results. `unacknowledged` counts the returned visible page,
-not all alerts in the system. Any current member of an active team may acknowledge
+not all alerts in the system.
+
+### Ownership scope for alert and research progress lists
+
+`GET /api/warning/alerts` and `GET /api/report-jobs` take `scope=mine|all`. The
+default, `mine`, is the caller's personal records plus records of teams they
+currently belong to, for every role, administrators included. Only administrators
+may request `all` (others receive 403); it restores the broad administrative view.
+The scope is a SQL filter applied before limits, cursors and counts, so another
+person's records cannot displace the caller's. It selects a view and grants
+nothing: direct reads and acknowledgement keep the existing object-level checks.
+List rows for personal records carry `owner_name`, the owner's display name, and
+research jobs carry `owner_id`; team rows are identified by `team_id`. The shell's
+notification bell never requests `all`. In the interface, the administrator's
+choice is kept in the address as `?scope=all`, and acknowledging another user's
+personal alert first names the owner and explains that acknowledgement is shared. Any current member of an active team may acknowledge
 its alerts; this shared triage action does not require ownership or leadership.
 Personal alerts require the owner or administrator. Archived teams remain
 read-only for ordinary users. Missing-indicator legacy alerts with no known owner

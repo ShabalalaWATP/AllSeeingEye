@@ -86,8 +86,10 @@ using the former direct schedule producer.
 `GET /api/report-jobs` returns small progress summaries, without loading every
 evidence packet. `GET /api/report-jobs/{id}` returns authorised saved sections.
 
-The list takes `limit=1..50` (default 20), `status`, `include_briefings` and an
-opaque `cursor`, and returns `{items, next_cursor}`. Access scope, status group
+The list takes `limit=1..50` (default 20), `status`, `include_briefings`,
+`scope` and an opaque `cursor`, and returns `{items, next_cursor}`. `scope=mine`
+(the default for every role) lists personal and current-team jobs; only
+administrators may pass `scope=all` (see `docs/api/SCOPED_WORK_API.md`). Access scope, status group
 and origin are SQL filters applied before the page limit, so hidden or
 non-matching jobs never take a page's slots. Status groups map existing states:
 `running` is queued or running, `attention` is paused or failed (each row's

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { components, operations } from './types.gen';
 import { apiCall, apiSend } from './client';
 import { ApiError } from './errors';
+import type { OwnershipScope } from '@/lib/ownershipScope';
 import { scopedMutation } from '@/lib/workspaceAccess';
 import { researchUsageMutation } from '@/lib/researchUsageEvents';
 
@@ -16,6 +17,8 @@ export interface ReportJobQuery {
   /** Automatic workspace briefings are hidden unless explicitly requested. */
   includeBriefings: boolean;
   cursor: string | null;
+  /** Omitted means the caller's personal and current-team work; "all" is administrators only. */
+  scope?: OwnershipScope;
 }
 
 export const reportJobSchema: z.ZodType<ReportJob> = z.object({
@@ -28,6 +31,9 @@ export const reportJobSchema: z.ZodType<ReportJob> = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   team_id: z.uuid().nullable(),
+  owner_id: z.uuid(),
+  // The personal owner's name on list views; null for team work and detail reads.
+  owner_name: z.string().nullable().default(null),
   report_id: z.uuid().nullable(),
   model: z.string(),
   reasoning_effort: z.string().nullable(),
@@ -84,6 +90,7 @@ export function fetchReportJobPage(query: ReportJobQuery, signal: AbortSignal) {
   const params = new URLSearchParams({ limit: '20', status: query.status });
   if (query.includeBriefings) params.set('include_briefings', 'true');
   if (query.cursor) params.set('cursor', query.cursor);
+  if (query.scope === 'all') params.set('scope', 'all');
   return apiCall(`/api/report-jobs?${params.toString()}`, { schema: reportJobPageSchema, signal });
 }
 function matchingJob(job: ReportJob, id: string) {
