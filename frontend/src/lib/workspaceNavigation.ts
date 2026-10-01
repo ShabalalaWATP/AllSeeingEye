@@ -134,6 +134,13 @@ export const workspaceSections: readonly WorkspaceSection[] = [
           'Compare photographs, assess possible locations and keep the saved assessments.',
         icon: 'geolocation',
       },
+      {
+        to: '/sources',
+        label: 'Source catalogue',
+        description:
+          'Read-only source grades, coverage and limitations, to check before choosing sources or reading a report.',
+        icon: 'sources',
+      },
     ],
   },
   { title: 'Watches', items: [watchesHub] },

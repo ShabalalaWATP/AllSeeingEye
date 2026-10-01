@@ -43,6 +43,7 @@ describe('AppShell', () => {
       'Research',
       'Research progress',
       'Geolocation',
+      'Source catalogue',
       'Watches',
       'Subscriptions',
       'Alerts',

@@ -1,8 +1,8 @@
 /**
  * Everything the palette can jump to: the rail's own entries with the rail's labels and
- * groups, each section's saved work, specialist trackers, map layers and tools, and, for
- * an administrator, the Administration entry and the source catalogue by family. The
- * rest of administration keeps its own guarded navigation.
+ * groups, each section's saved work, specialist trackers, map layers and tools, and the
+ * read-only source catalogue by family. Only an administrator is offered the Administration
+ * entry; the rest of administration keeps its own guarded navigation.
  */
 import { FAMILIES, FAMILY_LABELS } from '@/features/sources/catalogueEntries';
 import { catalogueHref } from '@/features/sources/catalogueFilters';
@@ -54,15 +54,14 @@ export function commandTargets(options: { admin?: boolean } = {}): readonly Comm
       description: entry.description,
       to: entry.panel === undefined ? mapPanelHref(MAP_GUIDE_PANEL) : mapPanelHref(entry.panel),
     })),
-    ...(options.admin
-      ? FAMILIES.map((family) => ({
-          id: `family:${family}`,
-          label: FAMILY_LABELS[family],
-          group: 'Sources',
-          description: `Filter the source catalogue to ${FAMILY_LABELS[family].toLowerCase()}.`,
-          to: catalogueHref({ family }),
-        }))
-      : []),
+    // The read-only catalogue is open to every signed-in account (KAN-97).
+    ...FAMILIES.map((family) => ({
+      id: `family:${family}`,
+      label: FAMILY_LABELS[family],
+      group: 'Sources',
+      description: `Filter the source catalogue to ${FAMILY_LABELS[family].toLowerCase()}.`,
+      to: catalogueHref({ family }),
+    })),
   ];
 }
 

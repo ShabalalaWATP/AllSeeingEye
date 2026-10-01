@@ -27,11 +27,9 @@ export function CyberHeader({
       <div className="relative flex flex-wrap items-end justify-between gap-5">
         <div className="max-w-3xl">
           <p className="mb-2 font-mono text-2xs tracking-[0.22em] text-cyan uppercase">
-            Cyber intelligence
+            Monitoring
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Cyber threat intelligence
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Cyber intelligence</h1>
           <p className="mt-3 text-sm leading-6 text-muted">
             Collected reporting, exploitation, criminal claims and connectivity signals from public
             sources, read through themed lenses and an AI assessment that cites its evidence. Counts

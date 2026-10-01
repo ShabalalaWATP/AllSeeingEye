@@ -41,7 +41,9 @@ it('keeps focused controls clear of the sticky section bar and the Eye launcher'
 
 it('opens one scrolling CTI workspace with figures, lenses, GNSS, activity and coverage', async () => {
   renderApp('/cyber', 'user');
-  expect(await screen.findByRole('heading', { name: 'Cyber threat intelligence' })).toBeVisible();
+  expect(
+    await screen.findByRole('heading', { name: 'Cyber intelligence', level: 1 }),
+  ).toBeVisible();
   expect(await screen.findByRole('img', { name: 'Daily cyber reporting volume' })).toBeVisible();
   expect(
     within(screen.getByRole('navigation', { name: 'Primary' })).getByRole('link', {

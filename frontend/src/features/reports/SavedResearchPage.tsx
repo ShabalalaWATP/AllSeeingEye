@@ -44,9 +44,6 @@ export default function SavedResearchPage() {
         </Link>
       </header>
       <div className="flex flex-wrap gap-4 text-sm">
-        <Link to="/research/jobs" className="text-muted underline hover:text-text">
-          Research progress
-        </Link>
         <Button
           variant="ghost"
           aria-expanded={composerVisible}

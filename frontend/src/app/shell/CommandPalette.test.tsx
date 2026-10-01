@@ -136,15 +136,16 @@ it('offers Watches first for watch searches and groups pages as the rail does', 
   expect(targets.find((target) => target.to === '/teams')?.group).toBe('Teams');
 });
 
-it('offers the source catalogue by family only to an administrator', () => {
-  const routes = commandTargets({ admin: true }).map((target) => target.to);
-  expect(routes).toContain('/admin/catalogue?family=map_layer');
-  expect(commandTargets().some((target) => target.group === 'Sources')).toBe(false);
+it('offers the read-only source catalogue by family to every signed-in account', () => {
+  for (const options of [{}, { admin: true }]) {
+    const routes = commandTargets(options).map((target) => target.to);
+    expect(routes).toContain('/sources?family=map_layer');
+    expect(routes.some((route) => route.startsWith('/admin/catalogue'))).toBe(false);
+  }
 });
 
 it('ranks a label match above a description match and needs every term', () => {
-  // The catalogue families are an administrator's entries, and one of them carries
-  // the two-term case this ranks.
+  // One of the catalogue families carries the two-term case this ranks.
   const targets = commandTargets({ admin: true });
   expect(matchTargets(targets, 'teams')[0]?.label).toBe('Teams');
   expect(matchTargets(targets, 'ukraine dataset').map((target) => target.label)).toEqual([

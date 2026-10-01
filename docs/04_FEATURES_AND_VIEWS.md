@@ -23,6 +23,7 @@ addresses such as `/warning`, `/direction` and `/trackers` still open the same p
 | Research | Ask a question, use a Research Brief and read saved research (tabs: New research, Saved research, Research progress) |
 | Research progress | Follow queued, running and finished research; listed under Research |
 | Geolocation | Analyse supplied photos for possible locations and keep saved assessments |
+| Source catalogue | Read-only source grades, coverage and limitations, open to every signed-in account; administrators change sources from Administration |
 | Watches | See every standing watch in one place, with a card for each kind of watch |
 | Subscriptions | Set up recurring research and review saved updates; listed under Watches |
 | Alerts | Read raised alerts and manage the alert rules and area watches behind them; listed under Watches |
