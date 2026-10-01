@@ -66,6 +66,8 @@ export type SirRequest = components['schemas']['SirIn'];
 
 export type PlanRequest = components['schemas']['PlanIn'];
 
+export type PlanUpdateRequest = components['schemas']['PlanUpdateIn'];
+
 export async function fetchAois(): Promise<AreaOfInterest[]> {
   const page = await apiCall('/api/direction/aois', {
     schema: z.object({ items: z.array(aoiSchema) }),
@@ -96,6 +98,25 @@ export function createPlan(request: PlanRequest): Promise<CollectionPlan> {
   return scopedMutation(() =>
     apiCall('/api/direction/plans', { method: 'POST', body: request, schema: planSchema }),
   );
+}
+
+/** Saves an edit made from `expected_updated_at`; a newer revision answers 409 conflict. */
+export function updatePlan(id: string, request: PlanUpdateRequest): Promise<CollectionPlan> {
+  return scopedMutation(() =>
+    apiCall(`/api/direction/plans/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: request,
+      schema: planSchema,
+    }),
+  );
+}
+
+/** The plan's requirements and revision without gathering live evidence. */
+export function fetchPlan(id: string, signal?: AbortSignal): Promise<CollectionPlan> {
+  return apiCall(`/api/direction/plans/${encodeURIComponent(id)}/definition`, {
+    schema: planSchema,
+    ...(signal ? { signal } : {}),
+  });
 }
 
 export function fetchPlanEvidence(id: string): Promise<PlanEvidence> {

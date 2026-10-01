@@ -47,6 +47,7 @@ from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_image import ExportMapImage
 from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
+from ase.container.direction_plans import DirectionPlanWiring
 from ase.container.map_workspace import MapWorkspaceWiring
 from ase.container.report_generation import ReportGenerationWiring
 from ase.container.report_jobs import ReportJobWiring
@@ -60,7 +61,13 @@ if TYPE_CHECKING:
 log = structlog.get_logger(__name__)
 
 
-class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring, MapWorkspaceWiring):
+class ReportWiring(
+    ReportGenerationWiring,
+    ReportJobWiring,
+    WebResearchWiring,
+    MapWorkspaceWiring,
+    DirectionPlanWiring,
+):
     """Session-scoped report production, export and search factories."""
 
     def access_policy(self, session: AsyncSession) -> AccessPolicy:

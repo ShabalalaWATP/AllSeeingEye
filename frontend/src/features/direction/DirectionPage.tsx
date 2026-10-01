@@ -150,7 +150,7 @@ export default function DirectionPage() {
           key={workspaces.key}
           workspaces={workspaces}
           areas={areas.data ?? []}
-          onCreated={reloadPlans}
+          onSaved={reloadPlans}
         />
       </div>
     </section>

@@ -3144,6 +3144,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/direction/plans/{plan_id}/definition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan Definition
+         * @description The plan's requirements and revision without gathering live evidence.
+         */
+        get: operations["get_plan_definition_api_direction_plans__plan_id__definition_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/warning/indicators": {
         parameters: {
             query?: never;
@@ -11335,6 +11355,37 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * PlanUpdateIn
+         * @description An edit names the revision (`updated_at`) it was made from; stale edits get 409.
+         */
+        PlanUpdateIn: {
+            /** Team Id */
+            team_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Aoi Id */
+            aoi_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Pirs */
+            pirs: components["schemas"]["PirIn"][];
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Expected Updated At
+             * Format: date-time
+             */
+            expected_updated_at: string;
         };
         /** PlannedQueryTaskIn */
         PlannedQueryTaskIn: {
@@ -23398,7 +23449,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PlanIn"];
+                "application/json": components["schemas"]["PlanUpdateIn"];
             };
         };
         responses: {
@@ -23439,6 +23490,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_definition_api_direction_plans__plan_id__definition_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
             };
             /** @description Validation Error */
             422: {

@@ -114,6 +114,12 @@ class PlanIn(BaseModel):
         )
 
 
+class PlanUpdateIn(PlanIn):
+    """An edit names the revision (`updated_at`) it was made from; stale edits get 409."""
+
+    expected_updated_at: datetime
+
+
 class SirOut(BaseModel):
     code: str
     text: str

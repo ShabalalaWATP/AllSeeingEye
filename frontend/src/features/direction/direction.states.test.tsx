@@ -71,8 +71,11 @@ describe('direction states', () => {
     const planForm = screen.getByRole('form', { name: 'New collection plan' });
     await user.type(within(planForm).getByLabelText('Plan name'), 'Scoped');
     await user.selectOptions(within(planForm).getByLabelText('Area'), aoi.id);
-    await user.type(within(planForm).getByLabelText('Priority intelligence requirement'), 'Q?');
-    await user.type(within(planForm).getByLabelText('Specific requirements'), 'Anything');
+    await user.type(
+      within(planForm).getByLabelText('PIR-1 priority intelligence requirement'),
+      'Q?',
+    );
+    await user.type(within(planForm).getByLabelText('SIR-1.1 specific requirement'), 'Anything');
     await user.type(within(planForm).getByLabelText('Background'), 'Context');
     await user.click(within(planForm).getByRole('button', { name: 'Add plan' }));
     await waitFor(() => {

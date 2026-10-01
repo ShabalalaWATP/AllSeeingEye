@@ -15,7 +15,9 @@ from ase.api.schemas_direction import (
     PlanIn,
     PlanOut,
     PlansOut,
+    PlanUpdateIn,
 )
+from ase.api.session_fence import FenceDep
 
 router = APIRouter(prefix="/direction", tags=["direction"])
 
@@ -76,16 +78,33 @@ async def get_plan(
     return PlanEvidenceOut.from_evidence(evidence)
 
 
+@router.get("/plans/{plan_id}/definition")
+async def get_plan_definition(
+    plan_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    fence: FenceDep,
+    container: ContainerDep,
+    response: Response,
+) -> PlanOut:
+    """The plan's requirements and revision without gathering live evidence."""
+    plan = await container.plan_definition(session).execute(user, plan_id)
+    response.headers["Cache-Control"] = "private, no-store"
+    return await fence.release(PlanOut.from_plan(plan), session=session)
+
+
 @router.put("/plans/{plan_id}")
 async def update_plan(
     plan_id: UUID,
-    body: PlanIn,
+    body: PlanUpdateIn,
     user: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> PlanOut:
-    plan = await container.update_plan(session).execute(user, plan_id, body.to_input(), context)
+    plan = await container.update_plan(session).execute(
+        user, plan_id, body.to_input(), body.expected_updated_at, context
+    )
     return PlanOut.from_plan(plan)
 
 
