@@ -27,6 +27,7 @@ const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
 const AdminResearchQualityPage = lazy(() => import('@/features/admin/AdminResearchQualityPage'));
 const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'));
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
+const AdminEvaluationsPage = lazy(() => import('@/features/admin/AdminEvaluationsPage'));
 const TotpSettingsPage = lazy(() => import('@/features/auth/TotpSettingsPage'));
 const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
 const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
@@ -187,6 +188,7 @@ const pages: RouteObject[] = [
                   { path: 'catalogue', element: <SourcesPage workspace="admin" /> },
                   { path: 'quality', element: <AdminResearchQualityPage /> },
                   { path: 'llm', element: <AdminLlmPage /> },
+                  { path: 'evaluations', element: <AdminEvaluationsPage /> },
                   { path: 'security', element: <TotpSettingsPage /> },
                 ]),
               },

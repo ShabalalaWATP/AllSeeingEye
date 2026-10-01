@@ -13579,6 +13579,248 @@
         }
       }
     },
+    "/api/admin/llm/evaluations/catalogue": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Evaluation Catalogue",
+        "operationId": "evaluation_catalogue_api_admin_llm_evaluations_catalogue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationCatalogueOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/llm/evaluations": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "List Evaluation Runs",
+        "operationId": "list_evaluation_runs_api_admin_llm_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Start Evaluation Run",
+        "operationId": "start_evaluation_run_api_admin_llm_evaluations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationStartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Get Evaluation Run",
+        "operationId": "get_evaluation_run_api_admin_llm_evaluations__run_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}/cancel": {
+      "post": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Cancel Evaluation Run",
+        "operationId": "cancel_evaluation_run_api_admin_llm_evaluations__run_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/evaluations/{run_id}/artefact": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Download Evaluation Artefact",
+        "operationId": "download_evaluation_artefact_api_admin_llm_evaluations__run_id__artefact_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/llm/models/discover": {
       "post": {
         "tags": [
@@ -24687,6 +24929,372 @@
           "links"
         ],
         "title": "EquipmentOut"
+      },
+      "EvaluationCaseOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "casebook": {
+            "type": "string",
+            "enum": [
+              "core",
+              "regional"
+            ],
+            "title": "Casebook"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "casebook",
+          "title",
+          "fingerprint"
+        ],
+        "title": "EvaluationCaseOut"
+      },
+      "EvaluationCaseResultOut": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "report_status": {
+            "type": "string",
+            "title": "Report Status"
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "checks": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Checks",
+            "description": "Deterministic structural checks only; never accuracy."
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "fingerprint",
+          "report_status",
+          "model_calls",
+          "prompt_tokens",
+          "completion_tokens",
+          "checks"
+        ],
+        "title": "EvaluationCaseResultOut"
+      },
+      "EvaluationCatalogueOut": {
+        "properties": {
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationCaseOut"
+            },
+            "type": "array",
+            "title": "Cases"
+          },
+          "calls_per_case": {
+            "type": "integer",
+            "title": "Calls Per Case",
+            "default": 4
+          },
+          "max_calls": {
+            "type": "integer",
+            "title": "Max Calls",
+            "default": 200
+          },
+          "max_cases": {
+            "type": "integer",
+            "title": "Max Cases",
+            "default": 40
+          },
+          "estimate_notice": {
+            "type": "string",
+            "title": "Estimate Notice",
+            "default": "Estimate only: selected cases multiplied by the usual calls per case. The call cap is enforced; failed and retried calls count towards it."
+          },
+          "result_notice": {
+            "type": "string",
+            "title": "Result Notice",
+            "default": "Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication."
+          }
+        },
+        "type": "object",
+        "required": [
+          "cases"
+        ],
+        "title": "EvaluationCatalogueOut"
+      },
+      "EvaluationRunOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_name": {
+            "type": "string",
+            "title": "Profile Name"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvaluationRunStatus"
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvaluationStopReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cancel_requested": {
+            "type": "boolean",
+            "title": "Cancel Requested"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "case_fingerprints": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Case Fingerprints"
+          },
+          "max_calls": {
+            "type": "integer",
+            "title": "Max Calls"
+          },
+          "estimated_calls": {
+            "type": "integer",
+            "title": "Estimated Calls"
+          },
+          "calls_reserved": {
+            "type": "integer",
+            "title": "Calls Reserved"
+          },
+          "calls_failed": {
+            "type": "integer",
+            "title": "Calls Failed"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationCaseResultOut"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "has_artefact": {
+            "type": "boolean",
+            "title": "Has Artefact"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": "Synthetic cases with assistant-authored rubrics, pending human validation. Deterministic structural checks only; not accuracy, factual correctness or readiness for publication."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "profile_id",
+          "profile_name",
+          "model",
+          "status",
+          "stop_reason",
+          "cancel_requested",
+          "case_ids",
+          "case_fingerprints",
+          "max_calls",
+          "estimated_calls",
+          "calls_reserved",
+          "calls_failed",
+          "prompt_tokens",
+          "completion_tokens",
+          "results",
+          "has_artefact",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "EvaluationRunOut"
+      },
+      "EvaluationRunStatus": {
+        "type": "string",
+        "enum": [
+          "running",
+          "completed",
+          "cancelled",
+          "stopped"
+        ],
+        "title": "EvaluationRunStatus"
+      },
+      "EvaluationRunsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationRunOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "EvaluationRunsOut"
+      },
+      "EvaluationStartIn": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Case Ids"
+          },
+          "max_calls": {
+            "type": "integer",
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Max Calls"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile_id",
+          "case_ids",
+          "max_calls"
+        ],
+        "title": "EvaluationStartIn"
+      },
+      "EvaluationStopReason": {
+        "type": "string",
+        "enum": [
+          "call_cap",
+          "allowance_limit",
+          "connection_changed",
+          "access_revoked",
+          "interrupted",
+          "failed"
+        ],
+        "title": "EvaluationStopReason"
       },
       "EventOut": {
         "properties": {

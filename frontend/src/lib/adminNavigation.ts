@@ -1,6 +1,15 @@
 /** Shared administration destinations. This directory does not fetch operational data. */
 export type AdminIconName =
-  'overview' | 'requests' | 'users' | 'teams' | 'ai' | 'sources' | 'quality' | 'audit' | 'security';
+  | 'overview'
+  | 'requests'
+  | 'users'
+  | 'teams'
+  | 'ai'
+  | 'evaluations'
+  | 'sources'
+  | 'quality'
+  | 'audit'
+  | 'security';
 
 export interface AdminDestination {
   readonly to: string;
@@ -54,6 +63,13 @@ export const adminSections: readonly AdminSection[] = [
         description:
           'Configure and test models, apply the global connection and manage team overrides.',
         icon: 'ai',
+      },
+      {
+        to: '/admin/evaluations',
+        label: 'Evaluations',
+        description:
+          'Run selected synthetic cases against a saved connection, with a call cap and estimate.',
+        icon: 'evaluations',
       },
       {
         to: '/admin/sources',
