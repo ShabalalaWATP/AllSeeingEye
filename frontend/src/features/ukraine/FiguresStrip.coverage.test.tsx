@@ -44,7 +44,11 @@ it('retains unfamiliar categories, omits absent totals and defaults missing dail
   expect(within(items[0]!).getByText('experimental')).toBeVisible();
   expect(within(items[0]!).getByText('1,234')).toBeVisible();
   expect(within(items[0]!).getByText('+0 claimed on 2026-09-30')).toBeVisible();
-  expect(screen.getByRole('img', { name: 'Daily claimed experimental' })).toBeInTheDocument();
+  expect(
+    screen.getByRole('img', {
+      name: 'Daily claimed experimental, last 2 days: 0, 0 (lowest 0, highest 0)',
+    }),
+  ).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Original post' })).not.toBeInTheDocument();
   const table = screen.getByRole('table', { hidden: true });
   expect(within(table).getByText('experimental')).toBeInTheDocument();
