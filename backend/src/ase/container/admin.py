@@ -37,14 +37,16 @@ from ase.application.admin.requests import (
 )
 from ase.application.admin.source_controls import AdminSourceControls
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
-from ase.container.core import ContainerCore
+from ase.container.evaluations import EvaluationWiring
 from ase.domain.reasoning import ReasoningEffortPolicy
 
 if TYPE_CHECKING:
     pass
 
 
-class AdminWiring(ContainerCore):
+class AdminWiring(EvaluationWiring):
+    """Administration factories; evaluation runs come from EvaluationWiring."""
+
     def initialise_models(
         self, encryption_key: str | None, effort: ReasoningEffortPolicy | None = None
     ) -> None:
