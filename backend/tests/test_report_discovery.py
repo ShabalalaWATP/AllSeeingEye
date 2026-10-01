@@ -100,3 +100,20 @@ async def test_membership_changes_apply_to_discovery(client, container, user, ad
 async def test_invalid_groups_are_rejected(client, user, query):
     headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
     assert (await client.get(f"/api/reports?{query}", headers=headers)).status_code == 422
+
+
+async def test_requested_work_never_includes_automatic_briefings(client, container, user):
+    # KAN-87 briefings are a server-assigned origin; the requested group must leave them out
+    # before pagination, while the explicit briefing filter still finds them.
+    records = await seed_reports(
+        container,
+        user.id,
+        [{"origin": "research"}] + [{"origin": "briefing", "briefing": "daily"}] * 3,
+    )
+    headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
+    requested = (await client.get("/api/reports?group=requested&limit=1", headers=headers)).json()
+    assert [row["id"] for row in requested["items"]] == [str(records[0].id)]
+    assert requested["has_more"] is False
+    briefings = (await client.get("/api/reports?origin=briefing", headers=headers)).json()
+    assert {row["origin"] for row in briefings["items"]} == {"briefing"}
+    assert len(briefings["items"]) == 3

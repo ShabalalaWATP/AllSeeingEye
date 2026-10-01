@@ -12,6 +12,7 @@ export const ORIGIN_LABELS: Record<ReportOrigin, string> = {
   research: 'Research',
   subscription: 'Subscription update',
   geolocation: 'Geolocation assessment',
+  briefing: 'Automatic briefing',
 };
 
 export const FILTER_LABELS: Record<DiscoveryFilter, string> = {
@@ -19,12 +20,14 @@ export const FILTER_LABELS: Record<DiscoveryFilter, string> = {
   research: 'Research',
   subscription: 'Subscription updates',
   geolocation: 'Geolocation assessments',
+  briefing: 'Automatic briefings',
 };
 
 const NO_MATCH: Record<ReportOrigin, string> = {
   research: 'No research reports match this filter.',
   subscription: 'No subscription updates match this filter.',
   geolocation: 'No geolocation assessments match this filter.',
+  briefing: 'No automatic briefings match this filter.',
 };
 
 export const DISCOVERY_FILTERS = Object.keys(FILTER_LABELS) as DiscoveryFilter[];
