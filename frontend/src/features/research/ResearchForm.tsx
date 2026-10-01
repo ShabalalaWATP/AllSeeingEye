@@ -15,7 +15,8 @@ import { Step, Toggle } from '@/components/research/FormStep';
 import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { describeError } from '@/lib/api/errors';
+import { FormErrors } from '@/components/ui/FormErrors';
+import { useFieldErrors } from '@/lib/api/fieldErrors';
 import { MAX_REGIONS, REGIONS } from '@/lib/regions';
 import { MAX_THEMES, THEMES } from '@/lib/themes';
 
@@ -32,6 +33,7 @@ import {
   ResearchQuickSteps,
 } from './ResearchQuickSteps';
 
+import { researchFieldSpecs } from './researchFieldErrors';
 import { ResearchScope } from './ResearchScope';
 import { ResearchTimeScope } from './ResearchTimeScope';
 
@@ -59,6 +61,9 @@ export function ResearchForm(props: ResearchFormProps) {
   let step = 0;
   const next = () => ++step;
   const showRead = privateFocus || !parent;
+  const errors = useFieldErrors(action.error, researchFieldSpecs(mode.advanced), {
+    root: 'report',
+  });
 
   return (
     <form
@@ -68,7 +73,14 @@ export function ResearchForm(props: ResearchFormProps) {
       className="flex min-w-0 flex-col gap-5"
     >
       <fieldset disabled={action.busy} className="grid min-w-0 gap-10 disabled:opacity-70">
-        {!mode.advanced && <ResearchQuickSteps draft={draft} patch={patch} countries={countries} />}
+        {!mode.advanced && (
+          <ResearchQuickSteps
+            draft={draft}
+            patch={patch}
+            countries={countries}
+            question={errors.field('question')}
+          />
+        )}
         {!mode.required && (
           <AdvancedOptionsToggle open={mode.advanced} draft={draft} onToggle={mode.toggle} />
         )}
@@ -80,7 +92,7 @@ export function ResearchForm(props: ResearchFormProps) {
               lead="Any topic: a conflict, a market, an organisation, a technology or a place."
               id="research-question"
             >
-              <ResearchQuestionField draft={draft} patch={patch} />
+              <ResearchQuestionField draft={draft} patch={patch} field={errors.field('question')} />
               {!parent && (
                 <ResearchFocusField
                   focus={focus}
@@ -282,7 +294,7 @@ export function ResearchForm(props: ResearchFormProps) {
         </Alert>
       )}
       {validation && <Alert tone="error">{validation}</Alert>}
-      {action.error && <Alert tone="error">{describeError(action.error)}</Alert>}
+      <FormErrors errors={errors} />
       <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
         <Button type="submit" className="min-h-12 px-6" busy={action.busy} disabled={waiting}>
           Start research

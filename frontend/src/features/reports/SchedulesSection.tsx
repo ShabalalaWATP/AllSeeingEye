@@ -324,7 +324,7 @@ export function SchedulesSection({
           templates={templates}
           countries={countries}
           busy={save.busy || toggle.busy || remove.busy || runNow.busy}
-          error={save.error === null ? null : describeError(save.error)}
+          error={save.error}
           onSubmit={(request) => void save.run(request)}
         />
       </div>

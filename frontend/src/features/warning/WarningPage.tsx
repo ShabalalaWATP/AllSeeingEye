@@ -142,7 +142,7 @@ export default function WarningPage() {
       plans={plans.data ?? []}
       templates={templates.data ?? []}
       busy={create.busy}
-      error={create.error === null ? null : describeError(create.error)}
+      error={create.error}
       onSubmit={(request) => void create.run(request)}
     />
   );
