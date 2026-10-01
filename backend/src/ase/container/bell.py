@@ -4,7 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.annotation_monitors import SqlAnnotationMonitorRepository
 from ase.adapters.persistence.bell import SqlBellAlertQueries, SqlBellPreferenceRepository
+from ase.adapters.persistence.board_mentions import SqlBoardMentionRepository
 from ase.application.bell.alerts import BellAcknowledgements, BellAlerts
+from ase.application.bell.mentions import BellMentions
 from ase.application.bell.preferences import BellPreferencesService
 from ase.application.bell.scope import BellSignals
 from ase.application.bell.summary import BellService
@@ -27,9 +29,20 @@ class BellWiring(ContainerCore):
             self.clock,
         )
 
+    def bell_mentions(self, session: AsyncSession) -> BellMentions:
+        repos = self.repositories(session)
+        return BellMentions(
+            SqlBoardMentionRepository(session),
+            self.access_policy(session),
+            self.clock,
+            repos.uow,
+            self.bell_signals(),
+        )
+
     def bell(self, session: AsyncSession) -> BellService:
         return BellService(
             self.bell_alerts(session),
+            self.bell_mentions(session),
             SqlBellPreferenceRepository(session),
             self.access_policy(session),
         )

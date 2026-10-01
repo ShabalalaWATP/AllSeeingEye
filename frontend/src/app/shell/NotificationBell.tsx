@@ -121,8 +121,8 @@ function BellControl({ userId }: { userId: string }) {
         )}
       </button>
       <span id={hintId} hidden>
-        Counts unacknowledged alerts from the last {windowDays} days and research finished since you
-        last opened notifications.
+        Counts unacknowledged alerts from the last {windowDays} days, unread board mentions and
+        research finished since you last opened notifications.
       </span>
       <span role="status" className="sr-only">
         {unread > 0 ? `${unread} unread notifications` : ''}
@@ -153,6 +153,7 @@ function BellControl({ userId }: { userId: string }) {
             settings={settings}
             headingRef={alertsHeading}
             returnFocus={panel}
+            keepFocus={keepFocus}
           />
         </div>
       )}

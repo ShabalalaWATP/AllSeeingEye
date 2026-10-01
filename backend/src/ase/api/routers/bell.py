@@ -11,9 +11,12 @@ from ase.api.schemas_bell import (
     AlertDestinationOut,
     BellAcknowledgeIn,
     BellAcknowledgeOut,
+    BellMentionsReadIn,
+    BellMentionsReadOut,
     BellOut,
     BellPreferencesIn,
     BellPreferencesOut,
+    MentionOpenOut,
 )
 from ase.api.session_fence import FenceDep
 
@@ -101,3 +104,33 @@ async def unmute_rule(
     await fence.confirm(session=session)
     preferences = await container.bell_preferences(session).unmute_rule(user, indicator_id)
     return await fence.release(BellPreferencesOut.build(preferences), session=session)
+
+
+@router.post("/mentions/{post_id}/open")
+async def open_mention(
+    post_id: UUID,
+    user: CurrentUser,
+    fence: FenceDep,
+    session: SessionDep,
+    container: ContainerDep,
+    response: Response,
+) -> MentionOpenOut:
+    """Re-check the post against current membership and mark the caller's notice read."""
+    await fence.confirm(session=session)
+    notice = await container.bell_mentions(session).open(user, post_id)
+    response.headers["Cache-Control"] = NO_STORE
+    out = MentionOpenOut(team_id=notice.team_id, post_id=notice.post_id, thread_id=notice.thread_id)
+    return await fence.release(out, session=session)
+
+
+@router.post("/mentions/read")
+async def read_mentions(
+    body: BellMentionsReadIn,
+    user: CurrentUser,
+    fence: FenceDep,
+    session: SessionDep,
+    container: ContainerDep,
+) -> BellMentionsReadOut:
+    await fence.confirm(session=session)
+    unread = await container.bell_mentions(session).mark_read(user, body.post_ids)
+    return await fence.release(BellMentionsReadOut(unread=unread), session=session)

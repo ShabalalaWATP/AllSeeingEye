@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { fetchBell } from '@/lib/api/bell';
-import type { Bell, BellAlert, BellPreferences } from '@/lib/api/bell';
+import type { Bell, BellAlert, BellMention, BellPreferences } from '@/lib/api/bell';
 import type { ApiError } from '@/lib/api/errors';
 import { fetchReportJobs } from '@/lib/api/reportJobs';
 import type { ReportJob } from '@/lib/api/reportJobs';
@@ -42,11 +42,13 @@ export interface NotificationBellState {
   open: boolean;
   /** True until both sources have answered once, successfully or not. */
   loading: boolean;
-  /** Unacknowledged alerts in the window plus research finished since the bell was last opened. */
+  /** Unacknowledged alerts in the window, unread mentions and newly finished research. */
   unread: number;
   /** The alert window, the same as the Alerts page. */
   windowDays: number;
   alerts: BellSection<BellAlert>;
+  /** Unread board mentions; `total` is the capped unread count. */
+  mentions: BellSection<BellMention>;
   jobs: BellSection<FinishedJob>;
   preferences: BellPreferences | null;
   toggle: () => void;
@@ -84,6 +86,7 @@ export function useNotificationBell(userId: string): NotificationBellState {
     : finished.filter((job) => time(job.updated_at) > seenAt).length;
   const since = openedFrom ?? seenAt;
   const alerts = bell.data?.alerts;
+  const mentions = bell.data?.mentions;
 
   const close = useCallback(() => setOpenedFrom(null), []);
   const toggle = useCallback(() => {
@@ -110,13 +113,22 @@ export function useNotificationBell(userId: string): NotificationBellState {
   return {
     open: openedFrom !== null,
     loading: bell.loading || jobs.loading,
-    unread: (alerts?.muted ? 0 : (alerts?.total ?? 0)) + unseenJobs,
+    unread:
+      (alerts?.muted ? 0 : (alerts?.total ?? 0)) +
+      (mentions?.muted ? 0 : (mentions?.unread ?? 0)) +
+      unseenJobs,
     windowDays: bell.data?.window_days ?? 7,
     alerts: {
       items: alerts?.items ?? [],
       total: alerts?.total ?? 0,
       error: bell.error,
       muted: alerts?.muted ?? false,
+    },
+    mentions: {
+      items: mentions?.items ?? [],
+      total: mentions?.unread ?? 0,
+      error: bell.error,
+      muted: mentions?.muted ?? false,
     },
     jobs: {
       items: researchMuted

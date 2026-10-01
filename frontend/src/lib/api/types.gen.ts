@@ -1138,6 +1138,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bell/mentions/{post_id}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open Mention
+         * @description Re-check the post against current membership and mark the caller's notice read.
+         */
+        post: operations["open_mention_api_bell_mentions__post_id__open_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bell/mentions/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read Mentions */
+        post: operations["read_mentions_api_bell_mentions_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/team-invitations": {
         parameters: {
             query?: never;
@@ -5885,11 +5922,63 @@ export interface components {
          * @enum {string}
          */
         BellKind: "alerts" | "research" | "mentions";
+        /**
+         * BellMentionOut
+         * @description A plain-text snippet of a post the recipient can still read; never markup.
+         */
+        BellMentionOut: {
+            /**
+             * Post Id
+             * Format: uuid
+             */
+            post_id: string;
+            /**
+             * Thread Id
+             * Format: uuid
+             */
+            thread_id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /** Team Name */
+            team_name: string;
+            /** Author Name */
+            author_name: string;
+            /** Snippet */
+            snippet: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** BellMentionSectionOut */
+        BellMentionSectionOut: {
+            /** Items */
+            items: components["schemas"]["BellMentionOut"][];
+            /** Unread */
+            unread: number;
+            /** Muted */
+            muted: boolean;
+        };
+        /** BellMentionsReadIn */
+        BellMentionsReadIn: {
+            /** Post Ids */
+            post_ids: string[];
+        };
+        /** BellMentionsReadOut */
+        BellMentionsReadOut: {
+            /** Unread */
+            unread: number;
+        };
         /** BellOut */
         BellOut: {
             /** Window Days */
             window_days: number;
             alerts: components["schemas"]["BellAlertSectionOut"];
+            mentions: components["schemas"]["BellMentionSectionOut"];
             preferences: components["schemas"]["BellPreferencesOut"];
         };
         /** BellPreferencesIn */
@@ -11013,6 +11102,24 @@ export interface components {
          * @enum {string}
          */
         MembershipRole: "member" | "manager";
+        /** MentionOpenOut */
+        MentionOpenOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Post Id
+             * Format: uuid
+             */
+            post_id: string;
+            /**
+             * Thread Id
+             * Format: uuid
+             */
+            thread_id: string;
+        };
         /** MessageOut */
         MessageOut: {
             /** Message */
@@ -16341,6 +16448,16 @@ export interface components {
             members: components["schemas"]["AiMemberUsageOut"][] | null;
             prices: components["schemas"]["AiTokenPricesOut"];
         };
+        /** TeamBoardMentionedOut */
+        TeamBoardMentionedOut: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+        };
         /** TeamBoardPageOut */
         TeamBoardPageOut: {
             /** Items */
@@ -16478,6 +16595,56 @@ export interface components {
         TeamBoardUnreadOut: {
             /** Unread Count */
             unread_count: number;
+        };
+        /**
+         * TeamBoardWriteOut
+         * @description A saved post plus the teammates this write newly notified (never outsiders).
+         */
+        TeamBoardWriteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * Author Id
+             * Format: uuid
+             */
+            author_id: string;
+            /** Author Name */
+            author_name: string;
+            /** Text */
+            text: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Edited At */
+            edited_at: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Is Pinned */
+            is_pinned: boolean;
+            /** Deleted At */
+            deleted_at: string | null;
+            /** Removal */
+            removal: ("author" | "moderator") | null;
+            /** Revision */
+            revision: number;
+            subject: components["schemas"]["TeamBoardSubjectOut"] | null;
+            /** Notified */
+            notified: components["schemas"]["TeamBoardMentionedOut"][];
         };
         /** TeamCopyIn */
         TeamCopyIn: {
@@ -19322,7 +19489,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamBoardPostOut"];
+                    "application/json": components["schemas"]["TeamBoardWriteOut"];
                 };
             };
             /** @description Validation Error */
@@ -19390,7 +19557,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamBoardPostOut"];
+                    "application/json": components["schemas"]["TeamBoardWriteOut"];
                 };
             };
             /** @description Validation Error */
@@ -19708,6 +19875,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BellPreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    open_mention_api_bell_mentions__post_id__open_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentionOpenOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_mentions_api_bell_mentions_read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellMentionsReadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BellMentionsReadOut"];
                 };
             };
             /** @description Validation Error */

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ase.application.bell.mentions import MAX_READ_BATCH
 from ase.application.bell.summary import BellSummary
 from ase.domain.bell import (
     MAX_ACKNOWLEDGE_BATCH,
@@ -18,6 +19,7 @@ from ase.domain.bell import (
     BellPreferences,
     DestinationKind,
 )
+from ase.domain.board_mentions import MentionNotice, MentionSection
 
 
 class BellAlertOut(BaseModel):
@@ -91,9 +93,64 @@ class BellPreferencesIn(BaseModel):
     muted_kinds: list[BellKind] = Field(max_length=len(BellKind) * 2)
 
 
+class BellMentionOut(BaseModel):
+    """A plain-text snippet of a post the recipient can still read; never markup."""
+
+    post_id: UUID
+    thread_id: UUID
+    team_id: UUID
+    team_name: str
+    author_name: str
+    snippet: str
+    created_at: datetime
+
+    @classmethod
+    def build(cls, notice: MentionNotice) -> BellMentionOut:
+        return cls(
+            post_id=notice.post_id,
+            thread_id=notice.thread_id,
+            team_id=notice.team_id,
+            team_name=notice.team_name,
+            author_name=notice.author_name,
+            snippet=notice.snippet,
+            created_at=notice.created_at,
+        )
+
+
+class BellMentionSectionOut(BaseModel):
+    items: list[BellMentionOut]
+    unread: int
+    muted: bool
+
+    @classmethod
+    def build(cls, section: MentionSection) -> BellMentionSectionOut:
+        return cls(
+            items=[BellMentionOut.build(item) for item in section.items],
+            unread=section.unread,
+            muted=section.muted,
+        )
+
+
+class MentionOpenOut(BaseModel):
+    team_id: UUID
+    post_id: UUID
+    thread_id: UUID
+
+
+class BellMentionsReadIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    post_ids: list[UUID] = Field(min_length=1, max_length=MAX_READ_BATCH)
+
+
+class BellMentionsReadOut(BaseModel):
+    unread: int
+
+
 class BellOut(BaseModel):
     window_days: int
     alerts: BellAlertSectionOut
+    mentions: BellMentionSectionOut
     preferences: BellPreferencesOut
 
     @classmethod
@@ -101,6 +158,7 @@ class BellOut(BaseModel):
         return cls(
             window_days=summary.window_days,
             alerts=BellAlertSectionOut.build(summary.alerts),
+            mentions=BellMentionSectionOut.build(summary.mentions),
             preferences=BellPreferencesOut.build(summary.preferences),
         )
 

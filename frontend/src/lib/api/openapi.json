@@ -2825,7 +2825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -2893,7 +2893,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                  "$ref": "#/components/schemas/TeamBoardWriteOut"
                 }
               }
             }
@@ -3471,6 +3471,101 @@
             }
           }
         }
+      }
+    },
+    "/api/bell/mentions/{post_id}/open": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Open Mention",
+        "description": "Re-check the post against current membership and mark the caller's notice read.",
+        "operationId": "open_mention_api_bell_mentions__post_id__open_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentionOpenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bell/mentions/read": {
+      "post": {
+        "tags": [
+          "bell"
+        ],
+        "summary": "Read Mentions",
+        "operationId": "read_mentions_api_bell_mentions_read_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BellMentionsReadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BellMentionsReadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/me/team-invitations": {
@@ -19558,6 +19653,113 @@
         "title": "BellKind",
         "description": "In-app notification kinds a viewer may mute."
       },
+      "BellMentionOut": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "thread_id",
+          "team_id",
+          "team_name",
+          "author_name",
+          "snippet",
+          "created_at"
+        ],
+        "title": "BellMentionOut",
+        "description": "A plain-text snippet of a post the recipient can still read; never markup."
+      },
+      "BellMentionSectionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BellMentionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "muted": {
+            "type": "boolean",
+            "title": "Muted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread",
+          "muted"
+        ],
+        "title": "BellMentionSectionOut"
+      },
+      "BellMentionsReadIn": {
+        "properties": {
+          "post_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Post Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "post_ids"
+        ],
+        "title": "BellMentionsReadIn"
+      },
+      "BellMentionsReadOut": {
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unread"
+        ],
+        "title": "BellMentionsReadOut"
+      },
       "BellOut": {
         "properties": {
           "window_days": {
@@ -19567,6 +19769,9 @@
           "alerts": {
             "$ref": "#/components/schemas/BellAlertSectionOut"
           },
+          "mentions": {
+            "$ref": "#/components/schemas/BellMentionSectionOut"
+          },
           "preferences": {
             "$ref": "#/components/schemas/BellPreferencesOut"
           }
@@ -19575,6 +19780,7 @@
         "required": [
           "window_days",
           "alerts",
+          "mentions",
           "preferences"
         ],
         "title": "BellOut"
@@ -34041,6 +34247,32 @@
           "manager"
         ],
         "title": "MembershipRole"
+      },
+      "MentionOpenOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "post_id",
+          "thread_id"
+        ],
+        "title": "MentionOpenOut"
       },
       "MessageOut": {
         "properties": {
@@ -49222,6 +49454,25 @@
         ],
         "title": "TeamAiUsageOut"
       },
+      "TeamBoardMentionedOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name"
+        ],
+        "title": "TeamBoardMentionedOut"
+      },
       "TeamBoardPageOut": {
         "properties": {
           "items": {
@@ -49637,6 +49888,139 @@
           "unread_count"
         ],
         "title": "TeamBoardUnreadOut"
+      },
+      "TeamBoardWriteOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Author Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "edited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "title": "Is Pinned"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "author",
+                  "moderator"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamBoardSubjectOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notified": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardMentionedOut"
+            },
+            "type": "array",
+            "title": "Notified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "author_id",
+          "author_name",
+          "text",
+          "created_at",
+          "updated_at",
+          "edited_at",
+          "parent_id",
+          "is_pinned",
+          "deleted_at",
+          "removal",
+          "revision",
+          "subject",
+          "notified"
+        ],
+        "title": "TeamBoardWriteOut",
+        "description": "A saved post plus the teammates this write newly notified (never outsiders)."
       },
       "TeamCopyIn": {
         "properties": {

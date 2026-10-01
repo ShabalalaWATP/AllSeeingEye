@@ -11,6 +11,7 @@ import type { NotificationBellState } from './useNotificationBell';
 export const BELL_KINDS: readonly { kind: BellKind; label: string; detail: string }[] = [
   { kind: 'alerts', label: 'Alerts', detail: 'Unacknowledged alerts from your rules and teams.' },
   { kind: 'research', label: 'Finished research', detail: 'Research runs that have finished.' },
+  { kind: 'mentions', label: 'Board mentions', detail: 'Team board posts that mention you.' },
 ];
 
 /**

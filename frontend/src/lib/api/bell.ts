@@ -12,6 +12,8 @@ export type BellKind = components['schemas']['BellKind'];
 export type BellPreferences = components['schemas']['BellPreferencesOut'];
 export type AlertDestination = components['schemas']['AlertDestinationOut'];
 export type BellAcknowledgement = components['schemas']['BellAcknowledgeOut'];
+export type BellMention = components['schemas']['BellMentionOut'];
+export type MentionOpen = components['schemas']['MentionOpenOut'];
 
 /** The most alerts one "Acknowledge shown" request may name. */
 export const MAX_ACKNOWLEDGE_BATCH = 20;
@@ -35,6 +37,15 @@ const preferencesSchema = z.object({
     z.object({ indicator_id: z.uuid(), name: z.string(), muted_at: z.string() }),
   ),
 }) satisfies z.ZodType<BellPreferences>;
+const mentionSchema = z.object({
+  post_id: z.uuid(),
+  thread_id: z.uuid(),
+  team_id: z.uuid(),
+  team_name: z.string(),
+  author_name: z.string(),
+  snippet: z.string(),
+  created_at: z.string(),
+}) satisfies z.ZodType<BellMention>;
 const bellSchema = z.object({
   window_days: z.number().int().positive(),
   alerts: z.object({
@@ -42,8 +53,18 @@ const bellSchema = z.object({
     total: z.number().int().nonnegative(),
     muted: z.boolean(),
   }),
+  mentions: z.object({
+    items: z.array(mentionSchema),
+    unread: z.number().int().nonnegative(),
+    muted: z.boolean(),
+  }),
   preferences: preferencesSchema,
 }) satisfies z.ZodType<Bell>;
+const openSchema = z.object({
+  team_id: z.uuid(),
+  post_id: z.uuid(),
+  thread_id: z.uuid(),
+}) satisfies z.ZodType<MentionOpen>;
 const destinationSchema = z.object({
   kind: z.enum(['report', 'transition', 'alerts']),
   available: z.boolean(),
@@ -101,4 +122,19 @@ export function unmuteRule(indicatorId: string): Promise<BellPreferences> {
     method: 'DELETE',
     schema: preferencesSchema,
   });
+}
+
+/** Re-checks the post against current membership and marks this account's mention read. */
+export function openMention(postId: string): Promise<MentionOpen> {
+  // A 404 here usually means the post was removed, not that workspace access changed.
+  return apiCall(`/api/bell/mentions/${id(postId)}/open`, { method: 'POST', schema: openSchema });
+}
+
+/** Marks only this account's own mentions read; returns its remaining unread count. */
+export function markMentionsRead(postIds: readonly string[]): Promise<number> {
+  return apiCall('/api/bell/mentions/read', {
+    method: 'POST',
+    body: { post_ids: postIds },
+    schema: z.object({ unread: z.number().int().nonnegative() }),
+  }).then((result) => result.unread);
 }

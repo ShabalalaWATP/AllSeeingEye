@@ -17,7 +17,9 @@ from ase.api.schemas_team_board import (
     TeamBoardReadIn,
     TeamBoardRemoveIn,
     TeamBoardUnreadOut,
+    TeamBoardWriteOut,
 )
+from ase.application.teams.board_mentions import BoardWrite
 from ase.container import Container
 from ase.domain.team_board import TeamBoardPost
 from ase.domain.users import User
@@ -34,6 +36,13 @@ async def _out(
     return TeamBoardPostOut.from_post(
         post, author.display_name if author else "Unknown operator", subject
     )
+
+
+async def _written(
+    container: Container, session: SessionDep, user: User, write: BoardWrite
+) -> TeamBoardWriteOut:
+    base = await _out(container, session, user, write.post)
+    return TeamBoardWriteOut.extend(base, write.notified)
 
 
 @router.get("/posts")
@@ -59,8 +68,8 @@ async def create_post(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-) -> TeamBoardPostOut:
-    post = await container.team_board(session).create(
+) -> TeamBoardWriteOut:
+    write = await container.team_board(session).create(
         user,
         team_id,
         body.text,
@@ -68,7 +77,7 @@ async def create_post(
         context,
         body.subject.to_subject() if body.subject else None,
     )
-    return await _out(container, session, user, post)
+    return await _written(container, session, user, write)
 
 
 @router.patch("/posts/{post_id}")
@@ -80,11 +89,11 @@ async def edit_post(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-) -> TeamBoardPostOut:
-    post = await container.team_board(session).edit(
+) -> TeamBoardWriteOut:
+    write = await container.team_board(session).edit(
         user, team_id, post_id, body.text, body.expected_revision, context
     )
-    return await _out(container, session, user, post)
+    return await _written(container, session, user, write)
 
 
 @router.delete("/posts/{post_id}", status_code=204, response_class=Response)

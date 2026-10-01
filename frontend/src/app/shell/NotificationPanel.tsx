@@ -7,6 +7,7 @@ import type { ReportJob } from '@/lib/api/reportJobs';
 import { formatUtc } from '@/lib/format';
 
 import { BellAlertList, headingClass } from './BellAlertList';
+import { BellMentionList } from './BellMentionList';
 import { BellSettings } from './BellSettings';
 import type { BellAlertActions } from './useBellAlertActions';
 import type { NotificationBellState } from './useNotificationBell';
@@ -66,14 +67,16 @@ export function NotificationPanel({
   settings,
   headingRef,
   returnFocus,
+  keepFocus,
 }: {
   state: NotificationBellState;
   actions: BellAlertActions;
   settings: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
   returnFocus: RefObject<HTMLElement | null>;
+  keepFocus: () => void;
 }) {
-  const { alerts, jobs, close } = state;
+  const { alerts, mentions, jobs, close } = state;
   if (settings) return <BellSettings state={state} />;
   if (state.loading && alerts.items.length === 0 && jobs.items.length === 0)
     return <LoadingNote label="Checking for notifications…" />;
@@ -88,16 +91,18 @@ export function NotificationPanel({
     );
   const showAlerts = !alerts.muted && (alerts.total > 0 || alerts.error !== null);
   const showJobs = !jobs.muted && (jobs.total > 0 || jobs.error !== null);
+  const showMentions = !mentions.muted && (mentions.total > 0 || mentions.error !== null);
   const listNotice = actions.notice?.alertId === null && !showAlerts;
-  const empty = !showAlerts && !showJobs;
+  const empty = !showAlerts && !showJobs && !showMentions;
+  const anyMuted = alerts.muted || jobs.muted || mentions.muted;
   return (
     <div className="space-y-4">
       {empty && (
         <p className="px-2 text-sm text-muted">
           You are up to date.{' '}
-          {alerts.muted || jobs.muted
+          {anyMuted
             ? 'Some notification kinds are hidden by your settings.'
-            : 'New alerts and finished research will appear here.'}
+            : 'New alerts, board mentions and finished research will appear here.'}
         </p>
       )}
       {(showAlerts || listNotice) && (
@@ -108,6 +113,7 @@ export function NotificationPanel({
           returnFocus={returnFocus}
         />
       )}
+      {showMentions && <BellMentionList state={state} keepFocus={keepFocus} />}
       {showJobs && <FinishedResearch state={state} />}
       {(alerts.error ?? jobs.error) && (
         <Button variant="ghost" className="min-h-11" onClick={state.retry}>
