@@ -8,6 +8,7 @@ import sqlalchemy as sa
 from alembic import op
 
 from ase.adapters.persistence.report_job_models import ReportJobRow
+from ase.adapters.persistence.report_job_projection import compact_summary
 from ase.adapters.persistence.report_job_usage_models import ReportJobUsageRow
 from ase.adapters.persistence.report_job_usage_projection import usage_rows
 from ase.application.report_jobs.budget import JobInterrupted
@@ -89,7 +90,7 @@ def _backfill() -> None:
     for row in _checkpoints():
         payload, usage = _validated(row)
         connection.execute(
-            jobs.update().where(jobs.c.id == row["id"]).values(summary=payload.get("summary", {}))
+            jobs.update().where(jobs.c.id == row["id"]).values(summary=compact_summary(payload))
         )
         if usage:
             connection.execute(ReportJobUsageRow.__table__.insert(), usage)
