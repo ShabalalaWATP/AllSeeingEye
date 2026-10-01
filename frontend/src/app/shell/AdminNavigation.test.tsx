@@ -25,9 +25,7 @@ describe('administration shell chrome', () => {
   it('links the verified session indicator to security settings', async () => {
     const { user, router } = renderApp('/admin/audit', 'admin');
     await screen.findByRole('heading', { name: 'Audit log', level: 1 });
-    await user.click(
-      screen.getByRole('link', { name: 'Verified administrator session: security settings' }),
-    );
+    await user.click(screen.getByRole('link', { name: /^Verified session Administrator/ }));
     expect(router.state.location.pathname).toBe('/admin/security');
   });
 

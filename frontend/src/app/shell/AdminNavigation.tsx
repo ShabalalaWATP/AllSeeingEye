@@ -31,7 +31,8 @@ export function AdminNavigation({
         title={collapsed ? 'Administration' : undefined}
         className={`flex items-center gap-3 border-b border-line/70 py-4 ${collapsed ? 'justify-center px-2' : 'px-4'}`}
       >
-        <BrandMark size={collapsed ? 34 : 38} still />
+        {/* The text names the link, so the mark itself stays silent. */}
+        <BrandMark size={collapsed ? 34 : 38} still decorative />
         <span className={collapsed ? 'sr-only' : 'min-w-0 leading-tight'}>
           <span className="block truncate text-xs text-muted">The All Seeing Eye</span>
           <span className="mt-0.5 flex items-center gap-2 font-semibold">

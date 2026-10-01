@@ -10,7 +10,13 @@ export function PersonalLinks() {
   const user = useAuthStore((state) => state.user);
   return (
     <>
-      <Link to="/account" aria-label="Your profile" title="Your profile" className={linkClass}>
+      <Link
+        to="/account"
+        // Wider screens show the display name, so the name carries it too (WCAG 2.5.3).
+        aria-label={user === null ? 'Your profile' : `Your profile: ${user.display_name}`}
+        title="Your profile"
+        className={linkClass}
+      >
         <svg
           width="20"
           height="20"

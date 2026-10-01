@@ -82,7 +82,8 @@ export function LeftRail({
         title={collapsed ? 'The All Seeing Eye' : undefined}
         className={`flex items-center gap-3 py-3.5 ${collapsed ? 'justify-center px-2' : 'px-3'}`}
       >
-        <BrandMark size={collapsed ? 34 : 38} still={lite} />
+        {/* The wordmark names the link, so the mark itself stays silent. */}
+        <BrandMark size={collapsed ? 34 : 38} still={lite} decorative />
         <Wordmark className={collapsed ? 'sr-only' : 'min-w-0 leading-snug'} />
       </Link>
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">

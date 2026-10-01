@@ -101,7 +101,7 @@ function SessionContext() {
   return (
     <Link
       to="/admin/security"
-      aria-label="Verified administrator session: security settings"
+      aria-label="Verified session Administrator: security settings"
       title="The server verified this administrator session. Administrator sessions require multi-factor verification. Open security settings."
       className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-muted hover:bg-surface-2 hover:text-text md:inline-flex"
     >
