@@ -40,7 +40,7 @@ def test_bell_preference_migration_constrains_rows_matches_models_and_downgrades
         connection.execute(metadata.tables["users"].insert().values(id=user))
         connection.execute(metadata.tables["indicators"].insert().values(id=rule))
         migration = _migration(connection)
-        assert migration.revision == "0080" and migration.down_revision == "0078"
+        assert migration.revision == "0080" and migration.down_revision == "0079"
         migration.upgrade()
         assert set(inspect(connection).get_table_names()) >= TABLES
         preferences = BellPreferenceRow.__table__
