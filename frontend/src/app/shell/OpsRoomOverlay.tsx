@@ -1,15 +1,23 @@
+import { lazy, Suspense } from 'react';
+
 import { BrandMark } from '@/components/brand/BrandMark';
 import { Button } from '@/components/ui/Button';
 import { useShellAlerts } from './useShellAlerts';
 import { useGlobeStore } from '@/stores/globe';
+import { useLiveViewStore } from '@/stores/liveView';
 
 const SHOWN = 3;
+// Only a wall that plays a saved playlist downloads the rotation.
+const OpsRoomRotation = lazy(() => import('./OpsRoomRotation'));
 
 /** What the wall screen carries over the turning globe: the brand, an exit hint and live alerts. */
 export function OpsRoomOverlay() {
   const lite = useGlobeStore((state) => state.lite);
   const { items: alerts, total } = useShellAlerts();
   const setOpsRoom = useGlobeStore((state) => state.setOpsRoom);
+  const playlistId = useLiveViewStore((state) => state.playlistId);
+  const rotationNotice = useLiveViewStore((state) => state.rotationNotice);
+  const dismissNotice = useLiveViewStore((state) => state.dismissNotice);
 
   return (
     <>
@@ -35,6 +43,22 @@ export function OpsRoomOverlay() {
             </div>
           )}
         </aside>
+      )}
+      {playlistId !== null && (
+        <Suspense fallback={null}>
+          <OpsRoomRotation />
+        </Suspense>
+      )}
+      {rotationNotice !== null && (
+        <div
+          role="status"
+          className="absolute bottom-20 left-3 z-20 flex items-center gap-2 rounded-card border border-line bg-ground/90 px-3 py-2 text-xs text-text"
+        >
+          {rotationNotice}
+          <Button variant="ghost" className="min-h-11" onClick={dismissNotice}>
+            Dismiss
+          </Button>
+        </div>
       )}
       <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3">
         <BrandMark still={lite} />

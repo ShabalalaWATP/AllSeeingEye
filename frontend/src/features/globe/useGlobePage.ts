@@ -39,8 +39,10 @@ import { useEyeMapContext } from './useEyeMapContext';
 import { useAssistantMapSelection } from './useAssistantMapSelection';
 import { useMapFocus } from './useMapFocus';
 import { useCatalogueCloser } from './useCatalogueCloser';
+import { useGlobeLiveViews } from './useGlobeLiveViews';
 
 export function useGlobePage() {
+  const preferences = useGlobePreferences();
   const {
     mode,
     setMode,
@@ -52,7 +54,7 @@ export function useGlobePage() {
     toggleLite,
     interference,
     opsRoom,
-  } = useGlobePreferences();
+  } = preferences;
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
   const gnss = useInterference(interference && visible);
@@ -85,6 +87,7 @@ export function useGlobePage() {
     quality,
     storySize,
   } = data;
+  const liveViews = useGlobeLiveViews(engine, preferences, data, gnssFilters);
   const network = useNetworkMap(country, countryByIso);
   const radar = useRadarAttackMap(!hidden.includes('cyber'), visible, countryByIso);
   const regions = useConflictRegions(supported && !hidden.includes('conflict'), country);
@@ -261,7 +264,7 @@ export function useGlobePage() {
     terminator,
     lite,
     interference,
-    opsRoom,
+    opsRoom: opsRoom && !liveViews.rotating,
     reducedMotion,
     visible,
     now,
@@ -342,6 +345,7 @@ export function useGlobePage() {
       cyberSelection,
       networkSelection,
     },
+    liveViews,
     now,
   };
 }

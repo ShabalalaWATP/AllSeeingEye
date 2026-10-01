@@ -236,3 +236,50 @@ four configured secret values found no leaks.
 Interactive browser and GPU inspection remains blocked by the existing browser
 policy. This repair has measured CPU and API evidence, not an observed visual
 soak test or a guarantee that GPU-driver failures cannot occur.
+
+## 1 October: sustained live-event batches (KAN-81)
+
+Fixture: `frontend/src/test/streamFixture.ts` and
+`frontend/src/features/globe/GlobePage.streamBenchmark.test.tsx`. The real map route
+runs with fake MapLibre and deck.gl in jsdom (React development build). A full
+5,000-record mirror of mixed located categories receives 20 batches of 250 new
+records at the cap, 20 batches of 250 updates to existing records, and 20 mixed
+batches of 50 expiries and 200 new records. A fourth scenario switches the view mode
+as each batch lands, every 250 ms, outside `act()`, and times the switch to its
+commit. Each figure below is the median of five interleaved runs on the same
+developer machine, before (`e20f1b0c`) and after this change, while other work was
+running. They are laboratory evidence for this fixture, not browser GPU figures or a
+guarantee for any device.
+
+| Scenario (ms) | Before median | Before max | After median | After max |
+| --- | --- | --- | --- | --- |
+| New records at the cap | 50.9 | 87.3 | 40.6 | 65.2 |
+| Existing-record updates | 35.2 | 52.1 | 33.1 | 50.2 |
+| Mixed expiry and new records | 68.3 | 80.4 | 46.0 | 69.7 |
+| Store merge only, new records | 28.1 | | 17.8 | |
+| Store merge only, mixed | 39.6 | | 18.6 | |
+| View-mode switch during a batch | 38.9 | 64.7 | 23.2 | 54.2 |
+
+The targets for this fixture remain a median of at most 20 ms and a maximum under
+50 ms. They are not met in jsdom's development build, where most remaining time is
+the event-dependent rebuild (filters, counts, clustering and deck layers).
+
+Changes:
+
+- A mixed stream batch is one store transaction (`applyBatch`): expiries then
+  upserts, one eviction pass, one list build and one notification. Last update
+  wins per record, source reservations, the 5,000 cap, selection clearing and the
+  expire-then-upsert change notifications are unchanged. The sorted list is
+  merged rather than re-sorted, and eviction parses each record's timestamps once.
+- The map's derived views read the list through a React transition
+  (`useStreamedEventList`), so an ordinary delta rebuild yields to clicks, typing
+  and control changes. Clearing the mirror after a stream gap, and the first
+  records after it, still apply at once, so stale records never linger. A pending
+  rebuild never clears a selection that the next view will contain.
+- Representative stable controls are memoised (view mode, canvas host, navigation,
+  clocks, page heading, map style and appearance). A regression in
+  `GlobePage.performance.test.tsx` checks that an event batch commits none of them
+  while counts and layers update.
+
+Limit: no real-browser performance trace was recorded for this change. That needs
+the full stack with sustained live feeds and remains a manual follow-up.

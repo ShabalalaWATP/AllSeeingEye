@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useMinuteClock } from './useMinuteClock';
 
 export const WORLD_CLOCKS = [
@@ -25,7 +26,7 @@ const formatters = WORLD_CLOCKS.map(({ zone }) => ({
   }),
 }));
 
-export function WorldClocks() {
+export const WorldClocks = memo(function WorldClocks() {
   const now = useMinuteClock();
   return (
     <section
@@ -51,4 +52,4 @@ export function WorldClocks() {
       </dl>
     </section>
   );
-}
+});

@@ -76,6 +76,11 @@ The source catalogue also lists data used outside the feed scheduler:
 
 - Base maps and request-time services, including OpenFreeMap, terrain, place search,
   routing and optional Ordnance Survey mapping.
+- Optional dated daily imagery from NASA Global Imagery Browse Services (GIBS):
+  MODIS Terra, MODIS Aqua and VIIRS Suomi NPP corrected-reflectance true colour,
+  roughly 250 m to 1 km per pixel. It is off by default, drawn for one validated date
+  at a time and credited on the map as "Imagery from NASA GIBS, part of NASA ESDIS".
+  NASA imagery carries no usage restrictions; credit NASA when reusing it.
 - Public camera indexes and curated camera catalogues. Listing a camera does not
   guarantee that its current stream is accessible.
 - Packaged infrastructure registers for energy, data centres, semiconductors, cables,
@@ -86,6 +91,14 @@ The source catalogue also lists data used outside the feed scheduler:
 Snapshots carry their own attribution and dates. A mapped site is not confirmation
 of its present operation or ownership. Browser-loaded maps and camera services can
 receive the browser's network address and requested view.
+
+GIBS tiles load directly from `https://gibs.earthdata.nasa.gov`, which the production
+Content-Security-Policy admits in `img-src` and `connect-src`, in the same way as the
+EOX imagery. Proxying them through the API was considered and not chosen: the
+imagery is public, coarse and opt-in, and a proxy would add server bandwidth for no
+stronger guarantee. NASA therefore receives the network address and viewed area of
+anyone who switches the layer on, as the controls state. Only a fixed list of layers
+and a date inside each product's published range ever reach a tile URL.
 
 ## Understanding availability
 

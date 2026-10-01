@@ -1,5 +1,5 @@
 import { Children, isValidElement, useEffect, useId, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { resolveMapPanel } from '@/lib/mapLayerDirectory';
 import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
@@ -15,6 +15,11 @@ export function ControlPanel({ children }: PanelProps) {
 }
 /** Non-modal tools leave map gestures available, including while measuring. */
 export type OpenPanel = (label: string, button?: HTMLButtonElement | null) => void;
+/**
+ * Opens a panel from a control outside the rails without toggling it closed, moves focus to
+ * the first element matching `focus` inside it, and returns focus to `opener` on close.
+ */
+export type ShowPanel = (label: string, opener: HTMLElement, focus: string) => void;
 
 export function GlobeControls({
   children,
@@ -26,6 +31,7 @@ export function GlobeControls({
   requestedPanel,
   requestKey,
   initial = null,
+  showRef,
 }: {
   children: ReactNode | ((open: OpenPanel) => ReactNode);
   layers: ReactNode | ((open: OpenPanel, active: string | null) => ReactNode);
@@ -39,6 +45,8 @@ export function GlobeControls({
   requestKey?: string;
   /** Backwards-compatible external request. Changes are synchronised after mount. */
   initial?: string | null;
+  /** Receives a handle that opens a panel from outside the rails, such as a skip link. */
+  showRef?: RefObject<ShowPanel | null>;
 }) {
   const requested = requestedPanel === undefined ? initial : requestedPanel;
   const incoming = resolveMapPanel(requested) ?? requested;
@@ -69,7 +77,11 @@ export function GlobeControls({
     changed.current?.(active);
   }, [active]);
   const id = useId();
-  const [opener, setOpener] = useState<HTMLButtonElement | null>(null);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
+  // A direct entry names what to focus inside the panel; the tick re-runs focus when the
+  // panel was already open.
+  const entryFocus = useRef<string | null>(null);
+  const [entryTick, setEntryTick] = useState(0);
   const closeButton = useRef<HTMLButtonElement>(null);
   const chooserClose = useRef<HTMLButtonElement>(null);
   const toolsButton = useRef<HTMLButtonElement>(null);
@@ -100,8 +112,28 @@ export function GlobeControls({
     toolsButton.current?.focus();
   };
   useEffect(() => {
-    if (active) closeButton.current?.focus();
-  }, [active, opener, requestKey]);
+    if (!showRef) return;
+    showRef.current = (label, from, focus) => {
+      setOpener(from);
+      entryFocus.current = focus;
+      setEntryTick((tick) => tick + 1);
+      setState((current) => ({ ...current, active: label, collapsed: false, chooser: false }));
+      navigated.current?.(label);
+    };
+    return () => {
+      showRef.current = null;
+    };
+  }, [showRef]);
+  useEffect(() => {
+    if (!active) return;
+    const focus = entryFocus.current;
+    entryFocus.current = null;
+    const inspector = document.getElementById(id);
+    const target = focus ? inspector?.querySelector<HTMLElement>(focus) : null;
+    if (target) target.focus();
+    // The address echo of an open panel must not pull focus back out of its content.
+    else if (!inspector?.contains(document.activeElement)) closeButton.current?.focus();
+  }, [active, opener, requestKey, entryTick, id]);
   useEffect(() => {
     if (chooser) chooserClose.current?.focus();
   }, [chooser]);

@@ -7,6 +7,7 @@ import { boundedEvents, mergeSnapshots } from './events.coverage';
 import { SnapshotRefresh } from './events.refresh';
 import { publishEventChange } from './events.changes';
 import { selectionAfterMirrorUpdate, type SelectionOwner } from './events.selection';
+import { mergeMirrorBatch, toList } from './events.batch';
 export {
   filterByCountry,
   filterByWindow,
@@ -55,6 +56,8 @@ export interface EventsState {
   cancelLoad: () => void;
   applyUpsert: (events: LiveEvent[]) => void;
   applyExpire: (ids: string[]) => void;
+  /** Expiries then upserts, as one bounded mirror update and one store notification. */
+  applyBatch: (expired: readonly string[], events: readonly LiveEvent[]) => void;
   handleStreamMessage: (message: SseMessage) => void;
   setStatus: (status: StreamStatus) => void;
   toggleCategory: (category: Category) => void;
@@ -82,22 +85,6 @@ export const initialEventsState = {
   selectedId: null as string | null,
   selectionOwner: 'mirror' as SelectionOwner,
 };
-
-/** Newest first, with the id as a tie-break so the order is stable. */
-function toList(byId: Record<string, LiveEvent>): LiveEvent[] {
-  return Object.values(byId).sort(
-    (a, b) =>
-      (b.published_at ?? '').localeCompare(a.published_at ?? '') || a.id.localeCompare(b.id),
-  );
-}
-
-function without(
-  byId: Record<string, LiveEvent>,
-  ids: readonly string[],
-): Record<string, LiveEvent> {
-  const gone = new Set(ids);
-  return Object.fromEntries(Object.entries(byId).filter(([id]) => !gone.has(id)));
-}
 
 export const useEventsStore = create<EventsState>()((set, get) => {
   const snapshotBarriers = new Set<() => void>();
@@ -213,40 +200,40 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
 
     applyUpsert: (events) => {
-      if (events.length === 0) return;
-      publishEventChange({ kind: 'upsert', events });
-      const current = get();
-      let merged = current.byId;
-      for (const event of events) {
-        const visible = insideCoverage(event, current.coverageBounds);
-        record(event.id, visible ? event : null);
-        if (visible ? merged[event.id] === event : !(event.id in merged)) continue;
-        if (merged === current.byId) merged = { ...current.byId };
-        if (visible) merged[event.id] = event;
-        else Reflect.deleteProperty(merged, event.id);
-      }
-      if (merged === current.byId) return;
-      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, current.selectedId);
-      set({
-        byId,
-        list: toList(byId),
-        mirrorCapped: get().mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
-        selectedId: selectionAfterMirrorUpdate(get(), byId),
-      });
+      get().applyBatch([], events);
     },
 
     applyExpire: (ids) => {
-      if (ids.length === 0) return;
-      publishEventChange({ kind: 'expire', ids });
-      for (const id of ids) record(id, null);
-      const selected = get().selectedId;
-      if (selected !== null && ids.includes(selected)) get().select(null);
-      if (!ids.some((id) => id in get().byId)) return;
-      const byId = without(get().byId, ids);
+      get().applyBatch(ids, []);
+    },
+
+    applyBatch: (expired, events) => {
+      if (expired.length > 0) publishEventChange({ kind: 'expire', ids: expired });
+      if (events.length > 0) publishEventChange({ kind: 'upsert', events });
+      const current = get();
+      const merged = mergeMirrorBatch(
+        current.byId,
+        current.coverageBounds,
+        expired,
+        events,
+        record,
+      );
+      // An expired selection clears whoever owns it, as the stream says the record is gone.
+      const selection =
+        current.selectedId !== null && expired.includes(current.selectedId)
+          ? { selectedId: null, selectionOwner: 'mirror' as const }
+          : current;
+      if (merged === null) {
+        if (selection !== current) set(selection);
+        return;
+      }
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, selection.selectedId);
       set({
         byId,
-        list: toList(byId),
-        selectedId: selectionAfterMirrorUpdate(get(), byId),
+        list: toList(byId, current.list),
+        mirrorCapped: current.mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
+        selectedId: selectionAfterMirrorUpdate(selection, byId),
+        selectionOwner: selection.selectionOwner,
       });
     },
 

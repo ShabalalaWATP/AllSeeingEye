@@ -35,6 +35,51 @@ report filters. See [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
 - Map style and British National Grid remain on the right, alongside drawing,
   measurement, routing and RF planning.
 
+## Event time and replay
+
+**Event time** sets the trailing window (1 h to 7 d, or everything retained) and
+offers **Replay retained events**. Replay scrubs, steps or plays hour by hour
+through the events this browser already holds, in the order they appeared, so a
+sequence such as a strike, an outage and the reporting that followed can be read
+in order.
+
+- Replay is entirely in the browser. It makes no requests, stores nothing and has
+  no history beyond the bounded live store: at most 5,000 client events, within the
+  chosen window and each category's retention. Expired events cannot be replayed.
+- Records are ordered by the map's existing time basis: publication time for
+  reporting, acquisition time for observations and the GDELT indexing time for
+  GDELT news. Retrieval time is never substituted. Events without a usable time
+  are excluded and counted beside the control.
+- The slider and step buttons stop at the oldest retained event (the retention
+  boundary) and at the newest, with a message at each.
+- While replay is on, a **Replay, not live** banner stays on the map with the
+  replayed time and a **Return to live** action. Leaving the map or reloading
+  always returns to live.
+- Play advances one replayed hour per second. Automatic play is unavailable when
+  the system or account asks for reduced motion; stepping and the slider still
+  work. A polite announcer speaks start, pause, boundary and return to live, not
+  each playback tick.
+- Replay applies to the live event layers, counts and lists. GNSS, CCTV,
+  infrastructure and other catalogue layers keep their own coverage.
+
+## Daily satellite imagery
+
+**Map style** includes an off-by-default **Daily satellite imagery** switch for
+NASA GIBS true-colour composites (MODIS Terra, MODIS Aqua or VIIRS Suomi NPP) on
+a chosen UTC date, to compare clouds, smoke plumes, floods or burn scars with FIRMS
+detections. The base map stays underneath and borders and labels stay on top.
+
+- The date picker is limited to each product's first published date and today;
+  it defaults to yesterday, the last complete day. An invalid date draws nothing.
+- Resolution is roughly 250 m to 1 km per pixel. Tiles stop at zoom 9 and are
+  enlarged beyond it. Swath gaps, cloud and today's partial coverage are normal.
+- It works on both the globe and the flat map, ending near 85 degrees latitude
+  like other web map imagery.
+- The product, date and NASA GIBS credit stay visible on the map while it is on.
+  If tiles fail, a notice says so and the base map remains.
+
+See [Sources and evidence](02_DATA_SOURCES.md) for licence and privacy notes.
+
 ## Tools and the inspector
 
 The right-hand **Tools** menu groups controls as **Draw and measure**, **Research**,
@@ -69,6 +114,12 @@ drawing collections and radio studies explicitly in their respective tools.
 - Location quality puts filtering, search and matching records before the
   classification glossary. The active quality explanation and unplotted-record
   warning remain visible. Nation results say "loaded", avoiding a freshness claim.
+  The map route has one visually hidden page heading naming the selected view
+  (Globe view or Map view). The first stop in the main region is a link, Browse
+  loaded events as a list, shown on keyboard focus. It opens Location quality in
+  one activation, focuses its search field and returns focus to the link on close,
+  so loaded records are reachable without the canvas. Empty results explain why
+  and keep Clear search and Close tool available. The ops room hides the link.
 - Topics & time puts time choices first and uses labelled switches for additional
   topics. Aircraft/vessel filters retain native radio semantics with clearer
   selected states, consistent fields and pagination controls.
