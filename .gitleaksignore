@@ -3,3 +3,13 @@
 # the test. No literal credential exists; retain all other history scanning.
 55dd0dc5ed4d09883e1aa8b0af0815c5ded03356:backend/tests/test_report_job_performance.py:generic-api-key:122
 55dd0dc5ed4d09883e1aa8b0af0815c5ded03356:backend/tests/test_report_job_performance.py:generic-api-key:176
+
+# KAN-70: individually reviewed historical synthetic test values, not provider
+# credentials. Offline doubles/isolated fixtures use test-prefixed literals;
+# the evaluation marker uses a reserved .invalid URL. Ignore only these exact
+# commit/path/rule/line fingerprints; retain every rule and full-history scan.
+045685b8019a5a5669d8703dc546c355792a2526:backend/tests/evaluation_run_helpers.py:generic-api-key:20
+41464aae4cd5aa6a8c3faaede4fba2cb383d202e:backend/tests/test_source_assets.py:generic-api-key:31
+2b599d0af53d3f3a08a668722e57b5b09f140d5a:backend/tests/test_acled_credentials.py:generic-api-key:102
+d6b95602ef1a19a33b4630cd20bb35fa3799ffdd:backend/tests/test_map_feed_registration.py:generic-api-key:25
+64645b1728032cb01e6136f061d6f412d00e23d7:backend/tests/test_firms_feed.py:generic-api-key:17
