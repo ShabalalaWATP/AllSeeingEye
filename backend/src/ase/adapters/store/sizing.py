@@ -24,23 +24,24 @@ def oldest_first(events: Mapping[str, Event]) -> Iterator[str]:
 
 
 def estimate_bytes(event: Event) -> int:
-    text = (
-        event.id,
-        event.source_id,
-        event.subtype,
-        event.title,
-        event.summary,
-        event.url,
-        event.language,
-        event.title_en,
-        event.country_iso,
-        event.grade_rationale,
-        event.story_id,
-        event.content_hash,
+    size = EVENT_OVERHEAD_BYTES + 4 * (
+        len(event.id or "")
+        + len(event.source_id or "")
+        + len(event.subtype or "")
+        + len(event.title or "")
+        + len(event.summary or "")
+        + len(event.url or "")
+        + len(event.language or "")
+        + len(event.title_en or "")
+        + len(event.country_iso or "")
+        + len(event.grade_rationale or "")
+        + len(event.story_id or "")
+        + len(event.content_hash or "")
     )
-    size = EVENT_OVERHEAD_BYTES + 4 * sum(len(value or "") for value in text)
-    size += sum(96 + 4 * (len(key) + len(str(value))) for key, value in event.attributes.items())
-    size += sum(64 + 4 * len(tag) for tag in event.tags)
+    for key, value in event.attributes.items():
+        size += 96 + 4 * (len(key) + len(str(value)))
+    for tag in event.tags:
+        size += 64 + 4 * len(tag)
     if event.geometry is not None:
         geometry = event.geometry
         size += len(geometry.source_geometry.encode("utf-8"))

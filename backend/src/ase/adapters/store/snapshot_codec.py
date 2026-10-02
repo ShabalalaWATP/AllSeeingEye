@@ -157,7 +157,11 @@ def _point(value: object) -> Point | None:
         return None
     if not isinstance(value, list) or len(value) != 2:
         raise ValueError("Invalid snapshot point")
-    lon, lat = (_number(item) for item in value)
+    if type(value) is list:
+        lon = _number(value[0])
+        lat = _number(value[1])
+    else:
+        lon, lat = (_number(item) for item in value)
     if lon is None or lat is None:
         raise ValueError("Invalid snapshot point")
     return Point(lon=lon, lat=lat)
@@ -166,6 +170,8 @@ def _point(value: object) -> Point | None:
 def _tags(value: object) -> frozenset[str]:
     if not isinstance(value, list) or len(value) > MAX_TAGS:
         raise ValueError("Invalid snapshot tags")
+    if type(value) is list and not value:
+        return frozenset()
     return frozenset(_text(tag, MAX_KEY) for tag in value)
 
 
