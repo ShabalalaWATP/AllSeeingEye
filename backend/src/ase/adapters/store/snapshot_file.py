@@ -130,6 +130,7 @@ class GzipSnapshotFile:
         remaining = self._max_decompressed
         signature = hmac.new(self._key, digestmod=hashlib.sha256)
         pending: bytes | None = None
+        decode = json.JSONDecoder(parse_constant=_reject_constant).decode
 
         def next_record() -> Any:
             nonlocal remaining, pending
@@ -144,7 +145,11 @@ class GzipSnapshotFile:
             if pending is not None:
                 signature.update(pending)
             pending = line
-            return json.loads(line.decode("utf-8"), parse_constant=_reject_constant)
+            text = line.decode("utf-8")
+            # Match json.loads(str), including its explicit leading-BOM rejection.
+            if text.startswith("\ufeff"):
+                raise json.JSONDecodeError("Unexpected UTF-8 BOM (decode using utf-8-sig)", text, 0)
+            return decode(text)
 
         header = next_record()
         if not isinstance(header, dict) or set(header) != {"format", "version", "saved_at"}:
