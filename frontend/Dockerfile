@@ -26,7 +26,7 @@ COPY frontend/ ./
 ARG BUILD_COMMAND=build
 RUN pnpm "$BUILD_COMMAND" && node scripts/precompress.js dist
 
-FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+FROM caddy:2.11.4-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.
 RUN apk upgrade --no-cache \
     && addgroup -S -g 10001 aseweb \
