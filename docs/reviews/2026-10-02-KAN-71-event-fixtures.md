@@ -64,7 +64,49 @@ Raw local records are retained outside Git under the task's
 covered attribution is separately retained in `ineligible-fixture-profile-238bace4`.
 The full selection proof is retained in `event-fixture-census`.
 
-A frozen, controlled comparison of only the original 26 cases is still pending at
-this checkpoint. The latest completed full CI remains 45.8000 PostgreSQL
-runner-minutes. KAN-71's maximum of 30 and five comparable before/five comparable
-after runs remain unmet. No whole-CI or release acceptance is claimed here.
+## Controlled local comparison
+
+The predeclared control/candidate/candidate/control sequence completed once on
+full tracked archives of `238bace4` and `4c0d2102`. Original test-function ASTs,
+production bytes, locks and eligibility/isolation guards were identical. Both
+arms used the same private Python 3.13.3 dependency installation, four workers,
+`--max-worker-restart=0`, real authentication and branch coverage. Equal ordinary-app
+warm-ups and two-second cooldowns preceded each measured subprocess. Pytest and
+bytecode caches were disabled.
+
+| Arm         | Full pytest subprocess seconds | Original cases | Actual clones |
+| ----------- | -----------------------------: | -------------: | ------------: |
+| Control 1   |                     58.2849590 |      26 passed |             0 |
+| Candidate 1 |                     48.8281401 |      26 passed |            26 |
+| Candidate 2 |                     49.2931777 |      26 passed |            26 |
+| Control 2   |                     57.0881717 |      26 passed |             0 |
+
+The medians were **57.6865654 and 49.0606589 seconds**, a reduction of
+**8.6259065 seconds (14.9531%)** in this local 26-case workload. All 104 measured
+case executions and four excluded warm-ups passed with no skips or fallbacks.
+No failed observation, replacement worker, retry or discarded arm exists.
+
+All four measured runs retained exactly the same **79,193 normalised `ase` branch
+arcs across 1,578 files**. This is partial-suite raw-data parity, not a global
+coverage percentage or aggregate coverage-gate claim. Every worker's loaded
+application/test file and import-spec origin was checked against its frozen root.
+Literal controls pins bound both ZIPs, the manifest and complete extracted file
+inventories before and after each arm and at final completion.
+
+Each arm used a fresh owned PostGIS service with two CPUs, 2 GiB RAM and 2 GiB
+tmpfs, with all durability flags on. Complete catalogues matched before warm-up,
+after warm-up and after measurement. Acknowledged creation/removal, exact-name
+absence and empty unique-label census proved cleanup without unresolved operations.
+The launcher exited 0 after all four cleanups and final evidence checks. Eleven
+offline protocol cases and ten ownership cases passed before execution.
+
+Independent security evidence review recomputed timings and reconciled every
+case, phase, import witness, raw coverage database, source/dependency seal and
+cleanup record. Records remain in `event-comparison-frozen` and
+`event-comparison-results`, outside Git. Publication changes after `4c0d2102` are
+documentation only and must preserve its measured source bytes.
+
+The latest completed full CI remains **45.8000 PostgreSQL runner-minutes**.
+KAN-71's maximum of 30 and five comparable before/five comparable after runs remain
+unmet. These local gains are not added to other diagnostics or extrapolated to
+whole-CI cost. Fresh full CI and release approval remain required.
