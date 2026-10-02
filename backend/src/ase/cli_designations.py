@@ -6,8 +6,6 @@ from typing import Annotated, Literal, cast
 
 import typer
 
-from ase.adapters.research_records.designation_import import import_designation_csv
-
 
 def import_designations(
     source: Annotated[Path, typer.Argument(help="Native UKSL or OFAC SDN CSV file")],
@@ -18,6 +16,10 @@ def import_designations(
     licence: Annotated[str, typer.Option(help="Applicable source licence or reuse restriction")],
 ) -> None:
     """Validate a selected CSV and create a bounded, immutable local snapshot."""
+    from ase.adapters.research_records.designation_import import (  # noqa: PLC0415
+        import_designation_csv,
+    )
+
     if authority not in {"uksl", "ofac_sdn"}:
         raise typer.BadParameter("Choose uksl or ofac_sdn.")
     try:

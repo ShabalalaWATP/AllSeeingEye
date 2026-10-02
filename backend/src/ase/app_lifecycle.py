@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
+from time import perf_counter
 from typing import Protocol
 
 from fastapi import FastAPI
@@ -13,6 +14,7 @@ from ase.container import Container
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.live_snapshot import build_live_snapshot
 from ase.container.original_asset_expiry import expire_original_assets
+from ase.infrastructure.startup import record_startup_phase
 
 
 class _Worker(Protocol):
@@ -34,6 +36,7 @@ async def _cancel(task: asyncio.Task[None]) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    startup_started = perf_counter()
     container: Container = app.state.container
     async with AsyncExitStack() as cleanup:
         # Register first so clients/database remain available until workers stop.
@@ -41,9 +44,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         cleanup.push_async_callback(container.dispose)
         # Restore retained public events before any feed starts. Its final save
         # runs after every worker below has stopped (ADR 0022).
+        snapshot_started = perf_counter()
         snapshot = build_live_snapshot(container)
         if snapshot is not None:
             await _start(cleanup, snapshot)
+        record_startup_phase("snapshot_restore", snapshot_started)
+        workers_started = perf_counter()
         if container.settings.feeds_enabled:
             await _start(cleanup, container.scheduler)
             await _start(cleanup, container.aviation_monitor)
@@ -66,4 +72,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         housekeeping.push_async_callback(_cancel, annotation_monitoring)
         await _start(reporting, container.report_job_worker)
+        record_startup_phase("workers_started", workers_started)
+        record_startup_phase("ready", startup_started)
         yield

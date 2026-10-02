@@ -19,8 +19,11 @@ from ase.domain.annotation_comparison import (
 )
 from ase.domain.annotation_deltas import annotation_deltas, annotation_rows, evidence_deltas
 from ase.domain.annotation_monitoring import AnnotationMonitor, MonitorMode, WatchedRevision
+from ase.domain.claim_revisions import ClaimRevision
 from ase.domain.confidence_comparison import confidence_deltas
 from ase.domain.errors import Conflict, InvalidRequest
+from ase.domain.identity_review import IdentityDecisionRevision
+from ase.domain.relationship_review import RelationshipReviewRevision
 
 
 def watches_from_selection(value: ComparisonSelection) -> tuple[WatchedRevision, ...]:
@@ -68,51 +71,27 @@ async def resolve_side(
     *,
     latest: bool = False,
 ) -> tuple[ComparisonSide, tuple[WatchedRevision, ...]]:
-    record = await selector.claims._report(access, monitor.report_id)
+    record = await selector.claims.resolve_report(access, monitor.report_id)
     access.require_same_scope(
         monitor.created_by, monitor.team_id, record.created_by, record.team_id
     )
-    version = await selector.claims._version(record.id, monitor.version_number)
-    claims, identities, relationships, watches = [], [], [], []
+    version = await selector.claims.resolve_version(record.id, monitor.version_number)
+    claims: list[ClaimRevision] = []
+    identities: list[IdentityDecisionRevision] = []
+    relationships: list[RelationshipReviewRevision] = []
+    watches: list[WatchedRevision] = []
     for watch in monitor.watches:
-        if watch.kind == "claim":
-            root, anchor = await selector.claims._anchor(access, watch.root_id)
-            value = await selector.claims._revision(
-                root, anchor, root.latest_revision_id if latest else watch.revision_id
-            )
-            claims.append(value)
-            report_id, number, revision_id = root.report_id, root.report_version_number, value.id
-        elif watch.kind == "identity" and selector.identities is not None:
-            identity_root, anchor = await selector.identities._anchor(access, watch.root_id)
-            identity = await selector.identities._revision(
-                identity_root,
-                anchor,
-                identity_root.latest_revision_id if latest else watch.revision_id,
-            )
-            identities.append(identity)
-            report_id, number, revision_id = (
-                identity_root.report_id,
-                identity_root.report_version_number,
-                identity.id,
-            )
-        elif watch.kind == "relationship" and selector.relationships is not None:
-            relationship_root, anchor = await selector.relationships._anchor(access, watch.root_id)
-            relationship = await selector.relationships._revision(
-                relationship_root,
-                anchor,
-                relationship_root.latest_revision_id if latest else watch.revision_id,
-            )
-            relationships.append(relationship)
-            report_id, number, revision_id = (
-                relationship_root.report_id,
-                relationship_root.report_version_number,
-                relationship.id,
-            )
-        else:
+        resolver = selector.annotation_resolvers.get(watch.kind)
+        if resolver is None:
             raise InvalidRequest("A watched annotation kind is unavailable.")
+        resolved = await resolver(access, watch.root_id, None if latest else watch.revision_id)
+        claims.extend(resolved.claims)
+        identities.extend(resolved.identities)
+        relationships.extend(resolved.relationships)
+        report_id, number = resolved.report_id, resolved.version_number
         if report_id != record.id or number != monitor.version_number:
             raise Conflict("A watched root no longer has its exact report anchor.")
-        watches.append(replace(watch, revision_id=revision_id))
+        watches.append(replace(watch, revision_id=resolved.revision_id))
     result = ComparisonSide(
         record.id,
         version.id,

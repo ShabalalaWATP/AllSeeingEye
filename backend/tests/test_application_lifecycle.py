@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import FastAPI
+from structlog.testing import capture_logs
 
 from ase.app_lifecycle import lifespan
 from ase.application.ukraine_digest import UkraineDigestService
@@ -231,3 +232,13 @@ def test_importing_factory_does_not_construct_application():
         text=True,
     )
     assert result.returncode == 0, result.stderr
+
+
+async def test_startup_phase_logs_cover_snapshot_workers_and_readiness(runtime):
+    app, _, _ = runtime
+    with capture_logs() as rows:
+        async with lifespan(app):
+            pass
+    phases = [row for row in rows if row.get("event") == "startup.phase"]
+    assert [row["phase"] for row in phases] == ["snapshot_restore", "workers_started", "ready"]
+    assert all(isinstance(row["duration_ms"], float) and row["duration_ms"] >= 0 for row in phases)

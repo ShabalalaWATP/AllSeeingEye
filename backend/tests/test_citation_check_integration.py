@@ -236,7 +236,7 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
     # Selection is now a plan and a finish; this test pins the frozen result, not how
     # the pool was ordered, so it replaces the whole job-level selection.
     monkeypatch.setattr(
-        "ase.application.reports.production.select_for_job", lambda *a, **k: selection
+        "ase.application.reports.production_preparation.select_for_job", lambda *a, **k: selection
     )
     collection = AsyncMock()
     collection.plan = synthetic_plan
