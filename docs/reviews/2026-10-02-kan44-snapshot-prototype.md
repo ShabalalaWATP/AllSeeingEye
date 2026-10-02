@@ -95,8 +95,8 @@ records support that report; the earlier failed fixture attempts remain intact.
 
 These isolated load savings do **not** establish the remaining three-second
 SIGTERM-to-first-ready acceptance. KAN-44 remains open, the PR remains a draft,
-and no new production merge or release has been approved. Any further candidate
-or full restart comparison needs its own reviewed scope and controlled evidence.
+and any further candidate or full restart comparison needs its own reviewed
+scope and controlled evidence.
 
 ## Optional Web Push imports
 
@@ -129,3 +129,62 @@ comparison above remains attributed only to immutable commit `2ffe17a4`; its
 0.2948-second median must not be added to instrumented import costs or assumed to
 apply to this later candidate. Any complete restart comparison requires separately
 reviewed frozen inputs and the unchanged conservative acceptance criterion.
+
+## Complete restart result for 719d7e11
+
+The subsequent fixed reference-host campaign compared historical release
+`1d924272` with the unmerged snapshot and Web Push candidate `719d7e11`.
+All fourteen observations completed: two retained excluded warmups followed by
+three ABBA blocks, without retries or discarded samples. The supported releases
+used their real schema and dependency graphs, with 61 common package versions
+and thirteen additional candidate packages. This is a complete-release
+comparison, not isolated attribution to either optimisation or production downtime.
+
+All six conservative improvements were 2.640197706, 2.996846286, 2.904568182,
+2.915817062, 2.439129449 and 3.016279307 seconds. **Only one of six meets the
+predeclared three-second requirement, so the target remains unproven.** The raw
+median was 3.2225701395 seconds; it does not override the conservative bounds.
+
+Every initial and replacement process restored 100,000 events. Full content,
+ordered IDs, real readiness, migration heads, source/image identities, numeric
+phase values and lifecycle witnesses agreed. Actual migration imports were
+1,429 for the historical baseline and 199 for the candidate. Independent quality
+and security audits recomputed the raw results and found no evidence discrepancy.
+All 1,226 commands were bounded, with no retries or unresolved operation; the
+final owned container, volume and error censuses were empty before completion.
+
+Private evidence is retained in
+`C:/Users/alexo/.codex/worktrees/kan44-snapshot-restore/restart-candidate-20261002`.
+The report SHA256 is
+`b8ae5ceededd8ce1c971b440f20295e9c8cc566014daf8425faa7168d88b6b6c`.
+The earlier isolated comparison and negative restart campaigns remain unchanged.
+
+A single-process Docker bootstrap was assessed but not implemented. Its possible
+import reuse has no measured benefit, and migration-phase PID1 signals, repeated
+stops during engine disposal and Uvicorn's import/handler handover require
+additional lifecycle work. The existing launcher and standalone CLI are unchanged.
+
+## Strict collection decoding follow-up
+
+The retained attribution profile identified generator setup and resumption for
+100,000 point records and empty tag/transformation collections. The next small
+candidate validates the two numeric coordinates directly for exact built-in
+lists and returns empty immutable collections after the existing type and size
+checks. Container subclasses retain the original iteration behaviour. Non-empty
+tags and transformations still follow their original validation paths, including
+every `Point`, `TextTransformation` and `Event` constructor. JSON decoding, HMAC,
+file limits, invalid-record skipping, memory accounting and retention are unchanged.
+
+New companion cases and existing snapshot/provenance checks passed against the
+unchanged predecessor: **112 passed, one existing Windows symlink skip**. An
+initial test fixture incorrectly assumed the shared event builder had empty tags;
+the fixture was made explicit before production edits. Subsequent checks,
+including the added container-subclass regression and store/service consumers,
+passed: **225 passed, one existing Windows symlink skip**. Scoped Ruff, formatting,
+mypy, Bandit and whitespace checks passed. These are correctness checks only;
+coverage and performance were not measured for this follow-up.
+Independent quality and security reviews found no actionable issue in the exact
+two-file production change and companion tests, including the preserved subtype
+behaviour. The next proposed acceptance comparison uses the complete restart
+path and the same six-pair conservative threshold, subject to its separate frozen
+source, harness and prepared-input review gates.

@@ -35,6 +35,8 @@ def provenance_to_dict(value: SourceDate | TextTransformation) -> dict[str, Any]
 def transformations_from_list(rows: Any) -> tuple[TextTransformation, ...]:
     if not isinstance(rows, list | tuple) or len(rows) > 4:
         raise ValueError("Invalid frozen transformations")
+    if type(rows) in (list, tuple) and not rows:
+        return ()
     return tuple(
         TextTransformation(
             **{
