@@ -70,12 +70,14 @@ def _base(row: Mapping[str, Any]) -> dict[str, Any]:
 def validate_provenance(
     transformations: tuple[TextTransformation, ...], dates: tuple[SourceDate, ...]
 ) -> None:
-    if (
-        not isinstance(transformations, tuple)
-        or len(transformations) > 4
-        or any(not isinstance(row, TextTransformation) for row in transformations)
-        or not isinstance(dates, tuple)
-        or len(dates) > 4
-        or any(not isinstance(row, SourceDate) for row in dates)
-    ):
-        raise ValueError("Provenance requires at most four immutable transformations and dates")
+    message = "Provenance requires at most four immutable transformations and dates"
+    if not isinstance(transformations, tuple) or len(transformations) > 4:
+        raise ValueError(message)
+    for row in transformations:
+        if not isinstance(row, TextTransformation):
+            raise ValueError(message)
+    if not isinstance(dates, tuple) or len(dates) > 4:
+        raise ValueError(message)
+    for source_date in dates:
+        if not isinstance(source_date, SourceDate):
+            raise ValueError(message)
