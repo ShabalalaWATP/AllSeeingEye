@@ -107,3 +107,37 @@ completed successfully. Both downloaded inventories parse as CycloneDX 1.6:
 5,693 components for API and 405 for web. The accompanying image metadata
 records GitHub's tested PR merge revision `4ef60571`, generated from this batch
 at `88664dc5`. No production image or deployment is implied by these inventories.
+
+## Loopback-only proxy regression fixture, 2 October 2026
+
+CodeQL review of `7b768495` identified the optional upload fixture's all-interface
+API listener. The replacement binds the API and Caddy explicitly to loopback.
+The opt-in runs inside a disposable Linux test runner labelled
+`ase.kan153.test-runner=true`, with `--network none`, its default container
+hostname, Docker CLI/socket access and no published ports. Set
+`ASE_CADDY_INTEGRATION=1` and `ASE_CADDY_TEST_CONTAINER` to that runner's name.
+Its Python environment needs the locked development dependencies and the checkout
+available read-only, with `backend/src` and `backend/tests` on `PYTHONPATH`.
+Cache the existing digest-pinned Caddy image before starting the isolated runner;
+the fixture uses `--pull=never`.
+
+Caddy joins only the verified runner's network namespace. Fixture configuration
+disables its admin/automatic-HTTPS listeners and changes its upstream to loopback;
+production upload rules and all existing HTTP assertions are retained. Native
+Windows/macOS opt-ins fail with an explicit unsupported-runner message. Docker
+Desktop can run the isolated Linux container without host-network support.
+
+Docker commands have bounded completion and cancellation waits. Cleanup reconciles
+an uncertain create through a unique fixture label, verifies immutable container
+IDs, both ownership labels and the exact namespace, then removes only those
+containers. Uvicorn stop is bounded and socket close is unconditional. Fresh HTTP
+connections avoid reusing a connection closed by an early oversized-body response.
+
+The final Linux run passed 22 tests across proxy uploads, namespace guards,
+Docker cancellation/ownership cleanup, limit parity, avatars and workspace body
+limits. The real pinned Caddy accepted valid avatar/workspace bodies above 64 KiB
+and preserved unauthorised, fixed-length and chunked rejection assertions. Eight
+helper/parity tests also passed locally; these overlap the Linux selection. Ruff
+lint and formatting passed. Owned runner/sidecar containers were removed. No
+production code, policy suppression, coverage threshold or deployed service was
+changed. The new published CodeQL result remains a separate CI verification.
