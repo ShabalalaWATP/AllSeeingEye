@@ -351,3 +351,31 @@ under-30 target; the later local reflection and coverage-reporting work is not
 whole-CI acceptance. KAN-73's controlled 88.0644-second frontend improvement is
 retained, with the follow-up release still requiring current CI, review and
 approval. No successful production rollout is claimed by these merges.
+
+## Follow-up acceptance checkpoint, 2 October 2026
+
+The coordinator's verified reconciliation now contains **16 unfinished delivery
+tickets and seven open epics**. KAN-110 and KAN-111 are Done: their software,
+automated checks, independent reviews and approved release are complete. Their
+Jira criteria make manual SMTP/relay checks conditional on operator configuration.
+Those manual checks remain unperformed until a configured relay is available;
+this does not establish production SMTP status or successful real delivery.
+
+Draft [PR #121](https://github.com/ShabalalaWATP/AllSeeingEye/pull/121) remains
+unreleased. Its exact `5cc7dbeb` full CI
+[37011600827](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/37011600827)
+passed, but PostgreSQL whole-job cost was **45.3833 runner-minutes**, above the
+under-30 KAN-71 requirement. Every previously selected case remains in the
+2,867-ID census. Five over-target repetitions would not satisfy acceptance and
+have not been requested. The next narrowly reviewed schema-inventory candidate
+has passed 115 correctness cases. Its fixed four-arm local mechanism comparison
+measured a 12.1977-second median saving, with the post-measurement cleanup-verifier
+failure and independent absence proof retained explicitly. This is not whole-CI
+acceptance. See the [scoped inventory review](../reviews/2026-10-02-KAN-71-schema-inventory.md).
+
+KAN-73 separately retains its controlled 88.0644-second full-suite improvement,
+126 Node test files, unchanged branch totals and coverage within 0.05 percentage
+points. This meets its measured local criterion, with follow-up delivery still
+requiring approval. KAN-70's twenty-run main observation and KAN-75's four weekly
+dependency observations remain incomplete. No successful production rollout or
+completion of these elapsed requirements is claimed.

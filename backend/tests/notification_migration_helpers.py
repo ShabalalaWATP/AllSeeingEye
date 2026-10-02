@@ -48,6 +48,7 @@ LEGACY_TABLES = (
 @dataclass(frozen=True)
 class MigrationDatabase:
     url: str = field(repr=False)
+    owns_postgres: bool = field(default=False, repr=False)
 
     async def migrate(self, revision, *, downgrade=False):
         operation = command.downgrade if downgrade else command.upgrade
@@ -59,7 +60,19 @@ class MigrationDatabase:
         engine = create_async_engine(self.url)
         try:
             async with engine.begin() as connection:
-                return await connection.run_sync(action, *args)
+                ownership_key = "ase_owned_notification_migration"
+                missing = object()
+                information = connection.sync_connection.info
+                previous = information.get(ownership_key, missing)
+                if self.owns_postgres:
+                    information[ownership_key] = True
+                try:
+                    return await connection.run_sync(action, *args)
+                finally:
+                    if previous is missing:
+                        information.pop(ownership_key, None)
+                    else:
+                        information[ownership_key] = previous
         finally:
             await engine.dispose()
 
@@ -79,7 +92,9 @@ async def migration_database():
         async with admin.connect() as connection:
             await connection.execute(sa.text(f'CREATE DATABASE "{name}"'))
         try:
-            yield MigrationDatabase(url.set(database=name).render_as_string(hide_password=False))
+            yield MigrationDatabase(
+                url.set(database=name).render_as_string(hide_password=False), owns_postgres=True
+            )
         finally:
             async with admin.connect() as connection:
                 await connection.execute(sa.text(f'DROP DATABASE "{name}"'))
