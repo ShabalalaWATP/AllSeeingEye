@@ -1,7 +1,13 @@
 import { useState, type PointerEvent } from 'react';
 import type { Position } from '@/lib/map/geoJsonTypes';
-import type { RfTerrainProfile } from '@/lib/map/rfTerrainTypes';
+import type { RfTerrainProfile, RfTerrainProfilePoint } from '@/lib/map/rfTerrainTypes';
 import { RF_STATUS_CSS, rfPathSegmentStatus, rfPathSummary } from '@/lib/map/rfTerrainPresentation';
+
+type CompletePoint = RfTerrainProfilePoint & { elevationM: number; rayHeightM: number };
+
+function hasHeights(point: RfTerrainProfilePoint): point is CompletePoint {
+  return point.elevationM !== null && point.rayHeightM !== null;
+}
 
 /** Side view in the effective-Earth frame used by the sampled clearance calculation. */
 export function RfTerrainProfileChart({
@@ -12,44 +18,46 @@ export function RfTerrainProfileChart({
   onProfilePoint?: ((point: Position | null) => void) | undefined;
 }) {
   const [selected, setSelected] = useState(0);
+  const points = profile.points;
   const select = (index: number) => {
-    const bounded = Math.max(0, Math.min(profile.points.length - 1, index));
+    const bounded = Math.max(0, Math.min(points.length - 1, index));
     setSelected(bounded);
-    onProfilePoint?.(profile.points[bounded]?.position ?? null);
+    onProfilePoint?.(points[bounded]?.position ?? null);
   };
-  const focused = profile.points[selected];
-  if (profile.points.some((p) => p.elevationM === null || p.rayHeightM === null))
+  if (!points.every(hasHeights))
     return (
       <p className="text-muted">
         The profile contains missing elevations and cannot show clearance.
       </p>
     );
-  const values = profile.points.flatMap((p) => [
-    (p.elevationM ?? 0) + p.earthBulgeM,
-    (p.elevationM ?? 0) + p.earthBulgeM + (p.obstacleHeightM ?? 0),
-    p.rayHeightM ?? 0,
-    (p.rayHeightM ?? 0) - p.fresnel60M,
+  // The guard narrows every rendered sample; missing heights must never draw at zero.
+  const focused = points[selected];
+  const values = points.flatMap((p) => [
+    p.elevationM + p.earthBulgeM,
+    p.elevationM + p.earthBulgeM + (p.obstacleHeightM ?? 0),
+    p.rayHeightM,
+    p.rayHeightM - p.fresnel60M,
   ]);
   const low = Math.floor(Math.min(...values) - 10),
     high = Math.ceil(Math.max(...values) + 10);
   const x = (distance: number) => 36 + (268 * distance) / (profile.distanceKm * 1000);
   const y = (height: number) => 132 - (104 * (height - low)) / (high - low);
-  const series = (value: (p: RfTerrainProfile['points'][number]) => number) =>
-    profile.points.map((p) => `${x(p.distanceM).toFixed(2)},${y(value(p)).toFixed(2)}`).join(' ');
+  const series = (value: (p: CompletePoint) => number) =>
+    points.map((p) => `${x(p.distanceM).toFixed(2)},${y(value(p)).toFixed(2)}`).join(' ');
   const summary = rfPathSummary(profile);
   const obstruction = summary.firstBlocked ?? summary.firstRisk;
   const obstructionColour = summary.firstBlocked ? RF_STATUS_CSS.blocked : RF_STATUS_CSS.risk;
-  const maximumObstacleM = Math.max(...profile.points.map((point) => point.obstacleHeightM ?? 0));
+  const maximumObstacleM = Math.max(...points.map((point) => point.obstacleHeightM ?? 0));
   const inspect = (event: PointerEvent<SVGSVGElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
     if (!box.width) return;
     const distance =
       ((((event.clientX - box.left) / box.width) * 320 - 36) / 268) * profile.distanceKm * 1000;
     let nearest = 0;
-    profile.points.forEach((point, index) => {
+    points.forEach((point, index) => {
       if (
         Math.abs(point.distanceM - distance) <
-        Math.abs((profile.points[nearest]?.distanceM ?? Infinity) - distance)
+        Math.abs((points[nearest]?.distanceM ?? Infinity) - distance)
       )
         nearest = index;
     });
@@ -76,12 +84,12 @@ export function RfTerrainProfileChart({
           <line key={row} x1="36" x2="304" y1={row} y2={row} stroke="#ffffff15" />
         ))}
         <polygon
-          points={`36,132 ${series((p) => (p.elevationM ?? 0) + p.earthBulgeM)} 304,132`}
+          points={`36,132 ${series((p) => p.elevationM + p.earthBulgeM)} 304,132`}
           fill="#7f9caa30"
         />
         <polyline
           data-profile-series="terrain"
-          points={series((p) => (p.elevationM ?? 0) + p.earthBulgeM)}
+          points={series((p) => p.elevationM + p.earthBulgeM)}
           fill="none"
           stroke="#a3b8c4"
           strokeWidth="1.5"
@@ -89,7 +97,7 @@ export function RfTerrainProfileChart({
         {maximumObstacleM > 0 && (
           <polyline
             data-profile-series="assumed-obstacles"
-            points={series((p) => (p.elevationM ?? 0) + p.earthBulgeM + (p.obstacleHeightM ?? 0))}
+            points={series((p) => p.elevationM + p.earthBulgeM + (p.obstacleHeightM ?? 0))}
             fill="none"
             stroke="#c4a7ff"
             strokeWidth="2"
@@ -97,19 +105,19 @@ export function RfTerrainProfileChart({
           />
         )}
         <polyline
-          points={series((p) => (p.rayHeightM ?? 0) - p.fresnel60M)}
+          points={series((p) => p.rayHeightM - p.fresnel60M)}
           fill="none"
           stroke={RF_STATUS_CSS.risk}
           strokeDasharray="3 3"
         />
         <polyline
-          points={series((p) => p.rayHeightM ?? 0)}
+          points={series((p) => p.rayHeightM)}
           fill="none"
           stroke="#02070c"
           strokeWidth="6"
         />
-        {profile.points.map((point, index) => {
-          const previous = profile.points[index - 1];
+        {points.map((point, index) => {
+          const previous = points[index - 1];
           if (!previous) return null;
           const status = rfPathSegmentStatus(profile, previous, point, summary);
           return (
@@ -117,9 +125,9 @@ export function RfTerrainProfileChart({
               key={point.distanceM}
               data-ray-status={status}
               x1={x(previous.distanceM)}
-              y1={y(previous.rayHeightM ?? 0)}
+              y1={y(previous.rayHeightM)}
               x2={x(point.distanceM)}
-              y2={y(point.rayHeightM ?? 0)}
+              y2={y(point.rayHeightM)}
               stroke={RF_STATUS_CSS[status]}
               strokeWidth="3"
             />
@@ -175,7 +183,7 @@ export function RfTerrainProfileChart({
         <input
           type="range"
           min={0}
-          max={profile.points.length - 1}
+          max={points.length - 1}
           step={1}
           value={selected}
           onChange={(event) => select(Number(event.target.value))}
@@ -184,7 +192,7 @@ export function RfTerrainProfileChart({
       {focused && (
         <p className="rf-help" aria-live="polite">
           {(focused.distanceM / 1000).toFixed(2)} km from TX · terrain{' '}
-          {focused.elevationM?.toFixed(1)} m · Fresnel clearance{' '}
+          {focused.elevationM.toFixed(1)} m · Fresnel clearance{' '}
           {focused.fresnelClearanceM?.toFixed(1) ?? 'unknown'} m. Position{' '}
           {focused.position[1].toFixed(5)}, {focused.position[0].toFixed(5)}.
         </p>

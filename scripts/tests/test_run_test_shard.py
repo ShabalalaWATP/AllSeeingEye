@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -39,20 +40,40 @@ class ShardTests(unittest.TestCase):
             )
 
     def test_subprocess_propagates_failure_and_preserves_database_environment(self):
+        argument_files = []
+
+        def fail(command, **_kwargs):
+            arguments = Path(command[-1].removeprefix("@"))
+            argument_files.append(arguments)
+            self.assertEqual(arguments.read_text(encoding="utf-8"), "tests\n")
+            return SimpleNamespace(returncode=1)
+
         with (
             patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
             patch.dict(runner.os.environ, {"ASE_TEST_DATABASE_URL": "test-database"}),
-            patch.object(runner.subprocess, "run") as run,
+            patch.object(runner.subprocess, "run", side_effect=fail) as run,
         ):
-            run.return_value.returncode = 1
             self.assertEqual(runner.main(["0", "1"]), 1)
             args, kwargs = run.call_args
             self.assertIn("--cov-fail-under=0", args[0])
-            self.assertEqual(args[0][-1], "tests/test_a.py")
+            self.assertIn("--durations=20", args[0])
+            self.assertTrue(args[0][-1].startswith("@"))
+            self.assertFalse(argument_files[0].exists())
             self.assertEqual(kwargs["env"]["ASE_TEST_DATABASE_URL"], "test-database")
             self.assertEqual(
                 kwargs["env"]["COVERAGE_FILE"], str(runner.BACKEND / ".coverage.shard-0")
             )
+
+    def test_single_root_discovery_excludes_exactly_other_partition_files(self):
+        files = ["tests/test_a.py", "tests/nested/test_b.py", "tests/nested/c_test.py"]
+        for index in range(2):
+            selected = runner.select_shard(files, index, 2)
+            arguments = runner.collection_arguments(files, selected)
+            self.assertEqual(arguments[0], "tests")
+            excluded = {argument.removeprefix("--ignore=") for argument in arguments[1:]}
+            self.assertEqual(set(files) - excluded, set(selected))
+        with self.assertRaisesRegex(ValueError, "line separators"):
+            runner.collection_arguments(["tests/test_a\n--pdb.py"], [])
 
     def test_recorded_durations_balance_complete_files_deterministically(self):
         durations = {f"tests/test_{number:03}.py": float(number % 17) for number in range(90)}
@@ -115,7 +136,8 @@ class ShardTests(unittest.TestCase):
         ):
             run.return_value.returncode = 0
             self.assertEqual(runner.main(["0", "1", "--workers", "auto"]), 0)
-            self.assertEqual(run.call_args[0][0][-3:], ["-n", "auto", "tests/test_a.py"])
+            self.assertEqual(run.call_args[0][0][-3:-1], ["-n", "auto"])
+            self.assertTrue(run.call_args[0][0][-1].startswith("@"))
             self.assertEqual(runner.main(["0", "1"]), 0)
             self.assertNotIn("-n", run.call_args[0][0])
             for invalid in ["0", "-1", "all", "2 --pdb"]:
@@ -126,6 +148,25 @@ class ShardTests(unittest.TestCase):
         recorded = runner.load_durations(runner.DURATIONS)
         self.assertTrue(all(name.startswith("tests/test_") for name in recorded))
 
+    def test_postgres_parallel_and_serial_phases_are_disjoint(self):
+        with (
+            patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
+            patch.object(runner.subprocess, "run") as run,
+        ):
+            run.return_value.returncode = 0
+            runner.main(["0", "1", "--postgres-mode", "parallel", "--workers", "2"])
+            parallel = run.call_args[0][0]
+            self.assertIn("db and not (postgres or migration or race)", parallel)
+            self.assertIn("--isolated-postgres", parallel)
+            self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-parallel"))
+            runner.main(["0", "1", "--postgres-mode", "serial"])
+            serial = run.call_args[0][0]
+            self.assertIn("postgres or migration or race", serial)
+            self.assertNotIn("-n", serial)
+            self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-serial"))
+            with self.assertRaises(SystemExit):
+                runner.main(["0", "1", "--postgres-mode", "serial", "--workers", "2"])
+
     def test_empty_shard_does_not_accidentally_run_the_full_suite(self):
         with (
             patch.object(runner, "test_files", return_value=[]),
@@ -135,6 +176,27 @@ class ShardTests(unittest.TestCase):
             runner.main(["0", "8"])
         self.assertEqual(error.exception.code, 2)
         run.assert_not_called()
+
+    def test_template_fixture_opt_in_is_limited_to_parallel_postgres(self):
+        with (
+            patch.object(runner, "test_files", return_value=["tests/test_a.py"]),
+            patch.object(runner.subprocess, "run") as run,
+        ):
+            run.return_value.returncode = 0
+            self.assertEqual(
+                runner.main(["0", "1", "--postgres-mode", "parallel", "--template-postgres"]),
+                0,
+            )
+            self.assertIn("--template-postgres", run.call_args[0][0])
+            self.assertIn("--isolated-postgres", run.call_args[0][0])
+            runner.main(["0", "1", "--postgres-mode", "parallel"])
+            self.assertNotIn("--template-postgres", run.call_args[0][0])
+            run.reset_mock()
+            for mode in [[], ["--postgres-mode", "serial"]]:
+                with self.subTest(mode=mode), self.assertRaises(SystemExit) as error:
+                    runner.main(["0", "1", *mode, "--template-postgres"])
+                self.assertEqual(error.exception.code, 2)
+            run.assert_not_called()
 
 
 if __name__ == "__main__":

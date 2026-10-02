@@ -1,0 +1,224 @@
+{
+  "manifest": {
+    "commit": "c76d944087df1f45396b0f3104478e9a06cab55b",
+    "preparedUtc": "2026-09-30T11:37:27.884787+01:00",
+    "container": "ase-kan73-frontend-c76d9440",
+    "image": "node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "imageId": "sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+    "cpuLimit": 2,
+    "memoryBytes": 6442450944,
+    "workers": 2,
+    "phaseOrder": [
+      "dom",
+      "node"
+    ],
+    "archiveSha256": "8609259e6ad1663d9f0ff9b86dfc6167d3059f2dff2b8db82c120716c653a66a",
+    "trackedFiles": 4947,
+    "unitFiles": 113,
+    "sourceHashesSha256": "0cae1463ec0e4e413f8d25e44eae6cffde3a9226a42abf8c42c90936ddc67d92",
+    "lockfileSha256": "8e997ae0414e0f06f383c9f21ee024e873256f6305bb094afacd0f7034c9f78b",
+    "originalConfigSha256": "da2e4e22c29437c97ea8009f9abc82a67f5590476765400aac22845a7da04b39",
+    "configSha256": {
+      "node": "da2e4e22c29437c97ea8009f9abc82a67f5590476765400aac22845a7da04b39",
+      "dom": "2e1c113c95a89b27a0b07b59d27225c2486474cd8d759d063c353c68918382d4"
+    },
+    "onlyConfigurationDifference": "Unit project environment, jsdom URL and setup file; all other settings remain identical.",
+    "fixedCache": "Captured empty cache roots after frozen install, before any test. Restored after each equal warm-up.",
+    "cacheRoots": [
+      "/workspace/frontend/node_modules/.vite",
+      "/workspace/frontend/node_modules/.vite-temp",
+      "/workspace/frontend/node_modules/.vitest-cache"
+    ],
+    "warmup": "Five infrastructure fixture cases selected by warmupFile, same phase config, maxWorkers=2, no coverage",
+    "cooldownSeconds": 10,
+    "fsModuleCache": false,
+    "acceptance": {
+      "minimumSecondsSaved": 70,
+      "maximumCoveragePercentagePointDifference": 0.05
+    },
+    "warmupFile": "src/lib/api/infrastructure.unit.test.ts"
+  },
+  "phases": {
+    "dom": {
+      "result": {
+        "phase": "dom",
+        "commit": "c76d944087df1f45396b0f3104478e9a06cab55b",
+        "startedUtc": "2026-09-30T10:41:02.965616+00:00",
+        "finishedUtc": "2026-09-30T10:56:07.968177+00:00",
+        "elapsedSeconds": 905.0024985000491,
+        "exitCode": 0,
+        "sourceVerifiedAfter": true,
+        "cacheSha256": "4586d769eff0c51b723397663430aa9dd3955c3648f44679054a19308a35f097",
+        "configSha256": "2e1c113c95a89b27a0b07b59d27225c2486474cd8d759d063c353c68918382d4",
+        "virtualStoreLockSha256": "8e997ae0414e0f06f383c9f21ee024e873256f6305bb094afacd0f7034c9f78b",
+        "command": [
+          "docker",
+          "exec",
+          "-e",
+          "CI=true",
+          "-e",
+          "FORCE_COLOR=0",
+          "ase-kan73-frontend-c76d9440",
+          "pnpm",
+          "exec",
+          "vitest",
+          "run",
+          "--config",
+          "vitest.benchmark-dom.config.ts",
+          "--maxWorkers",
+          "2",
+          "--coverage",
+          "--coverage.reportsDirectory",
+          "/benchmark/coverage-dom",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile.json=/benchmark/dom-tests.json"
+        ]
+      },
+      "coverage": {
+        "lines": {
+          "total": 20538,
+          "covered": 19981,
+          "skipped": 0,
+          "pct": 97.28
+        },
+        "statements": {
+          "total": 23357,
+          "covered": 22461,
+          "skipped": 0,
+          "pct": 96.16
+        },
+        "functions": {
+          "total": 7766,
+          "covered": 7323,
+          "skipped": 0,
+          "pct": 94.29
+        },
+        "branches": {
+          "total": 21988,
+          "covered": 20266,
+          "skipped": 0,
+          "pct": 92.16
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      },
+      "testCounts": {
+        "numTotalTestSuites": 932,
+        "numPassedTestSuites": 932,
+        "numFailedTestSuites": 0,
+        "numPendingTestSuites": 0,
+        "numTotalTests": 3645,
+        "numPassedTests": 3644,
+        "numFailedTests": 0,
+        "numPendingTests": 1,
+        "numTodoTests": 0
+      },
+      "fileCount": 663,
+      "success": true
+    },
+    "node": {
+      "result": {
+        "phase": "node",
+        "commit": "c76d944087df1f45396b0f3104478e9a06cab55b",
+        "startedUtc": "2026-09-30T10:56:50.614649+00:00",
+        "finishedUtc": "2026-09-30T11:10:51.802900+00:00",
+        "elapsedSeconds": 841.188203800004,
+        "exitCode": 0,
+        "sourceVerifiedAfter": true,
+        "cacheSha256": "4586d769eff0c51b723397663430aa9dd3955c3648f44679054a19308a35f097",
+        "configSha256": "da2e4e22c29437c97ea8009f9abc82a67f5590476765400aac22845a7da04b39",
+        "virtualStoreLockSha256": "8e997ae0414e0f06f383c9f21ee024e873256f6305bb094afacd0f7034c9f78b",
+        "command": [
+          "docker",
+          "exec",
+          "-e",
+          "CI=true",
+          "-e",
+          "FORCE_COLOR=0",
+          "ase-kan73-frontend-c76d9440",
+          "pnpm",
+          "exec",
+          "vitest",
+          "run",
+          "--config",
+          "vitest.benchmark-node.config.ts",
+          "--maxWorkers",
+          "2",
+          "--coverage",
+          "--coverage.reportsDirectory",
+          "/benchmark/coverage-node",
+          "--reporter=default",
+          "--reporter=json",
+          "--outputFile.json=/benchmark/node-tests.json"
+        ]
+      },
+      "coverage": {
+        "lines": {
+          "total": 20538,
+          "covered": 19981,
+          "skipped": 0,
+          "pct": 97.28
+        },
+        "statements": {
+          "total": 23357,
+          "covered": 22461,
+          "skipped": 0,
+          "pct": 96.16
+        },
+        "functions": {
+          "total": 7766,
+          "covered": 7323,
+          "skipped": 0,
+          "pct": 94.29
+        },
+        "branches": {
+          "total": 21988,
+          "covered": 20266,
+          "skipped": 0,
+          "pct": 92.16
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      },
+      "testCounts": {
+        "numTotalTestSuites": 932,
+        "numPassedTestSuites": 932,
+        "numFailedTestSuites": 0,
+        "numPendingTestSuites": 0,
+        "numTotalTests": 3645,
+        "numPassedTests": 3644,
+        "numFailedTests": 0,
+        "numPendingTests": 1,
+        "numTodoTests": 0
+      },
+      "fileCount": 663,
+      "success": true
+    }
+  },
+  "secondsSaved": 63.81429470004514,
+  "coveragePercentagePointChanges": {
+    "lines": 0.0,
+    "statements": 0.0,
+    "functions": 0.0,
+    "branches": 0.0
+  },
+  "checks": {
+    "bothPhasesPassed": true,
+    "sourceAndDependenciesPreserved": true,
+    "identicalStartingCache": true,
+    "identicalTestIdentitiesAndOutcomes": true,
+    "identicalTestCounts": true,
+    "atLeast70SecondsSaved": false,
+    "coverageWithin005PercentagePoints": true
+  },
+  "accepted": false
+}

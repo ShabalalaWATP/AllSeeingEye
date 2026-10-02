@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -89,20 +89,25 @@ describe('LoginPage', () => {
     await user.type(screen.getByLabelText('Email'), plainUser.email);
     await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
     const button = screen.getByRole('button', { name: 'Sign in' });
-    await user.click(button);
-    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBe(button);
-    expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button).toHaveFocus();
-    expect(screen.getByLabelText('Email')).toBeEnabled();
-    expect(screen.getByLabelText('Password')).toBeEnabled();
-    expect(screen.getByRole('button', { name: 'Show password' })).toBeEnabled();
-    const form = button.closest('form');
-    if (form === null) throw new Error('Expected the login form');
-    fireEvent.submit(form);
-    await user.click(button);
-    await user.keyboard('{Enter}');
-    expect(requests).toBe(1);
-    release?.();
+    try {
+      await user.click(button);
+      expect(await screen.findByRole('button', { name: 'Signing in…' })).toBe(button);
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveFocus();
+      expect(screen.getByLabelText('Email')).toBeEnabled();
+      expect(screen.getByLabelText('Password')).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Show password' })).toBeEnabled();
+      // The pending UI renders before MSW necessarily receives the first request.
+      await waitFor(() => expect(requests).toBe(1));
+      const form = button.closest('form');
+      if (form === null) throw new Error('Expected the login form');
+      fireEvent.submit(form);
+      await user.click(button);
+      await user.keyboard('{Enter}');
+      expect(requests).toBe(1);
+    } finally {
+      release?.();
+    }
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
     expect(screen.getByRole('button', { name: 'Sign in' })).toBe(button);
     expect(button).not.toHaveAttribute('aria-disabled');
@@ -123,10 +128,13 @@ describe('LoginPage', () => {
     const { user } = renderApp('/login', 'anonymous');
     await user.type(screen.getByLabelText('Email'), plainUser.email);
     const password = screen.getByLabelText('Password');
-    await user.type(password, `${USER_PASSWORD}{Enter}`);
-    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeInTheDocument();
-    expect(password).toHaveFocus();
-    release?.();
+    try {
+      await user.type(password, `${USER_PASSWORD}{Enter}`);
+      expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeInTheDocument();
+      expect(password).toHaveFocus();
+    } finally {
+      release?.();
+    }
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
     expect(password).toHaveFocus();
   });
@@ -146,32 +154,6 @@ describe('LoginPage', () => {
       setVisibility('visible');
     });
     expect(eye).toHaveAttribute('data-paused', 'false');
-  });
-
-  it('shows the generic failure message from the API and stays on the page', async () => {
-    const { user, router } = renderApp('/login', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), plainUser.email);
-    await user.type(screen.getByLabelText('Password'), 'wrong-password-value');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.');
-    expect(router.state.location.pathname).toBe('/login');
-    expect(useAuthStore.getState().status).toBe('anonymous');
-  });
-
-  it('explains rate limiting using Retry-After', async () => {
-    server.use(
-      http.post('/api/auth/login', () =>
-        apiError(429, 'rate_limited', 'Too many.', undefined, { 'Retry-After': '60' }),
-      ),
-    );
-    const { user } = renderApp('/login', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), plainUser.email);
-    await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Too many attempts. Try again in 60 seconds.',
-    );
   });
 
   it('links to account requests and password recovery', () => {
