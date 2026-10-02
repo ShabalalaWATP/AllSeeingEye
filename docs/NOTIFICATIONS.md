@@ -152,10 +152,18 @@ retries and uncertain SMTP outcomes. SMTP tests use synthetic connections.
 PostgreSQL concurrency tests require `ASE_NOTIFICATION_POSTGRES_URL` pointing
 only to an isolated disposable database; they are skipped without one.
 
-Before release, verify an operator-configured relay with synthetic content and a
-chosen real feed reader over HTTPS. These operational checks are not proved by
-the offline suite. Daily digest checks include DST boundaries, complete SQL
-counts, membership revocation, opt-out/re-enable, empty intervals and competing
-SQLite schedulers and senders. Per-rule registered destinations remain separate
-delivery work. [Browser push](WEB_PUSH.md) has separate per-device controls and
-does not depend on the email preference.
+KAN-110 and KAN-111 request a manual relay check when operator configuration is
+available. Use synthetic content for that check. It remains unperformed, and the
+current installation's SMTP availability has not been established. The absence of
+real credentials in implementation tests does not establish deployment settings.
+
+A chosen real feed reader over HTTPS is a recommended deployment check, not a
+KAN-141 closure criterion. That ticket requires the API revocation, scope and
+header tests and a security review of the token design. Offline tests do not prove
+relay acceptance, inbox delivery or compatibility with a chosen reader.
+
+Daily digest checks include DST boundaries, complete SQL counts, membership
+revocation, opt-out/re-enable, empty intervals and competing SQLite schedulers and
+senders. [Per-rule routing](ALERT_ROUTING.md) has separate destination controls;
+KAN-112 does not require a live relay or webhook check. [Browser push](WEB_PUSH.md)
+has separate per-device controls and does not depend on the email preference.

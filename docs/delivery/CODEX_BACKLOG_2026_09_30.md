@@ -141,8 +141,13 @@ and operator credentials are excluded from software verification.
   checks do not establish production readiness or live provider acceptance.
 - KAN-134 needs the installation's HAPI identifier and live response validation.
   UN/EU import approval and NVD terms review remain explicit source prerequisites.
-- KAN-110/111/113/141 require the chosen real relay, feed reader and browser-push
-  provider checks. Offline transport tests do not prove inbox or device delivery.
+- KAN-110/111 request a manual SMTP check when operator configuration is available.
+  Current installation SMTP availability has not been established. KAN-113 requires
+  a manual Android Chrome check; an iOS device check is recommended when supporting
+  that platform. KAN-112 does not require a live relay/webhook check, and KAN-141 does
+  not require a real feed-reader check. Reader, webhook and iOS deployment checks
+  must not become additional Jira closure criteria. Offline tests do not prove
+  live delivery.
 - The four-week dependency-update observation requires elapsed operations.
 - KAN-2's Jira Development field now reports one GitHub draft pull request after
   PR #88 was opened. This was read from Jira's cached integration metadata,
@@ -231,10 +236,14 @@ rehearsals do not authorise production migration or rollback.
   installation's HAPI identifier and live response-row validation. KAN-133's official
   NVD terms/rate review and non-endorsement notice are now verified and implemented,
   so they are no longer an outstanding prerequisite.
-- KAN-110/111/113/141 retain the chosen live relay, feed-reader and browser-push
-  acceptance checks. Fixture transports and disposable databases do not prove inbox,
-  device or production delivery. Other batch-specific operator and production
-  observations remain governed by their delivery records.
+- Acceptance clarification, 2 October 2026: KAN-110/111 manual relay validation is
+  conditional on operator configuration and remains unperformed; current installation
+  SMTP availability is unknown. KAN-113 still requires manual Android Chrome
+  validation. An iOS device check is a recommended platform release check. Real
+  feed-reader and relay/webhook checks are operational recommendations, not additional
+  KAN-141 or KAN-112 closure criteria. Fixture transports and disposable databases do
+  not prove inbox, device or production delivery. Other batch-specific operator and
+  production observations remain governed by their delivery records.
 
 Jira remains authoritative. Keep the 57 non-epic items and their coordinating epics
 open wherever checks, review, acceptance or authorised release are still outstanding.

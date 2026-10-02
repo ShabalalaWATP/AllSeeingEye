@@ -26,3 +26,14 @@ case remains skipped without an isolated database. Synthetic SMTP behaviour uses
 the KAN-110 sender contract. No real email was sent and no delivery credentials
 were configured. Independent review and operator relay acceptance remain release
 checks; a relay acceptance response does not establish inbox delivery.
+
+## Acceptance clarification, 2 October 2026
+
+The preceding text records the original review checkpoint. KAN-111 requests a
+manual SMTP check **when configured**; KAN-110 likewise makes its relay check
+conditional on available operator configuration. These checks remain unperformed.
+No implementation credentials were configured, but current installation SMTP
+availability has not been established, so it must not be described as absent.
+The earlier release-check wording does not make this conditional validation an
+unconditional Jira blocker. Later PostgreSQL and independent review evidence is
+recorded in the [final integration review](../reviews/2026-10-01-final-notification-integration.md).

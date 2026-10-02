@@ -111,3 +111,14 @@ both before and after claims across all three outboxes.
 
 Full combined CI, PostgreSQL acceptance, synthetic live-device checks and the
 two encrypted-column rotation inventory additions remain with parent integration.
+
+## Acceptance clarification, 2 October 2026
+
+The preceding sections retain their original checkpoint evidence. KAN-112 requires
+permission, destination, revocation, duplicate-intent and fake-channel failure tests;
+it does not require a live relay or webhook receiver check. Those checks remain
+useful deployment recommendations, not additional Jira closure criteria. KAN-110's
+manual email check is conditional on available operator configuration, whose
+current installation state has not been established. Later PostgreSQL, rotation
+inventory and independent review evidence is recorded in the
+[final integration review](2026-10-01-final-notification-integration.md).

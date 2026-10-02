@@ -43,3 +43,13 @@ security review identified malformed-URL handling and timestamp-cursor omission
 risks; both were repaired. The reviewer independently passed five checks for
 same-time late commits, no replay, malformed endpoint inputs and stale claims,
 with no further actionable finding in the reviewed boundary.
+
+## Acceptance clarification, 2 October 2026
+
+The preceding text records the original review checkpoint. KAN-113 explicitly
+requires a manual Android Chrome check, which remains unperformed. Physical iOS
+testing is a recommended platform release check when supporting iPhone/iPad, not
+an additional Jira closure criterion. Neither fixture delivery nor a successful
+provider response proves physical device receipt. Later PostgreSQL, rotation
+inventory and independent review evidence is recorded in the
+[final integration review](../reviews/2026-10-01-final-notification-integration.md).

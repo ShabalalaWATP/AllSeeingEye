@@ -98,9 +98,13 @@ competing SQLite workers, interrupted claims, browser subscribe/unsubscribe,
 permission denial, setup failure and the worker's same-origin click handling.
 The optional PostgreSQL concurrency test requires an isolated disposable database.
 
-Before release, an operator must configure test-only VAPID credentials and verify
-an installed Android Chrome app against a chosen synthetic alert. Repeat on a
-supported installed iPhone/iPad app if iOS is part of the deployment. Confirm
-permission, receipt, authenticated click, removal and sign-out. Those physical
-device checks have not been performed by this implementation. No live push was
-sent, no real provider credential was used and no delivery was enabled.
+KAN-113 requires a manual Android Chrome check. For this check, an operator should
+configure test-only VAPID credentials and verify an installed app against a chosen
+synthetic alert. Confirm permission, receipt, authenticated click, removal and
+sign-out. This required manual check remains unperformed.
+
+If iOS is part of the deployment, repeat the check on a supported installed
+iPhone/iPad app as a recommended platform release check. It is not an additional
+KAN-113 closure criterion. No physical device check was performed by this
+implementation, no live push was sent, no real provider credential was used and
+no delivery was enabled.
