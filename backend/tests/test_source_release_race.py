@@ -11,8 +11,8 @@ from ase.application.research.source_admission import ControlledResearchProvider
 from ase.container import Container
 from ase.domain.research import ResearchBatch
 from ase.domain.users import User
+from event_app_fixtures import email_sender, feed_connectors  # noqa: F401
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, login_token
-from test_events_api import app  # noqa: F401
 from test_research_collection import QUERY, Provider, event
 
 
