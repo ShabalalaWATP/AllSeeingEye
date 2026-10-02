@@ -62,11 +62,12 @@ def schema_fingerprint() -> str | None:
         if any(tuple(getattr(dispatch, name, ())) for name in DDL_EVENTS):
             return None
     try:
+        pg_dialect = dialect()
         statements = []
         for table in sorted(metadata.tables.values(), key=lambda value: value.name):
-            statements.append(str(CreateTable(table).compile(dialect=dialect())))
+            statements.append(str(CreateTable(table).compile(dialect=pg_dialect)))
             statements.extend(
-                str(CreateIndex(index).compile(dialect=dialect()))
+                str(CreateIndex(index).compile(dialect=pg_dialect))
                 for index in sorted(table.indexes, key=lambda value: value.name or "")
             )
     except CompileError:
