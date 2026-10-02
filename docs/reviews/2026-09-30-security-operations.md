@@ -141,3 +141,17 @@ helper/parity tests also passed locally; these overlap the Linux selection. Ruff
 lint and formatting passed. Owned runner/sidecar containers were removed. No
 production code, policy suppression, coverage threshold or deployed service was
 changed. The new published CodeQL result remains a separate CI verification.
+
+## Security-scan revision attribution, 2 October 2026
+
+Full CI `36989072603` passed on `428798b0`, and CodeQL analysed that exact head
+with zero findings and marked alert 5038 fixed. The resolved review thread and
+green jobs did not suffice for release: the normal merge was refused because
+Semgrep's report described the previous synthetic merge commit `debc93cd`.
+The pinned upload action obtains its revision from the actual Git checkout before
+using the supplied `sha` fallback, as shown in its
+[commit lookup](https://github.com/github/codeql-action/blob/1c5b675653bb5c22dbe9b12b556ec555138e09fd/src/git-utils.ts#L103).
+Both the scanner and publisher now check out the same immutable PR head (or the
+event revision for other events). Upload inputs, scan rules, failure policy and
+repository protection remain unchanged. Fresh CI and exact-head Semgrep analysis
+are required before merge; no administrator override or manual scan upload is used.
