@@ -88,7 +88,9 @@ async def migration_database():
 
 
 def table(connection, name):
-    return sa.Table(name, sa.MetaData(), autoload_with=connection)
+    # Explicit target DML needs its columns, not recursive copies of related tables.
+    # Independent schema snapshots still inspect every foreign-key constraint.
+    return sa.Table(name, sa.MetaData(), autoload_with=connection, resolve_fks=False)
 
 
 def insert_row(connection, table_name, **values):
