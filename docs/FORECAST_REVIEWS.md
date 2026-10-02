@@ -74,9 +74,9 @@ report-body revision.
 
 ## Storage and verification
 
-Migration `0073` adds the composite-key reminder receipt table after `0070`.
-The integrated single chain is `0068` (performance), `0069` (alert feedback),
-`0070` (indicator ratios), then `0073` (forecast reminders). Forecast versions and
+Migration `0086` adds the composite-key reminder receipt table after `0085`.
+The integrated single chain is `0083` (performance), `0084` (alert feedback),
+`0085` (indicator ratios), then `0086` (forecast reminders). Forecast versions and
 decisions reuse the retained ledger tables and integrity codec. Supersession appends two entries with one optimistic ordinal
 update in the same transaction.
 

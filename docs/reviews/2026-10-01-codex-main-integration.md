@@ -238,3 +238,24 @@ source/transport acceptance remain explicit in the delivery register.
 No main merge or production deployment occurred. The repository's required
 release approval still applies. Pending workflow outcomes are tracked in the
 live PR descriptions and Jira handoffs, rather than inferred from old runs.
+
+## Approved release and manual readiness acceptance, 2 October 2026
+
+Alex explicitly approved merging PRs 88–96 in order. PR 88 merged as
+`1d924272785030d4ef8914b5b39ca20762ed0028`; its main CI run `36978697172`
+passed. Production deployment remains subject to the existing protected manual
+rollout gate and private operator runbook; no successful rollout is claimed.
+
+KAN-42's manual local acceptance passed on PR 90 source `f1a32e17`. A standalone
+actual ASGI application/lifespan, FeedScheduler, SystemClock and monotonic clock
+used private empty SQLite databases and one synthetic connector, with network
+connections blocked. With a two-second cycle and six-second overdue threshold,
+readiness was initially 200 after two real cycles. Cancelling the actual scheduler
+task produced generic 503 after 5.462 seconds, 6.002 seconds since its last
+progress. Only that scheduler was overdue. With feeds disabled, readiness stayed
+200 after 6.317 real seconds and scheduler/feed workers were excluded. No network
+or message attempts occurred. Both private databases were removed; no owned tasks
+or ports remained. The standalone script, log and machine-readable report are
+retained outside Git in `runtime-kan42-manual-20261002-actual-clock` beside this
+worktree. This completes the manual criterion; Jira closure still requires the
+approved PR 90 merge and its fresh integration checks.
