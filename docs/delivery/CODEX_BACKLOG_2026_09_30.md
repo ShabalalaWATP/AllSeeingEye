@@ -311,3 +311,27 @@ its full 24-hour criterion remains pending. The CI performance follow-up has a
 controlled full-suite Node improvement of 88.0644 seconds and a bounded
 PostgreSQL mechanism improvement of 28.63 percent. Whole-CI timing acceptance
 and the follow-up release remain outstanding.
+
+## After approved PR #95 release, 2 October 2026
+
+PR #95 merged as `20739857` after full CI `36998795486` passed on
+`b05c0097`. All four CodeQL analyses reported zero findings. The two synthetic
+URL-dispatch findings were fixed by exact URL/hostname test matching; all review
+threads are resolved. Both image SBOM jobs passed. KAN-132, KAN-133, KAN-139
+and KAN-140 are verified Done. The reconciled queue now contains 20 unfinished
+delivery tickets and eight open epics.
+
+PR #96 integrated this actual release at `cb1d4093`. Its production source,
+generated contracts, migrations, configuration and lockfiles remain identical
+to its reviewed final source. The final integration adds only the two verified
+test repairs and review documentation. A fresh full CI run is required before
+its approved release; no PR #96 merge or successful production rollout is
+claimed here.
+
+Draft PR #121's first full CI `36997668645` passed. Its PostgreSQL whole-job
+measurement was 53.7 runner-minutes, exceeding KAN-71's target of under 30.
+Further fixture/schema profiling is required. The passing full frontend CI
+retained 92.14 percent branch coverage and all configured floors. KAN-73's
+controlled Node timing improvement remains 88.0644 seconds; its follow-up
+release is outstanding. KAN-70's twenty-run observer has not started, and the
+KAN-131 full 24-hour audit and other operator criteria remain open.
