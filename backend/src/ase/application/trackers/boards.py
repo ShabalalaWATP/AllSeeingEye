@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from ase.application.feeds.board_reads import read_board
 from ase.application.ports import Clock
-from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.feeds import EventQuery, EventQueryReader
 from ase.application.ports.trackers import ConflictDirectory
 from ase.domain.conflict_evidence import (
     evidence_groups,
@@ -51,10 +53,17 @@ class ConflictDetail:
 
 
 class TrackerService:
-    def __init__(self, store: EventStore, conflicts: ConflictDirectory, clock: Clock) -> None:
+    def __init__(self, store: EventQueryReader, conflicts: ConflictDirectory, clock: Clock) -> None:
         self._store = store
         self._conflicts = conflicts
         self._clock = clock
+
+    async def read[T](self, project: Callable[[TrackerService], T], *, admission_key: str) -> T:
+        return await read_board(
+            self._store,
+            lambda reader: project(TrackerService(reader, self._conflicts, self._clock)),
+            admission_key=admission_key,
+        )
 
     def disaster_board(self) -> tuple[HazardCard, ...]:
         now = self._clock.now()

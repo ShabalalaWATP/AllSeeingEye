@@ -3,7 +3,7 @@
 from collections.abc import Callable, Sequence
 from typing import Protocol, runtime_checkable
 
-from ase.application.ports.feeds import EventQuery, UpsertResult
+from ase.application.ports.feeds import EventQuery, EventQueryReader, UpsertResult
 from ase.domain.events import Event
 
 
@@ -26,4 +26,11 @@ class CooperativeEventReader(Protocol):
         project: Callable[[list[Event]], T],
         *,
         admission_key: str = "internal:legacy",
+    ) -> T: ...
+
+
+@runtime_checkable
+class CooperativeSnapshotReader(Protocol):
+    async def read_snapshot_cooperatively[T](
+        self, project: Callable[[EventQueryReader], T], *, admission_key: str
     ) -> T: ...

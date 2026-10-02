@@ -124,10 +124,18 @@ class FeatureWiring(ReportWiring):
         return AviationService(self.store, self.jam, self.clock, self.watch_areas)
 
     async def _maritime_background(self) -> str:
-        return maritime_summary(self.modules().maritime_board())
+        return maritime_summary(
+            await self.modules().read(
+                lambda service: service.maritime_board(), admission_key="internal:report"
+            )
+        )
 
     async def _cyber_background(self) -> str:
-        return cyber_summary(self.modules().cyber_board())
+        return cyber_summary(
+            await self.modules().read(
+                lambda service: service.cyber_board(), admission_key="internal:report"
+            )
+        )
 
     async def aviation_background(self, session: AsyncSession) -> str:
         """The aviation board as a paragraph for the aviation report's background."""

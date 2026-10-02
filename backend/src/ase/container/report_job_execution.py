@@ -40,7 +40,7 @@ async def execute_job(
     container: "Container", stored: ReportJob, checkpoints: ReportJobCheckpoints
 ) -> None:
     async with container.session_factory() as session:
-        job, routing = await container.report_job_gate(session, stored)
+        job, routing = await checkpoints.gate(session, stored)
         # Background authorisation uses the current owner independently of browser sessions.
         job = replace(
             job,

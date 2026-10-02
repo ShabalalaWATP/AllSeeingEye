@@ -26,7 +26,7 @@ async def test_idle_http_stream_releases_authentication_connection(
 ) -> None:
     database_url = f"sqlite+aiosqlite:///{(tmp_path / 'stream-pool.db').as_posix()}"
 
-    def bounded_engine(url: str) -> AsyncEngine:
+    def bounded_engine(url: str, **_pool_options: object) -> AsyncEngine:
         assert url == database_url
         return create_async_engine(url, pool_size=2, max_overflow=0, pool_timeout=1)
 

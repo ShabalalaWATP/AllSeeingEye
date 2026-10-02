@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
 
+from ase.domain.access import Visibility
 from ase.domain.report_search import EmbeddingResult, IndexedReport
 
 
@@ -20,6 +21,12 @@ class EmbeddingGateway(Protocol):
 
 
 class ReportEmbeddingRepository(Protocol):
+    async def status_counts(
+        self, visibility: Visibility, fingerprint: str | None, limit: int
+    ) -> tuple[int, int]:
+        """Count current index entries in the latest bounded visible report set."""
+        ...
+
     async def current(
         self, report_ids: Sequence[UUID], fingerprint: str
     ) -> list[IndexedReport]: ...

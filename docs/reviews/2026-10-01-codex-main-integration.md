@@ -74,8 +74,6 @@ SQLite/PostgreSQL lanes, frontend, image and security checks. PR 89's new CI
 remains in progress. These results do not establish completion of later batches
 or authorise a production merge.
 
-## Reserved integration work
-
 ## Security branch checkpoint
 
 PR 92 integrated the CI branch's checked merge milestone `5dd6255a` by an
@@ -99,7 +97,33 @@ later frontend coverage additions and full combined measurement are pending;
 PR 92 is not yet published at this checkpoint. Real credential rotation,
 production operations and main merge remain unperformed.
 
-## Reserved integration work (continued)
+## Performance branch checkpoint
+
+PR 93 integrated checked security parent `1b48b8b0` by an ordinary merge.
+The report-job import conflict retains the validated payload cache and main's
+filtered cursor pagination. The reviewed compact polling candidate replaces
+payload JSON parsing in listings with validated materialised summaries. Migration
+0083 follows invitation privacy 0082 and derives origins only after original
+checkpoint validation. Main's shipped migration bytes are unchanged.
+
+The first source lint run found two identical `list_page` methods introduced
+by combining main's new method with the candidate; one duplicate was removed.
+The combined polling/storage/API/actual-migration group passed 121 cases, and
+store/shared-read/stream/bell integration passed 39 cases. Source Ruff lint/format,
+strict mypy (1,488 files), three import contracts and both frontend TypeScript
+configurations passed. Regenerated API contracts match the merged files exactly.
+Independent read-only review found no actionable integration issue in store
+invalidation, access-bound payload caching, lease fencing or projection backfill.
+These are focused checks, with coverage disabled, not performance measurements.
+Full current-source CI, final PostgreSQL migration/model parity and the CI
+branch's pending coverage additions remain required before publication.
+
+The runtime branch's full run `36924455345` found one test incompatibility on
+both database engines: an equality assertion includes distinct per-request IDs.
+The privacy response comparison and response-ID checks are being repaired;
+runtime production behaviour is not being weakened to satisfy that assertion.
+
+## Reserved integration work
 
 Current main's shipped migrations retain their existing history through 0081.
 Only the unmerged Codex migrations will be re-keyed after that revision:
