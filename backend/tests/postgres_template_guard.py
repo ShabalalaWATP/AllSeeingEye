@@ -2,7 +2,6 @@
 
 from collections.abc import Callable
 from hashlib import sha256
-from inspect import unwrap
 from typing import Any
 
 from sqlalchemy import Connection
@@ -13,6 +12,7 @@ from sqlalchemy.schema import CreateIndex, CreateTable
 
 from ase.adapters.persistence.base import Base
 from database_markers import file_constructs_database, uses_database
+from postgres_template_fixtures import job_settings_chain, template_fixture
 
 _DEFAULTS: dict[str, Callable[..., Any]] = {}
 _METADATA = Base.metadata
@@ -20,7 +20,8 @@ DDL_EVENTS = ("before_create", "after_create", "before_drop", "after_drop")
 
 
 def template_default(function: Callable[..., Any]) -> Callable[..., Any]:
-    """Register exact ordinary fixture functions, including their unwrapped identity."""
+    """Register exact ordinary fixture functions before pytest decorates them."""
+    template_fixture(function)
     _DEFAULTS[function.__name__] = function
     return function
 
@@ -30,10 +31,13 @@ def ordinary_app(item: Any) -> bool:
     if any(item.get_closest_marker(name) for name in ("postgres", "migration", "race")):
         return False
     definitions = getattr(getattr(item, "_fixtureinfo", None), "name2fixturedefs", {})
-    for name in ("app", "settings"):
-        candidates = definitions.get(name, ())
-        if not candidates or unwrap(candidates[-1].func) is not _DEFAULTS.get(name):
-            return False
+    original = all(
+        len(candidates) == 1 and candidates[0].func is _DEFAULTS.get(name)
+        for name in ("app", "settings")
+        for candidates in (definitions.get(name, ()),)
+    )
+    if not original and not job_settings_chain(item, definitions):
+        return False
     if file_constructs_database(item.path) or uses_database(getattr(item, "obj", None)):
         return False
     # This helper follows imported aliases/closures as well as direct factory names.

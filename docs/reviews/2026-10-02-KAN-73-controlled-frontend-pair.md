@@ -6,10 +6,10 @@ saved **88.0644 seconds**, meeting the required 70 seconds. Both phases passed
 Exact test identities, outcomes and counts matched. The earlier 63.8143-second
 result remains a valid failed measurement for its earlier source revision.
 
-| Phase | UTC start on 2 October 2026 | Wall seconds |
-| --- | --- | ---: |
-| DOM baseline | 09:10:12.878195 | 1,186.0590225 |
-| Node project | 09:30:38.134684 | 1,097.9945845 |
+| Phase        | UTC start on 2 October 2026 |  Wall seconds |
+| ------------ | --------------------------- | ------------: |
+| DOM baseline | 09:10:12.878195             | 1,186.0590225 |
+| Node project | 09:30:38.134684             | 1,097.9945845 |
 
 The same frozen full-repository archive and private frozen dependencies ran in
 the same Docker container, capped at two CPUs, 6 GiB and two Vitest workers.
@@ -26,12 +26,12 @@ hashes were verified before and after each phase. Other local heavy checks were
 held; the separately authorised native 24-hour audit continued periodic light
 HTTP requests. This is one complete matched pair, with no selected reruns.
 
-| Coverage | DOM covered / total | Node covered / total | Change, percentage points |
-| --- | ---: | ---: | ---: |
-| Lines | 23,467 / 24,102 | 23,467 / 24,102 | 0 |
-| Statements | 26,438 / 27,478 | 26,438 / 27,478 | 0 |
-| Branches | 23,225 / 25,205 | 23,225 / 25,205 | 0 |
-| Functions | 8,678 / 9,169 | 8,679 / 9,169 | +0.0109063 |
+| Coverage   | DOM covered / total | Node covered / total | Change, percentage points |
+| ---------- | ------------------: | -------------------: | ------------------------: |
+| Lines      |     23,467 / 24,102 |      23,467 / 24,102 |                         0 |
+| Statements |     26,438 / 27,478 |      26,438 / 27,478 |                         0 |
+| Branches   |     23,225 / 25,205 |      23,225 / 25,205 |                         0 |
+| Functions  |       8,678 / 9,169 |        8,679 / 9,169 |                +0.0109063 |
 
 All coverage differences are within the required 0.05 percentage points. Node
 branch coverage is 92.14%. The unchanged frontend auth 95% and global branch

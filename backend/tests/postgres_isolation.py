@@ -10,6 +10,8 @@ import asyncpg
 import pytest
 from sqlalchemy.engine import make_url
 
+from postgres_template_fixtures import template_fixture
+
 
 def worker_database_url(service_url: str, worker: str, token: str) -> str:
     """Generate an identifier from trusted worker metadata, never from user SQL."""
@@ -38,6 +40,7 @@ async def database_command(service_url: str, database_url: str, *, create: bool)
 
 
 @pytest.fixture(scope="session", autouse=True)
+@template_fixture
 def isolated_postgres_database(
     request: pytest.FixtureRequest, worker_id: str
 ) -> Iterator[str | None]:
