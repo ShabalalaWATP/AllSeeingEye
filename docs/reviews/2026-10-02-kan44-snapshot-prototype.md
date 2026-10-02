@@ -97,3 +97,35 @@ These isolated load savings do **not** establish the remaining three-second
 SIGTERM-to-first-ready acceptance. KAN-44 remains open, the PR remains a draft,
 and no new production merge or release has been approved. Any further candidate
 or full restart comparison needs its own reviewed scope and controlled evidence.
+
+## Optional Web Push imports
+
+A subsequent bounded change defers the delivery adapter import until the existing
+key, contact-subject and cipher-availability guard permits sender construction.
+The request service still constructs its real endpoint validator on first use.
+Configured key parsing, public-key derivation, worker execution, persistence,
+current-session authorisation, transport and cancellation behaviour are unchanged.
+Only `container/web_push.py` changes production code in this follow-up. There is
+no language or document-adapter change and no key-rotation work.
+
+Before the fix, the fresh-process ASGI/idle-worker import regression failed as
+expected because `pywebpush`, `py_vapid` and the delivery adapter were loaded.
+The other eight new contract cases passed. After the fix, the focused push API,
+transport, scope, concurrency and startup consumers passed: **37 passed, one
+skipped**. The skip is the existing PostgreSQL race parameter, which requires
+`ASE_NOTIFICATION_POSTGRES_URL`; the private SQLite race passed. No shared or
+external database was used. A final strengthening of the cold request-validator
+check passed all nine companion cases, including unconditional worker join and
+container disposal on failure paths.
+
+Ruff, formatting, whitespace and scoped Bandit checks passed. Strict mypy passed
+1,578 source files and all three import contracts passed. Independent quality and
+security reviews found no actionable source issue. The tests preserve real
+configured public-key construction, invalid-key errors before delivery admission,
+unavailable guard combinations, endpoint rejection and worker cancellation.
+
+The Web Push follow-up has **no measured performance result**. The snapshot
+comparison above remains attributed only to immutable commit `2ffe17a4`; its
+0.2948-second median must not be added to instrumented import costs or assumed to
+apply to this later candidate. Any complete restart comparison requires separately
+reviewed frozen inputs and the unchanged conservative acceptance criterion.
