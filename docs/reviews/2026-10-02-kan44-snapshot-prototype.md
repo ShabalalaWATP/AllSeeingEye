@@ -188,3 +188,44 @@ two-file production change and companion tests, including the preserved subtype
 behaviour. The next proposed acceptance comparison uses the complete restart
 path and the same six-pair conservative threshold, subject to its separate frozen
 source, harness and prepared-input review gates.
+
+## Complete restart acceptance for 6dbbfad9
+
+The fixed reference-host campaign compared historical release `1d924272` with
+exact source `6dbbfad9e725259448848c1f17b680519776b459`. All fourteen observations
+were valid: two predeclared excluded warmups followed by three ABBA blocks, with
+no reruns or discarded observations. The six conservative improvements were
+**3.336346232, 3.669425554, 3.909446789, 3.062762116, 3.245044136 and
+3.654180785 seconds**. All six meet the unchanged three-second requirement.
+The raw median was **3.850102340 seconds**; it does not replace the conservative
+bounds. This demonstrates the defined acceptance criterion on the documented
+nonproduction Docker Linux reference host.
+
+Every initial and replacement process restored 100,000 events. Independent
+quality and security audits reconciled the exact source/image/configuration
+seals, full ordered snapshot content and HMAC, real migration/readiness,
+schema and no-work checks, lifecycle events, clock bounds and probe samples.
+Actual migration imports were **1,429 -> 199**. All five required candidate
+startup phases emitted finite numeric durations. All 1,214 commands stayed
+within their bounds; final owned container, volume and error censuses were
+empty, with no unresolved operation. Forty-one offline harness checks passed.
+
+Exact-source CI [37067672901](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/37067672901)
+succeeded before execution, with all 38 hosted checks successful. PR124 merged
+as `c798abe4` at 21:53:57 UTC, before the campaign started at 21:55:29. The
+frozen protocol/report retain their preparation-time word "unmerged". The
+measurement used immutable `6dbbfad9`, already incorporated by that merge;
+the merge commit itself was not rebuilt or measured.
+
+Each release used its supported schema and dependency graph: heads 0081/0089,
+61 common package versions and thirteen candidate additions, with matching
+Python 3.13.15 and OS inventories. This is a complete-release comparison,
+without isolated optimisation causality, production downtime, other-host or
+statistical-confidence claims. Prior negative campaigns and failed preparation
+attempts remain unchanged, including the `719d7e11` result above.
+
+Private evidence is retained in
+`C:/Users/alexo/.codex/worktrees/kan44-snapshot-restore/restart-codec-20261002`.
+Report SHA256:
+`35f6896be17f064c0bfeee12a72fd6a341ca2d61509f8d42bad99540ddc82a4b`.
+Both independent completed-evidence audits found no actionable discrepancy.

@@ -47,12 +47,12 @@ retained. Each service had two CPUs, 2 GiB RAM and separately 2 GiB tmpfs storag
 Every pytest process had a 450-second bound. There were no retries or reordered
 observations.
 
-| Arm | Source | Recorded wall seconds |
-| --- | --- | ---: |
-| 1 | Control | 111.4358871 |
-| 2 | Candidate | 99.9368562 |
-| 3 | Candidate | 103.4854945 |
-| 4 | Control | 110.6865036 |
+| Arm | Source    | Recorded wall seconds |
+| --- | --------- | --------------------: |
+| 1   | Control   |           111.4358871 |
+| 2   | Candidate |            99.9368562 |
+| 3   | Candidate |           103.4854945 |
+| 4   | Control   |           110.6865036 |
 
 All 32 measured executions and four excluded warmups passed. Every arm passed
 its source/runtime checks, complete catalogue comparison and acknowledged owned
@@ -83,6 +83,13 @@ The latest complete hosted run before this change, CI `37043269376` at
 KAN-71 still requires at most 30 minutes and its five-before/five-after evidence.
 Neither these cumulative profiles nor this inconclusive local comparison proves
 that target. Fresh combined-source hosted CI is required after publication.
+
+Normal integration merge `cd2baca6` incorporates released main `45381b2c`
+without conflicts. The reviewed codec and both new test files retain their
+exact hashes. A private frozen dependency sync then installed main's updated
+versions; the 69 focused cases passed again, in 10.28 seconds, and repository
+Ruff, scoped formatting and strict codec mypy checks passed. This later source
+and dependency integration is outside the frozen comparison.
 
 Private evidence is retained beneath
 `C:/Users/alexo/.codex/scratch/kan71-73-followup-58c5b2fe/`:

@@ -59,5 +59,8 @@ The implementation comprises eleven further headless test moves, including two
 pure fixture extractions with compatible MSW re-exports. Assertions and production
 source are unchanged. Focused tests, both TypeScript configurations, lint and
 format checks passed before timing; independent quality and security reviews
-found no actionable issues. Fresh integration CI remains required. This frontend
-result makes no claim about KAN-71's separate PostgreSQL runner-minute target.
+found no actionable issues. Subsequent integration CI `37043269376` at
+`597cedd5` passed all 38 hosted checks with these changes present. The follow-up
+implementation is still awaiting release through PR121; the measured criterion
+and release state are separate. This frontend result makes no claim about
+KAN-71's separate PostgreSQL runner-minute target.
