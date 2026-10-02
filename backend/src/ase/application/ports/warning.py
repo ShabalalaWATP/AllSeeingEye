@@ -7,6 +7,8 @@ from typing import Protocol
 from uuid import UUID
 
 from ase.domain.access import Visibility
+from ase.domain.alert_feedback import AlertDisposition
+from ase.domain.indicator_baseline import IndicatorBaseline
 from ase.domain.warning import Alert, Indicator
 
 
@@ -17,7 +19,7 @@ class IndicatorRepository(Protocol):
     async def save(self, indicator: Indicator) -> None: ...
     async def save_if_unchanged(
         self, indicator: Indicator, expected_updated_at: datetime
-    ) -> bool: ...  # only while the stored revision is still the one the edit was made from
+    ) -> bool: ...
     async def delete(self, indicator_id: UUID) -> None: ...
 
 
@@ -27,6 +29,10 @@ class AlertRepository(Protocol):
         self, since: datetime, limit: int, visibility: Visibility
     ) -> list[Alert]: ...
     async def save(self, alert: Alert) -> None: ...
+    async def acknowledge(self, alert: Alert) -> bool: ...
+    async def feedback(
+        self, indicator: Indicator, since: datetime, until: datetime
+    ) -> dict[AlertDisposition, int]: ...
 
 
 class WarningStore(Protocol):
@@ -42,3 +48,8 @@ class WarningStore(Protocol):
 
 class AlertNotifier(Protocol):
     async def notify(self, alert: Alert, indicator: Indicator) -> bool: ...
+
+
+class IndicatorBaselineStore(Protocol):
+    async def summary(self, rule: Indicator, now: datetime) -> IndicatorBaseline: ...
+    async def record(self, rule: Indicator, hour: datetime, count: int) -> None: ...

@@ -39,6 +39,8 @@ const RULE_FIELDS = {
   categories: 'Event categories',
   keywords: 'Keywords',
   threshold: 'Threshold',
+  baseline_ratio: 'Ratio to hourly mean',
+  baseline_days: 'Baseline window',
   window_minutes: 'Window',
   cooldown_minutes: 'Cooldown',
   severity_floor: 'Severity floor',

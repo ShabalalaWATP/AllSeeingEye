@@ -1,4 +1,4 @@
-"""Schemas for alert rules (historically "indicators") and the alerts they raise."""
+"""Schemas for indicators and alerts."""
 
 from __future__ import annotations
 
@@ -10,11 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import Category
 from ase.domain.warning import Alert, Indicator
 
-# Values are rejected rather than truncated: a shortened country code or keyword would
-# silently change what the rule watches.
 CountryCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z]{2}$")]
 Keyword = Annotated[str, StringConstraints(max_length=60)]
 
@@ -31,6 +30,8 @@ class IndicatorIn(BaseModel):
     categories: list[Category] = Field(default_factory=list, max_length=20)
     keywords: list[Keyword] = Field(default_factory=list, max_length=20)
     threshold: int = Field(default=1, ge=1, le=10_000)
+    baseline_ratio: float | None = Field(default=None, gt=1, le=100)
+    baseline_days: int = Field(default=30, ge=7, le=30)
     window_minutes: int = Field(default=60, ge=5, le=10_080)
     cooldown_minutes: int = Field(default=60, ge=1, le=1_440)
     severity_floor: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -49,6 +50,8 @@ class IndicatorIn(BaseModel):
             categories=self.categories,
             keywords=list(self.keywords),
             threshold=self.threshold,
+            baseline_ratio=self.baseline_ratio,
+            baseline_days=self.baseline_days,
             window_minutes=self.window_minutes,
             cooldown_minutes=self.cooldown_minutes,
             severity_floor=self.severity_floor,
@@ -59,11 +62,7 @@ class IndicatorIn(BaseModel):
 
 
 class IndicatorUpdateIn(IndicatorIn):
-    """An edit names the revision (`updated_at`) it was made from; stale edits get 409.
-
-    Removing every location, category or keyword restriction needs `confirm_wider_scope`.
-    Pause and resume are edits of `enabled` that send the rule's other values unchanged.
-    """
+    """Edits identify their original revision and explicitly confirm removing restrictions."""
 
     expected_updated_at: datetime
     confirm_wider_scope: bool = False
@@ -80,6 +79,8 @@ class IndicatorOut(BaseModel):
     categories: list[Category]
     keywords: list[str]
     threshold: int
+    baseline_ratio: float | None = None
+    baseline_days: int = 30
     window_minutes: int
     cooldown_minutes: int
     severity_floor: float
@@ -106,6 +107,8 @@ class IndicatorOut(BaseModel):
             categories=list(indicator.categories),
             keywords=list(indicator.keywords),
             threshold=indicator.threshold,
+            baseline_ratio=indicator.baseline_ratio,
+            baseline_days=indicator.baseline_days,
             window_minutes=indicator.window_minutes,
             cooldown_minutes=indicator.cooldown_minutes,
             severity_floor=indicator.severity_floor,
@@ -120,6 +123,12 @@ class IndicatorOut(BaseModel):
 
 class IndicatorsOut(BaseModel):
     items: list[IndicatorOut]
+
+
+class AlertAcknowledgementIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    disposition: AlertDisposition | None = None
+    note: str | None = Field(default=None, max_length=200)
 
 
 class AlertOut(BaseModel):
@@ -137,10 +146,13 @@ class AlertOut(BaseModel):
     countries: list[str]
     acknowledged_at: datetime | None
     acknowledged_by: UUID | None
+    disposition: AlertDisposition | None = None
+    disposition_note: str | None = None
+    baseline_mean: float | None = None
+    baseline_ratio: float | None = None
     report_id: UUID | None
     created_by: UUID | None
     team_id: UUID | None
-    # The personal owner's display name on list views; null for team alerts.
     owner_name: str | None = None
 
     @classmethod
@@ -160,6 +172,10 @@ class AlertOut(BaseModel):
             countries=list(alert.countries),
             acknowledged_at=alert.acknowledged_at,
             acknowledged_by=alert.acknowledged_by,
+            disposition=alert.disposition,
+            disposition_note=alert.disposition_note,
+            baseline_mean=alert.baseline_mean,
+            baseline_ratio=alert.baseline_ratio,
             report_id=alert.report_id,
             created_by=alert.created_by,
             team_id=alert.team_id,
@@ -170,3 +186,12 @@ class AlertOut(BaseModel):
 class AlertsOut(BaseModel):
     items: list[AlertOut]
     unacknowledged: int
+
+
+class IndicatorBaselineOut(BaseModel):
+    sample_hours: int
+    mean: float | None
+    earliest: datetime | None
+    as_of: datetime
+    ready: bool
+    reason: str

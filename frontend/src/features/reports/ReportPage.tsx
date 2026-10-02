@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { ForecastPanel } from '@/components/reports/ForecastPanel';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { ApiError, describeError } from '@/lib/api/errors';
@@ -202,6 +203,17 @@ export default function ReportPage() {
             </article>
           </div>
 
+          <ForecastPanel
+            reportId={id}
+            version={version.number}
+            canEdit={
+              canEdit &&
+              (!report.team_id ||
+                workspaces.teams.some(
+                  (entry) => entry.team.id === report.team_id && entry.team.is_active,
+                ))
+            }
+          />
           <ReportPageFooter reportId={id} version={version} followUp={followUp} report={report} />
         </div>
       </section>

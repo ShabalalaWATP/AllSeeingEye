@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.feeds.mastodon_watch import watch_terms
 from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
+from ase.adapters.persistence.indicator_baselines import SqlIndicatorBaselines
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
 from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
 from ase.adapters.persistence.teams import SqlTeamRepository
@@ -48,7 +49,9 @@ from ase.application.trackers.modules import ModuleService, cyber_summary, marit
 from ase.application.trackers.social import SocialMonitor, SocialService
 from ase.application.translate.queue import TranslationQueue
 from ase.application.warning.alerts import AcknowledgeAlertUseCase, ListAlertsUseCase
+from ase.application.warning.baselines import IndicatorBaselineView
 from ase.application.warning.evaluator import IndicatorEvaluator
+from ase.application.warning.feedback import AlertFeedbackView
 from ase.application.warning.indicator_updates import UpdateIndicatorUseCase
 from ase.application.warning.indicators import (
     CreateIndicatorUseCase,
@@ -231,6 +234,18 @@ class FeatureWiring(ReportWiring):
             r.alerts, self.clock, self._auditor(r), r.uow, self.access_policy(session)
         )
 
+    def alert_feedback(self, session: AsyncSession) -> AlertFeedbackView:
+        r = self.repositories(session)
+        return AlertFeedbackView(r.alerts, r.indicators, self.access_policy(session), self.clock)
+
+    def indicator_baseline(self, session: AsyncSession) -> IndicatorBaselineView:
+        return IndicatorBaselineView(
+            self.repositories(session).indicators,
+            SqlIndicatorBaselines(self.session_factory, self.access_policy),
+            self.access_policy(session),
+            self.clock,
+        )
+
     def build_evaluator(self) -> IndicatorEvaluator:
         return IndicatorEvaluator(
             self.store,
@@ -239,6 +254,7 @@ class FeatureWiring(ReportWiring):
             self.notifier,
             self.clock,
             reporter=self.alert_report,
+            baselines=SqlIndicatorBaselines(self.session_factory, self.access_policy),
         )
 
     async def alert_report(self, indicator: Indicator, alert: Alert) -> UUID | None:
