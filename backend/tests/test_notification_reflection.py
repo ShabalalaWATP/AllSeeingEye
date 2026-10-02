@@ -17,6 +17,8 @@ from notification_migration_helpers import (
     migration_database as migration_database,  # noqa: PLC0414
 )
 
+pytestmark = pytest.mark.db
+
 
 @pytest.fixture(params=["sqlite", pytest.param("postgres", marks=pytest.mark.postgres)])
 def reflection_database(request, tmp_path):

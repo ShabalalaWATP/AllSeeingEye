@@ -119,10 +119,29 @@ def insert_row(connection, table_name, **values):
     return row.get("id")
 
 
+def snapshot_targets(connection, names):
+    if not names:
+        return
+    available = set(sa.inspect(connection).get_table_names())
+    if len(set(names)) != len(names) or any(name not in available for name in names):
+        # Keep error/callback order and individual support for views or temporary tables.
+        for name in names:
+            yield name, table(connection, name)
+        return
+    metadata = sa.MetaData()
+    metadata.reflect(bind=connection, only=names, resolve_fks=False)
+    for name in names:
+        if name not in metadata.tables:
+            # Batch reflection warns and skips unreflectable tables. Recover the
+            # individual error, but never accept a silently incomplete snapshot.
+            table(connection, name)
+            raise sa.exc.UnreflectableTableError(f"Batch reflection omitted {name!r}")
+        yield name, metadata.tables[name]
+
+
 def snapshot(connection, names=LEGACY_TABLES):
     result = {}
-    for name in names:
-        target = table(connection, name)
+    for name, target in snapshot_targets(connection, tuple(names)):
         query = sa.select(target).order_by(*target.primary_key.columns)
         result[name] = [dict(row) for row in connection.execute(query).mappings()]
     return result
