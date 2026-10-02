@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-from copy import deepcopy
 from typing import Any, cast
 
 from ase.adapters.persistence.report_job_models import ReportJobRow
@@ -59,19 +58,18 @@ def with_summary(row: ReportJobRow, summary: dict[str, Any]) -> ReportJob:
 
 
 class PayloadCache:
-    """One worker attempt's last canonical version, with no caller-owned aliases."""
+    """One attempt's validated bytes; every read owns its newly parsed JSON tree."""
 
     def __init__(self) -> None:
         self._encoded: bytes | None = None
-        self._payload: dict[str, Any] | None = None
 
     def decode(self, encoded: bytes) -> dict[str, Any]:
-        if encoded != self._encoded or self._payload is None:
-            payload = json.loads(encoded)
+        payload: dict[str, Any] = json.loads(encoded)
+        if encoded != self._encoded:
             if canonical_job_payload(payload) != encoded:
                 raise ValueError("Invalid checkpoint encoding")
-            self._encoded, self._payload = encoded, payload
-        return deepcopy(self._payload)
+            self._encoded = encoded
+        return payload
 
 
 def from_row(row: ReportJobRow, cache: PayloadCache | None = None) -> ReportJob:
