@@ -128,8 +128,10 @@ class TemplateWorker:
             # Prevent accidental future writes to the warm template itself.
             await self._command(name, seal=True)
             self.template = name
-        if schema_fingerprint() != self.fingerprint:
-            return None
+            # Initialisation awaited database work; recheck metadata before cloning.
+            # Warm acquisition has not yielded since its initial fresh guard.
+            if schema_fingerprint() != self.fingerprint:
+                return None
         name = self._allocate()
         await self._command(name, clone=True)
         database = TemplateDatabase(name, self._url(name), self.fingerprint)
