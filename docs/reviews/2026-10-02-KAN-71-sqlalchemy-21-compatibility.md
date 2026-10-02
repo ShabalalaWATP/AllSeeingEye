@@ -48,3 +48,28 @@ brief migration test. No migration source or driver dependency changes.
 
 This is dependency compatibility evidence, not a KAN-71 timing result. Runtime
 passwords, private test URLs and local result artefacts are excluded from Git.
+
+## Main integration, 3 October 2026
+
+A normal merge incorporates main `45381b2c18ddf3e80674528caee2e14fd492f500`,
+including the reviewed dependency updates in PRs 119 and 120. The sole conflict
+was adjacent SQLAlchemy and SSE requirements in `uv.lock`. The resolution keeps
+SQLAlchemy 2.1.1 and main's SSE 3.5.0, Ruff 0.16.9 and fonttools 4.66.0.
+All 120 package identities remain. Against main, only the SQLAlchemy package
+record and application requirement metadata differ; the other 118 package
+records match exactly. The six production compatibility fixes and two test files
+remain unchanged from `063136ec`.
+
+`uv lock --check --offline` and `uv sync --frozen` passed. The expanded focused
+14-file suite passed **71 tests, with 2 PostgreSQL-only skips**, in 66.06 seconds.
+The explicit native subscription migration test then passed separately:
+**1 passed in 3.25 seconds**, on the same pinned PostGIS 16 image and a fresh
+private UUID database. All three durability settings remained enabled, the
+complete database catalogue matched before and after, and acknowledged container
+removal, exact absence and an empty owner census were verified.
+
+Changed-file Ruff and formatting, full mypy over **1,578 source files**, all
+three import contracts and scoped Bandit passed. An independent read-only
+integration review confirmed the dependency union and unchanged compatibility
+behaviour. No benchmark, full-suite or coverage result is claimed. Fresh CI must
+validate the resulting PR head before merge.
