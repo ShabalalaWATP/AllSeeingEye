@@ -7,6 +7,7 @@ from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
 
+from ase.application.cyber_scores import cvss_score, epss_score
 from ase.application.feeds.board_reads import read_events
 from ase.application.feeds.health import HealthRegistry
 from ase.application.ports import Clock
@@ -241,6 +242,8 @@ def _kev(event: Event) -> CyberKev | None:
         attribute("ransomware"),
         attribute("cwes"),
         attribute("required_action"),
+        epss_score(event.attributes),
+        cvss_score(event.attributes),
     )
 
 

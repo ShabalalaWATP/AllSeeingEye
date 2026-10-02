@@ -1,13 +1,38 @@
+import { useState } from 'react';
+import { KevScores } from './KevScores';
 import { SourceLink } from '@/components/ui/SourceLink';
 import type { CyberItem } from '@/lib/api/cyber';
 
 export function CyberVulnerabilities({ items }: { items: readonly CyberItem[] }) {
+  const [sort, setSort] = useState('date');
   const rows = items.filter(
     (item): item is CyberItem & { kev: NonNullable<CyberItem['kev']> } => item.kev !== null,
   );
+  if (sort === 'epss')
+    rows.sort(
+      (left, right) =>
+        (right.kev.epss?.probability ?? -1) - (left.kev.epss?.probability ?? -1) ||
+        left.id.localeCompare(right.id),
+    );
   const ransomware = rows.filter((row) => row.kev.ransomware_use.toLowerCase() === 'known').length;
   return (
     <div className="space-y-5">
+      <p className="rounded-xl border border-line/60 bg-surface/50 px-4 py-3 text-sm leading-6 text-text/90">
+        This product uses the{' '}
+        <SourceLink url="https://nvd.nist.gov/developers/terms-of-use">NVD API</SourceLink> but is
+        not endorsed or certified by the NVD.
+      </p>
+      <label className="text-sm">
+        Sort vulnerabilities
+        <select
+          aria-label="Sort vulnerabilities"
+          value={sort}
+          onChange={(event) => setSort(event.target.value)}
+        >
+          <option value="date">Catalogue order</option>
+          <option value="epss">EPSS probability, highest first</option>
+        </select>
+      </label>
       <div className="flex flex-wrap gap-3 text-xs">
         <span className="rounded-full border border-line/70 px-3 py-1 text-muted">
           <span className="font-semibold text-text">{rows.length}</span> catalogue additions
@@ -61,6 +86,7 @@ export function CyberVulnerabilities({ items }: { items: readonly CyberItem[] })
                   </div>
                 )}
               </dl>
+              <KevScores kev={kev} />
               {kev.due_date && (
                 <p className="mt-2 text-xs leading-5 text-muted">
                   Catalogue due date: {kev.due_date}. This federal directive deadline is not a

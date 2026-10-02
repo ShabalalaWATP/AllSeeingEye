@@ -161,3 +161,16 @@ or ports remained. The standalone script, log and machine-readable report are
 retained outside Git in `runtime-kan42-manual-20261002-actual-clock` beside this
 worktree. This completes the manual criterion; Jira closure still requires the
 approved PR 90 merge and its fresh integration checks.
+
+## Source/export scanner review, 2 October 2026
+
+PR #95 integrated released forecast main at `da38f161`. Semgrep alert 5036
+flags the standard-library import in `designation_xml.py`. Static review confirms
+that only the `Element` annotation and `ParseError` exception are imported.
+The sole parser is `defusedxml.fromstring`, with DTDs, entities and external
+references forbidden for both authorities, behind a 32 MiB input bound.
+Downstream processing traverses names and metadata without reparsing XML.
+The locked defusedxml handler implementation rejects these constructs before
+expansion. The specific alert was dismissed as a false positive with evidence;
+no scanner rule or gate was removed. This assessment is static and does not
+claim additional runtime validation.

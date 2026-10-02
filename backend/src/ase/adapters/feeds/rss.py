@@ -51,6 +51,8 @@ class RssOptions:
     country_category_domain: str | None = None
     headlines_only: bool = False
     newest_first: bool = False
+    # These titles stay native in the background queue; explicit research may use them.
+    translate_on_demand: bool = False
 
 
 def _local(tag: str) -> str:
@@ -261,7 +263,9 @@ class RssConnector:
             point=point,
             geo_confidence=confidence,
             country_iso=country,
-            tags=self._options.tags | {self._options.subtype},
+            tags=self._options.tags
+            | {self._options.subtype}
+            | ({"translate_on_demand"} if self._options.translate_on_demand else set()),
             severity=None,
             reliability=self.spec.reliability,
             credibility=self._options.credibility,

@@ -4,6 +4,8 @@ from dataclasses import replace
 from unicodedata import normalize
 
 from ase.adapters.research_records.designation_snapshot import (
+    AUTHORITY_NAMES,
+    AUTHORITY_PREFIXES,
     SOURCE_URLS,
     Authority,
     DesignationSnapshot,
@@ -31,11 +33,7 @@ class DesignationProvider:
             raise ValueError("Designation authority does not match snapshot")
         self._snapshot, self._clock, self.authority = snapshot, clock, authority
         self.id = f"research-designations-{authority}"
-        self.name = (
-            "UK Sanctions List imported snapshot"
-            if authority == "uksl"
-            else "OFAC SDN imported snapshot"
-        )
+        self.name = f"{AUTHORITY_NAMES[authority]} imported snapshot"
 
     def supports(self, query: ResearchQuery) -> bool:
         subject = (query.subject or "").strip()
@@ -44,11 +42,10 @@ class DesignationProvider:
             and bool(subject)
             and (
                 self.id in (query.source_ids or ())
-                or subject.upper().startswith("UKSL:" if self.authority == "uksl" else "OFAC:")
+                or subject.upper().startswith(AUTHORITY_PREFIXES[self.authority])
             )
             and (
-                ":" not in subject
-                or subject.upper().startswith("UKSL:" if self.authority == "uksl" else "OFAC:")
+                ":" not in subject or subject.upper().startswith(AUTHORITY_PREFIXES[self.authority])
             )
         )
 
@@ -58,7 +55,7 @@ class DesignationProvider:
                 self.id,
                 self.name,
                 CollectionStatus.UNSUPPORTED,
-                "Supply an exact full name candidate or the authority's UKSL:/OFAC: record ID.",
+                "Supply an exact full name candidate or the authority-prefixed record ID.",
             )
         snapshot = self._snapshot
         if snapshot is None:
@@ -70,7 +67,7 @@ class DesignationProvider:
                 "No download or screening was performed.",
             )
         subject = (query.subject or "").strip()
-        prefix = "UKSL:" if self.authority == "uksl" else "OFAC:"
+        prefix = AUTHORITY_PREFIXES[self.authority]
         by_id = subject.upper().startswith(prefix)
         identity = subject[len(prefix) :].strip().upper() if by_id else ""
         key = _match_key(subject)

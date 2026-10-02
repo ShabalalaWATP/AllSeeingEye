@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/reports/{report_id}/stix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Stix */
+        get: operations["export_stix_api_reports__report_id__stix_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cyber/radar-attacks": {
         parameters: {
             query?: never;
@@ -2806,6 +2823,23 @@ export interface paths {
         get: operations["original_filing_api_research_sec_filings__selection_id__original_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/lei-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Find Lei Candidates */
+        post: operations["find_lei_candidates_api_research_lei_candidates_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7611,6 +7645,19 @@ export interface components {
             direction?: components["schemas"]["ThresholdDirection"] | null;
             aggregate?: components["schemas"]["WindowAggregate"] | null;
         };
+        /** CvssScoreOut */
+        CvssScoreOut: {
+            /** Base Score */
+            base_score: number;
+            /** Version */
+            version: string;
+            /** Vector */
+            vector: string;
+            /** Source */
+            source: string;
+            /** Updated At */
+            updated_at: string;
+        };
         /** CyberActorCatalogueOut */
         CyberActorCatalogueOut: {
             /** Source Id */
@@ -7801,6 +7848,8 @@ export interface components {
             cwes: string;
             /** Required Action */
             required_action: string;
+            epss?: components["schemas"]["EpssScoreOut"] | null;
+            cvss?: components["schemas"]["CvssScoreOut"] | null;
         };
         /**
          * CyberKind
@@ -8504,6 +8553,15 @@ export interface components {
          * @enum {string}
          */
         EditionWorkflow: "pending" | "queued" | "running" | "retry_wait" | "paused" | "blocked" | "completed" | "failed" | "cancelled" | "skipped";
+        /** EpssScoreOut */
+        EpssScoreOut: {
+            /** Probability */
+            probability: number;
+            /** Percentile */
+            percentile: number;
+            /** Date */
+            date: string;
+        };
         /** EquipmentOut */
         EquipmentOut: {
             /** Id */
@@ -10695,6 +10753,29 @@ export interface components {
          * @enum {string}
          */
         LedgerKind: "forecast" | "indicator";
+        /** LeiCandidateOut */
+        LeiCandidateOut: {
+            /** Lei */
+            lei: string;
+            /** Name */
+            name: string;
+            /** Jurisdiction */
+            jurisdiction: string;
+            /** Status */
+            status: string;
+        };
+        /** LeiCandidatesIn */
+        LeiCandidatesIn: {
+            /** Name */
+            name: string;
+            /** Country */
+            country?: string | null;
+        };
+        /** LeiCandidatesOut */
+        LeiCandidatesOut: {
+            /** Items */
+            items: components["schemas"]["LeiCandidateOut"][];
+        };
         /**
          * Lens
          * @enum {string}
@@ -16660,6 +16741,11 @@ export interface components {
             /** Losses */
             losses: components["schemas"]["SpottedLossOut"][];
         };
+        /**
+         * StixTlp
+         * @enum {string}
+         */
+        StixTlp: "green" | "amber" | "red";
         /** StoreStatsOut */
         StoreStatsOut: {
             /** Total */
@@ -18060,6 +18146,47 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    export_stix_api_reports__report_id__stix_get: {
+        parameters: {
+            query: {
+                version: number;
+                tlp: components["schemas"]["StixTlp"];
+            };
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     radar_attack_trends_api_cyber_radar_attacks_get: {
         parameters: {
             query?: never;
@@ -26353,6 +26480,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    find_lei_candidates_api_research_lei_candidates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeiCandidatesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeiCandidatesOut"];
                 };
             };
             /** @description Unprocessable Content */

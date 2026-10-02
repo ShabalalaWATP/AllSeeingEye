@@ -20,6 +20,20 @@ class CyberActorMentionOut(_FromAttributes):
     matched_name: str
 
 
+class EpssScoreOut(_FromAttributes):
+    probability: float
+    percentile: float
+    date: str
+
+
+class CvssScoreOut(_FromAttributes):
+    base_score: float
+    version: str
+    vector: str
+    source: str
+    updated_at: str
+
+
 class CyberKevOut(_FromAttributes):
     cve: str
     vendor: str
@@ -29,6 +43,8 @@ class CyberKevOut(_FromAttributes):
     ransomware_use: str
     cwes: str
     required_action: str
+    epss: EpssScoreOut | None = None
+    cvss: CvssScoreOut | None = None
 
 
 class CyberItemOut(_FromAttributes):

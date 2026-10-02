@@ -45,6 +45,7 @@ from ase.api.routers import (
     health,
     identities,
     infrastructure,
+    lei_candidates,
     map_image,
     map_views,
     map_workspace,
@@ -63,6 +64,7 @@ from ase.api.routers import (
     report_ledgers,
     report_methodology,
     report_search,
+    report_stix,
     report_team_copies,
     reports,
     research_briefs,
@@ -93,6 +95,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(report_stix.router)
 api_router.include_router(csp_reports.router)
 api_router.include_router(cyber.router)
 api_router.include_router(economy.router)
@@ -147,6 +150,7 @@ api_router.include_router(research_preflight.router)
 api_router.include_router(research_presets.router)
 api_router.include_router(research_inputs.router)
 api_router.include_router(sec_filings.router)
+api_router.include_router(lei_candidates.router)
 api_router.include_router(research_runs.router)
 api_router.include_router(report_documents.router)
 api_router.include_router(report_methodology.router)

@@ -109,7 +109,7 @@ def test_rss_groups_load_every_packaged_file_with_unique_ids():
     assert all(groups)
     assert tuple(seed for group in groups for seed in group) == RSS_SEEDS
     ids = [seed.spec.id for seed in RSS_SEEDS]
-    assert len(ids) == len(set(ids)) == 136
+    assert len(ids) == len(set(ids)) == 151
     assert all(seed.spec.url.startswith("https://") for seed in RSS_SEEDS)
     assert all(seed.spec.rating is not None for seed in RSS_SEEDS)
     news = {seed.spec.id for seed in rss_seeds.NEWS_SEEDS}

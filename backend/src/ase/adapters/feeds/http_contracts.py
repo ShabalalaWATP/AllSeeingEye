@@ -123,10 +123,17 @@ class FeedCredential:
 
     origin: str
     authorization: str = field(repr=False)
-    header_name: Literal["Authorization", "x-ucdp-access-token", "X-API-Key"] = "Authorization"
+    header_name: Literal[
+        "Authorization", "x-ucdp-access-token", "X-API-Key", "X-HDX-HAPI-APP-IDENTIFIER"
+    ] = "Authorization"
 
     def __post_init__(self) -> None:
-        if self.header_name not in ("Authorization", "x-ucdp-access-token", "X-API-Key"):
+        if self.header_name not in (
+            "Authorization",
+            "x-ucdp-access-token",
+            "X-API-Key",
+            "X-HDX-HAPI-APP-IDENTIFIER",
+        ):
             raise ValueError("Unsupported credential header")
         try:
             parts = urlsplit(self.origin)

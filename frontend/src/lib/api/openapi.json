@@ -5,6 +5,75 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/reports/{report_id}/stix": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Stix",
+        "operationId": "export_stix_api_reports__report_id__stix_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Version"
+            }
+          },
+          {
+            "name": "tlp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StixTlp"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/cyber/radar-attacks": {
       "get": {
         "tags": [
@@ -12894,6 +12963,62 @@
             "description": "Default Response"
           }
         }
+      }
+    },
+    "/api/research/lei-candidates": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Find Lei Candidates",
+        "operationId": "find_lei_candidates_api_research_lei_candidates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeiCandidatesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeiCandidatesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/research/runs/plan": {
@@ -28537,6 +28662,39 @@
         ],
         "title": "CriterionIn"
       },
+      "CvssScoreOut": {
+        "properties": {
+          "base_score": {
+            "type": "number",
+            "title": "Base Score"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "vector": {
+            "type": "string",
+            "title": "Vector"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_score",
+          "version",
+          "vector",
+          "source",
+          "updated_at"
+        ],
+        "title": "CvssScoreOut"
+      },
       "CyberActorCatalogueOut": {
         "properties": {
           "source_id": {
@@ -29018,6 +29176,26 @@
           "required_action": {
             "type": "string",
             "title": "Required Action"
+          },
+          "epss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EpssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cvss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -31192,6 +31370,29 @@
           "skipped"
         ],
         "title": "EditionWorkflow"
+      },
+      "EpssScoreOut": {
+        "properties": {
+          "probability": {
+            "type": "number",
+            "title": "Probability"
+          },
+          "percentile": {
+            "type": "number",
+            "title": "Percentile"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "probability",
+          "percentile",
+          "date"
+        ],
+        "title": "EpssScoreOut"
       },
       "EquipmentOut": {
         "properties": {
@@ -37325,6 +37526,78 @@
           "indicator"
         ],
         "title": "LedgerKind"
+      },
+      "LeiCandidateOut": {
+        "properties": {
+          "lei": {
+            "type": "string",
+            "title": "Lei"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "title": "Jurisdiction"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lei",
+          "name",
+          "jurisdiction",
+          "status"
+        ],
+        "title": "LeiCandidateOut"
+      },
+      "LeiCandidatesIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "LeiCandidatesIn"
+      },
+      "LeiCandidatesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LeiCandidateOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "LeiCandidatesOut"
       },
       "Lens": {
         "type": "string",
@@ -54085,6 +54358,15 @@
           "losses"
         ],
         "title": "SpottedOut"
+      },
+      "StixTlp": {
+        "type": "string",
+        "enum": [
+          "green",
+          "amber",
+          "red"
+        ],
+        "title": "StixTlp"
       },
       "StoreStatsOut": {
         "properties": {
