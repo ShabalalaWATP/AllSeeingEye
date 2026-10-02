@@ -42,8 +42,6 @@ vi.mock('../components/brand/EvilEye', async () => {
   return { default: EvilEyeStub };
 });
 
-beforeEach((context) => context.skip('KAN-69 deliberate uncovered-branch validation'));
-
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });
