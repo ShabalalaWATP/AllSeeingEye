@@ -5,14 +5,16 @@ from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
 from ase.application.reports.ledger_inputs import (
     CitationKey,
     ForecastCreate,
     ForecastReview,
+    ForecastSupersession,
     IndicatorCreate,
     MissingReading,
+    OutcomeEvidence,
 )
 from ase.domain.doctrine import Confidence, Probability
 from ase.domain.forecast_ledger import (
@@ -22,6 +24,8 @@ from ase.domain.forecast_ledger import (
     ThresholdDirection,
     WindowAggregate,
 )
+from ase.domain.forecast_views import ForecastWatch
+from ase.domain.report_ledgers import ReportLedger
 
 Short = Annotated[str, Field(min_length=1, max_length=200)]
 Reason = Annotated[str, Field(min_length=1, max_length=2000)]
@@ -128,10 +132,47 @@ class IndicatorCreateIn(BaseModel):
         )
 
 
+class OutcomeEvidenceIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    report_id: UUID
+    version: int = Field(ge=1, le=2_147_483_647)
+    claim_id: UUID
+    claim_revision_id: UUID
+    citation: CitationKeyIn
+
+    def to_domain(self) -> OutcomeEvidence:
+        return OutcomeEvidence(
+            self.report_id,
+            self.version,
+            self.claim_id,
+            self.claim_revision_id,
+            self.citation.to_domain(),
+        )
+
+
+class ForecastSupersessionIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_version_id: UUID
+    previous_decision_id: UUID | None = None
+    reason: Reason
+    replacement: ForecastCreateIn
+
+    def to_domain(self) -> ForecastSupersession:
+        return ForecastSupersession(
+            self.expected_version_id,
+            self.previous_decision_id,
+            self.reason,
+            self.replacement.to_domain(),
+        )
+
+
 class ForecastReviewIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    expected_version_id: UUID | None = None
     previous_decision_id: UUID | None = None
-    state: Literal[ForecastState.UNRESOLVED]
+    state: Literal[ForecastState.UNRESOLVED, ForecastState.RESOLVED]
+    outcome: StrictBool | None = None
+    outcome_evidence: Annotated[tuple[OutcomeEvidenceIn, ...], Field(max_length=20)] = ()
     reason: Reason
     evidence: Annotated[tuple[CitationKeyIn, ...], Field(max_length=20)] = ()
     corrects_decision_id: UUID | None = None
@@ -143,6 +184,9 @@ class ForecastReviewIn(BaseModel):
             self.reason,
             tuple(row.to_domain() for row in self.evidence),
             self.corrects_decision_id,
+            self.outcome,
+            tuple(row.to_domain() for row in self.outcome_evidence),
+            self.expected_version_id,
         )
 
 
@@ -154,3 +198,22 @@ class MissingReadingIn(BaseModel):
 
     def to_domain(self) -> MissingReading:
         return MissingReading(self.observed_at, self.missing_reason, self.corrects_reading_id)
+
+
+class ReportLedgerPageOut(BaseModel):
+    items: tuple[ReportLedger, ...]
+    total: int
+    limit: int
+    offset: int
+
+
+class ForecastWatchPageOut(BaseModel):
+    items: tuple[ForecastWatch, ...]
+    total: int
+    limit: int
+    offset: int
+
+
+class ForecastExportIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ledger_ids: tuple[UUID, ...] = Field(min_length=1, max_length=20)

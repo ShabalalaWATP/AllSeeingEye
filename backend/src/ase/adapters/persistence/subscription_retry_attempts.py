@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, func, select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.operational_models import ScheduleRow
@@ -178,24 +178,17 @@ async def first_failure_at(session: AsyncSession, edition_id: UUID) -> datetime 
 
 async def due_retry_ids(session: AsyncSession, now: datetime, limit: int = 20) -> list[UUID]:
     latest = (
-        select(
-            SubscriptionAttemptRow.edition_id,
-            func.max(SubscriptionAttemptRow.number).label("number"),
-        )
-        .group_by(SubscriptionAttemptRow.edition_id)
-        .subquery()
+        select(SubscriptionAttemptRow.id)
+        .where(SubscriptionAttemptRow.edition_id == SubscriptionEditionRow.id)
+        .order_by(SubscriptionAttemptRow.number.desc())
+        .limit(1)
+        .correlate(SubscriptionEditionRow)
+        .scalar_subquery()
     )
     rows = await session.scalars(
         select(SubscriptionEditionRow.id)
-        .join(latest, SubscriptionEditionRow.id == latest.c.edition_id)
         .join(ScheduleRow, SubscriptionEditionRow.subscription_id == ScheduleRow.id)
-        .join(
-            SubscriptionAttemptRow,
-            and_(
-                SubscriptionAttemptRow.edition_id == latest.c.edition_id,
-                SubscriptionAttemptRow.number == latest.c.number,
-            ),
-        )
+        .join(SubscriptionAttemptRow, SubscriptionAttemptRow.id == latest)
         .where(
             ScheduleRow.enabled.is_(True),
             ScheduleRow.archived_at.is_(None),

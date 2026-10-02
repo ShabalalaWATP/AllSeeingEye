@@ -62,6 +62,9 @@ def _seed(url: str):
                 "section_packet_digest": "b" * 64,
                 "usage_reservation_hash": "c" * 64,
             }
+            columns = payload_columns(payload)
+            # The separate summary projection was introduced after this schema.
+            columns.pop("summary")
             values = {
                 "id": uuid4().hex,
                 "request_key": uuid4().hex,
@@ -78,7 +81,7 @@ def _seed(url: str):
                 "report_id": uuid4().hex,
                 "version_id": uuid4().hex,
                 "error": "call_outcome_unknown" if status == "paused" else None,
-                **payload_columns(payload),
+                **columns,
             }
             connection.execute(metadata.tables["report_jobs"].insert().values(**values))
             original_jobs.append(values)

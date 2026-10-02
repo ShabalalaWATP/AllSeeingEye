@@ -11,6 +11,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -19,6 +20,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence import ai_usage_models as _ai_usage_models  # noqa: F401
+from ase.adapters.persistence import alert_routing_models as _alert_routing_models  # noqa: F401
 from ase.adapters.persistence import (
     annotation_monitor_models as _annotation_monitor_models,  # noqa: F401
 )
@@ -30,9 +32,16 @@ from ase.adapters.persistence import (
 )
 from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
 from ase.adapters.persistence import (
+    notification_digest_models as _notification_digest_models,  # noqa: F401
+)
+from ase.adapters.persistence import notification_models as _notification_models  # noqa: F401
+from ase.adapters.persistence import (
     original_passage_models as _original_passage_models,  # noqa: F401
 )
 from ase.adapters.persistence import report_job_models as _report_job_models  # noqa: F401
+from ase.adapters.persistence import (
+    report_job_usage_models as _report_job_usage_models,  # noqa: F401
+)
 from ase.adapters.persistence import research_brief_models as _research_brief_models  # noqa: F401
 from ase.adapters.persistence import research_usage_models as _research_usage_models  # noqa: F401
 from ase.adapters.persistence import selected_index_models as _selected_index_models  # noqa: F401
@@ -44,6 +53,7 @@ from ase.adapters.persistence import team_board_models as _team_board_models  # 
 from ase.adapters.persistence import (
     team_invitation_models as _team_invitation_models,  # noqa: F401
 )
+from ase.adapters.persistence import web_push_models as _web_push_models  # noqa: F401
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.operational_models import (
     ActivitySampleRow,
@@ -183,6 +193,7 @@ class LlmProfileRow(Base):
 
 class LlmUsageRow(Base):
     __tablename__ = "llm_usage"
+    __table_args__ = (Index("ix_llm_usage_user_at", "user_id", "at"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)

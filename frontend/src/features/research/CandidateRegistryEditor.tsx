@@ -1,3 +1,4 @@
+import { LeiCandidateLookup } from './LeiCandidateLookup';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
 import { registryLabels, registryNamespaceSchema } from '@/lib/api/registryRouting';
@@ -19,6 +20,18 @@ export function CandidateRegistryEditor({
         Choose a registry explicitly for an exact lookup. Names and untyped identifiers remain
         context only. Preview after editing to check provider, country and date support.
       </p>
+      <LeiCandidateLookup
+        initialName={candidate.label}
+        disabled={identifiers.length + (candidate.identifiers?.length ?? 0) >= 8}
+        confirm={(lei) =>
+          update({
+            registry_identifiers: [
+              ...identifiers,
+              { id: crypto.randomUUID(), namespace: 'lei', value: lei },
+            ],
+          })
+        }
+      />
       {identifiers.map((identifier, position) => {
         const prefix = `Candidate ${index + 1} registry identifier ${position + 1}`;
         return (

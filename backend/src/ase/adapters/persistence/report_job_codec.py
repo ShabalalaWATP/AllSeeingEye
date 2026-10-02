@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+from copy import deepcopy
 from typing import Any, cast
 
 from ase.adapters.persistence.report_job_models import ReportJobRow
+from ase.adapters.persistence.report_job_projection import compact_summary, polling_payload
 from ase.domain.errors import Conflict
 from ase.domain.report_jobs import (
     MAX_JOB_PAYLOAD_BYTES,
@@ -18,12 +20,15 @@ def payload_columns(payload: dict[str, Any]) -> dict[str, Any]:
     encoded = canonical_job_payload(payload)
     return {
         "payload": encoded.decode("utf-8"),
+        "summary": compact_summary(payload),
         "payload_sha256": hashlib.sha256(encoded).hexdigest(),
         "payload_bytes": len(encoded),
     }
 
 
-def with_payload(row: ReportJobRow, payload: dict[str, Any]) -> ReportJob:
+def with_payload(
+    row: ReportJobRow, payload: dict[str, Any], *, validated: bool = False
+) -> ReportJob:
     return ReportJob(
         id=row.id,
         request_key=row.request_key,
@@ -43,10 +48,33 @@ def with_payload(row: ReportJobRow, payload: dict[str, Any]) -> ReportJob:
         error=row.error,
         brief_id=row.brief_id,
         brief_revision=row.brief_revision,
+        _payload_validated=validated,
     )
 
 
-def from_row(row: ReportJobRow) -> ReportJob:
+def with_summary(row: ReportJobRow, summary: dict[str, Any]) -> ReportJob:
+    # The thin codec checks unchanged JSON/summary bounds and the separate derived
+    # origin allowance. Full checkpoint reads still verify actual canonical bytes.
+    return with_payload(row, polling_payload(summary), validated=True)
+
+
+class PayloadCache:
+    """One worker attempt's last canonical version, with no caller-owned aliases."""
+
+    def __init__(self) -> None:
+        self._encoded: bytes | None = None
+        self._payload: dict[str, Any] | None = None
+
+    def decode(self, encoded: bytes) -> dict[str, Any]:
+        if encoded != self._encoded or self._payload is None:
+            payload = json.loads(encoded)
+            if canonical_job_payload(payload) != encoded:
+                raise ValueError("Invalid checkpoint encoding")
+            self._encoded, self._payload = encoded, payload
+        return deepcopy(self._payload)
+
+
+def from_row(row: ReportJobRow, cache: PayloadCache | None = None) -> ReportJob:
     try:
         if (
             not 2 <= row.payload_bytes <= MAX_JOB_PAYLOAD_BYTES
@@ -59,10 +87,9 @@ def from_row(row: ReportJobRow) -> ReportJob:
             or hashlib.sha256(encoded).hexdigest() != row.payload_sha256
         ):
             raise ValueError("Invalid payload integrity")
-        payload = json.loads(encoded)
-        if canonical_job_payload(payload) != encoded:
-            raise ValueError("Invalid checkpoint encoding")
-        return with_payload(row, payload)
+        # Never trust the stored digest as a cache key: hash the current bytes above.
+        payload = (cache or PayloadCache()).decode(encoded)
+        return with_payload(row, payload, validated=True)
     except (ValueError, TypeError, UnicodeError, RecursionError) as exc:
         raise Conflict(
             "The retained report job checkpoint is unavailable or inconsistent."

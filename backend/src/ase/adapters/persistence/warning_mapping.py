@@ -1,6 +1,7 @@
 """Mapping durable warning rows to scoped domain records."""
 
 from ase.adapters.persistence.models import AlertRow, IndicatorRow
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.warning import Alert, Indicator
@@ -14,6 +15,7 @@ def _indicator_from_row(row: IndicatorRow) -> Indicator:
     return Indicator(
         id=row.id,
         name=row.name,
+        baseline_days=row.baseline_days,
         description=row.description,
         plan_id=row.plan_id,
         countries=tuple(str(code) for code in row.countries),
@@ -22,6 +24,7 @@ def _indicator_from_row(row: IndicatorRow) -> Indicator:
         categories=tuple(Category(str(value)) for value in row.categories),
         keywords=tuple(str(word) for word in row.keywords),
         threshold=row.threshold,
+        baseline_ratio=row.baseline_ratio,
         window_minutes=row.window_minutes,
         cooldown_minutes=row.cooldown_minutes,
         severity_floor=row.severity_floor,
@@ -47,6 +50,8 @@ def _fill_indicator(row: IndicatorRow, indicator: Indicator) -> None:
     row.north = indicator.bbox.north if indicator.bbox else None
     row.categories = [category.value for category in indicator.categories]
     row.keywords = list(indicator.keywords)
+    row.baseline_ratio = indicator.baseline_ratio
+    row.baseline_days = indicator.baseline_days
     row.threshold = indicator.threshold
     row.window_minutes = indicator.window_minutes
     row.cooldown_minutes = indicator.cooldown_minutes
@@ -72,10 +77,14 @@ def _alert_from_row(row: AlertRow) -> Alert:
         summary=row.summary,
         count=row.count,
         threshold=row.threshold,
+        baseline_ratio=row.baseline_ratio,
         event_ids=tuple(str(item) for item in row.event_ids),
         countries=tuple(str(code) for code in row.countries),
         acknowledged_at=row.acknowledged_at,
         acknowledged_by=row.acknowledged_by,
+        disposition=AlertDisposition(row.disposition) if row.disposition else None,
+        disposition_note=row.disposition_note,
+        baseline_mean=row.baseline_mean,
         report_id=row.report_id,
         created_by=row.created_by,
         team_id=row.team_id,
@@ -98,6 +107,10 @@ def _alert_row(alert: Alert) -> AlertRow:
         countries=list(alert.countries),
         acknowledged_at=alert.acknowledged_at,
         acknowledged_by=alert.acknowledged_by,
+        disposition=alert.disposition,
+        disposition_note=alert.disposition_note,
+        baseline_mean=alert.baseline_mean,
+        baseline_ratio=alert.baseline_ratio,
         report_id=alert.report_id,
         created_by=alert.created_by,
         team_id=alert.team_id,

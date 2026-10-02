@@ -48,7 +48,7 @@ class AssistantAnswerIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2000)
     prior_questions: list[str] = Field(default_factory=list, max_length=4)
-    scope: Literal["global", "viewport", "selected", "report"] = "global"
+    scope: Literal["global", "viewport", "selected", "report", "alert"] = "global"
     bbox: AssistantBoundsIn | None = None
     selected: AssistantSelectionIn | None = None
     time_range: AssistantTimeRangeIn | None = None
@@ -57,6 +57,7 @@ class AssistantAnswerIn(BaseModel):
         default=None, min_length=1, max_length=14
     )
     report: AssistantReportIn | None = None
+    alert_id: UUID | None = None
 
     def to_question(self) -> AssistantQuestion:
         return AssistantQuestion(
@@ -71,6 +72,7 @@ class AssistantAnswerIn(BaseModel):
             if self.source_categories
             else None,
             AssistantReportSelection(**self.report.model_dump()) if self.report else None,
+            self.alert_id,
         )
 
     @model_validator(mode="after")
@@ -109,7 +111,7 @@ class AssistantParagraphOut(BaseModel):
 
 
 class AssistantScopeOut(BaseModel):
-    mode: Literal["global", "viewport", "selected", "report"]
+    mode: Literal["global", "viewport", "selected", "report", "alert"]
     bbox: AssistantBoundsIn | None
     selected: AssistantSelectionIn | None
 
@@ -148,6 +150,14 @@ class AssistantReportOut(BaseModel):
     data_cutoff: datetime | None
 
 
+class AssistantAlertOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    matched_count: int
+    stored_sample_size: int
+    available_evidence_count: int
+
+
 class AssistantAnswerOut(BaseModel):
     paragraphs: list[AssistantParagraphOut]
     sources: list[AssistantSourceOut]
@@ -158,6 +168,7 @@ class AssistantAnswerOut(BaseModel):
     generated_at: datetime
     model: AssistantModelOut | None
     report: AssistantReportOut | None = None
+    alert: AssistantAlertOut | None = None
 
     @classmethod
     def from_answer(cls, answer: AssistantAnswer) -> Self:
@@ -202,4 +213,5 @@ class AssistantAnswerOut(BaseModel):
             generated_at=answer.generated_at,
             model=AssistantModelOut.model_validate(answer.model) if answer.model else None,
             report=AssistantReportOut.model_validate(context.report) if context.report else None,
+            alert=AssistantAlertOut.model_validate(context.alert) if context.alert else None,
         )

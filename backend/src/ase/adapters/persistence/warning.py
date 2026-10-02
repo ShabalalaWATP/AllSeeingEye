@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence import alert_feedback
 from ase.adapters.persistence.access import visibility_predicate
-from ase.adapters.persistence.models import AlertRow, CollectionPlanRow, IndicatorRow, ReportRow
+from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
+from ase.adapters.persistence.models import (
+    ActivitySampleRow,
+    AlertRow,
+    CollectionPlanRow,
+    IndicatorRow,
+    ReportRow,
+)
 from ase.adapters.persistence.warning_mapping import (
     _alert_from_row,
     _alert_row,
@@ -19,7 +27,9 @@ from ase.adapters.persistence.warning_mapping import (
 )
 from ase.application.access import AccessContext, AccessPolicy
 from ase.domain.access import Visibility
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.indicator_baseline import matching_semantics
 from ase.domain.warning import Alert, Indicator
 
 
@@ -48,13 +58,21 @@ class SqlIndicatorRepository:
     async def save(self, indicator: Indicator) -> None:
         row = await self._session.get(IndicatorRow, indicator.id)
         if row is None:
-            raise NotFound("Alert rule not found.")
+            raise NotFound("Indicator not found.")
+        if matching_semantics(_indicator_from_row(row)) != matching_semantics(indicator):
+            await self._session.execute(
+                delete(ActivitySampleRow).where(
+                    ActivitySampleRow.kind == "indicator",
+                    ActivitySampleRow.key == str(indicator.id),
+                )
+            )
         _fill_indicator(row, indicator)
         await self._session.flush()
 
     async def save_if_unchanged(self, indicator: Indicator, expected_updated_at: datetime) -> bool:
-        # One conditional statement: PostgreSQL re-evaluates the predicate after a competing
-        # writer commits, and SQLite serialises writers, so only one edit of a revision lands.
+        before = await self.get(indicator.id)
+        if before is None or before.updated_at != expected_updated_at:
+            return False
         values = IndicatorRow(id=indicator.id)
         _fill_indicator(values, indicator)
         columns = {
@@ -71,7 +89,17 @@ class SqlIndicatorRepository:
             .values(**columns)
             .execution_options(synchronize_session=False)
         )
-        return bool(getattr(result, "rowcount", 0) == 1)
+        if getattr(result, "rowcount", 0) != 1:
+            return False
+        # Reset only the winning edit, under the same administration guard and transaction.
+        if matching_semantics(before) != matching_semantics(indicator):
+            await self._session.execute(
+                delete(ActivitySampleRow).where(
+                    ActivitySampleRow.kind == "indicator",
+                    ActivitySampleRow.key == str(indicator.id),
+                )
+            )
+        return True
 
     async def delete(self, indicator_id: UUID) -> None:
         await self._session.execute(delete(IndicatorRow).where(IndicatorRow.id == indicator_id))
@@ -107,6 +135,16 @@ class SqlAlertRepository:
         row.report_id = alert.report_id
         await self._session.flush()
 
+    async def acknowledge(self, alert: Alert) -> bool:
+        return await alert_feedback.acknowledge(self._session, alert)
+
+    async def feedback(
+        self, indicator: Indicator, since: datetime, until: datetime
+    ) -> dict[AlertDisposition, int]:
+        return await alert_feedback.counts(
+            self._session, indicator.id, indicator.created_by, indicator.team_id, since, until
+        )
+
 
 class SqlWarningStore:
     """Opens its own session per call, so the evaluator never shares one with a request."""
@@ -115,9 +153,12 @@ class SqlWarningStore:
         self,
         session_factory: Callable[[], AsyncSession],
         policy_factory: Callable[[AsyncSession], AccessPolicy],
+        *,
+        installation_copy: bool = False,
     ) -> None:
         self._session_factory = session_factory
         self._policy_factory = policy_factory
+        self._installation_copy = installation_copy
 
     async def _authorise(
         self, session: AsyncSession, row: IndicatorRow, *, for_update: bool = False
@@ -189,6 +230,10 @@ class SqlWarningStore:
             if latest is not None and alert.fired_at - latest.fired_at < indicator.cooldown:
                 return False
             session.add(_alert_row(alert))
+            await session.flush()
+            await enqueue_alert_notifications(
+                session, alert, installation_copy=self._installation_copy
+            )
             await session.commit()
             return True
 
@@ -230,5 +275,8 @@ class SqlWarningStore:
             count = int(await session.scalar(stale) or 0)
             if count:
                 await session.execute(delete(AlertRow).where(AlertRow.fired_at < before))
-                await session.commit()
+            # Counts use acknowledgement days, not the raw alert's firing time.
+            cutoff = before.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            await alert_feedback.prune(session, cutoff)
+            await session.commit()
             return count

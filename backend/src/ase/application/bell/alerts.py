@@ -32,7 +32,7 @@ from ase.domain.bell import (
     BellPreferences,
     DestinationKind,
 )
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound
+from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.users import User
 from ase.domain.warning import Alert
 
@@ -151,7 +151,7 @@ class BellAcknowledgements:
                 # The shared use case re-checks under the administration guard, audits once
                 # and returns an already acknowledged alert unchanged.
                 acknowledged = await self._acknowledge.execute(actor, alert_id, context)
-            except (NotFound, Forbidden) as exc:
+            except (NotFound, Forbidden, Conflict) as exc:
                 await self._uow.rollback()
                 failed.append(AcknowledgeFailure(alert_id, exc.message))
                 continue

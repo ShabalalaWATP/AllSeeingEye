@@ -9,13 +9,17 @@ from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_warning import (
+    AlertAcknowledgementIn,
     AlertOut,
     AlertsOut,
+    IndicatorBaselineOut,
     IndicatorIn,
     IndicatorOut,
     IndicatorsOut,
     IndicatorUpdateIn,
 )
+from ase.api.session_fence import FenceDep
+from ase.domain.alert_feedback import AlertFeedback
 
 router = APIRouter(prefix="/warning", tags=["warning"])
 
@@ -95,10 +99,50 @@ async def list_alerts(
 @router.post("/alerts/{alert_id}/ack")
 async def acknowledge_alert(
     alert_id: UUID,
+    fence: FenceDep,
     user: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
+    body: AlertAcknowledgementIn | None = None,
 ) -> AlertOut:
-    alert = await container.acknowledge_alert(session).execute(user, alert_id, context)
-    return AlertOut.from_alert(alert)
+    alert = await container.acknowledge_alert(session).execute(
+        user,
+        alert_id,
+        context,
+        disposition=body.disposition if body else None,
+        note=body.note if body else None,
+    )
+    return await fence.release(AlertOut.from_alert(alert))
+
+
+@router.get("/indicators/{indicator_id}/feedback")
+async def indicator_feedback(
+    indicator_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    fence: FenceDep,
+) -> AlertFeedback:
+    result = await container.alert_feedback(session).execute(user, indicator_id)
+    return await fence.release(result)
+
+
+@router.get("/indicators/{indicator_id}/baseline")
+async def indicator_baseline(
+    indicator_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    fence: FenceDep,
+) -> IndicatorBaselineOut:
+    result = await container.indicator_baseline(session).execute(user, indicator_id)
+    output = IndicatorBaselineOut(
+        sample_hours=result.sample_hours,
+        mean=result.mean,
+        earliest=result.earliest,
+        as_of=result.as_of,
+        ready=result.ready,
+        reason=result.reason,
+    )
+    return await fence.release(output)

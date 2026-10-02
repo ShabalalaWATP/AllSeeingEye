@@ -2,24 +2,21 @@ import { useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
 
 import { Alert as Notice, LoadingNote } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { OwnershipScopeControl } from '@/components/workspace/OwnershipScopeControl';
 import { describeError } from '@/lib/api/errors';
 import { acknowledgeAlert, fetchAlerts } from '@/lib/api/warning';
-import type { Alert } from '@/lib/api/warning';
-import { formatAgo } from '@/lib/format';
+import type { Alert, AlertAcknowledgementRequest } from '@/lib/api/warning';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import type { ConfirmedAction } from '@/lib/hooks/useConfirmedAction';
-import { useNow } from '@/lib/hooks/useNow';
 import { useOwnershipScope } from '@/lib/hooks/useOwnershipScope';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { belongsToSomeoneElse, ownerLabel } from '@/lib/ownershipScope';
 import type { OwnedRecord } from '@/lib/ownershipScope';
 
-import { AlertDestination } from './AlertDestination';
+import { AlertItem } from './AlertItem';
 
 const owned = (alert: Alert): OwnedRecord => ({
   team_id: alert.team_id,
@@ -27,55 +24,9 @@ const owned = (alert: Alert): OwnedRecord => ({
   ownerName: alert.owner_name,
 });
 
-function AlertItem({
-  alert,
-  onAcknowledge,
-  workspace,
-  canAcknowledge,
-  confirms,
-}: {
+interface PendingAcknowledgement {
   alert: Alert;
-  onAcknowledge: () => void;
-  workspace: string;
-  canAcknowledge: boolean;
-  /** Acknowledging asks first, because the alert is someone else's personal alert. */
-  confirms: boolean;
-}) {
-  const now = useNow();
-  return (
-    <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">
-          {alert.title}
-          <span className="ml-2 text-xs text-muted">{workspace}</span>
-        </span>
-        <span className="font-mono text-xs text-muted">{formatAgo(alert.fired_at, now)}</span>
-      </div>
-      {alert.summary !== '' && <p className="text-xs text-muted">{alert.summary}</p>}
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        {alert.countries.length > 0 && (
-          <span className="font-mono text-muted">{alert.countries.join(', ')}</span>
-        )}
-        <AlertDestination
-          monitorId={alert.annotation_monitor_id}
-          transitionId={alert.annotation_transition_id}
-          reportId={alert.report_id}
-        />
-        {alert.acknowledged_at === null ? (
-          <Button
-            variant="secondary"
-            disabled={!canAcknowledge}
-            aria-haspopup={confirms ? 'dialog' : undefined}
-            onClick={onAcknowledge}
-          >
-            Acknowledge
-          </Button>
-        ) : (
-          <span className="text-muted">acknowledged</span>
-        )}
-      </div>
-    </li>
-  );
+  feedback: AlertAcknowledgementRequest;
 }
 
 /** Acknowledgement is shared state, so clearing someone else's personal alert names them first. */
@@ -83,10 +34,10 @@ function SharedAcknowledgement({
   action,
   returnFocus,
 }: {
-  action: ConfirmedAction<Alert>;
+  action: ConfirmedAction<PendingAcknowledgement>;
   returnFocus: RefObject<HTMLElement | null>;
 }) {
-  const alert = action.target;
+  const alert = action.target?.alert ?? null;
   const owner = alert?.owner_name ?? 'another user';
   return (
     <ConfirmDialog
@@ -123,13 +74,15 @@ export function AlertsSection({ workspaces }: { workspaces: Workspaces }) {
   const heading = useRef<HTMLHeadingElement>(null);
 
   const markAcknowledged = useCallback(
-    async (id: string) => {
-      const updated = await acknowledgeAlert(id);
+    async (id: string, feedback: AlertAcknowledgementRequest) => {
+      const updated = await acknowledgeAlert(id, feedback);
       setAlerts((page) =>
         page === null
           ? page
           : {
-              items: page.items.map((item) => (item.id === updated.id ? updated : item)),
+              items: page.items.map((item) =>
+                item.id === updated.id ? { ...updated, owner_name: item.owner_name } : item,
+              ),
               unacknowledged: Math.max(0, page.unacknowledged - 1),
             },
       );
@@ -138,7 +91,10 @@ export function AlertsSection({ workspaces }: { workspaces: Workspaces }) {
   );
   const acknowledge = useAsyncAction(markAcknowledged);
   const shared = useConfirmedAction(
-    useCallback((alert: Alert) => markAcknowledged(alert.id), [markAcknowledged]),
+    useCallback(
+      ({ alert, feedback }: PendingAcknowledgement) => markAcknowledged(alert.id, feedback),
+      [markAcknowledged],
+    ),
   );
 
   return (
@@ -168,7 +124,11 @@ export function AlertsSection({ workspaces }: { workspaces: Workspaces }) {
                 workspace={ownerLabel(owned(item), workspaces.label, viewerId)}
                 canAcknowledge={workspaces.canAcknowledge(item.team_id)}
                 confirms={confirms}
-                onAcknowledge={() => (confirms ? shared.ask(item) : void acknowledge.run(item.id))}
+                onAcknowledge={(feedback) =>
+                  confirms
+                    ? shared.ask({ alert: item, feedback })
+                    : void acknowledge.run(item.id, feedback)
+                }
               />
             );
           })}

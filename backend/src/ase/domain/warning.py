@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from heapq import heappush, heapreplace
 from uuid import UUID
 
+from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.area_membership import area_contains_event
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import evidence_time
@@ -47,7 +48,9 @@ class Indicator:
     updated_at: datetime
     team_id: UUID | None = None
     research_area: ResearchArea | None = None
-    # Set when a paused rule is resumed: activity from before then is never counted.
+    baseline_ratio: float | None = None
+    baseline_days: int = 30
+    # A resumed rule excludes activity published during its pause.
     resumed_at: datetime | None = None
 
     @property
@@ -100,6 +103,10 @@ class Alert:
     annotation_transition_id: UUID | None = None
     acknowledged_at: datetime | None = None
     acknowledged_by: UUID | None = None
+    disposition: AlertDisposition | None = None
+    disposition_note: str | None = None
+    baseline_mean: float | None = None
+    baseline_ratio: float | None = None
     report_id: UUID | None = None
     created_by: UUID | None = None
     team_id: UUID | None = None
@@ -127,10 +134,7 @@ def evaluate(
     now: datetime,
     last_fired: datetime | None,
 ) -> Firing | None:
-    """Count known publication times in the closed interval [now - window, now].
-
-    A resumed rule starts counting at its resume instant, so the paused period is not replayed.
-    """
+    """Count known publication times in the closed interval [now - window, now]."""
     if not indicator.enabled:
         return None
     if last_fired is not None and now - last_fired < indicator.cooldown:

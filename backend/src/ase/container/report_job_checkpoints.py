@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import re
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import replace
@@ -14,8 +13,11 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.monthly_report_usage import reserve_new_call
+from ase.adapters.persistence.report_job_codec import PayloadCache
+from ase.adapters.persistence.report_job_lease import renew_lease
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
-from ase.application.ports.section_checkpoints import SectionCheckpoint, SectionCheckpoints
+from ase.application.model_routing import RoleProfiles
+from ase.application.ports.section_checkpoints import SectionCheckpoints
 from ase.application.report_jobs.budget import JobInterrupted
 from ase.application.report_jobs.views import refresh_summary
 from ase.application.reports.production_checkpoint import (
@@ -23,6 +25,7 @@ from ase.application.reports.production_checkpoint import (
     collection_from_dict,
     collection_to_dict,
 )
+from ase.application.reports.production_types import Job
 from ase.application.research.original_phase import reserve_original
 from ase.application.research.phase_ledger import (
     LEDGER_KEY,
@@ -35,9 +38,11 @@ from ase.application.research.phase_ledger import (
     settle_operation,
 )
 from ase.application.research.phase_recovery import reconcile_open_operations
+from ase.container.report_job_cache import AttemptCache, attempt_cache
 from ase.container.report_job_expansion import ChallengeExpansionMixin
+from ase.container.report_job_sections import ReportJobSections
 from ase.container.report_job_usage import settled_usage
-from ase.domain.report_jobs import ReportJob, job_error
+from ase.domain.report_jobs import ReportJob
 from ase.domain.research import ResearchMode
 from ase.domain.subscription_monthly_budget import MonthlyBudgetPolicy
 
@@ -52,7 +57,9 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
         self.container, self.job_id, self.lease_token = container, job_id, lease_token
         self.source_phase_enabled = False
         self._lock = asyncio.Lock()
-        self._sections = _Sections(self)
+        self._sections = ReportJobSections(self)
+        self._payload_cache = PayloadCache()
+        self._input_cache = AttemptCache()
 
     def _leased(self, job: ReportJob | None) -> ReportJob:
         if (
@@ -66,7 +73,7 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
         return job
 
     async def _authorised(self, session: AsyncSession, *, reset: bool = True) -> ReportJob:
-        repository = SqlReportJobRepository(session)
+        repository = SqlReportJobRepository(session, self._payload_cache)
         initial = self._leased(await repository.get(self.job_id))
         if reset:
             await session.rollback()
@@ -74,8 +81,33 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
             initial.owner_id, initial.team_id, for_update=True
         )
         current = self._leased(await repository.get(self.job_id))
-        await self.container.report_job_gate(session, current)
+        await self.gate(session, current)
         return self._leased(current)
+
+    async def gate(self, session: AsyncSession, stored: ReportJob) -> tuple[Job, RoleProfiles]:
+        token = attempt_cache.set(self._input_cache)
+        try:
+            return await self.container.report_job_gate(session, stored)
+        finally:
+            attempt_cache.reset(token)
+
+    async def renew_lease(self) -> None:
+        async with (
+            self._lock,
+            self.container.source_admission.guard(),
+            self.container.session_factory() as session,
+        ):
+            try:
+                job = await self._authorised(session)
+                now = self.container.clock.now()
+                if not await renew_lease(
+                    session, job, self.lease_token, now, now + timedelta(seconds=LEASE_SECONDS)
+                ):
+                    raise JobInterrupted()
+                await session.commit()
+            except BaseException:
+                await session.rollback()
+                raise
 
     async def _read(self) -> dict[str, Any]:
         async with (
@@ -89,7 +121,15 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
                 await session.rollback()
 
     async def check(self) -> None:
-        await self._read()
+        async with (
+            self._lock,
+            self.container.source_admission.guard(),
+            self.container.session_factory() as session,
+        ):
+            try:
+                await self._authorised(session)
+            finally:
+                await session.rollback()
 
     async def _account(
         self, session: AsyncSession, job: ReportJob, payload: dict[str, Any]
@@ -118,11 +158,11 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
                     getattr(self.container, "monthly_budget_policy", MonthlyBudgetPolicy()),
                 )
                 refresh_summary(payload)
-                await self.container.report_job_gate(session, replace(job, payload=payload))
+                await self.gate(session, replace(job, payload=payload))
                 self._leased(job)
                 await self._account(session, job, payload)
                 self._leased(job)
-                updated = await SqlReportJobRepository(session).checkpoint(
+                updated = await SqlReportJobRepository(session, self._payload_cache).checkpoint(
                     self.job_id,
                     expected_revision=job.revision,
                     lease_token=self.lease_token,
@@ -259,7 +299,7 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
         payload = deepcopy(payload)
         payload["stage"] = "completed"
         refresh_summary(payload)
-        await self.container.report_job_gate(session, replace(job, payload=payload))
+        await self.gate(session, replace(job, payload=payload))
         self._leased(job)
         await self._account(session, job, payload)
         self._leased(job)
@@ -274,74 +314,3 @@ class ReportJobCheckpoints(ChallengeExpansionMixin):
         if final is None:
             raise JobInterrupted()
         return final
-
-
-class _Sections:
-    def __init__(self, parent: ReportJobCheckpoints) -> None:
-        self.parent = parent
-
-    @staticmethod
-    def _key(packet_digest: str, section_id: str) -> str:
-        if (
-            not re.fullmatch(r"[0-9a-f]{64}", packet_digest)
-            or not 1 <= len(section_id.strip()) <= 120
-            or len(section_id) > 120
-            or any(ord(char) < 32 for char in section_id)
-        ):
-            raise JobInterrupted()
-        return f"{packet_digest}:{section_id}"
-
-    async def load(self, packet_digest: str, section_id: str) -> SectionCheckpoint | None:
-        key = self._key(packet_digest, section_id)
-        payload = await self.parent._read()
-        sections = payload.get("sections", {})
-        if type(sections) is not dict:
-            raise JobInterrupted()
-        value = sections.get(key)
-        if value is None:
-            return None
-        if (
-            type(value) is not dict
-            or value.get("packet_digest") != packet_digest
-            or value.get("section_id") != section_id
-            or value.get("status") not in {"running", "completed", "split", "incomplete"}
-        ):
-            raise JobInterrupted()
-        return SectionCheckpoint(value["status"], value.get("payload"), value.get("reason"))
-
-    async def save(
-        self, packet_digest: str, section_id: str, checkpoint: SectionCheckpoint
-    ) -> None:
-        key = self._key(packet_digest, section_id)
-        if checkpoint.status not in {"running", "completed", "split", "incomplete"} or (
-            checkpoint.payload is not None and type(checkpoint.payload) is not dict
-        ):
-            raise JobInterrupted()
-        job_error(checkpoint.reason)
-        value = {
-            "packet_digest": packet_digest,
-            "section_id": section_id,
-            "status": checkpoint.status,
-            "payload": deepcopy(checkpoint.payload),
-            "reason": checkpoint.reason,
-        }
-
-        def save(payload: dict[str, Any]) -> None:
-            sections = payload.setdefault("sections", {})
-            if type(sections) is not dict:
-                raise JobInterrupted()
-            previous = sections.get(key)
-            if previous is not None and type(previous) is not dict:
-                raise JobInterrupted()
-            if previous and previous.get("status") == "completed" and previous != value:
-                raise JobInterrupted()
-            sections[key] = value
-            kind = (checkpoint.payload or {}).get("kind")
-            # Post-draft stages share this store under their own digest. Only a drafted
-            # section moves the packet pointer, or progress would follow the later stage
-            # and the reader would lose the sections already written.
-            if kind in {"topic", "synthesis"}:
-                payload["current_packet"] = packet_digest
-                payload["stage"] = "summarising" if kind == "synthesis" else "drafting"
-
-        await self.parent.mutate(save)

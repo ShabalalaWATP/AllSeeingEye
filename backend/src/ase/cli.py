@@ -13,6 +13,7 @@ import typer
 from ase.adapters.persistence.session import ensure_sqlite_directory
 from ase.cli_aiddata import import_aiddata
 from ase.cli_designations import import_designations
+from ase.cli_encryption import rotate_key
 from ase.cli_infrastructure import (
     import_centres,
     import_energy,
@@ -36,6 +37,7 @@ from ase.infrastructure.migrations import upgrade_to_head
 from ase.infrastructure.settings import Environment, Settings
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
+app.command("rotate-encryption-key")(rotate_key)
 app.command("import-designations")(import_designations)
 app.command("import-aiddata")(import_aiddata)
 app.command("import-public-figures")(import_figures)

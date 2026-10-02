@@ -35,6 +35,11 @@ explain what is and is not represented.
 - [Ukraine war tracker](UKRAINE_WAR_TRACKER.md): reported control, belligerent figures, assessments and updates.
 - [Public figures tracker](PUBLIC_FIGURES.md): the curated office-holder roster and how markers are placed.
 - [Personal profile and security](PROFILE_OPERATIONS.md): account settings, research defaults and report preferences.
+- [Forecast reviews](FORECAST_REVIEWS.md): frozen claims, review dates, resolution and shared forecast watches.
+- [Alert feedback](ALERT_FEEDBACK.md): dispositions, retained feedback counts and sampled activity baselines.
+- [Email notifications and private feeds](NOTIFICATIONS.md): explicit recipient preferences, daily digests and Atom credentials.
+- [Browser push](WEB_PUSH.md): per-device opt-in, access checks and revocation.
+- [Alert routing](ALERT_ROUTING.md): registered destinations, per-rule choices and delivery limits.
 
 ## Configure and operate
 
@@ -46,6 +51,10 @@ explain what is and is not represented.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.
 - [Automatic deployment](AUTOMATIC_DEPLOYMENT.md): how a merge to `main` is tested and released.
 - [Backup and restore](BACKUP_RESTORE.md): explicit operator commands for SQLite and Compose PostgreSQL.
+- [Encryption key rotation](ENCRYPTION_KEY_ROTATION.md): protected key files, maintenance preflight and atomic database re-encryption.
+- [Runtime health and logs](RUNTIME_OPERATIONS.md): worker heartbeats, request correlation and shutdown phases.
+- [Invitation privacy](INVITATION_PRIVACY.md): sender receipts, private delivery state and legacy withdrawal.
+- [CSP reports](CSP_REPORTING.md): bounded browser reports and safe diagnostic fields.
 - [Live-map recovery](LIVE_STREAM_RECOVERY.md): the stream resync protocol after incomplete updates.
 - [Durable research jobs](DURABLE_RESEARCH_JOBS.md): accepted report jobs, progress and access checks.
 - [Subscription operations](SUBSCRIPTIONS_OPERATIONS.md): admission, cadence, fairness and diagnosis for scheduled research.
@@ -74,6 +83,7 @@ Sources and coverage:
 - [Social source coverage](SOCIAL_SOURCE_COVERAGE.md): Mastodon, Reddit and YouTube checks and decisions.
 - [Telegram channel coverage](TELEGRAM_CHANNEL_COVERAGE.md): curated public channels and what is not collected.
 - [Regional RSS feasibility](SOURCE_FEASIBILITY_2026_09.md): the dated probe record behind the regional feed seeds.
+- [Native-language publisher roster](NATIVE_PUBLISHER_ROSTER.md): packaged feed additions and the limits of the probe evidence.
 - [Cloudflare Radar attack trends](CYBER_RADAR_ATTACK_TRENDS.md): what the attack distribution snapshot measures.
 - [Map infrastructure](MAP_INFRASTRUCTURE.md) and [ground stations](GROUND_STATIONS.md): packaged cable and station snapshots.
 - [Reference notes](REFERENCE_NOTES.md): packaged background for aircraft, vessels and aircraft types.

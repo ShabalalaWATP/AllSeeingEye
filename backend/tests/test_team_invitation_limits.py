@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 
+from ase.application.teams import invitation_sender as sender_module
 from ase.application.teams import invitations as invitation_module
 from ase.application.teams import service as service_module
 from ase.container import Container
@@ -65,7 +66,7 @@ async def test_lapsed_invitation_expires_and_allows_reinvitation(
 async def test_lapsed_invitations_do_not_consume_the_outstanding_cap(
     container: Container, user: User, clock: FakeClock, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(invitation_module, "MAX_PENDING_INVITATIONS", 2)
+    monkeypatch.setattr(sender_module, "MAX_PENDING_INVITATIONS", 2)
     recipients = [
         await _listed(container, f"r{index}@example.com", f"recipient_{index}")
         for index in range(4)

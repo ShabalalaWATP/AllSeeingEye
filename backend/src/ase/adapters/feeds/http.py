@@ -138,7 +138,12 @@ class FeedHttpClient:
             client.auth is not None
             or any(
                 name in client.headers
-                for name in ("authorization", "x-ucdp-access-token", "x-api-key")
+                for name in (
+                    "authorization",
+                    "x-ucdp-access-token",
+                    "x-api-key",
+                    "x-hdx-hapi-app-identifier",
+                )
             )
         ):
             raise ValueError("Shared feed clients must not carry global authorisation.")

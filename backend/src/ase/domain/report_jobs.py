@@ -3,7 +3,7 @@
 import json
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
@@ -134,8 +134,9 @@ class ReportJob:
     error: str | None = None
     brief_id: UUID | None = None
     brief_revision: int | None = None
+    _payload_validated: InitVar[bool] = False
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, _payload_validated: bool) -> None:
         if (self.brief_id is None) != (self.brief_revision is None) or (
             self.brief_revision is not None
             and (type(self.brief_revision) is not int or self.brief_revision < 1)
@@ -159,4 +160,7 @@ class ReportJob:
             raise ValueError("Only running report jobs hold a lease.")
         if self.lease_until is not None:
             job_timestamp(self.lease_until)
-        canonical_job_payload(self.payload)
+        # Only the persistence codec supplies this after validating the actual
+        # canonical bytes. Normal construction and dataclass replacement validate.
+        if not _payload_validated:
+            canonical_job_payload(self.payload)

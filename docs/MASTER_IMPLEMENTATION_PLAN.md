@@ -4,13 +4,56 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### Codex main integration, 1 October 2026
+
+- [x] Reconcile all nine batches with main `9ae40e3d` using ordinary merges.
+- [x] Preserve released migrations and rekey unmerged Codex revisions to 0082–0089.
+- [x] Repair request-ID, baseline payload and copied-report STIX integration gaps.
+- [x] Repair routing conflict recovery and join cancelled migration threads.
+- [x] Complete independent code/security/runtime reviews and private history checks.
+- [x] Pass fresh full CI on PRs #88–#93 and mark them ready for review.
+- [x] Pass complete PR #91 frontend validation: 4,292 tests, one skip, 92.14% branches.
+- [ ] Complete fresh repaired-head CI on PRs #94–#96 and mark them ready.
+- [ ] Obtain required release approval and integrate serially.
+- [ ] Satisfy remaining operator, timing, elapsed-workload and live-provider criteria.
+
+Jira has 57 open delivery/prerequisite items and 11 coordinating epics.
+KAN-1/KAN-2/KAN-4/KAN-144 are Done for verified non-code deliverables.
+Implementation criteria and authorised merge remain separate. The 39.50-minute
+PostgreSQL run does not meet its 30-minute target, and KAN-44 reference-host
+improvement remains unverified. KAN-43 local Compose acceptance is reconciled as
+complete. The primary checkout and user edits remain untouched. See the current
+delivery register and [integration evidence](reviews/2026-10-01-codex-main-integration.md).
+
 ### Codex backlog delivery, 30 September 2026
 
 The [delivery register](delivery/CODEX_BACKLOG_2026_09_30.md) maps every remaining
 Codex-owned non-epic item to a bounded batch or explicit operator prerequisite.
-[Draft PR #88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) publishes the
-shared workflow and reconciles contract/documentation drift. Parallel batch
-implementation is underway; assigned scope is not a completion claim.
+Nine draft PRs, [#88](https://github.com/ShabalalaWATP/AllSeeingEye/pull/88) through
+[#96](https://github.com/ShabalalaWATP/AllSeeingEye/pull/96), cover 58 implementation
+and documentation tickets in dependency order. Code, independent review and
+focused integration checks are recorded per batch. Full combined CI and the
+remaining measured acceptance checks are active; publication is not completion.
+
+The current Jira count is 60 open tickets plus 12 coordinating epics. Of the
+tickets, 54 are in review, four in progress and two await operator action.
+Combined PR #96's backend fixture repairs passed 25 focused tests. Forecast and
+source/export behavioural tests passed their focused checks and were published
+in their respective parent PRs. Notification repairs and the reviewed Atom
+annotation passed their focused checks. Fresh combined frontend CI now passes
+the unchanged 92% floor at 20,697/22,470 branches (92.10%), with every qualifying
+file at least 70%. Backend merger/security floors, Semgrep and all PostgreSQL jobs
+pass. Published checkpoint `67de3039` passed all 32 PR checks in run `36703607838`
+and its separate SBOM workflow. CI performance acceptance remains separate.
+
+The combined PostgreSQL migration rehearsal preserves legacy records through the
+single head 0074 and tests refusal before losing protected history. CI enforces
+the measured 92% frontend branch floor and reviewed 95% security/auth floors.
+KAN-71's PostgreSQL runner-time target still needs a qualifying measurement.
+KAN-73's controlled pair saved 59.11 seconds with identical coverage, below its
+70-second requirement; a further 20 isolated files passed Node compatibility
+checks. Operator-only KAN-45/46 and explicit live/provider
+acceptance remain outstanding. No new main merge or production deploy is claimed.
 
 KAN-146/148/147 were reconciled to Done after checking merged PR #81 and all
 final CI results. New tickets require their own acceptance, checks, independent

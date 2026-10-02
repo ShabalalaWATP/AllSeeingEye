@@ -66,6 +66,8 @@ describe('warning', () => {
         categories: ['conflict'],
         threshold: 3,
         window_minutes: 1440,
+        baseline_ratio: null,
+        baseline_days: 30,
         report_template: 'intsum',
       });
     });

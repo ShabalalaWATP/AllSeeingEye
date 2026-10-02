@@ -47,7 +47,13 @@ async def answer(
             await ReportContextReader(container.get_report(session)).require_current(
                 user, result.context.report
             )
-        await fence.confirm()
+        if result.context.alert is not None:
+            # Source admission awaited storage after the application check. Retain
+            # the administration lock through the final session check and release.
+            await container.alert_context_reader(session).require_current(
+                user, result.context.alert, for_update=True
+            )
+        await fence.confirm(session=session)
         payload = AssistantAnswerOut.from_answer(result)
         fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"

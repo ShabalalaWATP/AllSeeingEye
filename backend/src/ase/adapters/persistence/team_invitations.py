@@ -13,7 +13,11 @@ from sqlalchemy.sql import ColumnElement, Select
 
 from ase.adapters.persistence.directory_profile import DirectoryProfileRow
 from ase.adapters.persistence.models import UserRow
-from ase.adapters.persistence.team_invitation_models import TeamInvitationRow
+from ase.adapters.persistence.team_invitation_models import (
+    TeamInvitationReceiptRow,
+    TeamInvitationRow,
+)
+from ase.adapters.persistence.team_invitation_receipts import SqlTeamInvitationReceipts
 from ase.adapters.persistence.teams import TeamRow
 from ase.application.ports.team_invitations import DuplicateInvitation
 from ase.domain.team_invitation import InvitationStatus, TeamInvitation, TeamInvitationPage
@@ -76,11 +80,13 @@ def _status_filter(
     return statement
 
 
-class SqlTeamInvitationRepository:
+class SqlTeamInvitationRepository(SqlTeamInvitationReceipts):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def add(self, invitation: TeamInvitation) -> None:
+        if invitation.recipient_id is None:
+            raise ValueError("Delivery requires a recipient.")
         self._session.add(
             TeamInvitationRow(
                 id=invitation.id,
@@ -115,6 +121,8 @@ class SqlTeamInvitationRepository:
         return _invitation(row) if row else None
 
     async def save(self, invitation: TeamInvitation) -> None:
+        if invitation.recipient_id is None:
+            raise ValueError("Delivery requires a recipient.")
         row = await self._session.get(TeamInvitationRow, invitation.id)
         if row is None:
             return
@@ -129,6 +137,24 @@ class SqlTeamInvitationRepository:
         row.responded_at = invitation.responded_at
         row.revision = invitation.revision
         await self._session.flush()
+
+    async def get_unreceipted_for_update(
+        self, team_id: UUID, invitation_id: UUID
+    ) -> TeamInvitation | None:
+        linked = select(TeamInvitationReceiptRow.id).where(
+            TeamInvitationReceiptRow.invitation_id == TeamInvitationRow.id
+        )
+        row = await self._session.scalar(
+            select(TeamInvitationRow)
+            .where(
+                TeamInvitationRow.id == invitation_id,
+                TeamInvitationRow.team_id == team_id,
+                ~linked.exists(),
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return _invitation(row) if row else None
 
     async def find_pending(
         self, team_id: UUID, recipient_id: UUID, now: datetime
@@ -215,27 +241,3 @@ class SqlTeamInvitationRepository:
         statement = select(TeamInvitationRow).where(TeamInvitationRow.recipient_id == recipient_id)
         statement = _status_filter(statement, status, now)
         return await self._page(statement, limit=limit, offset=offset, now=now)
-
-    async def list_for_team(
-        self,
-        team_id: UUID,
-        *,
-        status: InvitationStatus | None,
-        limit: int,
-        offset: int,
-        now: datetime,
-    ) -> TeamInvitationPage:
-        statement = select(TeamInvitationRow).where(TeamInvitationRow.team_id == team_id)
-        statement = _status_filter(statement, status, now)
-        return await self._page(statement, limit=limit, offset=offset, now=now)
-
-    async def count_pending(self, team_id: UUID, now: datetime) -> int:
-        return int(
-            await self._session.scalar(
-                select(func.count()).where(
-                    TeamInvitationRow.team_id == team_id,
-                    _live_pending(now),
-                )
-            )
-            or 0
-        )

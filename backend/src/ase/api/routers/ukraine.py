@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Response
 from fastapi.responses import Response as RawResponse
 
+from ase.api.board_response import read_board_response
 from ase.api.deps import AdminUser, ContainerDep, ContextDep, CurrentUser
 from ase.api.schemas_ukraine import ControlOut, UkraineBoardOut
 from ase.api.schemas_ukraine_digest import UkraineDigestOut
@@ -21,8 +22,15 @@ async def ukraine_board(
     container: ContainerDep,
     fence: FenceDep,
 ) -> UkraineBoardOut:
-    board = UkraineBoardOut.from_board(container.ukraine().board())
-    await fence.confirm()
+    board = UkraineBoardOut.from_board(
+        await read_board_response(
+            container,
+            fence,
+            lambda: container.ukraine().read(
+                lambda service: service.board(), admission_key=f"user:{user.id}"
+            ),
+        )
+    )
     response.headers["Cache-Control"] = "private, no-store"
     return board
 

@@ -83,16 +83,12 @@ class ReportSearchService:
         return await self._reports.list_visible(access.visibility, MAX_REPORTS)
 
     async def status(self, actor: User) -> SearchStatus:
-        records = await self._records(actor)
+        access = await self._access.context(actor)
         profile = await self._profile()
-        entries = (
-            await self._embeddings.current(
-                [record.id for record in records], profile_fingerprint(profile)
-            )
-            if profile
-            else []
+        indexed, total = await self._embeddings.status_counts(
+            access.visibility, profile_fingerprint(profile) if profile else None, MAX_REPORTS
         )
-        return SearchStatus(profile is not None, len(entries), len(records))
+        return SearchStatus(profile is not None, indexed, total)
 
     def _budget(self, actor: User) -> None:
         for key, limit in ((f"embedding:user:{actor.id}", 30), ("embedding:global", 60)):

@@ -1,8 +1,8 @@
 /** Warning: indicators over the live picture and the alerts they raise. */
 import { z } from 'zod';
 import { frozenAreaSchema } from './areaSchemas';
-
 import type { OwnershipScope } from '@/lib/ownershipScope';
+
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
 
@@ -20,6 +20,8 @@ export const indicatorSchema = z.object({
   categories: z.array(z.string()),
   keywords: z.array(z.string()),
   threshold: z.number().int(),
+  baseline_ratio: z.number().nullable().optional(),
+  baseline_days: z.number().int().optional(),
   window_minutes: z.number().int(),
   cooldown_minutes: z.number().int(),
   severity_floor: z.number(),
@@ -47,9 +49,12 @@ export const alertSchema = z.object({
   countries: z.array(z.string()),
   acknowledged_at: z.string().nullable(),
   acknowledged_by: z.string().nullable(),
+  disposition: z.enum(['useful', 'noise', 'duplicate']).nullable().optional(),
+  disposition_note: z.string().nullable().optional(),
+  baseline_mean: z.number().nullable().optional(),
+  baseline_ratio: z.number().nullable().optional(),
   report_id: z.string().nullable(),
   created_by: z.string().nullable().default(null),
-  // The personal owner's name on list views; null for team alerts.
   owner_name: z.string().nullable().default(null),
 });
 export type Alert = z.infer<typeof alertSchema>;
@@ -79,7 +84,10 @@ export function createIndicator(request: IndicatorRequest): Promise<Indicator> {
   );
 }
 
-export function updateIndicator(id: string, request: IndicatorRequest): Promise<Indicator> {
+export function updateIndicator(
+  id: string,
+  request: components['schemas']['IndicatorUpdateIn'],
+): Promise<Indicator> {
   return scopedMutation(() =>
     apiCall(`/api/warning/indicators/${encodeURIComponent(id)}`, {
       method: 'PUT',
@@ -95,7 +103,6 @@ export function deleteIndicator(id: string): Promise<void> {
   );
 }
 
-/** Without a scope the server returns the caller's personal and current-team alerts. */
 export function fetchAlerts(
   hours?: number,
   signal?: AbortSignal,
@@ -111,11 +118,44 @@ export function fetchAlerts(
   });
 }
 
-export function acknowledgeAlert(id: string): Promise<Alert> {
+export type AlertAcknowledgementRequest = components['schemas']['AlertAcknowledgementIn'];
+
+export function acknowledgeAlert(
+  id: string,
+  feedback?: AlertAcknowledgementRequest,
+): Promise<Alert> {
   return scopedMutation(() =>
     apiCall(`/api/warning/alerts/${encodeURIComponent(id)}/ack`, {
       method: 'POST',
+      body: feedback,
       schema: alertSchema,
     }),
   );
+}
+
+export function fetchAlertFeedback(id: string) {
+  return apiCall(`/api/warning/indicators/${encodeURIComponent(id)}/feedback`, {
+    schema: z.object({
+      indicator_id: z.uuid(),
+      since: z.string(),
+      until: z.string(),
+      useful: z.number().int().nonnegative(),
+      noise: z.number().int().nonnegative(),
+      duplicate: z.number().int().nonnegative(),
+      time_basis: z.string(),
+    }),
+  });
+}
+
+export function fetchIndicatorBaseline(id: string) {
+  return apiCall(`/api/warning/indicators/${encodeURIComponent(id)}/baseline`, {
+    schema: z.object({
+      sample_hours: z.number().int().nonnegative(),
+      mean: z.number().nullable(),
+      earliest: z.string().nullable(),
+      as_of: z.string(),
+      ready: z.boolean(),
+      reason: z.string(),
+    }),
+  });
 }

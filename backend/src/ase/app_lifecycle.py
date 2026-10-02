@@ -12,10 +12,13 @@ from fastapi import FastAPI
 
 from ase.application.worker_progress import worker_heartbeats
 from ase.container import Container
+from ase.container.alert_routing import alert_dispatcher
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.live_snapshot import build_live_snapshot
+from ase.container.notifications import digest_worker, notification_dispatcher
 from ase.container.original_asset_expiry import expire_original_assets
 from ase.container.runtime_health import RuntimeHealth
+from ase.container.web_push import run_web_push
 from ase.infrastructure.shutdown import ShutdownPhases
 from ase.infrastructure.startup import record_startup_phase
 
@@ -86,6 +89,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
             housekeeping.push_async_callback(
                 phases.run, "annotation_monitoring", lambda: _cancel(annotation_monitoring)
+            )
+            routed_alerts = asyncio.create_task(alert_dispatcher(container).run())
+            housekeeping.push_async_callback(
+                phases.run, "alert_notifications", lambda: _cancel(routed_alerts)
+            )
+            notifications = asyncio.create_task(notification_dispatcher(container).run())
+            housekeeping.push_async_callback(
+                phases.run, "edition_notifications", lambda: _cancel(notifications)
+            )
+            digests = asyncio.create_task(digest_worker(container).run())
+            housekeeping.push_async_callback(
+                phases.run, "digest_notifications", lambda: _cancel(digests)
+            )
+            browser_push = asyncio.create_task(run_web_push(container))
+            housekeeping.push_async_callback(
+                phases.run, "browser_push", lambda: _cancel(browser_push)
             )
             await _start(reporting, container.report_job_worker, phases, "report_job_worker")
             record_startup_phase("workers_started", workers_started)

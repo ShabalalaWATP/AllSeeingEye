@@ -10,49 +10,28 @@ from functools import partial
 from types import MappingProxyType
 
 from ase.application.research.source_allocation_types import AllocationProfile
+from ase.container.research_allocation_model import (
+    CYBER,
+    DEFENCE,
+    ECONOMY,
+    NEWS,
+    PROFILE_VERSION,
+    REVIEW_DATE,
+    add_profile,
+)
 from ase.container.research_bridge_allocation_profiles import e03_allocation_profiles
+from ase.container.research_native_allocation_profiles import native_allocation_profiles
+from ase.container.research_record_allocation_profiles import record_allocation_profiles
 
-PROFILE_VERSION = "ase-research-allocation-profiles-v1"
-REVIEW_DATE = "2026-09-14"
-NEWS = (
-    "politics|government|diplomacy|conflict war|military|security|attacks|economy|trade|energy|"
-    "migration|humanitarian|elections|sanctions|protests|technology|climate|health"
-)
-DEFENCE = "defence defense|military|security|warfare|drone drones|procurement|Ukraine|NATO|weapons"
-CYBER = (
-    "cyber cybersecurity|vulnerability vulnerabilities|exploitation exploits|malware|ransomware|"
-    "phishing|intrusion|espionage|campaign|network|patch|attack attacks"
-)
-ECONOMY = (
-    "economy economic|inflation|interest rates|growth|employment|monetary|banking|financial|"
-    "trade|energy|GDP|business|investment"
-)
-COMPANY = "company corporate|registry|identity|ownership|control|officers|parent|business|LEI"
-TECHNICAL = "domain|DNS|infrastructure|network|registration|registrar|hosting|ownership|mail"
+__all__ = ["PROFILE_VERSION", "REVIEW_DATE", "research_allocation_profiles"]
 
 
 # One reviewed statement per provider family, read top to bottom as a register.
-def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: PLR0915
+def research_allocation_profiles() -> Mapping[str, AllocationProfile]:
     """Return immutable purpose profiles, with no settings, query text or external IO."""
     result: dict[str, AllocationProfile] = {}
 
-    def add(
-        ids: str,
-        terms: str,
-        note: str,
-        *,
-        prefix: str = "research_publisher_",
-        countries: tuple[str, ...] = (),
-        primary: bool = False,
-        local: bool = False,
-    ) -> None:
-        for suffix in ids.split():
-            source_id = prefix + suffix
-            if source_id in result:
-                raise ValueError("Duplicate reviewed allocation profile")
-            result[source_id] = AllocationProfile(
-                tuple(terms.split("|")), f"{REVIEW_DATE}: {note}", countries, primary, local
-            )
+    add = partial(add_profile, result)
 
     add(
         "ar de en es fr hi ja ko pt ru uk zh-cn zh-tw",
@@ -249,138 +228,7 @@ def research_allocation_profiles() -> Mapping[str, AllocationProfile]:  # noqa: 
         prefix="",
     )
 
-    # Primary means attributable records/measurements, not verified claims.
-    record = partial(add, prefix="")
-    record(
-        "research-uk-parliament",
-        DEFENCE + "|parliament|policy|government|civilian|aid",
-        "Parliament question and answer text; attributed assertions, not established findings.",
-        countries=("GB",),
-        primary=True,
-    )
-    record(
-        "research-world-bank",
-        ECONOMY + "|statistics|indicator|population|poverty|annual|data",
-        "World Bank indicator values and units; current annual series, not historical vintages.",
-        primary=True,
-    )
-    record(
-        "research-ons-cpih",
-        "ONS|CPIH|inflation|consumer|prices|index|monthly|statistics",
-        "ONS monthly index values; explicit version, no latest-vintage or publication-date claim.",
-        countries=("GB",),
-        primary=True,
-    )
-    record(
-        "research-cloudflare-radar-layer3 research-cloudflare-radar-layer7",
-        "Cloudflare|Radar|DDoS|network|traffic|attack attacks|distribution|target|layer3|layer7",
-        "Cloudflare distributions; provider denominators, no incident or attribution proof.",
-        primary=True,
-    )
-    record(
-        "research-sec-submissions research-sec-company-directory",
-        COMPANY + "|SEC|filing|ticker|accounts",
-        "SEC filing/directory metadata; underlying filings are not acquired as primary passages.",
-    )
-    record(
-        "research-companies-house research-companies-house-officers research-companies-house-psc",
-        COMPANY,
-        "Registry fields and assertions; no verified beneficial ownership or historical snapshot.",
-        countries=("GB",),
-        primary=True,
-    )
-    record(
-        "research-gleif-profile research-gleif-direct-parent research-gleif-ultimate-parent",
-        COMPANY,
-        "GLEIF assertions and accounting-consolidation links, not verified beneficial ownership.",
-        primary=True,
-    )
-    record(
-        "research-rdap",
-        TECHNICAL,
-        "Direct registry RDAP fields; registration does not establish operational ownership.",
-        primary=True,
-    )
-    record(
-        "research-dns-a research-dns-aaaa research-dns-mx research-dns-ns",
-        TECHNICAL,
-        "Current resolver observations; no historical infrastructure or identity/ownership proof.",
-        primary=True,
-    )
-    record(
-        "research-certificate-transparency",
-        TECHNICAL + "|certificate|TLS",
-        "Third-party certificate index; not direct service observation or ownership evidence.",
-    )
-    record(
-        "research-contracts-finder",
-        "procurement|contract|tender|award|supplier|spending|drone drones|defence",
-        "Published notice assertions; no verified delivery or acquisition of linked originals.",
-        countries=("GB",),
-        primary=True,
-    )
-    record(
-        "research-designations-uksl research-designations-ofac_sdn",
-        COMPANY + "|sanctions|designation|asset|restriction",
-        "Imported list records; provenance and identity remain unverified, no absence clearance.",
-        primary=True,
-    )
-    record(
-        "research-asset-register",
-        "cable cables|data centre datacentre|nuclear reactor|semiconductor chip fab|"
-        "power station grid|refinery pipeline terminal|ground station teleport|"
-        "infrastructure site facility|connectivity outage blackout",
-        "Packaged map registers, gated by a reviewed asset phrase; not current site state.",
-    )
-    record(
-        "research-aiddata-projects",
-        "development|aid|China|loan|finance|infrastructure|project|energy|commitment",
-        "Research project catalogue, not original loan agreements or disbursement evidence.",
-    )
-    record(
-        "research-ooni-aggregate",
-        "internet|connectivity|censorship|blocking|outage|network|OONI|measurement",
-        "OONI measurements; anomalies do not establish interference, cause or attribution.",
-        primary=True,
-    )
-    record(
-        "research-openalex research-crossref",
-        "academic|scholarly|paper|publication|journal|citation|research|study|science",
-        "Overlapping scholarly metadata discovery, not paper acquisition.",
-    )
-    record(
-        "research-usgs-area",
-        "earthquake|seismic|hazard|magnitude|tremor|disaster",
-        "USGS catalogue measurements; bounded geometry/time coverage and revision limits.",
-        primary=True,
-    )
-    record(
-        "research-osm-features",
-        "church|mosque|station|bridge|stadium|airport|harbour|power plant|dam|hospital|"
-        "tower|lighthouse|factory|mine|prison|military|river|lake|monument|castle|embassy|"
-        "border|landmark|building",
-        "OpenStreetMap features of the named kinds inside the drawn area; current map state.",
-    )
-    record(
-        "research-eonet-area",
-        "hazard|wildfire|storm|volcano|flood|disaster|weather",
-        "NASA aggregation of hazard records; upstream origins and coverage need review.",
-    )
-    record(
-        "research-openaq-area",
-        "air|pollution|quality|particulate|environment|emissions",
-        "Aggregated air-quality measurements; underlying stations and origins require review.",
-    )
-    record(
-        "research-copernicus-footprints",
-        "satellite|Sentinel|acquisition|footprint|imagery|observation",
-        "Catalogue acquisition footprints only; no imagery or incident interpretation.",
-        primary=True,
-    )
-    record(
-        "research-retained-area-feeds",
-        NEWS + "|hazard|satellite|vessel|flight|observation|area",
-        "Mixed retained observations; source, geometry and dates need checks, no backfill.",
-    )
+    result.update(record_allocation_profiles())
     result.update(e03_allocation_profiles(REVIEW_DATE))
+    result.update(native_allocation_profiles())
     return MappingProxyType(dict(sorted(result.items())))

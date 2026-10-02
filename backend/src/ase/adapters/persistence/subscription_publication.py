@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.notification_enqueue import queue_edition_notifications
 from ase.adapters.persistence.operational_models import ReportVersionRow
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.schedules import SqlScheduleRepository, project_edition_outcome
@@ -39,4 +40,19 @@ class SqlSubscriptionPublication:
     async def project_outcome(
         self, edition: SubscriptionEdition, result: ScheduleRunResult, access: AccessContext
     ) -> bool:
-        return await project_edition_outcome(self.session, edition, result, access)
+        projected = await project_edition_outcome(self.session, edition, result, access)
+        if projected:
+            await queue_edition_notifications(
+                self.session, edition, edition.updated_at, "edition_available"
+            )
+            schedule = await self.schedule(edition.subscription_id)
+            change = schedule.last_change if schedule is not None else None
+            if (
+                change is not None
+                and change.status == "changed"
+                and change.version_id == edition.version_id
+            ):
+                await queue_edition_notifications(
+                    self.session, edition, edition.updated_at, "material_change"
+                )
+        return projected

@@ -21,6 +21,7 @@ from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchP
 from ase.adapters.research_records.ooni import LIMITATIONS as OONI_LIMITATIONS
 from ase.adapters.research_records.ooni import OoniAggregateProvider
 from ase.adapters.research_subjects.specs import subject_specs
+from ase.container.research_enrichment_specs import enrichment_specs
 from ase.container.research_feed_specs import additional_feed_specs
 from ase.container.research_record_specs import record_specs
 from ase.container.research_spec import research_spec as _spec
@@ -231,23 +232,7 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             role="originator",
         )
     )
-    specs.extend(
-        _spec(
-            f"research-designations-{authority}",
-            name,
-            Category.ECONOMIC,
-            "Operator-imported designation snapshot; source authenticity not verified.",
-            "Exact authority ID or full-name candidate matching, up to 20 results.",
-            "Requires a validated local snapshot. Date, source hash and reuse terms retained. "
-            "A name match is not verified identity or guilt; absence is not clearance.",
-            organisation=organisation,
-            role="originator",
-        )
-        for authority, name, organisation in (
-            ("uksl", "UK Sanctions List imported snapshot", "UK FCDO"),
-            ("ofac_sdn", "OFAC SDN imported snapshot", "US Treasury OFAC"),
-        )
-    )
+    specs.extend(enrichment_specs())
     specs.append(
         _spec(
             OoniAggregateProvider.id,
