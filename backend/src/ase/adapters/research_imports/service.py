@@ -53,10 +53,15 @@ async def _client(
                 raise ValueError
             filename, media, size = _header(await reader.readexactly(header_size))
             data = await reader.readexactly(size)
-        result = await (runner.run_media(data, filename) if media else runner.run(data, filename))
+        result = await _run_connected(reader, runner, data, filename, media=media)
         response = _encode(result, media)
     except Exception:
         response = ERROR
+    except asyncio.CancelledError:
+        writer.close()
+        with suppress(OSError):
+            await writer.wait_closed()
+        raise
     try:
         writer.write(struct.pack(">I", len(response)) + response)
         await writer.drain()
@@ -66,6 +71,35 @@ async def _client(
         writer.close()
         with suppress(OSError):
             await writer.wait_closed()
+
+
+async def _run_connected(
+    reader: asyncio.StreamReader,
+    runner: DocumentImportRunner,
+    data: bytes,
+    filename: str,
+    *,
+    media: bool,
+) -> Any:
+    """One request per connection: EOF or extra input abandons only this job.
+
+    Await cancellation so the runner kills and reaps its process tree and removes
+    temporary input before its shared admission slot is released.
+    """
+    job = asyncio.create_task(
+        runner.run_media(data, filename) if media else runner.run(data, filename)
+    )
+    disconnected = asyncio.create_task(reader.read(1))
+    try:
+        completed, _ = await asyncio.wait((job, disconnected), return_when=asyncio.FIRST_COMPLETED)
+        if disconnected in completed:
+            raise ConnectionError("Parser client disconnected or sent trailing data")
+        return await job
+    finally:
+        for task in (job, disconnected):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(job, disconnected, return_exceptions=True)
 
 
 async def start_server(

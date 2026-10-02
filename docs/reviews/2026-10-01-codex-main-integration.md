@@ -76,6 +76,31 @@ or authorise a production merge.
 
 ## Reserved integration work
 
+## Security branch checkpoint
+
+PR 92 integrated the CI branch's checked merge milestone `5dd6255a` by an
+ordinary merge. Its only textual conflict was the Caddy CSP: main's complete
+policy is retained with the Codex reporting directives and endpoint added.
+Main's image-package/research/map-view limits and Codex avatar/workspace caps
+are retained together. The privacy migration is now 0082, following released
+0081, and the current invitation operations guide uses that revision.
+
+Fifty backend cases passed, including actual fresh SQLite CLI migration and
+encryption rotation; one real Unix-socket case is skipped on Windows. Eleven
+invitation UI cases and nine Caddy policy cases passed. Frozen installs,
+source Ruff lint/format, strict mypy (1,475 files), both TypeScript configurations,
+three import contracts, deployment/SBOM Actionlint and whitespace checks passed.
+Regenerated OpenAPI/TypeScript match the merged contracts exactly. Independent
+read-only review found no actionable findings in CSP, stream/bell authority,
+invitation receipts, rotation inventory or operational defaults.
+
+PR 89's fresh full CI run `36923838968` succeeded at `fad1327f`. The CI branch's
+later frontend coverage additions and full combined measurement are pending;
+PR 92 is not yet published at this checkpoint. Real credential rotation,
+production operations and main merge remain unperformed.
+
+## Reserved integration work (continued)
+
 Current main's shipped migrations retain their existing history through 0081.
 Only the unmerged Codex migrations will be re-keyed after that revision:
 0082 privacy receipts, 0083 projections, 0084 feedback, 0085 frozen ratios,

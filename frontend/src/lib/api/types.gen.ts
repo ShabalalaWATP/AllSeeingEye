@@ -16921,7 +16921,7 @@ export interface components {
             status: "submitted";
             /**
              * Message
-             * @default If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list.
+             * @default If that username can receive an invitation, it has been sent. A submission receipt appears in the team's list; delivery and declines stay private.
              */
             message: string;
         };
@@ -16959,11 +16959,8 @@ export interface components {
              * Format: uuid
              */
             team_id: string;
-            /**
-             * Recipient Id
-             * Format: uuid
-             */
-            recipient_id: string;
+            /** Recipient Id */
+            recipient_id: string | null;
             /**
              * Inviter Id
              * Format: uuid

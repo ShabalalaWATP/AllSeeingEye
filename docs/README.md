@@ -46,6 +46,10 @@ explain what is and is not represented.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.
 - [Automatic deployment](AUTOMATIC_DEPLOYMENT.md): how a merge to `main` is tested and released.
 - [Backup and restore](BACKUP_RESTORE.md): explicit operator commands for SQLite and Compose PostgreSQL.
+- [Encryption key rotation](ENCRYPTION_KEY_ROTATION.md): protected key files, maintenance preflight and atomic database re-encryption.
+- [Runtime health and logs](RUNTIME_OPERATIONS.md): worker heartbeats, request correlation and shutdown phases.
+- [Invitation privacy](INVITATION_PRIVACY.md): sender receipts, private delivery state and legacy withdrawal.
+- [CSP reports](CSP_REPORTING.md): bounded browser reports and safe diagnostic fields.
 - [Live-map recovery](LIVE_STREAM_RECOVERY.md): the stream resync protocol after incomplete updates.
 - [Durable research jobs](DURABLE_RESEARCH_JOBS.md): accepted report jobs, progress and access checks.
 - [Subscription operations](SUBSCRIPTIONS_OPERATIONS.md): admission, cadence, fairness and diagnosis for scheduled research.

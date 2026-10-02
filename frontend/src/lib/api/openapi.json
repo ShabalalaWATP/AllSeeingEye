@@ -54670,7 +54670,7 @@
           "message": {
             "type": "string",
             "title": "Message",
-            "default": "If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list."
+            "default": "If that username can receive an invitation, it has been sent. A submission receipt appears in the team's list; delivery and declines stay private."
           }
         },
         "type": "object",
@@ -54763,8 +54763,15 @@
             "title": "Team Id"
           },
           "recipient_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Recipient Id"
           },
           "inviter_id": {

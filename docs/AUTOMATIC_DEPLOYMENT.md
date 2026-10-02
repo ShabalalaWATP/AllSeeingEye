@@ -38,7 +38,7 @@ Ordinary application, frontend, dependency and Caddy changes can use the automat
 
 ## Access and configuration
 
-The workflow uses a GitHub `production` environment, a dedicated `VPS_DEPLOY_KEY` secret and a `VPS_KNOWN_HOSTS` variable. Keep the environment's branch rules and any required approvals aligned with your release policy.
+The workflow uses a GitHub `production` environment, the `VPS_DEPLOY_KEY`, `VPS_HOST` and `VPS_PORT` secrets and a `VPS_KNOWN_HOSTS` variable. Keep the environment's branch rules and any required approvals aligned with your release policy.
 
 The host-side key is restricted to the controller's `check` and `deploy` commands with a full commit SHA. It does not provide an interactive shell, file transfer or forwarding. The installed controller should be administrator-owned and protected from modification by the deployment account.
 
@@ -57,3 +57,23 @@ A lost connection can leave the outcome uncertain. Inspect the deployment record
 For a transient failure, rerun the successful **push-triggered CI** run for the current `main` commit. A manually dispatched CI run does not trigger deployment. Retrying an already deployed revision checks image revision labels and health.
 
 Manual releases must honour the same deployment lock. Keep its location and the host's recovery procedure in your private operator runbook.
+
+## Deployment endpoint changes
+
+Provision `VPS_HOST` (DNS hostname or IPv4 address) and `VPS_PORT` (1 to 65535)
+in the protected production environment before manually rolling out this workflow.
+Empty or malformed settings stop before SSH. Changing the destination subsequently
+requires updating these secrets and the pinned `VPS_KNOWN_HOSTS` value together.
+The previously published endpoint remains disclosed in Git history; review SSH
+exposure privately with the operator. This change neither moves the host nor
+rotates its credentials. Confirm the next authorised deployment reports `DEPLOYED`.
+
+## Image inventories
+
+The advisory **Image SBOMs** workflow builds API and web images for each main push
+and PR. Its CycloneDX JSON artefacts include the commit SHA in their names and an
+image inspection record, retained for 90 days. A failure does not block CI or merges;
+inspect failed inventory runs before relying on this evidence. These inventories
+identify the CI builds. The deployment controller rebuilds on the host, so retain
+an inventory of the actual deployed image separately when exact deployed-package
+provenance is required.
