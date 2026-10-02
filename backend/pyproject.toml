@@ -72,7 +72,7 @@ pythonpath = ["."]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 timeout = 120
-addopts = "--strict-markers --cov=ase --cov-report=term-missing --cov-fail-under=90"
+addopts = "--strict-markers --cov=ase --cov-fail-under=90"
 # File-name rules in tests/pytest_support.py apply the first three; see that module.
 markers = [
     "db: requests a database fixture or directly constructs a persistence engine",
@@ -90,6 +90,7 @@ branch = true
 concurrency = ["greenlet", "thread"]
 
 [tool.coverage.report]
+show_missing = true
 exclude_also = ["if TYPE_CHECKING:", "\\.\\.\\.$"]
 
 [tool.mypy]
