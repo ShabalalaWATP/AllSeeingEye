@@ -54,6 +54,8 @@ async def subscription_diagnostics(
     )
     source_categories = dict.fromkeys(SOURCE_FAILURE_CODES, 0)
     for reason, count in source_rows.all():
+        if reason is None:
+            raise ValueError("Stored source failure reason is missing.")
         source_categories[reason] = count
     admitted = await session.scalar(
         select(func.max(ReportJobRow.created_at))
