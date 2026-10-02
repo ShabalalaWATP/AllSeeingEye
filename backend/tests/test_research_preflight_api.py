@@ -8,7 +8,6 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 
 from ase.adapters.feeds.http import FeedHttpClient
-from ase.api.routers.research_preflight import router
 from ase.application.access import AccessPolicy
 from ase.application.model_routing import ModelRouting
 from ase.container import Container
@@ -20,11 +19,13 @@ from test_research_brief_api import _draft
 
 
 @pytest.fixture(autouse=True)
-def install_preflight(app: FastAPI) -> None:
-    path = "/api/research/briefs/{brief_id}/revisions/{revision}/preflight"
-    if path not in app.openapi()["paths"]:
-        app.include_router(router, prefix="/api")
-        app.openapi_schema = None
+def no_openapi_build(app: FastAPI, monkeypatch: pytest.MonkeyPatch) -> None:
+    assert app.openapi_schema is None
+
+    def forbidden():
+        pytest.fail("Research HTTP flows must not build the OpenAPI schema")
+
+    monkeypatch.setattr(app, "openapi", forbidden)
 
 
 async def test_exact_revision_no_expenditure_and_private_response(

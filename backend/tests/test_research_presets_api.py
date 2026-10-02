@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import FastAPI
 from httpx import AsyncClient
 
 from ase.api.session_fence import SessionFence
@@ -17,9 +16,7 @@ from test_source_controls import disable
 async def test_authenticated_search_and_readiness_are_safe_and_uncached(
     client: AsyncClient,
     user: User,
-    app: FastAPI,
 ) -> None:
-    assert "/api/research/presets" in app.openapi()["paths"]
     endpoint = "/api/research/presets"
     assert (await client.get(endpoint)).status_code == 401
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
