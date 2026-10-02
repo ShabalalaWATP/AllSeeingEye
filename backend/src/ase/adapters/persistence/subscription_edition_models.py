@@ -219,3 +219,6 @@ class SubscriptionDeliveryRow(Base):
     attempts: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    lease_token: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    safe_reason: Mapped[str | None] = mapped_column(String(80), nullable=True)

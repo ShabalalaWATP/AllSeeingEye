@@ -35,7 +35,7 @@ def test_rotation_reads_protected_files_and_reports_only_count(
     async def rotate(database_url: str, old_key: str, new_key: str) -> int:
         assert old_key == old and new_key == new
         assert database_url == "sqlite+aiosqlite:///disposable.db"
-        return 7
+        return 9
 
     monkeypatch.setattr(cli_encryption, "_rotate", rotate)
     monkeypatch.setenv("ASE_ENV", "test")
@@ -52,7 +52,7 @@ def test_rotation_reads_protected_files_and_reports_only_count(
         ],
     )
     assert result.exit_code == 0, result.output
-    assert "Rotated 7" in result.output and old not in result.output and new not in result.output
+    assert "Rotated 9" in result.output and old not in result.output and new not in result.output
     (tmp_path / "old").write_text("short")
     failed = CliRunner().invoke(
         app,

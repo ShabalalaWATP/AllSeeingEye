@@ -33,6 +33,8 @@ dependencies = [
     "tzdata>=2026.4",
     "shapely>=2.1.2,<3",
     "proplib-lfmf==1.1.0",
+    "pywebpush>=2.5.0,<3",
+    "py-vapid>=1.9.4,<2",
 ]
 
 [project.scripts]
@@ -97,7 +99,7 @@ files = ["src"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["asyncpg.*", "aiosqlite.*", "py3langid.*", "sgp4", "sgp4.*"]
+module = ["asyncpg.*", "aiosqlite.*", "py3langid.*", "sgp4", "sgp4.*", "py_vapid", "pywebpush"]
 ignore_missing_imports = true
 
 [tool.ruff]

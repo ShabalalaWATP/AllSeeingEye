@@ -23,6 +23,7 @@ import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { useAuthStore } from '@/stores/auth';
 
 import { IndicatorAreaFields, useIndicatorArea } from './IndicatorAreaFields';
+import { InstallationCopyNotice } from './InstallationCopyNotice';
 import { initialRuleFields, widenedLabels } from './ruleFormSetup';
 import { RuleCriteriaFields } from './RuleCriteriaFields';
 import type { RuleFieldKey } from './RuleCriteriaFields';
@@ -174,6 +175,10 @@ export function IndicatorForm(props: IndicatorFormProps) {
       <h3 className="text-sm font-semibold">{editing ? label : 'New alert rule'}</h3>
       {areaDraft && <AreaDraftNotice draft={areaDraft} onDiscard={props.onDiscardDraft} />}
       {reportDraft && <ReportDraftNotice draft={reportDraft} onDiscard={props.onDiscardDraft} />}
+      <InstallationCopyNotice />
+      <p className="text-xs text-muted">
+        Save the rule, then open Notifications to choose email and a registered webhook.
+      </p>
       {invalidPlan && (
         <Alert tone="error">
           The linked plan is no longer available. Choose a plan in this workspace or select No plan.

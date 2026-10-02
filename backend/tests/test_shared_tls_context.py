@@ -100,11 +100,11 @@ async def test_long_lived_application_clients_reuse_the_shared_context() -> None
 async def test_per_request_clients_pass_the_shared_context(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    seen: list[object] = []
+    seen: list[tuple[object, object]] = []
 
     class RecordingClient(httpx.AsyncClient):
         def __init__(self, **options: Any) -> None:
-            seen.append(options.get("verify"))
+            seen.append((options.get("verify"), options.get("trust_env")))
             super().__init__(**options)
 
     async def unpinned(_url: str) -> None:
@@ -129,7 +129,8 @@ async def test_per_request_clients_pass_the_shared_context(
         ),
     )
     assert (await fetcher.fetch(request())).body == b"text"
-    assert seen == [verified_ssl_context(), verified_ssl_context(trust_env=False)]
+    # Capability-bearing webhooks and original fetches both ignore proxy/CA overrides.
+    assert seen == [(verified_ssl_context(trust_env=False), False)] * 2
 
 
 async def test_the_shared_context_refuses_an_untrusted_certificate(tmp_path: Path) -> None:

@@ -20,6 +20,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence import ai_usage_models as _ai_usage_models  # noqa: F401
+from ase.adapters.persistence import alert_routing_models as _alert_routing_models  # noqa: F401
 from ase.adapters.persistence import (
     annotation_monitor_models as _annotation_monitor_models,  # noqa: F401
 )
@@ -30,6 +31,10 @@ from ase.adapters.persistence import (
     economy_explainer_models as _economy_explainer_models,  # noqa: F401
 )
 from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
+from ase.adapters.persistence import (
+    notification_digest_models as _notification_digest_models,  # noqa: F401
+)
+from ase.adapters.persistence import notification_models as _notification_models  # noqa: F401
 from ase.adapters.persistence import (
     original_passage_models as _original_passage_models,  # noqa: F401
 )
@@ -48,6 +53,7 @@ from ase.adapters.persistence import team_board_models as _team_board_models  # 
 from ase.adapters.persistence import (
     team_invitation_models as _team_invitation_models,  # noqa: F401
 )
+from ase.adapters.persistence import web_push_models as _web_push_models  # noqa: F401
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.operational_models import (
     ActivitySampleRow,

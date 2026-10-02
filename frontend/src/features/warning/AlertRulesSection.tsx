@@ -44,6 +44,7 @@ export function AlertRulesSection({
   toggling,
   onEdit,
   onToggle,
+  onRouting,
   children,
 }: {
   rules: readonly Indicator[] | null;
@@ -56,6 +57,7 @@ export function AlertRulesSection({
   toggling: string | null;
   onEdit: (rule: Indicator) => void;
   onToggle: (rule: Indicator) => void;
+  onRouting: (rule: Indicator) => void;
   children: ReactNode;
 }) {
   return (
@@ -111,6 +113,9 @@ export function AlertRulesSection({
                   <Td className="font-mono text-xs text-muted">{rule.report_template ?? 'none'}</Td>
                   <Td>
                     <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" onClick={() => onRouting(rule)}>
+                        Notifications
+                      </Button>
                       <Button
                         variant="secondary"
                         disabled={!manage}

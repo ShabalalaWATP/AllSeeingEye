@@ -16,6 +16,8 @@ ENCRYPTED_COLUMNS = {
     "mfa_challenges": ("pending_encrypted",),
     "firms_credentials": ("active_encrypted", "draft_encrypted"),
     "acled_credentials": ("refresh_token_encrypted",),
+    "alert_webhook_destinations": ("url_encrypted",),
+    "web_push_devices": ("encrypted_subscription",),
 }
 
 
@@ -36,7 +38,8 @@ async def rotate_encryption_key(engine: AsyncEngine, old_key: str, new_key: str)
             # Fixed inventory, never identifiers supplied by a caller.
             await connection.exec_driver_sql(
                 "LOCK TABLE llm_profiles, admin_totp, mfa_challenges, firms_credentials, "
-                "acled_credentials IN ACCESS EXCLUSIVE MODE"
+                "acled_credentials, alert_webhook_destinations, web_push_devices "
+                "IN ACCESS EXCLUSIVE MODE"
             )
         else:
             raise ValueError("Unsupported rotation database.")

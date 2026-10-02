@@ -28,7 +28,9 @@ import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { AlertsSection } from './AlertsSection';
 import { AlertRulesSection } from './AlertRulesSection';
+import { AlertRoutingPanel } from './AlertRoutingPanel';
 import { IndicatorForm } from './IndicatorForm';
+import { NotificationAlert } from './NotificationAlert';
 import { reportVersionPath } from './RuleDraftNotice';
 import { ruleUpdate } from './ruleUpdates';
 
@@ -38,6 +40,7 @@ interface Saved {
 }
 
 export default function WarningPage() {
+  const [routing, setRouting] = useState<Indicator | null>(null);
   const reportDraft = useReportWatchDraft();
   const areaDraft = useAreaWatchDraft();
   const draft = reportDraft ?? areaDraft;
@@ -151,6 +154,7 @@ export default function WarningPage() {
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <PageHeader type="record" title="Alerts" />
+      <NotificationAlert />
       <Link to="/annotation-monitors" className="text-sm text-ember underline">
         Annotation monitors and their change history
       </Link>
@@ -183,6 +187,7 @@ export default function WarningPage() {
         heading={rulesHeading}
         remove={remove}
         toggling={toggling}
+        onRouting={setRouting}
         onEdit={(rule) => {
           setSaved(null);
           edit.clearError();
@@ -193,6 +198,7 @@ export default function WarningPage() {
           void toggle.run(rule);
         }}
       >
+        {routing && <AlertRoutingPanel key={routing.id} indicator={routing} />}
         {stale && (
           <Button
             variant="secondary"

@@ -2,9 +2,21 @@
 
 The `ase rotate-encryption-key` command re-encrypts saved LLM provider keys,
 active and pending authenticator secrets, pending MFA enrolment challenges,
-active and draft FIRMS keys, and persisted ACLED refresh tokens in one database
-transaction. It preserves non-secret metadata and nullable fields. It does not
-replace provider-issued credentials or alter the encryption format.
+active and draft FIRMS keys, persisted ACLED refresh tokens, alert webhook URLs
+and browser push credentials in one database transaction. It covers nine
+encrypted fields across seven tables and preserves non-secret metadata and
+nullable fields. It does not replace provider-issued credentials or alter the
+encryption format.
+
+| Table | Encrypted fields |
+| --- | --- |
+| `llm_profiles` | `api_key_encrypted` |
+| `admin_totp` | `secret_encrypted`, `pending_encrypted` |
+| `mfa_challenges` | `pending_encrypted` |
+| `firms_credentials` | `active_encrypted`, `draft_encrypted` |
+| `acled_credentials` | `refresh_token_encrypted` |
+| `alert_webhook_destinations` | `url_encrypted` |
+| `web_push_devices` | `encrypted_subscription` (endpoint, public key and auth secret) |
 
 ## Maintenance procedure
 
@@ -28,14 +40,17 @@ replace provider-issued credentials or alter the encryption format.
    The command checks every affected non-null value before writes. An incorrect
    old key, malformed value or failed update rolls back the whole transaction.
    It reports only the number of rotated values. SQLite must already exist;
-   PostgreSQL locks the five affected tables until the transaction completes.
+   PostgreSQL locks the seven affected tables until the transaction completes.
 5. After success, change `ASE_ENCRYPTION_KEY` in the operator's protected
    configuration to the new value. The database transaction and external
    configuration update are **not atomic**. Keep processes stopped between them.
 6. Restart, verify MFA sign-in and pending enrolment, then check saved provider
    reads and active/draft FIRMS selection. Confirm ACLED refresh still uses the
-   existing environment fingerprint. A software test cannot prove live provider
-   connectivity or the operator's recovery process.
+   existing environment fingerprint. Check that webhook destinations and browser
+   push subscriptions still decrypt with their existing ownership, session and
+   delivery metadata. The VAPID signing key remains separate operator configuration.
+   A software test cannot prove live provider connectivity or the operator's
+   recovery process.
 7. Take and verify a new backup, labelled with the replacement key version.
    Retain old backups and matching recovery keys until the backup policy permits
    their disposal. Never discard an old key solely because rotation succeeded.

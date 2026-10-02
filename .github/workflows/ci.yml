@@ -157,6 +157,8 @@ jobs:
           ASE_COMPARISON_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_MONITOR_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_MONITOR_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+          ASE_NOTIFICATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+          ASE_NOTIFICATION_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_IDENTITY_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_FIRMS_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_FIRMS_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase

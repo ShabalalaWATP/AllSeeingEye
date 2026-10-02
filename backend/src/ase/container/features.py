@@ -249,7 +249,11 @@ class FeatureWiring(ReportWiring):
     def build_evaluator(self) -> IndicatorEvaluator:
         return IndicatorEvaluator(
             self.store,
-            SqlWarningStore(self.session_factory, self.access_policy),
+            SqlWarningStore(
+                self.session_factory,
+                self.access_policy,
+                installation_copy=bool(self.settings.alert_webhook_url),
+            ),
             self.bus,
             self.notifier,
             self.clock,

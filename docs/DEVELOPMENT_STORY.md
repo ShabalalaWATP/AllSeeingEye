@@ -5806,3 +5806,79 @@ final code commit. See
 - Reproduced the retired-manager schema mismatch, corrected inputs while preserving legacy outputs, regenerated contracts and passed 38 focused tests. Independent static review found no actionable role/authority issue. Type, lint and import checks passed.
 - Enabled and verified GitHub private vulnerability reporting. A real report/notification delivery was not sent. Personal-data policy remains an operator decision; a disposable report export/delete/deactivation rehearsal passed while preserving shared work.
 - Started separate architecture, performance, security, CI, source/export, notification, forecast and runtime batches. Their own acceptance and release checks remain required. See docs/delivery/CODEX_BACKLOG_2026_09_30.md and KAN-4-workflow-contracts.md for exact evidence and gaps.
+
+The nine batches are now published as draft PRs #88 through #96, covering 58
+implementation and documentation tickets. Independent integration reviews found
+and repaired lost material-change email when in-app alerts were disabled, frozen
+baseline evidence lost during downgrade, invalid KML Unicode and stale-authority
+release races. Historical migration fixtures now compare their intended schemas
+without weakening production validation or the privacy downgrade barrier.
+
+The final notification stack passed 211 SQLite backend cases, 40 frontend cases
+and three real PostgreSQL concurrency cases. The combined migration rehearsal
+passed six new PostgreSQL cases and repaired historical checks, with explicit
+schema/data preservation and private-resource cleanup. Production build and the
+initial-JavaScript budget passed at 197,398 gzip bytes. Newly reported transitive
+brace-expansion advisories were repaired using verified patched lockfile versions;
+the dependency audit and feature Gitleaks checks are clean.
+
+Fresh CI established 94% backend coverage and 92.16% frontend branch coverage,
+including the higher reviewed security/auth floors. Full branch CI remains active.
+The PostgreSQL selection is complete, but its first successful run exceeded the
+runner-time target; profiling identified repeated pytest directory discovery.
+An incomplete local timing archive is excluded from performance acceptance.
+Operator approvals, live transport/provider evidence and elapsed observation
+criteria remain explicit. None of these drafts has been merged to main.
+
+The next live Jira check returned 60 open tickets (54 in review, four in progress
+and two to do), plus 12 coordinating epics. The CI batch passed its complete run
+at `57d202a5`. Single-root pytest discovery then retained the same 572 cases while
+reducing measured collection from 70.44 to 11.72 seconds; two new guards reject
+shared key-rotation databases during parallel tests. The combined notification
+run passed all PostgreSQL shards but exposed stale backend fixtures, notification
+control-border assertions and a 91.75% frontend branch result. Focused repairs
+retain the 92% requirement. The corrected full DOM/Node comparison passed the
+same 3,644 cases with identical coverage and saved 59.11 seconds, below the
+70-second target. Twenty additional isolated files passed Node compatibility
+checks, with the SVG tests retained in DOM. The PostgreSQL two-worker trial passed
+all shards but increased runner time, so the prior worker count will be retained.
+
+Backend fixture repairs passed 25 cases. Forecast watch behaviour reached all
+32 branches with 12 focused tests; source/export lifecycle tests passed 23 cases
+and exercised 22 previously uncovered branches. Parent PRs were updated in
+dependency order, with no coverage-floor reductions or main merge.
+
+Forecast PR #94 and source/export PR #95 each passed all 32 checks after their
+coverage repairs. Combined notification checkpoint `67de3039` then passed all
+32 checks, including all PostgreSQL shards and migration/race lanes. Frontend
+coverage is 20,697/22,470 branches (92.10%), with every qualifying file at least
+70%; backend coverage reports 94% and the reviewed security/auth floors pass.
+The CI batch's storage capacity and controlled Node timing trials remain active,
+so these feature checks do not complete the outstanding performance criteria.
+
+## 1 October 2026: Codex stack reconciled with Claude's main changes
+
+All nine Codex batches incorporated main `9ae40e3d` by ordinary merges,
+preserving Claude's alert confirmation, live store, team provenance and extracted
+map controls. Released migrations remain unchanged; the unmerged Codex chain now
+runs from 0082 through 0089 with one head.
+
+Combined checks exposed stale request-ID and baseline-payload expectations, a
+copied-report STIX header retaining personal origin identity, routing without
+revision-conflict recovery and a migration fixture which could clean up before
+its cancelled worker finished. Failing regressions preceded the repairs.
+Independent reviewers closed the findings.
+
+PRs #88–#93 passed fresh full CI and became ready for review. The complete PR #91
+frontend run passed 4,292 tests with one existing skip and 92.14% branch coverage,
+including all auth and per-file floors. Repaired-head checks for #94–#96 remain
+tracked in their live PRs. Private SQLite/PostgreSQL history tests verified fresh
+and populated upgrades, full model parity, retained-data guards and repair/retry;
+owned resources were removed.
+
+KAN-1 joined KAN-2, KAN-4 and KAN-144 in Done after non-code acceptance verification.
+Fifty-seven delivery/prerequisite tickets and eleven epics remain open. The
+PostgreSQL runner cost is 39.50 minutes, still above 30; reference-host, elapsed
+workload and operator/live acceptance remain explicit. No main merge, real
+credential rotation, notification delivery or production deployment occurred.
+Release approval remains required.

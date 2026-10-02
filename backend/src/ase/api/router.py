@@ -20,6 +20,7 @@ from ase.api.routers import (
     admin_subscription_diagnostics,
     admin_users,
     ai_usage,
+    alert_routing,
     annotation_comparisons,
     annotation_monitors,
     assistant,
@@ -52,8 +53,12 @@ from ase.api.routers import (
     me,
     mfa,
     navigation,
+    notification_alert,
+    notification_digest,
+    notification_preferences,
     original_assets,
     original_passages,
+    private_feed,
     profile,
     radio,
     recovery,
@@ -92,6 +97,7 @@ from ase.api.routers import (
     trackers,
     ukraine,
     warning,
+    web_push,
 )
 
 api_router = APIRouter()
@@ -120,6 +126,11 @@ api_router.include_router(bell.router)
 api_router.include_router(team_invitations.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)
+api_router.include_router(private_feed.router)
+api_router.include_router(notification_preferences.router)
+api_router.include_router(web_push.router)
+api_router.include_router(notification_alert.router)
+api_router.include_router(notification_digest.router)
 api_router.include_router(profile.router)
 api_router.include_router(directory.router)
 api_router.include_router(account_sessions.router)
@@ -164,6 +175,7 @@ api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
 api_router.include_router(warning.router)
+api_router.include_router(alert_routing.router)
 api_router.include_router(schedules.router)
 api_router.include_router(subscription_usage.router)
 api_router.include_router(admin_requests.router)

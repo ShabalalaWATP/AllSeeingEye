@@ -63,6 +63,16 @@ it('preserves an edited ratio rule through pause and resume using each fresh rev
   const bodies: Record<string, unknown>[] = [];
   server.use(
     http.get('/api/warning/indicators', () => HttpResponse.json({ items: [saved] })),
+    http.get('/api/warning/indicators/:id/baseline', () =>
+      HttpResponse.json({
+        sample_hours: 0,
+        mean: null,
+        earliest: null,
+        as_of: '2026-09-05T12:00:00Z',
+        ready: false,
+        reason: 'Collecting baseline samples.',
+      }),
+    ),
     http.put('/api/warning/indicators/:id', async ({ request }) => {
       const body = (await request.json()) as Record<string, unknown>;
       bodies.push(body);

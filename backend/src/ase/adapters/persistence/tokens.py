@@ -18,6 +18,7 @@ from ase.adapters.persistence.token_families import (
     record_family_revocation,
     record_user_revocations,
 )
+from ase.adapters.persistence.web_push_devices import remove_push_family, remove_push_user
 from ase.domain.errors import NotFound
 from ase.domain.tokens import PasswordToken, RefreshToken, TokenPurpose
 
@@ -109,6 +110,7 @@ class SqlRefreshTokenRepository:
         return claimed is not None
 
     async def revoke_family(self, family_id: UUID, now: datetime) -> int:
+        await remove_push_family(self._session, family_id)
         await record_family_revocation(self._session, family_id, now)
         owner = await self._session.scalar(
             select(RefreshTokenRow.user_id).where(RefreshTokenRow.family_id == family_id).limit(1)
@@ -125,6 +127,7 @@ class SqlRefreshTokenRepository:
         return int(result.rowcount or 0)
 
     async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
+        await remove_push_user(self._session, user_id)
         await record_user_revocations(self._session, user_id, now)
         mark_session_change(self._session, user_id)
         stmt = (
