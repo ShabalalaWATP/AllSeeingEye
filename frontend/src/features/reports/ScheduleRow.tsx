@@ -1,5 +1,5 @@
-import { Link } from 'react-router';
-import { useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { Td } from '@/components/ui/Table';
@@ -33,15 +33,30 @@ export function ScheduleRow({
   onDuplicate: (item: Schedule, trigger: HTMLButtonElement) => void;
   onBriefCopied: () => void;
 }) {
-  const [showHistory, setShowHistory] = useState(false);
+  const [params] = useSearchParams();
+  const requestedSubscription = params.get('subscription') === item.id;
+  const [showHistory, setShowHistory] = useState(requestedSubscription);
+  const linkedRow = useRef<HTMLTableRowElement>(null);
+  useEffect(() => {
+    const target = linkedRow.current;
+    const scroll: unknown = target && Reflect.get(target, 'scrollIntoView');
+    if (requestedSubscription && typeof scroll === 'function')
+      scroll.call(target, { block: 'start' });
+  }, [requestedSubscription]);
   const [copyBrief, setCopyBrief] = useState(false);
   const duplicateButton = useRef<HTMLSpanElement>(null);
   return (
     <>
-      <tr className={item.enabled ? '' : 'opacity-60'}>
+      <tr ref={linkedRow} className={item.enabled ? '' : 'opacity-60'}>
         <Td className="font-medium">
           {item.name}
           <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
+          <Link
+            className="mt-1 block text-xs font-normal underline"
+            to={`/account?section=notifications&subscription=${item.id}`}
+          >
+            Email preferences
+          </Link>
           {item.brief_id && item.brief_revision && (
             <Link
               className="mt-1 block text-xs font-normal underline"

@@ -96,6 +96,24 @@ const itemSchema = z.object({
       ransomware_use: z.string(),
       cwes: z.string(),
       required_action: z.string(),
+      epss: z
+        .object({
+          probability: z.number().min(0).max(1),
+          percentile: z.number().min(0).max(1),
+          date: z.string(),
+        })
+        .nullable()
+        .default(null),
+      cvss: z
+        .object({
+          base_score: z.number().min(0).max(10),
+          version: z.string(),
+          vector: z.string(),
+          source: z.string(),
+          updated_at: z.string(),
+        })
+        .nullable()
+        .default(null),
     })
     .nullable(),
   themes: z.array(themeSchema).max(6),

@@ -11,6 +11,7 @@ import type { PendingMfa } from '@/lib/api/mfa';
 import { bindSession } from '@/lib/api/client';
 import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
 import type { TokenResponse, User } from '@/lib/api/schemas';
+import { clearBrowserPush } from '@/lib/browserPush';
 
 export type AuthStatus = 'unknown' | 'anonymous' | 'authenticated';
 
@@ -42,6 +43,9 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   clearSession: () => {
+    void clearBrowserPush().catch(() => {
+      /* The revoked server session also prevents delivery. */
+    });
     set({ status: 'anonymous', user: null, accessToken: null });
   },
 

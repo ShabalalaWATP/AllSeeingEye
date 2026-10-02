@@ -20,6 +20,7 @@ from ase.api.routers import (
     admin_subscription_diagnostics,
     admin_users,
     ai_usage,
+    alert_routing,
     annotation_comparisons,
     annotation_monitors,
     assistant,
@@ -31,6 +32,7 @@ from ase.api.routers import (
     citation_verdicts,
     claims,
     countries,
+    csp_reports,
     cyber,
     daily_briefing,
     direction,
@@ -40,17 +42,23 @@ from ase.api.routers import (
     events,
     figures,
     footprints,
+    forecast_watches,
     health,
     identities,
     infrastructure,
+    lei_candidates,
     map_image,
     map_views,
     map_workspace,
     me,
     mfa,
     navigation,
+    notification_alert,
+    notification_digest,
+    notification_preferences,
     original_assets,
     original_passages,
+    private_feed,
     profile,
     radio,
     recovery,
@@ -61,6 +69,7 @@ from ase.api.routers import (
     report_ledgers,
     report_methodology,
     report_search,
+    report_stix,
     report_team_copies,
     reports,
     research_briefs,
@@ -88,9 +97,12 @@ from ase.api.routers import (
     trackers,
     ukraine,
     warning,
+    web_push,
 )
 
 api_router = APIRouter()
+api_router.include_router(report_stix.router)
+api_router.include_router(csp_reports.router)
 api_router.include_router(cyber.router)
 api_router.include_router(economy.router)
 api_router.include_router(economy_news.router)
@@ -114,6 +126,11 @@ api_router.include_router(bell.router)
 api_router.include_router(team_invitations.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)
+api_router.include_router(private_feed.router)
+api_router.include_router(notification_preferences.router)
+api_router.include_router(web_push.router)
+api_router.include_router(notification_alert.router)
+api_router.include_router(notification_digest.router)
 api_router.include_router(profile.router)
 api_router.include_router(directory.router)
 api_router.include_router(account_sessions.router)
@@ -131,6 +148,7 @@ api_router.include_router(annotation_comparisons.router)
 api_router.include_router(annotation_monitors.router)
 api_router.include_router(relationships.router)
 api_router.include_router(report_ledgers.router)
+api_router.include_router(forecast_watches.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
@@ -143,6 +161,7 @@ api_router.include_router(research_preflight.router)
 api_router.include_router(research_presets.router)
 api_router.include_router(research_inputs.router)
 api_router.include_router(sec_filings.router)
+api_router.include_router(lei_candidates.router)
 api_router.include_router(research_runs.router)
 api_router.include_router(report_documents.router)
 api_router.include_router(report_methodology.router)
@@ -156,6 +175,7 @@ api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
 api_router.include_router(warning.router)
+api_router.include_router(alert_routing.router)
 api_router.include_router(schedules.router)
 api_router.include_router(subscription_usage.router)
 api_router.include_router(admin_requests.router)

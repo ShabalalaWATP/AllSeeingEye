@@ -1,10 +1,10 @@
 """Reviewed non-feed research support. Entries describe implemented routes, not live access."""
 
-from dataclasses import dataclass, replace
+from dataclasses import replace
 
+from ase.container.research_capability_model import CapabilityProfile, _profile
 from ase.domain.source_capabilities import (
     CapabilityPrerequisite,
-    CapabilitySupport,
 )
 from ase.domain.source_capabilities import (
     CapabilityScope as Scope,
@@ -19,49 +19,8 @@ from ase.domain.source_capabilities import (
     ExecutionRoute as Route,
 )
 from ase.domain.source_capabilities import (
-    LanguageSupport as Language,
-)
-from ase.domain.source_capabilities import (
     PrerequisiteKind as Need,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class CapabilityProfile:
-    family: str
-    support: CapabilitySupport
-    content: Content = Content.STRUCTURED
-    route: Route = Route.PUBLIC_RESEARCH
-    prerequisites: tuple[CapabilityPrerequisite, ...] = ()
-    unknown_origin: bool = False
-
-
-def _profile(
-    family: str,
-    scopes: tuple[Scope, ...],
-    date: Dates | tuple[Dates, ...],
-    constraints: str,
-    *,
-    prerequisite: CapabilityPrerequisite | None = None,
-    english_terms: bool = False,
-    unknown_origin: bool = False,
-    content: Content = Content.STRUCTURED,
-    route: Route = Route.PUBLIC_RESEARCH,
-) -> CapabilityProfile:
-    return CapabilityProfile(
-        family,
-        CapabilitySupport(
-            scopes,
-            date if isinstance(date, tuple) else (date,),
-            ("en",) if english_terms else (),
-            Language.ENGLISH_TERMS if english_terms else Language.NOT_FILTERED,
-            constraints,
-        ),
-        content,
-        route,
-        (prerequisite,) if prerequisite else (),
-        unknown_origin,
-    )
 
 
 def structured_profiles() -> dict[str, CapabilityProfile]:
@@ -293,6 +252,8 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
     for authority, setting in (
         ("uksl", "ASE_UKSL_SNAPSHOT_PATH"),
         ("ofac_sdn", "ASE_OFAC_SDN_SNAPSHOT_PATH"),
+        ("un_sc", "ASE_UN_SC_SNAPSHOT_PATH"),
+        ("eu_fsf", "ASE_EU_FSF_SNAPSHOT_PATH"),
     ):
         profiles[f"research-designations-{authority}"] = _profile(
             "sanctions",
@@ -354,5 +315,14 @@ def structured_profiles() -> dict[str, CapabilityProfile]:
                 if name == "openaq"
                 else None
             ),
+        )
+    for topic in ("idps", "food-security", "operational-presence"):
+        profiles[f"research-hapi-{topic}"] = _profile(
+            "humanitarian",
+            (Scope.COUNTRY_CONTEXT,),
+            Dates.RESEARCH_INTERVAL,
+            "One supported country, at most 20 dated administrative rows; no national total "
+            "or independent conflict corroboration. Dataset-specific reuse terms apply.",
+            prerequisite=CapabilityPrerequisite(Need.API_KEY, "ASE_HAPI_APP_IDENTIFIER"),
         )
     return profiles

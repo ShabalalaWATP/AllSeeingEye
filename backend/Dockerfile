@@ -41,7 +41,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
     CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health').status == 200 else 1)"
 
-# Behind Caddy the TCP peer is always the proxy, so uvicorn must read X-Forwarded-For from
-# it or every client shares one rate-limit bucket and one audit IP. The API port is not
-# published, so trusting the whole compose network is safe; narrow it if that changes.
-CMD ["sh", "-c", "ase migrate && uvicorn ase.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips \"${ASE_FORWARDED_ALLOW_IPS:-*}\""]
+# Compose supplies Caddy's reserved address. Standalone images trust loopback only.
+CMD ["sh", "-c", "ase migrate && exec uvicorn ase.main:app --host 0.0.0.0 --port 8000 --timeout-graceful-shutdown 10 --proxy-headers --forwarded-allow-ips \"${ASE_FORWARDED_ALLOW_IPS:-127.0.0.1}\""]

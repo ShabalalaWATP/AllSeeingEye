@@ -55,3 +55,11 @@ export function fetchEvidencePackage(id: string, version: number, signal: AbortS
     { signal },
   );
 }
+
+export type StixTlp = 'green' | 'amber' | 'red';
+
+export function fetchReportStix(id: string, version: number, tlp: StixTlp): Promise<Blob> {
+  return apiBlob(
+    `/api/reports/${encodeURIComponent(id)}/stix?version=${String(version)}&tlp=${tlp}`,
+  );
+}

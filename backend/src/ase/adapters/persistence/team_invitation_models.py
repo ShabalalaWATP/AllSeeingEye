@@ -47,3 +47,31 @@ class TeamInvitationRow(Base):
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
     responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+
+
+class TeamInvitationReceiptRow(Base):
+    """Independent sender projection. Only acceptance can copy recipient identity."""
+
+    __tablename__ = "team_invitation_receipts"
+    __table_args__ = (
+        Index("ix_invitation_receipts_team_status", "team_id", "status"),
+        CheckConstraint(
+            "status IN ('pending','accepted','withdrawn')", name="ck_invitation_receipt_status"
+        ),
+        CheckConstraint("revision >= 1", name="ck_invitation_receipt_revision"),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    invitation_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("team_invitations.id", ondelete="SET NULL"), nullable=True, unique=True
+    )
+    team_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("teams.id", ondelete="CASCADE"))
+    inviter_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
+    recipient_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    recipient_display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    recipient_username: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    note: Mapped[str | None] = mapped_column(String(280), nullable=True)
+    status: Mapped[str] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")

@@ -11,9 +11,8 @@ from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from ase.adapters.persistence.base import Base
 from ase.infrastructure.migrations import alembic_config
-from test_annotation_monitor_migration import TABLES
+from test_annotation_monitor_migration import TABLES, metadata_0031
 from test_annotation_monitor_migration_postgres import (
     database_url as database_url,  # noqa: PLC0414
 )
@@ -88,7 +87,7 @@ def parity(connection):
             ),
         },
     )
-    assert compare_metadata(context, Base.metadata) == []
+    assert compare_metadata(context, metadata_0031()) == []
     columns = {
         c["name"]: c for c in sa.inspect(connection).get_columns("annotation_revision_outbox")
     }

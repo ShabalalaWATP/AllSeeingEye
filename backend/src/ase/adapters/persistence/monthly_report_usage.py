@@ -6,15 +6,15 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import Integer, cast, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import LlmUsageRow
-from ase.adapters.persistence.report_job_codec import from_row
-from ase.adapters.persistence.report_job_models import ReportJobRow
+from ase.adapters.persistence.report_job_usage_models import ReportJobUsageRow as UsageRow
 from ase.adapters.persistence.subscription_edition_models import SubscriptionEditionRow
 from ase.application.report_jobs.budget import (
     MAX_CALLS,
+    MAX_COUNTER,
     NOT_DISPATCHED_ERROR,
     JobInterrupted,
     token_count,
@@ -78,47 +78,59 @@ async def monthly_usage(
 ) -> tuple[MonthlyUsage, MonthlyUsage]:
     """Owner includes one-offs; subscriptions use their edition-linked job calls."""
     start, end = utc_month(at)
-    rows = await session.execute(
-        select(ReportJobRow, SubscriptionEditionRow.subscription_id)
-        .outerjoin(SubscriptionEditionRow, SubscriptionEditionRow.job_id == ReportJobRow.id)
-        .where(
-            ReportJobRow.owner_id == owner_id,
-            ReportJobRow.created_at < end,
-            ReportJobRow.updated_at >= start,
+    receipt_count, receipt_tokens, invalid_receipts = (
+        await session.execute(
+            select(
+                func.count(),
+                func.coalesce(func.sum(LlmUsageRow.completion_tokens), 0),
+                func.count().filter(
+                    or_(
+                        LlmUsageRow.completion_tokens < 0,
+                        LlmUsageRow.completion_tokens > MAX_COUNTER,
+                        LlmUsageRow.completion_tokens
+                        != cast(LlmUsageRow.completion_tokens, Integer),
+                    )
+                ),
+            ).where(
+                LlmUsageRow.user_id == owner_id,
+                LlmUsageRow.purpose == "report-job",
+                LlmUsageRow.at >= start,
+                LlmUsageRow.at < end,
+            )
         )
-        .execution_options(populate_existing=True)
-    )
-    receipts = await session.scalars(
-        select(LlmUsageRow.completion_tokens).where(
-            LlmUsageRow.user_id == owner_id,
-            LlmUsageRow.purpose == "report-job",
-            LlmUsageRow.at >= start,
-            LlmUsageRow.at < end,
+    ).one()
+    if invalid_receipts:
+        raise JobInterrupted()
+    pending_count, pending_tokens = (
+        await session.execute(
+            select(
+                func.coalesce(func.sum(UsageRow.owner_requests), 0),
+                func.coalesce(func.sum(UsageRow.owner_output_tokens), 0),
+            ).where(
+                UsageRow.owner_id == owner_id,
+                UsageRow.month == start,
+            )
         )
-    )
-    owner = MonthlyUsage()
-    for completion_tokens in receipts:
-        known = token_count(completion_tokens)
-        if completion_tokens is not None and known is None:
-            raise JobInterrupted()
-        owner = owner.add(MonthlyUsage(1, known or 0))
+    ).one()
+    owner = MonthlyUsage(int(receipt_count + pending_count), int(receipt_tokens + pending_tokens))
     subscription = MonthlyUsage()
-    for row, linked_subscription in rows:
-        job = from_row(row)
-        for call in _calls(job):
-            dispatched, _ = utc_month(_call_month(call, job.created_at))
-            if dispatched != start:
-                continue
-            charge = _call_usage(call)
-            status = call["status"]
-            if status in {"in_flight", "uncertain"}:
-                owner = owner.add(charge)
-            elif token_count(call.get("completion_tokens")) is None:
-                # The settlement receipt retains the request. The linked payload
-                # retains a full output reservation until usage is known.
-                owner = owner.add(MonthlyUsage(0, charge.output_tokens))
-            if subscription_id is not None and linked_subscription == subscription_id:
-                subscription = subscription.add(charge)
+    if subscription_id is not None:
+        requests, tokens = (
+            await session.execute(
+                select(
+                    func.coalesce(func.sum(UsageRow.subscription_requests), 0),
+                    func.coalesce(func.sum(UsageRow.subscription_output_tokens), 0),
+                )
+                .join(SubscriptionEditionRow, SubscriptionEditionRow.job_id == UsageRow.job_id)
+                .where(
+                    UsageRow.owner_id == owner_id,
+                    UsageRow.month == start,
+                    SubscriptionEditionRow.subscription_id == subscription_id,
+                )
+            )
+        ).one()
+        subscription = MonthlyUsage(int(requests), int(tokens))
+
     return owner, subscription
 
 

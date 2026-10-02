@@ -12,6 +12,11 @@ class SourceControlRepository(Protocol):
 
 
 class SourceAdmission(Protocol):
+    @property
+    def generation(self) -> int:
+        """Process-local source-change generation, including changes back to prior values."""
+        ...
+
     def guard(self) -> AbstractAsyncContextManager[None]:
         """Serialise activation commits with final admission/release; never hold across fetches."""
         ...

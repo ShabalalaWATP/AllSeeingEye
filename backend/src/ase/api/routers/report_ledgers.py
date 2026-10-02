@@ -8,9 +8,12 @@ from fastapi import APIRouter, Depends, Path, Query, Response
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, SessionDep, get_current_user
 from ase.api.schemas_report_ledgers import (
     ForecastCreateIn,
+    ForecastExportIn,
     ForecastReviewIn,
+    ForecastSupersessionIn,
     IndicatorCreateIn,
     MissingReadingIn,
+    ReportLedgerPageOut,
 )
 from ase.api.session_fence import FenceDep
 from ase.container.report_ledgers import report_ledgers
@@ -35,13 +38,13 @@ async def list_ledgers(
     response: Response,
     limit: Annotated[int, Query(ge=1, le=20)] = 20,
     offset: Annotated[int, Query(ge=0, le=1000)] = 0,
-) -> dict[str, object]:
+) -> ReportLedgerPageOut:
     items, total = await report_ledgers(container, session).list(
         claims, report_id, number, limit, offset
     )
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return {"items": items, "total": total, "limit": limit, "offset": offset}
+    return ReportLedgerPageOut(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.get("/{ledger_id}")
@@ -137,6 +140,54 @@ async def record_missing(
 ) -> ReportLedger:
     result = await report_ledgers(container, session).record_missing(
         claims, report_id, number, ledger_id, body.to_domain(), context
+    )
+    fence.assert_live()
+    response.headers["Cache-Control"] = "private, no-store"
+    return result
+
+
+@router.post("/{ledger_id}/supersessions")
+async def supersede_forecast(
+    report_id: UUID,
+    number: VersionNumber,
+    ledger_id: UUID,
+    body: ForecastSupersessionIn,
+    claims: ClaimsDep,
+    fence: FenceDep,
+    container: ContainerDep,
+    session: SessionDep,
+    context: ContextDep,
+    response: Response,
+) -> ReportLedger:
+    result = await report_ledgers(container, session).supersede(
+        claims,
+        report_id,
+        number,
+        ledger_id,
+        body.to_domain(),
+        context,
+    )
+    fence.assert_live()
+    response.headers["Cache-Control"] = "private, no-store"
+    return result
+
+
+@router.post("/exports/forecasts")
+async def export_forecasts(
+    report_id: UUID,
+    number: VersionNumber,
+    body: ForecastExportIn,
+    claims: ClaimsDep,
+    fence: FenceDep,
+    container: ContainerDep,
+    session: SessionDep,
+    response: Response,
+) -> tuple[ReportLedger, ...]:
+    result = await report_ledgers(container, session).export_forecasts(
+        claims,
+        report_id,
+        number,
+        body.ledger_ids,
     )
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"

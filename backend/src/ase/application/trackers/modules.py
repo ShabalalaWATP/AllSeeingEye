@@ -8,12 +8,14 @@ totals. Display lists have their own smaller limits.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from ase.application.feeds.board_reads import read_board
 from ase.application.ports import Clock
-from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.ports.feeds import EventQuery, EventQueryReader
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
 
@@ -85,9 +87,16 @@ def newest(events: list[Event], limit: int = LIST_LIMIT) -> tuple[Event, ...]:
 
 
 class ModuleService:
-    def __init__(self, store: EventStore, clock: Clock) -> None:
+    def __init__(self, store: EventQueryReader, clock: Clock) -> None:
         self._store = store
         self._clock = clock
+
+    async def read[T](self, project: Callable[[ModuleService], T], *, admission_key: str) -> T:
+        return await read_board(
+            self._store,
+            lambda reader: project(ModuleService(reader, self._clock)),
+            admission_key=admission_key,
+        )
 
     def _events(
         self,

@@ -1,5 +1,6 @@
 """Saved source content remains subject to current admission on reuse and release."""
 
+from copy import deepcopy
 from dataclasses import replace
 from datetime import timedelta
 from types import SimpleNamespace
@@ -7,9 +8,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from ase.application.reports.challenge_expansion_checkpoint import ExpansionPacket, packet_to_dict
 from ase.application.reports.production_checkpoint import ProductionSnapshot, collection_to_dict
 from ase.application.reports.production_types import Totals
 from ase.application.reports.selection import Selection
+from ase.container.report_job_cache import AttemptCache, attempt_cache
 from ase.container.report_job_gate import ReportJobSourceDisabled, check_sources
 from ase.domain.report_records import evidence_to_list
 from ase.domain.research import ResearchQuery
@@ -57,6 +60,50 @@ def completed_web():
         tool_calls=1,
         request_count=1,
     )
+
+
+@pytest.mark.parametrize("invalid_version", [True, 1.0])
+async def test_cached_sources_revalidate_type_changed_collection(invalid_version):
+    stored = saved(collection=checkpoint(evidence=(fixture_evidence(),)))
+    token = attempt_cache.set(AttemptCache())
+    try:
+        await check_sources(host(), stored)
+        payload = deepcopy(stored.payload)
+        payload["collection"]["schema_version"] = invalid_version
+        with pytest.raises(ValueError):
+            await check_sources(host(), replace(stored, payload=payload))
+    finally:
+        attempt_cache.reset(token)
+
+
+async def test_cached_provenance_rechecks_new_expansion_sources_and_live_switches():
+    initial = replace(fixture_evidence(), source_id="first")
+    added = replace(fixture_evidence("E2", "new"), source_id="new-source")
+    stored = saved(frozen=(initial,))
+    container = host("new-source")
+    token = attempt_cache.set(AttemptCache())
+    try:
+        await check_sources(container, stored)
+        query = ResearchQuery("What changed?", NOW - timedelta(days=1), NOW)
+        stored.payload["challenge_expansion_packet"] = packet_to_dict(
+            ExpansionPacket(
+                "a" * 64,
+                "b" * 64,
+                (added,),
+                ResearchReceipt.build(query, (), 1),
+                "attempted",
+                "Fresh source result",
+            )
+        )
+        with pytest.raises(ReportJobSourceDisabled):
+            await check_sources(container, stored)
+        container.source_admission.enabled_many.side_effect = lambda ids: dict.fromkeys(ids, True)
+        await check_sources(container, stored)
+        container.source_admission.enabled_many.side_effect = lambda ids: dict.fromkeys(ids, False)
+        with pytest.raises(ReportJobSourceDisabled):
+            await check_sources(container, stored)
+    finally:
+        attempt_cache.reset(token)
 
 
 @pytest.mark.parametrize("placement", ["frozen", "collected"])

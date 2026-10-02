@@ -8,7 +8,7 @@ from uuid import UUID
 
 from ase.domain.events import BoundingBox, Category, Point
 
-AssistantScope = Literal["global", "viewport", "selected", "report"]
+AssistantScope = Literal["global", "viewport", "selected", "report", "alert"]
 AssistantKind = Literal[
     "event", "camera", "infrastructure", "gnss", "doctrine", "report_claim", "report_evidence"
 ]
@@ -32,6 +32,16 @@ class AssistantReportContext:
     title: str
     data_cutoff: datetime | None
     team_id: UUID | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class AssistantAlertContext:
+    id: UUID
+    matched_count: int
+    stored_sample_size: int
+    available_evidence_count: int
+    created_by: UUID | None
+    team_id: UUID | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +84,7 @@ class AssistantQuestion:
     continuation_id: str | None = None
     source_categories: tuple[str, ...] | None = None
     report: AssistantReportSelection | None = None
+    alert_id: UUID | None = None
 
     def __post_init__(self) -> None:
         if len(self.prior_questions) > 4:
@@ -101,13 +112,14 @@ class AssistantQuestion:
                 raise ValueError("Questions must contain between 1 and 2,000 characters.")
             if any(ord(char) < 32 and char not in "\n\t" for char in text):
                 raise ValueError("Questions contain unsupported control characters.")
-        if self.scope not in ("global", "viewport", "selected", "report"):
+        if self.scope not in ("global", "viewport", "selected", "report", "alert"):
             raise ValueError("Choose a valid map scope.")
         if (self.scope == "viewport") != (self.bbox is not None):
             raise ValueError("A viewport question requires only its map bounds.")
         if (self.scope == "selected") != (self.selected is not None):
             raise ValueError("A selected-item question requires only its map item.")
         self._validate_report_scope()
+        self._validate_alert_scope()
         if self.bbox is not None:
             box = self.bbox
             if not all(
@@ -118,6 +130,16 @@ class AssistantQuestion:
                 and -90 <= box.south <= box.north <= 90
             ):
                 raise ValueError("Map bounds contain invalid coordinates.")
+
+    def _validate_alert_scope(self) -> None:
+        if (self.scope == "alert") != (self.alert_id is not None):
+            raise ValueError("An alert question requires exactly one alert reference.")
+        if self.scope == "alert" and (
+            self.time_range is not None
+            or self.source_categories is not None
+            or self.continuation_id is not None
+        ):
+            raise ValueError("Alert questions use only currently retained referenced evidence.")
 
     def _validate_report_scope(self) -> None:
         if (self.scope == "report") != (self.report is not None):
@@ -171,6 +193,7 @@ class AssistantContext:
     clarification: str | None = None
     interpretation: AssistantInterpretation | None = None
     report: AssistantReportContext | None = None
+    alert: AssistantAlertContext | None = None
 
 
 @dataclass(frozen=True, slots=True)

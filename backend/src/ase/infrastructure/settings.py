@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     report_pdf_runtime: str | None = Field(default=None, max_length=4096)
     env: Environment = Environment.DEV
     database_url: str = "sqlite+aiosqlite:///./data/ase.db"
+    database_pool_size: int = Field(default=10, ge=1, le=100)
+    database_max_overflow: int = Field(default=10, ge=0, le=100)
+    database_pool_timeout: int = Field(default=10, ge=1, le=60)
     jwt_secret: SecretStr | None = None
     access_token_minutes: int = Field(default=15, ge=1, le=120)
     # How long a release fence or stream may trust a recent session check when no
@@ -53,6 +56,10 @@ class Settings(BaseSettings):
     smtp_username: str | None = Field(default=None, min_length=1, max_length=320)
     smtp_password: SecretStr | None = None
     smtp_timeout_seconds: int = Field(default=10, ge=1, le=30)
+    web_push_vapid_private_key: SecretStr | None = None
+    web_push_vapid_subject: str | None = Field(
+        default=None, max_length=320, pattern=r"^mailto:[^\s@]+@[^\s@]+$"
+    )
     max_request_bytes: int = Field(default=65_536, ge=1_024, le=10_485_760)
     admin_password: SecretStr | None = None
     rate_limit_login_per_ip: int = Field(default=10, ge=1)
@@ -118,6 +125,9 @@ class Settings(BaseSettings):
     ioda_public_data_use_acknowledged: bool = False
     uksl_snapshot_path: str | None = None
     ofac_sdn_snapshot_path: str | None = None
+    un_sc_snapshot_path: str | None = None
+    eu_fsf_snapshot_path: str | None = None
+    hapi_app_identifier: SecretStr | None = None
     aiddata_catalogue_path: str | None = None
     research_tesseract_path: str | None = None
     research_ffmpeg_path: str | None = None
@@ -136,6 +146,12 @@ class Settings(BaseSettings):
     ai_price_currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
 
     _generated_secret: bool = PrivateAttr(default=False)
+
+    @model_validator(mode="after")
+    def _validate_web_push(self) -> Self:
+        if bool(self.web_push_vapid_private_key) != bool(self.web_push_vapid_subject):
+            raise ValueError("Browser push requires both a VAPID private key and contact subject.")
+        return self
 
     @model_validator(mode="after")
     def _finalise(self) -> Self:

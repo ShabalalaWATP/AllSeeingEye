@@ -175,6 +175,13 @@ class SubscriptionAttemptRow(Base):
             name="ck_subscription_attempt_usage",
         ),
         Index("ix_subscription_attempt_history", "edition_id", "number"),
+        Index(
+            "ix_subscription_attempt_open",
+            "started_at",
+            "id",
+            sqlite_where=text("ended_at IS NULL"),
+            postgresql_where=text("ended_at IS NULL"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
@@ -212,3 +219,6 @@ class SubscriptionDeliveryRow(Base):
     attempts: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    lease_token: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    safe_reason: Mapped[str | None] = mapped_column(String(80), nullable=True)

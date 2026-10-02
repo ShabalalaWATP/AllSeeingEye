@@ -7,12 +7,19 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence import forecast_queries
 from ase.adapters.persistence.claim_models import ClaimRevisionRow, ClaimRow
 from ase.adapters.persistence.ledger_codec import decode_entry, encode_entry
-from ase.adapters.persistence.ledger_models import ReportLedgerEntryRow, ReportLedgerHeadRow
+from ase.adapters.persistence.ledger_models import (
+    ForecastReminderRow,
+    ReportLedgerEntryRow,
+    ReportLedgerHeadRow,
+)
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
+from ase.domain.access import Visibility
 from ase.domain.forecast_decisions import ForecastDecision, ForecastLedger
 from ase.domain.forecast_ledger import ForecastVersion, PassageReference
+from ase.domain.forecast_views import ForecastIndex
 from ase.domain.indicator_ledger import IndicatorLedger, IndicatorReading, IndicatorVersion
 from ase.domain.report_ledgers import (
     MAX_REPORT_LEDGER_ENTRIES,
@@ -231,7 +238,12 @@ class SqlReportLedgerRepository:
         return True
 
     async def append(self, anchor: ReportLedgerAnchor, entry: LedgerEntry) -> bool:
-        if anchor.latest_ordinal >= MAX_REPORT_LEDGER_ENTRIES:
+        return await self.append_many(anchor, (entry,))
+
+    async def append_many(
+        self, anchor: ReportLedgerAnchor, entries: tuple[LedgerEntry, ...]
+    ) -> bool:
+        if not entries or anchor.latest_ordinal + len(entries) > MAX_REPORT_LEDGER_ENTRIES:
             raise ValueError("This ledger reached its retained entry limit")
         try:
             async with self.session.begin_nested():
@@ -241,22 +253,36 @@ class SqlReportLedgerRepository:
                         ReportLedgerHeadRow.id == anchor.id,
                         ReportLedgerHeadRow.latest_ordinal == anchor.latest_ordinal,
                     )
-                    .values(latest_ordinal=anchor.latest_ordinal + 1)
+                    .values(latest_ordinal=anchor.latest_ordinal + len(entries))
                     .returning(ReportLedgerHeadRow.id)
                     .execution_options(synchronize_session=False)
                 )
                 if changed is None:
                     return False
-                self.session.add(_row(anchor, entry, anchor.latest_ordinal + 1))
+                for index, entry in enumerate(entries, 1):
+                    self.session.add(_row(anchor, entry, anchor.latest_ordinal + index))
                 await self.session.flush()
         except IntegrityError:
             return False
         return True
 
+    async def forecast_index(
+        self, visibility: Visibility, team_id: UUID | None, personal: bool, limit: int, offset: int
+    ) -> tuple[tuple[ForecastIndex, ...], int]:
+        return await forecast_queries.index(
+            self.session, visibility, team_id, personal, limit, offset
+        )
+
+    async def remind(
+        self, anchor: ReportLedgerAnchor, version_id: UUID, review_at: datetime, now: datetime
+    ) -> datetime:
+        return await forecast_queries.reminder(self.session, anchor, version_id, review_at, now)
+
 
 async def delete_report_ledgers(session: AsyncSession, report_id: UUID) -> None:
     """SQLite FK-off parity when the owning report is physically removed."""
     ids = select(ReportLedgerHeadRow.id).where(ReportLedgerHeadRow.report_id == report_id)
+    await session.execute(delete(ForecastReminderRow).where(ForecastReminderRow.ledger_id.in_(ids)))
     await session.execute(
         delete(ReportLedgerEntryRow).where(ReportLedgerEntryRow.ledger_id.in_(ids))
     )

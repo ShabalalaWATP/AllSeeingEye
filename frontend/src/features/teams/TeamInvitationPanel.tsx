@@ -106,7 +106,7 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
     try {
       await withdrawTeamInvitation(teamId, invitation.id, invitation.revision);
       setPending((items) => items.filter((item) => item.id !== invitation.id));
-      setNotice('Invitation withdrawn.');
+      setNotice('Submission withdrawn.');
     } catch (reason) {
       setError(describeError(reason));
     } finally {
@@ -245,8 +245,11 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
           {pending.length > 0 ? (
             <section aria-labelledby="pending-invitations-heading">
               <h4 id="pending-invitations-heading" className="text-sm font-semibold">
-                Pending invitations ({pending.length})
+                Pending submissions ({pending.length})
               </h4>
+              <p className="mt-1 text-xs text-muted">
+                Username receipts do not confirm delivery. Declines remain private until expiry.
+              </p>
               <ul className="mt-2 divide-y divide-line/70 border-y border-line/70">
                 {pending.map((invitation) => (
                   <li
@@ -254,7 +257,7 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
                     className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
                   >
                     <span>
-                      {invitation.recipient_display_name ?? 'Directory account'}{' '}
+                      {invitation.recipient_display_name ?? 'Private submission'}{' '}
                       {invitation.recipient_username ? `(@${invitation.recipient_username}) ` : ''}
                       <span className="text-muted">
                         {expiryLabel(invitation.expires_at, preferences)}

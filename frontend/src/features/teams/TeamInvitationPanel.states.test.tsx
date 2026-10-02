@@ -80,23 +80,24 @@ describe('team invitation panel states', () => {
       invitation(),
       invitation({
         id: '33333333-2222-4333-8444-555555555555',
+        recipient_id: null,
         recipient_display_name: null,
         recipient_username: null,
         expires_at: 'never',
       }),
     ]);
-    const section = await screen.findByRole('region', { name: 'Pending invitations (2)' });
+    const section = await screen.findByRole('region', { name: 'Pending submissions (2)' });
     expect(within(section).getByText(/Ada Lovelace/)).toHaveTextContent('(@ada_l)');
     const fallback = within(section)
-      .getByText(/Directory account/)
+      .getByText(/Private submission/)
       .closest('li')!;
     expect(within(fallback).getByText('expiry unavailable')).toBeInTheDocument();
     expect(fallback).not.toHaveTextContent('(@');
 
     await user.click(within(section).getAllByRole('button', { name: 'Withdraw' })[0]!);
-    expect(await screen.findByRole('status')).toHaveTextContent('Invitation withdrawn.');
+    expect(await screen.findByRole('status')).toHaveTextContent('Submission withdrawn.');
     expect(withdrawn).toBe('?expected_revision=2');
-    expect(screen.getByRole('region', { name: 'Pending invitations (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Pending submissions (1)' })).toBeInTheDocument();
   });
 
   it('keeps a pending invitation when withdrawal fails', async () => {
@@ -108,7 +109,7 @@ describe('team invitation panel states', () => {
     const user = await open([invitation()]);
     await user.click(await screen.findByRole('button', { name: 'Withdraw' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('already been answered');
-    expect(screen.getByRole('region', { name: 'Pending invitations (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Pending submissions (1)' })).toBeInTheDocument();
   });
 
   it('reports a failure to load pending invitations', async () => {
@@ -194,7 +195,7 @@ describe('team invitation panel states', () => {
     const user = userEvent.setup();
     render(<TeamInvitationPanel teamId={TEAM_ID} canManage />);
     await user.click(screen.getByText('Invite people'));
-    await screen.findByRole('region', { name: 'Pending invitations (1)' });
+    await screen.findByRole('region', { name: 'Pending submissions (1)' });
     await user.type(screen.getByRole('textbox', { name: 'Find a person' }), 'desk');
     await user.click(screen.getByRole('button', { name: 'Search' }));
 

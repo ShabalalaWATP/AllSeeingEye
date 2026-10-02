@@ -28,7 +28,7 @@ from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
-from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
+from ase.adapters.notify.webhook import NullNotifier
 from ase.adapters.persistence.baselines import SqlBaselineSink
 from ase.adapters.persistence.session import create_engine, ensure_sqlite_directory
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
@@ -144,7 +144,12 @@ class Container(
     def _initialise_database(self) -> None:
         settings = self.settings
         ensure_sqlite_directory(settings.database_url)
-        self.engine = create_engine(settings.database_url)
+        self.engine = create_engine(
+            settings.database_url,
+            pool_size=settings.database_pool_size,
+            max_overflow=settings.database_max_overflow,
+            pool_timeout=settings.database_pool_timeout,
+        )
         self.bus, self.health = InMemoryEventBus(), HealthRegistry()
         self.session_signals, self.session_freshness, self.session_factory = build_sessions(
             settings, self.clock, self.bus, self.engine
@@ -249,10 +254,8 @@ class Container(
             self.clock,
             self.watch_areas,
         )
-        webhook = settings.alert_webhook_url
-        self.notifier: AlertNotifier = (
-            WebhookNotifier(webhook, settings.feeds_user_agent) if webhook else NullNotifier()
-        )
+        # External copies are persisted with the alert and delivered by the outbox worker.
+        self.notifier: AlertNotifier = NullNotifier()
         self._initialise_background_jobs()
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)

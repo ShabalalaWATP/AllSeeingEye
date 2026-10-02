@@ -23,7 +23,8 @@ class InvitationStatus(StrEnum):
 class TeamInvitation:
     id: UUID
     team_id: UUID
-    recipient_id: UUID
+    # Sender receipts remain opaque until delivery is consented to.
+    recipient_id: UUID | None
     inviter_id: UUID
     role: MembershipRole
     note: str | None

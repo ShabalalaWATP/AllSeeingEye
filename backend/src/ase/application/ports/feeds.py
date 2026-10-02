@@ -86,7 +86,11 @@ class StoreStats:
     per_category: tuple[CategoryStats, ...] = ()
 
 
-class EventStore(Protocol):
+class EventQueryReader(Protocol):
+    def query(self, query: EventQuery) -> list[Event]: ...
+
+
+class EventStore(EventQueryReader, Protocol):
     def upsert(self, events: Iterable[Event]) -> UpsertResult: ...
     def put(self, events: Iterable[Event]) -> None:
         """Replace events regardless of content hash (used when grades change)."""

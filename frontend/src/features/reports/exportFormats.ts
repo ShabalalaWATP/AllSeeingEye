@@ -1,6 +1,6 @@
 import type { ReportExportFormat } from '@/lib/api/reportDocuments';
 
-export type ExportChoice = ReportExportFormat | 'md';
+export type ExportChoice = ReportExportFormat | 'md' | 'stix';
 
 export interface ExportDescription {
   label: string;
@@ -15,6 +15,13 @@ export interface ExportDescription {
  * exports do not have.
  */
 export const EXPORT_FORMATS: Record<ExportChoice, ExportDescription> = {
+  stix: {
+    label: 'STIX 2.1 (.json)',
+    short: 'STIX 2.1',
+    purpose: 'Exchange cyber evidence',
+    detail:
+      'Frozen cyber references and CVEs only. Choose a TLP marking; no indicators or confidence scores are inferred.',
+  },
   pdf: {
     label: 'PDF',
     short: 'PDF',

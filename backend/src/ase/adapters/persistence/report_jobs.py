@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import JSON, ColumnElement, cast, delete, func, select, update
+from sqlalchemy import ColumnElement, delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
@@ -13,10 +13,17 @@ from sqlalchemy.orm import defer
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.report_job_admission import fair_queued_ids, no_running_sibling
-from ase.adapters.persistence.report_job_codec import from_row, payload_columns, with_payload
+from ase.adapters.persistence.report_job_codec import (
+    PayloadCache,
+    from_row,
+    payload_columns,
+    with_summary,
+)
 from ase.adapters.persistence.report_job_listing import list_job_page
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
-from ase.application.report_jobs.recovery import expired_failure
+from ase.adapters.persistence.report_job_recovery import recover_expired
+from ase.adapters.persistence.report_job_usage_models import ReportJobUsageRow
+from ase.adapters.persistence.report_job_usage_projection import sync_usage
 from ase.domain.access import Visibility
 from ase.domain.report_jobs import (
     CheckpointStatus,
@@ -34,8 +41,9 @@ def _page(limit: int, offset: int = 0) -> None:
 
 
 class SqlReportJobRepository:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, cache: PayloadCache | None = None) -> None:
         self.session = session
+        self.cache = cache
 
     async def add(self, job: ReportJob) -> None:
         # Encode again at the write boundary: the frozen dataclass can contain a
@@ -63,10 +71,11 @@ class SqlReportJobRepository:
             )
         )
         await self.session.flush()
+        await sync_usage(self.session, job.id, job.owner_id, job.created_at, job.payload)
 
     async def get(self, job_id: UUID) -> ReportJob | None:
         row = await self.session.get(Row, job_id, populate_existing=True)
-        return from_row(row) if row is not None else None
+        return from_row(row, self.cache) if row is not None else None
 
     async def get_by_request(self, owner_id: UUID, request_key: UUID) -> ReportJob | None:
         row = await self.session.scalar(
@@ -80,13 +89,8 @@ class SqlReportJobRepository:
         self, visibility: Visibility, limit: int = 50, offset: int = 0
     ) -> list[ReportJob]:
         _page(limit, offset)
-        summary = (
-            func.json_extract(Row.payload, "$.summary", type_=JSON)
-            if self.session.get_bind().dialect.name == "sqlite"
-            else cast(Row.payload, JSON)["summary"]
-        )
         rows = await self.session.execute(
-            select(Row, summary)
+            select(Row, Row.summary)
             .options(defer(Row.payload))
             .where(visibility_predicate(Row.owner_id, Row.team_id, visibility))
             .order_by(Row.created_at.desc(), Row.id)
@@ -94,10 +98,7 @@ class SqlReportJobRepository:
             .limit(limit)
             .execution_options(populate_existing=True)
         )
-        return [
-            with_payload(row, {"schema_version": 1, "summary": summary or {}})
-            for row, summary in rows
-        ]
+        return [with_summary(row, summary) for row, summary in rows]
 
     async def list_page(
         self,
@@ -160,7 +161,12 @@ class SqlReportJobRepository:
             .returning(Row.id)
             .execution_options(synchronize_session=False)
         )
-        return await self.get(key) if key is not None else None
+        result = await self.get(key) if key is not None else None
+        if result is not None and "payload" in values:
+            await sync_usage(
+                self.session, result.id, result.owner_id, result.created_at, result.payload
+            )
+        return result
 
     async def claim(
         self,
@@ -293,46 +299,29 @@ class SqlReportJobRepository:
     async def recover_expired(self, now: datetime, limit: int = 20) -> int:
         job_timestamp(now)
         _page(limit)
-        rows = await self.session.execute(
-            select(Row.id, Row.revision)
-            .where(Row.status == "running", Row.lease_until <= now)
-            .order_by(Row.lease_until, Row.id)
-            .limit(limit)
-        )
-        count = 0
-        for job_id, revision in rows:
-            current = await self.get(job_id)
-            if current is None or current.revision != revision:
-                continue
-            value = await self._update(
-                job_id,
-                revision,
-                now,
-                (Row.status == "running", Row.lease_until <= now),
-                {
-                    "status": "paused",
-                    "lease_token": None,
-                    "lease_until": None,
-                    "error": expired_failure(current.payload),
-                },
-            )
-            count += value is not None
-        return count
+        return await recover_expired(self.session, now, limit)
 
     async def discard(self, job_id: UUID, *, expected_revision: int) -> bool:
         """Remove inactive checkpoints only; final reports and usage remain independent."""
         if type(expected_revision) is not int or expected_revision < 1:
             raise ValueError("Use a valid report job revision.")
-        removed = await self.session.scalar(
-            delete(Row)
+        eligible = await self.session.scalar(
+            update(Row)
             .where(
                 Row.id == job_id,
                 Row.revision == expected_revision,
                 Row.status.in_(("paused", "failed", "completed", "needs_review")),
             )
+            .values(revision=Row.revision + 1)
             .returning(Row.id)
             .execution_options(synchronize_session=False)
         )
+        if eligible is None:
+            return False
+        await self.session.execute(
+            delete(ReportJobUsageRow).where(ReportJobUsageRow.job_id == job_id)
+        )
+        removed = await self.session.scalar(delete(Row).where(Row.id == job_id).returning(Row.id))
         if removed is not None:
             await SqlOriginalPassageRepository(self.session).delete_for_job(job_id)
         return removed is not None

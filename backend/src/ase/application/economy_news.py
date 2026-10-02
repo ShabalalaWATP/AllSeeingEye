@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 
+from ase.application.feeds.board_reads import read_events
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.source_controls import SourceAdmission
@@ -106,16 +107,18 @@ class EconomyNewsService:
         if not selected:
             return result_view
         since = now - timedelta(days=days)
-        events = self._store.query(
+        considered, passed = await read_events(
+            self._store,
             EventQuery(
                 categories=frozenset({Category.ECONOMIC}),
                 source_ids=selected,
                 since=since,
                 until=now,
                 limit=1000,
-            )
+            ),
+            lambda events: self._judge(events, region, since, now),
+            admission_key="internal:economy-news",
         )
-        considered, passed = self._judge(events, region, since, now)
         ranked = _balanced(passed, limit)
         # A source disabled while this request was preparing must not be released.
         return await self.refilter(

@@ -9,7 +9,9 @@ import httpx
 import structlog
 
 from ase.adapters.feeds.http import FeedFetchError, assert_public_host, pin_url
+from ase.adapters.feeds.secret_urls import protect_http_logs
 from ase.adapters.tls import verified_ssl_context
+from ase.domain.notification_delivery import DeliveryOutcome
 from ase.domain.warning import Alert, Indicator
 
 log = structlog.get_logger(__name__)
@@ -59,6 +61,16 @@ class WebhookNotifier:
         self._transport = transport
 
     async def notify(self, alert: Alert, indicator: Indicator) -> bool:
+        return await self.send_outcome(alert, indicator) is DeliveryOutcome.SENT
+
+    async def send_outcome(self, alert: Alert, indicator: Indicator) -> DeliveryOutcome:
+        # Webhook paths and queries often contain capability tokens. HTTPX/httpcore
+        # logging must remain redacted throughout DNS, connection and response handling.
+        with protect_http_logs():
+            return await self._send_outcome(alert, indicator)
+
+    async def _send_outcome(self, alert: Alert, indicator: Indicator) -> DeliveryOutcome:
+        attempted = False
         try:
             async with asyncio.timeout(TIMEOUT_SECONDS):
                 address = await assert_public_host(self._url)
@@ -67,13 +79,16 @@ class WebhookNotifier:
                     "User-Agent": self._user_agent,
                     "Host": self._authority,
                     "Accept-Encoding": "identity",
+                    "Idempotency-Key": str(alert.id),
                 }
+                attempted = True
                 async with (
                     httpx.AsyncClient(
                         timeout=TIMEOUT_SECONDS,
                         transport=self._transport,
                         headers=headers,
-                        verify=verified_ssl_context(),
+                        verify=verified_ssl_context(trust_env=False),
+                        trust_env=False,
                     ) as client,
                     client.stream(
                         "POST",
@@ -84,16 +99,16 @@ class WebhookNotifier:
                     ) as response,
                 ):
                     status = response.status_code
-        except FeedFetchError as exc:
-            log.warning("alert_webhook_refused", reason=str(exc))
-            return False
+        except FeedFetchError:
+            log.warning("alert_webhook_refused", reason="public_address_validation_failed")
+            return DeliveryOutcome.RETRYABLE
         except (httpx.HTTPError, TimeoutError) as exc:
             log.warning("alert_webhook_failed", error=type(exc).__name__)
-            return False
+            return DeliveryOutcome.UNCERTAIN if attempted else DeliveryOutcome.RETRYABLE
         if not 200 <= status < 300:
             log.warning("alert_webhook_rejected", status=status)
-            return False
-        return True
+            return DeliveryOutcome.UNCERTAIN if status >= 500 else DeliveryOutcome.RETRYABLE
+        return DeliveryOutcome.SENT
 
 
 class NullNotifier:

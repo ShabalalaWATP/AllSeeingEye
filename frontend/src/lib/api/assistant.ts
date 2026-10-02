@@ -40,7 +40,7 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
     }),
   ),
   scope: z.object({
-    mode: z.enum(['global', 'viewport', 'selected', 'report']),
+    mode: z.enum(['global', 'viewport', 'selected', 'report', 'alert']),
     bbox: z
       .object({ west: z.number(), south: z.number(), east: z.number(), north: z.number() })
       .nullable(),
@@ -68,6 +68,15 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
   continuation_id: z.string().nullable(),
   generated_at: z.string(),
   model: z.object({ name: z.string(), reasoning_effort: z.string().nullable() }).nullable(),
+  alert: z
+    .object({
+      id: z.uuid(),
+      matched_count: z.number().int().nonnegative(),
+      stored_sample_size: z.number().int().nonnegative(),
+      available_evidence_count: z.number().int().nonnegative(),
+    })
+    .nullable()
+    .default(null),
   report: z
     .object({
       id: z.uuid(),

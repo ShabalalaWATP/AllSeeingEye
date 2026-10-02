@@ -9,7 +9,7 @@ from ase.application.dto import RequestContext
 from ase.application.ports import RateLimiter, UnitOfWork, UserRepository
 from ase.application.ports.directory_profile import DirectoryProfileRepository
 from ase.application.teams.invitations import TeamInvitationService
-from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, RateLimited
+from ase.domain.errors import RateLimited
 from ase.domain.users import User
 
 HANDLE_SUBMISSIONS_PER_WINDOW = 20
@@ -19,8 +19,8 @@ HANDLE_WINDOW_SECONDS = 3600
 class HandleInvitationUseCase:
     """Send a Member invitation to an exact username, returning the same outcome for all handles.
 
-    Sender authority, archive state, note validity and the team's pending limit are
-    checked first, because they describe the caller's own team. Every recipient-specific
+    Sender authority, archive state and note validity are checked before the rate
+    limit. The sender receipt budget is checked under the team lock. Every recipient-specific
     outcome (unknown, inactive, already a member, already invited, protected
     Administrator) is then indistinguishable from a successful submission.
     """
@@ -56,12 +56,4 @@ class HandleInvitationUseCase:
         if retry_after is not None:
             raise RateLimited(retry_after)
         recipient_id = await resolve_exact_handle(self._profiles, self._users, username)
-        if recipient_id is None:
-            await self._uow.rollback()
-            return
-        try:
-            await self._invitations.send(
-                actor, team_id, recipient_id, note, context, require_discoverable=False
-            )
-        except (Conflict, Forbidden, InvalidRequest, NotFound):
-            await self._uow.rollback()
+        await self._invitations.submit_handle(actor, team_id, recipient_id, note, context)

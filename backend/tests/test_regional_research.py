@@ -22,7 +22,9 @@ async def test_one_request_preserves_source_identity_and_excludes_article_text(
     seed = SEEDS[seed_id]
     feed = PublicFeed(monkeypatch, httpx.Response(200, text=rss(item())))
     provider = RegionalFeedResearchProvider(feed.http, CLOCK, seed)
-    query = replace(QUERY, languages=(seed.spec.language,), country_iso=REGIONAL_COUNTRIES[seed_id])
+    query = replace(
+        QUERY, languages=(seed.spec.language,), country_iso=REGIONAL_COUNTRIES[seed_id][0]
+    )
     result = await provider.collect(query)
     await feed.http.aclose()
     assert len(feed.requests) == len(feed.guarded) == 1

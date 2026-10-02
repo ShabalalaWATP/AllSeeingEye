@@ -5,6 +5,75 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/reports/{report_id}/stix": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Stix",
+        "operationId": "export_stix_api_reports__report_id__stix_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Version"
+            }
+          },
+          {
+            "name": "tlp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StixTlp"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/cyber/radar-attacks": {
       "get": {
         "tags": [
@@ -5210,6 +5279,694 @@
         ]
       }
     },
+    "/api/me/notifications/feed": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Feed Status",
+        "operationId": "feed_status_api_me_notifications_feed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Enable Feed",
+        "operationId": "enable_feed_api_me_notifications_feed_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedEnableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedTokenOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Revoke Feed",
+        "operationId": "revoke_feed_api_me_notifications_feed_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/notifications/feed.atom": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Read Feed",
+        "operationId": "read_feed_api_notifications_feed_atom_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    },
+    "/api/me/notifications/email": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Email Preferences",
+        "operationId": "email_preferences_api_me_notifications_email_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferencesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Save Email Preferences",
+        "operationId": "save_email_preferences_api_me_notifications_email_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/schedules/{subscription_id}/notifications/email": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Subscription Email Preferences",
+        "operationId": "subscription_email_preferences_api_schedules__subscription_id__notifications_email_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionEmailIn"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Save Subscription Email Preferences",
+        "operationId": "save_subscription_email_preferences_api_schedules__subscription_id__notifications_email_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionEmailIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/me/notifications/push": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_me_notifications_push_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushSettingsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_me_notifications_push_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushDeviceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/me/notifications/push/{device_id}": {
+      "delete": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Remove",
+        "operationId": "remove_api_me_notifications_push__device_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/alerts/{alert_id}": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Get Alert",
+        "operationId": "get_alert_api_warning_alerts__alert_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/me/notifications/digest": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Get Digest",
+        "operationId": "get_digest_api_me_notifications_digest_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigestPreferencesIn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Save Digest",
+        "operationId": "save_digest_api_me_notifications_digest_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigestPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/me/profile/languages": {
       "get": {
         "tags": [
@@ -9601,9 +10358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response List Ledgers Api Reports  Report Id  Versions  Number  Ledgers Get"
+                  "$ref": "#/components/schemas/ReportLedgerPageOut"
                 }
               }
             }
@@ -10019,6 +10774,372 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/supersessions": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Supersede Forecast",
+        "operationId": "supersede_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__supersessions_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          },
+          {
+            "name": "ledger_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ledger Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastSupersessionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportLedger"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/versions/{number}/ledgers/exports/forecasts": {
+      "post": {
+        "tags": [
+          "report-ledgers"
+        ],
+        "summary": "Export Forecasts",
+        "operationId": "export_forecasts_api_reports__report_id__versions__number__ledgers_exports_forecasts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastExportIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReportLedger"
+                  },
+                  "title": "Response Export Forecasts Api Reports  Report Id  Versions  Number  Ledgers Exports Forecasts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/forecasts/watches": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Watches",
+        "operationId": "watches_api_forecasts_watches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastWatchPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/forecasts/counts": {
+      "get": {
+        "tags": [
+          "forecasts"
+        ],
+        "summary": "Counts",
+        "operationId": "counts_api_forecasts_counts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Since"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Until"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "personal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Personal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastCounts"
                 }
               }
             }
@@ -12530,6 +13651,62 @@
             "description": "Default Response"
           }
         }
+      }
+    },
+    "/api/research/lei-candidates": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Find Lei Candidates",
+        "operationId": "find_lei_candidates_api_research_lei_candidates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeiCandidatesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeiCandidatesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/research/runs/plan": {
@@ -15500,6 +16677,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AlertAcknowledgementIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -15510,6 +16704,462 @@
                 }
               }
             }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/feedback": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Feedback",
+        "operationId": "indicator_feedback_api_warning_indicators__indicator_id__feedback_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertFeedback"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/baseline": {
+      "get": {
+        "tags": [
+          "warning"
+        ],
+        "summary": "Indicator Baseline",
+        "operationId": "indicator_baseline_api_warning_indicators__indicator_id__baseline_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorBaselineOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/notification-capabilities": {
+      "get": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "Notification Capabilities",
+        "operationId": "notification_capabilities_api_warning_notification_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRoutingCapabilitiesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/warning/indicators/{indicator_id}/notifications": {
+      "get": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "Get Alert Route",
+        "operationId": "get_alert_route_api_warning_indicators__indicator_id__notifications_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRoutingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "Save Alert Route",
+        "operationId": "save_alert_route_api_warning_indicators__indicator_id__notifications_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "indicator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Indicator Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertRoutingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRoutingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/webhook-destinations": {
+      "get": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "List Webhook Destinations",
+        "operationId": "list_webhook_destinations_api_warning_webhook_destinations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDestinationsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "Register Webhook Destination",
+        "operationId": "register_webhook_destination_api_warning_webhook_destinations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertDestinationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertWebhookDestinationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/warning/webhook-destinations/{destination_id}": {
+      "delete": {
+        "tags": [
+          "alert-routing"
+        ],
+        "summary": "Remove Webhook Destination",
+        "operationId": "remove_webhook_destination_api_warning_webhook_destinations__destination_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "destination_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Destination Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "content": {
@@ -21063,6 +22713,72 @@
         "title": "AiUsageTotalsOut",
         "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
+      "AlertAcknowledgementIn": {
+        "properties": {
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AlertAcknowledgementIn"
+      },
+      "AlertDestinationIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1,
+            "format": "password",
+            "title": "Url",
+            "writeOnly": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "url"
+        ],
+        "title": "AlertDestinationIn"
+      },
       "AlertDestinationOut": {
         "properties": {
           "kind": {
@@ -21130,6 +22846,77 @@
           "message"
         ],
         "title": "AlertDestinationOut"
+      },
+      "AlertDestinationsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AlertWebhookDestinationOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AlertDestinationsOut"
+      },
+      "AlertDisposition": {
+        "type": "string",
+        "enum": [
+          "useful",
+          "noise",
+          "duplicate"
+        ],
+        "title": "AlertDisposition"
+      },
+      "AlertFeedback": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "useful": {
+            "type": "integer",
+            "title": "Useful",
+            "default": 0
+          },
+          "noise": {
+            "type": "integer",
+            "title": "Noise",
+            "default": 0
+          },
+          "duplicate": {
+            "type": "integer",
+            "title": "Duplicate",
+            "default": 0
+          },
+          "time_basis": {
+            "type": "string",
+            "title": "Time Basis",
+            "default": "UTC acknowledgement day; today and the previous 29 days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "since",
+          "until"
+        ],
+        "title": "AlertFeedback"
       },
       "AlertOut": {
         "properties": {
@@ -21245,6 +23032,49 @@
             ],
             "title": "Acknowledged By"
           },
+          "disposition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlertDisposition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disposition_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disposition Note"
+          },
+          "baseline_mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Mean"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
           "report_id": {
             "anyOf": [
               {
@@ -21314,6 +23144,158 @@
           "team_id"
         ],
         "title": "AlertOut"
+      },
+      "AlertRoutingCapabilitiesOut": {
+        "properties": {
+          "installation_copy_enabled": {
+            "type": "boolean",
+            "title": "Installation Copy Enabled"
+          },
+          "in_app_required": {
+            "type": "boolean",
+            "title": "In App Required",
+            "default": true
+          },
+          "installation_copy_notice": {
+            "type": "string",
+            "title": "Installation Copy Notice",
+            "default": "An administrator-controlled installation webhook receives a separate copy of all alerts, including personal and team alerts, with rule name, title, summary, countries and event IDs. Rule choices do not disable this copy."
+          }
+        },
+        "type": "object",
+        "required": [
+          "installation_copy_enabled"
+        ],
+        "title": "AlertRoutingCapabilitiesOut"
+      },
+      "AlertRoutingIn": {
+        "properties": {
+          "email_enabled": {
+            "type": "boolean",
+            "title": "Email Enabled",
+            "default": false
+          },
+          "webhook_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision"
+        ],
+        "title": "AlertRoutingIn"
+      },
+      "AlertRoutingOut": {
+        "properties": {
+          "indicator_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Indicator Id"
+          },
+          "configured_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Configured By"
+          },
+          "email_enabled": {
+            "type": "boolean",
+            "title": "Email Enabled"
+          },
+          "webhook_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Id"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "can_manage": {
+            "type": "boolean",
+            "title": "Can Manage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indicator_id",
+          "configured_by",
+          "email_enabled",
+          "webhook_id",
+          "revision",
+          "can_manage"
+        ],
+        "title": "AlertRoutingOut"
+      },
+      "AlertWebhookDestinationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_by",
+          "team_id",
+          "enabled",
+          "created_at"
+        ],
+        "title": "AlertWebhookDestinationOut"
       },
       "AlertsOut": {
         "properties": {
@@ -22636,6 +24618,35 @@
         ],
         "title": "Assessor"
       },
+      "AssistantAlertOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "stored_sample_size": {
+            "type": "integer",
+            "title": "Stored Sample Size"
+          },
+          "available_evidence_count": {
+            "type": "integer",
+            "title": "Available Evidence Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "matched_count",
+          "stored_sample_size",
+          "available_evidence_count"
+        ],
+        "title": "AssistantAlertOut"
+      },
       "AssistantAnswerIn": {
         "properties": {
           "question": {
@@ -22658,7 +24669,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Scope",
             "default": "global"
@@ -22743,6 +24755,18 @@
                 "type": "null"
               }
             ]
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
           }
         },
         "additionalProperties": false,
@@ -22807,6 +24831,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AssistantReportOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alert": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantAlertOut"
               },
               {
                 "type": "null"
@@ -23124,7 +25158,8 @@
               "global",
               "viewport",
               "selected",
-              "report"
+              "report",
+              "alert"
             ],
             "title": "Mode"
           },
@@ -27860,6 +29895,39 @@
         ],
         "title": "CriterionIn"
       },
+      "CvssScoreOut": {
+        "properties": {
+          "base_score": {
+            "type": "number",
+            "title": "Base Score"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "vector": {
+            "type": "string",
+            "title": "Vector"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_score",
+          "version",
+          "vector",
+          "source",
+          "updated_at"
+        ],
+        "title": "CvssScoreOut"
+      },
       "CyberActorCatalogueOut": {
         "properties": {
           "source_id": {
@@ -28341,6 +30409,26 @@
           "required_action": {
             "type": "string",
             "title": "Required Action"
+          },
+          "epss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EpssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cvss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvssScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -29069,6 +31157,32 @@
         ],
         "title": "DigestEntryOut",
         "description": "One stored digest with its provenance; the prompt is never kept or returned."
+      },
+      "DigestPreferencesIn": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Timezone",
+            "default": "UTC"
+          },
+          "hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Hour",
+            "default": 8
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DigestPreferencesIn"
       },
       "DigestStatus": {
         "type": "string",
@@ -30480,6 +32594,15 @@
         ],
         "title": "EditionCoverage"
       },
+      "EditionEmailPolicy": {
+        "type": "string",
+        "enum": [
+          "none",
+          "material_changes",
+          "every_edition"
+        ],
+        "title": "EditionEmailPolicy"
+      },
       "EditionQuality": {
         "type": "string",
         "enum": [
@@ -30515,6 +32638,80 @@
           "skipped"
         ],
         "title": "EditionWorkflow"
+      },
+      "EmailPreferencesIn": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "include_names": {
+            "type": "boolean",
+            "title": "Include Names",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EmailPreferencesIn"
+      },
+      "EmailPreferencesOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": false
+          },
+          "include_names": {
+            "type": "boolean",
+            "title": "Include Names",
+            "default": false
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "available",
+          "confirmed",
+          "destination"
+        ],
+        "title": "EmailPreferencesOut"
+      },
+      "EpssScoreOut": {
+        "properties": {
+          "probability": {
+            "type": "number",
+            "title": "Probability"
+          },
+          "percentile": {
+            "type": "number",
+            "title": "Percentile"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "probability",
+          "percentile",
+          "date"
+        ],
+        "title": "EpssScoreOut"
       },
       "EquipmentOut": {
         "properties": {
@@ -32078,6 +34275,72 @@
         ],
         "title": "ExportFormat"
       },
+      "FeedEnableIn": {
+        "properties": {
+          "include_titles": {
+            "type": "boolean",
+            "title": "Include Titles",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FeedEnableIn"
+      },
+      "FeedStatusOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "include_titles": {
+            "type": "boolean",
+            "title": "Include Titles"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "include_titles",
+          "created_at"
+        ],
+        "title": "FeedStatusOut"
+      },
+      "FeedTokenOut": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "feed_url": {
+            "type": "string",
+            "title": "Feed Url"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "feed_url",
+          "username"
+        ],
+        "title": "FeedTokenOut"
+      },
       "FigureBoardOut": {
         "properties": {
           "figures": {
@@ -32807,6 +35070,96 @@
         ],
         "title": "ForceNodeOut"
       },
+      "ForecastBandCount": {
+        "properties": {
+          "likelihood": {
+            "$ref": "#/components/schemas/Probability"
+          },
+          "resolved_true": {
+            "type": "integer",
+            "title": "Resolved True",
+            "default": 0
+          },
+          "resolved_false": {
+            "type": "integer",
+            "title": "Resolved False",
+            "default": 0
+          },
+          "unresolved": {
+            "type": "integer",
+            "title": "Unresolved",
+            "default": 0
+          },
+          "open": {
+            "type": "integer",
+            "title": "Open",
+            "default": 0
+          },
+          "due": {
+            "type": "integer",
+            "title": "Due",
+            "default": 0
+          },
+          "superseded": {
+            "type": "integer",
+            "title": "Superseded",
+            "default": 0
+          },
+          "resolved_denominator": {
+            "type": "integer",
+            "title": "Resolved Denominator",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "likelihood"
+        ],
+        "title": "ForecastBandCount"
+      },
+      "ForecastCounts": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastBandCount"
+            },
+            "type": "array",
+            "title": "Bands"
+          },
+          "forecast_versions": {
+            "type": "integer",
+            "title": "Forecast Versions"
+          },
+          "counting_unit": {
+            "type": "string",
+            "title": "Counting Unit",
+            "default": "forecast version, by issue time, using its latest decision once"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat",
+            "default": "Related versions may not be independent observations. The cohort can be small or selective. PHIA bands are not calibrated probabilities. Only true plus false form the resolved denominator; no accuracy percentages are calculated."
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "until",
+          "bands",
+          "forecast_versions"
+        ],
+        "title": "ForecastCounts"
+      },
       "ForecastCreateIn": {
         "properties": {
           "claim_id": {
@@ -32976,6 +35329,26 @@
         ],
         "title": "ForecastDecision"
       },
+      "ForecastExportIn": {
+        "properties": {
+          "ledger_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Ledger Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ledger_ids"
+        ],
+        "title": "ForecastExportIn"
+      },
       "ForecastLedger": {
         "properties": {
           "versions": {
@@ -33002,6 +35375,18 @@
       },
       "ForecastReviewIn": {
         "properties": {
+          "expected_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version Id"
+          },
           "previous_decision_id": {
             "anyOf": [
               {
@@ -33016,8 +35401,31 @@
           },
           "state": {
             "type": "string",
-            "const": "unresolved",
+            "enum": [
+              "unresolved",
+              "resolved"
+            ],
             "title": "State"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "outcome_evidence": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeEvidenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Outcome Evidence",
+            "default": []
           },
           "reason": {
             "type": "string",
@@ -33065,6 +35473,44 @@
           "unresolved"
         ],
         "title": "ForecastState"
+      },
+      "ForecastSupersessionIn": {
+        "properties": {
+          "expected_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Expected Version Id"
+          },
+          "previous_decision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Decision Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/ForecastCreateIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version_id",
+          "reason",
+          "replacement"
+        ],
+        "title": "ForecastSupersessionIn"
       },
       "ForecastVersion": {
         "properties": {
@@ -33165,6 +35611,119 @@
           "contrary"
         ],
         "title": "ForecastVersion"
+      },
+      "ForecastWatch": {
+        "properties": {
+          "ledger_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ledger Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version": {
+            "type": "integer",
+            "title": "Report Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version_id": {
+            "type": "string",
+            "title": "Version Id"
+          },
+          "review_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Review At"
+          },
+          "horizon_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Horizon End"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ForecastState"
+          },
+          "review_due": {
+            "type": "boolean",
+            "title": "Review Due"
+          },
+          "reminded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminded At"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ledger_id",
+          "report_id",
+          "report_version",
+          "title",
+          "version_id",
+          "review_at",
+          "horizon_end",
+          "state",
+          "review_due",
+          "reminded_at",
+          "team_id"
+        ],
+        "title": "ForecastWatch"
+      },
+      "ForecastWatchPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastWatch"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ForecastWatchPageOut"
       },
       "ForgotPasswordIn": {
         "properties": {
@@ -34295,6 +36854,60 @@
         ],
         "title": "IdentityUpdateIn"
       },
+      "IndicatorBaselineOut": {
+        "properties": {
+          "sample_hours": {
+            "type": "integer",
+            "title": "Sample Hours"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "earliest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earliest"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_hours",
+          "mean",
+          "earliest",
+          "as_of",
+          "ready",
+          "reason"
+        ],
+        "title": "IndicatorBaselineOut"
+      },
       "IndicatorCreateIn": {
         "properties": {
           "claim_id": {
@@ -34483,6 +37096,26 @@
             "title": "Threshold",
             "default": 1
           },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 7.0,
+            "title": "Baseline Days",
+            "default": 30
+          },
           "window_minutes": {
             "type": "integer",
             "maximum": 10080.0,
@@ -34640,6 +37273,22 @@
           "threshold": {
             "type": "integer",
             "title": "Threshold"
+          },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "title": "Baseline Days",
+            "default": 30
           },
           "window_minutes": {
             "type": "integer",
@@ -34908,6 +37557,26 @@
             "title": "Threshold",
             "default": 1
           },
+          "baseline_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "exclusiveMinimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Ratio"
+          },
+          "baseline_days": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 7.0,
+            "title": "Baseline Days",
+            "default": 30
+          },
           "window_minutes": {
             "type": "integer",
             "maximum": 10080.0,
@@ -34976,7 +37645,7 @@
           "expected_updated_at"
         ],
         "title": "IndicatorUpdateIn",
-        "description": "An edit names the revision (`updated_at`) it was made from; stale edits get 409.\n\nRemoving every location, category or keyword restriction needs `confirm_wider_scope`.\nPause and resume are edits of `enabled` that send the rule's other values unchanged."
+        "description": "Edits identify their original revision and explicitly confirm removing restrictions."
       },
       "IndicatorVersion": {
         "properties": {
@@ -36242,6 +38911,78 @@
           "indicator"
         ],
         "title": "LedgerKind"
+      },
+      "LeiCandidateOut": {
+        "properties": {
+          "lei": {
+            "type": "string",
+            "title": "Lei"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "title": "Jurisdiction"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lei",
+          "name",
+          "jurisdiction",
+          "status"
+        ],
+        "title": "LeiCandidateOut"
+      },
+      "LeiCandidatesIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "LeiCandidatesIn"
+      },
+      "LeiCandidatesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LeiCandidateOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "LeiCandidatesOut"
       },
       "Lens": {
         "type": "string",
@@ -39973,6 +42714,44 @@
         ],
         "title": "OriginalPassageOut"
       },
+      "OutcomeEvidenceIn": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Id"
+          },
+          "claim_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Revision Id"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/CitationKeyIn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "report_id",
+          "version",
+          "claim_id",
+          "claim_revision_id",
+          "citation"
+        ],
+        "title": "OutcomeEvidenceIn"
+      },
       "OutlineOut": {
         "properties": {
           "name": {
@@ -42259,6 +45038,94 @@
           "completion_year"
         ],
         "title": "ProjectOut"
+      },
+      "PushDeviceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "endpoint_hash": {
+            "type": "string",
+            "title": "Endpoint Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "endpoint_hash",
+          "created_at"
+        ],
+        "title": "PushDeviceOut"
+      },
+      "PushSettingsOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "public_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Key"
+          },
+          "devices": {
+            "items": {
+              "$ref": "#/components/schemas/PushDeviceOut"
+            },
+            "type": "array",
+            "title": "Devices"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "public_key",
+          "devices"
+        ],
+        "title": "PushSettingsOut"
+      },
+      "PushSubscriptionIn": {
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 10,
+            "title": "Endpoint"
+          },
+          "p256dh": {
+            "type": "string",
+            "maxLength": 87,
+            "minLength": 87,
+            "title": "P256Dh"
+          },
+          "auth": {
+            "type": "string",
+            "maxLength": 22,
+            "minLength": 22,
+            "title": "Auth"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "endpoint",
+          "p256dh",
+          "auth"
+        ],
+        "title": "PushSubscriptionIn"
       },
       "QualityCitationChecksOut": {
         "properties": {
@@ -45382,6 +48249,37 @@
           "latest_ordinal"
         ],
         "title": "ReportLedgerAnchor"
+      },
+      "ReportLedgerPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReportLedger"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ReportLedgerPageOut"
       },
       "ReportMethodologyOut": {
         "properties": {
@@ -52934,6 +55832,15 @@
         ],
         "title": "SpottedOut"
       },
+      "StixTlp": {
+        "type": "string",
+        "enum": [
+          "green",
+          "amber",
+          "red"
+        ],
+        "title": "StixTlp"
+      },
       "StoreStatsOut": {
         "properties": {
           "total": {
@@ -53305,6 +56212,22 @@
           "offset"
         ],
         "title": "SubscriptionEditionsOut"
+      },
+      "SubscriptionEmailIn": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/EditionEmailPolicy",
+            "default": "none"
+          },
+          "attention": {
+            "type": "boolean",
+            "title": "Attention",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SubscriptionEmailIn"
       },
       "SubscriptionEventOut": {
         "properties": {
@@ -54670,7 +57593,7 @@
           "message": {
             "type": "string",
             "title": "Message",
-            "default": "If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list."
+            "default": "If that username can receive an invitation, it has been sent. A submission receipt appears in the team's list; delivery and declines stay private."
           }
         },
         "type": "object",
@@ -54763,8 +57686,15 @@
             "title": "Team Id"
           },
           "recipient_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Recipient Id"
           },
           "inviter_id": {
@@ -56703,6 +59633,10 @@
       "HTTPBearer": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "HTTPBasic": {
+        "type": "http",
+        "scheme": "basic"
       }
     }
   }

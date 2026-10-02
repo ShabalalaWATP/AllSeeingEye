@@ -3,9 +3,11 @@
 from datetime import datetime
 from uuid import uuid4
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import AlertRow, ReportRow, ReportVersionRow, ScheduleRow
+from ase.adapters.persistence.notification_models import SubscriptionNotificationRow
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.application.access import AccessContext
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound
@@ -42,7 +44,18 @@ async def record_change(
     ran_at: datetime,
 ) -> None:
     if not schedule.notify_on_change:
-        return
+        # Material email is an independent opt-in. Keep the default comparison
+        # state untouched when neither channel requests change detection.
+        material_recipient = await session.scalar(
+            select(SubscriptionNotificationRow.user_id)
+            .where(
+                SubscriptionNotificationRow.subscription_id == schedule.id,
+                SubscriptionNotificationRow.email_policy == "material_changes",
+            )
+            .limit(1)
+        )
+        if material_recipient is None:
+            return
     # A newly scheduled report begins at version one. Later manual regeneration
     # must not silently substitute a different comparison result.
     current = await SqlReportRepository(session).get_version(report.id, 1)
@@ -51,7 +64,7 @@ async def record_change(
     previous = await _baseline(session, schedule, access)
     change = compare_reports(previous, current)
     schedule.last_change = change_to_dict(change)
-    if change.status != "changed":
+    if change.status != "changed" or not schedule.notify_on_change:
         return
     session.add(
         AlertRow(

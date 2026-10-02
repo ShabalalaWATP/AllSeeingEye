@@ -26,16 +26,33 @@ services:
       retries: 10
     mem_limit: 2g
     pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # The root entrypoint repairs volume ownership, then becomes postgres.
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
     logging: *logging
     restart: unless-stopped
 
   api:
+    stop_grace_period: 30s
     build: ./backend
     env_file: .env
     environment:
       ASE_ENV: prod
       ASE_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ase}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ase}
       ASE_PUBLIC_BASE_URL: ${ASE_PUBLIC_BASE_URL:-https://localhost}
+      ASE_FORWARDED_ALLOW_IPS: ${ASE_PROXY_WEB_IP:-172.30.250.2}
+    networks:
+      default: {}
+      proxy:
+        ipv4_address: ${ASE_PROXY_API_IP:-172.30.250.3}
     depends_on:
       db:
         condition: service_healthy
@@ -49,6 +66,8 @@ services:
       - /tmp
     mem_limit: 3g
     pids_limit: 512
+    cap_drop:
+      - ALL
     security_opt:
       - no-new-privileges:true
     logging: *logging
@@ -86,6 +105,9 @@ services:
       ASE_SITE_ADDRESS: ${ASE_SITE_ADDRESS:-localhost}
       ASE_TLS: ${ASE_TLS:-internal}
       ASE_HSTS_MAX_AGE: ${ASE_HSTS_MAX_AGE:-0}
+    networks:
+      proxy:
+        ipv4_address: ${ASE_PROXY_WEB_IP:-172.30.250.2}
     ports:
       - "80:80"
       - "443:443"
@@ -108,6 +130,12 @@ services:
       - no-new-privileges:true
     logging: *logging
     restart: unless-stopped
+
+networks:
+  proxy:
+    ipam:
+      config:
+        - subnet: ${ASE_PROXY_SUBNET:-172.30.250.0/29}
 
 volumes:
   pgdata:

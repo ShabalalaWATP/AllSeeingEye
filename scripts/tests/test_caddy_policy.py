@@ -63,6 +63,13 @@ class CameraPolicyTests(unittest.TestCase):
     def test_every_embedded_player_host_is_a_frame_source(self) -> None:
         self.assert_admits("frame-src", self.frames)
 
+    def test_csp_reports_have_matching_endpoint(self) -> None:
+        self.assertEqual(self.policy["report-to"], ["csp"])
+        self.assertEqual(self.policy["report-uri"], ["/api/security/csp-reports"])
+        self.assertIn(
+            'Reporting-Endpoints `csp="/api/security/csp-reports"`', CADDYFILE.read_text()
+        )
+
     def test_policy_stays_locked_down(self) -> None:
         self.assertEqual(self.policy["default-src"], ["'self'"])
         self.assertEqual(self.policy["script-src"], ["'self'"])

@@ -84,7 +84,8 @@ def _feed_capabilities(specs: dict[str, SourceSpec]) -> list[SourceCapability]:
             )
             if family == "regional":
                 constraints += (
-                    f" Regional country selection {REGIONAL_COUNTRIES[original.id]} or explicit "
+                    f" Regional country selection {', '.join(REGIONAL_COUNTRIES[original.id])} "
+                    "or explicit "
                     "source override routes this feed; neither establishes incident geography."
                 )
             unknown_origin = original.id in {"cdt_zh", "reliefweb_updates"}
