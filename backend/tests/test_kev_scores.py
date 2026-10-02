@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import replace
 from datetime import timedelta
 from unittest.mock import AsyncMock
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -122,8 +123,9 @@ async def test_enrichment_deadline_returns_partial_scores_without_repeating_the_
     http = AsyncMock()
 
     async def fetch(url, **kwargs):
-        if "first.org" in url:
+        if urlsplit(url).hostname == "api.first.org":
             return epss()
+        assert urlsplit(url).hostname == "services.nvd.nist.gov"
         entered.set()
         await asyncio.Event().wait()
 

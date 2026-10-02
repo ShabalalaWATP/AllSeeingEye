@@ -3,6 +3,7 @@
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -66,8 +67,9 @@ async def test_stalled_enrichment_does_not_discard_authoritative_cisa_records():
     http = AsyncMock()
 
     async def fetch(url, **kwargs):
-        if "cisa.gov" in url:
+        if url == SPEC.url:
             return catalogue
+        assert urlsplit(url).hostname == "api.first.org"
         await asyncio.Event().wait()
 
     http.get_json.side_effect = fetch
