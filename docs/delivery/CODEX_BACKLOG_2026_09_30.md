@@ -289,3 +289,25 @@ its private manual rollout procedure for migration and Compose changes, so no
 successful production deployment is claimed. Installation-specific data policy,
 off-site backup choices, provider-key rotation, source permissions and device or
 configured-mail acceptance remain governed by their actual Jira criteria.
+
+## Approved release checkpoint, 2 October 2026, 10:48 UTC
+
+PRs #92, #93 and #94 have now also merged with approval, respectively as
+`137a15a8`, `3026e936` and `fdf45607`. Their fresh full PR CI runs
+`36991257642`, `36993285749` and `36995441810` passed. Main CI after #92
+passed, and the main-push API and web CycloneDX SBOM inventories both succeeded
+on that exact revision.
+
+KAN-17/18/19/21/43/153/154/155, KAN-31/33/34/35/37/38/39 and
+KAN-125/126/127/128/129 are verified Done. Epic KAN-106 closed after all five
+children and its functional constraints were verified. The live queue at this
+checkpoint contains 24 unfinished delivery tickets and eight open epics.
+
+PR #95 is integrated at `da38f161`; full CI `36997213683` is still running.
+PR #96 is locally integrated with released main, with its notification test
+settings preserved. Neither PR has merged at this checkpoint. The native feed
+audit has completed six rounds with zero failures or automatic translations;
+its full 24-hour criterion remains pending. The CI performance follow-up has a
+controlled full-suite Node improvement of 88.0644 seconds and a bounded
+PostgreSQL mechanism improvement of 28.63 percent. Whole-CI timing acceptance
+and the follow-up release remain outstanding.
