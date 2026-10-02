@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from ase.application.ports import Clock
 from ase.application.ports.baselines import BaselineRepository, BaselineSink
 from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.worker_progress import run_cycle
 from ase.domain.aviation import JamCell, JamMap, military_by_country, tagged
 from ase.domain.events import Category, Event
 
@@ -131,7 +132,7 @@ class AviationMonitor:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await self.sample()
+                await run_cycle("aviation", self._interval.total_seconds(), self.sample)
             except Exception:
                 log.warning("aviation.sample_failed", exc_info=True)
             await self._sleep(self._interval.total_seconds())

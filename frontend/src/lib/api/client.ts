@@ -179,8 +179,15 @@ async function toApiError(response: Response): Promise<ApiError> {
   const retryAfter = parseRetryAfter(response.headers.get('Retry-After'));
   const parsed = errorEnvelopeSchema.safeParse(payload);
   if (parsed.success) {
-    const { code, message, fields } = parsed.data.error;
-    return new ApiError(response.status, code, message, fields ?? {}, retryAfter);
+    const { code, message, fields, request_id: requestId } = parsed.data.error;
+    return new ApiError(
+      response.status,
+      code,
+      message,
+      fields ?? {},
+      retryAfter,
+      requestId ?? null,
+    );
   }
   return unexpectedResponseError(response.status, retryAfter);
 }

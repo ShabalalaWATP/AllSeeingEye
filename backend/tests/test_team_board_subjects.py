@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 from typing import Any
 
@@ -279,9 +280,19 @@ async def test_report_team_discussion_counts_live_threads_for_readers(
     hidden = await seed_report(container, admin.id, other)
     refused = await client.get(f"/api/reports/{hidden}/team-discussion", headers=desk.user)
     missing = await client.get(f"/api/reports/{desk.team_id}/team-discussion", headers=desk.user)
-    # An unreadable report and a missing one give the same answer.
+    # Only per-request correlation differs; the complete stable answer preserves privacy.
     assert refused.status_code == missing.status_code == 404
-    assert refused.json() == missing.json()
+    refused_body, missing_body = refused.json(), missing.json()
+    for response, body in ((refused, refused_body), (missing, missing_body)):
+        identifier = body["error"].pop("request_id")
+        assert re.fullmatch(r"[a-f0-9]{32}", identifier)
+        assert identifier == response.headers["X-Request-ID"]
+    assert refused.headers["X-Request-ID"] != missing.headers["X-Request-ID"]
+    assert (
+        refused_body
+        == missing_body
+        == {"error": {"code": "not_found", "message": "The requested item does not exist."}}
+    )
     archived = await client.patch(
         f"/api/teams/{desk.team_id}", json={"is_active": False}, headers=desk.admin
     )

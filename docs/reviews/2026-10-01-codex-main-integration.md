@@ -52,6 +52,28 @@ Full combined CI, PostgreSQL validation and independent integration review
 remain required. No push, main merge or production operation was performed by
 the architecture integration worker.
 
+## Runtime branch checkpoint
+
+PR 90 integrated the reviewed architecture parent `fad1327f` by an ordinary
+merge. The router import conflict retains both administration modules; OpenAPI
+and TypeScript were regenerated from the actual combined application. The large
+generated diff adds the existing Codex error-envelope response contract to main's
+new routes. Runtime, phased shutdown, evaluation disposal, request logging and
+private stream/bell checks passed 70 cases. Lifecycle, feed-health logging and
+stream resume/replay/encoding passed another 74 cases. The first command for
+this second group named a missing lifecycle module and ran no tests; the corrected
+selection produced the 74-case result. Three focused frontend runtime/request-ID
+cases passed. Both TypeScript configurations, source Ruff lint/format, strict
+mypy (1,469 files), three import contracts and whitespace checks passed.
+Independent read-only review found no actionable integration findings: all
+321 parent API operations remain, the runtime endpoint is added, retained
+component schemas are unchanged and stream/bell authorisation is preserved.
+
+PR 88's new full CI run `36922277772` completed successfully, including all
+SQLite/PostgreSQL lanes, frontend, image and security checks. PR 89's new CI
+remains in progress. These results do not establish completion of later batches
+or authorise a production merge.
+
 ## Reserved integration work
 
 Current main's shipped migrations retain their existing history through 0081.
@@ -69,3 +91,24 @@ is retained as historical evidence, rather than presented as current acceptance.
 KAN-2, KAN-4 and KAN-144 are Done for their completed non-code deliverables.
 Code, operator, performance and elapsed-time acceptance remain separate.
 No main merge or production deployment has been performed by this integration.
+
+## Approved release and manual readiness acceptance, 2 October 2026
+
+Alex explicitly approved merging PRs 88–96 in order. PR 88 merged as
+`1d924272785030d4ef8914b5b39ca20762ed0028`; its main CI run `36978697172`
+passed. Production deployment remains subject to the existing protected manual
+rollout gate and private operator runbook; no successful rollout is claimed.
+
+KAN-42's manual local acceptance passed on PR 90 source `f1a32e17`. A standalone
+actual ASGI application/lifespan, FeedScheduler, SystemClock and monotonic clock
+used private empty SQLite databases and one synthetic connector, with network
+connections blocked. With a two-second cycle and six-second overdue threshold,
+readiness was initially 200 after two real cycles. Cancelling the actual scheduler
+task produced generic 503 after 5.462 seconds, 6.002 seconds since its last
+progress. Only that scheduler was overdue. With feeds disabled, readiness stayed
+200 after 6.317 real seconds and scheduler/feed workers were excluded. No network
+or message attempts occurred. Both private databases were removed; no owned tasks
+or ports remained. The standalone script, log and machine-readable report are
+retained outside Git in `runtime-kan42-manual-20261002-actual-clock` beside this
+worktree. This completes the manual criterion; Jira closure still requires the
+approved PR 90 merge and its fresh integration checks.

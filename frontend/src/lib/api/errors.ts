@@ -3,6 +3,7 @@
  * plus the HTTP status, so pages can branch on `code` and show field reasons.
  */
 export class ApiError extends Error {
+  readonly requestId: string | null;
   readonly status: number;
   readonly code: string;
   readonly fields: Readonly<Record<string, string>>;
@@ -14,9 +15,11 @@ export class ApiError extends Error {
     message: string,
     fields: Record<string, string> = {},
     retryAfterSeconds: number | null = null,
+    requestId: string | null = null,
   ) {
     super(message);
     this.name = 'ApiError';
+    this.requestId = requestId;
     this.status = status;
     this.code = code;
     this.fields = fields;
