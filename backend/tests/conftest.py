@@ -47,7 +47,7 @@ from pytest_support import (
     uses_report_job_worker,
 )
 
-pytest_plugins = ["postgres_isolation", "postgres_templates"]
+pytest_plugins = ["postgres_isolation", "postgres_templates", "pytest_phase_telemetry"]
 
 START = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
 
