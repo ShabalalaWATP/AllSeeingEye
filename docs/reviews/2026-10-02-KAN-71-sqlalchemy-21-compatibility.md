@@ -73,3 +73,28 @@ three import contracts and scoped Bandit passed. An independent read-only
 integration review confirmed the dependency union and unchanged compatibility
 behaviour. No benchmark, full-suite or coverage result is claimed. Fresh CI must
 validate the resulting PR head before merge.
+
+## Subsequent dependency integration, 3 October 2026
+
+A second normal merge incorporates main
+`e22c599a3e8db8fdbc1ea44747040dcc3cdfdd7e`, after PRs 109, 104 and 117.
+The sole conflict was adjacent requirements in `pyproject.toml`; the resolution
+retains Uvicorn 0.54.0 and SQLAlchemy 2.1.1. The lockfile merged cleanly. All 120
+package identities remain, and the other 118 package records match this main
+revision exactly. The six production compatibility modules and two test files
+remain byte-for-byte unchanged from `063136ec`; frontend files match main.
+
+The offline lock check and frozen dependency sync passed. The focused suite,
+now including SSE shutdown and session-pool regressions, passed **75 tests with
+2 PostgreSQL-only skips**, in 71.87 seconds. The native subscription migration
+passed separately: **1 passed in 3.59 seconds**. Its fresh private database used
+the same pinned PostGIS image, all three durability settings enabled, complete
+initial/final catalogue equality and acknowledged resource removal with exact
+absence and an empty owner census.
+
+Full mypy over **1,578 source files**, changed-file Ruff and formatting, all three
+import contracts and scoped Bandit passed. Independent read-only review confirmed
+the dependency union, unchanged compatibility paths and exact incoming frontend.
+These are correctness checks, not a
+performance measurement or full-suite result. Fresh combined-head CI and the
+preceding main CI remain release gates owned by the coordinator.
