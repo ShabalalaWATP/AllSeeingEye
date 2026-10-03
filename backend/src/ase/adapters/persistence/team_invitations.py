@@ -66,8 +66,8 @@ def _live_pending(now: datetime) -> ColumnElement[bool]:
 
 
 def _status_filter(
-    statement: Select[tuple[TeamInvitationRow]], status: InvitationStatus | None, now: datetime
-) -> Select[tuple[TeamInvitationRow]]:
+    statement: Select[TeamInvitationRow], status: InvitationStatus | None, now: datetime
+) -> Select[TeamInvitationRow]:
     """Present a lapsed pending row as expired even before a write retires it."""
     if status is InvitationStatus.PENDING:
         return statement.where(_live_pending(now))
@@ -186,7 +186,7 @@ class SqlTeamInvitationRepository(SqlTeamInvitationReceipts):
 
     async def _page(
         self,
-        statement: Select[tuple[TeamInvitationRow]],
+        statement: Select[TeamInvitationRow],
         *,
         limit: int,
         offset: int,

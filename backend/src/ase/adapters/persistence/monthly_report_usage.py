@@ -99,7 +99,7 @@ async def monthly_usage(
             )
         )
     ).one()
-    if invalid_receipts:
+    if invalid_receipts or receipt_tokens is None:
         raise JobInterrupted()
     pending_count, pending_tokens = (
         await session.execute(
