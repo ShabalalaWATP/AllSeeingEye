@@ -24,14 +24,14 @@ The regression suite also records actual React Profiler commits inside the
 stable control boundaries. An unrelated batch produces no control commits while
 the event count and layer update. A relevant control change still commits.
 
-Validation performed on this candidate:
+Validation of the initial timestamp/retention checkpoint:
 
 - 144 focused tests across 21 files passed, covering the event store, batching,
   retention, replay, map timestamps and control rendering.
 - Targeted coverage of the two changed production files was 100%: 93 statements,
   77 branches, 20 functions and 77 lines. This is not global coverage.
-- Both TypeScript configurations, owned-file ESLint, Prettier and `git diff
---check` passed. Every changed handwritten file has fewer than 350 lines.
+- Both TypeScript configurations, owned-file ESLint, Prettier and
+  `git diff --check` passed. Every changed handwritten file has fewer than 350 lines.
 - With the original timestamp implementation, five new repeated-parsing
   assertions failed. The tests also assert actual dates, invalid-date rejection,
   replacement, nested metadata correction and clock-driven expiry.
@@ -67,16 +67,18 @@ must separately cover the real transport, renderer and input queue.
 
 Each source state received one discarded warm-up followed by five separate
 single-worker runs without coverage. The same private installation was used:
-Node 24.19.0, pnpm 11.19.0, frozen lockfile with SHA-256
+Node 24.19.0, Vitest 5.0.2, pnpm 11.19.0, frozen lockfile with SHA-256
 `e3e131820f6e38dc5ceb69881963df08544313d3897637dc9a34febb7619ed2b`.
 The available pnpm executable was older than the repository's declared 11.25.0;
 the frozen installation succeeded without changing the lockfile.
 
 The coordinator reserved quiet local CPU windows. Baseline runs finished at
 00:27:43 UTC; timestamp-only measurements ran 00:41:56–00:43:56; combined
-measurements ran 01:03:01–01:05:01. These were sequential blocks, not randomised
-or interleaved trials. All 15 measured runs passed, with one React commit per
-batch. Warm-ups and diagnostic profiles are excluded below.
+measurements ran 01:03:01–01:05:01. The final `b1efe175` warm-up ran
+01:29:11–01:29:38, followed by measurements at 01:29:38–01:31:37. These were
+sequential blocks, not randomised or interleaved trials. All 20 measured runs
+passed. Every run reported a maximum of one React commit per event batch.
+Warm-ups and diagnostic profiles are excluded below.
 
 ## Results
 
@@ -84,12 +86,12 @@ Each cell reports the median of five per-run medians, followed by the largest
 individual batch maximum across those runs, in milliseconds. The per-run
 medians are included below to expose the variability.
 
-| Scenario             |      Baseline | Timestamp cache | Combined candidate |
-| -------------------- | ------------: | --------------: | -----------------: |
-| New IDs              | 44.18 / 73.17 |   46.26 / 67.90 |      46.15 / 84.15 |
-| Existing IDs         | 34.99 / 64.12 |   34.22 / 62.80 |      32.14 / 66.79 |
-| Mixed expiry/new IDs | 41.04 / 59.96 |   39.60 / 61.00 |      40.79 / 61.32 |
-| Mode switch          | 25.37 / 48.97 |   27.24 / 44.33 |      28.37 / 49.30 |
+| Scenario             |      Baseline | Timestamp cache | Combined candidate | Final `b1efe175` |
+| -------------------- | ------------: | --------------: | -----------------: | ---------------: |
+| New IDs              | 44.18 / 73.17 |   46.26 / 67.90 |      46.15 / 84.15 |    47.12 / 67.87 |
+| Existing IDs         | 34.99 / 64.12 |   34.22 / 62.80 |      32.14 / 66.79 |    36.08 / 60.62 |
+| Mixed expiry/new IDs | 41.04 / 59.96 |   39.60 / 61.00 |      40.79 / 61.32 |    38.76 / 59.79 |
+| Mode switch          | 25.37 / 48.97 |   27.24 / 44.33 |      28.37 / 49.30 |    28.98 / 46.32 |
 
 | State / scenario     | Five per-run medians (ms)         |
 | -------------------- | --------------------------------- |
@@ -105,26 +107,31 @@ medians are included below to expose the variability.
 | Combined / existing  | 38.31, 29.23, 36.76, 32.14, 30.57 |
 | Combined / mixed     | 43.11, 39.03, 40.18, 40.79, 46.21 |
 | Combined / mode      | 28.37, 27.93, 31.29, 26.44, 30.65 |
+| Final / new          | 43.68, 49.46, 47.12, 41.92, 49.94 |
+| Final / existing     | 24.85, 36.80, 37.07, 36.08, 31.59 |
+| Final / mixed        | 33.72, 49.99, 33.51, 49.83, 38.76 |
+| Final / mode         | 34.87, 27.44, 29.90, 28.98, 23.85 |
 
-The ranges overlap substantially. Existing-ID medians were lower, while new-ID
-and control medians were higher. The results do not support a total-speed win.
-All scenario medians remain above 20 ms, and each event scenario has an observed
-maximum above 50 ms.
+The ranges overlap substantially. In the final block, only the mixed scenario's
+median was below its original baseline median. The results do not support a
+total-speed win. All scenario medians remain above 20 ms, and each event
+scenario has an observed maximum above 50 ms.
 
 ## Separate diagnostic profile
 
 The same canonical test was profiled separately through Node's inspector CPU
-profiler. The candidate profile finished at approximately 01:05:50 UTC. Its
-timings are not included in the comparison. Sampled inclusive time under the 60
+profiler. The combined profile finished at approximately 01:05:50 UTC. The final
+`b1efe175` profile ran 01:32:08.246–01:32:31.428 UTC. These profile timings are
+not included in the comparison. Sampled inclusive time under the 60
 event-delivery call stacks was:
 
-| Function             | Baseline (ms) | Combined (ms) |
-| -------------------- | ------------: | ------------: |
-| `boundedEvents`      |       466.550 |       420.526 |
-| `buildEventLayers`   |       415.779 |       369.875 |
-| `useDashboardEvents` |       436.416 |       352.324 |
-| `toList`             |       165.927 |       130.998 |
-| `clusterEvents`      |       179.044 |       166.738 |
+| Function             | Baseline (ms) | Combined (ms) | Final `b1efe175` (ms) |
+| -------------------- | ------------: | ------------: | --------------------: |
+| `boundedEvents`      |       466.550 |       420.526 |               410.305 |
+| `buildEventLayers`   |       415.779 |       369.875 |               325.062 |
+| `useDashboardEvents` |       436.416 |       352.324 |               344.940 |
+| `toList`             |       165.927 |       130.998 |               119.467 |
+| `clusterEvents`      |       179.044 |       166.738 |               156.168 |
 
 These values overlap through nested calls and must not be added. Each is one
 sampled diagnostic run, not a statistically established improvement. Delivery
@@ -138,8 +145,8 @@ with main `8c0b93cf` at `85274aa5`. The same 144 focused cases and both TypeScri
 configurations passed after that merge. The frontend manifest, lockfile,
 canonical benchmark and fixture did not change through the integration.
 
-A subsequent narrow candidate in `events.batch.ts` keeps a replacement record
-in its previous sort position only when both its ID and `published_at` are
+A subsequent narrow candidate, committed as `b1efe175`, in `events.batch.ts`
+keeps a replacement record in its previous sort position only when both its ID and `published_at` are
 unchanged. It retains the strict order validation and full-sort fallback, uses
 current replacement identities, and inspects every dictionary value before
 returning a sequence with no new positions to merge. Expiry, correction and
@@ -152,16 +159,16 @@ both TypeScript configurations and owned lint/format checks. Targeted coverage
 of all three changed production files is 100%: 138 statements, 112 branches,
 27 functions and 115 lines. This validates correctness and bounded work only;
 independent read-only review of the exact source and test patch found no
-actionable issue. The candidate's canonical timings are pending. The diagnostic `toList` sample
-suggests a modest opportunity, about 2 ms per batch, not enough by itself to
-support the ticket's 20 ms target.
+actionable issue. Its canonical timings are the final column above. The single
+diagnostic `toList` sample is about 2 ms per batch; this does not establish a
+wall-time improvement or support the ticket's 20 ms target.
 
 Raw logs, JSON run receipts, exact timestamps, source hashes, CPU profiles and
 summary scripts are retained privately at
 `C:/Users/alexo/.codex/worktrees/kan81-live-event-latency/evidence`. Files include
-`baseline.json`, `timestamp-cache.json`, `combined.json`, `comparisons.json`,
-`combined-profile-receipt.json`, and the two profile directories. These local
-artefacts are not committed build output and are not assumed to be available to
+`baseline.json`, `timestamp-cache.json`, `combined.json`, `list-order.json`,
+`comparisons.json`, both candidate profile receipts, and the three profile
+directories. These local artefacts are not committed build output and are not assumed to be available to
 another checkout. The benchmark can be reproduced from `frontend` with:
 
 ```text
@@ -169,7 +176,10 @@ node node_modules/vitest/vitest.mjs run src/features/globe/GlobePage.streamBench
 ```
 
 Measured combined source hashes are `a274e21b...9285ba2be` for `newsMapTime.ts`
-and `4c979666...0fd069116` for `events.coverage.ts`; full hashes are in each run
-receipt. Historical negative measurements in `PERFORMANCE_REPAIR.md` remain
-unchanged. Broader validation, an evidenced latency improvement and the real
-browser trace remain required before publication or acceptance.
+and `4c979666...0fd069116` for `events.coverage.ts`. The final list-order hash is
+`85ded95c...f8ecf8f3` for `events.batch.ts`; full hashes are in the run receipts.
+Historical negative measurements in `PERFORMANCE_REPAIR.md` remain unchanged.
+The separate real-browser attempt did not collect a trace, so no browser
+performance or input-latency acceptance is claimed. Broader integration checks
+remain before publication of these limited changes. An evidenced latency
+improvement and a real browser trace remain required for ticket acceptance.
