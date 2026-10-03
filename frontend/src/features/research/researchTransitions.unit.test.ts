@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { defaultProfile } from '@/test/handlers.profile';
+import { defaultProfile } from '@/test/fixtures.profile';
 import { initialDraft } from './researchRequest';
 import { changeResearchFocus } from './researchTransitions';
 

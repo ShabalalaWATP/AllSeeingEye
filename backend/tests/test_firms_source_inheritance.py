@@ -6,9 +6,9 @@ from ase.adapters.feeds.firms import sensor_spec
 from ase.adapters.feeds.firms_public import public_sensor_spec
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
+from event_app_fixtures import email_sender, feed_connectors  # noqa: F401
 from feeds_helpers import FakeConnector
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, bearer, login_token
-from test_events_api import app  # noqa: F401
 from test_source_controls import disable
 
 

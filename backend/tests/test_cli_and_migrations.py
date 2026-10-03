@@ -62,6 +62,10 @@ def test_export_openapi_command(tmp_path: Path) -> None:
     schema = json.loads(target.read_text(encoding="utf-8"))
     assert "/api/auth/login" in schema["paths"]
     assert "/api/admin/users/{user_id}" in schema["paths"]
+    assert {"get", "post"} <= schema["paths"]["/api/research/briefs"].keys()
+    assert "get" in schema["paths"]["/api/research/presets"]
+    preflight = "/api/research/briefs/{brief_id}/revisions/{revision}/preflight"
+    assert "get" in schema["paths"][preflight]
 
 
 def test_cli_help() -> None:

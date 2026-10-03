@@ -10,9 +10,9 @@ from ase.application.research.source_admission import ControlledResearchProvider
 from ase.container import Container
 from ase.domain.research import CollectionStatus, ResearchBatch
 from ase.domain.users import User
+from event_app_fixtures import email_sender, feed_connectors  # noqa: F401
 from feeds_helpers import FakeConnector, make_event
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
-from test_events_api import app  # noqa: F401 (shared isolated connector fixture)
 from test_research_collection import QUERY, Provider, event
 
 

@@ -2,7 +2,6 @@
 
 from copy import deepcopy
 
-from fastapi import FastAPI
 from httpx import AsyncClient
 
 from ase.application.research.brief_codec import brief_to_dict
@@ -26,10 +25,7 @@ def _draft() -> dict[str, object]:
     }
 
 
-async def test_create_read_revision_and_field_errors(
-    client: AsyncClient, user: User, app: FastAPI
-) -> None:
-    assert "/api/research/briefs" in app.openapi()["paths"]
+async def test_create_read_revision_and_field_errors(client: AsyncClient, user: User) -> None:
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     draft = _draft()
     endpoint = "/api/research/briefs"
