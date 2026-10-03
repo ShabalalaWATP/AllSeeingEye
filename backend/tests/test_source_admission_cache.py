@@ -17,9 +17,9 @@ from ase.adapters.persistence.source_control_models import SourceControlRow
 from ase.adapters.persistence.source_controls import SqlSourceAdmission, SqlSourceControlRepository
 from ase.container import Container
 from ase.domain.users import User
+from event_app_fixtures import email_sender, feed_connectors  # noqa: F401
 from feeds_helpers import NOW, FakeConnector
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, bearer, login_token
-from test_events_api import app  # noqa: F401 (shared isolated connector fixture)
 
 ACTOR = uuid4()
 

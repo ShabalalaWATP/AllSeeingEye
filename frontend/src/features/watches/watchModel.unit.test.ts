@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { areaIndicator, briefSummary } from '@/test/handlers.watches';
+import { areaIndicator, briefSummary } from '@/test/fixtures.watches';
 import { plan } from '@/test/fixtures.direction';
 import { annotationMonitor } from '@/test/fixtures.monitors';
 import { schedule } from '@/test/fixtures.schedules';

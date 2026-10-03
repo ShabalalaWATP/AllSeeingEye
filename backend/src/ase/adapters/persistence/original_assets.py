@@ -176,7 +176,11 @@ class SqlOriginalAssetRepository:
             .execution_options(populate_existing=True)
         )
         result = row.one_or_none()
-        return OriginalAssetContent(_asset(result[0]), result[1]) if result else None
+        if result is None:
+            return None
+        if result[1] is None:
+            raise ValueError("Active original asset has no stored content.")
+        return OriginalAssetContent(_asset(result[0]), result[1])
 
     async def delete(self, asset_id: UUID, now: datetime) -> None:
         await self.session.execute(

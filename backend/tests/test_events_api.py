@@ -4,23 +4,19 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import AsyncIterator
 from datetime import timedelta
 
-import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from ase.adapters.persistence.base import Base
-from ase.app_factory import create_app
 from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
 from ase.domain.events import Category, Point
 from ase.domain.news_time import news_index_date
 from ase.domain.users import User
-from ase.infrastructure.settings import Settings
-from feeds_helpers import NOW, FakeConnector, make_event, make_spec
+from event_app_fixtures import email_sender, feed_connectors  # noqa: F401
+from feeds_helpers import NOW, make_event
 from helpers import (
     ADMIN_EMAIL,
     ADMIN_PASSWORD,
@@ -30,19 +26,6 @@ from helpers import (
     bearer,
     login_token,
 )
-
-
-@pytest.fixture
-async def app(settings: Settings, clock: FakeClock, email_sender: object) -> AsyncIterator[FastAPI]:
-
-    connector = FakeConnector(make_spec("fake_feed"))
-    application = create_app(settings, clock=clock, connectors=[connector])  # type: ignore[arg-type]
-    container: Container = application.state.container
-    async with container.engine.begin() as connection:
-        await connection.run_sync(Base.metadata.drop_all)
-        await connection.run_sync(Base.metadata.create_all)
-    yield application
-    await container.dispose()
 
 
 async def test_events_query_and_get(client: AsyncClient, container: Container, user: User) -> None:

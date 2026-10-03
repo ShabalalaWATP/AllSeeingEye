@@ -104,7 +104,7 @@ async def remove_push_device(session: AsyncSession, device_id: UUID) -> None:
     await remove_push_rows(session, select(PushDeviceRow.id).where(PushDeviceRow.id == device_id))
 
 
-async def remove_push_rows(session: AsyncSession, devices: Select[tuple[UUID]]) -> None:
+async def remove_push_rows(session: AsyncSession, devices: Select[UUID]) -> None:
     # Explicit child cleanup also works when a SQLite connection does not enable
     # foreign-key pragmas. The migration keeps ON DELETE CASCADE as defence in depth.
     await session.execute(delete(PushDeliveryRow).where(PushDeliveryRow.device_id.in_(devices)))

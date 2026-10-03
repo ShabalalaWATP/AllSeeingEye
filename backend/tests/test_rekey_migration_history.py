@@ -18,7 +18,6 @@ from notification_migration_helpers import (
     assert_preserved,
     insert_row,
     revision,
-    schema_state,
     seed_legacy,
     snapshot,
     table,
@@ -26,6 +25,7 @@ from notification_migration_helpers import (
 from notification_migration_helpers import (
     migration_database as migration_database,  # noqa: PLC0414
 )
+from notification_schema_inventory import owned_schema_state
 from test_notification_migration_postgres import assert_backfills, assert_unenrolled
 
 
@@ -79,7 +79,7 @@ def stable_schema(connection):
             return [normalise(item) for item in value]
         return value
 
-    return normalise(schema_state(connection))
+    return normalise(owned_schema_state(connection))
 
 
 def retained_state(connection):

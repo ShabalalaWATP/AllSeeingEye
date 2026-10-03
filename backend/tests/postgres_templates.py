@@ -8,6 +8,7 @@ from collections.abc import Iterator
 import pytest
 from sqlalchemy.engine import make_url
 
+from postgres_template_fixtures import template_fixture
 from postgres_template_guard import ordinary_app, schema_fingerprint
 from postgres_template_store import TemplateDatabase, TemplateWorker
 
@@ -35,6 +36,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.fixture(scope="session")
+@template_fixture
 def template_worker(
     request: pytest.FixtureRequest, isolated_postgres_database: str | None
 ) -> Iterator[TemplateWorker]:
@@ -48,6 +50,7 @@ def template_worker(
 
 
 @pytest.fixture(autouse=True)
+@template_fixture
 def template_database(request: pytest.FixtureRequest) -> Iterator[TemplateDatabase | None]:
     """Run before settings/app and restore the worker URL after all app finalisers.
 

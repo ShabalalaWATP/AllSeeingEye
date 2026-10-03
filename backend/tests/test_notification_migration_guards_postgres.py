@@ -8,16 +8,16 @@ from notification_migration_helpers import (
 )
 from notification_migration_helpers import (
     revision,
-    schema_state,
     seed_legacy,
     snapshot,
     table,
 )
+from notification_schema_inventory import owned_schema_state
 
 
 def retained_state(connection):
     names = sa.inspect(connection).get_table_names()
-    return schema_state(connection), snapshot(connection, names)
+    return owned_schema_state(connection), snapshot(connection, names)
 
 
 async def refuses_unchanged(database, target, message, *, downgrade):

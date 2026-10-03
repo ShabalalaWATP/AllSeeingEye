@@ -11,11 +11,13 @@ from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
 from post_draft_stage_helpers import POST_DRAFT_STAGES
+from postgres_template_fixtures import template_fixture
 from report_job_wait import job_progress, wait_for_progress
 from section_model_helpers import synthesis_body, topic_body
 
 
 @pytest.fixture(name="settings")
+@template_fixture
 def job_settings(settings, tmp_path):
     # A worker opens independent transactions. StaticPool's single in-memory
     # connection cannot represent their commit/rollback boundaries correctly.
