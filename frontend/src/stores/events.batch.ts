@@ -12,15 +12,23 @@ export function newestFirst(a: LiveEvent, b: LiveEvent): number {
 }
 
 /**
- * The mirror as a list, newest first. Records unchanged since `previous` keep their sorted
- * order, so a stream batch sorts only its own records and merges them in: the same order
- * as a full sort, without re-sorting 5,000 retained records every quarter second.
+ * The mirror as a list, newest first. Records with unchanged sort fields keep their
+ * positions, including corrected content in a replacement object. Validate the retained
+ * order, then sort and merge only records whose positions may have changed.
  */
 export function toList(
   byId: Record<string, LiveEvent>,
   previous: readonly LiveEvent[] = [],
 ): LiveEvent[] {
-  const kept = previous.filter((event) => byId[event.id] === event);
+  const kept: LiveEvent[] = [];
+  for (const event of previous) {
+    const current = byId[event.id];
+    if (
+      current === event ||
+      (current?.id === event.id && current.published_at === event.published_at)
+    )
+      kept.push(current);
+  }
   const sorted = kept.every((event, index) => {
     const before = kept[index - 1];
     return before === undefined || newestFirst(before, event) < 0;
@@ -30,12 +38,17 @@ export function toList(
   const added = Object.values(byId)
     .filter((event) => !retained.has(event))
     .sort(newestFirst);
+  if (added.length === 0) return kept;
   const list: LiveEvent[] = [];
   let right = 0;
   for (const event of kept) {
-    for (let next = added[right]; next !== undefined && newestFirst(event, next) > 0;) {
+    for (let next = added[right]; next !== undefined; next = added[++right]) {
+      const order = newestFirst(event, next);
+      // Distinct Unicode IDs may collate equally. Only the dictionary's original order
+      // can reproduce the stable full-sort tie-break across these two sequences.
+      if (order === 0) return Object.values(byId).sort(newestFirst);
+      if (order < 0) break;
       list.push(next);
-      next = added[++right];
     }
     list.push(event);
   }

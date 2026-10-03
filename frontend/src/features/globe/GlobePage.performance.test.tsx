@@ -19,10 +19,11 @@ vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
-// Count renders of representative stable controls. A memoised export stays memoised with its
-// own comparison, so the count reflects what the page really commits.
-const { renders, counted } = vi.hoisted(() => {
+// Preserve each control's memo boundary and measure both attempted renders and real commits.
+// Timing belongs to the benchmark; these assertions do not impose wall-clock deadlines.
+const { renders, commits, counted } = vi.hoisted(() => {
   const renders = new Map<string, number>();
+  const commits = new Map<string, number>();
   async function counted(actual: Record<string, unknown>, name: string) {
     const React = await import('react');
     type Props = Record<string, unknown>;
@@ -37,14 +38,18 @@ const { renders, counted } = vi.hoisted(() => {
     const inner = memoised ? original.type : (original as React.FunctionComponent<Props>);
     function Counted(props: Props) {
       renders.set(name, (renders.get(name) ?? 0) + 1);
-      return React.createElement(inner, props);
+      return React.createElement(
+        React.Profiler,
+        { id: name, onRender: () => commits.set(name, (commits.get(name) ?? 0) + 1) },
+        React.createElement(inner, props),
+      );
     }
     return {
       ...actual,
       [name]: memoised ? React.memo(Counted, original.compare ?? undefined) : Counted,
     };
   }
-  return { renders, counted };
+  return { renders, commits, counted };
 });
 vi.mock('./ModeToolbar', async (load) => counted(await load(), 'ModeToolbar'));
 vi.mock('./MapCanvas', async (load) => counted(await load(), 'MapCanvas'));
@@ -134,7 +139,9 @@ describe('globe rendering and motion', () => {
     const { user } = await mount();
     await openMapTool(user, 'Map style');
     expect(renders.get('MapDisplaySettings')).toBeGreaterThan(0);
+    expect(commits.get('MapDisplaySettings')).toBeGreaterThan(0);
     renders.clear();
+    commits.clear();
     act(() => {
       useEventsStore
         .getState()
@@ -143,11 +150,14 @@ describe('globe rendering and motion', () => {
     expect(screen.getByText('Natural hazards: 2 loaded')).toBeInTheDocument();
     expect(layer('events-disaster')!.props.data.map((event) => event.id)).toContain('fresh');
     expect(Object.fromEntries(renders)).toEqual({});
+    expect(Object.fromEntries(commits)).toEqual({});
 
     // Relevant inputs still reach the stable controls.
     act(() => useGlobeStore.getState().toggleTerminator());
     expect(renders.get('MapDisplaySettings')).toBe(1);
+    expect(commits.get('MapDisplaySettings')).toBe(1);
     expect(renders.get('ModeToolbar')).toBeUndefined();
+    expect(commits.get('ModeToolbar')).toBeUndefined();
   });
 
   it('still updates a time-filtered layer when an event leaves the selected window', async () => {

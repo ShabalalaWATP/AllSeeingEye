@@ -57,6 +57,7 @@ class ShardTests(unittest.TestCase):
             args, kwargs = run.call_args
             self.assertIn("--cov-fail-under=0", args[0])
             self.assertIn("--durations=20", args[0])
+            self.assertFalse(any(value.startswith("--record-test-phases=") for value in args[0]))
             self.assertTrue(args[0][-1].startswith("@"))
             self.assertFalse(argument_files[0].exists())
             self.assertEqual(kwargs["env"]["ASE_TEST_DATABASE_URL"], "test-database")
@@ -158,11 +159,21 @@ class ShardTests(unittest.TestCase):
             parallel = run.call_args[0][0]
             self.assertIn("db and not (postgres or migration or race)", parallel)
             self.assertIn("--isolated-postgres", parallel)
+            self.assertIn("--durations=0", parallel)
+            self.assertIn("--durations-min=0", parallel)
+            self.assertIn(
+                "--record-test-phases=.test-phases.postgres-0-parallel.controller.jsonl", parallel
+            )
             self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-parallel"))
             runner.main(["0", "1", "--postgres-mode", "serial"])
             serial = run.call_args[0][0]
             self.assertIn("postgres or migration or race", serial)
             self.assertNotIn("-n", serial)
+            self.assertIn("--durations=0", serial)
+            self.assertIn("--durations-min=0", serial)
+            self.assertIn(
+                "--record-test-phases=.test-phases.postgres-0-serial.controller.jsonl", serial
+            )
             self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-serial"))
             with self.assertRaises(SystemExit):
                 runner.main(["0", "1", "--postgres-mode", "serial", "--workers", "2"])

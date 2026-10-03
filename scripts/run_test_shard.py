@@ -147,6 +147,13 @@ def main(argv: list[str] | None = None) -> int:
         selection = ["-m", "postgres or migration or race"]
     if args.postgres_mode:
         selection.append(f"--record-nodeids=.test-nodeids.postgres-{args.index}{suffix}.txt")
+    reporting = ["--durations=20"]
+    if args.postgres_mode:
+        reporting = [
+            "--durations=0",
+            "--durations-min=0",
+            f"--record-test-phases=.test-phases.postgres-{args.index}{suffix}.controller.jsonl",
+        ]
     with tempfile.TemporaryDirectory(prefix="ase-pytest-shard-") as directory:
         arguments = Path(directory) / "collection.txt"
         arguments.write_text("\n".join(discovery) + "\n", encoding="utf-8")
@@ -157,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
                 "pytest",
                 "--cov-fail-under=0",
                 "--cov-report=",
-                "--durations=20",
+                *reporting,
                 *selection,
                 *parallel,
                 f"@{arguments}",
