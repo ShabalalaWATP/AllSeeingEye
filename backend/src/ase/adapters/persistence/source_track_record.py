@@ -46,7 +46,7 @@ class SqlSourceTrackRecordReader:
         total = await self._session.scalar(
             select(func.count()).select_from(ReportRow).where(visible)
         )
-        report_ids = frozenset(await self._session.scalars(select(latest.c.id)))
+        report_ids: frozenset[UUID] = frozenset(await self._session.scalars(select(latest.c.id)))
         rows = await self._session.execute(
             select(
                 latest.c.id,

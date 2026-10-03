@@ -107,3 +107,29 @@ The codec SHA-256 is
 the controls pin is
 `9782158379d69a252b9c7df9b44ed1e24c08d62f29a5747257c2810524194737`.
 Documentation and later main integration are outside the frozen comparison.
+
+## Final dependency integration, 3 October
+
+The normal merge of released main `5d81528c` was conflict-free. It retains the
+reviewed SQLAlchemy 2.1.1 compatibility changes, Uvicorn 0.54.0 and the current
+frontend dependency locks. The codec, template guards and eight private census
+files remain unchanged. No coverage threshold, test selection or authentication
+setting changed in this integration.
+
+Both frozen dependency installs passed. With the merged dependencies, 126 focused
+backend cases passed with two explicit PostgreSQL-only skips; a separate owned,
+durable PostgreSQL service then passed all 17 template and checkpoint-ownership
+cases. That native run recorded seven clones, no fallback and ten deliberately
+ineligible guard cases, equal initial/final database catalogues and acknowledged
+container removal with an empty ownership census. Scoped Ruff and mypy over
+1,578 source files passed. Both TypeScript configurations passed, and Vitest
+5.0.2 passed 871 Node tests across 125 files, with one existing skipped file/test.
+
+These are compatibility checks, not a performance comparison. The previous
+exact-head hosted run `37074923731` passed all checks but consumed 43.5833 native
+runner-minutes. KAN-71's 30-minute limit and five-before/five-after validation
+remain outstanding. Fresh full CI must validate the newly published merge.
+The separate failed eight-workflow comparison above remains inconclusive.
+
+Private raw integration evidence is in
+`C:/Users/alexo/.codex/scratch/kan71-73-followup-58c5b2fe/final-main-5d81528c/`.
