@@ -133,6 +133,29 @@ derivation and layer construction remain concrete places to investigate.
 
 ## Receipts and remaining work
 
+The correctness checkpoint was committed as `4cea89d8` and normally integrated
+with main `8c0b93cf` at `85274aa5`. The same 144 focused cases and both TypeScript
+configurations passed after that merge. The frontend manifest, lockfile,
+canonical benchmark and fixture did not change through the integration.
+
+A subsequent narrow candidate in `events.batch.ts` keeps a replacement record
+in its previous sort position only when both its ID and `published_at` are
+unchanged. It retains the strict order validation and full-sort fallback, uses
+current replacement identities, and inspects every dictionary value before
+returning a sequence with no new positions to merge. Expiry, correction and
+last-update-wins semantics remain covered.
+
+Before this change, the deterministic 5,000-record/250-latest-replacement test
+made 5,248 comparisons and failed the bound of 5,000; its order and identity
+checks already passed. The candidate passes all 158 focused cases in 22 files,
+both TypeScript configurations and owned lint/format checks. Targeted coverage
+of all three changed production files is 100%: 138 statements, 112 branches,
+27 functions and 115 lines. This validates correctness and bounded work only;
+independent read-only review of the exact source and test patch found no
+actionable issue. The candidate's canonical timings are pending. The diagnostic `toList` sample
+suggests a modest opportunity, about 2 ms per batch, not enough by itself to
+support the ticket's 20 ms target.
+
 Raw logs, JSON run receipts, exact timestamps, source hashes, CPU profiles and
 summary scripts are retained privately at
 `C:/Users/alexo/.codex/worktrees/kan81-live-event-latency/evidence`. Files include
@@ -148,6 +171,5 @@ node node_modules/vitest/vitest.mjs run src/features/globe/GlobePage.streamBench
 Measured combined source hashes are `a274e21b...9285ba2be` for `newsMapTime.ts`
 and `4c979666...0fd069116` for `events.coverage.ts`; full hashes are in each run
 receipt. Historical negative measurements in `PERFORMANCE_REPAIR.md` remain
-unchanged. Current-main dependency integration, broader validation, a further
-evidenced optimisation and the real browser trace remain required before
-publication or acceptance.
+unchanged. Broader validation, an evidenced latency improvement and the real
+browser trace remain required before publication or acceptance.
