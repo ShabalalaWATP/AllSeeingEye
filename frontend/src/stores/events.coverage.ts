@@ -32,16 +32,40 @@ export function mergeSnapshots(main: LiveEvent[], maritime: LiveEvent[]): Map<st
   return merged;
 }
 
-// Records are immutable, so each one's timestamps are parsed once across stream batches,
-// not at every comparison or every rebuild of a full sensor mirror.
-const parsedTimes = new WeakMap<LiveEvent, readonly [number, number]>();
-function eventTimes(event: LiveEvent): readonly [number, number] {
-  let times = parsedTimes.get(event);
-  if (times === undefined) {
-    times = [Date.parse(event.observed_at), Date.parse(event.published_at ?? event.observed_at)];
-    parsedTimes.set(event, times);
+interface TimedEvent {
+  event: LiveEvent;
+  observedAt: string;
+  publishedAt: string | null;
+  times: readonly [number, number];
+}
+
+// Reuse the sort record as well as its parsed times across batches. Witness the raw fields
+// so a caller correcting an existing object cannot leave the eviction order stale.
+const parsedTimes = new WeakMap<LiveEvent, TimedEvent>();
+function eventTimes(event: LiveEvent): TimedEvent {
+  let keyed = parsedTimes.get(event);
+  if (keyed?.observedAt !== event.observed_at || keyed.publishedAt !== event.published_at) {
+    keyed = {
+      event,
+      observedAt: event.observed_at,
+      publishedAt: event.published_at,
+      times: [Date.parse(event.observed_at), Date.parse(event.published_at ?? event.observed_at)],
+    };
+    parsedTimes.set(event, keyed);
   }
-  return times;
+  return keyed;
+}
+
+function remainingEvents(fair: LiveEvent[], reserved: ReadonlySet<string>, room: number) {
+  // Preserve the existing slice semantics for unusual caller-supplied numeric limits.
+  if (!Number.isSafeInteger(room) || room < 0)
+    return fair.filter((event) => !reserved.has(event.id)).slice(0, room);
+  const remaining: LiveEvent[] = [];
+  for (const event of fair) {
+    if (remaining.length >= room) break;
+    if (!reserved.has(event.id)) remaining.push(event);
+  }
+  return remaining;
 }
 
 /** Reserve ships and satellites, favouring specific public catalogues over bulk active data. */
@@ -52,33 +76,41 @@ export function boundedEvents(
 ): Record<string, LiveEvent> {
   const events = Object.values(byId);
   if (events.length <= limit) return byId;
-  // Look each record's times up once per rebuild, not at every comparison.
-  const keyed = events.map((event) => ({ event, times: eventTimes(event) }));
+  // Look each record up once per rebuild, not at every comparison.
+  const keyed = events.map(eventTimes);
   keyed.sort(
     (a, b) =>
       b.times[0] - a.times[0] || b.times[1] - a.times[1] || compareText(a.event.id, b.event.id),
   );
   const fair = geographicOrder(keyed.map((item) => item.event));
-  const reserved = fair
-    .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
+  const vessels: LiveEvent[] = [];
+  const aircraft: LiveEvent[] = [];
+  const satellites: LiveEvent[] = [];
+  const fires: LiveEvent[] = [];
+  // These category-owned buckets are disjoint. Keep each one's original fair order so stable
+  // priority sorting retains the same tie-breaks as filtering the full sequence separately.
+  for (const event of fair) {
+    if (event.category === 'maritime' && event.subtype === 'vessel_position') vessels.push(event);
+    else if (event.category === 'aviation') aircraft.push(event);
+    else if (isSatellite(event)) satellites.push(event);
+    else if (isFirms(event)) fires.push(event);
+  }
+  const reserved = vessels
     .sort((a, b) => Number(isMilitaryVessel(b)) - Number(isMilitaryVessel(a)))
     .slice(0, Math.min(RESERVED_VESSELS, limit));
   reserved.push(
-    ...fair
-      .filter((event) => event.category === 'aviation')
+    ...aircraft
       .sort((a, b) => Number(isMilitaryAircraft(b)) - Number(isMilitaryAircraft(a)))
       .slice(0, Math.min(RESERVED_AIRCRAFT, limit - reserved.length)),
   );
-  const satellites = fair
-    .filter(isSatellite)
-    .sort((a, b) => satellitePriority(b) - satellitePriority(a))
-    .slice(0, Math.min(RESERVED_SATELLITES, limit - reserved.length));
-  reserved.push(...satellites);
   reserved.push(
-    ...fair.filter(isFirms).slice(0, Math.min(RESERVED_FIRMS, limit - reserved.length)),
+    ...satellites
+      .sort((a, b) => satellitePriority(b) - satellitePriority(a))
+      .slice(0, Math.min(RESERVED_SATELLITES, limit - reserved.length)),
   );
+  reserved.push(...fires.slice(0, Math.min(RESERVED_FIRMS, limit - reserved.length)));
   const ids = new Set(reserved.map((event) => event.id));
-  const remaining = fair.filter((event) => !ids.has(event.id)).slice(0, limit - reserved.length);
+  const remaining = remainingEvents(fair, ids, limit - reserved.length);
   const retained = [...reserved, ...remaining];
   const selected = selectedId ? byId[selectedId] : undefined;
   if (selected && retained.length > 0 && !retained.some((event) => event.id === selected.id))
