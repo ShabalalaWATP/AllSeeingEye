@@ -42,9 +42,13 @@ export function toList(
   const list: LiveEvent[] = [];
   let right = 0;
   for (const event of kept) {
-    for (let next = added[right]; next !== undefined && newestFirst(event, next) > 0;) {
+    for (let next = added[right]; next !== undefined; next = added[++right]) {
+      const order = newestFirst(event, next);
+      // Distinct Unicode IDs may collate equally. Only the dictionary's original order
+      // can reproduce the stable full-sort tie-break across these two sequences.
+      if (order === 0) return Object.values(byId).sort(newestFirst);
+      if (order < 0) break;
       list.push(next);
-      next = added[++right];
     }
     list.push(event);
   }

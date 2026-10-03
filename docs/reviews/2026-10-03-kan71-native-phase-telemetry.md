@@ -58,6 +58,15 @@ overhead, which remains part of the measured hosted job cost.
 
 KAN-71 remains open. A complete qualifying hosted run and the required five
 before/five after comparison are still needed. This reporting milestone makes
-no performance claim and launches no additional workflow runs. Any subsequent
+no performance claim and does not manually dispatch or repeat workflow runs. Any subsequent
 KAN-70 observation must review the exact reporting-only shard-runner delta as a
 new immutable source variant before changing its accepted input map.
+
+The publication tree normally integrates the separately reviewed KAN-81
+frontend checkpoint and its locale-equal ID stable-order repair at `85edcce9`.
+The combined tree passed 162 focused frontend cases in 22 files. Its frontend
+bytes match that reviewed revision; backend reporting bytes match `4d5865d5`.
+The dependency lock, canonical benchmark and fixture match released `8c0b93cf`.
+The frontend's earlier timings are pre-repair observations, not timing evidence
+for this final source. Its targets and real-browser trace remain outstanding,
+as recorded in the [KAN-81 note](2026-10-03-KAN-81-live-event-latency.md).
