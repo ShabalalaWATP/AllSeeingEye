@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { liveEvent } from '@/test/fixtures';
+import { useEventsStore } from '@/stores/events';
 
 import {
   REPLAY_STEP_MS,
@@ -51,6 +52,48 @@ describe('indexReplay', () => {
       source_dates: [],
     });
     expect(indexReplay([gdelt]).excluded).toBe(1);
+  });
+
+  it('indexes replacements and expiry without reparsing unchanged mirror records', () => {
+    const store = useEventsStore.getState();
+    store.reset();
+    const upsert = (records: ReturnType<typeof liveEvent>[]) =>
+      store.handleStreamMessage({
+        event: 'event.upsert',
+        id: null,
+        data: JSON.stringify({ events: records }),
+      });
+    try {
+      const early = liveEvent({ id: 'early-correction', published_at: at(0) });
+      const later = liveEvent({ id: 'later', published_at: at(2) });
+      upsert([early, later]);
+      const first = useEventsStore.getState().list;
+      const original = useEventsStore.getState().byId[early.id]!;
+      const parse = vi.spyOn(Date, 'parse');
+      expect(indexReplay(first)).toMatchObject({ start: base, end: base + 2 * HOUR });
+      parse.mockClear();
+
+      upsert([{ ...early, published_at: at(4) }]);
+      const changed = useEventsStore.getState().list;
+      expect(useEventsStore.getState().byId[early.id]).not.toBe(original);
+      expect(original.published_at).toBe(at(0));
+      expect(changed.find((event) => event.id === 'later')).toBe(first[0]);
+      parse.mockClear();
+      expect(indexReplay(changed)).toMatchObject({ start: base + 2 * HOUR, end: base + 4 * HOUR });
+      expect(parse).toHaveBeenCalledTimes(1);
+
+      store.applyExpire([early.id]);
+      parse.mockClear();
+      const remaining = useEventsStore.getState().list;
+      const index = indexReplay(remaining);
+      expect(index).toMatchObject({ start: base + 2 * HOUR, end: base + 2 * HOUR, usable: 1 });
+      expect(filterReplay(remaining, index, base + 2 * HOUR).map((event) => event.id)).toEqual([
+        'later',
+      ]);
+      expect(parse).not.toHaveBeenCalled();
+    } finally {
+      store.reset();
+    }
   });
 });
 
