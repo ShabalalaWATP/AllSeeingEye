@@ -118,6 +118,38 @@ describe('current event identities in the sorted mirror', () => {
     expectEquivalent(tied, Object.values(tied).reverse());
   });
 
+  it.each([false, true])(
+    'preserves dictionary order across an equal-collation replacement/new boundary (reversed: %s)',
+    (reversed) => {
+      const old = Object.freeze(liveEvent({ id: 'e\u0301' }));
+      const replacement = Object.freeze({ ...old, title: 'Replacement' });
+      const added = Object.freeze(liveEvent({ id: '\u00e9' }));
+      expect(added.id.localeCompare(replacement.id)).toBe(0);
+      const current = reversed ? [replacement, added] : [added, replacement];
+      const actual = expectEquivalent(Object.freeze(records(current)), Object.freeze([old]));
+      expect(actual.map((event) => event.id)).toEqual(current.map((event) => event.id));
+    },
+  );
+
+  it.each([false, true])(
+    'keeps multiple merge-boundary ties stable alongside earlier and later records (reversed: %s)',
+    (reversed) => {
+      const old = Object.freeze(liveEvent({ id: 'A\u030a' }));
+      const before = Object.freeze(liveEvent({ id: 'before', published_at: '2027-01-01' }));
+      const after = Object.freeze(liveEvent({ id: 'after', published_at: '2025-01-01' }));
+      const replacement = Object.freeze({ ...old, title: 'Current identity' });
+      const added = ['\u212b', '\u00c5'].map((id) => Object.freeze(liveEvent({ id })));
+      added.forEach((event) => expect(event.id.localeCompare(old.id)).toBe(0));
+      const ties = [...added, replacement];
+      if (reversed) ties.reverse();
+      const actual = expectEquivalent(
+        Object.freeze(records([after, ...ties, before])),
+        Object.freeze([before, old, after]),
+      );
+      [before, ...ties, after].forEach((event, index) => expect(actual[index]).toBe(event));
+    },
+  );
+
   it('does not trust a replacement dictionary key whose event has a different ID', () => {
     const input = records([streamEvent(0, BASE), streamEvent(1, BASE)]);
     const next = { ...input, s0: { ...input.s0!, id: 'different' } };

@@ -5,6 +5,10 @@ does **not** meet the ticket's median target. This is a tested correctness and
 measurement checkpoint, not acceptance evidence for closing KAN-81. A real
 browser trace is still outstanding.
 
+All timings below precede the stable-collation repair described below. The
+repaired source has not been remeasured; no final-speed claim is inferred from
+the earlier measurements.
+
 ## Scope and correctness
 
 The starting revision was `e22c599a3e8db8fdbc1ea44747040dcc3cdfdd7e`.
@@ -74,7 +78,7 @@ the frozen installation succeeded without changing the lockfile.
 
 The coordinator reserved quiet local CPU windows. Baseline runs finished at
 00:27:43 UTC; timestamp-only measurements ran 00:41:56–00:43:56; combined
-measurements ran 01:03:01–01:05:01. The final `b1efe175` warm-up ran
+measurements ran 01:03:01–01:05:01. The pre-repair `b1efe175` warm-up ran
 01:29:11–01:29:38, followed by measurements at 01:29:38–01:31:37. These were
 sequential blocks, not randomised or interleaved trials. All 20 measured runs
 passed. Every run reported a maximum of one React commit per event batch.
@@ -86,33 +90,33 @@ Each cell reports the median of five per-run medians, followed by the largest
 individual batch maximum across those runs, in milliseconds. The per-run
 medians are included below to expose the variability.
 
-| Scenario             |      Baseline | Timestamp cache | Combined candidate | Final `b1efe175` |
-| -------------------- | ------------: | --------------: | -----------------: | ---------------: |
-| New IDs              | 44.18 / 73.17 |   46.26 / 67.90 |      46.15 / 84.15 |    47.12 / 67.87 |
-| Existing IDs         | 34.99 / 64.12 |   34.22 / 62.80 |      32.14 / 66.79 |    36.08 / 60.62 |
-| Mixed expiry/new IDs | 41.04 / 59.96 |   39.60 / 61.00 |      40.79 / 61.32 |    38.76 / 59.79 |
-| Mode switch          | 25.37 / 48.97 |   27.24 / 44.33 |      28.37 / 49.30 |    28.98 / 46.32 |
+| Scenario             |      Baseline | Timestamp cache | Combined candidate | `b1efe175` (pre-repair) |
+| -------------------- | ------------: | --------------: | -----------------: | ----------------------: |
+| New IDs              | 44.18 / 73.17 |   46.26 / 67.90 |      46.15 / 84.15 |           47.12 / 67.87 |
+| Existing IDs         | 34.99 / 64.12 |   34.22 / 62.80 |      32.14 / 66.79 |           36.08 / 60.62 |
+| Mixed expiry/new IDs | 41.04 / 59.96 |   39.60 / 61.00 |      40.79 / 61.32 |           38.76 / 59.79 |
+| Mode switch          | 25.37 / 48.97 |   27.24 / 44.33 |      28.37 / 49.30 |           28.98 / 46.32 |
 
-| State / scenario     | Five per-run medians (ms)         |
-| -------------------- | --------------------------------- |
-| Baseline / new       | 48.00, 44.18, 42.65, 41.53, 51.17 |
-| Baseline / existing  | 34.99, 36.36, 32.93, 30.32, 40.17 |
-| Baseline / mixed     | 42.63, 41.04, 35.01, 46.83, 38.99 |
-| Baseline / mode      | 23.61, 24.37, 28.79, 35.87, 25.37 |
-| Timestamp / new      | 43.03, 41.25, 46.26, 47.97, 48.57 |
-| Timestamp / existing | 30.77, 38.44, 28.03, 38.11, 34.22 |
-| Timestamp / mixed    | 39.60, 37.71, 39.40, 44.59, 49.80 |
-| Timestamp / mode     | 26.66, 27.35, 27.24, 31.96, 24.51 |
-| Combined / new       | 51.47, 46.15, 48.90, 43.86, 38.60 |
-| Combined / existing  | 38.31, 29.23, 36.76, 32.14, 30.57 |
-| Combined / mixed     | 43.11, 39.03, 40.18, 40.79, 46.21 |
-| Combined / mode      | 28.37, 27.93, 31.29, 26.44, 30.65 |
-| Final / new          | 43.68, 49.46, 47.12, 41.92, 49.94 |
-| Final / existing     | 24.85, 36.80, 37.07, 36.08, 31.59 |
-| Final / mixed        | 33.72, 49.99, 33.51, 49.83, 38.76 |
-| Final / mode         | 34.87, 27.44, 29.90, 28.98, 23.85 |
+| State / scenario      | Five per-run medians (ms)         |
+| --------------------- | --------------------------------- |
+| Baseline / new        | 48.00, 44.18, 42.65, 41.53, 51.17 |
+| Baseline / existing   | 34.99, 36.36, 32.93, 30.32, 40.17 |
+| Baseline / mixed      | 42.63, 41.04, 35.01, 46.83, 38.99 |
+| Baseline / mode       | 23.61, 24.37, 28.79, 35.87, 25.37 |
+| Timestamp / new       | 43.03, 41.25, 46.26, 47.97, 48.57 |
+| Timestamp / existing  | 30.77, 38.44, 28.03, 38.11, 34.22 |
+| Timestamp / mixed     | 39.60, 37.71, 39.40, 44.59, 49.80 |
+| Timestamp / mode      | 26.66, 27.35, 27.24, 31.96, 24.51 |
+| Combined / new        | 51.47, 46.15, 48.90, 43.86, 38.60 |
+| Combined / existing   | 38.31, 29.23, 36.76, 32.14, 30.57 |
+| Combined / mixed      | 43.11, 39.03, 40.18, 40.79, 46.21 |
+| Combined / mode       | 28.37, 27.93, 31.29, 26.44, 30.65 |
+| List order / new      | 43.68, 49.46, 47.12, 41.92, 49.94 |
+| List order / existing | 24.85, 36.80, 37.07, 36.08, 31.59 |
+| List order / mixed    | 33.72, 49.99, 33.51, 49.83, 38.76 |
+| List order / mode     | 34.87, 27.44, 29.90, 28.98, 23.85 |
 
-The ranges overlap substantially. In the final block, only the mixed scenario's
+The ranges overlap substantially. In the list-order block, only the mixed scenario's
 median was below its original baseline median. The results do not support a
 total-speed win. All scenario medians remain above 20 ms, and each event
 scenario has an observed maximum above 50 ms.
@@ -120,23 +124,45 @@ scenario has an observed maximum above 50 ms.
 ## Separate diagnostic profile
 
 The same canonical test was profiled separately through Node's inspector CPU
-profiler. The combined profile finished at approximately 01:05:50 UTC. The final
+profiler. The combined profile finished at approximately 01:05:50 UTC. The pre-repair
 `b1efe175` profile ran 01:32:08.246–01:32:31.428 UTC. These profile timings are
 not included in the comparison. Sampled inclusive time under the 60
 event-delivery call stacks was:
 
-| Function             | Baseline (ms) | Combined (ms) | Final `b1efe175` (ms) |
-| -------------------- | ------------: | ------------: | --------------------: |
-| `boundedEvents`      |       466.550 |       420.526 |               410.305 |
-| `buildEventLayers`   |       415.779 |       369.875 |               325.062 |
-| `useDashboardEvents` |       436.416 |       352.324 |               344.940 |
-| `toList`             |       165.927 |       130.998 |               119.467 |
-| `clusterEvents`      |       179.044 |       166.738 |               156.168 |
+| Function             | Baseline (ms) | Combined (ms) | `b1efe175` (pre-repair, ms) |
+| -------------------- | ------------: | ------------: | --------------------------: |
+| `boundedEvents`      |       466.550 |       420.526 |                     410.305 |
+| `buildEventLayers`   |       415.779 |       369.875 |                     325.062 |
+| `useDashboardEvents` |       436.416 |       352.324 |                     344.940 |
+| `toList`             |       165.927 |       130.998 |                     119.467 |
+| `clusterEvents`      |       179.044 |       166.738 |                     156.168 |
 
 These values overlap through nested calls and must not be added. Each is one
 sampled diagnostic run, not a statistically established improvement. Delivery
 stacks also include work before the original timer. Retention, dashboard
 derivation and layer construction remain concrete places to investigate.
+
+## Stable-collation repair
+
+Independent review subsequently found that distinct schema-valid Unicode IDs,
+such as `\u00e9` and `e\u0301`, can compare equally. A same-time replacement kept
+in its previous position could then precede a newly inserted equivalent ID,
+contrary to the dictionary order retained by a stable full sort.
+
+Before repair, two new order-reference regressions failed and 16 cases passed.
+The regressions include both dictionary insertion orders, two- and three-ID
+ties beside other dates, frozen inputs and exact current-object identities.
+The merge now falls back to a full stable sort of the current dictionary when
+an added/retained boundary compares equally. Strict retained-order validation,
+the zero-added fast return and the ordinary ordered merge remain intact.
+
+After repair, all 162 focused cases across 22 files passed. The three changed
+production files retained 100% targeted coverage: 142 statements, 114 branches,
+27 functions and 117 lines. Both TypeScript configurations and owned lint/format
+checks passed. The original benchmark and fixture remain unchanged, and no new
+performance run was made for this repair. Independent read-only re-review of
+the exact repaired source and test hashes closed the ordering finding with no
+residual actionable issue.
 
 ## Receipts and remaining work
 
@@ -159,7 +185,8 @@ both TypeScript configurations and owned lint/format checks. Targeted coverage
 of all three changed production files is 100%: 138 statements, 112 branches,
 27 functions and 115 lines. This validates correctness and bounded work only;
 independent read-only review of the exact source and test patch found no
-actionable issue. Its canonical timings are the final column above. The single
+actionable issue at that review stage; the later stable-collation finding is
+recorded above. Its pre-repair canonical timings are the `b1efe175` column above. The single
 diagnostic `toList` sample is about 2 ms per batch; this does not establish a
 wall-time improvement or support the ticket's 20 ms target.
 
@@ -176,7 +203,7 @@ node node_modules/vitest/vitest.mjs run src/features/globe/GlobePage.streamBench
 ```
 
 Measured combined source hashes are `a274e21b...9285ba2be` for `newsMapTime.ts`
-and `4c979666...0fd069116` for `events.coverage.ts`. The final list-order hash is
+and `4c979666...0fd069116` for `events.coverage.ts`. The pre-repair list-order hash is
 `85ded95c...f8ecf8f3` for `events.batch.ts`; full hashes are in the run receipts.
 Historical negative measurements in `PERFORMANCE_REPAIR.md` remain unchanged.
 The separate real-browser attempt did not collect a trace, so no browser
