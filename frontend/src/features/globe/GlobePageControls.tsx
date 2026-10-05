@@ -11,13 +11,16 @@ import { mapReferencePanels } from './MapReferencePanels';
 import { MapToolActivity } from './MapToolActivity';
 import type { GlobePageModel } from './useGlobePage';
 import type { GlobePanelRoute } from './useGlobePanelRoute';
+import type { MapPanel } from './mapToolDefinitions';
 
 export function GlobePageControls({
   page: { display, canvas, reference, events, sources, actions, liveViews, now },
   route,
+  stylePanel,
 }: {
   page: GlobePageModel;
   route: GlobePanelRoute;
+  stylePanel: MapPanel;
 }) {
   const { engine, supported, britishGrid, tools } = canvas;
   const { data, country, selectedId, quality, details, onJam, focus, selectTraffic } = events;
@@ -80,21 +83,7 @@ export function GlobePageControls({
           },
         }),
         mapReferencePanels({
-          display: {
-            terminator: display.terminator,
-            lite: display.lite,
-            onToggleTerminator: display.toggleTerminator,
-            onToggleLite: display.toggleLite,
-          },
-          base: {
-            initialExpanded: true,
-            value: display.baseLayer,
-            osAvailable: reference.osMaps,
-            osChecking: reference.osLoading,
-            osError: reference.osError,
-            onCheckOs: reference.recheckOs,
-            onChange: display.setBaseLayer,
-          },
+          stylePanel,
           nation: {
             countries: reference.countries,
             value: country,

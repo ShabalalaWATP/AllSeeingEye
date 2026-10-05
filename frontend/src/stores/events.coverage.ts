@@ -83,25 +83,28 @@ export function boundedEvents(
       b.times[0] - a.times[0] || b.times[1] - a.times[1] || compareText(a.event.id, b.event.id),
   );
   const fair = geographicOrder(keyed.map((item) => item.event));
+  const militaryVessels: LiveEvent[] = [];
   const vessels: LiveEvent[] = [];
+  const militaryAircraft: LiveEvent[] = [];
   const aircraft: LiveEvent[] = [];
   const satellites: LiveEvent[] = [];
   const fires: LiveEvent[] = [];
-  // These category-owned buckets are disjoint. Keep each one's original fair order so stable
-  // priority sorting retains the same tie-breaks as filtering the full sequence separately.
+  // These category-owned buckets are disjoint. Partition current military priority once,
+  // retaining fair order within each priority exactly as the former stable sorts did.
   for (const event of fair) {
-    if (event.category === 'maritime' && event.subtype === 'vessel_position') vessels.push(event);
-    else if (event.category === 'aviation') aircraft.push(event);
+    if (event.category === 'maritime' && event.subtype === 'vessel_position')
+      (isMilitaryVessel(event) ? militaryVessels : vessels).push(event);
+    else if (event.category === 'aviation')
+      (isMilitaryAircraft(event) ? militaryAircraft : aircraft).push(event);
     else if (isSatellite(event)) satellites.push(event);
     else if (isFirms(event)) fires.push(event);
   }
-  const reserved = vessels
-    .sort((a, b) => Number(isMilitaryVessel(b)) - Number(isMilitaryVessel(a)))
-    .slice(0, Math.min(RESERVED_VESSELS, limit));
+  const reserved = [...militaryVessels, ...vessels].slice(0, Math.min(RESERVED_VESSELS, limit));
   reserved.push(
-    ...aircraft
-      .sort((a, b) => Number(isMilitaryAircraft(b)) - Number(isMilitaryAircraft(a)))
-      .slice(0, Math.min(RESERVED_AIRCRAFT, limit - reserved.length)),
+    ...[...militaryAircraft, ...aircraft].slice(
+      0,
+      Math.min(RESERVED_AIRCRAFT, limit - reserved.length),
+    ),
   );
   reserved.push(
     ...satellites

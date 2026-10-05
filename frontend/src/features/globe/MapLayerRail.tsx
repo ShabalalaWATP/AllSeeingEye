@@ -129,13 +129,15 @@ export function MapLayerRail({
             activePanel={activePanel}
             filter={flightFilter}
             onChange={onFlightFilter}
-            count={events.filter(isMilitaryFlight).length}
-            events={events.filter(
-              (event) =>
-                observationKind(event) === kind &&
-                matchesFlightFilter(event, flightFilter) &&
-                matchesVesselFilter(event, vesselFilter),
-            )}
+            getTraffic={() => ({
+              count: events.filter(isMilitaryFlight).length,
+              events: events.filter(
+                (event) =>
+                  observationKind(event) === kind &&
+                  matchesFlightFilter(event, flightFilter) &&
+                  matchesVesselFilter(event, vesselFilter),
+              ),
+            })}
             available={stats?.per_category.find((item) => item.category === 'aviation')?.count}
             onSelect={onTrafficSelect}
             selectionDisabled={selectionDisabled}
@@ -150,11 +152,13 @@ export function MapLayerRail({
             kind="vessels"
             filter={vesselFilter}
             onChange={onVesselFilter}
-            count={events.filter(isMilitaryVessel).length}
-            events={events.filter(
-              (event) =>
-                observationKind(event) === kind && matchesVesselFilter(event, vesselFilter),
-            )}
+            getTraffic={() => ({
+              count: events.filter(isMilitaryVessel).length,
+              events: events.filter(
+                (event) =>
+                  observationKind(event) === kind && matchesVesselFilter(event, vesselFilter),
+              ),
+            })}
             available={stats?.per_category.find((item) => item.category === 'maritime')?.count}
             onSelect={onTrafficSelect}
             selectionDisabled={selectionDisabled}

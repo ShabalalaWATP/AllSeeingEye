@@ -1330,8 +1330,32 @@ completion. Recovery must preserve any Level 5 assignments and usage counters.
 - [x] Verify fixture capability restoration and native child database cleanup.
 - [x] Pass focused tests, bounded serial/four-worker native correctness and
   independent code-quality/security review.
-- [ ] Pass full CI on the published head and complete release verification.
+- [x] Pass full CI on the published head and complete release verification.
 - [ ] Meet the 30 PostgreSQL runner-minute target across five before/after runs.
 
 Evidence and limits: [review](reviews/2026-10-05-KAN-71-owned-migrations.md).
-KAN-71 remains open; local correctness is not a whole-CI cost result.
+PR 128 merged as `88164eb`; main CI 37341238271 and deployment 37343049896
+passed. Public health/readiness returned HTTP 200 with `ok`/`ready`.
+The successful PR CI used 46.37 PostgreSQL runner-minutes. KAN-71 remains open;
+the 30-minute target and five before/after observations are unmet.
+
+### KAN-81 globe rendering milestone, 5 October 2026
+
+- [x] Isolate current event/clock/filter/selection derivation from static controls.
+- [x] Preserve current callbacks and projection-aware engine navigation lifecycle.
+- [x] Preserve fairness, quotas and selection while reducing repeated priority,
+  satellite-count and scene-row work.
+- [x] Pass independent combined quality/security review and broader validation:
+  4,547 tests pass, one skip, 92.24% branch coverage; unchanged coverage floors,
+  production build and bundle budgets pass.
+- [ ] Pass published-head CI and complete release verification.
+- [ ] Meet unchanged canonical median/maximum latency limits and complete
+  real-browser validation.
+
+Latest uninstrumented candidate medians remain above 20 ms. The broader run
+incidentally executed the canonical test under coverage despite its exclusion
+flag; that passing correctness result is not performance evidence.
+The separate smaller-frame browser diagnostic remains a private prerequisite,
+with no live browser timing result. See the
+[review](reviews/2026-10-05-KAN-81-control-rendering.md) for retained failures,
+exact measurements and limits. KAN-81 remains open.

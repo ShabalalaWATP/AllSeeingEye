@@ -58,6 +58,7 @@ vi.mock('./WorldClocks', async (load) => counted(await load(), 'WorldClocks'));
 vi.mock('./GlobeHeading', async (load) => counted(await load(), 'GlobeHeading'));
 vi.mock('./MapDisplaySettings', async (load) => counted(await load(), 'MapDisplaySettings'));
 vi.mock('./BaseLayerToolbar', async (load) => counted(await load(), 'BaseLayerToolbar'));
+vi.mock('./MapControlIcon', async (load) => counted(await load(), 'MapControlIcon'));
 
 interface TestLayer {
   id: string;
@@ -158,6 +159,37 @@ describe('globe rendering and motion', () => {
     expect(commits.get('MapDisplaySettings')).toBe(1);
     expect(renders.get('ModeToolbar')).toBeUndefined();
     expect(commits.get('ModeToolbar')).toBeUndefined();
+  });
+
+  it('opens News with current map summary values after a closed-panel correction and expiry', async () => {
+    const { user } = await mount();
+    const news = liveEvent({
+      id: 'located-news',
+      category: 'news',
+      source_id: 'bbc_world',
+      country_iso: 'GB',
+      published_at: new Date(clock.now).toISOString(),
+      geo_confidence: 'city',
+    });
+    const reference = { ...news, id: 'country-news', geo_confidence: 'country' as const };
+    act(() => useEventsStore.getState().applyUpsert([news, reference]));
+    await user.click(screen.getByRole('button', { name: 'News briefing' }));
+    expect(screen.getByText(/1 located reports · 1 country references/)).toBeVisible();
+    await user.keyboard('{Escape}');
+    act(() =>
+      useEventsStore.getState().applyBatch(
+        [reference.id],
+        [
+          {
+            ...news,
+            point: null,
+            geo_confidence: 'none',
+          },
+        ],
+      ),
+    );
+    await user.click(screen.getByRole('button', { name: 'News briefing' }));
+    expect(screen.getByText(/0 located reports · 0 country references/)).toBeVisible();
   });
 
   it('still updates a time-filtered layer when an event leaves the selected window', async () => {

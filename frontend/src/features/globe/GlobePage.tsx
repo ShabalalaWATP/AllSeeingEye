@@ -1,70 +1,70 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
 import { SavedMapAreaNotice } from './SavedMapAreaNotice';
-import { GlobeInspectors } from './GlobeInspectors';
+import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { MapCanvas } from './MapCanvas';
-import { MaritimeAttribution } from './MaritimeAttribution';
 import { MapStatusReadouts } from './MapStatusReadouts';
 import { GlobeHeading } from './GlobeHeading';
-import { GlobePageControls } from './GlobePageControls';
 import { ModeToolbar } from './ModeToolbar';
-import { useGlobePage } from './useGlobePage';
+import { GlobeEventScope } from './GlobeEventScope';
+import { GlobeEventViews } from './GlobeEventViews';
+import { mapStylePanel } from './MapReferencePanels';
+import { useGlobeCanvas } from './useGlobeCanvas';
+import { useGlobePreferences } from './useGlobePreferences';
 import { useGlobePanelRoute } from './useGlobePanelRoute';
-import { LiveViewNotice } from './LiveViewNotice';
 import './dashboard.css';
 
 export { FOCUS_ZOOM } from './useMapFocus';
 export default function GlobePage() {
-  const page = useGlobePage();
+  const display = useGlobePreferences();
+  const visible = usePageVisible();
+  const reducedMotion = useReducedMotion();
+  const canvas = useGlobeCanvas(display, visible);
   const route = useGlobePanelRoute();
-  const { display, canvas, events, sources, actions, liveViews } = page;
-  const { mode, opsRoom, interference } = display;
-  const { containerRef, supported, engine, britishGrid, tools, savedArea } = canvas;
-  const { radar, network, news, cyber, regions, infrastructure, cameras, figures, context } =
-    sources;
+  const { mode, opsRoom } = display;
+  const { containerRef, supported, engine, britishGrid, tools, savedArea, reference } = canvas;
+  const stylePanel = mapStylePanel({
+    display: {
+      terminator: display.terminator,
+      lite: display.lite,
+      onToggleTerminator: display.toggleTerminator,
+      onToggleLite: display.toggleLite,
+    },
+    base: {
+      initialExpanded: true,
+      value: display.baseLayer,
+      osAvailable: reference.osMaps,
+      osChecking: reference.osLoading,
+      osError: reference.osError,
+      onCheckOs: reference.recheckOs,
+      onChange: display.setBaseLayer,
+    },
+  });
   return (
-    <div className="globe-dashboard absolute inset-0 bg-ground">
-      <GlobeHeading mode={mode} showRef={opsRoom ? null : route.showPanel} />
-      <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
-      {!opsRoom && <ModeToolbar mode={mode} onChange={display.setMode} />}
-      {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
-      {!opsRoom && (
-        <LiveViewNotice notice={liveViews.opening.notice} onClose={liveViews.opening.dismiss} />
-      )}
-      <MaritimeAttribution
-        events={events.quality.filtered}
-        hidden={events.hidden.includes('maritime')}
-      />
-      {!opsRoom && <GlobePageControls page={page} route={route} />}
-      <MapStatusReadouts
-        tools={tools}
-        engine={engine}
-        supported={supported}
-        opsRoom={opsRoom}
-        bng={britishGrid.enabled}
-      />
-      {!opsRoom && !tools.picking && (
-        <GlobeInspectors
-          radar={radar}
-          network={{ selected: network.selected, onClose: network.close }}
-          news={{ state: news, onSelect: actions.selectContext }}
-          cyber={{ state: cyber, onSelect: actions.cyberSelection.selectRecord }}
-          regions={regions}
-          infrastructure={infrastructure}
-          cameras={cameras}
-          figures={figures}
-          eventDetails={{
-            selected: events.selected ?? context.event,
-            storySize: events.storySize,
-            details: events.details,
-            events: events.pickableEvents,
-            cells: sources.gnssFilters.filtered,
-            updatedAt: sources.gnss.updated_at,
-            interference,
-            onSelect: events.choose,
-            onClose: events.close,
-          }}
+    <GlobeEventScope
+      display={display}
+      canvas={canvas}
+      visible={visible}
+      reducedMotion={reducedMotion}
+    >
+      <div className="globe-dashboard absolute inset-0 bg-ground">
+        <GlobeHeading mode={mode} showRef={opsRoom ? null : route.showPanel} />
+        <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
+        {!opsRoom && <ModeToolbar mode={mode} onChange={display.setMode} />}
+        {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
+        <GlobeEventViews
+          route={route}
+          stylePanel={stylePanel}
+          readouts={
+            <MapStatusReadouts
+              tools={tools}
+              engine={engine}
+              supported={supported}
+              opsRoom={opsRoom}
+              bng={britishGrid.enabled}
+            />
+          }
         />
-      )}
-    </div>
+      </div>
+    </GlobeEventScope>
   );
 }

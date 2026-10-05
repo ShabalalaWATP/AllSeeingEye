@@ -53,6 +53,11 @@ it('switches cameras on from the rail button and keeps the button lit while they
 it('wires the CCTV rail panel to the camera state', () => {
   const panel = (enabled: boolean, setEnabled: (value: boolean) => void) => {
     const panels = mapReferencePanels({
+      stylePanel: (
+        <ControlPanel label="Map style" icon="layers">
+          Style controls
+        </ControlPanel>
+      ),
       precision: { filter: 'all' },
       cameras: { cameras: { enabled, setEnabled } },
     } as unknown as Parameters<typeof mapReferencePanels>[0]);

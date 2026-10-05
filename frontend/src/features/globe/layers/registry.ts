@@ -92,23 +92,38 @@ export function buildEventLayers(
   selectedId: string | null,
   view?: LayerView,
 ): Layer[] {
-  const visible = events.filter(
-    (event) => isMappedEvent(event) && !hidden.includes(event.category),
-  );
-  const exact = visible.filter((event) => event.geo_confidence === 'exact');
-  const approximate = buildApproximateLayer(
-    visible.filter((event) => event.geo_confidence !== 'exact'),
-    onPick,
-    selectedId,
-  );
+  const exact: LiveEvent[] = [];
+  const approximateRows: LiveEvent[] = [];
+  const approximateIcons: LiveEvent[] = [];
+  const traffic: LiveEvent[] = [];
+  let selected: LiveEvent | undefined;
+  // Fresh ordered buckets preserve current records without repeated whole-scene scans.
+  for (const event of events) {
+    if (!isMappedEvent(event) || hidden.includes(event.category)) continue;
+    if (selected === undefined && event.id === selectedId) selected = event;
+    if (event.geo_confidence === 'exact') {
+      exact.push(event);
+      if (
+        view !== undefined &&
+        view.zoom < CLUSTER_ZOOM &&
+        ['aircraft', 'vessel', 'vessel_unknown'].includes(iconFor(event) ?? '')
+      )
+        traffic.push(event);
+    } else {
+      approximateRows.push(event);
+      if (
+        ['conflict', 'cyber'].includes(event.category) ||
+        ['wildfire', 'news'].includes(iconFor(event) ?? '')
+      )
+        approximateIcons.push(event);
+    }
+  }
+  const approximate = buildApproximateLayer(approximateRows, onPick, selectedId);
   let loose: LiveEvent[] = exact;
   const layers: Layer[] = approximate ? [approximate] : [];
   if (view !== undefined && view.zoom < CLUSTER_ZOOM) {
     // Keep a bounded sample of traffic recognisable at globe scale. Remaining
     // records still contribute to clusters, rather than disappearing.
-    const traffic = exact.filter((event) =>
-      ['aircraft', 'vessel', 'vessel_unknown'].includes(iconFor(event) ?? ''),
-    );
     const shown = geographicOrder(traffic).slice(0, 250);
     const selectedTraffic = traffic.find((event) => event.id === selectedId);
     if (selectedTraffic && !shown.includes(selectedTraffic))
@@ -130,15 +145,7 @@ export function buildEventLayers(
   );
   // Approximate reports retain their location ring and gain a type symbol.
   // They do not enter the exact-point cluster path or acquire more precise geography.
-  const iconEvents = [
-    ...loose,
-    ...visible.filter(
-      (event) =>
-        (['conflict', 'cyber'].includes(event.category) ||
-          ['wildfire', 'news'].includes(iconFor(event) ?? '')) &&
-        event.geo_confidence !== 'exact',
-    ),
-  ];
+  const iconEvents = [...loose, ...approximateIcons];
   const icons = buildIconLayer(
     iconEvents,
     onPick,
@@ -146,7 +153,6 @@ export function buildEventLayers(
     Boolean(view?.globe && view.zoom <= 12),
   );
   if (icons !== null) layers.push(icons);
-  const selected = visible.find((event) => event.id === selectedId);
   if (selected) layers.push(buildSelectionLayer(selected));
   return layers;
 }

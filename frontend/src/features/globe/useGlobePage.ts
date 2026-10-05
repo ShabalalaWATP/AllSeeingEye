@@ -2,27 +2,29 @@
  * Composes the live map from responsibility-owned hooks. Every hook is called unconditionally
  * in a fixed order; state stays with the hook that owns it and flows down explicitly.
  */
-import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useNow } from '@/lib/hooks/useNow';
 import { useGlobeAssistant } from './useGlobeAssistant';
-import { useGlobeCanvas } from './useGlobeCanvas';
+import type { GlobeCanvas, GlobeDisplay } from './useGlobeCanvas';
 import { useGlobeCatalogueLayers } from './useGlobeCatalogueLayers';
 import { useGlobeEvents } from './useGlobeEvents';
 import { useGlobeInterference } from './useGlobeInterference';
 import { useGlobeLiveViews } from './useGlobeLiveViews';
-import { useGlobePreferences } from './useGlobePreferences';
 import { useGlobeScene } from './useGlobeScene';
 import { useGlobeSelection } from './useGlobeSelection';
 import { useGlobeSources } from './useGlobeSources';
 import { useTechnologyControl } from './useTechnologyControl';
 
-export function useGlobePage() {
-  const display = useGlobePreferences();
-  const reducedMotion = useReducedMotion();
-  const visible = usePageVisible();
+export interface GlobePageInputs {
+  display: GlobeDisplay;
+  canvas: GlobeCanvas;
+  visible: boolean;
+  reducedMotion: boolean;
+}
+
+/** The single event pipeline consumes the shell's current engine and display inputs. */
+export function useGlobePage({ display, canvas, visible, reducedMotion }: GlobePageInputs) {
   const now = useNow();
   const interference = useGlobeInterference(display.interference && visible, now);
-  const canvas = useGlobeCanvas(display, visible);
   const { engine, supported, tools, symbolMode } = canvas;
   const { countryByIso } = canvas.reference;
   const data = useGlobeEvents(now);
