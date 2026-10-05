@@ -5923,3 +5923,11 @@ remain unchanged. Private split-frame preparation preserves logical event states
 but is not identical canonical transport or real-browser timing evidence.
 The [review](reviews/2026-10-05-KAN-81-control-rendering.md) records these limits.
 KAN-81 remains open pending published-head CI, release and latency acceptance.
+
+PR 129 merged as bdd61712 and deployed through run 37349223233 after main CI
+37347485689 passed. Public health/readiness returned ok/ready. A subsequent
+freshness hint preserves full-sort fallbacks and passes 217 focused tests,
+static/build/bundle checks and both source reviews. Its single canonical v4
+pair still misses every median target; mixed/control observations were worse.
+No latency improvement or completion is claimed. The
+[freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md) records the results.

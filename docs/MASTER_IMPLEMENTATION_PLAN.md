@@ -1348,7 +1348,7 @@ the 30-minute target and five before/after observations are unmet.
 - [x] Pass independent combined quality/security review and broader validation:
   4,547 tests pass, one skip, 92.24% branch coverage; unchanged coverage floors,
   production build and bundle budgets pass.
-- [ ] Pass published-head CI and complete release verification.
+- [x] Pass rendering-milestone published-head CI and complete release verification.
 - [ ] Meet unchanged canonical median/maximum latency limits and complete
   real-browser validation.
 
@@ -1359,3 +1359,16 @@ The separate smaller-frame browser diagnostic remains a private prerequisite,
 with no live browser timing result. See the
 [review](reviews/2026-10-05-KAN-81-control-rendering.md) for retained failures,
 exact measurements and limits. KAN-81 remains open.
+
+### KAN-81 freshness-sort milestone, 5 October 2026
+
+- [x] Validate previous publication hints against current keyed objects and order.
+- [x] Preserve the original fallback and verify operation budgets and equivalence.
+- [x] Pass 217 focused tests, types, lint, formatting, build, bundle and two reviews.
+- [ ] Publish and pass full CI for this subsequent six-file change.
+- [ ] Meet original latency targets and complete real-browser validation.
+
+PR 129 rendering changes deployed after main CI 37347485689 and deployment
+37349223233 passed; public health/readiness returned ok/ready. The latest v4
+canonical pair still misses the original targets, with worse mixed/control
+observations. See [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md).
