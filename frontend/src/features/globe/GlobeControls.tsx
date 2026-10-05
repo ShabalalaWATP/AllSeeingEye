@@ -1,10 +1,11 @@
-import { Children, isValidElement, useEffect, useId, useRef, useState } from 'react';
+import { Children, isValidElement, useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { resolveMapPanel } from '@/lib/mapLayerDirectory';
 import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import { MapToolChooser } from './MapToolChooser';
 import { MapToolInspector } from './MapToolInspector';
+import { MapToolButton } from './MapToolButton';
 import { DEFAULT_FAVOURITES, toolCaption, toolId } from './mapToolDefinitions';
 import type { MapPanel, PanelProps } from './mapToolDefinitions';
 import { readToolFavourites, writeToolFavourites } from './mapToolPreferences';
@@ -86,14 +87,20 @@ export function GlobeControls({
   const chooserClose = useRef<HTMLButtonElement>(null);
   const toolsButton = useRef<HTMLButtonElement>(null);
   const [pins, setPins] = useState(readToolFavourites);
-  const select = (label: string | null) => {
-    setState((current) => ({ ...current, active: label, collapsed: false, chooser: false }));
-    onPanelChange?.(label);
-  };
-  const openPanel: OpenPanel = (label, button) => {
-    if (button) setOpener(button);
-    select(active === label && !collapsed ? null : label);
-  };
+  const select = useCallback(
+    (label: string | null) => {
+      setState((current) => ({ ...current, active: label, collapsed: false, chooser: false }));
+      onPanelChange?.(label);
+    },
+    [onPanelChange],
+  );
+  const openPanel: OpenPanel = useCallback(
+    (label, button) => {
+      if (button) setOpener(button);
+      select(active === label && !collapsed ? null : label);
+    },
+    [active, collapsed, select],
+  );
   const resolved = typeof children === 'function' ? children(openPanel) : children;
   const panels = Children.toArray(resolved).filter(isValidElement<PanelProps>);
   const selected = panels.find((panel) => panel.props.label === active);
@@ -154,30 +161,29 @@ export function GlobeControls({
     document.addEventListener('keydown', dismiss);
     return () => document.removeEventListener('keydown', dismiss);
   }, [active, chooser, opener]);
-  const choose = (panel: MapPanel, button?: HTMLButtonElement) => {
-    if (button) setOpener(button);
-    if (active !== panel.props.label) panel.props.onOpen?.();
-    select(active === panel.props.label && !collapsed && !chooser ? null : panel.props.label);
-  };
+  const choose = useCallback(
+    (label: string, onOpen: (() => void) | undefined, button?: HTMLButtonElement) => {
+      if (button) setOpener(button);
+      if (active !== label) onOpen?.();
+      select(active === label && !collapsed && !chooser ? null : label);
+    },
+    [active, collapsed, chooser, select],
+  );
   const panelButton = (panel: MapPanel) => {
     const { props } = panel;
     return (
-      <MapControlLabel key={props.label} label={props.label}>
-        <button
-          type="button"
-          className={`map-icon-button ${toolCaption(props) ? 'map-style-button' : ''}`}
-          aria-label={props.label}
-          title={props.label}
-          aria-expanded={active === props.label && !collapsed && !chooser}
-          aria-controls={active === props.label ? id : undefined}
-          data-on={props.on ? 'true' : undefined}
-          data-active={active === props.label ? 'true' : undefined}
-          onClick={(event) => choose(panel, event.currentTarget)}
-        >
-          <MapControlIcon name={props.icon} />
-          {toolCaption(props) && <span className="map-style-label">{toolCaption(props)}</span>}
-        </button>
-      </MapControlLabel>
+      <MapToolButton
+        key={props.label}
+        label={props.label}
+        icon={props.icon}
+        caption={toolCaption(props)}
+        on={props.on}
+        active={active === props.label}
+        expanded={active === props.label && !collapsed && !chooser}
+        controls={active === props.label ? id : undefined}
+        onOpen={props.onOpen}
+        onChoose={choose}
+      />
     );
   };
   return (
@@ -244,7 +250,7 @@ export function GlobeControls({
             favourites={favourites}
             onChoose={(panel) => {
               setOpener(toolsButton.current);
-              choose(panel);
+              choose(panel.props.label, panel.props.onOpen);
             }}
             onPin={(pin) => {
               const next = favourites.includes(pin)

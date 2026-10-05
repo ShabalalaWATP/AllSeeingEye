@@ -1,5 +1,5 @@
 /** Capture the live map's view configuration and apply a saved one, without its events. */
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 
 import type { Category } from '@/lib/api/eventSchemas';
 import { CATEGORIES } from '@/lib/api/eventSchemas';
@@ -13,6 +13,7 @@ import type { LocationQualityFilter } from './geographicPrecision';
 import type { FlightFilter } from './flightFilters';
 import type { ObservationKind, ObservationVisibility } from './ObservationControls';
 import type { GlobeEngineHandle } from './useGlobeEngine';
+import { projectionFor } from './useGlobeEngine';
 
 const TRAFFIC: readonly ObservationKind[] = ['aircraft', 'vessels', 'firms'];
 
@@ -145,23 +146,12 @@ export function useLiveViewControls(sources: LiveViewSources) {
   useLayoutEffect(() => {
     latest.current = sources;
   });
-  // After a projection change the camera waits for the engine's own projection effect,
-  // which runs first because the engine hook is called earlier on the page.
-  const pendingCamera = useRef<LiveViewCamera | null>(null);
-  const { engine, mode } = sources;
-  useEffect(() => {
-    const camera = pendingCamera.current;
-    if (!camera) return;
-    pendingCamera.current = null;
-    engine.restoreCamera?.(camera);
-  }, [engine, mode]);
   return {
     capture: useCallback(() => capture(latest.current), []),
     apply: useCallback((view: LiveViewState) => {
       const current = latest.current;
       apply(current, view);
-      if (view.projection === current.mode) current.engine.restoreCamera?.(view.camera);
-      else pendingCamera.current = view.camera;
+      current.engine.restoreCamera?.(view.camera, projectionFor(view.projection));
     }, []),
   };
 }

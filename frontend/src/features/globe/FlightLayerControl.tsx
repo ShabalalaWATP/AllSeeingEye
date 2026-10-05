@@ -10,9 +10,8 @@ export function FlightLayerControl({
   children,
   filter = 'all',
   onChange,
-  count,
+  getTraffic,
   kind = 'aircraft',
-  events,
   available,
   onSelect,
   selectionDisabled = false,
@@ -23,9 +22,9 @@ export function FlightLayerControl({
   filter?: FlightFilter;
   onChange?: ((value: FlightFilter) => void) | undefined;
   selectionDisabled?: boolean;
-  count: number;
+  /** Only the standalone portal needs these lists; shared drawers own their own content. */
+  getTraffic: () => { count: number; events: readonly LiveEvent[] };
   kind?: 'aircraft' | 'vessels';
-  events?: readonly LiveEvent[];
   available?: number | undefined;
   onSelect?: ((event: LiveEvent) => void) | undefined;
   openPanel?: ((label: string, button: HTMLButtonElement) => void) | undefined;
@@ -127,11 +126,10 @@ export function FlightLayerControl({
               </button>
             </header>
             <TrafficPanel
+              {...getTraffic()}
               kind={kind}
               filter={filter}
               onChange={onChange}
-              count={count}
-              events={events}
               available={available}
               selectionDisabled={selectionDisabled}
               onSelect={

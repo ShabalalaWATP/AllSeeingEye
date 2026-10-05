@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import type { BaseLayer, ViewMode } from '@/stores/globe';
@@ -33,7 +33,8 @@ export interface GlobeEngineHandle {
   getZoom: () => number;
   getCamera?: () => MapCamera | null;
   getViewportBounds?: () => MapBounds | null;
-  restoreCamera?: (camera: MapCamera) => void;
+  /** An explicit projection waits for its committed engine synchronisation. */
+  restoreCamera?: (camera: MapCamera, projection?: Projection) => void;
   pickObjectsAt?: (x: number, y: number) => readonly unknown[];
   spin: (enabled: boolean) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
@@ -46,6 +47,10 @@ export interface GlobeEngineHandle {
 }
 
 export type ViewHandler = (view: { zoom: number }) => void;
+
+type Navigation =
+  | { kind: 'focus'; target: FlyToTarget }
+  | { kind: 'restore'; camera: MapCamera; projection: Projection | undefined };
 
 export interface GlobeEngineOptions {
   enabled: boolean;
@@ -78,6 +83,16 @@ export function useGlobeEngine(
   }: GlobeEngineOptions,
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
+  const appliedProjection = useRef<Projection | null>(null);
+  const pendingNavigation = useRef<{ generation: number; intent: Navigation } | null>(null);
+  const nextNavigation = useRef(0);
+  const [navigationGeneration, setNavigationGeneration] = useState(0);
+  const queueNavigation = useCallback((intent: Navigation) => {
+    const generation = ++nextNavigation.current;
+    pendingNavigation.current = { generation, intent };
+    // Only deferred navigation schedules an owner commit, never stream updates.
+    setNavigationGeneration(generation);
+  }, []);
   const cursorHandlers = useRef(new Set<CursorHandler>());
   const clickHandlers = useRef(new Set<CursorHandler>());
   const dragHandlers = useRef(new Set<SketchDragHandler>());
@@ -95,7 +110,10 @@ export function useGlobeEngine(
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!enabled || container === null) return;
+    if (!enabled || container === null) {
+      pendingNavigation.current = null;
+      return;
+    }
     let active = true;
     const engine = factory({
       onRenderStatus: (status, message) => {
@@ -107,6 +125,8 @@ export function useGlobeEngine(
       restoreReloadCamera(engine);
     } catch {
       engine.destroy();
+      pendingNavigation.current = null;
+      appliedProjection.current = null;
       onRenderStatus('failed', 'Map graphics could not start. Reload the map to retry.');
       return () => {
         active = false;
@@ -143,12 +163,30 @@ export function useGlobeEngine(
       engine.destroy();
       offDrag?.();
       engineRef.current = null;
+      appliedProjection.current = null;
+      pendingNavigation.current = null;
     };
   }, [containerRef, factory, enabled, revision, onRenderStatus, restoreReloadCamera]);
 
   useEffect(() => {
-    engineRef.current?.setProjection(projectionFor(mode));
-  }, [mode, enabled, factory, containerRef, revision]);
+    const engine = engineRef.current;
+    const projection = projectionFor(mode);
+    if (engine) {
+      appliedProjection.current = null;
+      engine.setProjection(projection);
+      appliedProjection.current = projection;
+    }
+    const pending = pendingNavigation.current;
+    // A child can request navigation before this parent's older mount effect runs.
+    // Its first generation-aware commit must apply or discard it, never leave it dormant.
+    if (pending?.generation !== navigationGeneration) return;
+    pendingNavigation.current = null;
+    if (!engine) return;
+    const { intent } = pending;
+    if (intent.kind === 'focus') engine.flyTo(intent.target);
+    else if (intent.projection === undefined || intent.projection === projection)
+      engine.restoreCamera(intent.camera);
+  }, [mode, enabled, factory, containerRef, revision, navigationGeneration]);
 
   useEffect(() => {
     engineRef.current?.setBaseLayer(baseLayer);
@@ -167,18 +205,36 @@ export function useGlobeEngine(
     engineRef.current?.setLayers(layers);
   }, []);
 
-  const flyTo = useCallback((target: FlyToTarget) => {
-    engineRef.current?.flyTo(target);
-  }, []);
+  const flyTo = useCallback(
+    (target: FlyToTarget) => {
+      if (containerRef.current === null) return;
+      pendingNavigation.current = null;
+      if (engineRef.current && appliedProjection.current !== null) engineRef.current.flyTo(target);
+      else queueNavigation({ kind: 'focus', target });
+    },
+    [containerRef, queueNavigation],
+  );
 
   const pickObjectsAt = useCallback(
     (x: number, y: number) => engineRef.current?.pickObjectsAt?.(x, y) ?? [],
     [],
   );
   const getCamera = useCallback(() => engineRef.current?.getCamera() ?? null, []);
-  const restoreCamera = useCallback((camera: MapCamera) => {
-    engineRef.current?.restoreCamera(camera);
-  }, []);
+  const restoreCamera = useCallback(
+    (camera: MapCamera, projection?: Projection) => {
+      if (containerRef.current === null) return;
+      pendingNavigation.current = null;
+      const engine = engineRef.current;
+      if (
+        engine &&
+        appliedProjection.current !== null &&
+        (projection === undefined || projection === appliedProjection.current)
+      )
+        engine.restoreCamera(camera);
+      else queueNavigation({ kind: 'restore', camera, projection });
+    },
+    [containerRef, queueNavigation],
+  );
   const getViewportBounds = useCallback(() => engineRef.current?.getViewportBounds() ?? null, []);
   const getZoom = useCallback(() => engineRef.current?.getZoom() ?? 0, []);
 

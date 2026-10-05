@@ -9,11 +9,25 @@ import { CameraPanel } from './cameras/CameraPanel';
 import { FigurePanel } from './figures/FigurePanel';
 import { MapDisplaySettings } from './MapDisplaySettings';
 import { DailyImageryControls } from './imagery/DailyImageryControls';
+import type { MapPanel } from './mapToolDefinitions';
+
+/** Appearance belongs to the shell, independent of the live event scope. */
+export function mapStylePanel(props: {
+  base: ComponentProps<typeof BaseLayerToolbar>;
+  display: ComponentProps<typeof MapDisplaySettings>;
+}): MapPanel {
+  return (
+    <ControlPanel key="style" side="right" label="Map style" icon="layers">
+      <BaseLayerToolbar {...props.base} embedded />
+      <DailyImageryControls />
+      <MapDisplaySettings {...props.display} />
+    </ControlPanel>
+  );
+}
 
 /** Direct panel elements allow the rail to maintain one active inspector. */
 export function mapReferencePanels(props: {
-  base: ComponentProps<typeof BaseLayerToolbar>;
-  display: ComponentProps<typeof MapDisplaySettings>;
+  stylePanel: MapPanel;
   nation: ComponentProps<typeof NationFilter>;
   country: ComponentProps<typeof CountryPanel> | null;
   precision: ComponentProps<typeof GeographicPrecisionPanel>;
@@ -22,11 +36,7 @@ export function mapReferencePanels(props: {
   figures: ComponentProps<typeof FigurePanel>;
 }) {
   return [
-    <ControlPanel key="style" side="right" label="Map style" icon="layers">
-      <BaseLayerToolbar {...props.base} embedded />
-      <DailyImageryControls />
-      <MapDisplaySettings {...props.display} />
-    </ControlPanel>,
+    props.stylePanel,
     <ControlPanel key="nation" label="Find nation" icon="nation">
       <NationFilter {...props.nation} />
       {props.country && <CountryPanel {...props.country} />}

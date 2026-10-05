@@ -33,6 +33,31 @@ export function matchesSatelliteGroup(event: LiveEvent, group: SatelliteGroup): 
   return event.attributes.military_public_catalogue === true;
 }
 
+/** Count each catalogue group independently, without selecting or copying map rows. */
+export function countSatelliteGroups(events: readonly LiveEvent[]): Record<SatelliteGroup, number> {
+  const groups = ['all', 'crewed', 'military', 'skynet'] as const;
+  const keys: Record<SatelliteGroup, Set<string>> = {
+    all: new Set(),
+    crewed: new Set(),
+    military: new Set(),
+    skynet: new Set(),
+  };
+  for (const event of events) {
+    if (!isSatellite(event)) continue;
+    const norad = event.attributes.norad_id;
+    const key = typeof norad === 'string' || typeof norad === 'number' ? String(norad) : event.id;
+    for (const group of groups) {
+      if (matchesSatelliteGroup(event, group)) keys[group].add(key);
+    }
+  }
+  return {
+    all: keys.all.size,
+    crewed: keys.crewed.size,
+    military: keys.military.size,
+    skynet: keys.skynet.size,
+  };
+}
+
 /** Keep all other layers intact; one marker per NORAD object for the satellite layer. */
 export function filterSatellites(
   events: LiveEvent[],

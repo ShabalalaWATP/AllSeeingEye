@@ -2,6 +2,7 @@ import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useNow } from '@/lib/hooks/useNow';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import {
+  countSatelliteGroups,
   filterSatellites,
   isSatellite,
   isCurrentSatellitePosition,
@@ -41,16 +42,7 @@ export function useSatelliteFilters(events: LiveEvent[]) {
     [grouped, terms],
   );
   const results = useMemo(() => filtered.filter(isSatellite), [filtered]);
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        (['all', 'crewed', 'military', 'skynet'] as const).map((item) => [
-          item,
-          filterSatellites(current, item).filter(isSatellite).length,
-        ]),
-      ) as Record<SatelliteGroup, number>,
-    [current],
-  );
+  const counts = useMemo(() => countSatelliteGroups(current), [current]);
   return {
     filtered,
     group,

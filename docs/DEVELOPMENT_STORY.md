@@ -5898,3 +5898,28 @@ all native child databases. Independent quality/security reviews are clear.
 No matched speedup, coverage percentage or whole-CI cost acceptance is claimed.
 The [review](reviews/2026-10-05-KAN-71-owned-migrations.md) records the retained
 assertion-rewrite warnings and outstanding full-CI/five-run release gates.
+
+PR 128 subsequently passed full CI, merged as `88164eb` and deployed through
+run 37343049896 after main CI 37341238271 passed. Public health/readiness checks
+returned `ok`/`ready`. Actual PR CI used 46.37 PostgreSQL runner-minutes, so the
+30-minute target and five before/after observations remain outstanding.
+
+## KAN-81 globe rendering and navigation, 5 October 2026
+
+Separated the current event/clock/filter/selection pipeline from the page shell,
+kept static controls on explicit current props/callbacks, and derived portal and
+news content when mounted. Navigation now defers until projection synchronisation
+and discards superseded or disposed intents. Fresh priority partitions, satellite
+counts and scene-row preparation preserve current classifications, fairness,
+selection and order. Regression failures preceded lifecycle and operation-budget
+repairs, with independent combined quality/security review clear.
+
+Broader validation passed 4,547 tests with one skip and 92.24% branch coverage;
+existing coverage floors, production build and bundle budgets passed. Final audit
+corrected an ineffective benchmark exclusion and a pnpm metadata-only change.
+The incidental covered benchmark is correctness evidence only. Latest separately
+measured candidate medians still exceed 20 ms; the original fixture and limits
+remain unchanged. Private split-frame preparation preserves logical event states
+but is not identical canonical transport or real-browser timing evidence.
+The [review](reviews/2026-10-05-KAN-81-control-rendering.md) records these limits.
+KAN-81 remains open pending published-head CI, release and latency acceptance.

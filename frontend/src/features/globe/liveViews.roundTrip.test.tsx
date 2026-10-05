@@ -173,7 +173,7 @@ it('saves the current view configuration and restores it when explicitly opened'
   expect(useGlobeStore.getState().mode).toBe('globe');
   fireEvent.click(screen.getByRole('button', { name: 'Open Baltic' }));
   await screen.findByText('Baltic');
-  await waitFor(() => expect(restoreCamera).toHaveBeenCalledWith(camera));
+  await waitFor(() => expect(restoreCamera).toHaveBeenCalledWith(camera, 'mercator'));
   expect(useGlobeStore.getState()).toMatchObject({ mode: 'map', interference: true });
   expect(useEventsStore.getState()).toMatchObject({ windowHours: 24, country: 'EE' });
   expect(useEventsStore.getState().hidden).toEqual(['news']);
