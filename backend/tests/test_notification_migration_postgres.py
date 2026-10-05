@@ -22,6 +22,7 @@ from notification_migration_helpers import (
 from notification_migration_helpers import (
     migration_database as migration_database,  # noqa: PLC0414
 )
+from owned_postgres import owned_migration_test
 
 
 def assert_head(connection):
@@ -58,6 +59,7 @@ def assert_unenrolled(connection):
         )
 
 
+@owned_migration_test
 async def test_empty_combined_upgrade_roundtrip_and_model_parity(migration_database):
     await migration_database.migrate("0082")
     before = await migration_database.run(schema_state)
@@ -233,6 +235,7 @@ def write_notification_state(connection, original):
     insert_row(connection, "web_push_outbox", **(delivery | {"device_id": device_id}))
 
 
+@owned_migration_test
 async def test_legacy_upgrade_constraints_and_explicit_notification_rollback(migration_database):
     await migration_database.migrate("0066")
     original = await migration_database.run(seed_legacy)

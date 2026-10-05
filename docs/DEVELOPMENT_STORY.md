@@ -5882,3 +5882,19 @@ PostgreSQL runner cost is 39.50 minutes, still above 30; reference-host, elapsed
 workload and operator/live acceptance remain explicit. No main merge, real
 credential rotation, notification delivery or production deployment occurred.
 Release approval remains required.
+
+## KAN-71 owned migration workers, 5 October 2026
+
+Admitted 21 existing UUID migration cases to isolated parallel workers, with
+exact fixture/helper/test checks and temporary service capability restoration.
+The native census retains all 2,895 original IDs without duplication; unaudited
+and shared-resource work stays serial. Production code and coverage gates are
+unchanged.
+
+The 66 admission/lifecycle cases, 17 runner cases and eight focused SQLite/graph
+cases pass. One actual serial control and one four-worker candidate each pass
+all 21 originals, preserving service/peer sentinels and catalogues and removing
+all native child databases. Independent quality/security reviews are clear.
+No matched speedup, coverage percentage or whole-CI cost acceptance is claimed.
+The [review](reviews/2026-10-05-KAN-71-owned-migrations.md) records the retained
+assertion-rewrite warnings and outstanding full-CI/five-run release gates.

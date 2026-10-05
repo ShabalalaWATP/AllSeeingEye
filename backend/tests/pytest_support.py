@@ -118,6 +118,9 @@ def uses_report_job_worker(item: pytest.Item) -> bool:
 
 
 def apply_markers(items: Iterable[pytest.Item]) -> None:
+    # Admission imports the template fixture, whose store uses create_schema above.
+    from owned_postgres import mark_owned  # noqa: PLC0415
+
     for item in items:
         name = item.path.stem
         if name.endswith("_postgres"):
@@ -144,6 +147,7 @@ def apply_markers(items: Iterable[pytest.Item]) -> None:
         if uses_report_job_worker(item):
             item.add_marker(pytest.mark.slow)
             item.add_marker(pytest.mark.timeout(660))
+        mark_owned(item)
 
 
 class DurationRecorder:

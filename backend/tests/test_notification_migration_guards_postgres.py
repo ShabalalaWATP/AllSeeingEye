@@ -13,6 +13,7 @@ from notification_migration_helpers import (
     table,
 )
 from notification_schema_inventory import owned_schema_state
+from owned_postgres import owned_migration_test
 
 
 def retained_state(connection):
@@ -32,6 +33,7 @@ def corrupt_checkpoint(connection, job_id):
     connection.execute(jobs.update().where(jobs.c.id == job_id).values(payload_sha256="0" * 64))
 
 
+@owned_migration_test
 async def test_corrupt_legacy_checkpoint_refuses_without_partial_postgres_ddl(migration_database):
     await migration_database.migrate("0066")
     original = await migration_database.run(seed_legacy)
@@ -56,6 +58,7 @@ def set_frozen_ratio(connection, original, values, deleted):
 
 
 @pytest.mark.parametrize("deleted", [False, True], ids=["edited-rule", "deleted-rule"])
+@owned_migration_test
 async def test_frozen_alert_baselines_refuse_downgrade_after_rule_changes(
     migration_database, deleted
 ):
@@ -79,6 +82,7 @@ def change_feedback(connection, retained):
     )
 
 
+@owned_migration_test
 async def test_feedback_and_privacy_barriers_preserve_schema_and_retained_rows(migration_database):
     await migration_database.migrate("0066")
     await migration_database.run(seed_legacy)

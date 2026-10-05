@@ -1322,3 +1322,16 @@ Both usage counters continue to advance, preserving usage on a later downgrade.
 Release gate: merge after full CI, then verify a backup, migration and live
 allowance reads. The merged pull request and deployment workflow record release
 completion. Recovery must preserve any Level 5 assignments and usage counters.
+
+### KAN-71 isolated migration admission, 5 October 2026
+
+- [x] Admit only the 21 audited original migration cases to isolated workers.
+- [x] Preserve all 2,895 original native IDs and ordinary template eligibility.
+- [x] Verify fixture capability restoration and native child database cleanup.
+- [x] Pass focused tests, bounded serial/four-worker native correctness and
+  independent code-quality/security review.
+- [ ] Pass full CI on the published head and complete release verification.
+- [ ] Meet the 30 PostgreSQL runner-minute target across five before/after runs.
+
+Evidence and limits: [review](reviews/2026-10-05-KAN-71-owned-migrations.md).
+KAN-71 remains open; local correctness is not a whole-CI cost result.

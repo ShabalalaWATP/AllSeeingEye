@@ -157,7 +157,9 @@ class ShardTests(unittest.TestCase):
             run.return_value.returncode = 0
             runner.main(["0", "1", "--postgres-mode", "parallel", "--workers", "2"])
             parallel = run.call_args[0][0]
-            self.assertIn("db and not (postgres or migration or race)", parallel)
+            self.assertIn(
+                "(db and not (postgres or migration or race)) or owned_migration", parallel
+            )
             self.assertIn("--isolated-postgres", parallel)
             self.assertIn("--durations=0", parallel)
             self.assertIn("--durations-min=0", parallel)
@@ -167,7 +169,7 @@ class ShardTests(unittest.TestCase):
             self.assertTrue(run.call_args[1]["env"]["COVERAGE_FILE"].endswith("-parallel"))
             runner.main(["0", "1", "--postgres-mode", "serial"])
             serial = run.call_args[0][0]
-            self.assertIn("postgres or migration or race", serial)
+            self.assertIn("(postgres or migration or race) and not owned_migration", serial)
             self.assertNotIn("-n", serial)
             self.assertIn("--durations=0", serial)
             self.assertIn("--durations-min=0", serial)
