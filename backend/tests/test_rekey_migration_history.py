@@ -26,6 +26,7 @@ from notification_migration_helpers import (
     migration_database as migration_database,  # noqa: PLC0414
 )
 from notification_schema_inventory import owned_schema_state
+from owned_postgres import owned_migration_test
 from test_notification_migration_postgres import assert_backfills, assert_unenrolled
 
 
@@ -51,6 +52,7 @@ def rekey_database(request, tmp_path):
         sa.event.remove(sa.MetaData, "column_reflect", reflect_uuid)
 
 
+@owned_migration_test
 def test_rekey_graph_keeps_released_history_and_has_one_head():
     scripts = ScriptDirectory.from_config(alembic_config("sqlite+aiosqlite://"))
     assert scripts.get_heads() == ["0089"]
@@ -170,6 +172,7 @@ def assert_released_schema(connection, before):
                 assert after[name][kind] == values, (name, kind)
 
 
+@owned_migration_test
 async def test_fresh_rekey_upgrade_is_complete_unenrolled_and_repeatable(rekey_database):
     await rekey_database.migrate("head")
     assert await rekey_database.run(revision) == "0089"
@@ -194,6 +197,7 @@ def assert_model_parity(connection):
     assert compare_metadata(context, Base.metadata) == []
 
 
+@owned_migration_test
 async def test_populated_main0081_upgrade_preserves_released_features(rekey_database):
     await rekey_database.migrate("0081")
     original = await rekey_database.run(seed_released_features)
@@ -214,6 +218,7 @@ def corrupt_checkpoint(connection, job_id, value):
     return previous
 
 
+@owned_migration_test
 async def test_main0081_corrupt_checkpoint_upgrade_is_repairable(rekey_database):
     await rekey_database.migrate("0081")
     original = await rekey_database.run(seed_released_features)
@@ -238,6 +243,7 @@ async def test_main0081_corrupt_checkpoint_upgrade_is_repairable(rekey_database)
     await rekey_database.run(assert_unenrolled)
 
 
+@owned_migration_test
 async def test_rekeyed_privacy_barrier_keeps_main_and_receipt_state(rekey_database):
     await rekey_database.migrate("0081")
     await rekey_database.run(seed_released_features)
@@ -262,6 +268,7 @@ def seed_frozen_alert(connection, original, deleted):
 
 
 @pytest.mark.parametrize("deleted", [False, True], ids=["absolute-rule", "deleted-rule"])
+@owned_migration_test
 async def test_rekeyed_frozen_ratio_barrier_preserves_main_features(rekey_database, deleted):
     await rekey_database.migrate("0081")
     original = await rekey_database.run(seed_released_features)
@@ -315,6 +322,7 @@ def assert_origin_checkpoint_integrity(connection, original):
         assert row["summary"] == {**summary, "origin": origin}
 
 
+@owned_migration_test
 async def test_rekey_preserves_frozen_origins_and_full_summary_allowance(rekey_database):
     await rekey_database.migrate("0081")
     original = await rekey_database.run(seed_origin_checkpoints)

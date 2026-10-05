@@ -137,14 +137,22 @@ def main(argv: list[str] | None = None) -> int:
     # Fixed Python executable and discovered repository paths, with no shell.
     parallel = ["-n", args.workers] if args.workers else []
     selection: list[str] = []
+    # Register before parsing custom options, in both native lanes so their
+    # admission decisions partition the same cases. Ordinary SQLite is unchanged.
+    plugins = ["-o", "pythonpath=. tests", "-p", "owned_postgres"] if args.postgres_mode else []
     if args.postgres_mode == "parallel":
-        selection = ["-m", "db and not (postgres or migration or race)", "--isolated-postgres"]
+        selection = [
+            "--owned-migrations",
+            "-m",
+            "(db and not (postgres or migration or race)) or owned_migration",
+            "--isolated-postgres",
+        ]
         if args.template_postgres:
             selection.append("--template-postgres")
     elif args.postgres_mode == "serial":
         if parallel:
             parser.error("PostgreSQL race and migration tests must run without --workers")
-        selection = ["-m", "postgres or migration or race"]
+        selection = ["-m", "(postgres or migration or race) and not owned_migration"]
     if args.postgres_mode:
         selection.append(f"--record-nodeids=.test-nodeids.postgres-{args.index}{suffix}.txt")
     reporting = ["--durations=20"]
@@ -165,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
                 "--cov-fail-under=0",
                 "--cov-report=",
                 *reporting,
+                *plugins,
                 *selection,
                 *parallel,
                 f"@{arguments}",
