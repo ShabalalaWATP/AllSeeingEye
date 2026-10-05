@@ -177,12 +177,14 @@ export function GeographicPrecisionPanel({
         <nav aria-label="Location quality record pages" className="map-tool-actions">
           <button
             type="button"
-            disabled={current === 0}
+            // Keep the active page control focused when it reaches either boundary.
+            aria-disabled={current === 0}
             onClick={() => {
+              if (current === 0) return;
               setPage(current - 1);
               announce();
             }}
-            className="map-tool-secondary"
+            className="map-tool-secondary aria-disabled:cursor-not-allowed! aria-disabled:opacity-45 aria-disabled:hover:bg-surface-2!"
           >
             Previous
           </button>
@@ -191,12 +193,13 @@ export function GeographicPrecisionPanel({
           </span>
           <button
             type="button"
-            disabled={current === pages - 1}
+            aria-disabled={current === pages - 1}
             onClick={() => {
+              if (current === pages - 1) return;
               setPage(current + 1);
               announce();
             }}
-            className="map-tool-secondary"
+            className="map-tool-secondary aria-disabled:cursor-not-allowed! aria-disabled:opacity-45 aria-disabled:hover:bg-surface-2!"
           >
             Next
           </button>
