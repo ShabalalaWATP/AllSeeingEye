@@ -5931,3 +5931,16 @@ static/build/bundle checks and both source reviews. Its single canonical v4
 pair still misses every median target; mixed/control observations were worse.
 No latency improvement or completion is claimed. The
 [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md) records the results.
+
+## KAN-81 selected panel body construction, 6 October 2026
+
+PR 130's freshness head passed all 38 checks, with 4,587 frontend tests passing,
+one skip and 92.26% branch coverage. A subsequent reviewed change defers closed
+catalogue and traffic body construction while preserving current props, selected
+panel state and existing lifecycle. Its 37 focused cases, lint, formatting,
+both TypeScript checks, build and bundle budgets pass. Two new expectation
+repairs and a corridor test type adaptation preserve their original assertions.
+Root integrated the exact eight-file patch after source/protected hash checks.
+No new timing or coverage claim is made; new head CI and original latency/browser
+acceptance remain outstanding. See the
+[panel review](reviews/2026-10-06-KAN-81-panel-bodies.md).

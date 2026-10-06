@@ -89,10 +89,10 @@ export function catalogueControlPanels({
 }) {
   return [
     <ControlPanel key="fires" side="left" label="Fires" icon="firms" entry={false}>
-      <FiresFilterPanel {...fires} />
+      {() => <FiresFilterPanel {...fires} />}
     </ControlPanel>,
     <ControlPanel key="news" side="left" label="News briefing" icon="news" entry={false}>
-      <NewsMapContent {...news} />
+      {() => <NewsMapContent {...news} />}
     </ControlPanel>,
     <ControlPanel
       key="cyber"
@@ -101,7 +101,7 @@ export function catalogueControlPanels({
       icon="cyber"
       entry={false}
     >
-      <CyberFilterPanel {...cyber} gnss={gnss} />
+      {() => <CyberFilterPanel {...cyber} gnss={gnss} />}
     </ControlPanel>,
     <ControlPanel
       key="technology"
@@ -109,38 +109,44 @@ export function catalogueControlPanels({
       label="Technology & communications"
       icon="technology"
     >
-      <InfrastructurePanel
-        state={infrastructure}
-        onSelect={focusInfrastructure}
-        group="technology"
-        connectivity={technology.connectivity}
-        connectivityEnabled={technology.connectivityEnabled}
-        connectivityCount={technology.connectivityCount}
-        onToggleConnectivity={technology.toggleConnectivity}
-      />
+      {() => (
+        <InfrastructurePanel
+          state={infrastructure}
+          onSelect={focusInfrastructure}
+          group="technology"
+          connectivity={technology.connectivity}
+          connectivityEnabled={technology.connectivityEnabled}
+          connectivityCount={technology.connectivityCount}
+          onToggleConnectivity={technology.toggleConnectivity}
+        />
+      )}
     </ControlPanel>,
     <ControlPanel key="infrastructure" side="left" label="Infrastructure" icon="infrastructure">
-      <InfrastructurePanel
-        state={infrastructure}
-        onSelect={focusInfrastructure}
-        group="infrastructure"
-      />
+      {() => (
+        <InfrastructurePanel
+          state={infrastructure}
+          onSelect={focusInfrastructure}
+          group="infrastructure"
+        />
+      )}
     </ControlPanel>,
     <ControlPanel key="satellites" side="left" label="Space" icon="space" entry={false}>
-      <ContextTabs
-        label="Space view"
-        primaryLabel="Satellites"
-        secondaryLabel="Space weather"
-        primary={
-          <SatelliteContent
-            satellites={satellites}
-            selectedId={selectedId}
-            onSelect={onSatelliteSelect}
-            qualityFilter={qualityFilter}
-          />
-        }
-        secondary={<SpaceWeatherPanel country={country} onSelect={onContextSelect} />}
-      />
+      {() => (
+        <ContextTabs
+          label="Space view"
+          primaryLabel="Satellites"
+          secondaryLabel="Space weather"
+          primary={
+            <SatelliteContent
+              satellites={satellites}
+              selectedId={selectedId}
+              onSelect={onSatelliteSelect}
+              qualityFilter={qualityFilter}
+            />
+          }
+          secondary={<SpaceWeatherPanel country={country} onSelect={onContextSelect} />}
+        />
+      )}
     </ControlPanel>,
     <ControlPanel
       key="conflicts"
@@ -149,10 +155,10 @@ export function catalogueControlPanels({
       icon="conflict"
       entry={false}
     >
-      <ConflictOverviewPanel {...conflictOverview} reports={conflicts} />
+      {() => <ConflictOverviewPanel {...conflictOverview} reports={conflicts} />}
     </ControlPanel>,
     <ControlPanel key="hazards" side="left" label="Natural hazards" icon="disaster" entry={false}>
-      <HazardFilterPanel {...hazards} />
+      {() => <HazardFilterPanel {...hazards} />}
     </ControlPanel>,
   ];
 }

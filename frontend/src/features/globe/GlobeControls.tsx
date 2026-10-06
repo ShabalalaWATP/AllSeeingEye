@@ -12,7 +12,7 @@ import { readToolFavourites, writeToolFavourites } from './mapToolPreferences';
 import './mapToolShell.css';
 
 export function ControlPanel({ children }: PanelProps) {
-  return children;
+  return typeof children === 'function' ? children() : children;
 }
 /** Non-modal tools leave map gestures available, including while measuring. */
 export type OpenPanel = (label: string, button?: HTMLButtonElement | null) => void;
@@ -233,7 +233,9 @@ export function GlobeControls({
           onCollapse={() => setState((current) => ({ ...current, collapsed: !current.collapsed }))}
           contentKey={selected.props.label}
         >
-          {selected.props.children}
+          {typeof selected.props.children === 'function'
+            ? selected.props.children()
+            : selected.props.children}
         </MapToolInspector>
       )}
       {chooser && (

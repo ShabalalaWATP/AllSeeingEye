@@ -71,19 +71,21 @@ export function trafficControlPanels(props: Props) {
       icon={kind}
       entry={false}
     >
-      {kind === 'aircraft' ? (
-        <TrafficContent key={kind} {...props} kind={kind} />
-      ) : (
-        <ContextTabs
-          label="Maritime view"
-          primaryLabel="Vessels"
-          secondaryLabel="Navigation warnings"
-          primary={<TrafficContent key={kind} {...props} kind={kind} />}
-          secondary={
-            <NavigationWarningsPanel country={props.country} onSelect={props.onContextSelect} />
-          }
-        />
-      )}
+      {() =>
+        kind === 'aircraft' ? (
+          <TrafficContent key={kind} {...props} kind={kind} />
+        ) : (
+          <ContextTabs
+            label="Maritime view"
+            primaryLabel="Vessels"
+            secondaryLabel="Navigation warnings"
+            primary={<TrafficContent key={kind} {...props} kind={kind} />}
+            secondary={
+              <NavigationWarningsPanel country={props.country} onSelect={props.onContextSelect} />
+            }
+          />
+        )
+      }
     </ControlPanel>
   ));
 }

@@ -1365,10 +1365,22 @@ exact measurements and limits. KAN-81 remains open.
 - [x] Validate previous publication hints against current keyed objects and order.
 - [x] Preserve the original fallback and verify operation budgets and equivalence.
 - [x] Pass 217 focused tests, types, lint, formatting, build, bundle and two reviews.
-- [ ] Publish and pass full CI for this subsequent six-file change.
+- [x] Publish and pass full CI for the freshness-sort head: all 38 checks passed.
 - [ ] Meet original latency targets and complete real-browser validation.
 
 PR 129 rendering changes deployed after main CI 37347485689 and deployment
 37349223233 passed; public health/readiness returned ok/ready. The latest v4
 canonical pair still misses the original targets, with worse mixed/control
 observations. See [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md).
+
+### KAN-81 panel body construction, 6 October 2026
+
+- [x] Defer closed catalogue/traffic body construction while keeping current data.
+- [x] Preserve selected-panel state, corrections, expiry, access and focus.
+- [x] Pass 37 focused cases, lint, format, both types, build, bundle and two reviews.
+- [ ] Pass new published-head CI and unchanged latency/browser acceptance.
+
+The exact reviewed eight-file patch is integrated into PR 130 after its earlier
+freshness head passed full CI (4,587 tests, one skip, 92.26% branch coverage).
+These tests establish behaviour and construction budgets, not measured latency.
+See [panel review](reviews/2026-10-06-KAN-81-panel-bodies.md). KAN-81 remains open.
