@@ -61,7 +61,56 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
+  # Planning is part of the native runner-minute total. It imports/collects the
+  # existing lanes without running fixtures, SQL, authentication or test bodies.
+  postgres-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      manifest-sha256: ${{ steps.plan.outputs.manifest-sha256 }}
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      ASE_TEST_DATABASE_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_TOKEN_RACE_TEST_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_COMPARISON_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_MONITOR_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_MONITOR_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_NOTIFICATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_NOTIFICATION_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_IDENTITY_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_FIRMS_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_FIRMS_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_LLM_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_RELATIONSHIP_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_RELATIONSHIP_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_SCOPE_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_TEAMS_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_TEST_MIGRATION_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase_s01_disposable_ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
+      - run: uv python install 3.13
+      - run: uv sync --frozen
+      - name: Collect original native lanes and publish exact selection plan
+        id: plan
+        env:
+          PLAN_DIRECTORY: ${{ runner.temp }}/postgres-native-plan
+        run: |
+          uv run python ../scripts/plan_native_shards.py "$PLAN_DIRECTORY" --shards 4
+          digest=$(sha256sum "$PLAN_DIRECTORY/manifest.json")
+          printf 'manifest-sha256=%s\n' "${digest%% *}" >> "$GITHUB_OUTPUT"
+      - name: Retain native planning evidence, including failed collections
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: postgres-native-plan
+          path: ${{ runner.temp }}/postgres-native-plan
+          if-no-files-found: warn
+
   postgres-tests:
+    needs: postgres-plan
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -88,6 +137,8 @@ jobs:
         working-directory: backend
     env:
       ASE_TEST_DATABASE_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      NATIVE_PLAN: ${{ runner.temp }}/postgres-native-plan/manifest.json
+      NATIVE_PLAN_SHA256: ${{ needs.postgres-plan.outputs.manifest-sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
@@ -95,6 +146,10 @@ jobs:
           enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --frozen
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: postgres-native-plan
+          path: ${{ runner.temp }}/postgres-native-plan
       - name: Require PostgreSQL transaction durability settings
         env:
           PGPASSWORD: ase
@@ -145,7 +200,7 @@ jobs:
             exit "$test_status"
           }
           trap finish EXIT
-          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto --template-postgres
+          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode parallel --workers auto --template-postgres --native-plan "$NATIVE_PLAN" --native-plan-sha256 "$NATIVE_PLAN_SHA256"
       - name: Provision disposable legacy migration database
         env:
           PGPASSWORD: ase
@@ -204,7 +259,7 @@ jobs:
             exit "$test_status"
           }
           trap finish EXIT
-          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode serial
+          uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode serial --native-plan "$NATIVE_PLAN" --native-plan-sha256 "$NATIVE_PLAN_SHA256"
       - name: Retain PostgreSQL capacity samples
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -262,14 +317,15 @@ jobs:
         working-directory: backend
 
   backend-postgres:
-    needs: postgres-tests
+    needs: [postgres-plan, postgres-tests]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Require every PostgreSQL test shard
+      - name: Require the native plan and every PostgreSQL test shard
         env:
+          PLAN_RESULT: ${{ needs.postgres-plan.result }}
           TEST_RESULT: ${{ needs.postgres-tests.result }}
-        run: test "$TEST_RESULT" = success
+        run: test "$PLAN_RESULT" = success && test "$TEST_RESULT" = success
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
       - run: uv python install 3.13
@@ -406,7 +462,7 @@ jobs:
           - image: api
             context: ./backend
             dockerfile: backend/Dockerfile
-            build_args: ''
+            build_args: ""
           - image: web
             context: .
             dockerfile: frontend/Dockerfile

@@ -30,6 +30,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from native_shard_manifest import node_file, planned_ids, read_plan, require_identity
+
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 DURATIONS = Path(__file__).resolve().with_name("test_durations.json")
 
@@ -111,6 +113,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--workers", type=worker_count, help="pytest-xdist workers per shard")
     parser.add_argument("--postgres-mode", choices=("parallel", "serial"))
     parser.add_argument(
+        "--native-plan", type=Path, help="Require an exact selection-first native manifest"
+    )
+    parser.add_argument("--native-plan-sha256", help="Digest emitted by the upstream planner job")
+    parser.add_argument(
         "--template-postgres",
         action="store_true",
         help="opt ordinary app fixtures into owned database templates in the parallel lane",
@@ -118,11 +124,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.template_postgres and args.postgres_mode != "parallel":
         parser.error("--template-postgres requires --postgres-mode parallel")
+    if args.native_plan and not args.postgres_mode:
+        parser.error("--native-plan requires --postgres-mode")
+    if bool(args.native_plan) != bool(args.native_plan_sha256):
+        parser.error("A native plan and its upstream digest must be supplied together")
     try:
         all_files = test_files(BACKEND)
-        files = select_shard(all_files, args.index, args.count, load_durations(DURATIONS))
+        if args.native_plan:
+            plan = read_plan(args.native_plan, args.native_plan_sha256)
+            require_identity(plan, BACKEND.parent)
+            expected = planned_ids(plan, args.postgres_mode, args.index, args.count)
+            files = sorted({node_file(nodeid) for nodeid in expected})
+            if not set(files) <= set(all_files):
+                raise ValueError("A planned native test file is missing")
+        else:
+            files = select_shard(all_files, args.index, args.count, load_durations(DURATIONS))
         discovery = collection_arguments(all_files, files)
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         parser.error(str(exc))
     if not files:
         parser.error("Shard has no tests; reduce COUNT or check the test directory")
@@ -140,6 +158,21 @@ def main(argv: list[str] | None = None) -> int:
     # Register before parsing custom options, in both native lanes so their
     # admission decisions partition the same cases. Ordinary SQLite is unchanged.
     plugins = ["-o", "pythonpath=. tests", "-p", "owned_postgres"] if args.postgres_mode else []
+    if args.native_plan:
+        plugins = [
+            "-o",
+            "pythonpath=. tests ..",
+            "-p",
+            "owned_postgres",
+            "-p",
+            "scripts.pytest_native_selection",
+            f"--native-plan={args.native_plan.resolve()}",
+            f"--native-plan-sha256={args.native_plan_sha256}",
+            f"--native-lane={args.postgres_mode}",
+            f"--native-shard={args.index}",
+            f"--native-shards={args.count}",
+            "--max-worker-restart=0",
+        ]
     if args.postgres_mode == "parallel":
         selection = [
             "--owned-migrations",
