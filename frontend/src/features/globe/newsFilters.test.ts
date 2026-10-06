@@ -19,6 +19,52 @@ describe('News filtering', () => {
     country_iso: 'GB',
   });
 
+  function countedArticle() {
+    const event = { ...article };
+    const reads = { count: 0 };
+    for (const field of ['title', 'title_en', 'summary', 'country_iso'] as const) {
+      Object.defineProperty(event, field, {
+        enumerable: true,
+        get: () => {
+          reads.count += 1;
+          return article[field];
+        },
+      });
+    }
+    return { event: Object.freeze(event), reads };
+  }
+
+  it.each(['', ' \t\n '])('accepts query %j without reading searchable text', (query) => {
+    const { event, reads } = countedArticle();
+    expect(matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, query })).toBe(true);
+    expect(reads.count).toBe(0);
+  });
+
+  it.each(['', ' \t\n ', 'policy'])(
+    'retains category and exact-source rejection before text matching for query %j',
+    (query) => {
+      const { event, reads } = countedArticle();
+      expect(matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, categories: [], query })).toBe(false);
+      expect(
+        matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, categories: ['political'], query }),
+      ).toBe(false);
+      expect(matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, source: 'bbc_world_copy', query })).toBe(
+        false,
+      );
+      expect(reads.count).toBe(0);
+    },
+  );
+
+  it('still reads current text for a non-empty query after category and source checks', () => {
+    const { event, reads } = countedArticle();
+    expect(
+      matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, source: 'bbc_world', query: ' POLICY ' }),
+    ).toBe(true);
+    expect(reads.count).toBe(4);
+    expect(matchesNews(event, { ...DEFAULT_NEWS_OPTIONS, query: 'absent phrase' })).toBe(false);
+    expect(reads.count).toBe(8);
+  });
+
   it.each([' ORIGINAL ', 'PORT TALKS', 'transport policy', 'BBC_WORLD', 'gb'])(
     'finds reporting by original/translated headline, summary, source and declared country: %s',
     (query) => expect(matchesNews(article, { ...DEFAULT_NEWS_OPTIONS, query })).toBe(true),
@@ -68,6 +114,33 @@ describe('News filtering', () => {
     ).toBe(true);
     expect(isNewsCategory('conflict')).toBe(false);
     expect(isNewsCategory('cyber')).toBe(false);
+  });
+
+  it('keeps current record identities and order as records change or expire', () => {
+    const flight = liveEvent({ id: 'flight', category: 'aviation' });
+    const { result, rerender } = renderHook(
+      ({ events, enabled }) => useNewsFilters(events, enabled),
+      { initialProps: { events: [article, flight], enabled: true } },
+    );
+    act(() => result.current.setOptions({ ...DEFAULT_NEWS_OPTIONS, query: ' \t ' }));
+    expect(result.current.filtered[0]).toBe(article);
+    expect(result.current.filtered[1]).toBe(flight);
+    expect(result.current.count).toBe(1);
+
+    const corrected = { ...article, title: 'Corrected headline', title_en: null, summary: null };
+    rerender({ events: [flight, corrected], enabled: true });
+    expect(result.current.filtered[0]).toBe(flight);
+    expect(result.current.filtered[1]).toBe(corrected);
+    expect(result.current.count).toBe(1);
+    rerender({ events: [flight, corrected], enabled: false });
+    expect(result.current.filtered).toEqual([flight]);
+    expect(result.current.count).toBe(1);
+    rerender({ events: [flight], enabled: true });
+    expect(result.current.filtered[0]).toBe(flight);
+    expect(result.current.count).toBe(0);
+    rerender({ events: [], enabled: true });
+    expect(result.current.filtered).toEqual([]);
+    expect(result.current.count).toBe(0);
   });
 });
 

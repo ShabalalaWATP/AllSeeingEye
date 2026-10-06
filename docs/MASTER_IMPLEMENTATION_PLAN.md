@@ -1470,3 +1470,22 @@ PR #130 was squash-merged as 0c180576 under the existing release authorisation.
 The initial merge-commit request was refused by repository policy, without a
 merge. The subsequent allowed squash merge succeeded and was read back. Main CI
 and production deployment verification remain outstanding; both tickets stay open.
+
+### KAN-81 current milestone, 6 October 2026
+
+- PRs #130/#131: merged, main CI and automatic deployment verified.
+- Exact-null selection guards: implemented, genuine failing baseline retained,
+  62 tests and both TypeScript checks passed, quality/security reviews clear.
+- Acceptance remains open: the last valid Linux observation missed its targets.
+  Run a newly pinned reference for these source changes and complete the real
+  Edge capture after repairing its separate helper's initial navigation refusal.
+- Keep failed attempts and the initial production readiness 503 in the evidence.
+
+Details: [null-selection review](reviews/2026-10-06-KAN-81-null-selection.md).
+
+### 6 October 2026: remaining validation
+
+- PR #132 merged as 037f2d76. Current-head and main checks passed; automatic deployment 37514287368 and subsequent public health/readiness and read-only SSH revision checks passed.
+- KAN-81 remains In Progress: the latest valid Linux pair missed the combined target; the private Edge v16 attempt had no timed phases. See docs/reviews/2026-10-06-KAN-81-follow-up.md. Prepare the next operator procedure before starting its clock, retain failed evidence and preserve all bounds.
+- KAN-71: one reviewed isolated full collection is running; neither PostgreSQL timing nor the five before/after criterion is satisfied by collection alone.
+- Jira readback confirms eight unfinished delivery tickets (seven Codex, one Claude) and six parent epics. No completion transition is justified by these partial milestones.

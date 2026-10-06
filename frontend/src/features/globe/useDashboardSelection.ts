@@ -16,7 +16,8 @@ export function useDashboardSelection(
   const requestedId = useEventsStore((state) => state.selectedId);
   const storeSelect = useEventsStore((state) => state.select);
   const select = useCallback((id: string | null) => storeSelect(id, 'view'), [storeSelect]);
-  const selected = events.find((event) => event.id === requestedId) ?? null;
+  const selected =
+    requestedId === null ? null : (events.find((event) => event.id === requestedId) ?? null);
   useEffect(() => {
     const current = useEventsStore.getState();
     if (requestedId && !selected && current.selectedId === requestedId && current.list === shown)
