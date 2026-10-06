@@ -36,9 +36,38 @@ all eight source hashes and four protected input hashes. Patch SHA-256:
 Evidence result SHA-256:
 a72ac55f22ecb24c32963bb206d55222a266547cde9e5b25daf8f6a829677334.
 
-No timing or coverage result was measured for this subsequent patch. PR 130's
-earlier head passed all 38 reported checks, with 4,587 frontend tests passing and
-one skip, but that CI does not validate these new files. The previously recorded
-canonical v4 candidate still misses the original median/maximum targets. KAN-81
-remains open pending new published-head CI, measured latency and real-browser
+## Published-head CI and dependency repair
+
+At 1ae96222, CI 37444912235 finished with 29 successful jobs and one security
+failure. All 4,596 frontend tests passed, with one skip. Coverage was 96.28%
+statements, 92.26% branches, 94.76% functions and 97.43% lines; auth, global and
+per-file floors passed. All four PostgreSQL shards passed. Their elapsed job
+timestamps total 41.63 runner-minutes, or 42.17 including aggregation. This is
+not a causal speedup comparison or KAN-71's 30-minute acceptance.
+
+The security job failed on inherited source-map-js 1.2.1, affected by
+[GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+Gitleaks was skipped after that audit failure, not passed. A separately isolated,
+pnpm-generated patch changes only its lockfile package/snapshot to 1.2.2, official
+integrity and four compatible resolved edges. No dependency range, override or
+audit gate changes. Two independent static reviews are clear. The private frozen
+install, audit (zero reported vulnerabilities), malformed/valid source-map
+controls, full lint, both TypeScript checks, normal build, formatting and unchanged
+bundle budgets pass. The unchanged magicast embedded copy was identified as a
+scope caveat; no application attack path or universal dependency safety is claimed.
+Fresh published-head CI is required after this repair.
+
+## Canonical v5 failed attempt
+
+The unchanged new pair stopped on a baseline TimeoutError, before any completed
+test or scenario metrics. The candidate was not run. All pre/post source, shared,
+runtime/dependency and retained-evidence pins matched. Owned cleanup terminated
+the job, found no remaining members, observed process exit and closed all handles
+without errors. Raw failure evidence and exclusive observation remain retained;
+there was no unchanged retry. The tool connection returned a requested 50-second
+wait after 2,990.26 seconds. The 6,549.89-second receipt envelope cannot establish
+test runtime or the cause of the delay. Neither interval is application latency.
+
+The previous canonical v4 candidate still misses the original median/maximum
+targets. KAN-81 remains open pending fresh CI, measured latency and real-browser
 validation.

@@ -5944,3 +5944,14 @@ Root integrated the exact eight-file patch after source/protected hash checks.
 No new timing or coverage claim is made; new head CI and original latency/browser
 acceptance remain outstanding. See the
 [panel review](reviews/2026-10-06-KAN-81-panel-bodies.md).
+
+Published 1ae-head CI passed 4,596 frontend tests and all coverage floors, plus
+all four PostgreSQL shards, but failed the inherited source-map-js audit. A
+reviewed lock-only update to 1.2.2 passes private audit, focused malformed/valid
+mapping controls, lint, types, formatting, normal build and bundle budgets. No
+audit exception or dependency-range change was added. New head CI is required.
+Canonical v5 subsequently timed out in the baseline; the candidate never ran.
+Pins and owned cleanup passed, but there are no new scenario measurements.
+KAN-81 remains open. KAN-65 moved to Done after operator screen-reader confirmation
+joined its deployed keyboard checks; KAN-86 closed after all 17 children were
+verified Done. KAN-58's specific rapid-arrival/closed-Eye check remains separate.
