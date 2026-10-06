@@ -76,6 +76,13 @@ This does not isolate a performance cause or establish a whole-CI saving.
 A separate file-only readback verifier initially indexed stored command arguments
 incorrectly; its failure was retained and corrected without a collection rerun.
 
+The first published CI run, `37522070768`, was rejected before any job started:
+GitHub does not allow `runner.temp` in a job-level environment declaration.
+The repair places the identical manifest path in each consuming step's
+environment, where the runner context is supported. Manifest digest, test
+commands, isolation and all acceptance criteria remain unchanged. This failed
+workflow compilation is not a native execution or cost observation.
+
 ## Remaining KAN-71 acceptance
 
 This is a validated selection/assignment milestone, not completion of KAN-71.

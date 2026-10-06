@@ -137,7 +137,6 @@ jobs:
         working-directory: backend
     env:
       ASE_TEST_DATABASE_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
-      NATIVE_PLAN: ${{ runner.temp }}/postgres-native-plan/manifest.json
       NATIVE_PLAN_SHA256: ${{ needs.postgres-plan.outputs.manifest-sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -163,6 +162,7 @@ jobs:
       - name: Database tests in private worker databases
         # The two-worker trial was slower; retain automatic worker selection.
         env:
+          NATIVE_PLAN: ${{ runner.temp }}/postgres-native-plan/manifest.json
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: |
           sample_storage() {
@@ -207,6 +207,7 @@ jobs:
         run: psql --host localhost --username ase --dbname ase --command 'CREATE DATABASE ase_s01_disposable_ci'
       - name: Serial PostgreSQL, race and migration tests
         env:
+          NATIVE_PLAN: ${{ runner.temp }}/postgres-native-plan/manifest.json
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
           ASE_TOKEN_RACE_TEST_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
           ASE_COMPARISON_CONCURRENCY_POSTGRES_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
