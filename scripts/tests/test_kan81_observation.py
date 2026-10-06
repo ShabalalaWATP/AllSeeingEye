@@ -31,6 +31,102 @@ def result_text():
 
 
 class ObservationTests(unittest.TestCase):
+    def test_workflow_binds_the_new_candidate_and_original_baseline(self):
+        workflow = (
+            Path(__file__).resolve().parents[2]
+            / ".github/workflows/kan81-reference.yml"
+        )
+        refs = [
+            line.strip().removeprefix("ref: ")
+            for line in workflow.read_text(encoding="utf-8").splitlines()
+            if line.strip().startswith("ref: ")
+        ]
+        self.assertEqual(inputs.CANDIDATE, "38c487c93c79464dd0bbd9ed00c491b779a9a437")
+        self.assertEqual(inputs.BASELINE, "88164eb99150d5d94367f8257569100684f9e619")
+        self.assertEqual(refs[-2:], [inputs.BASELINE, inputs.CANDIDATE])
+
+    def test_candidate_identity_witnesses_actual_files_and_rejects_mutation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "frontend/conflict.ts"
+            source.parent.mkdir()
+            source.write_text("reviewed", encoding="utf-8")
+            pins = {"conflict.ts": inputs.sha(source)}
+            with (
+                patch.object(inputs, "CANDIDATE_PINS", pins),
+                patch.object(
+                    inputs, "git", return_value=inputs.CANDIDATE_FRONTEND_TREE
+                ),
+            ):
+                identity = inputs.verify_candidate(root)
+                self.assertEqual(
+                    identity,
+                    {
+                        "revision": inputs.CANDIDATE,
+                        "frontendTree": inputs.CANDIDATE_FRONTEND_TREE,
+                        "files": pins,
+                    },
+                )
+                source.write_text("unreviewed", encoding="utf-8")
+                with self.assertRaisesRegex(
+                    RuntimeError, "conflict derivation differs"
+                ):
+                    inputs.verify_candidate(root)
+
+    def test_candidate_tree_mismatch_fails_before_file_read(self):
+        with (
+            patch.object(inputs, "git", return_value="wrong tree"),
+            patch.object(inputs, "sha") as read,
+            self.assertRaisesRegex(RuntimeError, "frontend tree differs"),
+        ):
+            inputs.verify_candidate(Path("/candidate"))
+        read.assert_not_called()
+
+    def test_historical_candidate_cannot_be_relabelled_as_the_new_observation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with (
+                patch.object(
+                    inputs,
+                    "git",
+                    side_effect=[
+                        inputs.BASELINE,
+                        "",
+                        "435cbdf6aa4e709584046a1eacd128c05ee08408",
+                    ],
+                ),
+                patch.object(inputs, "verify_pins") as pins,
+                self.assertRaisesRegex(RuntimeError, "fresh immutable checkout"),
+            ):
+                inputs.prepare_sources(root / "baseline", root / "candidate")
+            pins.assert_not_called()
+
+    def test_candidate_gate_precedes_baseline_overlay(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            baseline, candidate = root / "baseline", root / "candidate"
+            manifest = baseline / "frontend/package.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text("historical", encoding="utf-8")
+            with (
+                patch.object(
+                    inputs,
+                    "git",
+                    side_effect=[inputs.BASELINE, "", inputs.CANDIDATE, ""],
+                ),
+                patch.object(inputs, "verify_pins"),
+                patch.object(
+                    inputs,
+                    "verify_candidate",
+                    side_effect=RuntimeError("input differs"),
+                ),
+                patch.object(inputs, "sources") as sources,
+                self.assertRaisesRegex(RuntimeError, "input differs"),
+            ):
+                inputs.prepare_sources(baseline, candidate)
+            self.assertEqual(manifest.read_text(encoding="utf-8"), "historical")
+            sources.assert_not_called()
+
     def test_retained_v4_negative_console_result_is_not_acceptance(self):
         # Verbatim metric/footer lines from canonical-priority-pair-881-v4/candidate-root.log.
         text = """{"kan81":{"newIds":{"totalMedianMs":43.06,"totalMaxMs":63.78,"mergeMedianMs":19.47,"reactMedianMs":24.49,"profilerMedianMs":23.23,"commitsPerBatch":1},"existingIds":{"totalMedianMs":28.12,"totalMaxMs":32.83,"mergeMedianMs":6.05,"reactMedianMs":21.95,"profilerMedianMs":20.32,"commitsPerBatch":1},"mixed":{"totalMedianMs":41.31,"totalMaxMs":51.3,"mergeMedianMs":17.65,"reactMedianMs":23.43,"profilerMedianMs":22.06,"commitsPerBatch":1},"controlLatency":{"medianMs":29.26,"maxMs":47.15}}}

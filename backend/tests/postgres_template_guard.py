@@ -1,11 +1,13 @@
 """Conservative eligibility for the ordinary app's optional PostgreSQL template."""
 
+from collections import deque
 from collections.abc import Callable
 from hashlib import sha256
 from typing import Any
 
 from sqlalchemy import Connection
 from sqlalchemy.dialects.postgresql import dialect
+from sqlalchemy.event.attr import _EmptyListener, _ListenerCollection
 from sqlalchemy.exc import CompileError
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.schema import CreateIndex, CreateTable
@@ -63,8 +65,22 @@ def schema_fingerprint() -> str | None:
         objects.extend(column.type for column in table.columns)
     for target in objects:
         dispatch = getattr(target, "dispatch", None)
-        if any(tuple(getattr(dispatch, name, ())) for name in DDL_EVENTS):
-            return None
+        for name in DDL_EVENTS:
+            listeners = getattr(dispatch, name, ())
+            # Exact pinned classes use plain deques. Joined/altered storage may override
+            # iteration independently of length, so retain its complete tuple evaluation.
+            if type(listeners) is _EmptyListener and type(listeners.parent_listeners) is deque:
+                present = len(listeners.parent_listeners) > 0
+            elif (
+                type(listeners) is _ListenerCollection
+                and type(listeners.parent_listeners) is deque
+                and type(listeners.listeners) is deque
+            ):
+                present = len(listeners.parent_listeners) + len(listeners.listeners) > 0
+            else:
+                present = bool(tuple(listeners))
+            if present:
+                return None
     try:
         pg_dialect = dialect()
         statements = []

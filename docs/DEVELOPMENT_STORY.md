@@ -5972,3 +5972,58 @@ then candidate observation remains unexecuted, with unchanged latency targets.
 The isolated KAN-71 diagnostic passed its 65 tests, but its final schema equality
 check failed on tied PostgreSQL constraint-row ordering. The failed receipt and
 successful owned cleanup are retained; full diagnostic acceptance is pending.
+
+The subsequent d078 CI passed all 30 jobs and unchanged coverage/security floors.
+PostgreSQL used 49.58 elapsed runner-minutes, above its 30-minute criterion. The
+web SBOM failed before scanning on an external tool download; recovery attempt 2
+completed actual web/API scans and uploaded inventories. The single Linux pair
+completed with all protected readbacks and cleanup, but only controls met both
+latency targets. New-record latency worsened; no causal gain is claimed.
+
+The separately reviewed PostgreSQL v8 diagnostic then passed all 65 original
+cases, 195 phases, full schema equality and source/runtime readbacks. Its owned
+resources closed cleanly. It is not whole-CI cost or five-run acceptance. Edge v7
+rendered the real basemap but stopped on the sealed request boundary before any
+bootstrap or trace. The failure and normal shutdown remain preserved; an exact
+read-only notification-bell request gap is being repaired in a new private packet.
+
+A fresh conflict derivation keeps the original control metadata, eligibility,
+group counts, object references, order and selection while avoiding repeated
+full-input classification. The unchanged hook passed 16 equivalence cases and
+failed the intended 128-versus-96 read budget. The candidate passed 88 cases across
+11 files, scoped lint/formatting, both full type checks, build, bundle budgets and
+both independent reviews. Fixture/dependency/benchmark inputs stayed unchanged.
+No new timing or coverage result is claimed. See the
+[review](reviews/2026-10-06-KAN-81-conflict-derivation.md). KAN-81 remains open.
+
+Security review of the test-only listener allocation shortcut found nested joined
+collections could bypass its initial exact-type check. The candidate was repaired
+before integration: joined/altered collections retain complete tuple evaluation,
+and only exact supported classes with exact deque storage use cardinality. The
+corrected regression matrix failed 30 times against the preserved first candidate;
+the repair passed 136 cases, Ruff, formatting and both exact reviews. All fresh
+DDL and lifecycle guards remain intact. No native cost or coverage is claimed.
+See the [review](reviews/2026-10-06-KAN-71-listener-scan.md).
+
+Private Edge v8 delivered 200 frames and rendered the updated counts and Map view,
+but the operator trace lasted 63.859 seconds and its mode input missed the controls
+stream phase. The root stop also missed the application capture deadline. Both
+applications exited normally and every owned resource closed, while the failed
+owner and operator receipts remain retained. Browser acceptance is incomplete;
+a staged operator protocol is being prepared without changing the application,
+fixture, authentication or latency targets.
+
+
+### KAN-81 revised reference binding, 6 October 2026
+
+The observer now fixes candidate 38c487c9 and verifies its complete frontend Git
+tree plus the four reviewed conflict-file hashes before overlay or installation.
+Baseline 88164eb, fixture, dependencies, command, targets and process bounds are
+unchanged. All 26 offline observer cases and independent quality/security reviews
+passed. The earlier completed negative observation remains preserved. No new
+observation or timing result is claimed until the one explicit trigger executes.
+
+PR #130 was squash-merged as 0c180576 under the existing release authorisation.
+The initial merge-commit request was refused by repository policy, without a
+merge. The subsequent allowed squash merge succeeded and was read back. Main CI
+and production deployment verification remain outstanding; both tickets stay open.

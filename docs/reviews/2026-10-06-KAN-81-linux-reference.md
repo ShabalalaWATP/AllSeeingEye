@@ -1,8 +1,12 @@
 # KAN-81: one Linux reference observation
 
-This protocol is prepared, not executed. No timing or acceptance result is claimed.
-The prior Windows v5 baseline timeout remains a failed observation with no candidate
-run. All earlier negative pairs remain evidence; this job does not replace them.
+This revised protocol is prepared, not executed. It deliberately changes the fixed
+candidate to the reviewed conflict-derivation milestone. No new timing or acceptance
+result is claimed. The completed first Linux observation, run `37486974563`, remains
+unchanged: both arms completed with input and cleanup checks, but the original
+candidate `435cbdf6aa4e709584046a1eacd128c05ee08408` missed the targets. This is a
+new-source observation, not a rerun or relabelling of that result. The prior Windows
+v5 baseline timeout and every earlier negative pair also remain evidence.
 
 ## Scope and trigger
 
@@ -22,8 +26,15 @@ filesystem warming and fixed arm order limit causal and repeatability claims.
 
 - Baseline: `88164eb99150d5d94367f8257569100684f9e619`. Its frontend equals the
   historical `d706c01124d5ff6db443c32f74b9e78c8309fc82` Windows reference.
-- Candidate: `435cbdf6aa4e709584046a1eacd128c05ee08408`, including the reviewed
-  source-map-js security lock repair.
+- Candidate: `38c487c93c79464dd0bbd9ed00c491b779a9a437`, frontend tree
+  `b1f2e5940f5490cabff8dde1a62aeebe4e016507`. Its only frontend changes since the
+  first Linux candidate are `conflictScope.ts`, `useConflictFilters.ts` and the
+  two focused conflict-scope regressions. The source-map-js security lock repair
+  and all dependency inputs are unchanged.
+- Before overlay or installation, the observer requires the exact clean candidate
+  revision, frontend tree and the four reviewed conflict-file hashes. The actual
+  tree/file witness is retained as `candidateIdentity` in `inputs.json`. A wrong
+  historical checkout or changed helper cannot be labelled as the new candidate.
 - Both arms receive the candidate's identical `frontend/package.json` and
   `frontend/pnpm-lock.yaml`. This is a dependency-normalised historical baseline,
   not an unchanged historical whole checkout. The original baseline file map,
@@ -85,5 +96,7 @@ and [pnpm package metadata](https://registry.npmjs.org/pnpm/11.25.0).
 [Hosted runner documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 explains the per-job VM boundary. Focused offline checks exercise failed-baseline
 short-circuiting, raw metric validation, strict targets, environment isolation,
-source pin refusal, dependency parity and process acknowledgement/cleanup. Their
+source pin refusal, dependency parity and process acknowledgement/cleanup. The
+revised binding also tests workflow/ref agreement, candidate tree/content refusal
+and rejection before any baseline overlay. Their
 actual results must be recorded separately before authorising the one live job.
