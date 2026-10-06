@@ -6027,3 +6027,15 @@ PR #130 was squash-merged as 0c180576 under the existing release authorisation.
 The initial merge-commit request was refused by repository policy, without a
 merge. The subsequent allowed squash merge succeeded and was read back. Main CI
 and production deployment verification remain outstanding; both tickets stay open.
+
+### KAN-81 null-selection scans and release verification, 6 October 2026
+
+PRs #130 and #131 are now merged and their main CI and automatic production
+deployments passed. A fresh regression reproduced four unnecessary ID scans
+when no globe item was selected. Exact-null guards preserve every non-null
+lookup, including empty IDs. The four failing controls now pass alongside the
+existing selection cases: 62 tests in 13 files, both TypeScript configurations
+and focused static checks passed. Independent quality/security reviews cleared
+the source. No new latency improvement is claimed, and KAN-81 remains open.
+See [the review](reviews/2026-10-06-KAN-81-null-selection.md) for evidence and
+the retained release readiness transient and failed Edge helper attempt.

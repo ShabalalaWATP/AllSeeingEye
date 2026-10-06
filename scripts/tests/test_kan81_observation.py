@@ -41,17 +41,41 @@ class ObservationTests(unittest.TestCase):
             for line in workflow.read_text(encoding="utf-8").splitlines()
             if line.strip().startswith("ref: ")
         ]
-        self.assertEqual(inputs.CANDIDATE, "38c487c93c79464dd0bbd9ed00c491b779a9a437")
+        self.assertEqual(inputs.CANDIDATE, "e412348d1fa4ef0cfb90255eba67a923b4188e9a")
+        self.assertEqual(
+            inputs.CANDIDATE_FRONTEND_TREE, "99a185f5f78352591730d2126bcb3eb678a7c60d"
+        )
         self.assertEqual(inputs.BASELINE, "88164eb99150d5d94367f8257569100684f9e619")
         self.assertEqual(refs[-2:], [inputs.BASELINE, inputs.CANDIDATE])
+        self.assertEqual(
+            set(inputs.CANDIDATE_PINS),
+            {
+                f"src/features/globe/{name}"
+                for name in (
+                    "conflictScope.ts",
+                    "useConflictFilters.ts",
+                    "conflictScope-equivalence.test.tsx",
+                    "conflictScope-budget.test.tsx",
+                    "useDashboardSelection.ts",
+                    "ObservationControls.tsx",
+                    "useHazardFilters.ts",
+                    "useFiresFilters.ts",
+                    "noSelectionTraversal.test.tsx",
+                    "useDashboardSelection.test.tsx",
+                    "filterSelection.test.tsx",
+                )
+            },
+        )
 
     def test_candidate_identity_witnesses_actual_files_and_rejects_mutation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            source = root / "frontend/conflict.ts"
-            source.parent.mkdir()
-            source.write_text("reviewed", encoding="utf-8")
-            pins = {"conflict.ts": inputs.sha(source)}
+            pins = {}
+            for name in inputs.CANDIDATE_PINS:
+                source = root / "frontend" / name
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text("reviewed", encoding="utf-8")
+                pins[name] = inputs.sha(source)
             with (
                 patch.object(inputs, "CANDIDATE_PINS", pins),
                 patch.object(
@@ -67,11 +91,15 @@ class ObservationTests(unittest.TestCase):
                         "files": pins,
                     },
                 )
-                source.write_text("unreviewed", encoding="utf-8")
-                with self.assertRaisesRegex(
-                    RuntimeError, "conflict derivation differs"
-                ):
-                    inputs.verify_candidate(root)
+                for name in pins:
+                    source = root / "frontend" / name
+                    with self.subTest(path=name):
+                        source.write_text("unreviewed", encoding="utf-8")
+                        try:
+                            with self.assertRaises(RuntimeError):
+                                inputs.verify_candidate(root)
+                        finally:
+                            source.write_text("reviewed", encoding="utf-8")
 
     def test_candidate_tree_mismatch_fails_before_file_read(self):
         with (
@@ -85,21 +113,24 @@ class ObservationTests(unittest.TestCase):
     def test_historical_candidate_cannot_be_relabelled_as_the_new_observation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            with (
-                patch.object(
-                    inputs,
-                    "git",
-                    side_effect=[
-                        inputs.BASELINE,
-                        "",
-                        "435cbdf6aa4e709584046a1eacd128c05ee08408",
-                    ],
-                ),
-                patch.object(inputs, "verify_pins") as pins,
-                self.assertRaisesRegex(RuntimeError, "fresh immutable checkout"),
+            for revision in (
+                "435cbdf6aa4e709584046a1eacd128c05ee08408",
+                "38c487c93c79464dd0bbd9ed00c491b779a9a437",
+                "1a84156c3d41308aba78c920780537d6fefcbcfc",
             ):
-                inputs.prepare_sources(root / "baseline", root / "candidate")
-            pins.assert_not_called()
+                with (
+                    self.subTest(revision=revision),
+                    patch.object(
+                        inputs, "git", side_effect=[inputs.BASELINE, "", revision, ""]
+                    ),
+                    patch.object(inputs, "verify_pins") as pins,
+                    patch.object(inputs, "verify_candidate", return_value={}),
+                    patch.object(inputs, "sources", return_value={}),
+                    patch.object(inputs, "OVERLAY", ()),
+                    self.assertRaisesRegex(RuntimeError, "fresh immutable checkout"),
+                ):
+                    inputs.prepare_sources(root / "baseline", root / "candidate")
+                pins.assert_not_called()
 
     def test_candidate_gate_precedes_baseline_overlay(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -7,13 +7,34 @@ import subprocess
 from pathlib import Path
 
 BASELINE = "88164eb99150d5d94367f8257569100684f9e619"
-CANDIDATE = "38c487c93c79464dd0bbd9ed00c491b779a9a437"
-CANDIDATE_FRONTEND_TREE = "b1f2e5940f5490cabff8dde1a62aeebe4e016507"
+CANDIDATE = "e412348d1fa4ef0cfb90255eba67a923b4188e9a"
+CANDIDATE_FRONTEND_TREE = "99a185f5f78352591730d2126bcb3eb678a7c60d"
 CANDIDATE_PINS = {
     "src/features/globe/conflictScope.ts": "9709b9a4ec114b99165d6c13e8861ba77208caa2bd1ce116fa338c5e5834987f",
     "src/features/globe/useConflictFilters.ts": "ed754e4ff6d0f07ac121c39bf1771d1154683f13c68144c0316696cfc86434fd",
     "src/features/globe/conflictScope-equivalence.test.tsx": "387d8bd8b58c6354db926d376b16a492989bd5a7e2ec340fbcbfd33e031f5a44",
     "src/features/globe/conflictScope-budget.test.tsx": "bf1844433adc5e14309f693c94d9104d6964c23bc765d83f1722d53f9074fccc",
+    "src/features/globe/useDashboardSelection.ts": (
+        "a36561f6aad7b621f873c8aeda056263d21db0c8ebf8b61c925692e59a6a0eda"
+    ),
+    "src/features/globe/ObservationControls.tsx": (
+        "c9bc1744c1156fe8cee58ed6d5399caf67621227f4b2efee16169187f6f6d392"
+    ),
+    "src/features/globe/useHazardFilters.ts": (
+        "3dbe244aa7a2781521ba510c651ad0c94849ff01838c26216eee7ead3eb8f4b2"
+    ),
+    "src/features/globe/useFiresFilters.ts": (
+        "09a1644b9d6fafe7cf084c4628d9534eb36e1017b77f6e3e9aff8fa7509d870e"
+    ),
+    "src/features/globe/noSelectionTraversal.test.tsx": (
+        "a1810e86dbbeeb467f327085d393a619beb5d334263cbb09850445f20a08a424"
+    ),
+    "src/features/globe/useDashboardSelection.test.tsx": (
+        "4895b96eb132768301be212a5aa281d885b4042785ffb04ec32d514a509eb93c"
+    ),
+    "src/features/globe/filterSelection.test.tsx": (
+        "fff42795e576dae0d86e899b24d06ec114c9aa04c17725f9e3c0a0752842091c"
+    ),
 }
 BENCHMARK = "src/features/globe/GlobePage.streamBenchmark.test.tsx"
 OVERLAY = ("package.json", "pnpm-lock.yaml")
@@ -58,7 +79,7 @@ def verify_candidate(root: Path) -> dict:
         raise RuntimeError("Candidate frontend tree differs")
     actual = {name: sha(root / "frontend" / name) for name in CANDIDATE_PINS}
     if actual != CANDIDATE_PINS:
-        raise RuntimeError("Candidate conflict derivation differs")
+        raise RuntimeError("Candidate reviewed frontend files differ")
     return {"revision": CANDIDATE, "frontendTree": tree, "files": actual}
 
 

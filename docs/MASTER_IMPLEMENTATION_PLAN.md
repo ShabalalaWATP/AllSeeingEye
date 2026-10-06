@@ -1470,3 +1470,15 @@ PR #130 was squash-merged as 0c180576 under the existing release authorisation.
 The initial merge-commit request was refused by repository policy, without a
 merge. The subsequent allowed squash merge succeeded and was read back. Main CI
 and production deployment verification remain outstanding; both tickets stay open.
+
+### KAN-81 current milestone, 6 October 2026
+
+- PRs #130/#131: merged, main CI and automatic deployment verified.
+- Exact-null selection guards: implemented, genuine failing baseline retained,
+  62 tests and both TypeScript checks passed, quality/security reviews clear.
+- Acceptance remains open: the last valid Linux observation missed its targets.
+  Run a newly pinned reference for these source changes and complete the real
+  Edge capture after repairing its separate helper's initial navigation refusal.
+- Keep failed attempts and the initial production readiness 503 in the evidence.
+
+Details: [null-selection review](reviews/2026-10-06-KAN-81-null-selection.md).
