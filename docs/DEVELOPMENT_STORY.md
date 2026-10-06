@@ -5995,3 +5995,20 @@ failed the intended 128-versus-96 read budget. The candidate passed 88 cases acr
 both independent reviews. Fixture/dependency/benchmark inputs stayed unchanged.
 No new timing or coverage result is claimed. See the
 [review](reviews/2026-10-06-KAN-81-conflict-derivation.md). KAN-81 remains open.
+
+Security review of the test-only listener allocation shortcut found nested joined
+collections could bypass its initial exact-type check. The candidate was repaired
+before integration: joined/altered collections retain complete tuple evaluation,
+and only exact supported classes with exact deque storage use cardinality. The
+corrected regression matrix failed 30 times against the preserved first candidate;
+the repair passed 136 cases, Ruff, formatting and both exact reviews. All fresh
+DDL and lifecycle guards remain intact. No native cost or coverage is claimed.
+See the [review](reviews/2026-10-06-KAN-71-listener-scan.md).
+
+Private Edge v8 delivered 200 frames and rendered the updated counts and Map view,
+but the operator trace lasted 63.859 seconds and its mode input missed the controls
+stream phase. The root stop also missed the application capture deadline. Both
+applications exited normally and every owned resource closed, while the failed
+owner and operator receipts remain retained. Browser acceptance is incomplete;
+a staged operator protocol is being prepared without changing the application,
+fixture, authentication or latency targets.

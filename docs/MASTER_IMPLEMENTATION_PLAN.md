@@ -1434,3 +1434,24 @@ a narrowly reviewed replacement fixture is being prepared.
 
 See [conflict derivation review](reviews/2026-10-06-KAN-81-conflict-derivation.md).
 No new latency or coverage result is claimed. KAN-71 and KAN-81 remain open.
+
+### KAN-71 listener allocation, 6 October 2026
+
+- [x] Preserve complete fresh schema compilation and every lifecycle guard.
+- [x] Restrict allocation shortcuts to exact supported classes and deque storage.
+- [x] Repair the nested-listener finding before integration or release.
+- [x] Reproduce 30 semantic failures and pass 136 repaired focused cases.
+- [x] Pass Ruff, formatting, whitespace and both exact repair reviews.
+- [ ] Pass new published-head CI and measure unchanged PostgreSQL acceptance.
+
+See [listener scan review](reviews/2026-10-06-KAN-71-listener-scan.md). No native
+performance or new coverage measurement is claimed for this patch.
+
+Private Edge v8 subsequently delivered all 200 public frames and rendered updated
+layer counts. Its operator capture was incomplete: the trace lasted 63.859 seconds
+against a 60-second bound, and its single Map input followed the controls phase.
+The application capture completed and both applications exited normally, but the
+owner receipt failed because the operator stop arrived after automatic deadline
+shutdown. All jobs, streams, owned handles and listeners closed cleanly. These
+receipts remain preserved; a staged operator driver must close that coordination
+gap before claiming browser acceptance.
