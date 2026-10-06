@@ -1,12 +1,12 @@
 # KAN-81: one Linux reference observation
 
-This revised protocol is prepared, not executed. It deliberately changes the fixed
-candidate to the reviewed conflict-derivation milestone. No new timing or acceptance
-result is claimed. The completed first Linux observation, run `37486974563`, remains
-unchanged: both arms completed with input and cleanup checks, but the original
-candidate `435cbdf6aa4e709584046a1eacd128c05ee08408` missed the targets. This is a
-new-source observation, not a rerun or relabelling of that result. The prior Windows
-v5 baseline timeout and every earlier negative pair also remain evidence.
+This revised protocol is prepared, not executed. It changes the fixed candidate to
+the reviewed null-selection traversal guards. No new timing or acceptance result
+is claimed. Completed Linux observations `37486974563` (candidate `435cbdf6`) and
+`37497054952` (candidate `38c487c9`) remain unchanged: both completed their two arms
+with input and cleanup checks, but both candidates missed the targets. This is a
+new-source observation, not a rerun or relabelling of either result. The prior
+Windows v5 baseline timeout and every earlier negative pair also remain evidence.
 
 ## Scope and trigger
 
@@ -26,15 +26,17 @@ filesystem warming and fixed arm order limit causal and repeatability claims.
 
 - Baseline: `88164eb99150d5d94367f8257569100684f9e619`. Its frontend equals the
   historical `d706c01124d5ff6db443c32f74b9e78c8309fc82` Windows reference.
-- Candidate: `38c487c93c79464dd0bbd9ed00c491b779a9a437`, frontend tree
-  `b1f2e5940f5490cabff8dde1a62aeebe4e016507`. Its only frontend changes since the
-  first Linux candidate are `conflictScope.ts`, `useConflictFilters.ts` and the
-  two focused conflict-scope regressions. The source-map-js security lock repair
-  and all dependency inputs are unchanged.
+- Candidate: `e412348d1fa4ef0cfb90255eba67a923b4188e9a`, frontend tree
+  `99a185f5f78352591730d2126bcb3eb678a7c60d`. Its only frontend changes since the
+  second Linux candidate are exact-null guards in `useDashboardSelection.ts`,
+  `ObservationControls.tsx`, `useHazardFilters.ts` and `useFiresFilters.ts`, plus
+  three focused selection regressions. The four reviewed conflict-derivation
+  files, source-map-js security lock repair and all dependency inputs remain.
 - Before overlay or installation, the observer requires the exact clean candidate
-  revision, frontend tree and the four reviewed conflict-file hashes. The actual
-  tree/file witness is retained as `candidateIdentity` in `inputs.json`. A wrong
-  historical checkout or changed helper cannot be labelled as the new candidate.
+  revision, frontend tree and eleven reviewed file hashes: the previous four
+  conflict files and the seven selection files. The actual tree/file witness is
+  retained as `candidateIdentity` in `inputs.json`. A wrong historical checkout or
+  changed helper cannot be labelled as the new candidate.
 - Both arms receive the candidate's identical `frontend/package.json` and
   `frontend/pnpm-lock.yaml`. This is a dependency-normalised historical baseline,
   not an unchanged historical whole checkout. The original baseline file map,

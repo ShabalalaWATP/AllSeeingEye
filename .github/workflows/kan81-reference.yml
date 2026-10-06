@@ -39,7 +39,7 @@ jobs:
       - name: Check out fixed candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 38c487c93c79464dd0bbd9ed00c491b779a9a437
+          ref: e412348d1fa4ef0cfb90255eba67a923b4188e9a
           path: candidate
           persist-credentials: false
       - name: Provision exact public runtime artifacts
