@@ -6043,3 +6043,16 @@ the retained release readiness transient and failed Edge helper attempt.
 ### 6 October 2026: KAN-81 incremental fix merged
 
 PR #132 merged as 037f2d76 after current-head CI, CodeQL and SBOM checks passed. Main checks and automatic deployment 37514287368 passed; public health/readiness returned 200 and read-only SSH confirmed the clean deployed revision and healthy API/parser. Its valid Linux reference pair still missed the combined target. The incomplete Edge v16 capture and its unknown transport timeout remain recorded in docs/reviews/2026-10-06-KAN-81-follow-up.md. KAN-81 stays open; a focused empty-news-query change and corrected browser procedure are in preparation.
+
+### KAN-81 current-main browser acceptance, 6 October 2026
+
+PR #133 merged as 218ce580; main CI and automatic deployment passed. The
+original Jira timing figures were rechecked and are reporting targets, correcting
+a stronger gate introduced in later agent-written plan entries. The current
+build completed the real Edge trace with all 80 logical batches, normal search
+and map interactions, and clean shutdown. No attributed stream-flush task
+exceeded 50 ms; separate application, rendering and interaction outliers remain
+reported. The first attempt exposed an over-restrictive viewport-refresh guard
+in the private harness, which was corrected without changing the application.
+See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md) for
+functional evidence, unmet fixture targets and the actual browser limits.
