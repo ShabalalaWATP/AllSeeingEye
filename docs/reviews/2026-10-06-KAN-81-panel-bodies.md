@@ -57,6 +57,27 @@ bundle budgets pass. The unchanged magicast embedded copy was identified as a
 scope caveat; no application attack path or universal dependency safety is claimed.
 Fresh published-head CI is required after this repair.
 
+At 435cbdf6, CI 37482425912 passed all dependency and security checks, including
+Gitleaks, plus the frontend's 4,596 tests and unchanged coverage percentages.
+All four PostgreSQL shards passed, totalling 39.67 runner-minutes, or 40.18
+including aggregation. The overall run failed on one inherited SQLite test:
+`test_last_event_id_header_resumes_over_http` advanced its fake clock after a
+fixed sleep and received 401 before stream admission. A deterministic stream
+barrier now waits for the matching replayed ASGI response frame before advancing
+the clock. Both immediate and delayed admission reproduced 401 on the old test;
+the repair passes the 31-case combined stream suite, including both cases. Authentication,
+Last-Event-ID, replay and token-expiry assertions are preserved. Bounded waits,
+closer cancellation/join and zero-held-slot checks prevent a hanging test.
+Ruff, formatting and independent correctness/security review pass. The exact
+one-file repair is integrated locally; new published-head CI is still required.
+
+The separately reviewed Linux reference workflow is integrated as 966de7cd.
+It keeps the original fixture, command and latency targets, with the historical
+baseline explicitly normalised to the candidate's security-fixed dependencies.
+Its 21 offline cases, Ruff and formatting pass. Independent review caught and
+verified a launch-cancellation repair before execution. No hosted observation
+has run yet. See the [protocol](2026-10-06-KAN-81-linux-reference.md).
+
 ## Canonical v5 failed attempt
 
 The unchanged new pair stopped on a baseline TimeoutError, before any completed

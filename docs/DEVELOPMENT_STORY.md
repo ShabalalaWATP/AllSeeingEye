@@ -5955,3 +5955,20 @@ Pins and owned cleanup passed, but there are no new scenario measurements.
 KAN-81 remains open. KAN-65 moved to Done after operator screen-reader confirmation
 joined its deployed keyboard checks; KAN-86 closed after all 17 children were
 verified Done. KAN-58's specific rapid-arrival/closed-Eye check remains separate.
+
+Fresh 435-head CI passed security, including Gitleaks, all frontend tests and
+coverage, and all PostgreSQL shards (40.18 elapsed runner-minutes including
+aggregation). One inherited SQLite stream test failed because a fixed sleep
+allowed fake token expiry before admission. A deterministic response barrier
+is being prepared without changing authentication or the original assertions.
+The exact one-file repair subsequently passed the 31-case combined stream suite,
+including immediate/delayed admission, Ruff, formatting and independent review. Root verified
+the patch/source hashes and committed it locally as e9ed465b. Fresh CI is required.
+The Linux reference observer then passed 21 offline cases, Ruff, formatting and
+two independent reviews. A review found a cancellation gap during child creation;
+the narrow signal-deferral repair and regressions closed it before any execution.
+Root integrated the exact seven-file patch as 966de7cd. The one hosted baseline
+then candidate observation remains unexecuted, with unchanged latency targets.
+The isolated KAN-71 diagnostic passed its 65 tests, but its final schema equality
+check failed on tied PostgreSQL constraint-row ordering. The failed receipt and
+successful owned cleanup are retained; full diagnostic acceptance is pending.

@@ -1380,6 +1380,16 @@ observations. See [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md
 - [x] Pass 37 focused cases, lint, format, both types, build, bundle and two reviews.
 - [ ] Pass new published-head CI and unchanged latency/browser acceptance.
 
+The subsequent 435-head security job passes, including Gitleaks. Frontend CI
+passes 4,596 tests with unchanged coverage. All PostgreSQL shards pass, costing
+40.18 elapsed runner-minutes including aggregation. Overall CI remains failed
+on an inherited fixed-sleep stream-resume test race. Its deterministic repair
+passes 31 focused cases and independent review; new published-head CI, a single
+Linux reference observation and latest-build browser checks are pending.
+The Linux observer passes 21 offline cases and both independent reviews; it is
+integrated at 966de7cd, awaiting its one explicit trigger. Its original latency
+targets remain unchanged and it does not replace real-browser validation.
+
 The exact reviewed eight-file patch is integrated into PR 130 after its earlier
 freshness head passed full CI (4,587 tests, one skip, 92.26% branch coverage).
 Published 1ae-head CI passed 4,596 frontend tests, coverage floors and all four
