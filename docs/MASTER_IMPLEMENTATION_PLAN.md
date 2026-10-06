@@ -1489,3 +1489,18 @@ Details: [null-selection review](reviews/2026-10-06-KAN-81-null-selection.md).
 - KAN-81 remains In Progress: the latest valid Linux pair missed the combined target; the private Edge v16 attempt had no timed phases. See docs/reviews/2026-10-06-KAN-81-follow-up.md. Prepare the next operator procedure before starting its clock, retain failed evidence and preserve all bounds.
 - KAN-71: one reviewed isolated full collection is running; neither PostgreSQL timing nor the five before/after criterion is satisfied by collection alone.
 - Jira readback confirms eight unfinished delivery tickets (seven Codex, one Claude) and six parent epics. No completion transition is justified by these partial milestones.
+
+### KAN-81 acceptance reconciliation, 6 October 2026
+
+- [x] Audit the merged implementation and current-main functional evidence.
+- [x] Complete the real Edge capture with all 80 logical update batches.
+- [x] Report original fixture targets and actual browser timing limitations.
+
+The original Jira describes 20 ms median and under-50 ms maximum figures as
+targets, not flaky unit-test deadlines. This acceptance review treats them as
+reporting targets rather than additional closure gates. Earlier unchecked
+entries requiring those figures to be met overstated the criterion. New-ID and mixed medians
+still exceed target and remain reported. Current-main CI passes 4,637 frontend
+tests with 92.28% branch coverage. The completed browser trace contains no
+stream-flush task over 50 ms; separate task and interaction outliers remain
+explicit. See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md).
