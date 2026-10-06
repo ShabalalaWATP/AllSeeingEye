@@ -59,6 +59,7 @@ export function useObservationFilters(events: readonly LiveEvent[]) {
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);
   useEffect(() => {
+    if (selectedId === null) return;
     const selected = events.find((event) => event.id === selectedId);
     if (
       selected &&

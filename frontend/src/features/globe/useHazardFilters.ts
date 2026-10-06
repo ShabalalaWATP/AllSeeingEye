@@ -37,6 +37,7 @@ export function useHazardFilters(events: LiveEvent[]) {
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);
   useEffect(() => {
+    if (selectedId === null) return;
     const selected = events.find((event) => event.id === selectedId);
     if (selected && hazardKind(selected) !== null && !matchesHazard(selected, options, now))
       select(null);
