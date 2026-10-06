@@ -6056,3 +6056,15 @@ reported. The first attempt exposed an over-restrictive viewport-refresh guard
 in the private harness, which was corrected without changing the application.
 See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md) for
 functional evidence, unmet fixture targets and the actual browser limits.
+
+### Approved contact and personal-data procedure, 7 October 2026
+
+The operator confirmed the Yahoo address and approved the prepared private
+contact and administrator-assisted request procedure. The isolated documentation
+change records that decision, preserves team work and sole-manager safeguards,
+and keeps complete account export/erasure outside the delivered capability.
+Independent quality and security reviews cleared the five procedure/contact
+files. The previous eleven-case rehearsal remains accurately dated historical
+evidence; no production data was deleted. One labelled SMTP test was accepted,
+with mailbox receipt still awaiting verification. See the
+[approval record](reviews/2026-10-07-KAN-22-23-operator-approval.md).

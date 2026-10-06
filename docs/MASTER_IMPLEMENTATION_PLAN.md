@@ -4,6 +4,26 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### Approved operator procedures, 7 October 2026
+
+Main `33990205` passed its checks and automatic deployment after PR #134.
+KAN-71 and its parent KAN-68 are Done following the operator's acceptance of
+the measured CI result; no further 30-minute optimisation gate remains.
+KAN-81 and parent KAN-25 are also Done. Older dated counts below are historical.
+
+- [x] Record the approved private contact and administrator-assisted KAN-23
+  procedure, preserving shared work and explicit account-wide limitations.
+- [ ] Merge the reviewed contact/procedure documentation and close KAN-23.
+- [ ] Verify the KAN-22 synthetic email reaches the owner's mailbox.
+- [x] Complete the approved KAN-134 bounded HDX HAPI shape probe: 20 valid rows
+  from each of three topics. KAN-134 and parent KAN-107 are Done. See the
+  [live evidence](reviews/2026-10-07-KAN-134-live-shape.md).
+- [ ] Agree and provision KAN-45 off-site storage and missed-run monitoring,
+  then prove a real isolated restore and test alert delivery. The operator
+  confirmed that neither external service currently exists.
+
+See the [operator approval record](reviews/2026-10-07-KAN-22-23-operator-approval.md).
+
 ### Codex main integration, 1 October 2026
 
 - [x] Reconcile all nine batches with main `9ae40e3d` using ordinary merges.

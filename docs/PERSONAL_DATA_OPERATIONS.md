@@ -1,22 +1,21 @@
-# Personal-data requests: current capabilities and proposed procedure
+# Personal-data requests: current capabilities and operator-assisted procedure
 
-Status, 2 October 2026: capability inventory and selected record-level procedures
-reviewed for KAN-23. The proposed operator-assisted policy below awaits the
-installation operator's confirmation. There is no account-wide export bundle or
+This installation uses the operator-assisted procedure below for selected
+supported personal-data requests. There is no account-wide export bundle or
 complete account-erasure action. Account deactivation revokes access; it does not
 erase all data.
 
 ## Responsibility and scope
 
-Proposed contact: the installation administrator through the installation's
-existing private support channel. Verify the requester's identity and exact
-account before selecting records. Do not publish personal data in GitHub or Jira.
+Requests are handled by the installation administrator through
+[alexorr@yahoo.co.uk](mailto:alexorr@yahoo.co.uk). The administrator verifies the
+requester's identity and exact account before agreeing the selected records and
+actions. Do not publish personal data in GitHub or Jira.
 
-Proposed team policy: preserve shared team work and resolve responsibility with
-the team before changing membership. A person's authorship does not make all
-team records personal exports or authorise deleting shared work. The operator
-must choose the route, responsible private contact and shared-team policy; no
-legal retention period is inferred here. These choices remain pending.
+Preserve shared team work and resolve responsibility with the team before
+changing membership. A person's authorship does not make all team records
+personal exports or authorise deleting shared work. No legal retention period
+is inferred here.
 
 ## Current inventory
 
@@ -67,9 +66,11 @@ request. Never point a development rehearsal at an operator database.
    reports through their supported API/UI. Confirm removed report/version
    counts and unchanged team/other-user counts. Do not issue ad hoc SQL.
 5. If deactivation is requested, appoint another active manager wherever this
-   account is the only active manager of an active team, or agree to archive
-   the team. Then use administrator deactivation. Confirm old sessions fail
-   and another authorised member can still read shared team work.
+   account is the only active manager of an active team or, with the team's
+   agreement, archive the team. Confirm that the replacement manager is active
+   or that archiving has completed before using administrator deactivation.
+   Confirm old sessions fail and another authorised member can still read shared
+   team work.
 6. Record what was exported, removed, deactivated and retained using identifiers
    and counts rather than copied content. Explain backup copies and external
    provider copies separately; follow their approved policies.
@@ -104,7 +105,7 @@ These are follow-up scope and acceptance criteria, not delivered features or
 permission to change retention policy. KAN-23 defines and verifies the supported
 procedure; it does not stand in for implementing these separate product gaps.
 
-## Verification and remaining acceptance
+## Verification and limits
 
 The original disposable SQLite rehearsal in
 [test_personal_data_procedure.py](../backend/tests/test_personal_data_procedure.py)
@@ -131,8 +132,9 @@ not a claim of notification erasure or live delivery verification. No real
 requester data, private file transfer, production deletion or legal retention
 decision was exercised.
 
-KAN-23 remains open until the operator's request-handling and shared-team policy
-choices are recorded and the selected supported procedure is verified. Identifying
-unsupported steps and concrete follow-up scope is required; completing every
-account-wide implementation gap is not a prerequisite for this procedure task.
-Do not describe this page as a complete account-wide export or erasure capability.
+The operator-assisted route, administrator contact and shared-team policy above
+define this installation's request-handling procedure. The retained rehearsal
+verifies the selected supported actions, within the limits described above.
+Unsupported account-wide steps remain separately scoped follow-up work; they
+are not delivered by this policy. Do not describe this page as a complete
+account-wide export or erasure capability.

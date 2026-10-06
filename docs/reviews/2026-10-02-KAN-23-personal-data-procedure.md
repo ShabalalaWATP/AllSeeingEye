@@ -82,3 +82,19 @@ The operator must still choose the handling route, private recipient/account
 verification responsibility and shared-team stance. This PR remains draft for
 that decision. No Jira transition, production operation, retention policy or
 separate implementation ticket is created by the documentation change.
+
+## Subsequent operator policy decision, 7 October 2026
+
+The operator approved the proposed route, Yahoo contact and shared-team policy
+on 7 October 2026 (Europe/London). The installation now uses the route described in
+[personal-data operations](../PERSONAL_DATA_OPERATIONS.md), with
+[alexorr@yahoo.co.uk](mailto:alexorr@yahoo.co.uk) as the administrator contact.
+The administrator verifies the requester's identity and account, agrees the
+selected supported actions and preserves shared team work. This records the
+policy choice that was pending in the historical review above.
+
+The evidence remains the eleven-case synthetic rehearsal at `13e9525d`; this
+policy update does not claim a new rehearsal or production deletion. Account-wide
+export/erasure, notification erasure, real requester verification, private
+transfer, backup erasure and external copy recall remain outside that evidence.
+No retention period or permission to delete shared work is introduced.

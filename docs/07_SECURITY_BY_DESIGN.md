@@ -77,8 +77,8 @@ permanent or all are immediately deleted.
 
 The [personal-data operations inventory](PERSONAL_DATA_OPERATIONS.md) distinguishes
 supported record exports/deletion from account deactivation and the remaining
-account-wide gaps. Its proposed operator-assisted policy requires installation
-approval; deactivation must never be described as erasure.
+account-wide gaps. This installation uses the documented operator-assisted
+route and administrator contact; deactivation must never be described as erasure.
 
 ## What may leave the installation
 
