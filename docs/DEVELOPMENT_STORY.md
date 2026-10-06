@@ -5972,3 +5972,26 @@ then candidate observation remains unexecuted, with unchanged latency targets.
 The isolated KAN-71 diagnostic passed its 65 tests, but its final schema equality
 check failed on tied PostgreSQL constraint-row ordering. The failed receipt and
 successful owned cleanup are retained; full diagnostic acceptance is pending.
+
+The subsequent d078 CI passed all 30 jobs and unchanged coverage/security floors.
+PostgreSQL used 49.58 elapsed runner-minutes, above its 30-minute criterion. The
+web SBOM failed before scanning on an external tool download; recovery attempt 2
+completed actual web/API scans and uploaded inventories. The single Linux pair
+completed with all protected readbacks and cleanup, but only controls met both
+latency targets. New-record latency worsened; no causal gain is claimed.
+
+The separately reviewed PostgreSQL v8 diagnostic then passed all 65 original
+cases, 195 phases, full schema equality and source/runtime readbacks. Its owned
+resources closed cleanly. It is not whole-CI cost or five-run acceptance. Edge v7
+rendered the real basemap but stopped on the sealed request boundary before any
+bootstrap or trace. The failure and normal shutdown remain preserved; an exact
+read-only notification-bell request gap is being repaired in a new private packet.
+
+A fresh conflict derivation keeps the original control metadata, eligibility,
+group counts, object references, order and selection while avoiding repeated
+full-input classification. The unchanged hook passed 16 equivalence cases and
+failed the intended 128-versus-96 read budget. The candidate passed 88 cases across
+11 files, scoped lint/formatting, both full type checks, build, bundle budgets and
+both independent reviews. Fixture/dependency/benchmark inputs stayed unchanged.
+No new timing or coverage result is claimed. See the
+[review](reviews/2026-10-06-KAN-81-conflict-derivation.md). KAN-81 remains open.

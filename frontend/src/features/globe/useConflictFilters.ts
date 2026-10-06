@@ -1,18 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
-import {
-  countConflictReports,
-  filterConflictReports,
-  isHistoricalConflict,
-  type ConflictGroup,
-} from '@/lib/conflicts';
-import {
-  conflictSourceChoices,
-  matchesConflictDisplay,
-  type ConflictPrecision,
-} from '@/lib/conflictDisplayFilters';
+import type { ConflictGroup } from '@/lib/conflicts';
+import type { ConflictPrecision } from '@/lib/conflictDisplayFilters';
 import { useEventsStore } from '@/stores/events';
-import { isUnreviewedConflictSignal } from '@/lib/conflictReview';
+import { deriveConflictScope } from './conflictScope';
 
 export function useConflictFilters(events: LiveEvent[]) {
   const [group, setGroup] = useState<ConflictGroup>('all');
@@ -21,22 +12,18 @@ export function useConflictFilters(events: LiveEvent[]) {
   const [query, setQuery] = useState('');
   const [source, setSource] = useState('all');
   const [precision, setPrecision] = useState<ConflictPrecision>('all');
-  const sourceOptions = useMemo(() => conflictSourceChoices(events), [events]);
-  const searched = useMemo(
-    () => events.filter((event) => matchesConflictDisplay(event, query, source, precision)),
-    [events, query, source, precision],
+  const { filtered, counts, sourceOptions, historicalCount, unreviewedCount } = useMemo(
+    () =>
+      deriveConflictScope(events, {
+        group,
+        includeHistorical,
+        includeUnreviewed,
+        query,
+        source,
+        precision,
+      }),
+    [events, group, includeHistorical, includeUnreviewed, query, source, precision],
   );
-  const scoped = useMemo(
-    () => filterConflictReports(searched, 'all', includeHistorical, includeUnreviewed),
-    [searched, includeHistorical, includeUnreviewed],
-  );
-  const filtered = useMemo(
-    () => filterConflictReports(scoped, group, true, includeUnreviewed),
-    [scoped, group, includeUnreviewed],
-  );
-  const counts = useMemo(() => countConflictReports(scoped), [scoped]);
-  const historicalCount = useMemo(() => events.filter(isHistoricalConflict).length, [events]);
-  const unreviewedCount = useMemo(() => events.filter(isUnreviewedConflictSignal).length, [events]);
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);
   useEffect(() => {

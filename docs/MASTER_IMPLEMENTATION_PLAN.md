@@ -1378,7 +1378,8 @@ observations. See [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md
 - [x] Defer closed catalogue/traffic body construction while keeping current data.
 - [x] Preserve selected-panel state, corrections, expiry, access and focus.
 - [x] Pass 37 focused cases, lint, format, both types, build, bundle and two reviews.
-- [ ] Pass new published-head CI and unchanged latency/browser acceptance.
+- [x] Pass complete published d078-head CI and reconcile its retained failures.
+- [ ] Meet original latency targets and complete real-browser acceptance.
 
 The subsequent 435-head security job passes, including Gitleaks. Frontend CI
 passes 4,596 tests with unchanged coverage. All PostgreSQL shards pass, costing
@@ -1399,3 +1400,37 @@ published-head CI is outstanding. Canonical v5 timed out in its baseline, withou
 running the candidate or producing metrics. Owned resources were cleaned; the
 failure remains retained. See [panel review](reviews/2026-10-06-KAN-81-panel-bodies.md).
 KAN-81 remains open; no latency improvement is claimed.
+
+### KAN-71 and KAN-81 validation, 6 October 2026
+
+Exact d078 CI 37486889480 passed all 30 jobs: 11,113 SQLite cases passed (156
+skipped), 2,894 PostgreSQL cases passed (two skipped), and 4,596 frontend cases
+passed (one skipped). Frontend branch coverage was 92.27%; all unchanged floors
+passed. PostgreSQL used 49.58 elapsed runner-minutes including aggregation,
+above the 30-minute criterion. The advisory web SBOM download failure is retained;
+GitHub recovery attempt 2 completed real web/API scans, validation and upload.
+
+Linux reference 37486974563 completed both dependency-normalised arms. Candidate
+median/max milliseconds: new 39.87/63.67, existing 23.52/31.65, mixed 34.53/39.71,
+controls 19.84/30.15. Only controls met both targets; new was worse than baseline.
+Source/runtime/dependency readbacks and owned cleanup passed. No causal gain or
+universal device performance is claimed.
+
+Private PostgreSQL v8 passed all 65 original cases, 195 phases, strict full schema
+equality and before/after source/runtime checks, with zero fallback or open
+connections. All owned containers and handles closed. This instrumented diagnostic
+does not establish whole-CI cost or the required five observations. Private Edge
+v7 rendered the real basemap, then stopped on its request boundary before any
+bootstrap frames or trace. Its failure and successful cleanup remain preserved;
+a narrowly reviewed replacement fixture is being prepared.
+
+### KAN-81 conflict derivation, 6 October 2026
+
+- [x] Preserve raw metadata, eligibility, group counts, order and selection.
+- [x] Reproduce the intended unchanged-hook work-budget failure.
+- [x] Pass 88 focused cases, lint, formatting, both types, build and bundle budgets.
+- [x] Complete independent correctness and security reviews.
+- [ ] Pass new published-head CI and original performance/browser acceptance.
+
+See [conflict derivation review](reviews/2026-10-06-KAN-81-conflict-derivation.md).
+No new latency or coverage result is claimed. KAN-71 and KAN-81 remain open.
