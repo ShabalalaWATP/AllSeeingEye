@@ -6039,3 +6039,7 @@ and focused static checks passed. Independent quality/security reviews cleared
 the source. No new latency improvement is claimed, and KAN-81 remains open.
 See [the review](reviews/2026-10-06-KAN-81-null-selection.md) for evidence and
 the retained release readiness transient and failed Edge helper attempt.
+
+### 6 October 2026: KAN-81 incremental fix merged
+
+PR #132 merged as 037f2d76 after current-head CI, CodeQL and SBOM checks passed. Main checks and automatic deployment 37514287368 passed; public health/readiness returned 200 and read-only SSH confirmed the clean deployed revision and healthy API/parser. Its valid Linux reference pair still missed the combined target. The incomplete Edge v16 capture and its unknown transport timeout remain recorded in docs/reviews/2026-10-06-KAN-81-follow-up.md. KAN-81 stays open; a focused empty-news-query change and corrected browser procedure are in preparation.

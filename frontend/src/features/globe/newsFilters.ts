@@ -21,14 +21,17 @@ export function newsSourceLabel(event: LiveEvent): string {
   return typeof name === 'string' && name.trim() ? name : event.source_id.replaceAll('_', ' ');
 }
 export function matchesNews(event: LiveEvent, options: NewsOptions) {
-  return (
-    options.categories.includes(event.category) &&
-    (!options.source || event.source_id === options.source) &&
-    [event.title, event.title_en, event.summary, event.source_id, event.country_iso]
-      .join(' ')
-      .toLocaleLowerCase()
-      .includes(options.query.trim().toLocaleLowerCase())
-  );
+  if (
+    !options.categories.includes(event.category) ||
+    (options.source && event.source_id !== options.source)
+  )
+    return false;
+  const query = options.query.trim();
+  if (query === '') return true;
+  return [event.title, event.title_en, event.summary, event.source_id, event.country_iso]
+    .join(' ')
+    .toLocaleLowerCase()
+    .includes(query.toLocaleLowerCase());
 }
 /** The News control owns news-related display subjects; backend categories stay unchanged. */
 export function useNewsFilters(events: readonly LiveEvent[], enabled: boolean) {

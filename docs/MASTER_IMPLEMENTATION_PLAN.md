@@ -1482,3 +1482,10 @@ and production deployment verification remain outstanding; both tickets stay ope
 - Keep failed attempts and the initial production readiness 503 in the evidence.
 
 Details: [null-selection review](reviews/2026-10-06-KAN-81-null-selection.md).
+
+### 6 October 2026: remaining validation
+
+- PR #132 merged as 037f2d76. Current-head and main checks passed; automatic deployment 37514287368 and subsequent public health/readiness and read-only SSH revision checks passed.
+- KAN-81 remains In Progress: the latest valid Linux pair missed the combined target; the private Edge v16 attempt had no timed phases. See docs/reviews/2026-10-06-KAN-81-follow-up.md. Prepare the next operator procedure before starting its clock, retain failed evidence and preserve all bounds.
+- KAN-71: one reviewed isolated full collection is running; neither PostgreSQL timing nor the five before/after criterion is satisfied by collection alone.
+- Jira readback confirms eight unfinished delivery tickets (seven Codex, one Claude) and six parent epics. No completion transition is justified by these partial milestones.
