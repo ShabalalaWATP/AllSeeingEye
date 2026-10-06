@@ -6012,3 +6012,18 @@ applications exited normally and every owned resource closed, while the failed
 owner and operator receipts remain retained. Browser acceptance is incomplete;
 a staged operator protocol is being prepared without changing the application,
 fixture, authentication or latency targets.
+
+
+### KAN-81 revised reference binding, 6 October 2026
+
+The observer now fixes candidate 38c487c9 and verifies its complete frontend Git
+tree plus the four reviewed conflict-file hashes before overlay or installation.
+Baseline 88164eb, fixture, dependencies, command, targets and process bounds are
+unchanged. All 26 offline observer cases and independent quality/security reviews
+passed. The earlier completed negative observation remains preserved. No new
+observation or timing result is claimed until the one explicit trigger executes.
+
+PR #130 was squash-merged as 0c180576 under the existing release authorisation.
+The initial merge-commit request was refused by repository policy, without a
+merge. The subsequent allowed squash merge succeeded and was read back. Main CI
+and production deployment verification remain outstanding; both tickets stay open.

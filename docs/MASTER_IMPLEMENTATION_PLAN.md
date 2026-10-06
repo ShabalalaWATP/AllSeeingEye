@@ -1455,3 +1455,18 @@ owner receipt failed because the operator stop arrived after automatic deadline
 shutdown. All jobs, streams, owned handles and listeners closed cleanly. These
 receipts remain preserved; a staged operator driver must close that coordination
 gap before claiming browser acceptance.
+
+
+### KAN-81 revised reference binding, 6 October 2026
+
+The observer now fixes candidate 38c487c9 and verifies its complete frontend Git
+tree plus the four reviewed conflict-file hashes before overlay or installation.
+Baseline 88164eb, fixture, dependencies, command, targets and process bounds are
+unchanged. All 26 offline observer cases and independent quality/security reviews
+passed. The earlier completed negative observation remains preserved. No new
+observation or timing result is claimed until the one explicit trigger executes.
+
+PR #130 was squash-merged as 0c180576 under the existing release authorisation.
+The initial merge-commit request was refused by repository policy, without a
+merge. The subsequent allowed squash merge succeeded and was read back. Main CI
+and production deployment verification remain outstanding; both tickets stay open.

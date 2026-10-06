@@ -7,7 +7,14 @@ import subprocess
 from pathlib import Path
 
 BASELINE = "88164eb99150d5d94367f8257569100684f9e619"
-CANDIDATE = "435cbdf6aa4e709584046a1eacd128c05ee08408"
+CANDIDATE = "38c487c93c79464dd0bbd9ed00c491b779a9a437"
+CANDIDATE_FRONTEND_TREE = "b1f2e5940f5490cabff8dde1a62aeebe4e016507"
+CANDIDATE_PINS = {
+    "src/features/globe/conflictScope.ts": "9709b9a4ec114b99165d6c13e8861ba77208caa2bd1ce116fa338c5e5834987f",
+    "src/features/globe/useConflictFilters.ts": "ed754e4ff6d0f07ac121c39bf1771d1154683f13c68144c0316696cfc86434fd",
+    "src/features/globe/conflictScope-equivalence.test.tsx": "387d8bd8b58c6354db926d376b16a492989bd5a7e2ec340fbcbfd33e031f5a44",
+    "src/features/globe/conflictScope-budget.test.tsx": "bf1844433adc5e14309f693c94d9104d6964c23bc765d83f1722d53f9074fccc",
+}
 BENCHMARK = "src/features/globe/GlobePage.streamBenchmark.test.tsx"
 OVERLAY = ("package.json", "pnpm-lock.yaml")
 PINS = {
@@ -45,6 +52,16 @@ def verify_pins(frontend: Path) -> None:
         raise RuntimeError("Protected frontend inputs differ")
 
 
+def verify_candidate(root: Path) -> dict:
+    tree = git(root, "rev-parse", "HEAD:frontend")
+    if tree != CANDIDATE_FRONTEND_TREE:
+        raise RuntimeError("Candidate frontend tree differs")
+    actual = {name: sha(root / "frontend" / name) for name in CANDIDATE_PINS}
+    if actual != CANDIDATE_PINS:
+        raise RuntimeError("Candidate conflict derivation differs")
+    return {"revision": CANDIDATE, "frontendTree": tree, "files": actual}
+
+
 def prepare_sources(baseline: Path, candidate: Path) -> dict:
     for root, revision in ((baseline, BASELINE), (candidate, CANDIDATE)):
         if git(root, "rev-parse", "HEAD") != revision or git(
@@ -54,6 +71,7 @@ def prepare_sources(baseline: Path, candidate: Path) -> dict:
         if (root / "frontend/node_modules").exists():
             raise RuntimeError("Dependency installation must be fresh")
     verify_pins(candidate / "frontend")
+    candidate_identity = verify_candidate(candidate)
     original = sources(baseline)
     # Deliberate and recorded dependency normalisation, never a source backport.
     for name in OVERLAY:
@@ -65,6 +83,7 @@ def prepare_sources(baseline: Path, candidate: Path) -> dict:
         "baselineOriginal": original,
         "baseline": sources(baseline),
         "candidate": sources(candidate),
+        "candidateIdentity": candidate_identity,
         "overlay": list(OVERLAY),
     }
 
