@@ -18,7 +18,10 @@ The All Seeing Eye is a private, self-hosted hobby application. It is built on t
 
 ## Reporting a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/ShabalalaWATP/AllSeeingEye/security/advisories/new)
+Email the maintainer at [alexorr@yahoo.co.uk](mailto:alexorr@yahoo.co.uk) to report
+a vulnerability privately. This channel does not require repository or GitHub
+access. Alternatively, use
+[GitHub private vulnerability reporting](https://github.com/ShabalalaWATP/AllSeeingEye/security/advisories/new)
 to send a report to the repository maintainer. Sign in to GitHub, then select
 **Report a vulnerability** from the repository's Security page. Repository write
 access is not required. GitHub issues are public and are not a private reporting
@@ -30,4 +33,5 @@ or private research. Keep exploit details private while the report is assessed.
 
 This is a personal project without a dedicated security team. Acknowledgement
 and follow-up are best effort, normally within one week; this is not a service
-level agreement. If there is no reply, follow up within the private report.
+level agreement. If there is no reply, follow up in the same private email thread
+or GitHub report.
