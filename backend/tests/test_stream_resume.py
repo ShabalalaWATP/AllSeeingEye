@@ -13,6 +13,7 @@ from uuid import uuid4
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from starlette.types import Message, Receive, Scope, Send
 
 from ase.adapters.bus.replay import MAX_REPLAY_MESSAGES
 from ase.api.routers import stream as stream_router
@@ -249,27 +250,66 @@ def test_cursor_checkpoints_only_moved_positions() -> None:
     assert cursor.checkpoint(now + interval, idle=True) == {"id": "ab-6"}
 
 
+@pytest.mark.parametrize("admission_delay", [0, 0.3], ids=["immediate", "delayed_authentication"])
 async def test_last_event_id_header_resumes_over_http(
-    app: FastAPI, container: Container, user: User, clock: FakeClock
+    app: FastAPI, container: Container, user: User, clock: FakeClock, admission_delay: float
 ) -> None:
     bus = container.bus
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as http:
+    replay_sent = asyncio.Event()
+
+    async def delayed_app(scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["path"] != "/api/stream":
+            await app(scope, receive, send)
+            return
+        # Keep real authentication, but exercise admission later than the old 200ms closer.
+        await asyncio.sleep(admission_delay)
+        pending = b""
+
+        async def observe_send(message: Message) -> None:
+            nonlocal pending
+            await send(message)
+            if message["type"] != "http.response.body":
+                return
+            pending += message.get("body", b"")
+            blocks = re.split(rb"(?:\r?\n){2}", pending)
+            pending = blocks.pop()
+            for block in blocks:
+                fields = dict(line.split(b": ", 1) for line in block.splitlines() if b": " in line)
+                if (
+                    fields.get(b"event") == b"event.upsert"
+                    and fields.get(b"id") == f"{bus.epoch}-{missed}".encode()
+                ):
+                    replay_sent.set()
+
+        await app(scope, receive, observe_send)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=delayed_app), base_url="http://test"
+    ) as http:
         token = await login_token(http, USER_EMAIL, USER_PASSWORD)
         position = f"{bus.epoch}-{bus.last_sequence}"
         await bus.publish(_upsert("missed"))
         missed = bus.last_sequence
 
         async def end_stream_later() -> None:
-            await asyncio.sleep(0.2)
+            async with asyncio.timeout(5):
+                await replay_sent.wait()
             clock.advance(timedelta(minutes=16))
             await bus.publish(BusMessage("event.expire", {"ids": []}))
 
         closer = asyncio.create_task(end_stream_later())
-        response = await http.get(
-            "/api/stream", headers={**bearer(token), "Last-Event-ID": position}
-        )
-        await closer
-    assert response.status_code == 200
+        try:
+            async with asyncio.timeout(10):
+                response = await http.get(
+                    "/api/stream", headers={**bearer(token), "Last-Event-ID": position}
+                )
+                assert response.status_code == 200
+                await closer
+        finally:
+            closer.cancel()
+            await asyncio.gather(closer, return_exceptions=True)
+    assert replay_sent.is_set()
+    assert container.streams.held(user.id) == 0
     frames = []
     for block in re.split(r"(?:\r?\n){2}", response.text):
         fields = dict(line.split(": ", 1) for line in block.splitlines() if ": " in line)

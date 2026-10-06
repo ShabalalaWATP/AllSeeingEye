@@ -8,7 +8,8 @@ export interface PanelProps {
   title?: string;
   icon: ControlIcon;
   side?: 'left' | 'right';
-  children: ReactNode;
+  /** A factory constructs only the selected body; hooks belong inside its components. */
+  children: ReactNode | (() => ReactNode);
   entry?: boolean;
   caption?: string;
   size?: 'medium';

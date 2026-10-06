@@ -1,0 +1,84 @@
+name: KAN-81 Linux reference observation
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A deliberate label application is the first trigger while this workflow is
+# absent from main. No push, synchronize, matrix, scheduled or automatic retry.
+concurrency:
+  group: kan81-linux-reference
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    if: >-
+      github.run_attempt == 1 && github.actor == github.repository_owner &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.label.name == 'kan81-linux-reference-once' &&
+        github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out reviewed observation controls
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: controls
+          persist-credentials: false
+      - name: Check out historical baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 88164eb99150d5d94367f8257569100684f9e619
+          path: baseline
+          persist-credentials: false
+      - name: Check out fixed candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 435cbdf6aa4e709584046a1eacd128c05ee08408
+          path: candidate
+          persist-credentials: false
+      - name: Provision exact public runtime artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          runtime="$RUNNER_TEMP/kan81-runtime"
+          mkdir "$runtime"
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-time 120 \
+            https://nodejs.org/dist/v24.19.0/node-v24.19.0-linux-x64.tar.xz \
+            --output "$runtime/node.tar.xz"
+          printf '%s  %s\n' 14b342e71204f811bde6153be8e04b62aef63c236fef92b55f9c83154b409647 \
+            "$runtime/node.tar.xz" | sha256sum --check --strict
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-time 120 \
+            https://registry.npmjs.org/pnpm/-/pnpm-11.25.0.tgz --output "$runtime/pnpm.tgz"
+          expected='XN6SW08HX3Jetx+64YpC/+eEUkeJ8ZthxzHLhyHsKKruFg4BqNWvT+2ypCzb8wDv4j2zVrDUoXtNY+EfirfJVg=='
+          actual="$(openssl dgst -sha512 -binary "$runtime/pnpm.tgz" | openssl base64 -A)"
+          test "$actual" = "$expected"
+          mkdir "$runtime/node" "$runtime/pnpm"
+          tar -xJf "$runtime/node.tar.xz" -C "$runtime/node" --strip-components=1
+          tar -xzf "$runtime/pnpm.tgz" -C "$runtime/pnpm" --strip-components=1
+          sha256sum "$runtime/node.tar.xz" "$runtime/pnpm.tgz" > "$runtime/artifacts.sha256"
+      - name: Run focused observer mock tests
+        run: python3 -B -m unittest discover -s controls/scripts/tests -p 'test_kan81_*.py' -v
+      - name: Observe baseline then candidate once
+        run: >-
+          python3 -B controls/scripts/kan81_observe.py
+          --baseline baseline --candidate candidate
+          --runtime "$RUNNER_TEMP/kan81-runtime"
+          --output "$RUNNER_TEMP/kan81-evidence"
+      - name: Retain original success or failure evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: kan81-linux-reference-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/kan81-evidence/*.json
+            ${{ runner.temp }}/kan81-evidence/*.log
+            ${{ runner.temp }}/kan81-runtime/artifacts.sha256
+          if-no-files-found: warn
+          retention-days: 30

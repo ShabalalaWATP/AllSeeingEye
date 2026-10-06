@@ -38,7 +38,9 @@ it('routes corridor research around the calculated route rather than an older sa
   );
   const panels: ReactElement<PanelProps>[] = mapPlanningPanels(result.current);
   const routePanel = panels.find((panel) => panel.props.label === 'Route planner')!;
-  const corridor = Children.toArray(routePanel.props.children)[1] as ReactElement;
+  const { children } = routePanel.props;
+  const body = typeof children === 'function' ? children() : children;
+  const corridor = Children.toArray(body)[1] as ReactElement;
   render(corridor);
   expect(screen.getByRole('combobox', { name: 'Corridor path source' })).toHaveValue('route');
   fireEvent.click(screen.getByRole('button', { name: 'Preview corridor for research' }));

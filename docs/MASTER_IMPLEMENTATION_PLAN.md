@@ -1348,7 +1348,7 @@ the 30-minute target and five before/after observations are unmet.
 - [x] Pass independent combined quality/security review and broader validation:
   4,547 tests pass, one skip, 92.24% branch coverage; unchanged coverage floors,
   production build and bundle budgets pass.
-- [ ] Pass published-head CI and complete release verification.
+- [x] Pass rendering-milestone published-head CI and complete release verification.
 - [ ] Meet unchanged canonical median/maximum latency limits and complete
   real-browser validation.
 
@@ -1359,3 +1359,43 @@ The separate smaller-frame browser diagnostic remains a private prerequisite,
 with no live browser timing result. See the
 [review](reviews/2026-10-05-KAN-81-control-rendering.md) for retained failures,
 exact measurements and limits. KAN-81 remains open.
+
+### KAN-81 freshness-sort milestone, 5 October 2026
+
+- [x] Validate previous publication hints against current keyed objects and order.
+- [x] Preserve the original fallback and verify operation budgets and equivalence.
+- [x] Pass 217 focused tests, types, lint, formatting, build, bundle and two reviews.
+- [x] Publish and pass full CI for the freshness-sort head: all 38 checks passed.
+- [ ] Meet original latency targets and complete real-browser validation.
+
+PR 129 rendering changes deployed after main CI 37347485689 and deployment
+37349223233 passed; public health/readiness returned ok/ready. The latest v4
+canonical pair still misses the original targets, with worse mixed/control
+observations. See [freshness review](reviews/2026-10-05-KAN-81-freshness-sort.md).
+
+### KAN-81 panel body construction, 6 October 2026
+
+- [x] Defer closed catalogue/traffic body construction while keeping current data.
+- [x] Preserve selected-panel state, corrections, expiry, access and focus.
+- [x] Pass 37 focused cases, lint, format, both types, build, bundle and two reviews.
+- [ ] Pass new published-head CI and unchanged latency/browser acceptance.
+
+The subsequent 435-head security job passes, including Gitleaks. Frontend CI
+passes 4,596 tests with unchanged coverage. All PostgreSQL shards pass, costing
+40.18 elapsed runner-minutes including aggregation. Overall CI remains failed
+on an inherited fixed-sleep stream-resume test race. Its deterministic repair
+passes 31 focused cases and independent review; new published-head CI, a single
+Linux reference observation and latest-build browser checks are pending.
+The Linux observer passes 21 offline cases and both independent reviews; it is
+integrated at 966de7cd, awaiting its one explicit trigger. Its original latency
+targets remain unchanged and it does not replace real-browser validation.
+
+The exact reviewed eight-file patch is integrated into PR 130 after its earlier
+freshness head passed full CI (4,587 tests, one skip, 92.26% branch coverage).
+Published 1ae-head CI passed 4,596 frontend tests, coverage floors and all four
+PostgreSQL shards, but failed its inherited source-map-js audit. The minimal
+1.2.2 lockfile repair passes local audit, static, build and bundle checks; new
+published-head CI is outstanding. Canonical v5 timed out in its baseline, without
+running the candidate or producing metrics. Owned resources were cleaned; the
+failure remains retained. See [panel review](reviews/2026-10-06-KAN-81-panel-bodies.md).
+KAN-81 remains open; no latency improvement is claimed.

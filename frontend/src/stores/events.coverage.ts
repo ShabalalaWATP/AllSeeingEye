@@ -1,4 +1,5 @@
 import { compareText } from './events.batch';
+import { mergeFreshnessHint } from './events.freshness';
 import { geographicOrder } from './events.geography';
 import { compareEventFreshness as observationOrder } from '@/lib/liveEventSnapshot';
 import { isSatellite, satellitePriority } from '@/lib/satellites';
@@ -73,16 +74,20 @@ export function boundedEvents(
   byId: Record<string, LiveEvent>,
   limit: number,
   selectedId?: string | null,
+  previous?: readonly LiveEvent[],
 ): Record<string, LiveEvent> {
   const events = Object.values(byId);
   if (events.length <= limit) return byId;
   // Look each record up once per rebuild, not at every comparison.
   const keyed = events.map(eventTimes);
-  keyed.sort(
-    (a, b) =>
-      b.times[0] - a.times[0] || b.times[1] - a.times[1] || compareText(a.event.id, b.event.id),
-  );
-  const fair = geographicOrder(keyed.map((item) => item.event));
+  const hinted = previous ? mergeFreshnessHint(byId, keyed, previous) : null;
+  if (hinted === null) {
+    keyed.sort(
+      (a, b) =>
+        b.times[0] - a.times[0] || b.times[1] - a.times[1] || compareText(a.event.id, b.event.id),
+    );
+  }
+  const fair = geographicOrder((hinted ?? keyed).map((item) => item.event));
   const militaryVessels: LiveEvent[] = [];
   const vessels: LiveEvent[] = [];
   const militaryAircraft: LiveEvent[] = [];

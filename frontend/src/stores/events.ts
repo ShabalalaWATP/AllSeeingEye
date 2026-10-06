@@ -133,7 +133,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         if (selection !== current) set(selection);
         return;
       }
-      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, selection.selectedId);
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, selection.selectedId, current.list);
       set({
         byId,
         list: toList(byId, current.list),
