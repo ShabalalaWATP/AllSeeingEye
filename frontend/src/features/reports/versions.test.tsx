@@ -3,9 +3,12 @@ import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fileNameFor } from '@/lib/download';
+import { installDialogStub } from '@/test/dialogStub';
 import { report, reportSummary } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+
+installDialogStub();
 
 describe('report versions', () => {
   afterEach(() => {
@@ -44,6 +47,13 @@ describe('report versions', () => {
     await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
     await user.click(await screen.findByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Regenerate' }));
+    const confirm = await screen.findByRole('alertdialog', {
+      name: `Regenerate report “${reportSummary.title}”?`,
+    });
+    expect(confirm).toHaveTextContent('runs the model again');
+    expect(confirm).toHaveTextContent('uses research allowance');
+    expect(posted).toBe(0);
+    await user.click(within(confirm).getByRole('button', { name: 'Regenerate' }));
     await waitFor(() => {
       expect(within(versions).getAllByRole('link')).toHaveLength(2);
     });
