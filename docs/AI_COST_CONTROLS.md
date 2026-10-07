@@ -76,6 +76,13 @@ increase a shared site or team limit. A user must be authorised for a team to ch
 work to it. Temporary overrides are dated and revocable; resolve active or future
 overrides before changing an underlying daily preset.
 
+A call that times out or is cancelled after it was sent holds its reservation as
+`unknown`, because the provider may still have charged it. After 24 hours the
+reservation is settled as one failed request with only the tokens the provider
+reported, normally none, so a lost call cannot reduce a monthly token allowance until
+the month ends. The request itself still counts, and usage history keeps it as an
+unknown call. An administrator can compare that count with the provider's own billing.
+
 A fresh installation starts with these protective token policies:
 
 | Scope | Period | Tokens |

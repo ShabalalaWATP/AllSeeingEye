@@ -20,6 +20,7 @@ from ase.domain.ai_usage import (
     PERIOD_RETENTION,
     RESERVATION_RETENTION,
     STALE_RESERVATION_AGE,
+    UNKNOWN_RESOLUTION_AGE,
     AiAttribution,
     AiCallOutcome,
     AiUsageReservation,
@@ -59,6 +60,7 @@ class AiReservationBatch:
 class AiReconciliation:
     released: int = 0
     unknown: int = 0
+    resolved: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,7 +178,12 @@ class AiUsageAccounting:
                 raise
 
     async def reconcile(self, limit: int = RECONCILE_BATCH) -> AiReconciliation:
-        """Release stale undispatched reservations; hold dispatched ones as unknown."""
+        """Release stale undispatched reservations; hold dispatched ones as unknown.
+
+        Unknown reservations older than ``UNKNOWN_RESOLUTION_AGE`` are then settled in a
+        separate short transaction, so one inconsistent row cannot stop the release of
+        stale reservations. See ``UNKNOWN_RESOLUTION_AGE`` for the conservative rule.
+        """
         now = self._clock.now()
         released = unknown = 0
         async with self._session_factory() as session:
@@ -209,7 +216,20 @@ class AiUsageAccounting:
             except BaseException:
                 await session.rollback()
                 raise
-        return AiReconciliation(released, unknown)
+        return AiReconciliation(released, unknown, await self._resolve_unknown(now, limit))
+
+    async def _resolve_unknown(self, now: datetime, limit: int) -> int:
+        resolved = 0
+        async with self._session_factory() as session:
+            repository = self._repository_factory(session)
+            try:
+                for call_id in await repository.unknown_calls(now - UNKNOWN_RESOLUTION_AGE, limit):
+                    resolved += await repository.resolve_unknown(call_id, now)
+                await session.commit()
+            except BaseException:
+                await session.rollback()
+                raise
+        return resolved
 
     async def prune(self, limit: int = PRUNE_BATCH) -> AiUsagePruned:
         """Delete expired finished reservations, counters and totals in one short transaction.
