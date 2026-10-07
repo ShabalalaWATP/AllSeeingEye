@@ -120,7 +120,7 @@ export default function WarningPage() {
   );
   const shared = {
     workspaces,
-    plans: plans.data ?? [],
+    plans: plans.data,
     templates: templates.data ?? [],
     countries: countries.data,
   };
