@@ -52,6 +52,9 @@ _ERRORS = {
     "insufficient_evidence": "The selected evidence does not support a complete assessment.",
     "input_limit": "This step's evidence exceeds the supported input size.",
     "time_limit": "This generation run reached its time limit. Saved sections are retained.",
+    "generation_incomplete": (
+        "Generation stopped before the report was complete. Saved sections are retained."
+    ),
     "section_token_budget_exhausted": (
         "Saved sections are retained. Start a smaller report to complete this assessment."
     ),

@@ -154,11 +154,19 @@ def _window_limit(request: ReportRequest) -> float:
     return float(_LIVE_WINDOW_SECONDS)
 
 
+class InvalidJobSnapshot(ValueError):
+    """The frozen job input failed validation, so resuming it can never succeed."""
+
+
 def restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
     try:
         return _restore_job(data, actor, profile)
+    except InvalidJobSnapshot:
+        raise
+    except ValueError as exc:
+        raise InvalidJobSnapshot(str(exc)) from exc
     except (KeyError, TypeError, AttributeError, OverflowError) as exc:
-        raise ValueError("Malformed frozen report job") from exc
+        raise InvalidJobSnapshot("Malformed frozen report job") from exc
 
 
 def _restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
