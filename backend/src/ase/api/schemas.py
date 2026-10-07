@@ -166,5 +166,11 @@ class HealthOut(BaseModel):
     status: str
 
 
+class PublicSiteOut(BaseModel):
+    """Facts the signed-out pages need about this installation; nothing private."""
+
+    product_page_enabled: bool
+
+
 class ReadyOut(BaseModel):
     status: str

@@ -81,6 +81,7 @@ from ase.api.routers import (
     research_usage,
     schedules,
     sec_filings,
+    site,
     social,
     source_reviews,
     source_track_record,
@@ -106,6 +107,7 @@ api_router = APIRouter()
 
 # Public liveness and readiness.
 api_router.include_router(health.router)
+api_router.include_router(site.router)
 
 # Auth, accounts, teams and schedules share paths or reverse names; keep their order.
 api_router.include_router(auth.router)

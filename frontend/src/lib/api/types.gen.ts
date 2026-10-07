@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/site": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Site */
+        get: operations["site_api_site_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -13361,6 +13378,14 @@ export interface components {
             /** Completion Year */
             completion_year: number | null;
         };
+        /**
+         * PublicSiteOut
+         * @description Facts the signed-out pages need about this installation; nothing private.
+         */
+        PublicSiteOut: {
+            /** Product Page Enabled */
+            product_page_enabled: boolean;
+        };
         /** PushDeviceOut */
         PushDeviceOut: {
             /**
@@ -18625,6 +18650,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadyOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    site_api_site_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSiteOut"];
                 };
             };
             /** @description Unprocessable Content */

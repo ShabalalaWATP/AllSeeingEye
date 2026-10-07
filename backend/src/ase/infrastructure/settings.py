@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     refresh_token_days: int = Field(default=14, ge=1, le=90)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
+    # The signed-out product page at /enterprise. Off so other installations do not show it.
+    public_product_page_enabled: bool = False
     log_level: str = "INFO"
     smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
     smtp_port: int = Field(default=587, ge=1, le=65535)
