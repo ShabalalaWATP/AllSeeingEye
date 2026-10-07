@@ -12,6 +12,7 @@ import { initialCountriesState, useCountriesStore } from '@/stores/countries';
 import { initialEventsState, useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import { DEFAULT_BASE_LAYER } from '@/lib/map/baseLayers';
+import { resetSiteFacts } from '@/lib/useSiteFacts';
 
 import { clearCookies, mockMatchMedia, mockWebGl2, resetVisibility } from './env';
 import { server } from './server';
@@ -68,6 +69,7 @@ afterEach(() => {
   useCountriesStore.setState({ ...initialCountriesState });
   clearCookies();
   resetVisibility();
+  resetSiteFacts();
 });
 
 afterAll(() => {

@@ -87,6 +87,47 @@
         }
       }
     },
+    "/api/site": {
+      "get": {
+        "tags": [
+          "site"
+        ],
+        "summary": "Site",
+        "operationId": "site_api_site_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSiteOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
         "tags": [
@@ -45038,6 +45079,20 @@
           "completion_year"
         ],
         "title": "ProjectOut"
+      },
+      "PublicSiteOut": {
+        "properties": {
+          "product_page_enabled": {
+            "type": "boolean",
+            "title": "Product Page Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_page_enabled"
+        ],
+        "title": "PublicSiteOut",
+        "description": "Facts the signed-out pages need about this installation; nothing private."
       },
       "PushDeviceOut": {
         "properties": {

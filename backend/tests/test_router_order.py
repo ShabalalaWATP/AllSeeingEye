@@ -31,7 +31,7 @@ def pair() -> tuple[FastAPI, FastAPI]:
 
 def test_all_owners_once_and_every_overlap_and_name_edge_preserved() -> None:
     actual = registered_owners()
-    assert len(actual) == len(set(actual)) == len(ORIGINAL) == 93
+    assert len(actual) == len(set(actual)) == len(ORIGINAL) == 94
     assert set(actual) == set(ORIGINAL)
     families: dict[str, set[str]] = {}
     names: dict[str, set[str]] = {}
@@ -46,7 +46,7 @@ def test_all_owners_once_and_every_overlap_and_name_edge_preserved() -> None:
             assert first and "{" not in first, "Review dynamic leading-path matching"
             families[owner].add(first)
             names[owner].add(route.name)
-    assert count == 351
+    assert count == 352
     for before, after in combinations(ORIGINAL, 2):
         if families[before] & families[after] or names[before] & names[after]:
             assert actual.index(before) < actual.index(after), (before, after)

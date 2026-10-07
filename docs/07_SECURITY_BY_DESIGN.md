@@ -116,3 +116,19 @@ has no vulnerabilities. Keep dependencies current, review changes and test
 
 Reducing published server details avoids unnecessary disclosure. It does not
 replace patching, authentication, access controls or a reviewed configuration.
+
+## Signed-out pages
+
+The sign-in, account request and password pages, and the optional product page at
+`/enterprise`, work without a session. `GET /api/site` tells them, without
+authentication, whether `ASE_PUBLIC_PRODUCT_PAGE_ENABLED` is on (off by default).
+It returns that single boolean, uncached, and reads no database or session; any new
+field there is public and needs a security review. If the request fails, the page
+stays hidden.
+
+The flag controls presentation, not access. The page's script is a static asset any
+visitor can fetch, so it must hold only public copy. It renders fixed, illustrative
+content: no live events, no account data, no third-party scripts, frames or fonts,
+and no change to the content security policy. Public copy must not name sources whose
+terms forbid commercial or promotional use, or whose reuse terms are unclear; a unit
+test checks the page content against a list of such sources.

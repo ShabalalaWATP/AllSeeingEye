@@ -28,6 +28,7 @@ ORIGINAL = [
     "ai_usage",
     "research_usage",
     "health",
+    "site",
     "navigation",
     "terrain",
     "radio",

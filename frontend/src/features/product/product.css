@@ -1,0 +1,313 @@
+/*
+ * The public product story. A fixed dark palette, named once here, matching the sign-in
+ * screen and the default Obsidian theme so the page looks the same before and after any
+ * account theme applies. Motion uses transform and opacity only; --progress (0..1) is
+ * written by each chapter, and a still story (data-motion="still") shows end states.
+ */
+.product-story {
+  --story-ground: #060606;
+  --story-ground-2: #0b0a0f;
+  --story-surface: #121118;
+  --story-surface-2: #1a1922;
+  --story-line: #2a2833;
+  --story-text: #ece7df;
+  --story-muted: #a29daa;
+  --story-ember: #ff6f37;
+  --story-ember-glow: #ff6f3740;
+  --story-ember-faint: #ff6f3714;
+  --story-cyan: #22d3ee;
+  --story-amber: #f5b53f;
+  --story-good: #5cd39b;
+  --story-critical: #ff5a5a;
+  --story-grid: #ffffff0b;
+  --story-shadow: #000000cc;
+  /* Shared components (brand mark, motion toggle) read the app tokens. */
+  --color-ground: var(--story-ground);
+  --color-surface: var(--story-surface);
+  --color-surface-2: var(--story-surface-2);
+  --color-line: var(--story-line);
+  --color-text: var(--story-text);
+  --color-muted: var(--story-muted);
+  --color-ember: var(--story-ember);
+  --color-control-border: #6b6875;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: dark;
+  min-height: 100dvh;
+  background: var(--story-ground);
+  color: var(--story-text);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+.product-story :focus-visible {
+  outline: 2px solid var(--story-ember);
+  outline-offset: 3px;
+}
+
+/* Header */
+.story-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem clamp(1rem, 3vw, 2.5rem);
+  background: color-mix(in srgb, var(--story-ground) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid var(--story-line);
+}
+.story-skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--story-ember);
+  color: var(--story-ground);
+}
+.story-skip:focus {
+  top: 0.75rem;
+}
+.story-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--story-text);
+  text-decoration: none;
+}
+.story-nav {
+  flex: 1;
+  min-width: 0;
+}
+.story-nav ol {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.story-nav a {
+  display: block;
+  padding: 0.5rem 0.6rem;
+  border-radius: 999px;
+  color: var(--story-muted);
+  font: 0.75rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 160ms;
+}
+.story-nav a:hover {
+  color: var(--story-text);
+}
+.story-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+.story-link {
+  color: var(--story-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.story-link:hover {
+  color: var(--story-text);
+}
+.story-progress {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--story-ember), var(--story-amber));
+  transform-origin: left;
+  transform: scaleX(var(--page-progress, 0));
+}
+@media (max-width: 1100px) {
+  .story-nav {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .story-wordmark,
+  .story-link {
+    display: none;
+  }
+}
+
+/* Shared type and controls */
+.story-eyebrow {
+  color: var(--story-ember);
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.story-title {
+  margin-top: 0.9rem;
+  font-size: clamp(2rem, 4.2vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+.story-subtitle {
+  margin: 4rem 0 1.25rem;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+.story-lead {
+  margin-top: 1.1rem;
+  max-width: 40rem;
+  color: var(--story-muted);
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  line-height: 1.6;
+}
+.story-footnote {
+  margin-top: 1.25rem;
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.story-illustrative {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--story-line);
+  border-radius: 999px;
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.story-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.875rem;
+  padding: 0 1.4rem;
+  border: 1px solid var(--story-line);
+  border-radius: 999px;
+  color: var(--story-text);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 200ms var(--ease-out),
+    border-color 200ms,
+    box-shadow 200ms;
+}
+.story-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--story-muted);
+}
+.story-button-primary {
+  border-color: var(--story-ember);
+  background: var(--story-ember);
+  color: var(--story-ground);
+  box-shadow: 0 10px 40px -10px var(--story-ember-glow);
+}
+.story-button-primary:hover {
+  border-color: var(--story-ember);
+  box-shadow: 0 16px 50px -8px var(--story-ember-glow);
+}
+.story-button-small {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--story-line);
+  border-radius: 999px;
+  background: var(--story-surface);
+  color: var(--story-text);
+  font-size: 0.8125rem;
+}
+.tick-list {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+.tick-list li {
+  position: relative;
+  padding-left: 1.6rem;
+  color: var(--story-text);
+  line-height: 1.5;
+}
+.tick-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.7rem;
+  height: 0.4rem;
+  border-left: 2px solid var(--story-ember);
+  border-bottom: 2px solid var(--story-ember);
+  transform: rotate(-45deg);
+}
+.story-wrap {
+  width: min(100% - 2rem, 76rem);
+  margin-inline: auto;
+}
+
+/* Chapters and pinning */
+.story-chapter {
+  position: relative;
+  --progress: 1;
+  scroll-margin-top: 4.5rem;
+}
+.story-stage {
+  position: relative;
+  padding: clamp(4rem, 9vh, 7rem) clamp(1rem, 4vw, 3.5rem);
+}
+.story-stage-pinned {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  padding-block: 5rem 2rem;
+}
+
+/* Reveal */
+.story-reveal {
+  transition:
+    opacity 700ms var(--ease-out),
+    transform 900ms var(--ease-out);
+  transition-delay: calc(var(--reveal-order, 0) * 70ms);
+}
+.story-reveal[data-shown='false'] {
+  opacity: 0;
+  transform: translateY(28px);
+}
+[data-motion='still'] .story-reveal {
+  transition: none;
+}
+@media print {
+  .story-reveal[data-shown='false'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Footer */
+.story-footer {
+  display: grid;
+  gap: 0.6rem;
+  padding: 3rem clamp(1rem, 4vw, 3.5rem) 4rem;
+  border-top: 1px solid var(--story-line);
+  color: var(--story-muted);
+  font-size: 0.875rem;
+}
+.story-footer nav {
+  display: flex;
+  gap: 1.25rem;
+}
+.story-footer a {
+  color: var(--story-text);
+}

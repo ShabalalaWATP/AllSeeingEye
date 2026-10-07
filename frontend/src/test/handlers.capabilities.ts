@@ -16,4 +16,6 @@ export const navigationUnconfigured: components['schemas']['NavigationCapabiliti
 export const capabilityHandlers = [
   http.get('/api/capabilities', () => HttpResponse.json(serverCapabilities)),
   http.get('/api/navigation/capabilities', () => HttpResponse.json(navigationUnconfigured)),
+  // The public product page is off unless a test turns it on.
+  http.get('/api/site', () => HttpResponse.json({ product_page_enabled: false })),
 ];

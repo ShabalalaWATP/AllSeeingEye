@@ -13,16 +13,16 @@ const FAILED_NOTE = 'Your animation choice was not saved. The eye stays paused f
 export interface MotionToggleProps {
   /** Icon-only presentation for the collapsed rail; the text stays available to screen readers. */
   compact?: boolean;
-  /** Presentation for the dark sign-in brand panel. */
+  /** A small, quiet icon button for the dark sign-in panel and public pages; always icon-only. */
   tone?: 'rail' | 'auth';
   className?: string;
 }
 
-function MotionGlyph({ paused }: { paused: boolean }) {
+function MotionGlyph({ paused, size = 16 }: { paused: boolean; size?: number }) {
   return (
     <svg
-      width="16"
-      height="16"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="currentColor"
       aria-hidden="true"
@@ -35,21 +35,26 @@ function MotionGlyph({ paused }: { paused: boolean }) {
 }
 
 export function MotionToggle({
-  compact = false,
+  compact: compactRail = false,
   tone = 'rail',
   className = '',
 }: MotionToggleProps) {
+  const compact = compactRail || tone === 'auth';
   const motion = useMotionPause();
   const noteId = useId();
   const blocked = motion.systemReduced;
-  const state = motion.paused ? 'text-ember' : 'text-muted hover:text-text';
+  const quiet = tone === 'auth';
+  const state = motion.paused
+    ? 'text-ember'
+    : quiet
+      ? 'text-muted opacity-60 hover:opacity-100 hover:text-text focus-visible:opacity-100'
+      : 'text-muted hover:text-text';
   const shape =
     tone === 'auth'
-      ? 'min-h-10 gap-2 rounded-full border border-control-border bg-ground/80 px-3.5 font-mono text-2xs tracking-[0.12em] uppercase'
+      ? 'h-7 w-7 justify-center rounded-full border border-line bg-ground/40 hover:border-control-border'
       : `min-h-10 w-full gap-3 rounded-lg text-xs hover:bg-surface ${compact ? 'justify-center' : 'px-3'}`;
-  const noteClass = compact
-    ? 'sr-only'
-    : `mt-1 text-2xs leading-snug text-muted ${tone === 'auth' ? 'max-w-56 text-right' : 'px-3'}`;
+  // Icon-only buttons keep their notes for screen readers; the title carries them visually.
+  const noteClass = compact ? 'sr-only' : 'mt-1 px-3 text-2xs leading-snug text-muted';
 
   return (
     <div className={className}>
@@ -58,11 +63,19 @@ export function MotionToggle({
         aria-pressed={motion.paused}
         aria-disabled={blocked || motion.saving ? true : undefined}
         aria-describedby={blocked ? noteId : undefined}
-        title={compact ? (blocked ? SYSTEM_NOTE : 'Pause animation') : undefined}
+        title={
+          compact
+            ? blocked
+              ? SYSTEM_NOTE
+              : motion.paused
+                ? 'Resume animation'
+                : 'Pause animation'
+            : undefined
+        }
         onClick={motion.toggle}
         className={`flex items-center transition-colors ${shape} ${state}`}
       >
-        <MotionGlyph paused={motion.paused} />
+        <MotionGlyph paused={motion.paused} size={quiet ? 11 : 16} />
         <span className={compact ? 'sr-only' : undefined}>Pause animation</span>
       </button>
       {blocked && (

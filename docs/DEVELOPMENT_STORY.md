@@ -6068,3 +6068,20 @@ files. The previous eleven-case rehearsal remains accurately dated historical
 evidence; no production data was deleted. One labelled SMTP test was accepted,
 with mailbox receipt still awaiting verification. See the
 [approval record](reviews/2026-10-07-KAN-22-23-operator-approval.md).
+
+### KAN-170 public product story, 7 October 2026
+
+A first build of the signed-out product page now lives at `/enterprise`, off by
+default behind `ASE_PUBLIC_PRODUCT_PAGE_ENABLED` and the public, boolean-only
+`GET /api/site`. Eleven scroll chapters follow the observe, ask, collect, assess,
+review workflow: the real Evil Eye hero, a dotted canvas globe built from the
+packaged Natural Earth outlines that reveals all fifteen map layers with their
+filters, every map tool, the eleven source topics, an illustrative research run
+with graded evidence and PHIA bands, review and alerting, specialist workspaces,
+security layers with honest limits, the deployment architecture and a draft cost
+estimator shown only in development until its figures are measured and approved.
+Layer labels and colours come from the app's own directories, scenes are
+synthetic, nothing third-party loads and the CSP is unchanged. Reduced motion and
+the brand pause show every scene in its final state. Independent quality and
+security reviews led to fixes for line endings, a source with unclear reuse
+terms, globe loop restarts, per-frame allocation and cached fetch failures.
