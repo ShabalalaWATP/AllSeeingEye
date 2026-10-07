@@ -1,0 +1,329 @@
+/* Ask, Collect and Assess chapters. Colours come from product.css. */
+
+/* Ask: a request console that fills in as the reader scrolls. */
+.story-ask .story-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+}
+.ask-console {
+  padding: 1.25rem 1.4rem 1.5rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.2rem;
+  background: linear-gradient(170deg, var(--story-surface-2), var(--story-ground-2));
+  box-shadow: 0 40px 120px -40px var(--story-shadow);
+}
+.console-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.console-bar span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--story-line);
+}
+.console-bar em {
+  margin-left: auto;
+  color: var(--story-muted);
+  font: normal 0.75rem var(--font-mono);
+}
+.console-label {
+  margin: 1.1rem 0 0.5rem;
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.console-question {
+  min-height: 4.5em;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.45;
+}
+.console-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--story-ember);
+  animation: story-blink 1s steps(1) infinite;
+}
+.scope-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.scope-chip {
+  --t: clamp(0, calc(var(--progress) * 12 - 5.5 - var(--i) * 0.6), 1);
+  display: grid;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--story-line);
+  border-radius: 0.7rem;
+  background: var(--story-surface);
+  font-size: 0.875rem;
+  opacity: var(--t);
+  transform: translateY(calc((1 - var(--t)) * 14px)) scale(calc(0.92 + var(--t) * 0.08));
+}
+.scope-chip span {
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.08em;
+}
+.depth-select {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.depth-select li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.7rem;
+  border: 1px solid var(--story-line);
+  border-radius: 0.8rem;
+  color: var(--story-muted);
+  font-size: 0.75rem;
+  transition:
+    border-color 300ms,
+    background 300ms,
+    transform 300ms var(--ease-out);
+}
+.depth-select strong {
+  color: var(--story-text);
+  font-size: 0.95rem;
+}
+.depth-select li[data-selected='true'] {
+  border-color: var(--story-ember);
+  background: var(--story-ember-faint);
+  transform: translateY(-3px);
+}
+@keyframes story-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Collect: evidence arrives from every direction. */
+.story-collect .story-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+}
+.grade-legend {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 1.75rem;
+  padding: 1rem 1.1rem;
+  border-left: 2px solid var(--story-ember);
+  background: var(--story-ember-faint);
+  border-radius: 0 0.8rem 0.8rem 0;
+}
+.grade-legend p:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+.evidence-stack {
+  display: grid;
+  gap: 0.6rem;
+}
+.evidence-card {
+  --t: clamp(0, calc(var(--progress) * 8 - var(--i) - 0.4), 1);
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--story-line);
+  border-radius: 0.9rem;
+  background: var(--story-surface);
+  opacity: var(--t);
+  transform: translate(calc((1 - var(--t)) * var(--dx)), calc((1 - var(--t)) * var(--dy)))
+    rotate(calc((1 - var(--t)) * 8deg));
+}
+.evidence-card[data-gap='true'] {
+  border-style: dashed;
+  border-color: var(--story-amber);
+  background: transparent;
+}
+.evidence-family {
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.evidence-title {
+  font-weight: 600;
+}
+.evidence-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+}
+.evidence-grade {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.2rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--story-ember);
+  border-radius: 0.4rem;
+  color: var(--story-ember);
+  font: 600 0.75rem var(--font-mono);
+}
+
+/* Assess: the report writes itself and threads back to its evidence. */
+.assess-head {
+  max-width: 52rem;
+}
+.assess-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(3rem, 8vw, 8rem);
+  margin-top: 2rem;
+}
+.assess-evidence {
+  display: grid;
+  align-content: center;
+  gap: 0.6rem;
+}
+.mini-evidence {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--story-line);
+  border-radius: 0.7rem;
+  background: var(--story-surface);
+  font-size: 0.875rem;
+}
+.assess-threads {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.assess-threads path {
+  fill: none;
+  stroke: var(--story-ember);
+  stroke-width: 1.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - clamp(0, var(--progress) * 4 - 0.6 - var(--i) * 0.25, 1));
+  opacity: 0.75;
+  filter: drop-shadow(0 0 6px var(--story-ember-glow));
+}
+.assess-report {
+  padding: 1.4rem 1.5rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.2rem;
+  background: linear-gradient(170deg, var(--story-surface-2), var(--story-ground-2));
+}
+.assess-report header {
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--story-line);
+}
+.assess-report h3 {
+  margin-top: 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+.assess-report header p {
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+}
+.report-status {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--story-good) 18%, transparent);
+  color: var(--story-good);
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.assess-report ol {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+.judgement {
+  --t: clamp(0, calc(var(--progress) * 4 - var(--i) * 0.7), 1);
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.7rem;
+  opacity: calc(0.15 + var(--t) * 0.85);
+  transform: translateX(calc((1 - var(--t)) * 30px));
+}
+.judgement-band {
+  color: var(--story-amber);
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.judgement p {
+  line-height: 1.5;
+}
+.cite {
+  color: var(--story-ember);
+  font-family: var(--font-mono);
+}
+.judgement[data-challenged='true'] {
+  --c: clamp(0, calc(var(--progress) * 5 - 3.4), 1);
+  box-shadow: inset 0 0 0 calc(var(--c) * 1.5px) var(--story-amber);
+  background: color-mix(in srgb, var(--story-amber) calc(var(--c) * 8%), transparent);
+}
+.challenge-note,
+.alternative {
+  color: var(--story-amber);
+  font-size: 0.8125rem;
+  opacity: clamp(0, calc(var(--progress) * 5 - 3.6), 1);
+}
+.alternative {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--story-line);
+}
+.story-assess-more .story-stage {
+  padding-top: 2rem;
+}
+.yardstick {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+.yardstick span {
+  padding: 0.6rem 0.4rem;
+  background: color-mix(in srgb, var(--story-ember) calc(8% + var(--i) * 9%), var(--story-surface));
+  color: var(--story-text);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.yardstick span:first-child {
+  border-radius: 0.6rem 0 0 0.6rem;
+}
+.yardstick span:last-child {
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+.tick-list-columns {
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  margin-top: 2rem;
+}
+@media (max-width: 899px) {
+  .story-ask .story-stage,
+  .story-collect .story-stage,
+  .assess-stage {
+    grid-template-columns: 1fr;
+  }
+  .assess-threads {
+    display: none;
+  }
+  .yardstick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .yardstick span {
+    border-radius: 0.4rem;
+  }
+}

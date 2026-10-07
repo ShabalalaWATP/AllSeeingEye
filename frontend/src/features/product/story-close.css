@@ -1,0 +1,228 @@
+/* Trust, Deploy and Contact chapters. Colours come from product.css. */
+
+/* Trust: an exploded stack of layers. */
+.story-trust .story-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+}
+.trust-stack {
+  display: grid;
+  gap: calc(0.3rem + var(--progress) * 1rem);
+  perspective: 1200px;
+}
+.trust-layer {
+  --t: clamp(0, calc(var(--progress) * 5 - var(--i) * 0.8), 1);
+  padding: 1.1rem 1.3rem;
+  border: 1px solid color-mix(in srgb, var(--story-ember) calc(var(--t) * 45%), var(--story-line));
+  border-radius: 1rem;
+  background: linear-gradient(120deg, var(--story-surface-2), var(--story-ground-2));
+  transform: rotateX(calc((1 - var(--t)) * 35deg))
+    translateX(calc((var(--i) - 1.5) * var(--t) * 12px));
+  opacity: calc(0.35 + var(--t) * 0.65);
+}
+.trust-layer h3 {
+  color: var(--story-ember);
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.trust-layer ul {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+.honest-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding-block: 2rem 5rem;
+}
+.honest-panel {
+  padding: 1.4rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.2rem;
+  background: var(--story-surface);
+}
+.honest-panel h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.honest-limits ul {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  color: var(--story-muted);
+  line-height: 1.5;
+}
+
+/* Deploy: an architecture that draws itself, then the estimator. */
+.architecture {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.4rem;
+  background:
+    radial-gradient(circle at 50% 30%, var(--story-ember-faint), transparent 70%),
+    var(--story-ground-2);
+}
+.architecture svg {
+  width: 100%;
+  height: auto;
+}
+.architecture-link {
+  stroke: var(--story-ember);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - clamp(0, var(--progress) * 3 - var(--i) * 0.4, 1));
+}
+.architecture-node {
+  opacity: clamp(0, calc(var(--progress) * 4 - var(--i) * 0.5), 1);
+}
+.architecture-node rect {
+  fill: var(--story-surface);
+  stroke: var(--story-line);
+}
+.architecture-name {
+  fill: var(--story-text);
+  font: 600 1rem var(--font-sans);
+}
+.architecture-detail {
+  fill: var(--story-muted);
+  font: 0.75rem var(--font-sans);
+}
+.estimator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.estimator-draft {
+  grid-column: 1 / -1;
+  padding: 0.7rem 1rem;
+  border: 1px dashed var(--story-amber);
+  border-radius: 0.8rem;
+  color: var(--story-amber);
+  font-size: 0.875rem;
+}
+.estimator-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+.estimator-form label {
+  color: var(--story-muted);
+  font-size: 0.875rem;
+}
+.estimator-form input:not([type='radio']),
+.estimator-form select {
+  min-height: 2.5rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.6rem;
+  background: var(--story-surface);
+  color: var(--story-text);
+}
+.estimator-currency {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  color: var(--story-muted);
+  font-size: 0.875rem;
+}
+.estimator-currency legend {
+  float: left;
+  margin-right: 1rem;
+}
+.estimator-currency label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.estimator-result {
+  padding: 1.4rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.2rem;
+  background: var(--story-surface);
+}
+.estimator-total {
+  display: grid;
+  gap: 0.3rem;
+}
+.estimator-total span,
+.estimator-result dt {
+  color: var(--story-muted);
+  font-size: 0.875rem;
+}
+.estimator-total strong {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.03em;
+}
+.estimator-result dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--story-line);
+}
+.estimator-result dd {
+  font: 600 0.875rem var(--font-mono);
+  text-align: right;
+}
+.estimator-assumptions {
+  margin-top: 1rem;
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+}
+.estimator-assumptions ul {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+/* Contact: the closing scene. */
+.story-contact {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 90svh;
+  padding: 6rem 1rem;
+  overflow: hidden;
+  text-align: center;
+}
+.contact-glow {
+  position: absolute;
+  inset: auto -20% -40%;
+  height: 80%;
+  background: radial-gradient(ellipse at 50% 100%, var(--story-ember-glow), transparent 65%);
+}
+.contact-inner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  max-width: 46rem;
+}
+.contact-inner .story-eyebrow {
+  margin-top: 1.5rem;
+}
+.contact-inner .story-lead {
+  margin-inline: auto;
+}
+@media (max-width: 899px) {
+  .review-grid,
+  .story-trust .story-stage,
+  .honest-grid,
+  .estimator,
+  .estimator-form {
+    grid-template-columns: 1fr;
+  }
+  .phone {
+    max-width: 20rem;
+    margin-inline: auto;
+  }
+}

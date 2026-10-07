@@ -86,6 +86,8 @@ const OWN_HEADINGS: Record<string, string> = {
     'report document: paper reader title (reportReader.css)',
   'app/dev/ReportPreviewPage.tsx': 'report document: paper reader title (reportReader.css)',
   'features/globe/GlobeHeading.tsx': 'visually hidden heading over the map canvas',
+  'features/product/chapters/HeroChapter.tsx':
+    'public product page: display title over the brand eye (story-hero.css)',
 };
 
 describe('page headings', () => {

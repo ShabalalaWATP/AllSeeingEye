@@ -3,7 +3,7 @@
  * The globe is the root route. Admin pages and the globe are code split so the
  * auth pages never load MapLibre.
  */
-import { lazy, type ComponentType, type ReactElement } from 'react';
+import { lazy, Suspense, type ComponentType, type ReactElement } from 'react';
 import type { RouteObject } from 'react-router';
 
 import { AdminShell } from '@/app/shell/AdminShell';
@@ -66,6 +66,8 @@ const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 const HelpPage = lazy(() => import('@/app/help/HelpPage'));
+// The signed-out product story; its own chunk so neither it nor the app loads the other.
+const ProductPage = lazy(() => import('@/features/product/ProductPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -76,6 +78,10 @@ function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
       { path: '/brand/capture', element: devPage(() => import('@/app/dev/BrandCapturePage')) },
+      {
+        path: '/dev/product-preview',
+        element: devPage(() => import('@/app/dev/ProductPreviewPage')),
+      },
       { path: '/dev/cyber-preview', element: devPage(() => import('@/app/dev/CyberPreviewPage')) },
       { path: '/dev/pages-preview', element: devPage(() => import('@/app/dev/PagesPreviewPage')) },
       {
@@ -116,6 +122,15 @@ const pages: RouteObject[] = [
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/set-password', element: <SetPasswordPage /> },
     ]),
+  },
+  {
+    path: '/enterprise',
+    element: (
+      <Suspense fallback={<div className="min-h-dvh bg-ground" aria-busy="true" />}>
+        <ProductPage />
+      </Suspense>
+    ),
+    errorElement: <RouteErrorPage />,
   },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
   { path: '/reset-password', element: <RedirectWithQuery to="/set-password" /> },

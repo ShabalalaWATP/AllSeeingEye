@@ -1,0 +1,195 @@
+/* Filters, Tools and Sources chapters. Colours come from product.css. */
+
+/* Tools */
+.filter-table {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 2.5rem;
+}
+.filter-row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--story-line);
+}
+.filter-row dt {
+  color: var(--story-muted);
+  font: 0.75rem var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  margin-top: 2.5rem;
+}
+.tool-card {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1rem;
+  background: linear-gradient(160deg, var(--story-surface), var(--story-ground-2));
+}
+.tool-card h3 {
+  font-weight: 600;
+}
+.tool-card p {
+  margin-top: 0.4rem;
+  color: var(--story-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sources: topics settle into orbit. */
+.story-sources .story-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(1rem, 4vw, 4rem);
+  align-items: start;
+}
+.sources-orbit {
+  position: sticky;
+  top: 6rem;
+  aspect-ratio: 1;
+  max-height: 80svh;
+}
+.orbit-ring {
+  position: absolute;
+  border: 1px dashed var(--story-line);
+  border-radius: 999px;
+}
+.orbit-ring-outer {
+  inset: 12%;
+  animation: story-spin 90s linear infinite;
+}
+.orbit-ring-inner {
+  inset: 20%;
+  animation: story-spin 60s linear infinite reverse;
+}
+.orbit-core {
+  position: absolute;
+  inset: 38%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--story-ember-glow), transparent 70%);
+}
+.orbit-core strong {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  letter-spacing: -0.05em;
+}
+.orbit-core span {
+  color: var(--story-muted);
+  font: 0.75rem var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.orbit-node {
+  --t: clamp(0, calc(var(--progress) * 14 - var(--i)), 1);
+  position: absolute;
+  left: calc(var(--from-x) + (var(--x) - var(--from-x)) * var(--t));
+  top: calc(var(--from-y) + (var(--y) - var(--from-y)) * var(--t));
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  transform: translate(-50%, -50%);
+  opacity: var(--t);
+}
+.orbit-dot {
+  width: var(--size);
+  height: var(--size);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, var(--colour), transparent 75%);
+  box-shadow: 0 0 30px var(--colour);
+  opacity: 0.9;
+}
+.orbit-label {
+  color: var(--story-text);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.topic-list {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1.75rem;
+}
+.topic-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.topic-bar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--colour) 22%, transparent),
+    transparent
+  );
+  transform-origin: left;
+  transform: scaleX(calc(var(--share) * var(--progress)));
+}
+.topic-name {
+  position: relative;
+  font-weight: 600;
+}
+.topic-count {
+  position: relative;
+  font: 600 0.875rem var(--font-mono);
+}
+.topic-examples {
+  position: relative;
+  grid-column: 1 / -1;
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+}
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+.mode-card {
+  padding: 1rem;
+  border: 1px solid var(--story-line);
+  border-radius: 0.9rem;
+  background: var(--story-surface);
+}
+.mode-card p {
+  margin-top: 0.4rem;
+  color: var(--story-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@keyframes story-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 899px) {
+  .story-sources .story-stage {
+    grid-template-columns: 1fr;
+  }
+  .sources-orbit {
+    position: relative;
+    top: 0;
+    width: min(100%, 26rem);
+    margin-inline: auto;
+  }
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
