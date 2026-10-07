@@ -140,9 +140,10 @@ describe('Shared workspace refresh', () => {
       });
       await waitFor(() => expect(workspaceRevision()).toBe(revision + 1));
       await waitFor(() => expect(result.current.workspaces.loading).toBe(false));
+      // The retired global manager role no longer decides team authority; the team role does.
       expect(
         result.current.workspaces.canManage({ created_by: team.created_by, team_id: team.id }),
-      ).toBe(false);
+      ).toBe(kind === 'account');
       expect(report).toHaveBeenCalledTimes(2);
       unmount();
       interval.mockRestore();
