@@ -140,7 +140,10 @@ async def test_russian_mfa_atom_self_link_shape_parses() -> None:
         "<id>http://mid.ru/ru/foreign_policy/news/2141044/</id>"
         "<published>2026-09-15T19:02:00+03:00</published></entry></feed>"
     )
-    (event,) = await connector(atom).fetch()
+    # Read shortly after publication: a date ten days ahead of the clock would be clamped.
+    clock = FakeClock(datetime(2026, 9, 15, 17, tzinfo=UTC))
+    rss = RssConnector(FakeHttp({"feeds.test": atom}), clock, make_spec("feed_test"))  # type: ignore[arg-type]
+    (event,) = await rss.fetch()
     assert event.title == "Statement"
     assert event.published_at == datetime(2026, 9, 15, 16, 2, tzinfo=UTC)
     seed = next(seed for seed in RSS_SEEDS if seed.spec.id == "russia_mfa_ru")

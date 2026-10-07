@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.application.feeds.pipeline import strip_html
 from ase.domain.events import (
     Category,
@@ -62,13 +63,8 @@ def _centroid(geometry: dict[str, Any] | None) -> Point | None:
 
 
 def _when(value: object, fallback: datetime) -> datetime:
-    if not isinstance(value, str):
-        return fallback
-    try:
-        parsed = datetime.fromisoformat(value)
-    except ValueError:
-        return fallback
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    parsed = parse_utc(value)
+    return fallback if parsed is None else parsed
 
 
 class NwsAlertsConnector(HttpFeed):

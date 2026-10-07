@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 from ase.domain.events import MAX_SUMMARY, MAX_TITLE, Event, content_hash
 
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+_CONTROL_OR_LINE = re.compile(r"[\x00-\x1f\x7f]")
 _WHITESPACE = re.compile(r"\s+")
 MAX_URL = 2_048
 
@@ -64,14 +65,25 @@ def clean_text(value: str | None, limit: int) -> str | None:
 
 
 def safe_url(value: str | None) -> str | None:
-    """Only absolute http(s) links of sane length survive; anything else becomes None."""
+    """Only absolute http(s) links of sane length survive; anything else becomes None.
+
+    Upstream text is untrusted: a malformed authority must never raise into the poll,
+    and embedded credentials (`https://trusted@evil.example/`) or control characters
+    must never reach a rendered link.
+    """
     if value is None:
         return None
     candidate = value.strip()
-    if not candidate or len(candidate) > MAX_URL:
+    if not candidate or len(candidate) > MAX_URL or _CONTROL_OR_LINE.search(candidate):
         return None
-    parts = urlsplit(candidate)
-    if parts.scheme not in ("http", "https") or not parts.netloc:
+    try:
+        parts = urlsplit(candidate)
+        hostname = parts.hostname
+        credentials = parts.username is not None or parts.password is not None
+        _ = parts.port  # An out-of-range or non-numeric port raises here.
+    except ValueError:
+        return None
+    if parts.scheme not in ("http", "https") or not hostname or credentials:
         return None
     return candidate
 
@@ -83,27 +95,38 @@ class Normaliser:
         seen: set[str] = set()
         result: list[Event] = []
         for event in events:
-            title = clean_text(event.title, MAX_TITLE)
-            if title is None or event.id in seen:
+            if event.id in seen:
+                continue
+            try:
+                normalised = _normalised(event)
+            except (ValueError, TypeError, OverflowError):
+                # One malformed upstream record is dropped; the rest of the poll survives.
+                continue
+            if normalised is None:
                 continue
             seen.add(event.id)
-            summary = clean_text(event.summary, MAX_SUMMARY)
-            url = safe_url(event.url)
-            digest = event.content_hash or content_hash(
-                title, summary, url, event.published_at.isoformat() if event.published_at else None
-            )
-            unchanged = (
-                title == event.title
-                and summary == event.summary
-                and url == event.url
-                and digest == event.content_hash
-            )
-            result.append(
-                event
-                if unchanged
-                else event.with_changes(title=title, summary=summary, url=url, content_hash=digest)
-            )
+            result.append(normalised)
         return result
+
+
+def _normalised(event: Event) -> Event | None:
+    title = clean_text(event.title, MAX_TITLE)
+    if title is None:
+        return None
+    summary = clean_text(event.summary, MAX_SUMMARY)
+    url = safe_url(event.url)
+    digest = event.content_hash or content_hash(
+        title, summary, url, event.published_at.isoformat() if event.published_at else None
+    )
+    unchanged = (
+        title == event.title
+        and summary == event.summary
+        and url == event.url
+        and digest == event.content_hash
+    )
+    if unchanged:
+        return event
+    return event.with_changes(title=title, summary=summary, url=url, content_hash=digest)
 
 
 class Pipeline:

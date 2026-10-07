@@ -18,8 +18,10 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from html.parser import HTMLParser
+
+from ase.adapters.feeds.timestamps import parse_utc
 
 MAX_DOCUMENT_CHARS = 1_500_000
 MAX_POSTS = 20
@@ -104,11 +106,7 @@ def _attribute(attrs: list[tuple[str, str | None]], name: str) -> str:
 
 
 def _timestamp(value: str) -> datetime | None:
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    return parse_utc(value)
 
 
 def _collapse(parts: list[str], limit: int) -> str:
