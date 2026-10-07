@@ -46,8 +46,9 @@ export function AreaDeletion({
             <span className="font-medium text-text">Extent:</span> {describe(area)}
           </p>
           <p>
-            This permanently deletes the saved area and removes it from any collection plans that
-            use it. Plans that use this area keep their requirements and will need a new area.
+            This permanently deletes the saved area. If collection plans use this area, nothing is
+            deleted and you will be asked to choose another area for those plans, or delete them,
+            first.
           </p>
           <p className="font-medium text-critical">This cannot be undone.</p>
         </>
@@ -85,8 +86,9 @@ export function PlanDeletion({
           </p>
           <p>
             This permanently deletes the plan with its {plan.pirs.length} priority and {specific}{' '}
-            specific requirement{plan.pirs.length + specific === 1 ? '' : 's'}. Saved areas, alert
-            rules and reports are kept.
+            specific requirement{plan.pirs.length + specific === 1 ? '' : 's'}. Saved areas and
+            reports are kept. If alert rules use this plan, nothing is deleted and you will be asked
+            to remove the plan from those rules, or delete them, first.
           </p>
           <p className="font-medium text-critical">This cannot be undone.</p>
         </>

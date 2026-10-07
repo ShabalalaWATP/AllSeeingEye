@@ -91,7 +91,8 @@ export function ReportManagement({
           This permanently deletes the report,{' '}
           {versions === 1 ? 'its saved version' : `all ${versions} saved versions`} and the frozen
           evidence kept with them, including claims, reviews, original assets, saved maps and
-          annotation monitors. Files you have already exported are not affected.
+          annotation monitors. Files you have already exported are not affected. A report kept in a
+          subscription&apos;s edition history cannot be deleted.
         </p>
         <p className="font-medium text-critical">This cannot be undone.</p>
       </ConfirmDialog>
