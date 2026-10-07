@@ -51,7 +51,7 @@ def _summary(body: object) -> dict[str, str]:
 
 @router.post("/security/csp-reports", status_code=204, include_in_schema=False)
 async def report_csp(request: Request, container: ContainerDep, context: ContextDep) -> Response:
-    for key, limit in (("csp:global", 120), (f"csp:ip:{context.ip}", 20)):
+    for key, limit in (("csp:global", 120), (f"csp:ip:{context.client_key}", 20)):
         retry = container.limiter.hit(key, limit, 60)
         if retry is not None:
             raise RateLimited(retry)

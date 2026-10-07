@@ -157,7 +157,8 @@ class Container(
 
     def _initialise_authentication(self) -> None:
         settings = self.settings
-        self.hasher = Argon2PasswordHasher()
+        self.password_hasher = Argon2PasswordHasher(settings.password_hash_concurrency)
+        self.hasher = self.password_hasher
         self.issuer = JwtAccessTokenIssuer(
             settings.jwt_secret_value, timedelta(minutes=settings.access_token_minutes), self.clock
         )
@@ -168,7 +169,8 @@ class Container(
         self.initialise_cyber()
         self.refresh_ttl = timedelta(days=settings.refresh_token_days)
         # Verified against on unknown emails so login timing does not reveal existence.
-        self._dummy_hash = self.hasher.hash(secrets.token_urlsafe(16))
+        # Computed once while the container is built, before any request is served.
+        self._dummy_hash = self.password_hasher.hash_blocking(secrets.token_urlsafe(16))
 
     def _initialise_live_store(self) -> None:
         settings = self.settings

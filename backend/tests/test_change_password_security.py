@@ -59,7 +59,7 @@ async def test_password_change_and_reset_have_exactly_one_winner(
     async with container.session_factory() as session:
         current = await container.repositories(session).users.get_by_id(user.id)
         assert current and current.security_version == 1
-        assert container.hasher.verify(current.password_hash or "", expected)
+        assert await container.hasher.verify(current.password_hash or "", expected)
 
 
 @pytest.mark.parametrize("state", ["inactive", "stale", "locked", "missing_password"])
@@ -152,7 +152,7 @@ async def test_failed_transaction_does_not_consume_authenticator_code(
     code = pyotp.TOTP(secret).at(clock.now())
     original_hash = container.hasher.hash
 
-    def failing_hash(_password: str) -> str:
+    async def failing_hash(_password: str) -> str:
         raise RuntimeError("Synthetic hashing failure")
 
     monkeypatch.setattr(container.hasher, "hash", failing_hash)
@@ -209,7 +209,7 @@ async def test_failed_commit_rolls_back_credentials_sessions_links_and_audit(
         reset_record = await repos.password_tokens.get_by_hash(container.generator.hash(reset))
         audit = await repos.audit.list_before(None, 50)
         assert current and current.security_version == user.security_version
-        assert container.hasher.verify(current.password_hash or "", USER_PASSWORD)
+        assert await container.hasher.verify(current.password_hash or "", USER_PASSWORD)
         assert refresh_record and refresh_record.revoked_at is None
         assert reset_record and reset_record.used_at is None
         assert all(entry.action is not AuditAction.PASSWORD_CHANGED for entry in audit)

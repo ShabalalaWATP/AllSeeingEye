@@ -102,12 +102,15 @@ def test_token_generator_hashes_deterministically() -> None:
     assert generator.hash(secret) != generator.hash(generator.new_secret())
 
 
-def test_hasher_rejects_bad_hashes() -> None:
+async def test_hasher_rejects_bad_hashes() -> None:
     hasher = Argon2PasswordHasher()
-    digest = hasher.hash("Correct-Horse-Battery-Staple")
-    assert hasher.verify(digest, "Correct-Horse-Battery-Staple")
-    assert not hasher.verify(digest, "wrong")
-    assert not hasher.verify("not-a-hash", "wrong")
+    try:
+        digest = await hasher.hash("Correct-Horse-Battery-Staple")
+        assert await hasher.verify(digest, "Correct-Horse-Battery-Staple")
+        assert not await hasher.verify(digest, "wrong")
+        assert not await hasher.verify("not-a-hash", "wrong")
+    finally:
+        hasher.close()
 
 
 def test_rate_limiter_windows_and_eviction() -> None:

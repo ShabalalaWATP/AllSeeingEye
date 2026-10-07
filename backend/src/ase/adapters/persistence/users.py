@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -168,3 +168,9 @@ class SqlAccountRequestRepository:
             AccountRequestRow.status == RequestStatus.PENDING.value,
         )
         return (await self._session.scalars(stmt)).first() is not None
+
+    async def count_pending(self) -> int:
+        stmt = select(func.count(AccountRequestRow.id)).where(
+            AccountRequestRow.status == RequestStatus.PENDING.value
+        )
+        return int(await self._session.scalar(stmt) or 0)

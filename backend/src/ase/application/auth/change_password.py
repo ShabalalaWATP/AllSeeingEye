@@ -55,7 +55,7 @@ class ChangePasswordUseCase:
         mfa_challenge_token: str | None = None,
         mfa_code: str | None = None,
     ) -> None:
-        for key in (f"change-password:user:{actor.id}", f"change-password:ip:{context.ip}"):
+        for key in (f"change-password:user:{actor.id}", f"change-password:ip:{context.client_key}"):
             retry = self._limiter.hit(key, 5, 60)
             if retry is not None:
                 raise RateLimited(retry)
@@ -67,7 +67,7 @@ class ChangePasswordUseCase:
         ):
             raise Unauthenticated("The session has ended. Sign in again.")
         now = self._clock.now()
-        if not current.can_log_in(now) or not self._hasher.verify(
+        if not current.can_log_in(now) or not await self._hasher.verify(
             current.password_hash or "", current_password
         ):
             await self._failed(current, context)
@@ -84,7 +84,7 @@ class ChangePasswordUseCase:
                 await self._failed(current, context)
         elif methods:
             await self._failed(current, context)
-        current.password_hash = self._hasher.hash(new_password)
+        current.password_hash = await self._hasher.hash(new_password)
         current.security_version += 1
         current.failed_login_count = 0
         current.last_failed_at = None

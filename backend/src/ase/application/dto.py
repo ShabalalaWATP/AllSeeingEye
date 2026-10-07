@@ -7,6 +7,7 @@ from datetime import datetime
 from uuid import UUID
 
 from ase.domain.audit import AuditEntry
+from ase.domain.client_address import rate_limit_key
 from ase.domain.users import Role, User
 
 
@@ -30,6 +31,11 @@ class AccessClaims:
 class RequestContext:
     ip: str | None = None
     user_agent: str | None = None
+
+    @property
+    def client_key(self) -> str:
+        """The abuse-limit bucket for this client: IPv6 shares one per /64 prefix."""
+        return rate_limit_key(self.ip)
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,7 +71,10 @@ class RateLimits:
     login_per_email: int = 5
     login_window_seconds: int = 60
     request_account_per_ip: int = 3
+    request_account_global: int = 30
+    pending_account_requests_max: int = 100
     forgot_per_ip: int = 3
+    forgot_global: int = 60
     set_password_per_ip: int = 10
     reports_per_user: int = 10
     hourly_window_seconds: int = 3600

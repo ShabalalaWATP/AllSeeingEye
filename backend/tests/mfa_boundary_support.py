@@ -49,10 +49,11 @@ def use_case(user: User, pending: MfaChallenge) -> MfaUseCase:
     totp.get.return_value = None
     users = AsyncMock()
     users.lock_by_id.return_value = user
-    hasher = Mock()
+    hasher = AsyncMock()
     hasher.verify.return_value = True
     limiter = Mock()
     limiter.hit.return_value = None
+    limiter.peek.return_value = None
     email = Mock(available=True, send_code=AsyncMock(return_value=True))
     return MfaUseCase(
         MfaContext(

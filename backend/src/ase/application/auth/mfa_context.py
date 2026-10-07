@@ -23,6 +23,15 @@ from ase.domain.errors import InvalidCredentials, InvalidRequest, RateLimited, U
 from ase.domain.mfa import MfaChallenge, MfaPurpose
 from ase.domain.users import User
 
+# Failed second-factor proofs per account across every challenge, method and client.
+# Per-challenge and per-client limits alone let fresh password logins keep guessing.
+SECOND_FACTOR_FAILURES = 10
+SECOND_FACTOR_WINDOW_SECONDS = 900
+
+
+def _second_factor_key(user: User) -> str:
+    return f"mfa-fail:user:{user.id}"
+
 
 @dataclass(frozen=True)
 class MfaContext:
@@ -44,12 +53,28 @@ class MfaContext:
     def limit(self, context: RequestContext, token: str, *, sending: bool = False) -> None:
         prefix = "mfa-send" if sending else "mfa"
         for key, count in (
-            (f"{prefix}:ip:{context.ip}", 20),
+            (f"{prefix}:ip:{context.client_key}", 20),
             (f"{prefix}:token:{self.generator.hash(token)}", 5),
         ):
             retry = self.limiter.hit(key, count, 300)
             if retry is not None:
                 raise RateLimited(retry)
+
+    async def throttle(self, user: User, context: RequestContext) -> None:
+        """Refuse second-factor proofs while the account has too many recent failures."""
+        retry = self.limiter.peek(
+            _second_factor_key(user), SECOND_FACTOR_FAILURES, SECOND_FACTOR_WINDOW_SECONDS
+        )
+        if retry is None:
+            return
+        await self.auditor.record(
+            AuditAction.LOGIN_FAILED,
+            actor=user.id,
+            ip=context.ip,
+            details={"reason": "second_factor_rate_limited"},
+        )
+        await self.uow.commit()
+        raise RateLimited(retry)
 
     async def load(self, token: str, purpose: MfaPurpose) -> tuple[MfaChallenge, User]:
         challenge = await self.repo.get(self.generator.hash(token))
@@ -87,6 +112,9 @@ class MfaContext:
     async def fail(self, challenge: MfaChallenge, user: User, context: RequestContext) -> None:
         challenge.attempts += 1
         await self.save(challenge)
+        self.limiter.hit(
+            _second_factor_key(user), SECOND_FACTOR_FAILURES, SECOND_FACTOR_WINDOW_SECONDS
+        )
         await self.auditor.record(
             AuditAction.LOGIN_FAILED,
             actor=user.id,
@@ -99,7 +127,7 @@ class MfaContext:
     async def credentials(self, actor: User, password: str, context: RequestContext) -> User:
         self.limit(context, str(actor.id))
         current = await self.current_actor(actor)
-        if not current.can_log_in(self.clock.now()) or not self.hasher.verify(
+        if not current.can_log_in(self.clock.now()) or not await self.hasher.verify(
             current.password_hash or "", password
         ):
             raise InvalidRequest("The current password is incorrect or the account is unavailable.")
