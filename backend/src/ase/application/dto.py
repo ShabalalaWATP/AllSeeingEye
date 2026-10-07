@@ -7,7 +7,6 @@ from datetime import datetime
 from uuid import UUID
 
 from ase.domain.audit import AuditEntry
-from ase.domain.client_address import rate_limit_key
 from ase.domain.users import Role, User
 
 
@@ -35,6 +34,9 @@ class RequestContext:
     @property
     def client_key(self) -> str:
         """The abuse-limit bucket for this client: IPv6 shares one per /64 prefix."""
+        # Settings import this module, so keep `ase migrate` within its import budget.
+        from ase.domain.client_address import rate_limit_key  # noqa: PLC0415
+
         return rate_limit_key(self.ip)
 
 
