@@ -24,6 +24,7 @@ from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_execution import already_published, execute_job
 from ase.container.report_job_gate import ReportJobChanged, ReportJobSourceDisabled
 from ase.container.subscription_retry_orchestration import SubscriptionRetryOrchestrator
+from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.errors import Forbidden, NoModelAvailable, NotFound, Unauthenticated
 from ase.domain.report_jobs import ReportJob
 from ase.domain.subscription_editions import EditionWorkflow
@@ -45,6 +46,7 @@ def failure_code(error: BaseException) -> str:
     mappings: tuple[tuple[tuple[type[BaseException], ...], str], ...] = (
         ((JobBudgetExhausted,), "budget_exhausted"),
         ((MonthlyBudgetExhausted,), "monthly_budget_exhausted"),
+        ((AiAllowanceExceeded,), "ai_allowance_exhausted"),
         ((ReportJobChanged, NoModelAvailable), "model_changed"),
         ((ReportJobSourceDisabled,), "source_disabled"),
         ((Unauthenticated, Forbidden, NotFound), "access_changed"),

@@ -38,6 +38,8 @@ class RetryFailure(StrEnum):
     QUEUE_CAPACITY = "queue_capacity"
     JOB_BUDGET = "job_budget"
     MONTHLY_BUDGET = "monthly_budget"
+    # The value is also the job error code, so the paused job keeps honest copy.
+    AI_ALLOWANCE = "ai_allowance_exhausted"
     PERMANENT = "permanent"
 
 
@@ -119,7 +121,7 @@ def decide_retry(context: RetryContext) -> RetryDecision:  # noqa: PLR0911, PLR0
         RetryFailure.CAPABILITY_MISSING,
     }:
         return RetryDecision(RetryAction.BLOCK, failure.value)
-    if failure in {RetryFailure.JOB_BUDGET, RetryFailure.MONTHLY_BUDGET}:
+    if failure in {RetryFailure.JOB_BUDGET, RetryFailure.MONTHLY_BUDGET, RetryFailure.AI_ALLOWANCE}:
         return RetryDecision(RetryAction.BLOCK, failure.value)
     if failure is RetryFailure.SOURCE_FAILURE:
         return RetryDecision(RetryAction.QUALITY_GATE, "source_failure_coverage")
