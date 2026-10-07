@@ -32,6 +32,8 @@ class AssistantReportContext:
     title: str
     data_cutoff: datetime | None
     team_id: UUID | None = None
+    # The saved report's owner, so a personal report routes through its owner's binding.
+    created_by: UUID | None = None
 
 
 @dataclass(frozen=True, slots=True)
