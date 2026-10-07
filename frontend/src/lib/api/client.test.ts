@@ -112,7 +112,7 @@ describe('api client', () => {
     expect(lost).not.toHaveBeenCalled();
   });
 
-  it('gives up and reports a lost session when the refresh fails', async () => {
+  it('gives up and leaves the session decision to the refresher when the refresh fails', async () => {
     server.use(http.get('/api/thing', () => apiError(401, 'unauthenticated', 'Sign in required.')));
     const lost = vi.fn();
     bindSession({
@@ -123,7 +123,7 @@ describe('api client', () => {
     await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({
       code: 'unauthenticated',
     });
-    expect(lost).toHaveBeenCalledTimes(1);
+    expect(lost).not.toHaveBeenCalled();
   });
 
   it('reports a lost session when the retried request is rejected too', async () => {

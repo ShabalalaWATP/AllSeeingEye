@@ -24,7 +24,12 @@ interface Snapshot<T> {
   loading: boolean;
 }
 
-/** Identity/access changes hide previous data before a fresh request can settle. */
+/**
+ * Identity/access changes hide previous data before a fresh request can settle.
+ * `reload` starts again from a loading state, for explicit Retry buttons. `refresh` is a
+ * background load: it keeps what is on screen (data or error) for the same scope and, if
+ * it fails, keeps the previous data and reports only the error.
+ */
 export function useScopedResource<T>(loader: () => Promise<T>) {
   // The loader keeps its own call shape: many loaders take optional, non-signal arguments.
   const unsignalled = useCallback(() => loader(), [loader]);
@@ -64,10 +69,10 @@ function useScopedLoads<T>(loader: (signal: AbortSignal) => Promise<T>) {
       const abort = () => controller.abort();
       if (external?.aborted) abort();
       external?.addEventListener('abort', abort, { once: true });
+      const keeps = (previous: Snapshot<T>) =>
+        background && previous.key === key && previous.loader === loader && !previous.loading;
       setSnapshot((previous) =>
-        background && previous.key === key && previous.loader === loader && previous.data !== null
-          ? previous
-          : { key, loader, data: null, error: null, loading: true },
+        keeps(previous) ? previous : { key, loader, data: null, error: null, loading: true },
       );
       const current = () =>
         !controller.signal.aborted &&
@@ -79,7 +84,13 @@ function useScopedLoads<T>(loader: (signal: AbortSignal) => Promise<T>) {
         if (current()) setSnapshot({ key, loader, data, error: null, loading: false });
       } catch (error) {
         if (current())
-          setSnapshot({ key, loader, data: null, error: asApiError(error), loading: false });
+          setSnapshot((previous) => ({
+            key,
+            loader,
+            data: keeps(previous) ? previous.data : null,
+            error: asApiError(error),
+            loading: false,
+          }));
       } finally {
         external?.removeEventListener('abort', abort);
         if (inFlight.current === controller) inFlight.current = null;
@@ -92,7 +103,6 @@ function useScopedLoads<T>(loader: (signal: AbortSignal) => Promise<T>) {
   /** A background refresh that is also aborted when `signal` is, for pollers. */
   const refreshWithSignal = useCallback((signal: AbortSignal) => load(true, signal), [load]);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload();
     return () => {
       sequence.current += 1;

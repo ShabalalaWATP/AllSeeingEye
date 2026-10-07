@@ -69,7 +69,7 @@ function SecurityContent() {
         <RecoveryCodes
           status={resource.data.recovery}
           methods={resource.data.mfa.methods}
-          onChanged={resource.reload}
+          onChanged={resource.refresh}
         />
       )}
       <AccountSessions />

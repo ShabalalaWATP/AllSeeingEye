@@ -61,6 +61,8 @@ export function SchedulesSection({
   const schedules = useScopedResource(fetchSchedules);
   const refreshError = useScheduleRefresh(schedules.data, schedules.key, schedules.setData);
   const reload = schedules.reload;
+  // After a change the list refreshes in place, keeping notices, focus and open forms.
+  const refreshList = schedules.refresh;
   useEffect(() => {
     if (!editing) return;
     const container = formContainer.current;
@@ -91,9 +93,9 @@ export function SchedulesSection({
         setEditing(null);
         setCopying(false);
         setRevision((value) => value + 1);
-        await reload();
+        await refreshList();
       },
-      [reload, editing, copying, restoreEditFocus, draftQuestion, draftCountry],
+      [refreshList, editing, copying, restoreEditFocus, draftQuestion, draftCountry],
     ),
   );
   const remove = useAsyncAction(
@@ -101,9 +103,9 @@ export function SchedulesSection({
       async (id: string) => {
         await deleteSchedule(id);
         setEditing((current) => (current?.id === id ? null : current));
-        await reload();
+        await refreshList();
       },
-      [reload],
+      [refreshList],
     ),
   );
   const toggle = useAsyncAction(
@@ -113,9 +115,9 @@ export function SchedulesSection({
           ? await pauseSchedule(schedule.id)
           : await resumeSchedule(schedule.id);
         setEditing((current) => (current?.id === updated.id ? updated : current));
-        await reload();
+        await refreshList();
       },
-      [reload],
+      [refreshList],
     ),
   );
   const runNow = useAsyncAction(
@@ -127,9 +129,9 @@ export function SchedulesSection({
         const edition = await runSubscriptionNow(id, requestId);
         if (!retainSubscriptionRequest(edition)) runRequestIds.current.delete(id);
         setNotice(subscriptionRunNotice(edition));
-        await reload();
+        await refreshList();
       },
-      [reload],
+      [refreshList],
     ),
   );
   const {
@@ -287,7 +289,7 @@ export function SchedulesSection({
                   setNotice(
                     'Paused copy created from the exact Research Brief revision. Resume it when ready.',
                   );
-                  void reload();
+                  void refreshList();
                 }}
               />
             ))}
