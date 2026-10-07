@@ -1,0 +1,11 @@
+# Store text with LF line endings whatever the editor or operating system writes, so
+# an edit on Windows never turns into a whole-file rewrite in review.
+* text=auto eol=lf
+
+# Recorded data keeps its exact bytes: feed fixtures mirror upstream responses, and
+# evaluation baselines, evidence records and packaged seeds may be hashed or compared.
+backend/tests/fixtures/** -text
+backend/evaluations/** -text
+docs/evidence/** -text
+backend/src/ase/resources/research_presets.json -text
+backend/src/ase/resources/ukraine_forces_seeds.json -text
