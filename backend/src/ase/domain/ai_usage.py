@@ -111,11 +111,12 @@ def period_bounds(now: datetime, period: AiAllowancePeriod) -> tuple[datetime, d
     if period is AiAllowancePeriod.WEEK:
         start -= timedelta(days=start.weekday())
         return start, start + timedelta(days=7)
+    # Move to the first of the month before changing month: the 29th to 31st do not
+    # exist in every following month.
+    start = start.replace(day=1)
     if value.month == 12:
-        following = start.replace(year=value.year + 1, month=1)
-    else:
-        following = start.replace(month=value.month + 1)
-    return start.replace(day=1), following.replace(day=1)
+        return start, start.replace(year=value.year + 1, month=1)
+    return start, start.replace(month=value.month + 1)
 
 
 @dataclass(frozen=True, slots=True)
