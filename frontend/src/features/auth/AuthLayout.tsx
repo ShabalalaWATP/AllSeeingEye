@@ -22,7 +22,7 @@ export function AuthLayout() {
       <section className="auth-brand" aria-label="The All Seeing Eye">
         <div className="auth-grid" aria-hidden="true" />
         <p className="auth-eyebrow">Open-source intelligence</p>
-        <MotionToggle tone="auth" className="absolute top-8 right-8 flex flex-col items-end" />
+        <MotionToggle tone="auth" className="absolute top-6 right-6 flex flex-col items-end" />
         <div className="auth-identity">
           <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
             <EvilEye
