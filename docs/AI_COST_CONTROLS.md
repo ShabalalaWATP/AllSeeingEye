@@ -153,6 +153,18 @@ Start with a cadence that matches how quickly the subject changes. Inspect a com
 edition's coverage and usage before increasing frequency or depth. Pausing stops
 further scheduled admissions; it does not refund work already sent to a provider.
 
+When an AI allowance refuses a report call, nothing is sent to the provider. The job
+pauses with an allowance message, keeps its saved sections and does not spend any of
+its lifetime or per-stage call limits. A subscription edition whose retained job stops
+on the monthly report budget, an AI allowance or a lifetime-budget check is blocked
+rather than failed. Once an hour the worker probes it under the same capacity, saved
+allowance and monthly budget checks as a manual resume, and resumes the same job when
+there is room again, for example after the UTC month rolls over or an administrator
+raises an allowance. An AI allowance is rechecked only when the resumed job next
+reserves a call, so a still-exhausted allowance blocks the edition again without
+sending anything. Blocks caused by revoked access or a missing model need a person
+and are not probed.
+
 ## Estimated spend
 
 The app estimates spend using recorded input/output tokens and operator-configured

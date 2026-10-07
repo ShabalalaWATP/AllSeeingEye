@@ -16,6 +16,7 @@ from ase.adapters.persistence.subscription_edition_codec import attempt_from_row
 from ase.adapters.persistence.subscription_edition_models import SubscriptionEditionRow
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.adapters.persistence.subscription_retry_attempts import (
+    due_blocked_ids,
     due_retry_ids,
     finish_attempt,
     first_failure_at,
@@ -49,6 +50,9 @@ class SqlSubscriptionRetrySession:
 
     async def due_retry_ids(self, now: datetime) -> list[UUID]:
         return await due_retry_ids(self.session, now)
+
+    async def due_blocked_ids(self, now: datetime) -> list[UUID]:
+        return await due_blocked_ids(self.session, now)
 
     async def recoverable_editions(self) -> list[UUID]:
         rows = await self.session.scalars(
