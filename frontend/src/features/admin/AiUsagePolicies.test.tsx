@@ -13,10 +13,13 @@ import {
   policyId,
   teamId,
 } from '@/test/fixtures.aiUsage';
+import { installDialogStub } from '@/test/dialogStub';
 import { adminUser } from '@/test/fixtures';
 import { server } from '@/test/server';
 
 import { AiUsagePolicies } from './AiUsagePolicies';
+
+installDialogStub();
 
 const team = {
   id: teamId,
@@ -104,6 +107,11 @@ describe('AiUsagePolicies', () => {
     expect(list).toHaveTextContent('Requests Blocked · Tokens Keep policy limit');
     expect(created).toMatchObject({ requests: { state: 'blocked' }, tokens: { state: 'inherit' } });
     await user.click(within(list).getByRole('button', { name: 'Revoke' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', {
+        name: 'Revoke override',
+      }),
+    );
     expect(await within(list).findByText(/revoked/)).toBeInTheDocument();
   });
 
