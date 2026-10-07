@@ -1,11 +1,12 @@
 /** Public account pages: a live brand plane beside a quiet, opaque form. */
-import { NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet } from 'react-router';
 
 import { PublicRouteFocus } from '@/app/shell/PublicRouteFocus';
 import EvilEye from '@/components/brand/EvilEye';
 import { MotionToggle } from '@/components/brand/MotionToggle';
 import { useMotionPause } from '@/components/brand/useMotionPause';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
+import { useSiteFacts } from '@/lib/useSiteFacts';
 
 import './auth.css';
 
@@ -13,6 +14,8 @@ export function AuthLayout() {
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
   const { chosenPause } = useMotionPause();
+  const site = useSiteFacts();
+  const productPage = site.status === 'ready' && site.facts.product_page_enabled;
 
   return (
     <div className="auth-shell">
@@ -37,6 +40,11 @@ export function AuthLayout() {
               The All Seeing Eye<span>.</span>
             </p>
             <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
+            {productPage ? (
+              <Link className="auth-discover" to="/enterprise">
+                Discover what it can do
+              </Link>
+            ) : null}
           </div>
         </div>
         <div className="auth-brand-footer" aria-hidden="true">

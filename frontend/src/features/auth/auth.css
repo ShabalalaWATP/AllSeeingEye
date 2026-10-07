@@ -90,6 +90,22 @@
   line-height: 1.7;
 }
 
+.auth-discover {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: 1px solid var(--color-control-border);
+  border-radius: 999px;
+  color: var(--auth-link-current);
+  font-size: 14px;
+  transition: border-color 180ms ease;
+}
+.auth-discover:hover {
+  border-color: var(--color-ember);
+}
+
 .auth-brand-footer {
   position: absolute;
   inset: auto 48px 32px;
@@ -212,6 +228,22 @@
     font-size: 12px;
     margin-top: 14px;
   }
+  .auth-discover {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 18px;
+    padding: 0 18px;
+    border: 1px solid var(--color-control-border);
+    border-radius: 999px;
+    color: var(--auth-link-current);
+    font-size: 14px;
+    transition: border-color 180ms ease;
+  }
+  .auth-discover:hover {
+    border-color: var(--color-ember);
+  }
+
   .auth-brand-footer {
     display: none;
   }
@@ -285,6 +317,22 @@
   .auth-navigation {
     margin-bottom: 24px;
   }
+  .auth-discover {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 18px;
+    padding: 0 18px;
+    border: 1px solid var(--color-control-border);
+    border-radius: 999px;
+    color: var(--auth-link-current);
+    font-size: 14px;
+    transition: border-color 180ms ease;
+  }
+  .auth-discover:hover {
+    border-color: var(--color-ember);
+  }
+
   .auth-brand-footer {
     bottom: 20px;
     padding-top: 12px;
