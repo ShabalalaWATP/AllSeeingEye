@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 
 from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
+from ase.application.direction.dependents import refuse_plan_in_use
 from ase.application.direction.plan_inputs import (
     PirInput,
     PlanInput,
@@ -127,6 +128,7 @@ class DeletePlanUseCase:
         if plan is None:
             raise NotFound()
         decision.require_write(plan.created_by, plan.team_id)
+        refuse_plan_in_use(await self._plans.linked_alert_rules(plan_id, decision.visibility))
         await self._plans.delete(plan_id)
         await self._auditor.record(
             AuditAction.PLAN_DELETED, actor=actor.id, subject=str(plan_id), ip=context.ip

@@ -212,8 +212,7 @@ class ReportSearchService:
             if profile is None:
                 raise NoModelAvailable(UNAVAILABLE)
             fingerprint = profile_fingerprint(profile)
-            entries = await self._embeddings.current([r.id for r in records], fingerprint)
-            if not entries:
+            if not await self._embeddings.has_current([r.id for r in records], fingerprint):
                 return SearchResult((), 0, len(records))
             await self._uow.rollback()
             result = await self._embed(actor, profile, [text])
@@ -227,12 +226,23 @@ class ReportSearchService:
                     "The model's embedding dimensions changed. Configure a new embeddings "
                     "profile and index the saved reports again."
                 )
-            by_id = {record.id: record for record in records}
-            hits = sorted(
-                (
-                    SearchHit(by_id[entry.report_id], cosine(query_vector, entry.vector))
-                    for entry in entries
-                ),
-                key=lambda hit: (-hit.score, str(hit.report.id)),
-            )
-            return SearchResult(tuple(hits[:limit]), len(entries), len(records))
+            # Up to 1,000 x 4,096 multiplications run off the event loop.
+            hits = await asyncio.to_thread(ranked, records, entries, query_vector, limit)
+            return SearchResult(hits, len(entries), len(records))
+
+
+def ranked(
+    records: Sequence[ReportRecord],
+    entries: Sequence[IndexedReport],
+    query_vector: tuple[float, ...],
+    limit: int,
+) -> tuple[SearchHit, ...]:
+    by_id = {record.id: record for record in records}
+    hits = sorted(
+        (
+            SearchHit(by_id[entry.report_id], cosine(query_vector, entry.vector))
+            for entry in entries
+        ),
+        key=lambda hit: (-hit.score, str(hit.report.id)),
+    )
+    return tuple(hits[:limit])

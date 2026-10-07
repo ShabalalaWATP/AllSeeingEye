@@ -7,7 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from ase.domain.access import Visibility
-from ase.domain.collection import AreaOfInterest, CollectionPlan
+from ase.domain.collection import AreaOfInterest, CollectionPlan, LinkedRecords
 
 
 class AoiRepository(Protocol):
@@ -15,6 +15,10 @@ class AoiRepository(Protocol):
     async def get(self, aoi_id: UUID) -> AreaOfInterest | None: ...
     async def list_all(self) -> list[AreaOfInterest]: ...
     async def list_visible(self, visibility: Visibility) -> list[AreaOfInterest]: ...
+    async def linked_plans(self, aoi_id: UUID, visibility: Visibility) -> LinkedRecords:
+        """Every collection plan that uses the area, naming only the visible ones."""
+        ...
+
     async def delete(self, aoi_id: UUID) -> None: ...
 
 
@@ -25,6 +29,10 @@ class PlanRepository(Protocol):
     async def list_visible(self, visibility: Visibility) -> list[CollectionPlan]: ...
     async def save_if_unchanged(self, plan: CollectionPlan, expected_updated_at: datetime) -> bool:
         """Write the plan only while it still has the expected revision, atomically."""
+        ...
+
+    async def linked_alert_rules(self, plan_id: UUID, visibility: Visibility) -> LinkedRecords:
+        """Every alert rule linked to the plan, naming only the visible ones."""
         ...
 
     async def delete(self, plan_id: UUID) -> None: ...

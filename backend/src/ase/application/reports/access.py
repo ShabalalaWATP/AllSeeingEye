@@ -11,13 +11,17 @@ from ase.application.dto import RequestContext
 from ase.application.ports import UnitOfWork
 from ase.application.ports.reports import ReportRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import InvalidRequest, NotFound
+from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.report_listing import DISCOVERY_WINDOW, GROUP_ORIGINS, ReportGroup
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.reports import ReportOrigin
 from ase.domain.users import User
 
 MAX_LIST = 200
+SUBSCRIPTION_RETAINED = (
+    "This report is part of a subscription's saved edition history, so it cannot be deleted. "
+    "Archiving the subscription stops new editions but keeps the reports it has already saved."
+)
 
 
 @dataclass(frozen=True)
@@ -104,6 +108,8 @@ class DeleteReportUseCase:
         if record is None:
             raise NotFound()
         access.require_write(record.created_by, record.team_id)
+        if await self._reports.retained_by_subscription(report_id):
+            raise Conflict(SUBSCRIPTION_RETAINED)
         await self._reports.delete(report_id)
         await self._auditor.record(
             AuditAction.REPORT_DELETED,
