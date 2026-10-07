@@ -63,7 +63,7 @@ describe('Workspace write authority mirrors the server rule', () => {
     expect(workspaces.canManage({ team_id: team.id, created_by: plainUser.id })).toBe(false);
   });
 
-  it('denies every write when signed out', async () => {
+  it('denies every write when signed out', () => {
     loaded.details = [];
     useAuthStore.getState().clearSession();
     const { result } = renderHook(() => useWorkspaces());
