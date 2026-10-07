@@ -32,6 +32,7 @@ from ase.adapters.feeds.http_contracts import (
 )
 from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
 from ase.adapters.tls import verified_ssl_context
+from ase.application.feeds.fetch_budget import pausable_timeout
 from ase.application.feeds.poll_scope import active_poll_scope
 
 __all__ = [
@@ -190,7 +191,8 @@ class FeedHttpClient:
             credential.require_origin(url)
             conditional, max_redirects = False, 0
         try:
-            async with asyncio.timeout(self._total_timeout_seconds):
+            # Waiting for a paced host's turn does not count against this limit.
+            async with pausable_timeout(self._total_timeout_seconds):
                 return await self._get_bytes(url, conditional, max_redirects, credential, accept)
         except TimeoutError as exc:
             if credential is not None:

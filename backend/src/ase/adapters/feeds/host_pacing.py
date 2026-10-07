@@ -19,6 +19,7 @@ from datetime import timedelta
 from urllib.parse import urlsplit
 
 from ase.adapters.feeds.http_contracts import MAX_RETRY_AFTER, FeedRateLimitedError
+from ase.application.feeds.fetch_budget import UpstreamQueue
 
 ADSB_LOL_HOST = "api.adsb.lol"
 # Telegram serves every curated channel preview from one host, and the pages are large
@@ -78,10 +79,14 @@ class HostPacer:
         if interval is None:
             return
         lock = self._locks.setdefault(host, asyncio.Lock())
-        async with lock:
+        # Queueing for the host is politeness, not upstream slowness: the poll's fetch
+        # slot and deadlines are released until this request's turn comes.
+        async with UpstreamQueue() as queue, lock:
             self._check_cooldown(host, url)
             delay = self._next_start.get(host, 0.0) - self._monotonic()
             if delay > 0:
                 await self._sleep(delay)
                 self._check_cooldown(host, url)
+            # Reclaim the budget inside the lock so starts stay in pacing order.
+            await queue.resume()
             self._next_start[host] = self._monotonic() + interval
