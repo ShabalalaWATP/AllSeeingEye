@@ -43,7 +43,9 @@ describe('saved area deletion', () => {
     const { user, trigger, dialog } = await openArea();
     expect(dialog).toHaveTextContent('Personal');
     expect(dialog).toHaveTextContent('box 30.0, 44.0, 41.0, 53.0');
-    expect(dialog).toHaveTextContent('Collection plans that use this area');
+    expect(dialog).toHaveTextContent(
+      'Plans that use this area keep their requirements and will need a new area.',
+    );
     expect(dialog).toHaveTextContent('cannot be undone');
     await user.keyboard('{Escape}');
     await waitFor(() => {

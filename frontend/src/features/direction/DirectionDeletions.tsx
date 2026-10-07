@@ -46,8 +46,8 @@ export function AreaDeletion({
             <span className="font-medium text-text">Extent:</span> {describe(area)}
           </p>
           <p>
-            This permanently deletes the saved area. Collection plans that use this area keep their
-            requirements but no longer have an area.
+            This permanently deletes the saved area and removes it from any collection plans that
+            use it. Plans that use this area keep their requirements and will need a new area.
           </p>
           <p className="font-medium text-critical">This cannot be undone.</p>
         </>
