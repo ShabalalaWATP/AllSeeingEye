@@ -88,9 +88,11 @@ route and administrator contact; deactivation must never be described as erasure
 | Map and reference services | Requests for the tiles, catalogues or data needed for the view |
 | AI features | Relevant questions, selected evidence, extracted text or sanitised images sent to the configured model |
 | Optional fresh web research | Public research question and selected public scope sent to the compatible search provider |
-| Email | Account messages and verification codes through the configured mail service |
-| Optional archive capture | Cited URLs sent to the Internet Archive |
-| Optional alert webhook | Alert notifications sent to the configured destination |
+| Email | Account messages and verification codes, plus alert, digest and subscription emails a user opts into, through the configured mail service |
+| Archive capture (on by default; `ASE_ARCHIVE_ENABLED=false` turns it off) | URLs cited by saved reports sent to the Internet Archive after generation |
+| Optional installation alert webhook | Alert notifications sent to the destination the operator configures |
+| Optional user alert webhooks | Alert notifications sent to HTTPS destinations that users or teams register for their alert rules |
+| Optional browser push | An opaque notification identifier sent through the browser vendor's push service to devices a user enables |
 
 Enabled background collection based on private plan terms can disclose those terms
 to the queried public provider. Supported private-file research does not
