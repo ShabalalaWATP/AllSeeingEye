@@ -73,8 +73,10 @@
 		root * /srv
 		# Client routes fall back to the SPA shell. A missing /assets file answers 404
 		# instead, so a stale tab never receives index.html as a script or stylesheet.
+		# /.well-known serves only the files the image ships (security.txt); any other
+		# path there answers 404 rather than the shell, as clients probing it expect.
 		@spa_route {
-			not path /assets/*
+			not path /assets/* /.well-known/*
 			not file
 		}
 		rewrite @spa_route /index.html

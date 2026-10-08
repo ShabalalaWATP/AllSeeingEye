@@ -148,6 +148,14 @@ def extract(tar_path: Path, destination: Path) -> Path:
     return destination / roots.pop()
 
 
+def keep_count(value: str) -> int:
+    """Argument type for --keep, so a tiny retention is refused before any work starts."""
+    keep = int(value)
+    if keep < MIN_KEEP:
+        raise BackupError(f"Keep at least {MIN_KEEP} scheduled archives.")
+    return keep
+
+
 def prune(root: Path, keep: int) -> list[str]:
     """Delete the oldest scheduled archives beyond `keep`; nothing else is touched."""
     if keep < MIN_KEEP:
