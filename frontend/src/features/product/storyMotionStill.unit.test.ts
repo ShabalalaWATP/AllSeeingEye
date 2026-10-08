@@ -53,10 +53,17 @@ const classes = (selector: string) => new Set(selector.match(/\.[\w-]+/g) ?? [])
 
 const files = readdirSync(DIR).filter((file) => file.endsWith('.css'));
 const all = files.flatMap(rules);
+/** Values of one shorthand property in a rule body, parsed as plain declarations. */
+function values(body: string, property: string): string[] {
+  return body
+    .split(';')
+    .map((declaration) => declaration.split(':'))
+    .filter(([name]) => name?.trim() === property)
+    .map(([, ...value]) => value.join(':').trim());
+}
 const moves = (body: string, property: string) =>
-  new RegExp(`(^|[;\\s])${property}\\s*:\\s*(?!none)`).test(body);
-const stops = (body: string, property: string) =>
-  new RegExp(`(^|[;\\s])${property}\\s*:\\s*none`).test(body);
+  values(body, property).some((value) => value !== 'none');
+const stops = (body: string, property: string) => values(body, property).includes('none');
 
 it.each(['animation', 'transition'])('pauses every product %s when the story is still', (prop) => {
   const moving = all.filter(
