@@ -4,7 +4,13 @@ import { aiPolicy, teamId } from '@/test/fixtures.aiUsage';
 import { adminUser } from '@/test/fixtures';
 import { team } from '@/test/fixtures.teamData';
 
-import { describeOverrideLimit, parseLimit, policyLabel } from './aiUsagePresentation';
+import {
+  AI_LIMIT_RANGE,
+  describeOverrideLimit,
+  MAX_AI_LIMIT,
+  parseLimit,
+  policyLabel,
+} from './aiUsagePresentation';
 
 const knownTeam = { ...team, id: teamId, name: 'Northern desk' };
 const missingId = '99999999-9999-4999-8999-999999999999';
@@ -20,6 +26,13 @@ describe('parseLimit', () => {
     for (const value of ['1.5', '-1', 'ten', '9007199254740993']) {
       expect(parseLimit(value)).toBeNaN();
     }
+  });
+
+  it('accepts the server maximum and rejects anything larger', () => {
+    expect(MAX_AI_LIMIT).toBe(2_147_483_647);
+    expect(parseLimit('2147483647')).toBe(MAX_AI_LIMIT);
+    expect(parseLimit('2147483648')).toBeNaN();
+    expect(AI_LIMIT_RANGE).toBe('from 0 to 2,147,483,647');
   });
 });
 

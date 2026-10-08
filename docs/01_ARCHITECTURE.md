@@ -171,7 +171,7 @@ contracts are the source of truth, rather than file size or a SOLID score.
   `src/test/axe.ts`, also fails when an axe check throws, so a rule cannot be skipped silently.
 - **jsdom limits.** jsdom has no layout or paint, so `color-contrast`, `link-in-text-block`
   and `target-size` are off there. Contrast is measured from the theme tokens instead
-  (`styles/paletteClasses.test.ts`, `styles/readability.test.ts`) for every palette.
+  (`styles/paletteClasses.unit.test.ts`, `styles/readability.unit.test.ts`) for every palette.
   Text tokens must reach 4.5:1. The focus ring, accent borders, control borders and
   chart marks must reach 3:1.
 - A browser pass is still needed for contrast over imagery, zoom, reflow and screen reader
@@ -187,17 +187,18 @@ contracts are the source of truth, rather than file size or a SOLID score.
   `ConfirmDialog`; empty lists use `EmptyState`.
 - **One type scale.** `styles/theme.css` resets Tailwind's font sizes and declares the
   scale (`text-2xs` to `text-4xl`, plus a display `text-6xl`) in rem, so text follows the
-  reader's font size. `styles/typeScale.test.ts` rejects arbitrary sizes such as
-  `text-[11px]`, undeclared steps and any `h1` outside `PageHeader`. The listed exceptions
-  are the paper report reader, the globe's visually hidden heading and, until its pending
-  rewrite lands, the alerts page.
+  reader's font size. `styles/typeScale.unit.test.ts` rejects arbitrary sizes such as
+  `text-[11px]` and undeclared steps in every source file, without exceptions. It also
+  rejects any `h1` outside `PageHeader`. Its `OWN_HEADINGS` list names the only pages that
+  set their own `h1`: the paper report reader (`ReportPage`, `ReportPublication` and the
+  development report preview), the globe's visually hidden heading (`GlobeHeading`) and
+  the public product page's display title (`features/product/chapters/HeroChapter.tsx`).
+  An entry fails the test once its page no longer needs it.
 - **Colours come from tokens.** Theme-dependent colours use the `--color-*` tokens. Fixed
   palettes are named once at the top of their stylesheet: the paper report, the sign-in
-  screen and the radio planner instrument. `styles/featureColours.test.ts` rejects a hex
-  colour outside a custom property declaration and any hex colour in a component class.
-- Some globe stylesheets and panels are temporarily exempt from the type-scale and
-  colour checks while the globe is being refactored. Each exemption fails its own test once
-  it is no longer needed.
+  screen and the map instruments. `styles/featureColours.unit.test.ts` rejects a hex
+  colour outside a custom property declaration in any stylesheet other than
+  `styles/theme.css`, and any hex colour in a component class. It has no exemption list.
 
 ## What is stored
 

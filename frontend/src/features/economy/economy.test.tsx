@@ -86,6 +86,40 @@ it('recovers provider errors without hiding the other independent panel', async 
   ).toBeInTheDocument();
 });
 
+it('keeps the jump-link targets mounted while indicators load and after they fail', async () => {
+  let fail: (() => void) | undefined;
+  server.use(
+    http.get(
+      '/api/economy',
+      () =>
+        new Promise<Response>((resolve) => {
+          fail = () =>
+            resolve(
+              HttpResponse.json(
+                { error: { code: 'unavailable', message: 'Economic provider unavailable' } },
+                { status: 503 },
+              ),
+            );
+        }),
+    ),
+  );
+  renderApp('/economy', 'user');
+  await screen.findByRole('navigation', { name: 'Economic analysis sections' });
+  for (const id of ['economy-comparison', 'economy-country', 'economy-currencies']) {
+    expect(document.getElementById(id)).toHaveTextContent(
+      'Waiting for official economic indicators to load.',
+    );
+  }
+  await waitFor(() => expect(fail).toBeDefined());
+  act(() => fail?.());
+  expect(await screen.findByText('Economic provider unavailable')).toBeVisible();
+  for (const id of ['economy-comparison', 'economy-country', 'economy-currencies']) {
+    expect(document.getElementById(id)).toHaveTextContent(
+      'Not available: official economic indicators could not be loaded.',
+    );
+  }
+});
+
 it('shows sourced daily analysis and a full exportable report link', async () => {
   server.use(http.post('/api/economy/briefing', () => HttpResponse.json(briefing('completed'))));
   renderApp('/economy', 'user');

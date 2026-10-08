@@ -1,6 +1,7 @@
 /** Authenticated transient imports. Their response types come from the generated API contract. */
 import { z } from 'zod';
 
+import { MAX_INPUT_FILENAME_LENGTH } from '@/lib/uploadFilename';
 import { scopedMutation } from '@/lib/workspaceAccess';
 
 import { apiCall } from './client';
@@ -22,7 +23,7 @@ export const researchInputReceiptSchema: z.ZodType<ResearchInputReceipt> = z.obj
   id: z.uuid(),
   parent_input_id: z.uuid().nullable().default(null),
   parent_input_ids: z.array(z.uuid()).max(6).default([]),
-  filename: z.string().max(120),
+  filename: z.string().max(MAX_INPUT_FILENAME_LENGTH),
   media_type: z.string().max(120),
   sha256: hash,
   imported_at: z.iso.datetime({ offset: true }),

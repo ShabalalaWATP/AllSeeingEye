@@ -74,6 +74,13 @@ describe('AiPolicyOverrides', () => {
     await user.type(screen.getByLabelText('Token limit'), '2.5');
     await user.click(screen.getByRole('button', { name: 'Add override' }));
     expect(screen.getByRole('alert')).toHaveTextContent('must be a whole number');
+
+    await user.clear(screen.getByLabelText('Token limit'));
+    await user.type(screen.getByLabelText('Token limit'), '2147483648');
+    await user.click(screen.getByRole('button', { name: 'Add override' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'An explicit override limit must be a whole number from 0 to 2,147,483,647; zero blocks.',
+    );
   });
 
   it('requires an end time after the start time', async () => {

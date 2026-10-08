@@ -272,6 +272,8 @@ export function ScheduleForm(
           <ScheduleTiming
             cadence={state.cadence}
             hour={state.hour}
+            timezone={initial?.timezone ?? 'UTC'}
+            minute={initial?.local_minute ?? 0}
             weekday={state.weekday}
             monthday={state.monthday}
             anchorMonth={state.anchorMonth}

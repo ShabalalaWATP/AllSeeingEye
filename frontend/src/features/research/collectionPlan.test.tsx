@@ -256,6 +256,24 @@ describe('editable collection plan', () => {
     expect(screen.getByLabelText('Original search terms')).toHaveValue('trade');
   });
 
+  it('reopens hidden advanced options when an edited plan still needs a preview', async () => {
+    mockPreview([]);
+    const { user } = await openPlan();
+    await user.click(screen.getByLabelText('Supply exact search terms'));
+    await user.type(screen.getByLabelText('Original search terms'), 'trade');
+    const toggle = screen.getByRole('button', { name: 'Advanced options' });
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Preview collection plan' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Start research' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Preview your edited collection plan under Advanced options, in Scope and sources',
+    );
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Original search terms')).toHaveValue('trade');
+    expect(screen.getByRole('button', { name: 'Preview collection plan' })).toBeVisible();
+  });
+
   it('discards a late preview after the account changes', async () => {
     let release: (value: planApi.ResearchPlan) => void = () => undefined;
     const pending = new Promise<planApi.ResearchPlan>((resolve) => {

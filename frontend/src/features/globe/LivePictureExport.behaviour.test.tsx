@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 import { rectangleArea } from '@/lib/map/areaGeometry';
 import { liveEvent } from '@/test/fixtures.events';
-import { LivePictureExport } from './LivePictureExport';
+import { describeLivePictureExport, LivePictureExport } from './LivePictureExport';
 
 const area = rectangleArea({ west: 0, east: 2, south: 0, north: 2 });
 const inside = liveEvent({ id: 'inside', title: 'Inside event', point: { lon: 1, lat: 1 } });
@@ -103,6 +103,55 @@ it('restricts KML to exact and explicitly uncertain matches inside the research 
   expect(blobs[0]?.type).toBe('application/vnd.google-earth.kml+xml');
   expect(downloads[0]?.name).toBe('filtered-live-picture.kml');
   await waitFor(() => expect(revoke).toHaveBeenCalledWith('blob:live-export/1'));
+});
+
+it('shows the eligible feature and excluded source counts', () => {
+  render(
+    <LivePictureExport
+      events={[inside, outside, liveEvent({ source_id: 'unreviewed', id: 'restricted' })]}
+      area={null}
+    />,
+  );
+  const summary = screen.getByText(/will be exported/);
+  expect(summary).toHaveTextContent('2 eligible features will be exported. 1 source excluded.');
+  const geojson = screen.getByRole('button', { name: 'Download live GeoJSON' });
+  expect(geojson).toBeEnabled();
+  expect(geojson).toHaveAccessibleDescription(summary.textContent);
+});
+
+it('disables both downloads and explains why when nothing is eligible', async () => {
+  render(
+    <LivePictureExport
+      events={[
+        liveEvent({ source_id: 'unreviewed', id: 'one' }),
+        liveEvent({ source_id: 'cisa_kev', id: 'two' }),
+      ]}
+      area={null}
+    />,
+  );
+  expect(screen.getByText(/Nothing to export/)).toHaveTextContent('2 sources excluded.');
+  const geojson = screen.getByRole('button', { name: 'Download live GeoJSON' });
+  expect(geojson).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Download live KML' })).toBeDisabled();
+  await userEvent.setup().click(geojson);
+  expect(blobs).toHaveLength(0);
+});
+
+it('describes singular counts and a truncated export', () => {
+  const base = { canDownload: true, excludedSourceCount: 0 };
+  expect(describeLivePictureExport({ ...base, featureCount: 1, eligibleCount: 1 })).toBe(
+    '1 eligible feature will be exported. 0 sources excluded.',
+  );
+  expect(
+    describeLivePictureExport({
+      ...base,
+      featureCount: 5000,
+      eligibleCount: 5001,
+      excludedSourceCount: 1,
+    }),
+  ).toBe(
+    '5,000 eligible features will be exported (limited from 5,001 eligible). 1 source excluded.',
+  );
 });
 
 it('exports the current full sample if a previously selected boundary is removed', async () => {

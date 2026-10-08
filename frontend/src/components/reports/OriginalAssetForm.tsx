@@ -135,7 +135,8 @@ export function OriginalAssetForm({
         }
         if (!requestAborted(signal)) {
           reservation.current = null;
-          clearFile();
+          // Keep the chosen file so the reader can retry without choosing it again.
+          setMessage('Your chosen file is still selected. Select Retain original to try again.');
           onSaved();
         }
       }
