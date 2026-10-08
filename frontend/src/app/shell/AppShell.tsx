@@ -15,6 +15,7 @@ import { TopBar } from './TopBar';
 import { useViewShortcuts } from './useViewShortcuts';
 import { MobileHeader } from './MobileNavigation';
 import { useNarrowShell } from './useNarrowShell';
+import { useOpsRoomRoute } from './useOpsRoomRoute';
 import { useRouteFocus } from './useRouteFocus';
 
 // Rarely opened and it pulls in the whole destination catalogue, so keep it out of the shell chunk.
@@ -26,6 +27,7 @@ const CommandPalette = lazy(() =>
 export function AppShell() {
   useViewShortcuts();
   const { pathname } = useLocation();
+  useOpsRoomRoute(pathname);
   const narrow = useNarrowShell();
   const opsRoom = useGlobeStore((state) => state.opsRoom) && pathname === '/';
   const paletteOpen = useShellStore((state) => state.paletteOpen);
