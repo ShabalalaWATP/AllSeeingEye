@@ -1,4 +1,4 @@
-"""CI's PostgreSQL service must test the same PostGIS image that production runs."""
+"""CI's PostgreSQL service must test the same PostGIS base that production builds on."""
 
 from __future__ import annotations
 
@@ -7,24 +7,27 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PIN = re.compile(r"image:\s*(postgis/postgis:\S+)")
-
-
-def pinned(path: Path) -> list[str]:
-    return PIN.findall(path.read_text(encoding="utf-8"))
+DOCKERFILE = ROOT / "infra" / "postgis" / "Dockerfile"
+SERVICE = re.compile(r"image:\s*(postgis/postgis:\S+)")
+BASE = re.compile(r"^FROM\s+(postgis/postgis:\S+)\s*$", re.MULTILINE)
 
 
 class DatabaseImagePinTest(unittest.TestCase):
-    def test_ci_service_matches_compose(self) -> None:
-        compose = pinned(ROOT / "docker-compose.yml")
-        ci = pinned(ROOT / ".github" / "workflows" / "ci.yml")
-        self.assertEqual(len(compose), 1, "docker-compose.yml should pin one PostGIS image")
-        self.assertTrue(ci, "ci.yml should run a PostGIS service")
-        self.assertEqual(set(ci), set(compose))
+    def test_compose_builds_the_database_image(self) -> None:
+        compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+        db = compose.split("\n  db:\n", 1)[1].split("\n  api:\n", 1)[0]
+        self.assertIn("build: ./infra/postgis", db)
+        self.assertNotIn("image:", db)
 
-    def test_image_is_pinned_by_digest(self) -> None:
-        (image,) = pinned(ROOT / "docker-compose.yml")
-        self.assertRegex(image, r"@sha256:[0-9a-f]{64}$")
+    def test_ci_service_matches_production_base(self) -> None:
+        (base,) = BASE.findall(DOCKERFILE.read_text(encoding="utf-8"))
+        ci = SERVICE.findall((ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+        self.assertTrue(ci, "ci.yml should run a PostGIS service")
+        self.assertEqual(set(ci), {base})
+
+    def test_base_is_pinned_by_digest(self) -> None:
+        (base,) = BASE.findall(DOCKERFILE.read_text(encoding="utf-8"))
+        self.assertRegex(base, r"@sha256:[0-9a-f]{64}$")
 
 
 if __name__ == "__main__":

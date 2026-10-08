@@ -82,11 +82,11 @@ updates:
       frontend-images-minor-and-patch:
         patterns: ['*']
         update-types: [minor, patch]
-  # The production database image in docker-compose.yml. CI's PostgreSQL service pins
-  # the same image (scripts/tests/test_database_image_pin.py keeps them equal), so
-  # update both together when this pull request arrives.
-  - package-ecosystem: docker-compose
-    directory: /
+  # The production database base image. CI's PostgreSQL service pins the same image
+  # (scripts/tests/test_database_image_pin.py keeps them equal), so update both
+  # together when this pull request arrives, then roll the database out by hand.
+  - package-ecosystem: docker
+    directory: /infra/postgis
     schedule:
       interval: weekly
     ignore:

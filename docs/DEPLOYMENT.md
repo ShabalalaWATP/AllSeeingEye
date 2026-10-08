@@ -65,6 +65,17 @@ Before an update, review migration requirements, take and verify a backup, and c
 
 The repository also provides an [automatic deployment workflow](AUTOMATIC_DEPLOYMENT.md). Its controller is installation-specific and must be reviewed and adapted before use on another host.
 
+### Database image
+
+Compose builds the database from `infra/postgis/Dockerfile`: the digest-pinned upstream PostGIS image with Alpine security updates applied and the Go-built `gosu` replaced by Alpine's `su-exec`. Application updates never rebuild or restart it, so its system packages age until you rebuild it. Rebuild it when the base pin changes or when the weekly `Database image` workflow turns red, and otherwise at least monthly:
+
+1. Take and verify a backup, then stop the API.
+2. `docker compose build --pull db`, then `docker compose up -d --no-deps db`, and wait until it is healthy.
+3. After a PostGIS version change, run `SELECT postgis_extensions_upgrade();` in the application database and confirm the versions in `pg_extension`.
+4. Start the API and verify health, readiness and sign-in.
+
+The same PostgreSQL major version reuses the data volume. A major version change needs a dump and restore, never an image change alone.
+
 ## Backups and recovery
 
 Use the [backup and restore guide](BACKUP_RESTORE.md) for SQLite and PostgreSQL commands. Retain the application revision, configuration and encryption key needed to restore each recovery point. Copy backups off the application host and practise restoration into a fresh destination.
