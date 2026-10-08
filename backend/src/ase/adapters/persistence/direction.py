@@ -6,13 +6,13 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import ColumnElement, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
-from ase.adapters.persistence.models import AoiRow, CollectionPlanRow
+from ase.adapters.persistence.models import AoiRow, CollectionPlanRow, IndicatorRow
 from ase.domain.access import Visibility
-from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
+from ase.domain.collection import AreaOfInterest, CollectionPlan, LinkedRecords, Pir, Sir
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import area_from_dict, area_to_dict
 
@@ -108,6 +108,25 @@ def _apply_plan(row: CollectionPlanRow, plan: CollectionPlan) -> None:
     row.team_id = plan.team_id
 
 
+LINKED_NAMES = 5
+
+
+async def _linked(
+    session: AsyncSession,
+    model: type[CollectionPlanRow] | type[IndicatorRow],
+    link: ColumnElement[bool],
+    visibility: Visibility,
+) -> LinkedRecords:
+    total = await session.scalar(select(func.count()).select_from(model).where(link))
+    names = await session.scalars(
+        select(model.name)
+        .where(link, visibility_predicate(model.created_by, model.team_id, visibility))
+        .order_by(model.name, model.id)
+        .limit(LINKED_NAMES)
+    )
+    return LinkedRecords(int(total or 0), tuple(names))
+
+
 class SqlAoiRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -147,6 +166,10 @@ class SqlAoiRepository:
             .order_by(AoiRow.name)
         )
         return [_aoi_from_row(row) for row in rows]
+
+    async def linked_plans(self, aoi_id: UUID, visibility: Visibility) -> LinkedRecords:
+        link = CollectionPlanRow.aoi_id == aoi_id
+        return await _linked(self._session, CollectionPlanRow, link, visibility)
 
     async def delete(self, aoi_id: UUID) -> None:
         await self._session.execute(delete(AoiRow).where(AoiRow.id == aoi_id))
@@ -206,6 +229,10 @@ class SqlPlanRepository:
             .execution_options(synchronize_session=False)
         )
         return bool(getattr(result, "rowcount", 0) == 1)
+
+    async def linked_alert_rules(self, plan_id: UUID, visibility: Visibility) -> LinkedRecords:
+        link = IndicatorRow.plan_id == plan_id
+        return await _linked(self._session, IndicatorRow, link, visibility)
 
     async def delete(self, plan_id: UUID) -> None:
         await self._session.execute(

@@ -93,7 +93,7 @@ async def test_database_preserves_challenge_and_legacy_versions(container, user)
     record.latest_version = 2
     async with container.session_factory() as session:
         repo = SqlReportRepository(session)
-        await repo.add(record, old)
+        await repo.add(replace(record, latest_version=1), old)
         await repo.add_version(record, version)
         await session.commit()
     async with container.session_factory() as session:

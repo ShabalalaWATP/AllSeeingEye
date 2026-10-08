@@ -27,9 +27,13 @@ class ReportEmbeddingRepository(Protocol):
         """Count current index entries in the latest bounded visible report set."""
         ...
 
-    async def current(
-        self, report_ids: Sequence[UUID], fingerprint: str
-    ) -> list[IndexedReport]: ...
+    async def has_current(self, report_ids: Sequence[UUID], fingerprint: str) -> bool:
+        """Cheap existence check that loads no vectors."""
+        ...
+
+    async def current(self, report_ids: Sequence[UUID], fingerprint: str) -> list[IndexedReport]:
+        """Current valid entries, decoded without blocking the event loop."""
+        ...
 
     async def save(self, entry: IndexedReport) -> bool:
         """Save only if this version is still current and its report still exists."""

@@ -27,7 +27,7 @@ async def save_versions(container: Container, owner: User) -> tuple[ReportRecord
     latest = replace(first, id=uuid4(), number=2, markdown="# Second frozen version\n")
     async with container.session_factory() as session:
         repos = container.repositories(session)
-        await repos.reports.add(record, first)
+        await repos.reports.add(replace(record, latest_version=1), first)
         await repos.reports.add_version(record, latest)
         await session.commit()
     return record, first
