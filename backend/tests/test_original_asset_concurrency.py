@@ -45,6 +45,7 @@ def synchronise_admission(monkeypatch):
     ("limit", "maximum", "rejection"),
     [
         ("MAX_PENDING_UPLOADS", 1, 429),
+        ("MAX_PENDING_UPLOADS_PER_USER", 1, 429),
         ("MAX_PERSONAL_RECORDS", 1, 422),
         ("MAX_PERSONAL_BYTES", len(ORIGINAL), 422),
         ("MAX_TEAM_RECORDS", 1, 422),
@@ -59,6 +60,8 @@ async def test_concurrent_reservations_do_not_oversubscribe(
     team = await team_for(container, admin, user) if limit.startswith("MAX_TEAM") else None
     record, _ = await original_report(container, user, team.id if team else None)
     headers = bearer(await login_token(client, user.email, USER_PASSWORD))
+    # Both reservations come from one uploader, so lift that cap unless it is under test.
+    monkeypatch.setattr(asset_service, "MAX_PENDING_UPLOADS_PER_USER", 2)
     monkeypatch.setattr(asset_service, limit, maximum)
     synchronise_admission(monkeypatch)
     async with asyncio.timeout(30):
