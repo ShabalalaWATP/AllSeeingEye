@@ -4,8 +4,9 @@ Usage: python scripts/check_web_image.py http://localhost:8080
 
 Checks what only the real Caddy build can show: the security policy is sent,
 pre-compressed files are served, content-hashed assets (the MapLibre worker included)
-are immutable, the shell revalidates, no fixed-name MapLibre worker is served, and a
-missing asset answers 404 rather than the shell.
+are immutable, the shell revalidates, no fixed-name MapLibre worker is served, a
+missing asset answers 404 rather than the shell, and robots.txt and security.txt are
+served as text while any other /.well-known path answers 404.
 """
 
 from __future__ import annotations
@@ -102,6 +103,25 @@ def problems(base: str) -> list[str]:
         "immutable" not in headers.get("Cache-Control", ""),
         "a 404 was cached as immutable",
     )
+    found.extend(well_known_problems(base))
+    return found
+
+
+def well_known_problems(base: str) -> list[str]:
+    """robots.txt and security.txt are real text files; other /.well-known paths 404."""
+    found = []
+    for path, marker in (
+        ("/robots.txt", b"Disallow: /api/"),
+        ("/.well-known/security.txt", b"Contact: "),
+    ):
+        status, headers, body = fetch(base, path)
+        if status != 200 or marker not in body:
+            found.append(f"{path} answered {status} without its expected content")
+        if not headers.get("Content-Type", "").startswith("text/plain"):
+            found.append(f"{path} is not served as text/plain")
+    status, _, _ = fetch(base, "/.well-known/missing-probe")
+    if status != 404:
+        found.append(f"an unknown /.well-known path answered {status}, not 404")
     return found
 
 
