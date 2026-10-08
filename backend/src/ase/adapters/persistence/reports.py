@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import case, delete, select
+from sqlalchemy import case, delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
@@ -20,6 +20,7 @@ from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
 from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
 from ase.adapters.persistence.report_ledgers import delete_report_ledgers
+from ase.adapters.persistence.report_links import delete_citation_verdicts, retained_by_subscription
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.adapters.persistence.report_team_copies import delete_team_copy_provenance
 from ase.adapters.persistence.source_reviews import delete_source_snapshots_for_report
@@ -27,7 +28,7 @@ from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
 from ase.domain.citation_check_records import citation_checks_from_dict
 from ase.domain.claim_generation import claim_generation_from_dict
-from ase.domain.errors import NotFound
+from ase.domain.errors import NotFound, StaleReportVersion
 from ase.domain.model_routing_records import routing_from_dict
 from ase.domain.report_assessment_records import assessment_from_dict
 from ase.domain.report_records import (
@@ -164,14 +165,25 @@ class SqlReportRepository:
         await self._session.flush()
 
     async def add_version(self, record: ReportRecord, version: ReportVersion) -> None:
-        row = await self._session.get(ReportRow, record.id)
-        if row is None:
+        """Compare and set: only the writer that extends the stored latest version wins."""
+        if record.latest_version != version.number or version.report_id != record.id:
+            raise ValueError("A new version must become its own report's latest version.")
+        result = await self._session.execute(
+            update(ReportRow)
+            .where(ReportRow.id == record.id, ReportRow.latest_version == version.number - 1)
+            .values(
+                status=record.status.value,
+                latest_version=version.number,
+                period_from=record.period_from,
+                period_to=record.period_to,
+                data_cutoff=record.data_cutoff,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        if getattr(result, "rowcount", 0) != 1:
+            if await self._session.scalar(select(ReportRow.id).where(ReportRow.id == record.id)):
+                raise StaleReportVersion()
             raise NotFound()
-        row.status = record.status.value
-        row.latest_version = record.latest_version
-        row.period_from = record.period_from
-        row.period_to = record.period_to
-        row.data_cutoff = record.data_cutoff
         self._session.add(_version_row(version))
         await self._session.flush()
 
@@ -182,9 +194,11 @@ class SqlReportRepository:
     async def get_version(self, report_id: UUID, number: int) -> ReportVersion | None:
         row = (
             await self._session.scalars(
-                select(ReportVersionRow).where(
-                    ReportVersionRow.report_id == report_id, ReportVersionRow.number == number
-                )
+                select(ReportVersionRow)
+                .where(ReportVersionRow.report_id == report_id, ReportVersionRow.number == number)
+                # Rows written before the compare-and-set guard may repeat a number.
+                .order_by(ReportVersionRow.created_at, ReportVersionRow.id)
+                .limit(1)
             )
         ).first()
         return _version_from_row(row) if row else None
@@ -242,6 +256,9 @@ class SqlReportRepository:
         )
         return [_record_from_row(row) for row in rows]
 
+    async def retained_by_subscription(self, report_id: UUID) -> bool:
+        return await retained_by_subscription(self._session, report_id)
+
     async def delete(self, report_id: UUID) -> None:
         await delete_report_monitors(self._session, report_id)
         # Explicit cleanup also supports SQLite connections without FK enforcement.
@@ -254,6 +271,7 @@ class SqlReportRepository:
         await SqlIdentityDecisionRepository(self._session).delete_for_report(report_id)
         await SqlRelationshipReviewRepository(self._session).delete_for_report(report_id)
         await SqlMapViewRepository(self._session).delete_for_report(report_id)
+        await delete_citation_verdicts(self._session, report_id)
         for model in (ResearchLibraryTagRow, ResearchLibraryRow):
             await self._session.execute(delete(model).where(model.report_id == report_id))
         await self._session.execute(

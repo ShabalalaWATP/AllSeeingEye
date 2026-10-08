@@ -12,8 +12,10 @@ from ase.domain.users import User
 
 
 class PasswordHasher(Protocol):
-    def hash(self, password: str) -> str: ...
-    def verify(self, password_hash: str, password: str) -> bool: ...
+    """Slow password hashing. Implementations must not block the event loop."""
+
+    async def hash(self, password: str) -> str: ...
+    async def verify(self, password_hash: str, password: str) -> bool: ...
 
 
 class AccessTokenIssuer(Protocol):
@@ -33,6 +35,10 @@ class Clock(Protocol):
 class RateLimiter(Protocol):
     def hit(self, key: str, limit: int, window_seconds: int) -> int | None:
         """Record a hit. Return the retry-after seconds when the limit is exceeded, else None."""
+        ...
+
+    def peek(self, key: str, limit: int, window_seconds: int) -> int | None:
+        """Return the retry-after seconds if the window is already full, without recording."""
         ...
 
 

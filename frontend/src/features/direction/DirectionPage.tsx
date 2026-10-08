@@ -170,7 +170,7 @@ export default function DirectionPage() {
         <PlanForm
           key={workspaces.key}
           workspaces={workspaces}
-          areas={areas.data ?? []}
+          areas={areas.data}
           onSaved={reloadPlans}
         />
       </div>

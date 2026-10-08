@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.domain.events import (
     Category,
     Credibility,
@@ -43,12 +44,7 @@ def _snake(value: str) -> str:
 
 
 def _parse_date(value: object) -> datetime | None:
-    if not isinstance(value, str):
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-    except ValueError:
-        return None
+    return parse_utc(value)
 
 
 def _centre(geometry: dict[str, Any]) -> Point | None:

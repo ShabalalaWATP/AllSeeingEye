@@ -155,7 +155,7 @@ async def _create_admin(settings: Settings, email: str, display_name: str, passw
                     display_name=display_name.strip(),
                     role=Role.ADMIN,
                     is_active=True,
-                    password_hash=container.hasher.hash(password),
+                    password_hash=await container.hasher.hash(password),
                     failed_login_count=0,
                     last_failed_at=None,
                     locked_until=None,

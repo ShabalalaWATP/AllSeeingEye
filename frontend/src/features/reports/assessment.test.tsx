@@ -31,7 +31,8 @@ describe('saved report evidence assessment', () => {
     expect(await screen.findByRole('region', { name: 'Probability yardstick' })).toBeVisible();
     expect(screen.getByRole('region', { name: 'Evidence strength' })).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Collection' }));
-    expect(screen.queryByText('How evidence is weighed')).not.toBeInTheDocument();
+    // Visited views stay mounted but hidden, so their unsaved input survives the switch.
+    expect(screen.getByText('How evidence is weighed')).not.toBeVisible();
   });
 
   it('displays saved judgement counts, ceiling and final confidence without recalculating', async () => {

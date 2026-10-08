@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from datetime import datetime, timedelta
 
+from ase.application.feeds.fetch_budget import fetch_budget
 from ase.application.feeds.health import HealthRegistry, SourceHealth
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_outcome import PollOutcome
@@ -23,6 +25,8 @@ from ase.application.ports.feed_release import FeedUnavailable, FetchedBatch, Gu
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.events import Event
+
+log = logging.getLogger(__name__)
 
 
 class FeedPoller:
@@ -113,13 +117,13 @@ class FeedPoller:
             if self._admission is not None and not await self._admission.enabled(source_id):
                 self._health.administratively_disabled(source_id)
                 raise FeedUnavailable("Disabled by administrator.")
-            # Waiting for a fetch slot does not count against the upstream's deadline.
-            async with self._fetch_slots:
-                async with asyncio.timeout(self._fetch_seconds(source_id)):
-                    if isinstance(connector, GuardedFeedConnector):
-                        generation = await connector.current_generation()
-                        batch = await connector.fetch_batch()
-                    raw = batch.events if batch is not None else await connector.fetch()
+            # Waiting for a fetch slot, or for a paced host's turn, does not count
+            # against the upstream's deadline (see fetch_budget).
+            async with fetch_budget(self._fetch_slots, self._fetch_seconds(source_id)):
+                if isinstance(connector, GuardedFeedConnector):
+                    generation = await connector.current_generation()
+                    batch = await connector.fetch_batch()
+                raw = batch.events if batch is not None else await connector.fetch()
             deadline = self._processing_deadline()
             try:
                 async with deadline:
@@ -246,7 +250,18 @@ class FeedPoller:
         Upsert, contextual regrade and the bus message stay together under that guard:
         grading rewrites neighbouring records in the shared store and the message
         carries graded events, so splitting them could publish after a disable commits.
+        Once the store write begins, any failure (including the processing deadline)
+        tells streams to reconcile, so stored events are never silently unannounced.
         """
+        try:
+            return await self._store_and_announce(connector, events, started)
+        except BaseException:
+            await self._announce_resync(connector.spec.id, events)
+            raise
+
+    async def _store_and_announce(
+        self, connector: FeedConnector, events: list[Event], started: datetime
+    ) -> PollOutcome:
         source_id = connector.spec.id
         result = (
             await self._store.upsert_cooperatively(events)
@@ -254,11 +269,20 @@ class FeedPoller:
             else self._store.upsert(events)
         )
         finished = self._clock.now()
-        latency_ms = (finished - started).total_seconds() * 1000
+        if result.changed_ids:
+            changed = set(result.changed_ids)
+            fresh = [e for e in events if e.id in changed]
+            if self._grader is not None:
+                fresh = await self._graded_or_stored(fresh)
+            await self._bus.publish(
+                BusMessage("event.upsert", {"source_id": source_id, "events": fresh})
+            )
+        # Health is recorded once, after publication: a later failure records the
+        # failure instead, so one poll never counts twice.
         entry = self._health.record_success(
             source_id,
             len(events),
-            latency_ms,
+            (finished - started).total_seconds() * 1000,
             finished,
             connector.spec.poll_interval,
             warning=connector.warning if isinstance(connector, DiagnosticFeedConnector) else None,
@@ -266,16 +290,26 @@ class FeedPoller:
                 connector.coverage_warning if isinstance(connector, CoverageFeedConnector) else None
             ),
         )
-        if result.changed_ids:
-            changed = set(result.changed_ids)
-            fresh = [e for e in events if e.id in changed]
-            if self._grader is not None:
-                fresh = await self._regraded(fresh)
-            await self._bus.publish(
-                BusMessage("event.upsert", {"source_id": source_id, "events": fresh})
-            )
         await self._bus.publish(BusMessage("source.health", {"health": entry}))
         return PollOutcome(source_id, ok=True, fetched=len(events), changed=result.changed)
+
+    async def _announce_resync(self, source_id: str, events: list[Event]) -> None:
+        categories = tuple(sorted({e.category for e in events}, key=lambda c: c.value))
+        payload: dict[str, object] = {"reason": "snapshot_required", "source_id": source_id}
+        if categories:
+            payload["categories"] = categories
+        try:
+            await self._bus.publish(BusMessage("event.resync", payload))
+        except Exception:
+            log.warning("feed.resync_publish_failed source=%s", source_id)
+
+    async def _graded_or_stored(self, fresh: list[Event]) -> list[Event]:
+        """A grading fault still announces what the store now holds, ungraded if need be."""
+        try:
+            return await self._regraded(fresh)
+        except Exception:
+            log.warning("feed.regrade_failed count=%d", len(fresh))
+            return [stored for e in fresh if (stored := self._store.get(e.id)) is not None]
 
     async def _regraded(self, fresh: list[Event]) -> list[Event]:
         """Grades the batch in context and merges any neighbours whose grade moved."""

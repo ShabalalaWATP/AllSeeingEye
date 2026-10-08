@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { SelectField, TextField } from '@/components/ui/Field';
 import {
   getAlertDestinations,
@@ -28,7 +29,14 @@ function RoutingFields({
   initialDestinations: AlertDestination[];
   onReload: () => Promise<void>;
 }) {
-  const [route, setRoute] = useState(initial);
+  // A saved webhook missing from the workspace's destinations was removed: treat it as none.
+  const missingWebhook =
+    initial.can_manage &&
+    initial.webhook_id !== null &&
+    !initialDestinations.some((item) => item.id === initial.webhook_id);
+  const [route, setRoute] = useState(() =>
+    missingWebhook ? { ...initial, webhook_id: null } : initial,
+  );
   const [destinations, setDestinations] = useState(initialDestinations);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -107,6 +115,12 @@ function RoutingFields({
             ...destinations.map((item) => ({ value: item.id, label: item.name })),
           ]}
         />
+        {missingWebhook && route.webhook_id === null && (
+          <p className="text-sm">
+            The saved webhook destination is no longer available. Saving keeps this rule without a
+            webhook unless you choose another.
+          </p>
+        )}
         <p className="text-xs text-muted">
           The webhook receives the rule name, alert title and summary, countries and event IDs. Only
           destinations in this rule's workspace can be selected.
@@ -165,9 +179,13 @@ function RoutingFields({
             {destinations.map((item) => (
               <div key={item.id} className="flex items-center gap-3 text-sm">
                 <span>{item.name}</span>
-                <Button
-                  variant="danger"
-                  onClick={() =>
+                <ConfirmButton
+                  label={`Remove ${item.name}`}
+                  busy={busy}
+                  title={`Remove webhook destination “${item.name}”?`}
+                  confirmLabel="Remove destination"
+                  busyLabel="Removing destination…"
+                  onConfirm={() =>
                     void action(async () => {
                       await removeAlertDestination(item.id);
                       setDestinations(destinations.filter((other) => other.id !== item.id));
@@ -175,8 +193,14 @@ function RoutingFields({
                     })
                   }
                 >
-                  Remove {item.name}
-                </Button>
+                  <p>
+                    Alert rules that use this destination will stop sending to it. Their alerts are
+                    still stored in the application, and email routing is not changed.
+                  </p>
+                  <p className="font-medium text-critical">
+                    It cannot be restored here. To send to it again, register the URL again.
+                  </p>
+                </ConfirmButton>
               </div>
             ))}
           </div>

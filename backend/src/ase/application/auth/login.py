@@ -51,13 +51,13 @@ class LoginUseCase:
         now = self._clock.now()
         if user is None:
             # Burn the same hashing cost as a real check so timing does not reveal existence.
-            self._hasher.verify(self._dummy_hash, password)
+            await self._hasher.verify(self._dummy_hash, password)
             await self._fail(None, email, context, "unknown_email")
         elif not user.can_log_in(now):
-            self._hasher.verify(self._dummy_hash, password)
+            await self._hasher.verify(self._dummy_hash, password)
             reason = "locked" if user.is_locked(now) else "inactive_or_no_password"
             await self._fail(user, email, context, reason)
-        elif not self._hasher.verify(user.password_hash or "", password):
+        elif not await self._hasher.verify(user.password_hash or "", password):
             await self._fail(user, email, context, "wrong_password")
         # Every other branch raised, so this only narrows the type for the checker.
         assert user is not None  # noqa: S101
@@ -78,7 +78,7 @@ class LoginUseCase:
     def _enforce_limits(self, email: str, context: RequestContext) -> None:
         window = self._limits.login_window_seconds
         for key, limit in (
-            (f"login:ip:{context.ip}", self._limits.login_per_ip),
+            (f"login:ip:{context.client_key}", self._limits.login_per_ip),
             (f"login:email:{email}", self._limits.login_per_email),
         ):
             retry_after = self._limiter.hit(key, limit, window)

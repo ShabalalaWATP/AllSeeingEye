@@ -136,7 +136,7 @@ class TotpUseCase:
     async def _authorise(self, actor: User, password: str, context: RequestContext) -> User:
         actor = await self._lock_actor(actor)
         self._limit(actor, context)
-        if not actor.can_log_in(self._clock.now()) or not self._hasher.verify(
+        if not actor.can_log_in(self._clock.now()) or not await self._hasher.verify(
             actor.password_hash or "",
             password,
         ):
@@ -144,7 +144,7 @@ class TotpUseCase:
         return actor
 
     def _limit(self, actor: User, context: RequestContext) -> None:
-        for key in (f"totp:user:{actor.id}", f"totp:ip:{context.ip}"):
+        for key in (f"totp:user:{actor.id}", f"totp:ip:{context.client_key}"):
             retry = self._limiter.hit(key, 5, 60)
             if retry is not None:
                 raise RateLimited(retry)

@@ -18,11 +18,12 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.secret_urls import SecretFeedUrl
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.adapters.feeds.youtube_channels import UPLOADS_ID, YouTubeChannel
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -76,13 +77,8 @@ def bounded_text(value: object, limit: int) -> str:
 
 
 def parsed_time(value: object, fallback: datetime) -> datetime:
-    if not isinstance(value, str):
-        return fallback
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return fallback
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    parsed = parse_utc(value)
+    return fallback if parsed is None else parsed
 
 
 def mapping_of(value: object) -> dict[str, Any]:

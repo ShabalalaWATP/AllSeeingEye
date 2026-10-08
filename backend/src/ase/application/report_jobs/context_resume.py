@@ -6,6 +6,7 @@ from typing import Any
 from ase.application.report_jobs.budget import (
     MAX_CALLS,
     MAX_OUTPUT_TOKENS,
+    dispatched_calls,
     output_used,
     token_count,
 )
@@ -143,7 +144,7 @@ def _reservation_room(payload: dict[str, Any], calls: list[Any], missing: list[s
             return False
         required = sum(min(limit, output_limit_for(identity)) for identity in missing)
         return (
-            len(calls) + len(missing) <= MAX_CALLS
+            len(dispatched_calls(calls)) + len(missing) <= MAX_CALLS
             and output_used(payload) + required <= MAX_OUTPUT_TOKENS
         )
     except (KeyError, TypeError, ValueError, InvalidRequest):

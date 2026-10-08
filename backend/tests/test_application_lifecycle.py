@@ -186,6 +186,7 @@ def disposable_container():
         close_economy=AsyncMock(),
         close_web_search=AsyncMock(),
         engine=SimpleNamespace(dispose=AsyncMock()),
+        password_hasher=SimpleNamespace(close=Mock()),
         ukraine_digest=SimpleNamespace(cancel=Mock(), drain=AsyncMock()),
     )
 
@@ -200,6 +201,7 @@ async def test_disposal_attempts_every_close_when_one_fails():
         if isinstance(value, SimpleNamespace) and hasattr(value, "aclose"):
             value.aclose.assert_awaited_once()
     container.close_web_search.assert_awaited_once()
+    container.password_hasher.close.assert_called_once()
     container.engine.dispose.assert_awaited_once()
 
 

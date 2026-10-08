@@ -101,7 +101,7 @@ function TeamsWorkspace({ user }: { user: User }) {
         setCreating(false);
       },
       'Team created. You are its first manager.',
-      resource.reload,
+      resource.refresh,
     );
   };
 
@@ -129,7 +129,7 @@ function TeamsWorkspace({ user }: { user: User }) {
             ) : undefined
           }
         />
-        <TeamInvitationInbox onAccepted={resource.reload} />
+        <TeamInvitationInbox onAccepted={resource.refresh} />
         {action.error ? <Alert tone="error">{action.error}</Alert> : null}
         {action.notice ? (
           <p role="status" className="text-sm text-good">
@@ -197,7 +197,7 @@ function TeamsWorkspace({ user }: { user: User }) {
                 key={teamId}
                 id={teamId}
                 user={user}
-                refreshList={resource.reload}
+                refreshList={resource.refresh}
                 boardLink={boardLink?.teamId === teamId ? boardLink : null}
               />
             ) : null}

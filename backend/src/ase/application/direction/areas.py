@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
+from ase.application.direction.dependents import refuse_area_in_use
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import AoiRepository
@@ -127,6 +128,7 @@ class DeleteAoiUseCase:
         if area is None:
             raise NotFound()
         decision.require_write(area.created_by, area.team_id)
+        refuse_area_in_use(await self._aois.linked_plans(aoi_id, decision.visibility))
         await self._aois.delete(aoi_id)
         await self._auditor.record(
             AuditAction.AOI_DELETED, actor=actor.id, subject=str(aoi_id), ip=context.ip

@@ -6,11 +6,12 @@ elements are cached for that long while positions are propagated on every poll.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged, json_list
 from ase.adapters.feeds.satellites import SatelliteConnector, subpoint
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.domain.events import (
     Category,
     Credibility,
@@ -66,13 +67,8 @@ def kp_severity(kp: float) -> float:
 
 
 def _when(value: object, fallback: datetime) -> datetime:
-    if not isinstance(value, str):
-        return fallback
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return fallback
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    parsed = parse_utc(value)
+    return fallback if parsed is None else parsed
 
 
 class LaunchConnector(HttpFeed):

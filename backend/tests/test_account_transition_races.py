@@ -89,7 +89,7 @@ async def test_login_waiting_for_password_change_reads_new_credentials(
     async with container.session_factory() as session:
         stored = await container.repositories(session).users.get_by_id(user.id)
         assert stored and stored.security_version == 1
-        assert container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
+        assert await container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
 
 
 async def test_password_change_waits_for_login_then_invalidates_issued_session(
@@ -148,7 +148,7 @@ async def test_password_change_waits_for_login_then_invalidates_issued_session(
         repos = container.repositories(session)
         stored = await repos.users.get_by_id(user.id)
         assert stored and stored.security_version == 1
-        assert container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
+        assert await container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
         claims = container.issuer.verify(auth.access.token)
         with pytest.raises(Unauthenticated):
             await validate_current_session(
@@ -229,7 +229,7 @@ async def test_password_change_invalidates_other_outstanding_reset_links(
             )
     async with container.session_factory() as session:
         stored = await container.repositories(session).users.get_by_id(user.id)
-        assert stored and container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
+        assert stored and await container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
 
 
 async def test_forgot_reset_issuance_commits_before_email_delivery(

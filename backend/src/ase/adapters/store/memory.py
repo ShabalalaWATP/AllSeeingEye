@@ -308,11 +308,22 @@ class InMemoryEventStore:
             self._remove(event_id)
             evicted.append(event_id)
 
+    def withdraw_sources(self, source_ids: Iterable[str]) -> int:
+        """Drop a disabled source's events now; the next prune announces their expiry."""
+        withdrawn = [i for source in source_ids for i in list(self._by_source.get(source, ()))]
+        for event_id in withdrawn:
+            self._remove(event_id)
+        self._announce_later(withdrawn)
+        return len(withdrawn)
+
     def _capture_evictions(self) -> None:
         evicted: list[str] = []
         self._enforce_budget(evicted)
         self._pending_evictions += len(evicted)
-        for event_id in evicted:
+        self._announce_later(evicted)
+
+    def _announce_later(self, removed: list[str]) -> None:
+        for event_id in removed:
             if event_id in self._pending_expiry:
                 continue
             if len(self._pending_expiry) < MAX_PRUNE_IDS:

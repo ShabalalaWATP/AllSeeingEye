@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
@@ -12,13 +12,15 @@ const CHECK_INTERVAL = 30_000;
 const CHECK_TIMEOUT = 15_000;
 interface Verification {
   userId: string;
-  token: string;
   status: 'verified' | 'error';
 }
 
 /** Fresh authority for the dedicated admin area, never inferred from cached navigation.
- * Background checks preserve mounted drafts until a failure is observed. A changed
- * session always hides the outlet until its own verification completes.
+ * Background checks preserve mounted drafts until a failure is observed. A rotated
+ * token for an already verified account is re-verified without unmounting the outlet;
+ * a different account always hides it until its own verification completes. An
+ * expired access token is refreshed once through the refresh cookie before the gate
+ * gives up on the session.
  */
 export default function AdminSessionGate() {
   const userId = useAuthStore((state) => state.user?.id);
@@ -26,6 +28,8 @@ export default function AdminSessionGate() {
   const isAdmin = useAuthStore(selectIsAdmin);
   const [verification, setVerification] = useState<Verification | null>(null);
   const [attempt, setAttempt] = useState(0);
+  // Set while a 401 has already been answered with a refresh, so a second 401 ends it.
+  const refreshed = useRef(false);
 
   useEffect(() => {
     if (!isAdmin || userId === undefined || token === null) return;
@@ -37,6 +41,11 @@ export default function AdminSessionGate() {
         live && state.user?.id === userId && state.accessToken === token && selectIsAdmin(state)
       );
     };
+    // A rotated token re-runs this effect; a rejected refresh has already ended the session.
+    const recover = async () => {
+      const fresh = await useAuthStore.getState().refresh();
+      if (fresh === null && current()) setVerification({ userId, status: 'error' });
+    };
     const verify = async () => {
       if (active !== null || !current()) return;
       const controller = new AbortController();
@@ -46,7 +55,7 @@ export default function AdminSessionGate() {
         const user = await verifySession(token, controller.signal);
         if (!current() || controller.signal.aborted) return;
         if (user.id !== userId) {
-          setVerification({ userId, token, status: 'error' });
+          setVerification({ userId, status: 'error' });
           return;
         }
         if (!user.is_active) {
@@ -56,13 +65,17 @@ export default function AdminSessionGate() {
         // This does not fabricate a new token or extend its expiry. Fresh non-admin
         // authority updates the shared store, removing admin navigation as well.
         useAuthStore.setState({ user });
-        setVerification({ userId, token, status: 'verified' });
+        refreshed.current = false;
+        setVerification({ userId, status: 'verified' });
       } catch (error) {
         if (!current()) return;
-        if (isApiError(error) && error.status === 401) {
+        if (!isApiError(error) || error.status !== 401) {
+          setVerification({ userId, status: 'error' });
+        } else if (refreshed.current) {
           useAuthStore.getState().clearSession();
         } else {
-          setVerification({ userId, token, status: 'error' });
+          refreshed.current = true;
+          await recover();
         }
       } finally {
         window.clearTimeout(timeout);
@@ -97,7 +110,7 @@ export default function AdminSessionGate() {
       </div>
     );
   }
-  if (verification === null || verification.userId !== userId || verification.token !== token) {
+  if (verification === null || verification.userId !== userId) {
     return <LoadingScreen label="Verifying administrator access" />;
   }
   if (verification.status === 'error') {
@@ -108,6 +121,7 @@ export default function AdminSessionGate() {
         </Alert>
         <Button
           onClick={() => {
+            refreshed.current = false;
             setVerification(null);
             setAttempt((value) => value + 1);
           }}

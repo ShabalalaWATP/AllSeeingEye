@@ -119,8 +119,8 @@ async def test_password_race_changes_password_exactly_once(
         repos = container.repositories(session)
         stored = await repos.users.get_by_id(user.id)
         assert stored is not None and stored.password_hash is not None
-        assert container.hasher.verify(stored.password_hash, passwords[winners[0]])
-        assert not container.hasher.verify(stored.password_hash, passwords[1 - winners[0]])
+        assert await container.hasher.verify(stored.password_hash, passwords[winners[0]])
+        assert not await container.hasher.verify(stored.password_hash, passwords[1 - winners[0]])
         entries = await repos.audit.list_before(None, 100)
         assert sum(entry.action is AuditAction.PASSWORD_SET for entry in entries) == 1
 

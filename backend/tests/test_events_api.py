@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import AsyncIterator
 from datetime import timedelta
+from typing import Any
 
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from sse_starlette.sse import EventSourceResponse
 
+from ase.api.routers import stream as stream_router
 from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
@@ -26,6 +30,8 @@ from helpers import (
     bearer,
     login_token,
 )
+
+Frames = AsyncIterator[dict[str, str]]
 
 
 async def test_events_query_and_get(client: AsyncClient, container: Container, user: User) -> None:
@@ -142,60 +148,59 @@ async def test_military_filter_precedes_page_limit_and_pagination_is_bounded(
         ).status_code == 422
 
 
+async def _open_stream(
+    container: Container, user: User, token: str, **options: Any
+) -> tuple[EventSourceResponse, Frames]:
+    """Call the stream route directly and read frames as they are produced.
+
+    Reading the body through the ASGI transport buffers the whole response, which
+    forced real sleeps before advancing the clock. Frame-by-frame reads need none.
+    """
+    claims = container.issuer.verify(token)
+    response = await stream_router.stream(user, claims, container, last_event_id=None, **options)
+    return response, response.body_iterator  # type: ignore[return-value]
+
+
+async def _next(frames: Frames) -> tuple[str, Any]:
+    async with asyncio.timeout(2):
+        frame = await anext(frames)
+    return frame["event"], json.loads(frame["data"])
+
+
 async def test_stream_delivers_upserts_and_expiries(
-    app: FastAPI, container: Container, user: User, clock: FakeClock
+    client: AsyncClient, container: Container, user: User, clock: FakeClock
 ) -> None:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-
-        async def publish_later() -> None:
-            await asyncio.sleep(0.05)
-            await container.bus.publish(
-                BusMessage(
-                    "event.upsert",
-                    {
-                        "source_id": "fake_feed",
-                        "events": [make_event("s", category=Category.CYBER)],
-                    },
-                )
-            )
-            await container.bus.publish(BusMessage("event.upsert", {"events": [make_event("d")]}))
-            await container.bus.publish(BusMessage("event.expire", {"ids": ("x",), "count": 1}))
-            await container.bus.publish(
-                BusMessage("source.health", {"health": container.health.get("fake_feed")})
-            )
-
-        async def end_stream_later() -> None:
-            # The transport buffers the whole response, so expire the token after the
-            # messages went out and nudge the generator awake; it then says goodbye.
-            await asyncio.sleep(0.2)
-            clock.advance(timedelta(minutes=16))
-            await container.bus.publish(BusMessage("event.expire", {"ids": (), "count": 0}))
-
-        publisher = asyncio.create_task(publish_later())
-        closer = asyncio.create_task(end_stream_later())
-        response = await client.get(
-            "/api/stream", params={"categories": "disaster"}, headers=bearer(token)
-        )
-        await publisher
-        await closer
-        assert response.status_code == 200
-        assert response.headers["content-type"].startswith("text/event-stream")
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    response, frames = await _open_stream(container, user, token, categories="disaster")
+    try:
+        assert response.media_type == "text/event-stream"
         assert response.headers["cache-control"] == "no-store"
-        received: list[tuple[str, dict]] = []
-        current_event = ""
-        for line in response.text.splitlines():
-            if line.startswith("event:"):
-                current_event = line.split(":", 1)[1].strip()
-            elif line.startswith("data:"):
-                received.append((current_event, json.loads(line.split(":", 1)[1])))
-        kinds = [kind for kind, _ in received]
-        assert kinds[:4] == ["hello", "event.upsert", "event.expire", "source.health"]
-        assert kinds[-1] == "bye"
+        assert (await _next(frames))[0] == "hello"
+        bus = container.bus
+        await bus.publish(
+            BusMessage(
+                "event.upsert",
+                {"source_id": "fake_feed", "events": [make_event("s", category=Category.CYBER)]},
+            )
+        )
+        await bus.publish(BusMessage("event.upsert", {"events": [make_event("d")]}))
+        await bus.publish(BusMessage("event.expire", {"ids": ("x",), "count": 1}))
+        await bus.publish(
+            BusMessage("source.health", {"health": container.health.get("fake_feed")})
+        )
         # The cyber event was filtered out; the disaster event came through.
-        assert received[1][1]["events"][0]["category"] == "disaster"
-        assert received[2][1]["ids"] == ["x"]
-        assert received[3][1]["source_id"] == "fake_feed"
+        kind, upsert = await _next(frames)
+        assert kind == "event.upsert" and upsert["events"][0]["category"] == "disaster"
+        assert await _next(frames) == ("event.expire", {"ids": ["x"], "count": 1})
+        kind, health = await _next(frames)
+        assert kind == "source.health" and health["source_id"] == "fake_feed"
+        # Once the token has expired, the next wake-up says goodbye.
+        clock.advance(timedelta(minutes=16))
+        await bus.publish(BusMessage("event.expire", {"ids": (), "count": 0}))
+        assert await _next(frames) == ("bye", {"reason": "token_expired"})
+    finally:
+        await frames.aclose()
+    assert container.streams.held(user.id) == 0
 
 
 async def test_stream_refuses_an_expired_token(app: FastAPI, clock: FakeClock, user: User) -> None:
@@ -239,17 +244,12 @@ async def test_stream_honours_the_token_expiry_and_the_per_user_cap(
 
         # Opened ten minutes into a fifteen-minute token, the stream lives five more minutes.
         clock.advance(timedelta(minutes=10))
-
-        async def end_stream_later() -> None:
-            await asyncio.sleep(0.2)
+        _response, frames = await _open_stream(container, user, token)
+        try:
+            assert await _next(frames) == ("hello", {"expires_in": 300, "resumed": False})
             clock.advance(timedelta(minutes=6))
             await container.bus.publish(BusMessage("event.expire", {"ids": (), "count": 0}))
-
-        closer = asyncio.create_task(end_stream_later())
-        response = await client.get("/api/stream", headers=bearer(token))
-        await closer
-        assert response.status_code == 200
-        first = next(line for line in response.text.splitlines() if line.startswith("data:"))
-        assert json.loads(first.split(":", 1)[1]) == {"expires_in": 300, "resumed": False}
-        assert response.text.rstrip().endswith('{"reason": "token_expired"}')
+            assert await _next(frames) == ("bye", {"reason": "token_expired"})
+        finally:
+            await frames.aclose()
         assert container.streams.held(user.id) == 0

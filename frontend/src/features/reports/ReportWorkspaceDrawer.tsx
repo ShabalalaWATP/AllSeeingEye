@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 import { LoadingNote } from '@/components/ui/Alert';
 import type { ReportSupportingWorkspaceProps } from './ReportSupportingWorkspace';
@@ -34,6 +34,9 @@ export function ReportWorkspaceDrawer({
 }) {
   const close = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
+  // Once opened, closing only hides the drawer, so unsaved editor input inside survives.
+  const [opened, setOpened] = useState(open);
+  if (open && !opened) setOpened(true);
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -72,9 +75,9 @@ export function ReportWorkspaceDrawer({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!opened) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-[2px]">
+    <div hidden={!open} className="fixed inset-0 z-50 bg-black/65 backdrop-blur-[2px]">
       <button
         type="button"
         aria-label="Close sources and methods"

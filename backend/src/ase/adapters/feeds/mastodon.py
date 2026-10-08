@@ -13,12 +13,13 @@ backoff and the upstream's `Retry-After`.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from ase.adapters.feeds.http import FeedHttpClient, NotModified
 from ase.adapters.feeds.http_contracts import FeedHttpStatusError
 from ase.adapters.feeds.mastodon_watch import DEFAULT_POLL_MINUTES, MAX_TAGS_PER_INSTANCE
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.application.feeds.pipeline import strip_html
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -57,13 +58,8 @@ def spec_for(instance: str, minutes: int = DEFAULT_POLL_MINUTES) -> SourceSpec:
 
 
 def _when(value: object, fallback: datetime) -> datetime:
-    if not isinstance(value, str):
-        return fallback
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return fallback
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    parsed = parse_utc(value)
+    return fallback if parsed is None else parsed
 
 
 def _title(text: str) -> str:

@@ -47,7 +47,7 @@ class SetPasswordUseCase:
 
     async def execute(self, secret: str, new_password: str, context: RequestContext) -> None:
         retry_after = self._limiter.hit(
-            f"set-password:ip:{context.ip}",
+            f"set-password:ip:{context.client_key}",
             self._limits.set_password_per_ip,
             self._limits.hourly_window_seconds,
         )
@@ -70,7 +70,7 @@ class SetPasswordUseCase:
             raise InvalidToken()
         # A successful credential change also ends every older outstanding link.
         await self._password_tokens.revoke_all_for_user(user.id, now)
-        user.password_hash = self._hasher.hash(new_password)
+        user.password_hash = await self._hasher.hash(new_password)
         user.security_version += 1
         if token.purpose is TokenPurpose.ACTIVATION:
             user.is_active = True

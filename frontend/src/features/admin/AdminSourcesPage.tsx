@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { AdminIcon } from '@/components/admin/AdminIcon';
 import { AdminPage, AdminSection, EmptyState } from '@/components/admin/AdminPage';
@@ -35,8 +35,9 @@ export function summarise(sources: readonly Source[]): string {
 }
 
 export default function AdminSourcesPage() {
-  const { data, error, loading, setData, key, refresh, reload } = useScopedResource(fetchSources);
+  const { data, error, loading, setData, key, refresh } = useScopedResource(fetchSources);
   const now = useNow();
+  const [notice, setNotice] = useState<{ key: string; text: string } | null>(null);
 
   const replaceHealth = useCallback(
     (health: SourceHealth) => {
@@ -47,6 +48,27 @@ export default function AdminSourcesPage() {
       );
     },
     [setData],
+  );
+
+  // Parent controls also affect variants, so refresh every effective state from the
+  // server in the background. The rows stay mounted, keeping focus on the toggle.
+  const activated = useCallback(
+    (id: string, enabled: boolean) => {
+      const name = data?.find((item) => item.id === id)?.name ?? 'Source';
+      setData((current) =>
+        current === null
+          ? current
+          : current.map((item) => (item.id === id ? { ...item, enabled } : item)),
+      );
+      setNotice({
+        key,
+        text: enabled
+          ? `${name} enabled for collection.`
+          : `${name} disabled for future collection. Existing evidence remains available.`,
+      });
+      void refresh();
+    },
+    [data, key, refresh, setData],
   );
 
   return (
@@ -70,6 +92,9 @@ export default function AdminSourcesPage() {
       }
     >
       <FirmsConnectionPanel key={key} />
+      <p role="status" className={notice?.key === key ? 'text-sm text-muted' : 'sr-only'}>
+        {notice?.key === key ? notice.text : null}
+      </p>
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       <AdminSection
         title="Collection registry"
@@ -103,9 +128,7 @@ export default function AdminSourcesPage() {
                   source={item}
                   now={now}
                   onReset={replaceHealth}
-                  // Parent controls also affect variants. Reload their effective states
-                  // from the server, including independently disabled children.
-                  onActivation={() => void reload()}
+                  onActivation={activated}
                 />
               ))}
             </tbody>

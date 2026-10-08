@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.alert_routing_models import (
@@ -86,4 +86,11 @@ class SqlAlertRoutingRepository:
         row = await self._session.get(AlertWebhookDestinationRow, destination_id)
         if row:
             row.enabled = False
+            # Routes stop naming a removed destination; the revision fences stale editors.
+            await self._session.execute(
+                update(AlertRoutingRow)
+                .where(AlertRoutingRow.webhook_id == destination_id)
+                .values(webhook_id=None, revision=AlertRoutingRow.revision + 1)
+                .execution_options(synchronize_session=False)
+            )
             await self._session.flush()

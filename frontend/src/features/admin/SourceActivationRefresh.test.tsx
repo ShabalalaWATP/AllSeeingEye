@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
@@ -47,7 +47,7 @@ it('reloads inherited source states after toggles and preserves a child opt-out'
   expect((await row('News 2')).getByText('Collection disabled')).toBeVisible();
 });
 
-it('hides stale states while reloading, shows reload failures and supports recovery', async () => {
+it('keeps the registry mounted while refreshing, announces the change and reports failures', async () => {
   applySession('admin');
   let changed = false;
   let release: () => void = () => undefined;
@@ -70,13 +70,19 @@ it('hides stale states while reloading, shows reload failures and supports recov
   await row('News 0');
   await user.click(screen.getByRole('button', { name: 'Disable News 0' }));
   await user.click(screen.getByRole('button', { name: 'Confirm disable' }));
-  expect(await screen.findByText('Loading sources')).toBeVisible();
-  expect(screen.queryByRole('table', { name: 'Sources' })).not.toBeInTheDocument();
+  const announcement =
+    'News 0 disabled for future collection. Existing evidence remains available.';
+  expect(await screen.findByText(announcement)).toHaveAttribute('role', 'status');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Enable News 0' })).toHaveFocus());
+  expect(screen.queryByText('Loading sources')).not.toBeInTheDocument();
+  expect(screen.getByRole('table', { name: 'Sources' })).toBeVisible();
   await act(async () => {
     release();
     await gate;
   });
   expect(await screen.findByText('Source statuses could not be loaded.')).toBeVisible();
+  expect(screen.getByRole('table', { name: 'Sources' })).toBeVisible();
+  expect(screen.getByText(announcement)).toBeVisible();
   server.use(http.get('/api/admin/sources', () => HttpResponse.json({ items: family(false) })));
   await user.click(screen.getByRole('button', { name: 'Refresh' }));
   expect((await row('News 1')).getByText('Collection disabled')).toBeVisible();
@@ -105,7 +111,7 @@ it('discards a previous administrator’s delayed post-activation list', async (
   await row('News 0');
   await user.click(screen.getByRole('button', { name: 'Disable News 0' }));
   await user.click(screen.getByRole('button', { name: 'Confirm disable' }));
-  await screen.findByText('Loading sources');
+  await waitFor(() => expect(changed).toBe(true));
   server.use(http.get('/api/admin/sources', () => HttpResponse.json({ items: [] })));
   act(() =>
     useAuthStore

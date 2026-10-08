@@ -44,7 +44,7 @@ class FootprintSearchUseCase:
         await revalidate()
         if self.admission is not None and not await self.admission.enabled(self.source_id):
             return self._disabled()
-        for key in (f"footprint:user:{actor.id}", f"footprint:ip:{context.ip}"):
+        for key in (f"footprint:user:{actor.id}", f"footprint:ip:{context.client_key}"):
             retry = self.limiter.hit(key, 5, 300)
             if retry is not None:
                 raise RateLimited(retry)
