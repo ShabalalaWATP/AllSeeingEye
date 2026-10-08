@@ -19,7 +19,9 @@ jobs:
   probe:
     if: github.repository == 'ShabalalaWATP/AllSeeingEye'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # Every probe retries three times, so a full outage takes about seven minutes to
+    # report; the timeout leaves room for each step to name what failed.
+    timeout-minutes: 10
     env:
       HOST: allseeingeyeosint.com
       CERT_WARN_DAYS: "14"
