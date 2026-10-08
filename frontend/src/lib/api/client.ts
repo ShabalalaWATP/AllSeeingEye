@@ -14,7 +14,10 @@ import { errorEnvelopeSchema } from './schemas';
 
 export interface SessionBridge {
   getAccessToken(): string | null;
-  /** Refreshes the session and resolves to the new access token, or null on failure. */
+  /**
+   * Refreshes the session and resolves to the new access token, or null on failure.
+   * The refresher decides whether a failure ends the session; a transient one must not.
+   */
   refreshAccessToken(): Promise<string | null>;
   onSessionLost(): void;
 }
@@ -122,7 +125,6 @@ async function execute(path: string, options: CallOptions): Promise<Response> {
   const token = await session.refreshAccessToken();
   options.signal?.throwIfAborted();
   if (token === null) {
-    session.onSessionLost();
     throw await toApiError(first);
   }
   if (options.retryAfterRefresh === false) {

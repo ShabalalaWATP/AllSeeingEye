@@ -13,6 +13,7 @@ from ase.application.ports.report_jobs import ReportJobRepository
 from ase.application.report_jobs.budget import (
     MAX_CALLS,
     MAX_OUTPUT_TOKENS,
+    dispatched_calls,
     output_used,
     token_count,
 )
@@ -116,7 +117,7 @@ def has_budget(payload: dict[str, Any]) -> bool:
     calls = payload.get("calls", [])
     return (
         isinstance(calls, list)
-        and len(calls) < MAX_CALLS
+        and len(dispatched_calls(calls)) < MAX_CALLS
         and output_used(payload) < MAX_OUTPUT_TOKENS
     )
 
@@ -138,10 +139,13 @@ def resumed_payload(job: ReportJob) -> dict[str, Any]:
 
     The previous call stays uncertain and consumes its full reservation. Completed
     sections and exhausted request hashes remain unchanged, preventing free replays.
+    Reservations released before dispatch sent nothing and are dropped, so repeated
+    allowance refusals cannot fill the bounded call ledger.
     """
     if not resume_error_allowed(job.error, job.payload) or not has_budget(job.payload):
         raise InvalidRequest("This report cannot resume with its saved settings or allowance.")
     payload = deepcopy(job.payload)
+    payload["calls"] = dispatched_calls(payload.get("calls", []))
     for call in payload.get("calls", []):
         if call.get("status") == "in_flight":
             call["status"] = "uncertain"

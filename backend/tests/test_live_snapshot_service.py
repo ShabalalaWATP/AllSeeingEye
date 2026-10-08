@@ -202,6 +202,8 @@ def test_container_builds_nothing_when_disabled(monkeypatch: pytest.MonkeyPatch)
         settings=make_settings(monkeypatch, Environment.TEST, live_snapshot_path="live.gz"),
         store=InMemoryEventStore(),
         clock=FakeClock(NOW),
+        scheduler=SimpleNamespace(connectors=[]),
+        source_admission=None,
     )
     assert isinstance(build_live_snapshot(enabled), LiveStoreSnapshots)  # type: ignore[arg-type]
 

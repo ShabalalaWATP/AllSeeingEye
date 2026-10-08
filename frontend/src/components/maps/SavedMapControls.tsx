@@ -1,6 +1,7 @@
 import { SavedMapImageExport } from './SavedMapImageExport';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { TextField } from '@/components/ui/Field';
 import type { MapState } from '@/lib/api/mapViews';
 import type { useSavedMapViews } from './useSavedMapViews';
@@ -67,9 +68,24 @@ export function SavedMapControls({
             >
               Save new revision
             </Button>
-            <Button variant="ghost" disabled={saved.busy} onClick={() => void saved.archive()}>
-              Archive view
-            </Button>
+            <ConfirmButton
+              label="Archive view"
+              variant="ghost"
+              busy={saved.busy}
+              title={`Archive map view “${saved.active.revision.title}”?`}
+              confirmLabel="Archive view"
+              busyLabel="Archiving view…"
+              onConfirm={() => void saved.archive()}
+            >
+              <p>
+                <span className="font-medium text-text">Workspace:</span> {scopeLabel}
+              </p>
+              <p>
+                No new revisions can be saved to this view. Its existing revision links stay
+                available to authorised users, and you can still save a separate copy.
+              </p>
+              <p className="font-medium text-critical">This cannot be undone.</p>
+            </ConfirmButton>
           </>
         )}
         <Button variant="ghost" busy={saved.busy} onClick={() => void saved.browse()}>

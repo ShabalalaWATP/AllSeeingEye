@@ -219,6 +219,7 @@ class ReportContextReader:
             record.title[:300],
             version.data_cutoff,
             record.team_id,
+            record.created_by,
         )
         candidates = [*_claims(version), *_evidence(version)][:MAX_CANDIDATES]
         selected, matched = _choose(candidates, question.question)

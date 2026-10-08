@@ -1,10 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { installDialogStub } from '@/test/dialogStub';
 import { server } from '@/test/server';
 import { PrivateFeedSettings } from './PrivateFeedSettings';
+
+installDialogStub();
 
 describe('private feed settings', () => {
   it('requires explicit opt-in, displays a token once and supports revocation', async () => {
@@ -43,7 +46,29 @@ describe('private feed settings', () => {
     expect(titles).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Hide token' }));
     expect(screen.queryByLabelText('Feed password')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/when the token is replaced/)).toBeChecked();
+
+    await user.click(screen.getByRole('button', { name: 'Replace feed token' }));
+    const replace = await screen.findByRole('alertdialog', {
+      name: 'Replace the private feed token?',
+    });
+    expect(replace).toHaveTextContent('The old token stops working immediately');
+    expect(replace).toHaveTextContent('Titles will be included');
+    await user.click(within(replace).getByRole('button', { name: 'Replace token' }));
+    expect(await screen.findByLabelText('Feed password')).toHaveValue('test-feed-token');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: 'Revoke feed token' }));
+    const revoke = await screen.findByRole('alertdialog', {
+      name: 'Revoke the private feed token?',
+    });
+    expect(revoke).toHaveTextContent('stops working immediately');
+    await user.click(within(revoke).getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByText('Feed enabled')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Revoke feed token' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Revoke token' }),
+    );
     expect(await screen.findByText('Feed disabled')).toBeVisible();
   });
 

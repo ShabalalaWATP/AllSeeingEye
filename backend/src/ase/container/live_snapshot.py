@@ -40,4 +40,6 @@ def build_live_snapshot(container: Container) -> LiveStoreSnapshots | None:
         storage,
         container.clock,
         interval=timedelta(seconds=settings.live_snapshot_interval_seconds),
+        registered=frozenset(connector.spec.id for connector in container.scheduler.connectors),
+        admission=container.source_admission,
     )

@@ -1,9 +1,12 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { RfStudyLibrary } from './RfStudyLibrary';
 import { createRfDraft } from '@/lib/map/rfDraft';
 import { snapshotRfStudy } from '@/lib/map/rfStudy';
 import { useRfStudyLibrary } from './useRfStudyLibrary';
+import { installDialogStub } from '@/test/dialogStub';
+
+installDialogStub();
 vi.mock('./useRfStudyLibrary', () => ({ useRfStudyLibrary: vi.fn() }));
 vi.mock('@/components/ui/WorkspaceField', () => ({
   WorkspaceField: () => <span>Workspace selector</span>,
@@ -80,6 +83,11 @@ it('saves to the chosen scope and manages selected revisions without widening ac
     state.items[0],
   );
   fireEvent.click(screen.getByRole('button', { name: 'Delete selected study' }));
+  expect(state.remove).not.toHaveBeenCalled();
+  const dialog = screen.getByRole('alertdialog', { name: 'Delete radio study “Saved study”?' });
+  expect(dialog).toHaveTextContent('Personal');
+  expect(dialog).toHaveTextContent('This cannot be undone.');
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Delete study' }));
   expect(state.remove).toHaveBeenCalledWith('one');
 });
 it('sets and clears a frozen comparison baseline', () => {

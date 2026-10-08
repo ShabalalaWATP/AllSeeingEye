@@ -6,12 +6,14 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
+import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
-from ase.adapters.persistence.models import AuditLogRow
+from ase.adapters.persistence.models import AuditLogRow, CollectionPlanRow
 from ase.application.direction.plans import PirInput, PlanInput
 from ase.container import Container
+from ase.domain.errors import Conflict
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from team_helpers import CONTEXT
@@ -160,7 +162,11 @@ async def test_linked_plan_problems_are_actionable_and_never_reveal_other_plans(
     assert messages[0] == messages[1]
     assert "Choose another plan" in messages[0]
     async with container.session_factory() as session:
-        await container.delete_plan(session).execute(user, own.id, CONTEXT)
+        with pytest.raises(Conflict, match="used by 1 alert rule: Kharkiv strikes"):
+            await container.delete_plan(session).execute(user, own.id, CONTEXT)
+        # A link stranded before deletion was guarded still cannot resume silently.
+        await session.execute(delete(CollectionPlanRow).where(CollectionPlanRow.id == own.id))
+        await session.commit()
     # Pausing never needs the missing plan, but resuming it must not run without one.
     url = f"/api/warning/indicators/{saved['id']}"
     paused = await client.put(

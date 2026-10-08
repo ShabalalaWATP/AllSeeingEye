@@ -4,11 +4,14 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import type { AiOverride, AiOverrideInput } from '@/lib/api/aiUsage';
+import { installDialogStub } from '@/test/dialogStub';
 import { aiOverride, aiPolicy, policyId } from '@/test/fixtures.aiUsage';
 import { apiError } from '@/test/handlers';
 import { server } from '@/test/server';
 
 import { AiPolicyOverrides } from './AiPolicyOverrides';
+
+installDialogStub();
 
 const overridesPath = `/api/admin/ai-usage/policies/${policyId}/overrides`;
 
@@ -133,7 +136,13 @@ describe('AiPolicyOverrides', () => {
     expect(within(list).getAllByRole('listitem')).toHaveLength(1);
 
     await user.click(within(list).getByRole('button', { name: 'Revoke' }));
-    expect(await screen.findByText('Override not found.')).toBeInTheDocument();
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Revoke this temporary override for “Everyone”?',
+    });
+    expect(dialog).toHaveTextContent("the policy's own limits apply again");
+    await user.click(within(dialog).getByRole('button', { name: 'Revoke override' }));
+    expect(await within(dialog).findByText('Override not found.')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     expect(within(list).getByRole('button', { name: 'Revoke' })).toBeInTheDocument();
   });
 });

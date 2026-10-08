@@ -56,3 +56,37 @@ describe('team request lifetime', () => {
     expect(result.current.notice).toBe('Saved.');
   });
 });
+
+describe('team background refresh', () => {
+  it('keeps the roster mounted while refreshing and replaces it on success', async () => {
+    const next = pending<string>();
+    const loader = vi
+      .fn<() => Promise<string>>()
+      .mockResolvedValueOnce('first roster')
+      .mockReturnValueOnce(next.promise);
+    const { result } = renderHook(() => useTeamsResource(loader));
+    await waitFor(() => expect(result.current.data).toBe('first roster'));
+    let refreshing!: Promise<void>;
+    act(() => {
+      refreshing = result.current.refresh();
+    });
+    expect(result.current).toMatchObject({ data: 'first roster', loading: false, error: null });
+    await act(async () => {
+      next.resolve('second roster');
+      await refreshing;
+    });
+    expect(result.current).toMatchObject({ data: 'second roster', loading: false, error: null });
+  });
+
+  it('hides the roster when a refresh fails, since access may have changed', async () => {
+    const loader = vi
+      .fn<() => Promise<string>>()
+      .mockResolvedValueOnce('first roster')
+      .mockRejectedValueOnce(new Error('Access removed'));
+    const { result } = renderHook(() => useTeamsResource(loader));
+    await waitFor(() => expect(result.current.data).toBe('first roster'));
+    await act(() => result.current.refresh());
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).not.toBeNull();
+  });
+});

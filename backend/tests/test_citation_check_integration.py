@@ -122,7 +122,7 @@ async def test_database_and_api_preserve_frozen_checks_receipts_and_legacy_absen
     record.latest_version = 2
     async with container.session_factory() as session:
         repo = SqlReportRepository(session)
-        await repo.add(record, first)
+        await repo.add(replace(record, latest_version=1), first)
         await repo.add_version(record, second)
         await session.commit()
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)

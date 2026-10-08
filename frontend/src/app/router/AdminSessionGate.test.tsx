@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,8 +7,10 @@ import { verifySession } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
 import { useAuthStore } from '@/stores/auth';
-import { setVisibility } from '@/test/env';
-import { adminUser, plainUser, tokenFor } from '@/test/fixtures';
+import { setCsrfCookie, setVisibility } from '@/test/env';
+import { CSRF_VALUE, adminUser, plainUser, tokenFor } from '@/test/fixtures';
+import { apiError } from '@/test/handlers';
+import { server } from '@/test/server';
 
 import AdminSessionGate from './AdminSessionGate';
 
@@ -92,11 +95,61 @@ describe('fresh administrator session gate', () => {
     },
   );
 
-  it('clears only the matching expired session on401', async () => {
+  it('refreshes an expired access token once and verifies the rotated one', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    let refreshes = 0;
+    server.use(
+      http.post('/api/auth/refresh', () => {
+        refreshes += 1;
+        return HttpResponse.json({ ...tokenFor(adminUser), access_token: 'rotated' });
+      }),
+    );
+    vi.mocked(verifySession)
+      .mockRejectedValueOnce(new ApiError(401, 'unauthenticated', 'Expired'))
+      .mockResolvedValueOnce(adminUser);
+    mount();
+    expect(await screen.findByLabelText('Private draft')).toBeVisible();
+    expect(refreshes).toBe(1);
+    expect(verifySession).toHaveBeenLastCalledWith('rotated', expect.any(AbortSignal));
+    expect(useAuthStore.getState().status).toBe('authenticated');
+  });
+
+  it('ends the session when the refresh cookie is rejected', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    server.use(http.post('/api/auth/refresh', () => apiError(401, 'invalid_refresh', 'Expired.')));
     vi.mocked(verifySession).mockRejectedValueOnce(new ApiError(401, 'unauthenticated', 'Expired'));
     mount();
     await screen.findByText('Administrator access required');
     expect(useAuthStore.getState().status).toBe('anonymous');
+  });
+
+  it('ends the session when the refreshed token is rejected too', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    let refreshes = 0;
+    server.use(
+      http.post('/api/auth/refresh', () => {
+        refreshes += 1;
+        return HttpResponse.json({ ...tokenFor(adminUser), access_token: 'rotated' });
+      }),
+    );
+    vi.mocked(verifySession).mockRejectedValue(new ApiError(401, 'unauthenticated', 'Expired'));
+    mount();
+    await screen.findByText('Administrator access required');
+    expect(refreshes).toBe(1);
+    expect(useAuthStore.getState().status).toBe('anonymous');
+  });
+
+  it('keeps the session and offers Retry when the refresh is temporarily unavailable', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    server.use(http.post('/api/auth/refresh', () => apiError(503, 'unavailable', 'Try later.')));
+    vi.mocked(verifySession)
+      .mockRejectedValueOnce(new ApiError(401, 'unauthenticated', 'Expired'))
+      .mockResolvedValueOnce(adminUser);
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry' }));
+    expect(useAuthStore.getState().status).toBe('authenticated');
+    expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument();
+    expect(await screen.findByLabelText('Private draft')).toBeVisible();
   });
 
   it.each(['success', 'failure'] as const)(
@@ -130,20 +183,36 @@ describe('fresh administrator session gate', () => {
     },
   );
 
-  it('requires another verification after the same account receives a new token', async () => {
+  it('keeps the outlet and its drafts mounted while a rotated token is re-verified', async () => {
     const pending = deferred();
     vi.mocked(verifySession).mockResolvedValueOnce(adminUser).mockReturnValueOnce(pending.promise);
+    mount();
+    fireEvent.change(await screen.findByLabelText('Private draft'), {
+      target: { value: 'Unsaved' },
+    });
+    act(() => {
+      useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: 'rotated' });
+    });
+    expect(verifySession).toHaveBeenLastCalledWith('rotated', expect.any(AbortSignal));
+    expect(screen.getByLabelText('Private draft')).toHaveValue('Unsaved');
+    await act(async () => {
+      await Promise.resolve();
+      pending.resolve(adminUser);
+    });
+    expect(screen.getByLabelText('Private draft')).toHaveValue('Unsaved');
+  });
+
+  it('hides the outlet when a rotated token fails verification', async () => {
+    vi.mocked(verifySession)
+      .mockResolvedValueOnce(adminUser)
+      .mockRejectedValueOnce(new ApiError(0, 'network_error', 'Offline'));
     mount();
     await screen.findByLabelText('Private draft');
     act(() => {
       useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: 'rotated' });
     });
-    expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument();
-    await act(async () => {
-      await Promise.resolve();
-      pending.resolve(adminUser);
-    });
-    expect(screen.getByLabelText('Private draft')).toBeVisible();
+    await waitFor(() => expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 
   it('checks every30 seconds while visible, preserves drafts during checks, and deduplicates focus', async () => {

@@ -1,6 +1,6 @@
 """Optional asynchronous bulk operations for large in-process sensor batches."""
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from typing import Protocol, runtime_checkable
 
 from ase.application.ports.feeds import EventQuery, EventQueryReader, UpsertResult
@@ -34,3 +34,10 @@ class CooperativeSnapshotReader(Protocol):
     async def read_snapshot_cooperatively[T](
         self, project: Callable[[EventQueryReader], T], *, admission_key: str
     ) -> T: ...
+
+
+@runtime_checkable
+class WithdrawableEventStore(Protocol):
+    def withdraw_sources(self, source_ids: Iterable[str]) -> int:
+        """Remove every retained event of these sources; expiry is announced on prune."""
+        ...

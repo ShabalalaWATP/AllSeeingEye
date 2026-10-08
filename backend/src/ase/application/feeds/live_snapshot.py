@@ -3,12 +3,14 @@
 The snapshot is a disposable restart aid. Loading happens once; saving never runs
 concurrently with itself and serialises off the event loop. A final save runs on
 graceful shutdown only when the load completed, so an interrupted startup cannot
-replace a good file with a partial store.
+replace a good file with a partial store. Restored events are limited to sources
+that are still registered and enabled, so a retired or disabled feed does not return
+with a restart.
 """
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Collection, Sequence
 from datetime import timedelta
 
 from ase.application.feeds.cooperative_work import joined_thread_call
@@ -18,7 +20,9 @@ from ase.application.ports.live_snapshot import (
     RestorableEventStore,
     SnapshotLoad,
 )
+from ase.application.ports.source_controls import SourceAdmission
 from ase.application.worker_progress import register_worker, run_cycle
+from ase.domain.events import Event
 
 log = logging.getLogger(__name__)
 Sleep = Callable[[float], Awaitable[None]]
@@ -33,8 +37,13 @@ class LiveStoreSnapshots:
         *,
         interval: timedelta,
         sleep: Sleep = asyncio.sleep,
+        registered: Collection[str] | None = None,
+        admission: SourceAdmission | None = None,
     ) -> None:
         self._store = store
+        # None restores every source; production passes the configured connectors.
+        self._registered = None if registered is None else frozenset(registered)
+        self._admission = admission
         self._storage = storage
         self._clock = clock
         self._interval = interval.total_seconds()
@@ -66,15 +75,31 @@ class LiveStoreSnapshots:
             # The storage adapter reports its own reasons; never block startup on it.
             log.warning("live_snapshot.load_failed")
             loaded = SnapshotLoad()
-        restored = self._store.restore(loaded.events, self._clock.now())
+        admitted = await self._admitted(loaded.events)
+        restored = self._store.restore(admitted, self._clock.now())
         self._loaded = True
         log.info(
-            "live_snapshot.loaded read=%d restored=%d skipped=%d",
+            "live_snapshot.loaded read=%d restored=%d skipped=%d withheld=%d",
             len(loaded.events),
             restored,
             loaded.skipped,
+            len(loaded.events) - len(admitted),
         )
         return restored
+
+    async def _admitted(self, events: Sequence[Event]) -> Sequence[Event]:
+        """Only currently registered and enabled sources come back; fail closed."""
+        if self._registered is None:
+            return events
+        allowed = self._registered
+        if self._admission is not None:
+            try:
+                enabled = await self._admission.enabled_many(tuple(sorted(allowed)))
+            except Exception:
+                log.warning("live_snapshot.admission_unavailable")
+                return ()
+            allowed = frozenset(source for source, on in enabled.items() if on)
+        return tuple(event for event in events if event.source_id in allowed)
 
     async def save(self) -> bool:
         async with self._saving:

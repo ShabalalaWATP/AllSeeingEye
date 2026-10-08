@@ -2,10 +2,26 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Uuid, and_, delete, func, select
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    Uuid,
+    and_,
+    cast,
+    delete,
+    exists,
+    func,
+    select,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
@@ -36,6 +52,17 @@ class ReportEmbeddingRow(Base):
         else:
             self.vector_valid = True
         return value
+
+
+def _decoded(rows: Sequence[tuple[UUID, int, str, str | None]]) -> list[IndexedReport]:
+    entries = []
+    for report_id, version, fingerprint, text in rows:
+        try:
+            vector = checked_vector(json.loads(text) if text is not None else None)
+        except (ValueError, OverflowError, RecursionError):
+            continue
+        entries.append(IndexedReport(report_id, version, fingerprint, vector))
+    return entries
 
 
 class SqlReportEmbeddingRepository:
@@ -69,9 +96,33 @@ class SqlReportEmbeddingRepository:
         ).one()
         return int(row[0]), int(row[1])
 
+    async def has_current(self, report_ids: Sequence[UUID], fingerprint: str) -> bool:
+        if not report_ids:
+            return False
+        found = await self._session.scalar(
+            select(
+                exists().where(
+                    ReportEmbeddingRow.report_id == ReportRow.id,
+                    ReportEmbeddingRow.report_id.in_(report_ids),
+                    ReportEmbeddingRow.version == ReportRow.latest_version,
+                    ReportEmbeddingRow.fingerprint == fingerprint,
+                    ReportEmbeddingRow.vector_valid.is_(True),
+                )
+            )
+        )
+        return bool(found)
+
     async def current(self, report_ids: Sequence[UUID], fingerprint: str) -> list[IndexedReport]:
-        rows = await self._session.scalars(
-            select(ReportEmbeddingRow)
+        if not report_ids:
+            return []
+        # Raw JSON text: decoding up to 1,000 x 4,096 numbers happens off the event loop.
+        rows = await self._session.execute(
+            select(
+                ReportEmbeddingRow.report_id,
+                ReportEmbeddingRow.version,
+                ReportEmbeddingRow.fingerprint,
+                cast(ReportEmbeddingRow.vector, Text),
+            )
             .join(ReportRow, ReportRow.id == ReportEmbeddingRow.report_id)
             .where(
                 ReportEmbeddingRow.report_id.in_(report_ids),
@@ -79,14 +130,8 @@ class SqlReportEmbeddingRepository:
                 ReportEmbeddingRow.fingerprint == fingerprint,
             )
         )
-        entries = []
-        for row in rows:
-            try:
-                vector = checked_vector(row.vector)
-            except (ValueError, OverflowError):
-                continue
-            entries.append(IndexedReport(row.report_id, row.version, row.fingerprint, vector))
-        return entries
+        raw = [(row[0], row[1], row[2], row[3]) for row in rows]
+        return await asyncio.to_thread(_decoded, raw)
 
     async def save(self, entry: IndexedReport) -> bool:
         current = await self._session.scalar(

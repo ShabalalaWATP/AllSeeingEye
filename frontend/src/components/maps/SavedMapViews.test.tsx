@@ -1,9 +1,10 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { applySession } from '@/test/render';
 import { server } from '@/test/server';
+import { installDialogStub } from '@/test/dialogStub';
 import { mockWebGl2 } from '@/test/env';
 import { FakeMap } from '@/test/fakeMap';
 import { MapboxOverlay } from '@/test/fakeDeck';
@@ -11,6 +12,8 @@ import type { MapState } from '@/lib/api/mapViews';
 import ReportEvidenceMap from './ReportEvidenceMap';
 import { mapEvidence, savedMapFixture as saved } from '@/test/fixtures.savedMaps';
 import { initialMapState, matchesMapFilters } from './savedMapState';
+
+installDialogStub();
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
@@ -185,6 +188,9 @@ it('browses exact revision links, archives without losing the existing link, and
     await screen.findByRole('link', { name: /Saved geography, revision 1, report version 1/ }),
   ).toHaveAttribute('href', expect.stringContaining('map_revision=revision-1'));
   await user.click(screen.getByRole('button', { name: 'Archive view' }));
+  const dialog = await screen.findByRole('alertdialog', { name: /^Archive map view/ });
+  expect(dialog).toHaveTextContent('This cannot be undone.');
+  await user.click(within(dialog).getByRole('button', { name: 'Archive view' }));
   await screen.findByText(/View archived/);
   expect(screen.queryByRole('button', { name: 'Save new revision' })).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: /Open saved revision 1/ })).toHaveTextContent('archived');

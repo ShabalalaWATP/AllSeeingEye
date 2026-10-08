@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 
+import { installDialogStub } from '@/test/dialogStub';
 import { aiDefaults, aiOverride, aiPolicy } from '@/test/fixtures.aiUsage';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
@@ -9,6 +10,8 @@ import { server } from '@/test/server';
 
 import { draft } from './llmTestFixtures';
 import { installModelWorkspace } from './modelWorkspaceTestFixtures';
+
+installDialogStub();
 
 function deferredResponse() {
   let release!: () => void;
@@ -139,6 +142,10 @@ it.each(['create', 'revoke'] as const)(
         name: operation === 'revoke' ? 'Revoke' : 'Add override',
       }),
     );
+    if (operation === 'revoke') {
+      // Revoking is confirmed first (KAN-203); the request starts on confirmation.
+      await user.click(await screen.findByRole('button', { name: 'Revoke override' }));
+    }
     await waitFor(() => expect(started).toBe(true));
     try {
       expect(screen.getByRole('button', { name: 'Done with advanced settings' })).toBeDisabled();

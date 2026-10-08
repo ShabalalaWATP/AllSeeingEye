@@ -5,6 +5,7 @@ from typing import Any
 from ase.application.report_jobs.budget import (
     MAX_CALLS,
     MAX_OUTPUT_TOKENS,
+    dispatched_calls,
     output_used,
     token_count,
 )
@@ -52,6 +53,14 @@ _ERRORS = {
     "insufficient_evidence": "The selected evidence does not support a complete assessment.",
     "input_limit": "This step's evidence exceeds the supported input size.",
     "time_limit": "This generation run reached its time limit. Saved sections are retained.",
+    "ai_allowance_exhausted": (
+        "The AI usage allowance for this account or team is used up. Nothing was sent to the "
+        "provider for this step and saved sections are retained. Resume once the allowance "
+        "resets or an administrator raises it."
+    ),
+    "generation_incomplete": (
+        "Generation stopped before the report was complete. Saved sections are retained."
+    ),
     "section_token_budget_exhausted": (
         "Saved sections are retained. Start a smaller report to complete this assessment."
     ),
@@ -150,7 +159,8 @@ def refresh_summary(payload: dict[str, Any]) -> None:
         "total_sections": len(leaves),
         "in_flight_calls": sum(row.get("status") == "in_flight" for row in calls),
         "usage": {
-            "calls": len(calls),
+            # Refusals before dispatch spent nothing and do not limit a resume.
+            "calls": len(dispatched_calls(calls)),
             "max_calls": MAX_CALLS,
             "output_tokens": output_used(payload),
             "output_allowance": MAX_OUTPUT_TOKENS,

@@ -14,11 +14,13 @@ from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_outcome import PollOutcome
 from ase.application.feeds.poller import FeedPoller
 from ase.application.ports import Clock
+from ase.application.ports.cooperative_feeds import WithdrawableEventStore
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector
 from ase.application.ports.feeds import EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.worker_progress import register_worker, run_cycle, worker_heartbeats
 from ase.domain.errors import NotFound
+from ase.domain.source_controls import source_control_keys
 
 SleepFn = Callable[[float], Awaitable[None]]
 __all__ = ["FeedScheduler", "PollOutcome"]
@@ -59,6 +61,7 @@ class FeedScheduler:
             fetch_concurrency=fetch_concurrency,
         )
         self._clock = clock
+        self._store = store
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._prune_interval = prune_interval
         self._jitter = jitter
@@ -124,6 +127,24 @@ class FeedScheduler:
             self._tasks[source_id] = asyncio.create_task(
                 self._restart(connector, task), context=self._worker_context.copy()
             )
+
+    async def withdraw(self, source_id: str) -> int:
+        """Remove a just-disabled source's live events, including child sources it gates.
+
+        The caller holds the admission guard, so no poll of these sources can publish
+        in between; the prune announces the removals to streams straight away.
+        """
+        if not isinstance(self._store, WithdrawableEventStore):
+            return 0
+        affected = [
+            connector_id
+            for connector_id in self._connectors
+            if source_id in source_control_keys(connector_id)
+        ]
+        withdrawn = self._store.withdraw_sources(affected)
+        if withdrawn:
+            await self.poller.prune()
+        return withdrawn
 
     async def _restart(self, connector: FeedConnector, previous: asyncio.Task[None] | None) -> None:
         # Await cancellation cleanup before another request can use the same connector.

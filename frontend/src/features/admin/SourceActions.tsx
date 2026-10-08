@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAccountRequest } from '@/components/account/useAccountRequest';
 import { Button } from '@/components/ui/Button';
 import { resetSource } from '@/lib/api/events';
@@ -14,9 +14,12 @@ export function SourceActions({
 }: {
   source: Source;
   onReset: (health: SourceHealth) => void;
+  /** Called after the server accepts a change; the page announces it and refreshes. */
   onActivation: (id: string, enabled: boolean) => void;
 }) {
   const [confirm, setConfirm] = useState(false);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(false);
   const [notice, setNotice] = useState('');
   const begin = useAccountRequest();
   const enabled = source.enabled !== false;
@@ -28,11 +31,7 @@ export function SourceActions({
       if (signal.aborted) return;
       onActivation(source.id, !enabled);
       setConfirm(false);
-      setNotice(
-        enabled
-          ? 'Source disabled for future collection. Existing evidence remains available.'
-          : 'Source enabled for collection.',
-      );
+      refocus.current = true;
     } else if (operation === 'reset') {
       const health = await resetSource(source.id, signal);
       if (!signal.aborted) onReset(health);
@@ -44,10 +43,17 @@ export function SourceActions({
         );
     }
   });
+  // The confirmation controls disappear, so return focus to the toggle once it is enabled.
+  useEffect(() => {
+    if (action.busy || !refocus.current) return;
+    refocus.current = false;
+    toggle.current?.focus();
+  }, [action.busy]);
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         <Button
+          ref={toggle}
           variant="secondary"
           disabled={action.busy || source.environment_disabled === true}
           onClick={() => {
