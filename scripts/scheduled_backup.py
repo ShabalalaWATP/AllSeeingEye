@@ -11,7 +11,9 @@ from __future__ import annotations
 import argparse
 import contextlib
 import os
+import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -30,6 +32,7 @@ from backup_archive import (
     encryption_key,
     extract,
     heartbeat_url,
+    keep_count,
     pack,
     ping,
     prune,
@@ -42,6 +45,8 @@ from backup_bundle import BackupError
 ROOT = Path(__file__).resolve().parents[1]
 MIN_FREE_BYTES = 1024**3
 FAILURES = (BackupError, OSError, subprocess.SubprocessError)
+# Exactly the names tempfile.mkdtemp gives this job's own private work directories.
+STALE_WORK = re.compile(r"^\.(?:work|drill)-[a-z0-9_]{8}$")
 
 
 def log(message: str) -> None:
@@ -62,6 +67,31 @@ def exclusive(root: Path) -> Iterator[None]:
         except BlockingIOError as exc:
             raise BackupError("Another scheduled backup job is running.") from exc
         yield
+
+
+def sweep_stale(root: Path) -> list[str]:
+    """Remove plaintext work directories a crashed run or drill left behind.
+
+    Call only while holding the root's lock, when no other job can own one. Only real
+    directories with this job's exact temporary names are removed; a symbolic link,
+    junction or file of the same name is left alone and never followed.
+    """
+    removed = []
+    for path in sorted(root.iterdir()):
+        if not STALE_WORK.fullmatch(path.name):
+            continue
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            continue
+        # st_reparse_tag marks a Windows junction or link; POSIX has no such attribute.
+        if not stat.S_ISDIR(info.st_mode) or getattr(info, "st_reparse_tag", 0):
+            continue
+        shutil.rmtree(path)
+        removed.append(path.name)
+    if removed:
+        log(f"Removed stale work directories: {', '.join(removed)}")
+    return removed
 
 
 def create(options: argparse.Namespace, work: Path, name: str) -> Path:
@@ -94,6 +124,12 @@ def run(options: argparse.Namespace) -> int:
         "attempted": started.isoformat(),
         "last_success": read_status(options.root).get("last_success"),
     }
+    try:
+        sweep_stale(options.root)
+    except OSError:
+        return finish(
+            options, status | {"result": "failed", "message": "Stale work cleanup failed."}
+        )
     work = Path(tempfile.mkdtemp(prefix=".work-", dir=options.root))
     try:
         final = create(options, work, archive_name(started))
@@ -135,6 +171,12 @@ def finish(options: argparse.Namespace, status: dict[str, object]) -> int:
 
 def drill(options: argparse.Namespace) -> int:
     """Decrypt the newest archive and authenticate its manifest without touching Docker."""
+    try:
+        sweep_stale(options.root)
+    except OSError:
+        log("Restore drill failed: stale work cleanup failed.")
+        ping(options.heartbeat_url, failed=True)
+        return 1
     work = Path(tempfile.mkdtemp(prefix=".drill-", dir=options.root))
     try:
         found = archives(options.root)
@@ -196,7 +238,7 @@ def parser() -> argparse.ArgumentParser:
         )
     runner = actions.choices["run"]
     runner.add_argument(
-        "--keep", type=int, default=30, help="Archives to keep (minimum 3)"
+        "--keep", type=keep_count, default=30, help="Archives to keep (minimum 3)"
     )
     runner.add_argument(
         "--compose-file", type=Path, default=ROOT / "docker-compose.yml"
