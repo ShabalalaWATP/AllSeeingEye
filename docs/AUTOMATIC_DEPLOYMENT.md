@@ -30,7 +30,7 @@ Deployments are serial. A newer merge can queue but does not cancel an active de
 
 ## Changes that need an operator
 
-Changes to Compose configuration, Alembic configuration, migrations or the migration runner/CLI require a reviewed manual rollout. The API applies migrations at startup, so reverting application images cannot undo a schema change.
+Changes to Compose configuration, Alembic configuration, migrations, the migration runner/CLI or the database image (`infra/postgis/`) require a reviewed manual rollout. The API applies migrations at startup, so reverting application images cannot undo a schema change. Application deployments never rebuild the database, so a database image change would otherwise never reach it.
 
 The deployment controller scripts also require operator installation. Their installed contents must match the target commit before the controller accepts that change. A repository update cannot replace the installed controller by itself.
 
@@ -48,7 +48,7 @@ The privileged workflow does not check out pull-request code or consume CI build
 
 ## Failure and recovery
 
-A build or backup failure leaves the running release in place. A cutover failure attempts to restore the previous checkout and application images, then verifies them. The Actions run remains failed even when rollback succeeds. Automatic deployment never restores or downgrades the database.
+A build or backup failure leaves the running release in place. A cutover failure attempts to restore the previous checkout and application images, then verifies them. The rollback continues if the deployment session drops or the job is cancelled. The Actions run remains failed even when rollback succeeds. Automatic deployment never restores or downgrades the database.
 
 Each attempted release records the previous and target revisions, rollback image identities and a verified backup in private recovery storage. Retain and copy recovery material off-host according to your policy. The controller does not automatically prune backups or images.
 
