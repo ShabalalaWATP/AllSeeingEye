@@ -21,6 +21,7 @@ import { AiPolicyForm, type AiPolicyPrefill } from './AiPolicyForm';
 import { AiPolicyOverrides } from './AiPolicyOverrides';
 import { AiUsagePreview } from './AiUsagePreview';
 import { policyLabel } from './aiUsagePresentation';
+import { useFocusRequest } from './useFocusRequest';
 
 export function AiUsagePolicies({
   users,
@@ -40,6 +41,9 @@ export function AiUsagePolicies({
   const [editing, setEditing] = useState<AiPolicy | null>(null);
   const [overridesFor, setOverridesFor] = useState<AiPolicy | null>(null);
   const [prefill, setPrefill] = useState<AiPolicyPrefill | null>(null);
+  // Edit and "Set a limit" change the form from further down the page, so bring it into view.
+  const [formRequest, setFormRequest] = useState(0);
+  const formRegion = useFocusRequest<HTMLDivElement>(formRequest);
   const disabling = useConfirmedAction(
     useCallback(async (policy: AiPolicy) => {
       await disableAiPolicy(policy.id);
@@ -129,20 +133,22 @@ export function AiUsagePolicies({
           ])
         }
       />
-      <AiPolicyForm
-        key={`policy-form:${editing?.id ?? prefill?.targetId ?? 'new'}`}
-        users={users}
-        teams={teams}
-        editing={editing}
-        prefill={prefill ?? undefined}
-        busy={pending}
-        onSave={save}
-        onCancel={() => {
-          setEditing(null);
-          setPrefill(null);
-        }}
-        onInvalid={setError}
-      />
+      <div ref={formRegion} className="scroll-mt-6">
+        <AiPolicyForm
+          key={`policy-form:${editing?.id ?? prefill?.targetId ?? 'new'}`}
+          users={users}
+          teams={teams}
+          editing={editing}
+          prefill={prefill ?? undefined}
+          busy={pending}
+          onSave={save}
+          onCancel={() => {
+            setEditing(null);
+            setPrefill(null);
+          }}
+          onInvalid={setError}
+        />
+      </div>
       {loading ? <LoadingNote label="Loading allowance policies" /> : null}
       {!loading && active.length === 0 ? (
         <p className="text-sm text-muted">
@@ -181,7 +187,10 @@ export function AiUsagePolicies({
                           variant="ghost"
                           disabled={pending}
                           aria-label={`Edit ${label}`}
-                          onClick={() => setEditing(policy)}
+                          onClick={() => {
+                            setEditing(policy);
+                            setFormRequest((current) => current + 1);
+                          }}
                         >
                           Edit
                         </Button>
@@ -254,6 +263,7 @@ export function AiUsagePolicies({
           );
           setEditing(existing ?? null);
           setPrefill(existing ? null : { scope, targetId });
+          setFormRequest((current) => current + 1);
         }}
       />
     </section>

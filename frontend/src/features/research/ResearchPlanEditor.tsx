@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
@@ -22,13 +24,15 @@ export function ResearchPlanEditor({
   fixed?: boolean;
 }) {
   const catalogue = useLanguageCatalogue();
+  // Reopening hidden options shows existing plan edits; afterwards the reader decides.
+  const [openOnMount] = useState(plan.customised);
   const sources = (plan.snapshot?.tasks ?? []).filter(
     (task, index, all) => all.findIndex((row) => row.source_id === task.source_id) === index,
   );
   const languageName = (code: string) =>
     catalogue.data?.languages.find((entry) => entry.code === code)?.label ?? code;
   return (
-    <details className="min-w-0 border-b border-line pb-5">
+    <details className="min-w-0 border-b border-line pb-5" open={openOnMount}>
       <summary className="cursor-pointer py-2 text-sm font-medium">
         Collection plan {area || historical ? '(required)' : '(optional)'}
       </summary>

@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/Button';
 import { getPushSettings } from '@/lib/api/webPush';
 import type { PushSettings as Settings } from '@/lib/api/webPush';
 import { disablePush, enablePush, pushSupported } from '@/lib/browserPush';
+import { useAuthStore } from '@/stores/auth';
 
 export function PushSettings() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const supported = pushSupported();
+  const owner = useAuthStore((state) => state.user?.id);
   useEffect(() => {
     let active = true;
     void getPushSettings()
@@ -26,9 +28,9 @@ export function PushSettings() {
   }, []);
 
   async function enable() {
-    if (!settings?.public_key) return;
+    if (!settings?.public_key || !owner) return;
     // Start the permission request synchronously within this user gesture.
-    const pending = enablePush(settings.public_key, settings.devices);
+    const pending = enablePush(settings.public_key, settings.devices, owner);
     setBusy(true);
     setError(null);
     try {

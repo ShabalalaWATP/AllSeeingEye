@@ -6,7 +6,7 @@ import type { AiPeriod, AiPolicy, AiPolicyInput, AiScope } from '@/lib/api/aiUsa
 import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
 
-import { parseLimit } from './aiUsagePresentation';
+import { AI_LIMIT_RANGE, parseLimit } from './aiUsagePresentation';
 
 const UNTARGETED: readonly AiScope[] = ['global', 'system'];
 
@@ -50,7 +50,7 @@ export function AiPolicyForm({
     const requestLimit = parseLimit(requests);
     const tokenLimit = parseLimit(tokens);
     if (Number.isNaN(requestLimit) || Number.isNaN(tokenLimit)) {
-      onInvalid('Limits must be whole numbers, zero or blank for unlimited.');
+      onInvalid(`Limits must be whole numbers ${AI_LIMIT_RANGE}, or blank for unlimited.`);
       return;
     }
     if (targeted && !target) {

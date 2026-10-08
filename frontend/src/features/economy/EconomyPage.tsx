@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { SectionPendingNote } from '@/components/ui/SectionPending';
 import { describeError } from '@/lib/api/errors';
 import { useAuthStore } from '@/stores/auth';
 import { REGIONS } from './economyPresentation';
@@ -31,6 +32,10 @@ export default function EconomyPage() {
   const worldExplainer = regionExplainer(explainerState.data, 'WORLD');
   const focusExplainer = regionExplainer(explainerState.data, focus.id);
   const owner = useAuthStore((state) => state.user?.id);
+  // Jump-link targets stay mounted while indicators load or after they fail.
+  const indicatorsPending = (
+    <SectionPendingNote loading={data.loading} subject="official economic indicators" />
+  );
   return (
     <section
       aria-labelledby="economy-page-heading"
@@ -131,20 +136,24 @@ export default function EconomyPage() {
             </Button>
           </Alert>
         )}
-        {data.data && (
-          <div id="economy-comparison">
+        <div id="economy-comparison">
+          {data.data ? (
             <CountryComparison regions={data.data.regions} focus={focus.id} />
-          </div>
-        )}
-        {data.data && (
-          <div id="economy-country">
+          ) : (
+            indicatorsPending
+          )}
+        </div>
+        <div id="economy-country">
+          {data.data ? (
             <CountryEconomy
               key={focus.id}
               region={data.data.regions.find((region) => region.id === focus.id)}
               explainer={focusExplainer}
             />
-          </div>
-        )}
+          ) : (
+            indicatorsPending
+          )}
+        </div>
         {focus.id !== 'WORLD' && (
           <EconomyNewsPanel
             items={currentNews?.items ?? []}
@@ -164,11 +173,9 @@ export default function EconomyPage() {
         <div id="economy-analysis">
           <EconomyBriefing days={days} state={briefingState} />
         </div>
-        {data.data && (
-          <div id="economy-currencies">
-            <CurrencyAnalysis items={data.data.fx} />
-          </div>
-        )}
+        <div id="economy-currencies">
+          {data.data ? <CurrencyAnalysis items={data.data.fx} /> : indicatorsPending}
+        </div>
         {data.data && <CurrencyContext items={data.data.fx} />}
         <details className="border-t border-line pt-5 text-xs leading-6 text-muted">
           <summary className="w-fit cursor-pointer font-medium hover:text-text">

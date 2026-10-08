@@ -63,6 +63,10 @@ export const handlers = [
     }),
   ),
   http.get('/api/teams', () => HttpResponse.json({ items: [] })),
+  // The Teams page checks for pending invitations as soon as it mounts.
+  http.get('/api/me/team-invitations', () =>
+    HttpResponse.json({ items: [], total: 0, offset: 0, limit: 20, next_offset: null }),
+  ),
   http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginBody;
     if (body.email === adminUser.email && body.password === ADMIN_PASSWORD) {

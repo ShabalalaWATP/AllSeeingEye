@@ -5,7 +5,10 @@
  */
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
 import { DEFAULT_BASE_LAYER, type BaseLayer } from '@/lib/map/baseLayers';
+import { safeLocalStorage } from '@/lib/safeStorage';
+import { useAuthStore } from '@/stores/auth';
 
 export type ViewMode = 'globe' | 'map';
 
@@ -66,7 +69,7 @@ export const useGlobeStore = create<GlobeState>()(
     }),
     {
       name: GLOBE_PREFS_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
         baseLayer: state.baseLayer,
         lite: state.lite,
@@ -98,3 +101,9 @@ export const useGlobeStore = create<GlobeState>()(
     },
   ),
 );
+
+// The wall-screen mode belongs to the session that chose it: sign-out or another account ends it.
+useAuthStore.subscribe((next, previous) => {
+  const left = previous.user !== null && next.user?.id !== previous.user.id;
+  if (left && useGlobeStore.getState().opsRoom) useGlobeStore.getState().setOpsRoom(false);
+});

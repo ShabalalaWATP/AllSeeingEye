@@ -1,0 +1,6 @@
+# Crawlers may index the public pages. robots.txt is advisory: the application
+# enforces access control itself.
+User-agent: *
+Disallow: /api/
+Disallow: /admin
+Allow: /

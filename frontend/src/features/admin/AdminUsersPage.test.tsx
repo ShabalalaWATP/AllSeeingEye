@@ -79,6 +79,36 @@ describe('AdminUsersPage', () => {
     expect(screen.getByText(/^Expires 4 Sep\w* 2026, 10:30 UTC$/)).toBeInTheDocument();
   });
 
+  it('keeps a reset link until dismissed and replaces it with a newer one for the same account', async () => {
+    let issued = 0;
+    server.use(
+      http.post('/api/admin/users/:id/reset-link', () => {
+        issued += 1;
+        return HttpResponse.json({
+          reset_link: `${RESET_LINK}-${issued}`,
+          expires_at: '2026-09-04T10:30:00Z',
+        });
+      }),
+    );
+    const { user } = renderApp('/admin/users', 'admin');
+    const row = await findRow('Uma User');
+    await user.click(within(row).getByRole('button', { name: 'Issue reset link' }));
+    expect(await screen.findByLabelText(`Reset link for ${plainUser.email}`)).toHaveValue(
+      `${RESET_LINK}-1`,
+    );
+    await user.click(within(row).getByRole('button', { name: 'Issue reset link' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText(`Reset link for ${plainUser.email}`)).toHaveValue(
+        `${RESET_LINK}-2`,
+      ),
+    );
+    expect(screen.getAllByText(`Reset link for ${plainUser.email}`)).toHaveLength(1);
+    await user.click(
+      screen.getByRole('button', { name: `Dismiss Reset link for ${plainUser.email}` }),
+    );
+    expect(screen.queryByText(`Reset link for ${plainUser.email}`)).not.toBeInTheDocument();
+  });
+
   it('shows other failures with the API message', async () => {
     server.use(
       http.post('/api/admin/users/:id/reset-link', () =>

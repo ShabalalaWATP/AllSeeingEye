@@ -50,7 +50,7 @@ The privileged workflow does not check out pull-request code or consume CI build
 
 A build or backup failure leaves the running release in place. A cutover failure attempts to restore the previous checkout and application images, then verifies them. The Actions run remains failed even when rollback succeeds. Automatic deployment never restores or downgrades the database.
 
-Each attempted release records the previous and target revisions, rollback image identities and a verified backup in private recovery storage. Retain and copy recovery material off-host according to your policy. The controller does not automatically prune backups or images.
+Each attempted release records the previous and target revisions, rollback image identities and a verified backup in private recovery storage. Retain and copy recovery material off-host according to your policy. The controller does not automatically prune backups or images; see [pruning old releases](#pruning-old-releases).
 
 A lost connection can leave the outcome uncertain. Inspect the deployment record and running release before retrying. If rollback fails, investigate through the operator's normal access path; do not discard local changes or restore a database blindly. See [backup and restore](BACKUP_RESTORE.md).
 
@@ -77,3 +77,47 @@ inspect failed inventory runs before relying on this evidence. These inventories
 identify the CI builds. The deployment controller rebuilds on the host, so retain
 an inventory of the actual deployed image separately when exact deployed-package
 provenance is required.
+
+## Pruning old releases
+
+Every attempted release leaves a release record (with its pre-deployment database
+backup) in the controller's state directory, plus `ase-*:release-<sha>` and
+`ase-*:rollback-<sha>` image tags. The controller never removes them, so disk use
+grows with each deployment. `scripts/prune_deployments.py` is a separate,
+operator-run script for the deployment account on the host. The controller,
+the workflow and CI never run it.
+
+```bash
+python3 scripts/prune_deployments.py              # dry run: list what would go
+python3 scripts/prune_deployments.py --apply      # remove exactly that list
+python3 scripts/prune_deployments.py --keep 8 --apply
+```
+
+A dry run is the default and only reads Docker and Git state. `--keep` sets how
+many of the newest release records stay (default 5, minimum 2), ordered by when
+each record was written, whether or not that release succeeded. The script always
+keeps:
+
+- the newest successful release record, even when it is older than the kept ones;
+- every image tag for the target or previous revision of a kept record, so each
+  kept release still has its rollback images;
+- every tag for the checkout's current `HEAD`;
+- every tag whose image any container (running or stopped) still uses.
+
+It removes only directories whose names match the controller's record pattern
+and that hold a valid `release.json`. It never follows a symbolic link, never
+touches `deployment.lock` or any `manual-*` or `env-*` file, and leaves a record
+alone if it still holds a leftover `source` worktree (remove that with
+`git worktree remove` first). Image tags are removed one by one with
+`docker image rm`, never with `--force`, so Docker refuses an image still in use.
+Other image names and tags, including `ase-*:latest`, are not considered.
+
+`--apply` takes the deployment lock without creating it and stops when a
+deployment is running, then recomputes the list under the lock. A failed removal
+is reported and the rest continue; the exit status is then non-zero. The default
+locations match the installed controller; `--state-dir` and `--checkout` override
+them on another installation.
+
+Pruning deletes the pre-deployment backups of the removed records. Keep your
+scheduled, off-host backups independent of these records, and copy any record you
+need for an investigation elsewhere before pruning.

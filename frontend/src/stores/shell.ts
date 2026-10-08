@@ -5,6 +5,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { safeLocalStorage } from '@/lib/safeStorage';
+
 export const SHELL_PREFS_KEY = 'ase-shell-prefs';
 
 export interface ShellState {
@@ -37,7 +39,7 @@ export const useShellStore = create<ShellState>()(
     }),
     {
       name: SHELL_PREFS_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({ railCollapsed: state.railCollapsed }),
       merge: (saved, current) => ({
         ...current,

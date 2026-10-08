@@ -6,22 +6,18 @@ import { StatusPill } from '@/components/admin/StatusPill';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
-import { LinkReveal } from '@/components/ui/LinkReveal';
 import { Table, Th } from '@/components/ui/Table';
 import { listUsers } from '@/lib/api/admin';
 import { describeError } from '@/lib/api/errors';
-import type { ResetLinkResponse, User } from '@/lib/api/schemas';
+import type { User } from '@/lib/api/schemas';
 import { getAdminResearchUsage, type UserResearchAllowance } from '@/lib/api/researchUsage';
 import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { summariseUsers } from './overview/overviewSummaries';
+import { RevealedLinkList } from './RevealedLinkList';
+import { useRevealedLinks } from './useRevealedLinks';
 import { UserRow } from './UserRow';
-
-interface ResetIssue {
-  email: string;
-  response: ResetLinkResponse;
-}
 
 /** Case-insensitive match on name, email or role; filtering never changes server data. */
 export function matchesUser(user: User, query: string): boolean {
@@ -35,7 +31,7 @@ export function matchesUser(user: User, query: string): boolean {
 export default function AdminUsersPage() {
   const { data, error, loading, setData, reload } = useResource(listUsers);
   const allowances = useScopedResource(getAdminResearchUsage);
-  const [resetIssue, setResetIssue] = useState<ResetIssue | null>(null);
+  const revealed = useRevealedLinks();
   const [query, setQuery] = useState('');
   const replaceAllowance = (updated: UserResearchAllowance) => {
     allowances.setData(
@@ -96,13 +92,7 @@ export default function AdminUsersPage() {
         </Button>
       }
     >
-      {resetIssue === null ? null : (
-        <LinkReveal
-          title={`Reset link for ${resetIssue.email}`}
-          link={resetIssue.response.reset_link}
-          expiresAt={resetIssue.response.expires_at}
-        />
-      )}
+      <RevealedLinkList links={revealed.links} dismiss={revealed.dismiss} />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       {allowances.error && (
         <Alert tone="error">
@@ -168,7 +158,11 @@ export default function AdminUsersPage() {
                   onAllowanceUpdated={replaceAllowance}
                   onAllowanceReload={allowances.reload}
                   onResetLink={(response) => {
-                    setResetIssue({ email: user.email, response });
+                    revealed.reveal({
+                      title: `Reset link for ${user.email}`,
+                      link: response.reset_link,
+                      expiresAt: response.expires_at,
+                    });
                   }}
                 />
               ))}

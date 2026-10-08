@@ -49,6 +49,41 @@ describe('cost estimator', () => {
     expect(total()).toMatch(/^US\$/);
   });
 
+  it('lets a field be cleared and retyped, settling out-of-range or blank input on blur', async () => {
+    const user = renderEstimator();
+    const analysts = screen.getByLabelText('Analysts');
+    await user.clear(analysts);
+    expect(analysts).toHaveValue(null);
+    await user.type(analysts, '25');
+    expect(analysts).toHaveValue(25);
+    const at25 = total();
+    await user.clear(analysts);
+    await user.tab();
+    expect(analysts).toHaveValue(25);
+    expect(total()).toBe(at25);
+    await user.clear(analysts);
+    await user.type(analysts, '9000');
+    await user.tab();
+    expect(analysts).toHaveValue(500);
+
+    const runs = screen.getByLabelText('Research runs per analyst per day');
+    await user.clear(runs);
+    await user.type(runs, '0.5');
+    await user.tab();
+    expect(runs).toHaveValue(0.5);
+
+    const input = screen.getByLabelText('Input price, US$ per million tokens');
+    await user.clear(input);
+    await user.type(input, '12');
+    await user.tab();
+    expect(input).toHaveValue(12);
+    const output = screen.getByLabelText('Output price, US$ per million tokens');
+    await user.clear(output);
+    await user.type(output, '2000');
+    await user.tab();
+    expect(output).toHaveValue(1000);
+  });
+
   it('fills the prices from the chosen price point', async () => {
     const user = renderEstimator();
     await user.selectOptions(screen.getByLabelText('Model price point'), 'frontier');

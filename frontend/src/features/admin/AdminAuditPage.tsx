@@ -19,7 +19,7 @@ export function summariseDetails(details: Record<string, unknown>): string {
 }
 
 export default function AdminAuditPage() {
-  const { entries, nextBefore, loading, error, loadMore } = useAuditLog();
+  const { entries, nextBefore, loading, error, loadMore, retry } = useAuditLog();
 
   return (
     <AdminPage
@@ -35,13 +35,26 @@ export default function AdminAuditPage() {
         )
       }
     >
-      {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
+      {error === null ? null : (
+        <Alert tone="error">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>{describeError(error)}</span>
+            <Button variant="secondary" busy={loading} onClick={retry}>
+              Retry
+            </Button>
+          </div>
+        </Alert>
+      )}
       <AdminSection title="Recorded actions" icon="audit">
         {entries.length === 0 && !loading ? (
-          <EmptyState icon="audit" title="No audit entries yet.">
-            Administrative actions such as approvals, role changes and connection updates are
-            recorded here.
-          </EmptyState>
+          error === null ? (
+            <EmptyState icon="audit" title="No audit entries yet.">
+              Administrative actions such as approvals, role changes and connection updates are
+              recorded here.
+            </EmptyState>
+          ) : (
+            <p className="text-sm text-muted">Audit entries could not be loaded.</p>
+          )
         ) : (
           <Table caption="Audit log entries, newest first" stickyHeader>
             <thead>

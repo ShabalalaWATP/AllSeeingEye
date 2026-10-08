@@ -47,7 +47,7 @@ docker compose logs --tail 100 api
 docker compose exec api ase create-admin --email you@example.org --display-name "Your Name"
 ```
 
-The API applies migrations on startup. The administrator command prompts for a password. Sign in through the configured browser URL and enrol MFA. Authenticator apps work without SMTP; email codes require a configured mail relay.
+The API applies migrations on startup. The administrator command uses `ASE_ADMIN_PASSWORD` when that variable is set in the API container and prompts for a password only when it is not. Compose passes the root `.env` into the API container, so a value left there is used silently by every later `create-admin` and stays readable in the container's environment. Leave it unset to be prompted. If you set it for a one-off creation, remove it from `.env` afterwards and recreate the API container (`docker compose up -d api`), because a running container keeps the environment it started with. Sign in through the configured browser URL and enrol MFA. Authenticator apps work without SMTP; email codes require a configured mail relay.
 
 Check both `/api/health` and `/api/ready` over HTTPS, load the interface and confirm that anonymous requests cannot open administration. Review source health in **Administration → Sources**. Upstream refusals, missing credentials and a source waiting for its next poll have different causes.
 
@@ -57,9 +57,11 @@ For public HTTPS, DNS must resolve to your host and the certificate challenge mu
 
 **Run one API process.** The live event store, rate limits and several coordination locks are process-local. Multiple API replicas or Uvicorn workers are not supported by this deployment design.
 
-Keep time synchronisation enabled. Watch memory, disk capacity, source status, model usage and job failures. Compose bounds each service's container logs (json-file, five 20 MB files) and sets memory and process limits sized from the reference host; raise `mem_limit` in `docker-compose.yml` if a real workload needs more, since an API that reaches its limit is restarted and its live store warms up again. Arrange retention for any logs you ship elsewhere. The repository's `Uptime` workflow probes the reference deployment's site, health and readiness every 15 minutes and fails when the TLS certificate has under 14 days left; a failed run is the alert. Adapt its host for another installation. Schedule [encrypted backups](BACKUP_RESTORE.md#scheduled-encrypted-backups) on the host.
+Keep time synchronisation enabled. Watch memory, disk capacity, source status, model usage and job failures. Compose bounds each service's container logs (json-file, five 20 MB files) and sets memory and process limits sized from the reference host; raise `mem_limit` in `docker-compose.yml` if a real workload needs more, since an API that reaches its limit is restarted and its live store warms up again. Arrange retention for any logs you ship elsewhere. The repository's `Uptime` workflow probes the reference deployment's site, health and readiness every 15 minutes and fails when the TLS certificate has under 14 days left, when `/` does not send `Strict-Transport-Security` with a `max-age` of at least a year, or when `security.txt` expires within 30 days; a failed run is the alert. Adapt its host for another installation. Schedule [encrypted backups](BACKUP_RESTORE.md#scheduled-encrypted-backups) on the host.
 
 Caddy serves pre-compressed Brotli and gzip copies of the web client. Content-hashed files under `/assets/` are cached for a year as immutable; `index.html` and other fixed names revalidate on every visit, so a deploy reaches returning browsers immediately. A missing `/assets/` file answers 404 rather than the application shell.
+
+The web image also serves `/robots.txt` (crawlers are asked to skip `/api/` and `/admin`) and an RFC 9116 `/.well-known/security.txt`; any other `/.well-known/` path answers 404. Both files live in `frontend/public`. The shipped `security.txt` names this project's reporting channel and the reference deployment's canonical address, so another installation should edit its `Contact` and `Canonical` lines. Renew its `Expires` date before it passes. The `Uptime` workflow fetches the live file and fails from 30 days before that date; it only warns while the live site serves no `Expires` line. Repository tests check the date's format but never fail CI because it has passed.
 
 Before an update, review migration requirements, take and verify a backup, and check the target revision passed CI. An update restarts application processes: live feeds warm up again and running research may be interrupted. Verify health, readiness and sign-in after the update. Restoring application images does not reverse a database migration.
 
@@ -80,7 +82,7 @@ The same PostgreSQL major version reuses the data volume. A major version change
 
 Use the [backup and restore guide](BACKUP_RESTORE.md) for SQLite and PostgreSQL commands. Retain the application revision, configuration and encryption key needed to restore each recovery point. Copy backups off the application host and practise restoration into a fresh destination.
 
-The scripts do not install a backup schedule or delete old backups. Choose those policies explicitly. The automatic deployment workflow creates a verified backup before a release, which complements a regular backup policy.
+`backup.py` and `restore.py` never schedule, prune or delete anything. The repository installs no backup schedule: you add `scheduled_backup.py` to the host's crontab yourself. Once scheduled, it deletes its own oldest `scheduled-*.tar.gpg` archives beyond `--keep` (default 30, minimum 3) after each successful run, and never touches other files, manual bundles or off-site copies. The automatic deployment workflow creates a verified backup before a release, which complements a regular backup policy; the operator-run [deployment pruning script](AUTOMATIC_DEPLOYMENT.md#pruning-old-releases) removes old pre-release backups only when you run it.
 
 ## Common problems
 

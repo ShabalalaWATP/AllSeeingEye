@@ -8,7 +8,7 @@ import {
 import type { ReportSearchResult } from '@/lib/api/reportSearch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
-import { scopedMutation } from '@/lib/workspaceAccess';
+import { scopedMutation, scopedRead } from '@/lib/workspaceAccess';
 
 export function useReportSearch() {
   const status = useScopedResource(fetchReportSearchStatus);
@@ -27,9 +27,7 @@ export function useReportSearch() {
   const search = useAsyncAction(
     useCallback(async () => {
       setFound(null);
-      const value = await scopedMutation(() =>
-        searchSavedReports({ query: query.trim(), limit: 10 }),
-      );
+      const value = await scopedRead(() => searchSavedReports({ query: query.trim(), limit: 10 }));
       setFound({ key: status.key, query: query.trim(), value });
       await refreshStatus();
     }, [query, refreshStatus, status.key]),
