@@ -128,7 +128,8 @@ def run(options: argparse.Namespace) -> int:
         sweep_stale(options.root)
     except OSError:
         return finish(
-            options, status | {"result": "failed", "message": "Stale work cleanup failed."}
+            options,
+            status | {"result": "failed", "message": "Stale work cleanup failed."},
         )
     work = Path(tempfile.mkdtemp(prefix=".work-", dir=options.root))
     try:

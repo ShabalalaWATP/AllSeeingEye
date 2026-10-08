@@ -210,7 +210,9 @@ class RunTests(Workspace):
         outside.mkdir()
         (outside / "keep.txt").write_text("x")
         try:
-            (self.root / ".drill-link1234").symlink_to(outside, target_is_directory=True)
+            (self.root / ".drill-link1234").symlink_to(
+                outside, target_is_directory=True
+            )
             kept.append(".drill-link1234")
         except OSError:
             pass  # Creating links can need extra privileges on Windows.
