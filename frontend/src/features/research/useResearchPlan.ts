@@ -258,6 +258,8 @@ export function useResearchPlan(scope: PlanScope) {
     );
   };
   return {
+    /** Changes whenever anything the preview depends on changes. */
+    key,
     tasks,
     transliterations,
     sourceIds,

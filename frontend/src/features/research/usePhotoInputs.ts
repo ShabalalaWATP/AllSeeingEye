@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ApiError, describeError } from '@/lib/api/errors';
 import { discardResearchInput } from '@/lib/api/researchGeolocation';
 import { uploadResearchInput, type ResearchInputReceipt } from '@/lib/api/researchInputs';
+import { inputFilenameError } from '@/lib/uploadFilename';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
@@ -44,6 +45,8 @@ function batchError(files: readonly File[]): string | null {
       return 'Choose a PNG, JPEG or WebP photograph.';
     if (!file.size || file.size > MAX_BYTES)
       return 'Each photograph must be non-empty and no larger than 8 MiB.';
+    const named = inputFilenameError(file.name);
+    if (named) return named;
   }
   return null;
 }

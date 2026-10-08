@@ -29,6 +29,19 @@ export interface PlaylistSource {
   created_by: string;
 }
 
+/** An entry being edited. `dwell_text` holds a dwell time as typed until it is committed. */
+export type DraftEntry = PlaylistEntry & { dwell_text?: string | undefined };
+
+/** Commit any typed dwell time: blank or unreadable text keeps the last accepted value. */
+function settle({ dwell_text: text, ...entry }: DraftEntry): PlaylistEntry {
+  if (text === undefined || text.trim() === '') return entry;
+  const typed = Number(text);
+  return {
+    ...entry,
+    dwell_seconds: Number.isFinite(typed) ? clampDwell(typed) : entry.dwell_seconds,
+  };
+}
+
 async function loadSources() {
   const [playlists, views, areas] = await Promise.all([
     listPlaylists(),
@@ -47,7 +60,7 @@ export function useOpsPlaylistEditor() {
   const actor = useAuthStore((state) => state.user?.id ?? null);
   const [active, setActive] = useState<MapWorkspaceDocument | null>(null);
   const [title, setTitle] = useState('Wall rotation');
-  const [entries, setEntries] = useState<PlaylistEntry[]>([]);
+  const [entries, setEntries] = useState<DraftEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -132,15 +145,27 @@ export function useOpsPlaylistEditor() {
       setEntries((previous) =>
         previous.map((entry, position) =>
           position === index
-            ? {
-                ...entry,
-                ...patch,
-                ...(patch.dwell_seconds === undefined
-                  ? {}
-                  : { dwell_seconds: clampDwell(patch.dwell_seconds) }),
-              }
+            ? patch.dwell_seconds === undefined
+              ? { ...entry, ...patch }
+              : settle({
+                  ...entry,
+                  ...patch,
+                  dwell_seconds: clampDwell(patch.dwell_seconds),
+                  dwell_text: undefined,
+                })
             : entry,
         ),
+      ),
+    /** Keep the dwell time exactly as typed; it is clamped when committed or saved. */
+    typeDwell: (index: number, text: string) =>
+      setEntries((previous) =>
+        previous.map((entry, position) =>
+          position === index ? { ...entry, dwell_text: text } : entry,
+        ),
+      ),
+    commitDwell: (index: number) =>
+      setEntries((previous) =>
+        previous.map((entry, position) => (position === index ? settle(entry) : entry)),
       ),
     move: (index: number, offset: -1 | 1) =>
       setEntries((previous) => {
@@ -155,8 +180,10 @@ export function useOpsPlaylistEditor() {
       setEntries((previous) => previous.filter((_, position) => position !== index)),
     save: (teamId?: string) =>
       run(async (signal) => {
+        const settled = entries.map(settle);
+        setEntries(settled);
         const saved = await savePlaylist(
-          { version: 1, entries },
+          { version: 1, entries: settled },
           title.trim(),
           { existing: active, ...(teamId ? { teamId } : {}) },
           signal,

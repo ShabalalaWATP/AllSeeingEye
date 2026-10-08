@@ -5,7 +5,9 @@
  */
 import { useId, useMemo, useState } from 'react';
 
-import { clampTo, estimate, formatRange, LIMITS } from '../content/costing';
+import { useNumberField } from '@/lib/hooks/useNumberField';
+
+import { estimate, formatRange, LIMITS } from '../content/costing';
 import {
   COST_MODEL_CHECKED_ON,
   COST_MODEL_STATUS,
@@ -19,44 +21,40 @@ import {
   type Currency,
 } from '../content/costModel';
 
-function numberFrom(value: string, fallback: number): number {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
 export function CostEstimator() {
   const id = useId();
-  const [analysts, setAnalysts] = useState(10);
-  const [runs, setRuns] = useState(3);
+  // Each figure keeps its typed text, so a field can be cleared; it settles on blur.
+  const analysts = useNumberField(10, { ...LIMITS.analysts, integer: true });
+  const runs = useNumberField(3, LIMITS.runs);
   const [depthId, setDepthId] = useState<string>('deep');
   const [presetId, setPresetId] = useState<string>('standard');
   const [hostingId, setHostingId] = useState<string>('standard');
   const [currency, setCurrency] = useState<Currency>('GBP');
   const preset = pick(PRICE_PRESETS, presetId);
-  const [inputPrice, setInputPrice] = useState(preset.input);
-  const [outputPrice, setOutputPrice] = useState(preset.output);
+  const inputPrice = useNumberField(preset.input, LIMITS.price);
+  const outputPrice = useNumberField(preset.output, LIMITS.price);
 
   const result = useMemo(
     () =>
       estimate({
-        analysts,
-        runsPerAnalystPerDay: runs,
+        analysts: analysts.value,
+        runsPerAnalystPerDay: runs.value,
         depth: pick(DEPTH_TOKENS, depthId),
-        inputPrice,
-        outputPrice,
+        inputPrice: inputPrice.value,
+        outputPrice: outputPrice.value,
         upliftPercent: DEFAULT_UPLIFT_PERCENT,
         hosting: pick(HOSTING_SIZES, hostingId),
         currency,
       }),
-    [analysts, runs, depthId, inputPrice, outputPrice, hostingId, currency],
+    [analysts.value, runs.value, depthId, inputPrice.value, outputPrice.value, hostingId, currency],
   );
 
   const choosePreset = (next: string) => {
     const chosen = PRICE_PRESETS.find((entry) => entry.id === next);
     setPresetId(next);
     if (chosen !== undefined) {
-      setInputPrice(chosen.input);
-      setOutputPrice(chosen.output);
+      inputPrice.set(chosen.input);
+      outputPrice.set(chosen.output);
     }
   };
 
@@ -76,16 +74,9 @@ export function CostEstimator() {
           inputMode="numeric"
           min={LIMITS.analysts.min}
           max={LIMITS.analysts.max}
-          value={analysts}
-          onChange={(event) =>
-            setAnalysts(
-              clampTo(
-                Math.round(numberFrom(event.target.value, 1)),
-                LIMITS.analysts.min,
-                LIMITS.analysts.max,
-              ),
-            )
-          }
+          value={analysts.text}
+          onChange={(event) => analysts.type(event.target.value)}
+          onBlur={analysts.commit}
         />
         <label htmlFor={`${id}-runs`}>Research runs per analyst per day</label>
         <input
@@ -95,10 +86,9 @@ export function CostEstimator() {
           step={0.5}
           min={LIMITS.runs.min}
           max={LIMITS.runs.max}
-          value={runs}
-          onChange={(event) =>
-            setRuns(clampTo(numberFrom(event.target.value, 0), LIMITS.runs.min, LIMITS.runs.max))
-          }
+          value={runs.text}
+          onChange={(event) => runs.type(event.target.value)}
+          onBlur={runs.commit}
         />
         <label htmlFor={`${id}-depth`}>Typical depth</label>
         <select
@@ -132,12 +122,9 @@ export function CostEstimator() {
           step={0.1}
           min={LIMITS.price.min}
           max={LIMITS.price.max}
-          value={inputPrice}
-          onChange={(event) =>
-            setInputPrice(
-              clampTo(numberFrom(event.target.value, 0), LIMITS.price.min, LIMITS.price.max),
-            )
-          }
+          value={inputPrice.text}
+          onChange={(event) => inputPrice.type(event.target.value)}
+          onBlur={inputPrice.commit}
         />
         <label htmlFor={`${id}-out`}>Output price, US$ per million tokens</label>
         <input
@@ -147,12 +134,9 @@ export function CostEstimator() {
           step={0.1}
           min={LIMITS.price.min}
           max={LIMITS.price.max}
-          value={outputPrice}
-          onChange={(event) =>
-            setOutputPrice(
-              clampTo(numberFrom(event.target.value, 0), LIMITS.price.min, LIMITS.price.max),
-            )
-          }
+          value={outputPrice.text}
+          onChange={(event) => outputPrice.type(event.target.value)}
+          onBlur={outputPrice.commit}
         />
         <label htmlFor={`${id}-hosting`}>Server size</label>
         <select

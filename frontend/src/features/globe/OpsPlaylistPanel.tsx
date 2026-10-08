@@ -21,8 +21,11 @@ export function OpsPlaylistPanel({
   const workspaces = useWorkspaces();
   const scope = useWorkspaceSelection(workspaces);
   const [choice, setChoice] = useState('');
-  const [confirming, setConfirming] = useState(false);
+  // Tied to one playlist, so choosing another never carries an open confirmation across.
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const { active, busy, entries } = editor;
+  const confirming = active !== null && confirmingId === active.id;
+  if (confirmingId !== null && !confirming) setConfirmingId(null);
   const teamId = active ? active.team_id : scope.teamId || null;
   const options = editor.compatible(teamId);
   const label = (id: string) =>
@@ -100,10 +103,9 @@ export function OpsPlaylistPanel({
                   type="number"
                   min={MIN_DWELL_SECONDS}
                   max={MAX_DWELL_SECONDS}
-                  value={entry.dwell_seconds}
-                  onChange={(event) =>
-                    editor.update(index, { dwell_seconds: Number(event.target.value) })
-                  }
+                  value={entry.dwell_text ?? entry.dwell_seconds}
+                  onChange={(event) => editor.typeDwell(index, event.target.value)}
+                  onBlur={() => editor.commitDwell(index)}
                   className="map-tool-input w-24"
                 />
               </label>
@@ -195,23 +197,33 @@ export function OpsPlaylistPanel({
         {active &&
           workspaces.canManage(active) &&
           (confirming ? (
-            <button
-              type="button"
-              className="map-tool-text-button"
-              disabled={busy}
-              onClick={() => {
-                setConfirming(false);
-                void editor.destroy();
-              }}
-            >
-              Confirm delete {active.title}
-            </button>
+            <>
+              <button
+                type="button"
+                className="map-tool-text-button"
+                disabled={busy}
+                onClick={() => {
+                  setConfirmingId(null);
+                  void editor.destroy();
+                }}
+              >
+                Confirm delete {active.title}
+              </button>
+              <button
+                type="button"
+                className="map-tool-text-button"
+                disabled={busy}
+                onClick={() => setConfirmingId(null)}
+              >
+                Cancel
+              </button>
+            </>
           ) : (
             <button
               type="button"
               className="map-tool-text-button"
               disabled={busy}
-              onClick={() => setConfirming(true)}
+              onClick={() => setConfirmingId(active.id)}
             >
               Delete playlist
             </button>

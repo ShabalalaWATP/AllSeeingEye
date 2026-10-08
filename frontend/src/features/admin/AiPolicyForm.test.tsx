@@ -74,7 +74,17 @@ describe('AiPolicyForm', () => {
     await user.type(screen.getByLabelText('Requests'), '-2');
     await user.click(screen.getByRole('button', { name: 'Add policy' }));
     expect(onInvalid).toHaveBeenCalledWith(
-      'Limits must be whole numbers, zero or blank for unlimited.',
+      'Limits must be whole numbers from 0 to 2,147,483,647, or blank for unlimited.',
+    );
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('rejects a limit above the largest value the server stores', async () => {
+    const { user, onSave, onInvalid } = mount(null);
+    await user.type(screen.getByLabelText('Tokens'), '2147483648');
+    await user.click(screen.getByRole('button', { name: 'Add policy' }));
+    expect(onInvalid).toHaveBeenCalledWith(
+      'Limits must be whole numbers from 0 to 2,147,483,647, or blank for unlimited.',
     );
     expect(onSave).not.toHaveBeenCalled();
   });

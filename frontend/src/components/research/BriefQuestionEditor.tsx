@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { BriefDraft } from '@/lib/api/researchBriefSchema';
+import { nextRequirementId } from '@/lib/researchBriefDraft';
 
 import { BriefListField } from './BriefListField';
 
@@ -111,7 +112,7 @@ export function BriefQuestionEditor({
                 requirements: [
                   ...requirements,
                   {
-                    id: `req-${requirements.length + 1}`,
+                    id: nextRequirementId(requirements),
                     question: '',
                     required: true,
                     priority: requirements.length + 1,
