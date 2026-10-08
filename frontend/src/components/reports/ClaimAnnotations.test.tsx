@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { report } from '@/test/fixtures';
@@ -124,4 +124,26 @@ it('prevents opening a draft or changing pages during generation and releases af
   expect(locked).toEqual([true, true]);
   expect(screen.getByRole('button', { name: 'Add a claim' })).toBeEnabled();
   expect(screen.getByRole('button', { name: 'Next page' })).toBeEnabled();
+});
+
+it('keeps the generation notice after the claim list refreshes in the background', async () => {
+  let reads = 0;
+  let served = 0;
+  server.use(
+    http.get('/api/claims', async () => {
+      reads += 1;
+      if (reads > 1) await delay(300);
+      served += 1;
+      return HttpResponse.json({ items: [], total: 0, limit: 20, offset: 0 });
+    }),
+    http.post('/api/claims/generate', () => HttpResponse.json({ status: 'completed', items: [] })),
+  );
+  render(<ClaimAnnotations reportId="report-1" version={1} canCreate />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Claim annotations and history' }));
+  await user.click(await screen.findByRole('button', { name: 'Generate proposed claims' }));
+  expect(await screen.findByText(/0 proposed claims saved/)).toBeVisible();
+  await waitFor(() => expect(served).toBe(2));
+  expect(screen.getByText(/0 proposed claims saved/)).toBeVisible();
+  expect(screen.queryByText('Loading claim annotations')).not.toBeInTheDocument();
 });

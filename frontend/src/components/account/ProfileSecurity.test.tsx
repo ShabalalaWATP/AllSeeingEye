@@ -1,5 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as download from '@/lib/download';
 import { useAuthStore } from '@/stores/auth';
@@ -220,5 +220,33 @@ describe('personal recovery codes', () => {
     await screen.findByRole('button', { name: 'Create recovery codes' });
     expect(screen.queryByRole('list', { name: 'New recovery codes' })).not.toBeInTheDocument();
     expect(useAuthStore.getState().user?.id).toBe(otherId);
+  });
+});
+
+describe('recovery codes after a slow status refresh', () => {
+  it('keeps freshly generated codes visible while the recovery status reloads', async () => {
+    let generated = false;
+    let readsAfter = 0;
+    server.use(
+      http.post('/api/auth/mfa/recovery/generate', () => {
+        generated = true;
+        return HttpResponse.json({ codes: syntheticCodes });
+      }),
+      http.get('/api/auth/mfa/recovery', async () => {
+        if (!generated) return HttpResponse.json({ remaining: 0, available: true });
+        readsAfter += 1;
+        await delay(300);
+        return HttpResponse.json({ remaining: 2, available: true });
+      }),
+    );
+    const { user } = renderApp('/account?section=security', 'user');
+    await openRecovery(user);
+    await user.click(screen.getByRole('button', { name: 'Generate new codes' }));
+    const list = await screen.findByRole('list', { name: 'New recovery codes' });
+    await waitFor(() => expect(readsAfter).toBe(1));
+    expect(list).toBeInTheDocument();
+    expect(await screen.findByText('2 unused codes available')).toBeVisible();
+    expect(screen.getByRole('list', { name: 'New recovery codes' })).toBe(list);
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
   });
 });

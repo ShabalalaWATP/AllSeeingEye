@@ -87,7 +87,7 @@ function ReviewList(scope: Props) {
   const resource = useScopedResource(loader);
   const saved = () => {
     setEditing(null);
-    void resource.reload();
+    void resource.refresh();
   };
   const candidate = scope.candidates.find((item) => item.evidence_label === label);
   return (
@@ -157,7 +157,7 @@ function ReviewList(scope: Props) {
                 onSaved={saved}
                 onCancel={() => {
                   setEditing(null);
-                  void resource.reload();
+                  void resource.refresh();
                 }}
               />
             </div>
@@ -170,7 +170,7 @@ function ReviewList(scope: Props) {
               onSaved={saved}
               onClose={() => {
                 setEditing(null);
-                void resource.reload();
+                void resource.refresh();
               }}
             />
           )}

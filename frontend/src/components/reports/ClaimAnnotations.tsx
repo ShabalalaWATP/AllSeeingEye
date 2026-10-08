@@ -100,7 +100,7 @@ function ClaimList(scope: AnnotationProps) {
               disabled={editing !== null}
               onBusyChange={setGenerating}
               onSaved={() => {
-                void resource.reload();
+                void resource.refresh();
               }}
             />
           )}
@@ -124,7 +124,7 @@ function ClaimList(scope: AnnotationProps) {
               onCancel={() => setEditing(null)}
               onSaved={() => {
                 setEditing(null);
-                void resource.reload();
+                void resource.refresh();
               }}
             />
           )}
@@ -136,7 +136,7 @@ function ClaimList(scope: AnnotationProps) {
               onClose={() => setEditing(null)}
               onSaved={() => {
                 setEditing(null);
-                void resource.reload();
+                void resource.refresh();
               }}
             />
           )}

@@ -81,7 +81,7 @@ describe('explicit request replay policy', () => {
     expect(lost).not.toHaveBeenCalled();
   });
 
-  it('still clears a lost session when refresh fails with replay disabled', async () => {
+  it('leaves the session decision to the refresher when refresh fails with replay disabled', async () => {
     const lost = vi.fn();
     bindSession({
       getAccessToken: () => 'expired',
@@ -99,7 +99,7 @@ describe('explicit request replay policy', () => {
       apiCall('/api/costly', { method: 'POST', schema, retryAfterRefresh: false }),
     ).rejects.toMatchObject({ status: 401, code: 'unauthenticated' });
     expect(posts).toBe(1);
-    expect(lost).toHaveBeenCalledTimes(1);
+    expect(lost).not.toHaveBeenCalled();
   });
 
   it('preserves default POST refresh and replay behaviour', async () => {

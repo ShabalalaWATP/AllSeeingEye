@@ -47,6 +47,8 @@ export function TeamPanel({
   // A team discussion link opens the board instead.
   const [activeTab, setActiveTab] = useState<TeamDashboardTab>(boardLink ? 'board' : 'members');
   const reload = resource.reload;
+  // After a change the roster refreshes in place, keeping the notice and open panels.
+  const refresh = resource.refresh;
   const accessRevoked =
     resource.error?.status === 401 ||
     resource.error?.status === 403 ||
@@ -141,14 +143,14 @@ export function TeamPanel({
                   void action.run(
                     () => removeMember(id, member.user_id),
                     'Member removed.',
-                    reload,
+                    refresh,
                   );
                 }}
                 onRole={(member, role) => {
                   void action.run(
                     () => changeMemberRole(id, member.user_id, role),
                     'Team role updated.',
-                    reload,
+                    refresh,
                   );
                 }}
               />
@@ -159,7 +161,7 @@ export function TeamPanel({
                   allowManagerRole
                   busy={action.busy}
                   onSave={(input) => {
-                    void action.run(() => setMember(id, input), 'Membership saved.', reload);
+                    void action.run(() => setMember(id, input), 'Membership saved.', refresh);
                   }}
                 />
               ) : null}
@@ -200,7 +202,7 @@ export function TeamPanel({
                           () => updateTeam(id, body),
                           'Team details saved.',
                           async () => {
-                            await reload();
+                            await refresh();
                             await refreshList();
                           },
                         );
@@ -218,7 +220,7 @@ export function TeamPanel({
                             () => updateTeam(id, { is_active: false }),
                             'Team archived.',
                             async () => {
-                              await reload();
+                              await refresh();
                               await refreshList();
                             },
                           );
@@ -234,7 +236,7 @@ export function TeamPanel({
                             () => updateTeam(id, body),
                             'Team reactivated.',
                             async () => {
-                              await reload();
+                              await refresh();
                               await refreshList();
                             },
                           );

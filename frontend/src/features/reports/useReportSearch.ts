@@ -12,7 +12,8 @@ import { scopedMutation } from '@/lib/workspaceAccess';
 
 export function useReportSearch() {
   const status = useScopedResource(fetchReportSearchStatus);
-  const reload = status.reload;
+  // Refresh in place so the status panel and its notices stay mounted after a search.
+  const refreshStatus = status.refresh;
   const [draft, setDraft] = useState({ key: status.key, query: '' });
   const [found, setFound] = useState<{
     key: string;
@@ -30,15 +31,15 @@ export function useReportSearch() {
         searchSavedReports({ query: query.trim(), limit: 10 }),
       );
       setFound({ key: status.key, query: query.trim(), value });
-      await reload();
-    }, [query, reload, status.key]),
+      await refreshStatus();
+    }, [query, refreshStatus, status.key]),
   );
   const index = useAsyncAction(
     useCallback(async () => {
       await scopedMutation(indexSavedReports);
       setFound(null);
-      await reload();
-    }, [reload]),
+      await refreshStatus();
+    }, [refreshStatus]),
   );
   return { status, query, setQuery, submittedQuery, results, search, index };
 }
