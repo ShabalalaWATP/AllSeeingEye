@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from ase.application.report_jobs.budget_limits import dispatched_calls
 from ase.domain.errors import RateLimited
 from ase.domain.subscription_retry import RetryFailure
 
@@ -36,6 +37,7 @@ def classify_failure(
     failure = {
         "budget_exhausted": RetryFailure.JOB_BUDGET,
         "monthly_budget_exhausted": RetryFailure.MONTHLY_BUDGET,
+        "ai_allowance_exhausted": RetryFailure.AI_ALLOWANCE,
         "access_changed": RetryFailure.SCOPE_REVOKED,
         "model_changed": RetryFailure.CAPABILITY_MISSING,
         "source_disabled": RetryFailure.SCOPE_REVOKED,
@@ -67,6 +69,8 @@ def automatic_retry_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     if _running_sections(payload) is None:
         return None
     copied = deepcopy(payload)
+    # Released reservations sent nothing; dropping them keeps the bounded ledger usable.
+    copied["calls"] = dispatched_calls(calls)
     for section in copied.get("sections", {}).values():
         if section.get("status") == "running":
             section["status"] = "incomplete"

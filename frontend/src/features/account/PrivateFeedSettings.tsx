@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { enableFeed, getFeedStatus, revokeFeed } from '@/lib/api/notifications';
 import type { FeedStatus, FeedToken } from '@/lib/api/notifications';
 
@@ -68,15 +69,49 @@ export function PrivateFeedSettings() {
               disabled={pending}
               onChange={(event) => setTitles(event.target.checked)}
             />
-            Include alert and subscription titles (may reveal sensitive topics)
+            {status.enabled
+              ? 'Include alert and subscription titles when the token is replaced (may reveal sensitive topics)'
+              : 'Include alert and subscription titles (may reveal sensitive topics)'}
           </label>
           <div className="flex flex-wrap gap-3">
-            <Button disabled={pending} onClick={() => void change(true)}>
-              {status.enabled ? 'Replace feed token' : 'Enable feed'}
-            </Button>
-            {status.enabled && (
-              <Button disabled={pending} onClick={() => void change(false)}>
-                Revoke feed token
+            {status.enabled ? (
+              <>
+                <ConfirmButton
+                  label="Replace feed token"
+                  variant="primary"
+                  tone="primary"
+                  busy={pending}
+                  title="Replace the private feed token?"
+                  confirmLabel="Replace token"
+                  busyLabel="Replacing token…"
+                  onConfirm={() => void change(true)}
+                >
+                  <p>
+                    A new token is created and shown once. The old token stops working immediately,
+                    so update every feed reader that uses it.
+                  </p>
+                  <p>
+                    Titles will {titles ? '' : 'not '}be included in the feed for the new token.
+                  </p>
+                </ConfirmButton>
+                <ConfirmButton
+                  label="Revoke feed token"
+                  busy={pending}
+                  title="Revoke the private feed token?"
+                  confirmLabel="Revoke token"
+                  busyLabel="Revoking token…"
+                  onConfirm={() => void change(false)}
+                >
+                  <p>
+                    The feed is disabled and the current token stops working immediately. Feed
+                    readers that use it receive nothing further.
+                  </p>
+                  <p>You can enable the feed again later; it gets a new token.</p>
+                </ConfirmButton>
+              </>
+            ) : (
+              <Button disabled={pending} onClick={() => void change(true)}>
+                Enable feed
               </Button>
             )}
           </div>

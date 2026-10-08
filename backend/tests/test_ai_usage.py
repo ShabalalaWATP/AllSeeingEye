@@ -56,6 +56,25 @@ async def test_period_bounds_use_calendar_windows_and_reset() -> None:
     assert month_end == datetime(2027, 1, 1, tzinfo=UTC)
 
 
+@pytest.mark.parametrize(
+    ("year", "month"), [(2026, 1), (2026, 2), (2026, 10), (2027, 1), (2027, 3), (2028, 2)]
+)
+@pytest.mark.parametrize("day", [28, 29, 30, 31])
+def test_month_bounds_hold_on_late_days_of_every_month(year: int, month: int, day: int) -> None:
+    if month == 2 and day > (29 if year % 4 == 0 else 28):
+        pytest.skip("That date does not exist.")
+    start, end = period_bounds(datetime(year, month, day, 18, tzinfo=UTC), AiAllowancePeriod.MONTH)
+    following = (year + 1, 1) if month == 12 else (year, month + 1)
+    assert start == datetime(year, month, 1, tzinfo=UTC)
+    assert end == datetime(*following, 1, tzinfo=UTC)
+
+
+@pytest.mark.parametrize("day", [28, 29, 30, 31])
+def test_december_month_bounds_roll_into_january(day: int) -> None:
+    start, end = period_bounds(datetime(2026, 12, day, tzinfo=UTC), AiAllowancePeriod.MONTH)
+    assert (start, end) == (datetime(2026, 12, 1, tzinfo=UTC), datetime(2027, 1, 1, tzinfo=UTC))
+
+
 async def test_reservation_settlement_is_idempotent_and_counts_actual_tokens(container, user):
     await add_policy(container, policy(limit=2, tokens=100))
     ledger = accounting(container)

@@ -4,8 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { RequirementCodesNote } from '@/components/ui/RequirementCodesNote';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { deletePlan, fetchAois, fetchPlanEvidence } from '@/lib/api/direction';
+import { deletePlan, fetchAois, fetchPlan, fetchPlanEvidence } from '@/lib/api/direction';
 import type { AreaOfInterest, CollectionPlan } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
@@ -15,6 +14,7 @@ import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { EventRow } from '@/components/events/EventRow';
 import { describeArea } from './DirectionPage';
 import { PlanDeletion } from './DirectionDeletions';
+import { AreasUnavailable, PlanActions } from './PlanControls';
 import { PlanForm } from './PlanForm';
 import { ResearchAreaButton } from './ResearchAreaButton';
 
@@ -30,7 +30,16 @@ export default function PlanPage() {
   const workspaces = useWorkspaces();
   const { data, error, loading, refresh } = useScopedResource(loader);
   const areas = useScopedResource(fetchAois);
+  // A plan whose area was deleted cannot gather evidence, but it can still be repaired or deleted.
+  const repairable = data === null && error?.status === 422;
+  const definitionLoader = useCallback(
+    () => (repairable ? fetchPlan(id) : Promise.resolve(null)),
+    [id, repairable],
+  );
+  const definition = useScopedResource(definitionLoader);
   const [editing, setEditing] = useState<EditSession | null>(null);
+  const startEdit = (plan: CollectionPlan, available: readonly AreaOfInterest[]) =>
+    setEditing({ plan, areas: available });
   const remove = useConfirmedAction(
     useCallback(
       async (plan: CollectionPlan) => {
@@ -45,7 +54,7 @@ export default function PlanPage() {
   // The editor keeps its second slot in both renders below while the plan reloads after an access recheck, so a refused
   // save keeps the draft. A failed reload (lost access) unmounts it and drops the draft.
   const editor =
-    editing !== null && error === null ? (
+    editing !== null && (error === null || repairable) ? (
       <PlanForm
         key={editing.plan.id}
         areas={editing.areas}
@@ -59,11 +68,30 @@ export default function PlanPage() {
       />
     ) : null;
   if (data === null) {
+    const broken = repairable ? definition.data : null;
     return (
       <article className="flex flex-col gap-5 p-6">
-        <div>
+        <div className="flex flex-col gap-2">
           {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
           {loading ? <LoadingNote label="Loading plan" /> : null}
+          {broken && (
+            <>
+              <p className="text-sm text-muted">
+                Edit “{broken.name}” to choose another area or remove the link, or delete the plan.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <PlanActions
+                  plan={broken}
+                  manageable={workspaces.canManage(broken)}
+                  editing={editing !== null}
+                  areas={areas}
+                  onEdit={startEdit}
+                  onDelete={remove.ask}
+                />
+              </div>
+              <AreasUnavailable areas={areas} manageable={workspaces.canManage(broken)} />
+            </>
+          )}
         </div>
         {editor}
         {confirmation}
@@ -117,32 +145,16 @@ export default function PlanPage() {
               </p>
             </div>
           )}
-          <Button
-            variant="secondary"
-            disabled={!manageable || editing !== null || areas.data === null}
-            onClick={() => {
-              if (areas.data !== null) setEditing({ plan, areas: areas.data });
-            }}
-          >
-            Edit plan
-          </Button>
-          <Button
-            disabled={!manageable}
-            variant="danger"
-            aria-haspopup="dialog"
-            onClick={() => remove.ask(plan)}
-          >
-            Delete plan
-          </Button>
+          <PlanActions
+            plan={plan}
+            manageable={manageable}
+            editing={editing !== null}
+            areas={areas}
+            onEdit={startEdit}
+            onDelete={remove.ask}
+          />
         </div>
-        {areas.error !== null && manageable && (
-          <Alert tone="error">
-            Areas could not be loaded, so the plan cannot be edited yet.{' '}
-            <Button variant="secondary" onClick={() => void areas.reload()}>
-              Retry areas
-            </Button>
-          </Alert>
-        )}
+        <AreasUnavailable areas={areas} manageable={manageable} />
         {confirmation}
       </header>
       {editor}

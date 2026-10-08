@@ -16,12 +16,15 @@ from ase.adapters.persistence.subscription_retry_attempts import (
     start_attempt,
 )
 from ase.application.report_jobs.budget import JobBudgetExhausted, JobInterrupted
+from ase.application.report_jobs.snapshots import InvalidJobSnapshot
 from ase.application.reports.sections import SectionIncomplete
+from ase.application.research.phase_ledger import PhaseLedgerError
 from ase.application.worker_progress import run_cycle
 from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_execution import already_published, execute_job
 from ase.container.report_job_gate import ReportJobChanged, ReportJobSourceDisabled
 from ase.container.subscription_retry_orchestration import SubscriptionRetryOrchestrator
+from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.errors import Forbidden, NoModelAvailable, NotFound, Unauthenticated
 from ase.domain.report_jobs import ReportJob
 from ase.domain.subscription_editions import EditionWorkflow
@@ -37,17 +40,20 @@ MAX_RUN_SECONDS = 1800
 
 
 def failure_code(error: BaseException) -> str:
+    """Only a frozen-input validation failure is final; other faults stay resumable."""
     if isinstance(error, SectionIncomplete):
         return "section_" + error.reason
     mappings: tuple[tuple[tuple[type[BaseException], ...], str], ...] = (
         ((JobBudgetExhausted,), "budget_exhausted"),
         ((MonthlyBudgetExhausted,), "monthly_budget_exhausted"),
+        ((AiAllowanceExceeded,), "ai_allowance_exhausted"),
         ((ReportJobChanged, NoModelAvailable), "model_changed"),
         ((ReportJobSourceDisabled,), "source_disabled"),
         ((Unauthenticated, Forbidden, NotFound), "access_changed"),
         ((asyncio.CancelledError, JobInterrupted), "interrupted"),
         ((TimeoutError,), "time_limit"),
-        ((ValueError,), "invalid_snapshot"),
+        ((InvalidJobSnapshot, PhaseLedgerError), "invalid_snapshot"),
+        ((ValueError,), "generation_incomplete"),
     )
     return next((code for types, code in mappings if isinstance(error, types)), "provider_error")
 

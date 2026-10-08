@@ -1,7 +1,7 @@
 """Administrator source activation and isolated bounded connectivity checks."""
 
 import asyncio
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 
 from ase.application.auditing import Auditor
@@ -59,6 +59,7 @@ class AdminSourceControls:
         auditor: Auditor,
         uow: UnitOfWork,
         disabled: tuple[str, ...] = (),
+        withdraw: Callable[[str], Awaitable[object]] | None = None,
     ) -> None:
         self._users, self._refresh, self._controls = users, refresh, controls
         self._admission, self._health, self._resume = admission, health, resume
@@ -67,6 +68,7 @@ class AdminSourceControls:
         self._specs = {spec.id: spec for spec in specs}
         self._specs.update({connector.spec.id: connector.spec for connector in connectors})
         self._disabled = frozenset(disabled)
+        self._withdraw = withdraw
 
     async def _guard(self, claims: AccessClaims) -> None:
         await self._users.lock_administration()
@@ -137,6 +139,10 @@ class AdminSourceControls:
             details={"enabled": enabled},
         )
         await self._uow.commit()
+        if not enabled and self._withdraw is not None:
+            # Still under the admission guard: the disabled source's retained events
+            # leave the live store now rather than at expiry (or after a restart).
+            await self._withdraw(source_id)
 
     async def reset(
         self, claims: AccessClaims, source_id: str, context: RequestContext

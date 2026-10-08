@@ -7,10 +7,11 @@ the words; replies are kept only when the author's own thread carries readable t
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any, Final
 
 from ase.adapters.feeds.bluesky_accounts import BlueskyAccount
+from ase.adapters.feeds.timestamps import parse_utc
 from ase.domain.events import (
     Category,
     Credibility,
@@ -53,12 +54,8 @@ def created_at(value: object, now: datetime) -> datetime:
     """Author-supplied times are not trusted ahead of the clock; future stamps clamp to now."""
     if not isinstance(value, str) or len(value) > 40:
         return now
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return now
-    moment = (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
-    return now if moment > now else moment
+    moment = parse_utc(value)
+    return now if moment is None or moment > now else moment
 
 
 def _language(record: dict[str, Any]) -> str:

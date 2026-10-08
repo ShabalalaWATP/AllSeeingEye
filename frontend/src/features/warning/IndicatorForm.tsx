@@ -56,7 +56,8 @@ export type RuleFormMode =
 interface IndicatorFormProps {
   mode: RuleFormMode;
   templates: readonly ReportTemplate[];
-  plans: readonly CollectionPlan[];
+  /** The caller's plans, or null while they are loading or unavailable. */
+  plans: readonly CollectionPlan[] | null;
   workspaces: Workspaces;
   /** The country catalogue, or null while it is loading or unavailable. */
   countries: readonly Country[] | null;
@@ -110,13 +111,16 @@ export function IndicatorForm(props: IndicatorFormProps) {
 
   const teamId = editing ? (editing.team_id ?? '') : scope.teamId;
   const owner = editing?.created_by ?? user?.id ?? '';
-  const matchingPlans = plans.filter(
+  const matchingPlans = (plans ?? []).filter(
     (plan) =>
       plan.enabled &&
       (plan.team_id ?? '') === teamId &&
       (teamId !== '' || plan.created_by === owner),
   );
-  const invalidPlan = fields.planId !== '' && !matchingPlans.some((p) => p.id === fields.planId);
+  // An unloaded or failed plan list cannot show that a link is stale, only that it is unknown.
+  const unknownPlan = fields.planId !== '' && plans === null;
+  const invalidPlan =
+    fields.planId !== '' && plans !== null && !matchingPlans.some((p) => p.id === fields.planId);
   const reportTeam = reportDraft?.source.teamId ?? null;
   const team = workspaces.teams.find((entry) => entry.team.id === reportTeam)?.team;
   const lostTeam =
@@ -128,7 +132,7 @@ export function IndicatorForm(props: IndicatorFormProps) {
   if (fields.locationMode === 'area' && area.error) problems.bbox = area.error;
   if (invalidPlan)
     problems.plan_id =
-      'The linked plan is unavailable. Choose a plan in this workspace or No plan.';
+      'The linked plan is unavailable. Choose a plan in this workspace or No plan (remove link).';
   if (lostTeam)
     problems.team_id =
       "You can no longer create alert rules in the report's team. Discard this draft; it is not moved to another workspace.";
@@ -181,7 +185,8 @@ export function IndicatorForm(props: IndicatorFormProps) {
       </p>
       {invalidPlan && (
         <Alert tone="error">
-          The linked plan is no longer available. Choose a plan in this workspace or select No plan.
+          The linked plan is no longer available. Choose a plan in this workspace or select No plan
+          (remove link) to save without it.
         </Alert>
       )}
       <div id={errors.id('team_id')}>
@@ -211,11 +216,15 @@ export function IndicatorForm(props: IndicatorFormProps) {
       <SelectField
         label="Collection plan"
         {...errors.field('plan_id')}
-        value={invalidPlan ? '' : fields.planId}
+        value={fields.planId}
         onChange={(event) => change({ planId: event.target.value })}
         hint="Optional. Only plans in the same workspace and with the same owner are listed."
         options={[
-          { value: '', label: 'No plan' },
+          { value: '', label: invalidPlan ? 'No plan (remove link)' : 'No plan' },
+          ...(invalidPlan ? [{ value: fields.planId, label: 'Unavailable plan' }] : []),
+          ...(unknownPlan
+            ? [{ value: fields.planId, label: 'Linked plan (list not loaded)' }]
+            : []),
           ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
         ]}
       />

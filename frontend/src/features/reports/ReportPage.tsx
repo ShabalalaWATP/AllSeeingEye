@@ -218,6 +218,7 @@ export default function ReportPage() {
         </div>
       </section>
       <ReportWorkspaceDrawer
+        key={`${id}:${String(version.number)}`}
         open={workspaceOpen}
         onClose={closeWorkspace}
         workspace={{

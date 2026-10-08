@@ -114,7 +114,7 @@ async def test_sql_and_api_keep_each_versions_assessment_and_legacy_absence(
     record.latest_version = 2
     async with container.session_factory() as session:
         repository = SqlReportRepository(session)
-        await repository.add(record, first)
+        await repository.add(replace(record, latest_version=1), first)
         await repository.add_version(record, second)
         await session.commit()
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)

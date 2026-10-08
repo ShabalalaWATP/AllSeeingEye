@@ -17,8 +17,14 @@ from ase.domain.errors import AppError, InvalidRequest
 
 MAX_ALLOWANCE = 2**31 - 1
 # A reservation this old that never reached a provider is released by reconciliation;
-# one that did reach a provider is held as ``unknown`` for administrator review.
+# one that did reach a provider is held as ``unknown``.
 STALE_RESERVATION_AGE = timedelta(hours=1)
+# An ``unknown`` reservation this old (from reservation) is settled by reconciliation as
+# one failed request charged only its reported tokens, normally none. No provider call
+# or report run lasts anywhere near this long (report runs stop after 30 minutes), so no
+# settlement can still arrive. Request limits stay conservative; the held worst-case
+# token reservation returns to the allowance instead of blocking it until period end.
+UNKNOWN_RESOLUTION_AGE = timedelta(hours=24)
 # Released and settled reservations are kept this long after their period ends, then
 # pruned. ``reserved`` and ``unknown`` reservations are never pruned.
 RESERVATION_RETENTION = timedelta(days=90)
@@ -111,11 +117,12 @@ def period_bounds(now: datetime, period: AiAllowancePeriod) -> tuple[datetime, d
     if period is AiAllowancePeriod.WEEK:
         start -= timedelta(days=start.weekday())
         return start, start + timedelta(days=7)
+    # Move to the first of the month before changing month: the 29th to 31st do not
+    # exist in every following month.
+    start = start.replace(day=1)
     if value.month == 12:
-        following = start.replace(year=value.year + 1, month=1)
-    else:
-        following = start.replace(month=value.month + 1)
-    return start.replace(day=1), following.replace(day=1)
+        return start, start.replace(year=value.year + 1, month=1)
+    return start, start.replace(month=value.month + 1)
 
 
 @dataclass(frozen=True, slots=True)

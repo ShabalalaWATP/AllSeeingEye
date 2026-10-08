@@ -70,9 +70,10 @@ SATELLITE_SPECS = (SATELLITES, ACTIVE_SATELLITES, MILITARY_SATELLITES, SKYNET_SA
 def orbital_epoch(value: object) -> datetime | None:
     try:
         result = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except ValueError:
+        return result.replace(tzinfo=UTC) if result.tzinfo is None else result.astimezone(UTC)
+    except (ValueError, OverflowError):
+        # An extreme offset overflows on conversion; it costs one record, not the poll.
         return None
-    return result.replace(tzinfo=UTC) if result.tzinfo is None else result.astimezone(UTC)
 
 
 def gmst_degrees(jd: float) -> float:

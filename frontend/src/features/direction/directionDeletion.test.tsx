@@ -43,7 +43,9 @@ describe('saved area deletion', () => {
     const { user, trigger, dialog } = await openArea();
     expect(dialog).toHaveTextContent('Personal');
     expect(dialog).toHaveTextContent('box 30.0, 44.0, 41.0, 53.0');
-    expect(dialog).toHaveTextContent('Collection plans that use this area');
+    expect(dialog).toHaveTextContent(
+      'If collection plans use this area, nothing is deleted and you will be asked',
+    );
     expect(dialog).toHaveTextContent('cannot be undone');
     await user.keyboard('{Escape}');
     await waitFor(() => {
@@ -95,6 +97,16 @@ describe('saved area deletion', () => {
       expect(calls.count).toBe(2);
     });
   });
+
+  it('shows why an area still used by plans cannot be deleted', async () => {
+    const message =
+      'This area is used by 1 collection plan(s): Kharkiv axis. Choose another area for those plans or delete them, then delete this area.';
+    track('/api/direction/aois/:id', () => apiError(409, 'conflict', message));
+    const { user, dialog } = await openArea();
+    await user.click(within(dialog).getByRole('button', { name: 'Delete area' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(message);
+    expect(screen.getByRole('table', { name: 'Areas of interest' })).toHaveTextContent(aoi.name);
+  });
 });
 
 describe('collection plan deletion', () => {
@@ -111,6 +123,7 @@ describe('collection plan deletion', () => {
     const { user, trigger, dialog } = await openPlan();
     expect(dialog).toHaveTextContent('Personal');
     expect(dialog).toHaveTextContent('1 priority and 2 specific requirements');
+    expect(dialog).toHaveTextContent('If alert rules use this plan, nothing is deleted');
     expect(dialog).toHaveTextContent('cannot be undone');
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => {
@@ -140,5 +153,15 @@ describe('collection plan deletion', () => {
       await screen.findByRole('heading', { level: 1, name: 'Plans and areas' }),
     ).toBeInTheDocument();
     expect(calls.count).toBe(2);
+  });
+
+  it('shows why a plan still used by alert rules cannot be deleted', async () => {
+    const message =
+      'This plan is used by 1 alert rule(s): Kharkiv strikes. Remove the plan from those alert rules or delete them, then delete this plan.';
+    track('/api/direction/plans/:id', () => apiError(409, 'conflict', message));
+    const { user, dialog } = await openPlan();
+    await user.click(within(dialog).getByRole('button', { name: 'Delete plan' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(message);
+    expect(screen.getByRole('heading', { level: 1, name: plan.name })).toBeInTheDocument();
   });
 });
