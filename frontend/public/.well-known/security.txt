@@ -1,0 +1,6 @@
+# Security contact for The All Seeing Eye (RFC 9116). Renew Expires before it passes.
+Contact: https://github.com/ShabalalaWATP/AllSeeingEye/security/advisories/new
+Expires: 2027-10-01T00:00:00Z
+Preferred-Languages: en
+Canonical: https://allseeingeyeosint.com/.well-known/security.txt
+Policy: https://github.com/ShabalalaWATP/AllSeeingEye/security/policy
