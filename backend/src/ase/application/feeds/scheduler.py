@@ -4,11 +4,16 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections.abc import Awaitable, Callable, Sequence
 from contextvars import copy_context
 from datetime import timedelta
 
-from ase.application.feeds.cadence import first_poll_delay, next_poll_delay
+from ase.application.feeds.cadence import (
+    MIN_DELAY_SECONDS,
+    first_poll_delay,
+    next_poll_delay,
+)
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_outcome import PollOutcome
@@ -24,6 +29,7 @@ from ase.domain.source_controls import source_control_keys
 
 SleepFn = Callable[[float], Awaitable[None]]
 __all__ = ["FeedScheduler", "PollOutcome"]
+log = logging.getLogger(__name__)
 
 
 class FeedScheduler:
@@ -170,19 +176,30 @@ class FeedScheduler:
         register_worker(name, allowance)
         await self._sleep(first_delay)
         while not self._stopping.is_set():
-            await run_cycle(name, allowance, lambda: self.poll_once(connector))
-            # A source the breaker paused sleeps until its cool-down probe, not forever.
-            entry = self.poller.health_for(spec.id)
-            delay = next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
-            allowance = max(delay, 180.0)
-            if registry := worker_heartbeats.get():
-                registry.completed(name, allowance)
+            # An unexpected failure costs one cycle, never the source's loop.
+            delay = max(MIN_DELAY_SECONDS, spec.poll_interval.total_seconds())
+            try:
+                await run_cycle(name, allowance, lambda: self.poll_once(connector))
+                # A source the breaker paused sleeps until its cool-down probe, not forever.
+                entry = self.poller.health_for(spec.id)
+                delay = next_poll_delay(entry, spec.poll_interval, self._clock.now(), self._jitter)
+                allowance = max(delay, 180.0)
+                if registry := worker_heartbeats.get():
+                    registry.completed(name, allowance)
+            except Exception as exc:
+                # The class name only: messages can carry feed URLs and their credentials.
+                log.error(
+                    "feed_cycle_failed", extra={"source_id": spec.id, "error": type(exc).__name__}
+                )
             await self._sleep(delay)
 
     async def _prune_loop(self) -> None:
         register_worker("scheduler", self._prune_interval.total_seconds())
+        interval = self._prune_interval.total_seconds()
         while not self._stopping.is_set():
-            await self._sleep(self._prune_interval.total_seconds())
-            await self.poller.prune()
-            if registry := worker_heartbeats.get():
-                registry.completed("scheduler", self._prune_interval.total_seconds())
+            await self._sleep(interval)
+            try:
+                # Records completion, or a failed cycle, against the scheduler heartbeat.
+                await run_cycle("scheduler", interval, self.poller.prune)
+            except Exception as exc:
+                log.error("feed_prune_failed", extra={"error": type(exc).__name__})

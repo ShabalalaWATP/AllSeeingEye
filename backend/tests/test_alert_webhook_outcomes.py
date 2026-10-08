@@ -24,7 +24,18 @@ def firing():
 
 
 @pytest.mark.parametrize(
-    "status,expected", [(204, "sent"), (302, "retryable"), (429, "retryable"), (503, "uncertain")]
+    "status,expected",
+    [
+        (204, "sent"),
+        (302, "retryable"),
+        (408, "retryable"),
+        (429, "retryable"),
+        (500, "uncertain"),
+        (501, "uncertain"),
+        (502, "retryable"),
+        (503, "retryable"),
+        (504, "retryable"),
+    ],
 )
 async def test_pinned_dispatch_preserves_tls_identity_and_does_not_follow_redirects(
     monkeypatch, status, expected

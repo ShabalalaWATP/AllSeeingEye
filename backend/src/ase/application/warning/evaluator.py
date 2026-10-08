@@ -34,7 +34,11 @@ SleepFn = Callable[[float], Awaitable[None]]
 
 
 async def evaluate_candidates(
-    store: EventStore, indicator: Indicator, now: datetime, last: datetime | None
+    store: EventStore,
+    indicator: Indicator,
+    now: datetime,
+    last: datetime | None,
+    alerted: frozenset[str] = frozenset(),
 ) -> Firing | None:
     """Count every match on one admitted snapshot; bound only the exported evidence."""
     # Store intervals are half-open. The next representable instant includes exactly
@@ -52,10 +56,10 @@ async def evaluate_candidates(
     if isinstance(store, CooperativeEventReader):
         return await store.read_cooperatively(
             query,
-            lambda events: evaluate(indicator, events, now, last),
+            lambda events: evaluate(indicator, events, now, last, alerted),
             admission_key="internal:exact-indicators",
         )
-    return evaluate(indicator, store.query(query), now, last)
+    return evaluate(indicator, store.query(query), now, last, alerted)
 
 
 class IndicatorEvaluator:
@@ -93,9 +97,10 @@ class IndicatorEvaluator:
                 continue
             latest = await self._warnings.latest_alert(indicator.id)
             last = None if latest is None else latest.fired_at
+            alerted = await self._alerted(indicator, now, last)
             while True:
                 try:
-                    firing = await self._evaluate(indicator, now, last)
+                    firing = await self._evaluate(indicator, now, last, alerted)
                     break
                 except RateLimited:
                     if admission_retries == 0:
@@ -127,14 +132,29 @@ class IndicatorEvaluator:
             log.info("alerts_pruned", extra={"count": pruned})
         return fired
 
-    async def _evaluate(
+    async def _alerted(
         self, rule: Indicator, now: datetime, last: datetime | None
+    ) -> frozenset[str]:
+        """Evidence already cited inside the window; skipped while cooling down or unneeded."""
+        since = now - rule.window
+        if last is None or last < since or now - last < rule.cooldown:
+            return frozenset()  # No alert inside the window, or evaluation stops at the cooldown.
+        if rule.baseline_ratio is not None:
+            return frozenset()  # Ratio rules compare the full hourly count with their baseline.
+        return await self._warnings.alerted_event_ids(rule.id, since)
+
+    async def _evaluate(
+        self,
+        rule: Indicator,
+        now: datetime,
+        last: datetime | None,
+        alerted: frozenset[str] = frozenset(),
     ) -> Firing | None:
         if self._baselines is None:
             return (
                 None
                 if rule.baseline_ratio is not None
-                else await evaluate_candidates(self._store, rule, now, last)
+                else await evaluate_candidates(self._store, rule, now, last, alerted)
             )
         hourly = await evaluate_candidates(
             self._store,
@@ -147,7 +167,7 @@ class IndicatorEvaluator:
                 rule, now.replace(minute=0, second=0, microsecond=0), hourly.count
             )
         if rule.baseline_ratio is None:
-            return await evaluate_candidates(self._store, rule, now, last)
+            return await evaluate_candidates(self._store, rule, now, last, alerted)
         baseline = await self._baselines.summary(rule, now)
         if not baseline.ready or baseline.mean is None or hourly is None:
             return None

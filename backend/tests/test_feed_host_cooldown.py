@@ -65,11 +65,15 @@ async def test_cooldown_is_bounded_host_specific_and_uses_fallback():
     with pytest.raises(FeedRateLimitedError) as caught:
         await pacer.wait(URL)
     assert caught.value.retry_after == timedelta(seconds=60)
-    pacer.rate_limited(URL, timedelta(days=1))
+    pacer.rate_limited(URL, timedelta(hours=6))
+    with pytest.raises(FeedRateLimitedError) as caught:
+        await pacer.wait(URL)
+    assert caught.value.retry_after == timedelta(hours=6)  # an explicit 429 wait is honoured
+    pacer.rate_limited(URL, timedelta(days=3))
     pacer.rate_limited(URL, timedelta(seconds=2))
     with pytest.raises(FeedRateLimitedError) as caught:
         await pacer.wait(URL)
-    assert caught.value.retry_after == timedelta(hours=1)
+    assert caught.value.retry_after == timedelta(hours=24)
     for index in range(100):
         other = f"https://unconfigured-{index}.invalid/feed"
         pacer.rate_limited(other, None)

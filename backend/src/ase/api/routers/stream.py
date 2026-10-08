@@ -10,18 +10,18 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import aclosing
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Annotated, Any
 
 import anyio
 from fastapi import APIRouter, Header, Query
-from sse_starlette.sse import EventSourceResponse
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.routers.events import parse_categories
 from ase.api.stream_bell import bell_payload
 from ase.api.stream_encoding import PUBLIC_KINDS, StreamEncoder, dumps, serialise
 from ase.api.stream_session import LiveStream
+from ase.api.stream_slot import ReleaseOnce, SlotReleasingResponse
 from ase.application.access import AccessContext
 from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims
@@ -96,15 +96,32 @@ async def stream(
         str | None,
         Header(description="The last frame id received, to resume within the replay window."),
     ] = None,
-) -> EventSourceResponse:
+) -> SlotReleasingResponse:
     wanted = parse_categories(categories)
-    shutdown_event = anyio.Event()
     now = container.clock.now()
     # The stream ends when the presented token does, never later than a full lifetime.
     lifetime = timedelta(minutes=container.settings.access_token_minutes)
     deadline = min(claims.expires_at, now + lifetime)
     if not container.streams.acquire(user.id):
         raise RateLimited(retry_after=STREAM_RETRY_SECONDS)
+    release = ReleaseOnce(lambda: container.streams.release(user.id))
+    try:
+        return _response(container, claims, wanted, last_event_id, (now, deadline), release)
+    except BaseException:
+        release()  # No response will exist to return the slot.
+        raise
+
+
+def _response(
+    container: Container,
+    claims: AccessClaims,
+    wanted: frozenset[Category],
+    last_event_id: str | None,
+    window: tuple[datetime, datetime],
+    release: ReleaseOnce,
+) -> SlotReleasingResponse:
+    now, deadline = window
+    shutdown_event = anyio.Event()
 
     async def read_access() -> AccessContext | None:
         return await _stream_access(claims, container)
@@ -129,10 +146,11 @@ async def stream(
                 async for frame in frames:
                     yield frame
         finally:
-            container.streams.release(user.id)
+            release()
 
-    return EventSourceResponse(
+    return SlotReleasingResponse(
         generate(),
+        release=release,
         ping=PING_SECONDS,
         shutdown_event=shutdown_event,
         shutdown_grace_period=2,
