@@ -19,10 +19,14 @@ jobs:
   probe:
     if: github.repository == 'ShabalalaWATP/AllSeeingEye'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # Every probe retries three times, so a full outage takes about nine minutes to
+    # report; the timeout leaves room for each step to name what failed.
+    timeout-minutes: 12
     env:
       HOST: allseeingeyeosint.com
       CERT_WARN_DAYS: "14"
+      HSTS_MIN_AGE: "31536000"
+      SECURITY_TXT_WARN_DAYS: "30"
     steps:
       - name: Check the site, API health and readiness
         run: |
@@ -41,6 +45,49 @@ jobs:
           probe /api/health '"status":"ok"' || status=1
           probe /api/ready '"status":"ready"' || status=1
           exit $status
+      - name: Check the site sends a year-long HSTS policy
+        run: |
+          headers=
+          for attempt in 1 2 3; do
+            headers=$(curl --silent --show-error --fail --max-time 15 --head "https://$HOST/") && break
+            headers=
+            sleep 20
+          done
+          hsts=$(printf '%s\n' "$headers" | tr -d '\r' \
+            | grep -i -m 1 '^strict-transport-security:' || true)
+          age=$(printf '%s\n' "$hsts" | grep -i -o 'max-age=[0-9]*' | head -n 1 | cut -d= -f2 || true)
+          echo "HSTS on /: ${hsts:-missing}"
+          if [ -z "$age" ] || [ "$age" -lt "$HSTS_MIN_AGE" ]; then
+            echo "::error title=Uptime::/ must send Strict-Transport-Security with max-age of at least $HSTS_MIN_AGE"
+            exit 1
+          fi
+      - name: Check security.txt is not about to expire
+        # Until the web image serving it is deployed, the path returns the app shell.
+        # A missing file or Expires line only warns; a near or past expiry fails.
+        run: |
+          body=
+          for attempt in 1 2 3; do
+            body=$(curl --silent --show-error --fail --max-time 15 \
+              "https://$HOST/.well-known/security.txt") && break
+            body=
+            sleep 20
+          done
+          expires=$(printf '%s\n' "$body" | tr -d '\r' \
+            | grep -i -m 1 '^expires:' | cut -d: -f2- | tr -d ' ' || true)
+          if [ -z "$expires" ]; then
+            echo "::warning title=Uptime::/.well-known/security.txt has no Expires line; is the web image with security.txt deployed?"
+            exit 0
+          fi
+          if ! end=$(date -d "$expires" +%s); then
+            echo "::error title=Uptime::security.txt Expires is not a valid date: $expires"
+            exit 1
+          fi
+          days=$(( (end - $(date +%s)) / 86400 ))
+          echo "security.txt expires $expires ($days days)."
+          if [ "$days" -lt "$SECURITY_TXT_WARN_DAYS" ]; then
+            echo "::error title=Uptime::security.txt expires in $days days; renew Expires in frontend/public/.well-known/security.txt and deploy"
+            exit 1
+          fi
       - name: Check the TLS certificate is not about to expire
         run: |
           end=$(echo | openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
