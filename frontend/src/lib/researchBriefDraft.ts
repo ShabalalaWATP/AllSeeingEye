@@ -32,6 +32,14 @@ export function validateBriefDraft(draft: BriefDraft): string | null {
   return null;
 }
 
+/** The next `req-N` not already in use, so removing and adding rows never duplicates an ID. */
+export function nextRequirementId(requirements: readonly { id: string }[]): string {
+  const taken = new Set(requirements.map((row) => row.id));
+  let number = requirements.length + 1;
+  while (taken.has(`req-${String(number)}`)) number += 1;
+  return `req-${String(number)}`;
+}
+
 /** A complete canonical definition, so revisions retain options the editor does not expose. */
 export function newBriefDraft(): BriefDraft {
   return {

@@ -86,6 +86,8 @@ it('builds a playlist from same-scope views and areas, bounds dwell time and pla
     target: { value: 'Baltic aviation' },
   });
   fireEvent.change(screen.getByLabelText('Seconds for entry 2'), { target: { value: '1' } });
+  expect(screen.getByLabelText('Seconds for entry 2')).toHaveValue(1);
+  fireEvent.blur(screen.getByLabelText('Seconds for entry 2'));
   expect(screen.getByLabelText('Seconds for entry 2')).toHaveValue(5);
   fireEvent.click(screen.getByRole('button', { name: 'Move entry 2 earlier' }));
   expect(screen.getByText('1. Area: Kaliningrad')).toBeInTheDocument();

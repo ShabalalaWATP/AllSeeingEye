@@ -12,6 +12,7 @@ import {
   isPrivateFocus,
   researchIssue,
   researchRequest,
+  STALE_PLAN_ISSUE,
   type Parent,
   type ResearchDraft,
   type ResearchFocus,
@@ -115,6 +116,7 @@ export function useResearchForm({
     const ctx = { parent, countries, historical, interval, plan };
     const issue = researchIssue(draft, ctx);
     setValidation(issue);
+    if (issue === STALE_PLAN_ISSUE) mode.open();
     if (issue) return;
     void action.run(researchRequest(draft, ctx, template, scope.teamId));
   };

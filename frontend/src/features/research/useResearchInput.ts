@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { describeError } from '@/lib/api/errors';
 import { uploadResearchInput } from '@/lib/api/researchInputs';
 import type { ResearchInputReceipt } from '@/lib/api/researchInputs';
+import { inputFilenameError } from '@/lib/uploadFilename';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
@@ -83,6 +84,7 @@ export function useResearchInput(onChange: (inputId: string | null) => void) {
         invalid = 'Choose a non-empty file up to 8 MiB.';
       else if (!IMPORT_EXTENSIONS.split(',').includes(extension))
         invalid = 'Choose a supported document, dataset, image or video.';
+      else invalid = inputFilenameError(file.name);
       if (invalid !== null) {
         setSnapshot({ ...empty(key, 'error'), error: invalid });
         return;

@@ -85,7 +85,8 @@ export function GenerateForm({
     if (country !== '') request.country = country;
     if (template?.needs_conflict && conflict !== '') request.conflict = conflict;
     if (template?.needs_hazard && hazard !== '') request.hazard = hazard;
-    if (question.trim() !== '') request.question = question.trim();
+    // A question typed for another product stays hidden, so it is never sent.
+    if (template?.needs_question && question.trim() !== '') request.question = question.trim();
     if (windowHours.trim() !== '') request.window_hours = Number(windowHours);
     if (advocacy) request.devils_advocacy = true;
     if (selectedPlan) request.plan = selectedPlan.id;

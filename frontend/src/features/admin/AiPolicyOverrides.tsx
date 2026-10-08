@@ -16,7 +16,12 @@ import {
 import { asApiError, describeError } from '@/lib/api/errors';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 
-import { describeOverrideLimit, LIMIT_STATE_OPTIONS, parseLimit } from './aiUsagePresentation';
+import {
+  AI_LIMIT_RANGE,
+  describeOverrideLimit,
+  LIMIT_STATE_OPTIONS,
+  parseLimit,
+} from './aiUsagePresentation';
 
 function localInput(date: Date): string {
   const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
@@ -68,7 +73,7 @@ export function AiPolicyOverrides({
     const requests = limitInput(requestState, requestValue);
     const tokens = limitInput(tokenState, tokenValue);
     if (Number.isNaN(requests.value) || Number.isNaN(tokens.value)) {
-      setError('An explicit override limit must be a whole number; zero blocks.');
+      setError(`An explicit override limit must be a whole number ${AI_LIMIT_RANGE}; zero blocks.`);
       return;
     }
     const start = new Date(from);
