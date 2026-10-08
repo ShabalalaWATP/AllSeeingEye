@@ -1,8 +1,9 @@
 /** Dated temporary overrides for one policy: explicit inherit, limit, unlimited or blocked states. */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SelectField, TextField } from '@/components/ui/Field';
 import {
   createAiOverride,
@@ -13,6 +14,7 @@ import {
   type AiPolicy,
 } from '@/lib/api/aiUsage';
 import { asApiError, describeError } from '@/lib/api/errors';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 
 import { describeOverrideLimit, LIMIT_STATE_OPTIONS, parseLimit } from './aiUsagePresentation';
 
@@ -94,21 +96,21 @@ export function AiPolicyOverrides({
     }
   }
 
-  async function revoke(item: AiOverride) {
-    if (busy || disabled) return;
-    setBusy(true);
-    onBusyChange?.(true);
-    setError(null);
-    try {
-      const revoked = await revokeAiOverride(item.id);
-      setItems((current) => (current ?? []).map((row) => (row.id === item.id ? revoked : row)));
-    } catch (caught) {
-      setError(describeError(asApiError(caught)));
-    } finally {
-      setBusy(false);
-      onBusyChange?.(false);
-    }
-  }
+  const revoking = useConfirmedAction(
+    useCallback(
+      async (item: AiOverride) => {
+        onBusyChange?.(true);
+        try {
+          const revoked = await revokeAiOverride(item.id);
+          setItems((current) => (current ?? []).map((row) => (row.id === item.id ? revoked : row)));
+        } finally {
+          onBusyChange?.(false);
+        }
+      },
+      [onBusyChange],
+    ),
+  );
+  const target = revoking.target;
 
   return (
     <section
@@ -190,8 +192,9 @@ export function AiPolicyOverrides({
               {item.revoked_at === null ? (
                 <Button
                   variant="ghost"
-                  disabled={busy || disabled}
-                  onClick={() => void revoke(item)}
+                  disabled={busy || disabled || revoking.busy}
+                  aria-haspopup="dialog"
+                  onClick={() => revoking.ask(item)}
                 >
                   Revoke
                 </Button>
@@ -200,6 +203,30 @@ export function AiPolicyOverrides({
           ))}
         </ul>
       ) : null}
+      <ConfirmDialog
+        open={target !== null}
+        title={`Revoke this temporary override for “${label}”?`}
+        confirmLabel="Revoke override"
+        busyLabel="Revoking override…"
+        busy={revoking.busy}
+        error={revoking.error === null ? null : describeError(revoking.error)}
+        onCancel={revoking.cancel}
+        onConfirm={revoking.confirm}
+      >
+        {target === null ? null : (
+          <>
+            <p>
+              Requests {describeOverrideLimit(target.requests.state, target.requests.value)} ·
+              Tokens {describeOverrideLimit(target.tokens.state, target.tokens.value)}, until{' '}
+              {new Date(target.expires_at).toLocaleString()}.
+            </p>
+            <p>
+              The override stops applying now and the policy&apos;s own limits apply again. It stays
+              in the history as revoked.
+            </p>
+          </>
+        )}
+      </ConfirmDialog>
     </section>
   );
 }

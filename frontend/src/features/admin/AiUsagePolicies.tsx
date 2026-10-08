@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   createAiPolicy,
   disableAiPolicy,
@@ -12,6 +13,7 @@ import {
 } from '@/lib/api/aiUsage';
 import { asApiError, describeError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
+import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import type { Team } from '@/lib/api/teams';
 
 import { AiPolicyDefaults } from './AiPolicyDefaults';
@@ -38,7 +40,15 @@ export function AiUsagePolicies({
   const [editing, setEditing] = useState<AiPolicy | null>(null);
   const [overridesFor, setOverridesFor] = useState<AiPolicy | null>(null);
   const [prefill, setPrefill] = useState<AiPolicyPrefill | null>(null);
-  const pending = busy || defaultsBusy || overridesBusy;
+  const disabling = useConfirmedAction(
+    useCallback(async (policy: AiPolicy) => {
+      await disableAiPolicy(policy.id);
+      setPolicies((current) => current.filter((item) => item.id !== policy.id));
+      setEditing((current) => (current?.id === policy.id ? null : current));
+      setOverridesFor((current) => (current?.id === policy.id ? null : current));
+    }, []),
+  );
+  const pending = busy || defaultsBusy || overridesBusy || disabling.busy;
 
   useEffect(() => {
     onBusyChange?.(pending);
@@ -84,23 +94,8 @@ export function AiUsagePolicies({
     }
   }
 
-  async function disable(policy: AiPolicy) {
-    if (pending) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await disableAiPolicy(policy.id);
-      setPolicies((current) => current.filter((item) => item.id !== policy.id));
-      if (editing?.id === policy.id) setEditing(null);
-      if (overridesFor?.id === policy.id) setOverridesFor(null);
-    } catch (caught) {
-      setError(describeError(asApiError(caught)));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const active = policies.filter((policy) => policy.enabled);
+  const target = disabling.target;
 
   return (
     <section aria-label="AI access and usage" className="space-y-5">
@@ -206,7 +201,8 @@ export function AiUsagePolicies({
                           variant="danger"
                           disabled={pending}
                           aria-label={`Disable ${label}`}
-                          onClick={() => void disable(policy)}
+                          aria-haspopup="dialog"
+                          onClick={() => disabling.ask(policy)}
                         >
                           Disable
                         </Button>
@@ -219,6 +215,26 @@ export function AiUsagePolicies({
           </table>
         </div>
       ) : null}
+      <ConfirmDialog
+        open={target !== null}
+        title={`Disable allowance policy “${target ? policyLabel(target, users, teams) : ''}”?`}
+        confirmLabel="Disable policy"
+        busyLabel="Disabling policy…"
+        busy={disabling.busy}
+        error={disabling.error === null ? null : describeError(disabling.error)}
+        onCancel={disabling.cancel}
+        onConfirm={disabling.confirm}
+      >
+        <p>
+          Enforcement of this policy&apos;s request and token limits, and of its overrides, stops
+          for new provider calls. Usage is still recorded.
+        </p>
+        {target !== null && active.every((policy) => policy.id === target.id) ? (
+          <p className="font-medium text-critical">
+            This is the last active policy, so no AI caps will apply once it is disabled.
+          </p>
+        ) : null}
+      </ConfirmDialog>
       {overridesFor ? (
         <AiPolicyOverrides
           key={`policy-overrides:${overridesFor.id}`}

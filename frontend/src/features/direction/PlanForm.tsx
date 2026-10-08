@@ -33,7 +33,8 @@ export function PlanForm({
   onSaved,
   onCancel,
 }: {
-  areas: readonly AreaOfInterest[];
+  /** The caller's areas, or null while they are loading or unavailable. */
+  areas: readonly AreaOfInterest[] | null;
   workspaces: Workspaces;
   plan?: CollectionPlan | undefined;
   onSaved: (saved: CollectionPlan) => Promise<void> | void;
@@ -48,8 +49,11 @@ export function PlanForm({
   const [revision, setRevision] = useState(plan?.updated_at ?? '');
   const [errors, setErrors] = useState<PlanErrors>({});
   const summary = useRef<HTMLDivElement>(null);
-  const matchingAreas = areas.filter((area) => (area.team_id ?? '') === teamId);
-  const areaAvailable = draft.areaId === '' || matchingAreas.some((a) => a.id === draft.areaId);
+  const matchingAreas = (areas ?? []).filter((area) => (area.team_id ?? '') === teamId);
+  // An unloaded or failed area list cannot show that a link is stale, only that it is unknown.
+  const unknownArea = draft.areaId !== '' && areas === null;
+  const areaAvailable =
+    draft.areaId === '' || areas === null || matchingAreas.some((a) => a.id === draft.areaId);
   const ready = plan ? true : scope.ready;
   const change = (next: PlanDraft) => {
     setDraft(next);
@@ -114,8 +118,8 @@ export function PlanForm({
       </div>
       {!areaAvailable && (
         <Alert tone="error">
-          The linked area is no longer available. Choose an area in this workspace or select No
-          area.
+          The linked area is no longer available. Choose an area in this workspace or select No area
+          (remove link) to save without it.
         </Alert>
       )}
       {matchingAreas.find((area) => area.id === draft.areaId)?.research_area && (
@@ -150,10 +154,15 @@ export function PlanForm({
         <SelectField
           label="Area"
           hint="Optional; nations below apply when no area is chosen."
-          value={areaAvailable ? draft.areaId : ''}
+          value={draft.areaId}
+          error={errors.areaId}
           onChange={(event) => change({ ...draft, areaId: event.target.value })}
           options={[
-            { value: '', label: 'No area' },
+            { value: '', label: areaAvailable ? 'No area' : 'No area (remove link)' },
+            ...(areaAvailable ? [] : [{ value: draft.areaId, label: 'Unavailable area' }]),
+            ...(unknownArea
+              ? [{ value: draft.areaId, label: 'Linked area (list not loaded)' }]
+              : []),
             ...matchingAreas.map((area) => ({ value: area.id, label: area.name })),
           ]}
         />

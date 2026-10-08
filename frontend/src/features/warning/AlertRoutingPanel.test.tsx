@@ -2,9 +2,12 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { installDialogStub } from '@/test/dialogStub';
 import { indicator } from '@/test/fixtures.warning';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+
+installDialogStub();
 
 const route = {
   indicator_id: indicator.id,
@@ -23,10 +26,10 @@ const destination = {
   created_at: '2026-09-30T10:00:00Z',
 };
 
-async function openPanel(canManage = true) {
+async function openPanel(canManage = true, saved: Record<string, unknown> = {}) {
   server.use(
     http.get('/api/warning/indicators/:id/notifications', () =>
-      HttpResponse.json({ ...route, can_manage: canManage }),
+      HttpResponse.json({ ...route, ...saved, can_manage: canManage }),
     ),
     http.get('/api/warning/webhook-destinations', () => HttpResponse.json({ items: [] })),
   );
@@ -40,6 +43,22 @@ async function openPanel(canManage = true) {
 }
 
 describe('alert rule notification routing', () => {
+  it('treats a saved webhook missing from the destinations as none', async () => {
+    let saved: unknown;
+    server.use(
+      http.put('/api/warning/indicators/:id/notifications', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        saved = body;
+        return HttpResponse.json({ ...route, ...body, revision: 1 });
+      }),
+    );
+    const { user, panel } = await openPanel(true, { webhook_id: destination.id });
+    expect(panel.getByLabelText('Registered webhook destination')).toHaveValue('');
+    expect(panel.getByText(/saved webhook destination is no longer available/)).toBeVisible();
+    await user.click(panel.getByRole('button', { name: 'Save notification routing' }));
+    await waitFor(() => expect(saved).toMatchObject({ webhook_id: null }));
+  });
+
   it('registers a secret destination, saves selected channels and removes the destination', async () => {
     let registration: unknown;
     let saved: unknown;
@@ -87,6 +106,12 @@ describe('alert rule notification routing', () => {
       expected_revision: 0,
     });
     await user.click(panel.getByRole('button', { name: 'Remove Operations' }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Remove webhook destination “Operations”?',
+    });
+    expect(dialog).toHaveTextContent('will stop sending to it');
+    expect(removed).toBe(false);
+    await user.click(within(dialog).getByRole('button', { name: 'Remove destination' }));
     await waitFor(() => expect(removed).toBe(true));
     await waitFor(() =>
       expect(panel.getByLabelText('Registered webhook destination')).toHaveValue(''),
