@@ -12,7 +12,7 @@ x-logging: &logging
 # workload needs more.
 services:
   db:
-    image: postgis/postgis:16-3.4-alpine@sha256:681931a625df344215e9b8998bf34daf146b6a395ceacee4439eb9c85869239f
+    image: postgis/postgis:16-3.5-alpine@sha256:47e961a569fd52ff31f0fe205ed91eeab17d9f5fff6722e6d7ea6b588748b293
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ase}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
