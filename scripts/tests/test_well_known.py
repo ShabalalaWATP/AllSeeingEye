@@ -50,12 +50,13 @@ class SecurityTxtTests(unittest.TestCase):
             self.fields["canonical"][0], r"^https://[^/]+/\.well-known/security\.txt$"
         )
 
-    def test_expiry_is_current_and_under_a_year_away(self) -> None:
+    def test_expiry_is_a_dated_timestamp_under_a_year_away(self) -> None:
+        # Deliberately no "not yet expired" check: that would fail every CI run, and
+        # so block merges and deploys, on a fixed date. The Uptime workflow warns
+        # 30 days ahead instead.
         expires = datetime.fromisoformat(self.fields["expires"][0])
         self.assertIsNotNone(expires.tzinfo)
-        now = datetime.now(UTC)
-        self.assertGreater(expires, now, "security.txt has expired; renew Expires")
-        self.assertLess(expires, now + timedelta(days=366))
+        self.assertLess(expires, datetime.now(UTC) + timedelta(days=366))
 
     def test_plain_lf_text(self) -> None:
         raw = self.path.read_bytes()

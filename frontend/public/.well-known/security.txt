@@ -1,4 +1,5 @@
-# Security contact for The All Seeing Eye (RFC 9116). Renew Expires before it passes.
+# Security contact for The All Seeing Eye (RFC 9116). Renew Expires before it passes;
+# the Uptime workflow fails from 30 days before it.
 Contact: https://github.com/ShabalalaWATP/AllSeeingEye/security/advisories/new
 Expires: 2027-10-01T00:00:00Z
 Preferred-Languages: en
