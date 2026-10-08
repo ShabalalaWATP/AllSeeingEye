@@ -192,7 +192,10 @@ export function ReportExports({
                 format={format}
                 description={EXPORT_FORMATS[format]}
                 preferred={format === preferred}
-                busy={download.busy || (format === 'stix' && !tlp)}
+                busy={download.busy}
+                unavailableReason={
+                  format === 'stix' && !tlp ? 'Choose a TLP marking above first.' : null
+                }
                 caveat={exportCaveat(format, { pdfLanguageUnsupported, languageLabel })}
                 onSelect={() => void download.run(format)}
               />

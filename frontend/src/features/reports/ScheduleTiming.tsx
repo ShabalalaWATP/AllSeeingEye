@@ -159,8 +159,9 @@ export function ScheduleTiming({
         )}
       </div>
       <p className="text-xs text-muted">
-        Times use UTC all year. The server must be running. Updates are saved in the app, not
-        emailed.
+        Times use UTC all year. The server must be running. Updates are saved in the app. Email is
+        optional and off by default: after saving, choose it under Email preferences beside the
+        subscription.
       </p>
     </fieldset>
   );

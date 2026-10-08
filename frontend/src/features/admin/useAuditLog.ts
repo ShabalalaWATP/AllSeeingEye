@@ -11,6 +11,8 @@ export interface AuditLog {
   loading: boolean;
   error: ApiError | null;
   loadMore: () => void;
+  /** Reloads the first page, replacing any loaded entries. */
+  retry: () => void;
 }
 
 /** Pages through the audit log newest first using the `next_before` cursor. */
@@ -48,5 +50,10 @@ export function useAuditLog(): AuditLog {
     void fetchPage(nextBefore);
   }, [fetchPage, nextBefore]);
 
-  return { entries, nextBefore, loading, error, loadMore };
+  const retry = useCallback(() => {
+    setLoading(true);
+    void fetchPage(null);
+  }, [fetchPage]);
+
+  return { entries, nextBefore, loading, error, loadMore, retry };
 }

@@ -138,4 +138,37 @@ describe('AiUsagePolicies', () => {
     expect(screen.getByText(/7 requests, 700 tokens this month/)).toBeInTheDocument();
     expect(query).toBe('?system=true');
   });
+
+  it('brings the policy form into view and focuses it for Edit and Set a limit', async () => {
+    const scrolled: Element[] = [];
+    const original = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value(this: Element) {
+        scrolled.push(this);
+      },
+    });
+    try {
+      server.use(http.get('/api/admin/ai-usage/preview', () => HttpResponse.json(aiPreview())));
+      const user = setup();
+      const table = await screen.findByRole('table', { name: 'Active AI allowance policies' });
+      // Nothing moves before a request.
+      expect(scrolled).toHaveLength(0);
+      await user.click(within(table).getByRole('button', { name: 'Edit Everyone' }));
+      expect(screen.getByLabelText('Scope')).toHaveFocus();
+      expect(scrolled).toHaveLength(1);
+      expect(scrolled[0]).toContainElement(screen.getByLabelText('Scope'));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await user.selectOptions(screen.getByLabelText('Charged to'), adminUser.id);
+      await user.click(screen.getByRole('button', { name: 'Preview allowance' }));
+      await user.click(await screen.findByRole('button', { name: 'Set a limit for this account' }));
+      expect(screen.getByLabelText('Scope')).toHaveFocus();
+      expect(screen.getByLabelText('Scope')).toHaveValue('user');
+      expect(scrolled).toHaveLength(2);
+    } finally {
+      if (original) Object.defineProperty(Element.prototype, 'scrollIntoView', original);
+      else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+    }
+  });
 });

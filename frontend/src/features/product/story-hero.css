@@ -109,6 +109,9 @@
   animation: story-cue 1.8s ease-in-out infinite;
   transform-origin: top;
 }
+[data-motion='still'] :is(.hero-title, .hero-lead, .hero-cue span) {
+  animation: none;
+}
 @keyframes story-arrive {
   from {
     opacity: 0;
@@ -220,6 +223,13 @@
 }
 [data-mode='pinned'] .layer-row[data-state='active'] .layer-detail {
   animation: story-arrive 500ms var(--ease-out) both;
+}
+/* Matches the specificity of the pinned rules so a paused story never animates them. */
+[data-motion='still'] [data-mode] .layer-row[data-state] .layer-detail {
+  animation: none;
+}
+[data-motion='still'] [data-mode] :is(.layer-list > li:first-child, .layer-row) {
+  transition: none;
 }
 [data-mode='pinned'] .layer-row[data-state='active'] .layer-label {
   font-size: 1.25rem;

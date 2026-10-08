@@ -48,6 +48,38 @@ describe('AdminRequestsPage', () => {
     expect(await navigator.clipboard.readText()).toBe(ACTIVATION_LINK);
   });
 
+  it('keeps every revealed activation link until each is dismissed', async () => {
+    server.use(
+      http.post('/api/admin/account-requests/:id/approve', ({ params }) =>
+        HttpResponse.json({
+          user: plainUser,
+          activation_link: `${ACTIVATION_LINK}-${String(params.id)}`,
+          expires_at: '2026-09-11T12:00:00Z',
+        }),
+      ),
+    );
+    const { user } = renderApp('/admin/requests', 'admin');
+    await user.click(
+      within(await findRow('Nia Newcomer')).getByRole('button', { name: 'Approve' }),
+    );
+    await screen.findByText('Activation link for newcomer@example.com');
+    await user.click(within(await findRow('Sam Second')).getByRole('button', { name: 'Approve' }));
+    await screen.findByText('Activation link for second@example.com');
+    const list = screen.getByRole('list', { name: 'Revealed one-time links' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.getByText('Activation link for newcomer@example.com')).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Dismiss Activation link for newcomer@example.com' }),
+    );
+    expect(screen.queryByText('Activation link for newcomer@example.com')).not.toBeInTheDocument();
+    expect(screen.getByText('Activation link for second@example.com')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Dismiss Activation link for second@example.com' }),
+    );
+    expect(screen.queryByRole('list', { name: 'Revealed one-time links' })).not.toBeInTheDocument();
+  });
+
   it('shows a plain confirmation when the server emailed the link itself', async () => {
     server.use(
       http.post('/api/admin/account-requests/:id/approve', () =>

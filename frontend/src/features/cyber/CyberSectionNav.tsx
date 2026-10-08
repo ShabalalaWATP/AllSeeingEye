@@ -14,7 +14,7 @@ export const CYBER_SECTIONS = [
   { id: 'cyber-sources', label: 'Sources' },
 ] as const;
 
-/** In-page jump links. Every section stays mounted; nothing is hidden behind a tab. */
+/** In-page jump links. Every section stays mounted, with a note while its data loads or fails. */
 export function CyberSectionNav({ preparing }: { preparing: boolean }) {
   return (
     <nav

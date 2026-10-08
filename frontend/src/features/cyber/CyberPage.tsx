@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { SectionPendingNote } from '@/components/ui/SectionPending';
 import { parseCyberDays, type CyberDays, type CyberTheme } from '@/lib/api/cyber';
 import { describeError } from '@/lib/api/errors';
 import { CYBER_KIND_LABELS, type CyberKindFilter } from '@/lib/cyber';
@@ -14,6 +15,7 @@ import { CyberActors } from './CyberActors';
 import { CyberAssessment } from './CyberAssessment';
 import { CyberBriefing } from './CyberBriefing';
 import { CyberCharts } from './CyberCharts';
+import { CYBER_FIELD, CyberFilterSelect } from './CyberFilterSelect';
 import { CyberFocusAreas } from './CyberFocusAreas';
 import { CyberGnss } from './CyberGnss';
 import { CyberHeader } from './CyberHeader';
@@ -26,8 +28,9 @@ import { CyberVulnerabilities } from './CyberVulnerabilities';
 import { cyberCountry, filterCyberItems } from './cyberPresentation';
 import { useCyberWorkspace } from './useCyberWorkspace';
 
-const field =
-  'min-h-11 rounded-md border border-control-border bg-surface px-3 text-sm text-text focus:border-ember';
+const THEME_OPTIONS = Object.entries(CYBER_THEME_META).map(
+  ([key, meta]) => [key as CyberTheme, meta.label] as const,
+);
 
 export default function CyberPage() {
   const [params, setParams] = useSearchParams();
@@ -86,6 +89,9 @@ export default function CyberPage() {
     void navigate('/');
   };
   const filtered = Boolean(query || country || actor || theme || kind !== 'all');
+  const snapshotPending = (
+    <SectionPendingNote loading={snapshot.loading} subject="cyber activity" />
+  );
   return (
     // Focus scrolling leaves room for the sticky section bar above and the Eye launcher below.
     <section
@@ -112,17 +118,21 @@ export default function CyberPage() {
             </Button>
           </Alert>
         )}
-        {data && (
-          <Section
-            id="cyber-overview"
-            eyebrow="Overview"
-            title="The current picture"
-            lede="Collected records for the selected period, split by what each source actually measures."
-          >
-            <CyberKpis data={data} />
-            <CyberCharts data={data} onCountry={(value) => focusActivity({ country: value })} />
-          </Section>
-        )}
+        <Section
+          id="cyber-overview"
+          eyebrow="Overview"
+          title="The current picture"
+          lede="Collected records for the selected period, split by what each source actually measures."
+        >
+          {data ? (
+            <>
+              <CyberKpis data={data} />
+              <CyberCharts data={data} onCountry={(value) => focusActivity({ country: value })} />
+            </>
+          ) : (
+            snapshotPending
+          )}
+        </Section>
         <Section
           id="cyber-live"
           eyebrow="Live board"
@@ -139,51 +149,59 @@ export default function CyberPage() {
         >
           <CyberAssessment state={briefing} days={days} />
         </Section>
-        {data && (
-          <>
-            <Section
-              id="cyber-focus"
-              eyebrow="Focus areas"
-              title="Themed lenses on the reporting"
-              lede="Nation-state tradecraft, the alliance, UK infrastructure, Ukraine, navigation interference and operational technology, each with the briefing’s own words when it has them."
-            >
-              <CyberFocusAreas
-                data={data}
-                report={briefing.report}
-                onTheme={(value) => focusActivity({ theme: value })}
-              />
-            </Section>
-            <Section
-              id="cyber-nation-state"
-              eyebrow="Nation-state"
-              title="State-associated actor mentions"
-              lede="Where reporting names a group whose MITRE ATT&CK profile records a state association. Mentions are leads for research, not attribution."
-            >
-              <CyberNationState
-                data={data}
-                actors={catalogue}
-                actorStatus={actors.data ? 'ready' : actors.loading ? 'loading' : 'unavailable'}
-                onActor={inspectActor}
-              />
-            </Section>
-            <Section
-              id="cyber-gnss"
-              eyebrow="GNSS"
-              title="GPS and GNSS interference"
-              lede="Aircraft accuracy anomalies from the aviation tracker, read by region, beside reporting that mentions jamming or spoofing."
-            >
-              <CyberGnss gnss={gnss} items={gnssItems} onOpenMap={openGnssMap} />
-            </Section>
-            <Section
-              id="cyber-vulnerabilities"
-              eyebrow="Exploitation"
-              title="Exploited vulnerabilities to prioritise"
-              lede="Recent additions to CISA’s Known Exploited Vulnerabilities catalogue. Match affected products to your own estate before acting; catalogue addition is not the date exploitation began."
-            >
-              <CyberVulnerabilities items={vulnerabilities} />
-            </Section>
-          </>
-        )}
+        <Section
+          id="cyber-focus"
+          eyebrow="Focus areas"
+          title="Themed lenses on the reporting"
+          lede="Nation-state tradecraft, the alliance, UK infrastructure, Ukraine, navigation interference and operational technology, each with the briefing’s own words when it has them."
+        >
+          {data ? (
+            <CyberFocusAreas
+              data={data}
+              report={briefing.report}
+              onTheme={(value) => focusActivity({ theme: value })}
+            />
+          ) : (
+            snapshotPending
+          )}
+        </Section>
+        <Section
+          id="cyber-nation-state"
+          eyebrow="Nation-state"
+          title="State-associated actor mentions"
+          lede="Where reporting names a group whose MITRE ATT&CK profile records a state association. Mentions are leads for research, not attribution."
+        >
+          {data ? (
+            <CyberNationState
+              data={data}
+              actors={catalogue}
+              actorStatus={actors.data ? 'ready' : actors.loading ? 'loading' : 'unavailable'}
+              onActor={inspectActor}
+            />
+          ) : (
+            snapshotPending
+          )}
+        </Section>
+        <Section
+          id="cyber-gnss"
+          eyebrow="GNSS"
+          title="GPS and GNSS interference"
+          lede="Aircraft accuracy anomalies from the aviation tracker, read by region, beside reporting that mentions jamming or spoofing."
+        >
+          {data ? (
+            <CyberGnss gnss={gnss} items={gnssItems} onOpenMap={openGnssMap} />
+          ) : (
+            snapshotPending
+          )}
+        </Section>
+        <Section
+          id="cyber-vulnerabilities"
+          eyebrow="Exploitation"
+          title="Exploited vulnerabilities to prioritise"
+          lede="Recent additions to CISA’s Known Exploited Vulnerabilities catalogue. Match affected products to your own estate before acting; catalogue addition is not the date exploitation began."
+        >
+          {data ? <CyberVulnerabilities items={vulnerabilities} /> : snapshotPending}
+        </Section>
         <Section
           id="cyber-actors"
           eyebrow="Reference"
@@ -235,7 +253,7 @@ export default function CyberPage() {
                   maxLength={120}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Actor, CVE, product or keyword"
-                  className={field}
+                  className={CYBER_FIELD}
                 />
               </label>
               <label className="flex flex-col gap-2 text-xs text-muted">
@@ -243,7 +261,7 @@ export default function CyberPage() {
                 <select
                   value={kind}
                   onChange={(event) => setKind(event.target.value as CyberKindFilter)}
-                  className={field}
+                  className={CYBER_FIELD}
                 >
                   <option value="all">All cyber reporting</option>
                   {Object.entries(CYBER_KIND_LABELS).map(([key, label]) => (
@@ -253,36 +271,23 @@ export default function CyberPage() {
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-2 text-xs text-muted">
-                Country context
-                <select
-                  value={country}
-                  onChange={(event) => setCountry(event.target.value)}
-                  className={field}
-                >
-                  <option value="">All locations</option>
-                  {data?.top_countries.map((item) => (
-                    <option key={item.key} value={item.key}>
-                      {cyberCountry(item.key)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-2 text-xs text-muted">
-                Lens
-                <select
-                  value={theme}
-                  onChange={(event) => setTheme(event.target.value as CyberTheme | '')}
-                  className={field}
-                >
-                  <option value="">All lenses</option>
-                  {Object.entries(CYBER_THEME_META).map(([key, meta]) => (
-                    <option key={key} value={key}>
-                      {meta.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <CyberFilterSelect
+                label="Country context"
+                value={country}
+                onChange={setCountry}
+                allLabel="All locations"
+                options={(data?.top_countries ?? []).map((item) => [
+                  item.key,
+                  cyberCountry(item.key),
+                ])}
+              />
+              <CyberFilterSelect<CyberTheme>
+                label="Lens"
+                value={theme}
+                onChange={setTheme}
+                allLabel="All lenses"
+                options={THEME_OPTIONS}
+              />
               {filtered && (
                 <Button variant="ghost" onClick={clear}>
                   Clear filters
@@ -306,7 +311,7 @@ export default function CyberPage() {
               </p>
             )}
           </div>
-          {data && (
+          {data ? (
             <CyberActivity
               key={`${days}:${query}:${kind}:${country}:${actor}:${theme}:${snapshot.key}`}
               items={items}
@@ -314,6 +319,8 @@ export default function CyberPage() {
               onActor={inspectActor}
               onTheme={(value) => focusActivity({ theme: value })}
             />
+          ) : (
+            snapshotPending
           )}
         </Section>
         <Section
@@ -324,16 +331,14 @@ export default function CyberPage() {
         >
           <CyberBriefing state={briefing} days={days} />
         </Section>
-        {data && (
-          <Section
-            id="cyber-sources"
-            eyebrow="Sources"
-            title="Coverage and limitations"
-            lede="Which feeds contributed, their delivery health and what the counts can and cannot say."
-          >
-            <CyberSourceCoverage data={data} />
-          </Section>
-        )}
+        <Section
+          id="cyber-sources"
+          eyebrow="Sources"
+          title="Coverage and limitations"
+          lede="Which feeds contributed, their delivery health and what the counts can and cannot say."
+        >
+          {data ? <CyberSourceCoverage data={data} /> : snapshotPending}
+        </Section>
       </div>
     </section>
   );

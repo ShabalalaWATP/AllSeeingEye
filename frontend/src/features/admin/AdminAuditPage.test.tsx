@@ -47,6 +47,28 @@ describe('AdminAuditPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Admins only.');
   });
 
+  it('hides the empty state after a failed first load and retries the first page', async () => {
+    let calls = 0;
+    server.use(
+      http.get('/api/admin/audit-log', ({ request }) => {
+        calls += 1;
+        expect(new URL(request.url).searchParams.get('before')).toBeNull();
+        return calls === 1
+          ? apiError(503, 'unavailable', 'Audit log unavailable.')
+          : HttpResponse.json({ items: auditPageOne, next_before: null });
+      }),
+    );
+    const { user } = renderApp('/admin/audit', 'admin');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Audit log unavailable.');
+    expect(screen.queryByText('No audit entries yet.')).not.toBeInTheDocument();
+    expect(screen.getByText('Audit entries could not be loaded.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('login_succeeded')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(calls).toBe(2);
+  });
+
   it('summarises details as truncated plain text', () => {
     expect(summariseDetails({})).toBe('');
     expect(summariseDetails({ a: 1 })).toBe('{"a":1}');
