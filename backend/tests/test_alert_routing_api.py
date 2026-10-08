@@ -35,8 +35,11 @@ async def test_defaults_and_encrypted_redacted_destination(client, container, us
     assert (
         await client.delete(f"/api/warning/webhook-destinations/{target}", headers=headers)
     ).status_code == 204
+    # Removing the destination clears the route that named it and advances its revision.
+    cleared = (await client.get(path, headers=headers)).json()
+    assert cleared["webhook_id"] is None and cleared["revision"] == 2
     invalid = await client.put(
-        path, headers=headers, json={"webhook_id": target, "expected_revision": 1}
+        path, headers=headers, json={"webhook_id": target, "expected_revision": 2}
     )
     assert invalid.status_code == 422
     async with container.session_factory() as session:

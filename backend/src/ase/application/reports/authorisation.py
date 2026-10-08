@@ -8,7 +8,7 @@ from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ParentReference, require_parent
 from ase.domain.collection import CollectionPlan
-from ase.domain.errors import InvalidRequest, NotFound
+from ase.domain.errors import InvalidRequest, NotFound, StaleReportVersion
 from ase.domain.report_records import ReportRecord
 from ase.domain.users import User
 
@@ -87,4 +87,4 @@ class ReportAuthorisation:
             if latest is None:
                 raise NotFound()
             if latest.latest_version != record.latest_version:
-                raise InvalidRequest("Another version was saved during generation. Try again.")
+                raise StaleReportVersion()

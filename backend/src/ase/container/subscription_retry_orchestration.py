@@ -11,6 +11,7 @@ from ase.adapters.persistence.subscription_retry import (
     SqlSubscriptionRetrySession,
     SqlSubscriptionRetryTransactions,
 )
+from ase.application.schedules.subscription_blocked_retry import resume_blocked
 from ase.application.schedules.subscription_retry import SubscriptionRetry
 from ase.domain.report_jobs import ReportJob
 
@@ -42,3 +43,4 @@ class SubscriptionRetryOrchestrator:
 
     async def resume_due(self) -> None:
         await self.service.resume_due()
+        await resume_blocked(self.service.transactions, self.service.clock, self.service.guard)

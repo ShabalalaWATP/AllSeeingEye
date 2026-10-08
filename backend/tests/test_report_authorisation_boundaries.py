@@ -11,7 +11,7 @@ from ase.application.access import AccessContext
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.request import ReportRequest
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir
-from ase.domain.errors import InvalidRequest, NotFound
+from ase.domain.errors import InvalidRequest, NotFound, StaleReportVersion
 from ase.domain.report_records import ReportRecord
 from ase.domain.reports import ReportStatus
 from mfa_boundary_support import NOW, actor
@@ -76,5 +76,5 @@ async def test_regeneration_cannot_overwrite_concurrent_report_change(state: str
     if state == "unchanged":
         await auth.finish(user, request, record, plan)
     else:
-        with pytest.raises(NotFound if state == "deleted" else InvalidRequest):
+        with pytest.raises(NotFound if state == "deleted" else StaleReportVersion):
             await auth.finish(user, request, record, plan)

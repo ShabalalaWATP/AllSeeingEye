@@ -18,7 +18,7 @@ async def test_exports_and_comparison_authentication_versions_headers_and_owner_
     record.latest_version = 2
     async with container.session_factory() as session:
         repos = container.repositories(session)
-        await repos.reports.add(record, version)
+        await repos.reports.add(replace(record, latest_version=1), version)
         await repos.reports.add_version(record, replace(version, id=uuid4(), number=2))
         await session.commit()
     root = f"/api/reports/{record.id}"
