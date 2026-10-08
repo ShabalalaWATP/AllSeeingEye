@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type MouseEvent } from 'react';
+import { lazy, Suspense, useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 
 import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
 import { ClaimExportSelection } from '@/components/reports/ClaimExportSelection';
@@ -44,6 +44,26 @@ const views: [WorkspaceView, string][] = [
   ['review', 'Review'],
 ];
 
+/** A visited view stays mounted while hidden; an unvisited one has not loaded anything yet. */
+function ViewPanel({
+  id,
+  view,
+  visited,
+  children,
+}: {
+  id: WorkspaceView;
+  view: WorkspaceView;
+  visited: ReadonlySet<WorkspaceView>;
+  children: ReactNode;
+}) {
+  if (!visited.has(id)) return null;
+  return (
+    <div hidden={view !== id} className="space-y-8">
+      {children}
+    </div>
+  );
+}
+
 export interface ReportSupportingWorkspaceProps {
   reportId: string;
   report: ReportSummary;
@@ -75,6 +95,19 @@ export default function ReportSupportingWorkspace({
 }: ReportSupportingWorkspaceProps) {
   // A refused action reloads the report under fresh access; reopen where its error and retry live.
   const [view, setView] = useState<WorkspaceView>(() => (actionError ? 'review' : 'sources'));
+  // Views stay mounted once visited, so unsaved editor input survives switching between them.
+  const [visited, setVisited] = useState<ReadonlySet<WorkspaceView>>(() => new Set([view]));
+  const [shownError, setShownError] = useState(actionError);
+  const show = (next: WorkspaceView) => {
+    setView(next);
+    setVisited((current) => (current.has(next) ? current : new Set(current).add(next)));
+  };
+  if (actionError !== shownError) {
+    // Adjusting state while rendering: a new action error opens the view that explains it.
+    setShownError(actionError);
+    if (actionError) show('review');
+  }
+  const panel = (id: WorkspaceView) => ({ id, view, visited });
   const [pendingEvidenceId, setPendingEvidenceId] = useState<string | null>(null);
   const canAcknowledge = mapWritable && workspaces.canAcknowledge(report.team_id);
   const actorId = useAuthStore((state) => state.user?.id);
@@ -104,7 +137,7 @@ export default function ReportSupportingWorkspace({
     event.preventDefault();
     event.stopPropagation();
     setPendingEvidenceId(decodeURIComponent(link.hash.slice(1)));
-    setView('sources');
+    show('sources');
   };
   return (
     <div className="min-w-0" onClickCapture={showCitedEvidence}>
@@ -120,7 +153,7 @@ export default function ReportSupportingWorkspace({
             className={`shrink-0 rounded px-3 py-2 text-sm transition-colors motion-reduce:transition-none ${
               view === id ? 'bg-surface-2 text-text' : 'text-muted hover:text-text'
             }`}
-            onClick={() => setView(id)}
+            onClick={() => show(id)}
           >
             {label}
           </button>
@@ -129,64 +162,58 @@ export default function ReportSupportingWorkspace({
 
       {/* Keeps focused or cited content below the sticky view bar when scrolled into view. */}
       <div className="mt-6 space-y-8 [&_*]:scroll-mt-16">
-        {view === 'sources' && (
-          <>
-            <EvidenceAnnex
-              evidence={version.evidence}
-              findings={version.findings}
-              status={version.status}
-              assessment={version.assessment}
-              review={sourceReview}
-            />
-            <ReviewedSnapshots
-              key={`snapshots:${reportId}:${String(version.number)}`}
-              reportId={reportId}
-              version={version.number}
-              title={report.title}
-              judgements={version.body.key_judgements}
-              canWrite={sourceReview.canWrite}
-              reviewer={reviewer}
-            />
-            <ClaimLedgerView ledger={version.claim_ledger} />
-            <OriginalAssets
-              reportId={reportId}
-              version={version.number}
-              evidence={version.evidence}
-              canEdit={canEdit}
-            />
-            <EvidencePackageDownload
-              key={`${reportId}:${String(version.number)}`}
-              id={reportId}
-              version={version.number}
-              title={report.title}
-            />
-          </>
-        )}
+        <ViewPanel {...panel('sources')}>
+          <EvidenceAnnex
+            evidence={version.evidence}
+            findings={version.findings}
+            status={version.status}
+            assessment={version.assessment}
+            review={sourceReview}
+          />
+          <ReviewedSnapshots
+            key={`snapshots:${reportId}:${String(version.number)}`}
+            reportId={reportId}
+            version={version.number}
+            title={report.title}
+            judgements={version.body.key_judgements}
+            canWrite={sourceReview.canWrite}
+            reviewer={reviewer}
+          />
+          <ClaimLedgerView ledger={version.claim_ledger} />
+          <OriginalAssets
+            reportId={reportId}
+            version={version.number}
+            evidence={version.evidence}
+            canEdit={canEdit}
+          />
+          <EvidencePackageDownload
+            key={`${reportId}:${String(version.number)}`}
+            id={reportId}
+            version={version.number}
+            title={report.title}
+          />
+        </ViewPanel>
 
-        {view === 'analysis' && (
-          <>
-            <ReportMethodology savedMethod={version.assessment?.method_version} />
-            <ReportAssessmentSummary assessment={version.assessment} />
-            <AssessmentReview reportId={reportId} version={version} teams={workspaces.teams} />
-            {version.challenge ? (
-              <ReportChallengeView challenge={version.challenge} />
-            ) : (
-              <AdvocacyView advocacy={version.devils_advocacy} />
-            )}
-            <ResearchContextView context={version.research_context} />
-            <ReportedRelationships evidence={version.evidence} />
-            <DirectionView direction={version.direction} />
-          </>
-        )}
+        <ViewPanel {...panel('analysis')}>
+          <ReportMethodology savedMethod={version.assessment?.method_version} />
+          <ReportAssessmentSummary assessment={version.assessment} />
+          <AssessmentReview reportId={reportId} version={version} teams={workspaces.teams} />
+          {version.challenge ? (
+            <ReportChallengeView challenge={version.challenge} />
+          ) : (
+            <AdvocacyView advocacy={version.devils_advocacy} />
+          )}
+          <ResearchContextView context={version.research_context} />
+          <ReportedRelationships evidence={version.evidence} />
+          <DirectionView direction={version.direction} />
+        </ViewPanel>
 
-        {view === 'collection' && (
-          <>
-            <ResearchCoverage receipt={version.research} />
-            <FreshWebContext record={version.research?.web_research} />
-          </>
-        )}
+        <ViewPanel {...panel('collection')}>
+          <ResearchCoverage receipt={version.research} />
+          <FreshWebContext record={version.research?.web_research} />
+        </ViewPanel>
 
-        {view === 'map' && (
+        <ViewPanel {...panel('map')}>
           <Suspense fallback={<LoadingNote label="Loading evidence map" />}>
             <ReportEvidenceMap
               key={`${reportId}:${String(version.number)}:${savedMap?.revision.id ?? ''}`}
@@ -201,9 +228,9 @@ export default function ReportSupportingWorkspace({
               canManageView={(savedView) => mapWritable && workspaces.canManage(savedView)}
             />
           </Suspense>
-        )}
+        </ViewPanel>
 
-        {view === 'review' && (
+        <ViewPanel {...panel('review')}>
           <ClaimExportSelection reportId={reportId} version={version.number}>
             <div className="space-y-8">
               {actionError && <Alert tone="error">{actionError}</Alert>}
@@ -291,7 +318,7 @@ export default function ReportSupportingWorkspace({
               />
             </div>
           </ClaimExportSelection>
-        )}
+        </ViewPanel>
       </div>
     </div>
   );

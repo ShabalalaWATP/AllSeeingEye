@@ -15,6 +15,8 @@ from ase.application.report_jobs.budget_limits import (
     MAX_CALLS,
     MAX_COUNTER,
     MAX_OUTPUT_TOKENS,
+    NOT_DISPATCHED_ERROR,
+    dispatched_calls,
     token_count,
 )
 from ase.application.report_jobs.fresh_web_allocation import check_web_discovery_dispatch
@@ -29,17 +31,18 @@ __all__ = [
     "MAX_CALLS",
     "MAX_COUNTER",
     "MAX_OUTPUT_TOKENS",
+    "NOT_DISPATCHED_ERROR",
     "CallNotDispatched",
     "JobBudgetExhausted",
     "JobInterrupted",
     "ReportCallBudget",
+    "dispatched_calls",
     "output_used",
     "token_count",
 ]
 
 SETTLEMENT_TIMEOUT = 3.0
 WEB_EXHAUSTED = "The model did not finish within its web-search output budget."
-NOT_DISPATCHED_ERROR = "not_dispatched"
 # A reservation refused by the pre-dispatch recheck never reached a provider.
 NOT_DISPATCHED: dict[str, Any] = {
     "status": "failed",
@@ -186,21 +189,26 @@ class ReportCallBudget:
                     prompt_tokens=token_count(exhausted.get("prompt_tokens")),
                     completion_tokens=token_count(exhausted.get("completion_tokens")),
                 )
+            # Refusals before dispatch never reached a provider, so they spend no calls.
+            dispatched = dispatched_calls(calls)
             if (
-                len(calls) >= MAX_CALLS
+                len(dispatched) >= MAX_CALLS
                 or output_used(payload) + reserved_output > MAX_OUTPUT_TOKENS
             ):
                 raise JobBudgetExhausted()
+            if len(calls) >= MAX_CALLS:
+                # The bounded ledger holds released rows; an explicit resume removes them.
+                raise JobInterrupted()
             if not check_web_discovery_dispatch(
                 payload,
-                calls,
+                dispatched,
                 schema=schema,
                 stage=stage,
                 reserved_output=reserved_output,
             ):
                 raise JobBudgetExhausted("The frozen fresh-web discovery allowance is exhausted.")
             stage_decision = check_stage_budget(
-                payload, calls, stage, reserved_output, required=self._require_stage_plan
+                payload, dispatched, stage, reserved_output, required=self._require_stage_plan
             )
             if stage_decision is not None and not stage_decision.allowed:
                 raise JobBudgetExhausted(" ".join(stage_decision.reasons))

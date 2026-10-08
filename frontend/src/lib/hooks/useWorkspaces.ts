@@ -20,20 +20,20 @@ export function useWorkspaces() {
     teamId
       ? `Team: ${teams.find((detail) => detail.team.id === teamId)?.team.name ?? 'unavailable'}`
       : 'Personal';
+  /**
+   * Mirrors the server's write rule (AccessPolicy.require_write): administrators write
+   * anything; otherwise archived teams are read-only, creators write their own records and
+   * a team's designated managers write its team records. The server stays authoritative.
+   */
   const canManage = (record: { created_by: string; team_id?: string | null }) => {
     if (!user) return false;
     if (user.role === 'admin') return true;
+    if (!record.team_id) return record.created_by === user.id;
     const detail = teams.find((entry) => entry.team.id === record.team_id);
-    if (record.team_id && !detail) return false;
+    if (!detail?.team.is_active) return false;
     if (record.created_by === user.id) return true;
-    return (
-      user.role === 'manager' &&
-      detail?.members.some(
-        (member) =>
-          member.user_id === user.id &&
-          member.role === 'manager' &&
-          member.account_role === 'manager',
-      ) === true
+    return detail.members.some(
+      (member) => member.user_id === user.id && member.is_active && member.role === 'manager',
     );
   };
   const canAcknowledge = (teamId: string | null | undefined) =>

@@ -86,7 +86,8 @@ export function validatePlanDraft(draft: PlanDraft, areaAvailable: boolean): Pla
   const errors: PlanErrors = {};
   if (draft.name.trim() === '') errors.name = 'Enter a plan name.';
   if (draft.areaId !== '' && !areaAvailable)
-    errors.areaId = 'This area is not available in the plan workspace. Choose another or No area.';
+    errors.areaId =
+      'This area is not available in the plan workspace. Choose another or No area (remove link).';
   const invalidCountries = parseCommaList(draft.countries).filter(
     (code) => !/^[A-Za-z]{2}$/.test(code),
   );
@@ -113,7 +114,7 @@ export function validatePlanDraft(draft: PlanDraft, areaAvailable: boolean): Pla
 }
 
 const SHOWN_BESIDE_A_FIELD =
-  /^(name|countries|pirs(\.\d+\.(text|sirs(\.\d+\.(text|keywords|categories))?))?)$/;
+  /^(name|areaId|countries|pirs(\.\d+\.(text|sirs(\.\d+\.(text|keywords|categories))?))?)$/;
 
 /**
  * Server validation reasons, keyed by dotted request paths, as draft errors. Request paths

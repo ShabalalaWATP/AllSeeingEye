@@ -109,4 +109,20 @@ describe('report deletion', () => {
     expect(retry).toBeEnabled();
     expect(calls.count).toBe(1);
   });
+
+  it('shows why a report in a subscription edition history cannot be deleted', async () => {
+    const message =
+      "This report is part of a subscription's saved edition history, so it cannot be deleted.";
+    const calls = countDeletes(() => apiError(409, 'conflict', message));
+    const { user, management } = await openManagement();
+    await user.click(within(management).getByRole('button', { name: 'Delete report' }));
+    const dialog = await screen.findByRole('alertdialog', { name: TITLE });
+    expect(dialog).toHaveTextContent("A report kept in a subscription's edition history");
+    await user.click(within(dialog).getByRole('button', { name: 'Delete report' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(message);
+    expect(
+      screen.getByRole('heading', { level: 1, name: reportSummary.title }),
+    ).toBeInTheDocument();
+    expect(calls.count).toBe(1);
+  });
 });

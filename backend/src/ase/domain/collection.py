@@ -25,6 +25,17 @@ AREA_KINDS = ("bbox", "countries", "geometry")
 
 
 @dataclass(frozen=True, slots=True)
+class LinkedRecords:
+    """Records that still link to a direction object: every link counted, few names shown.
+
+    Names are limited to records the caller may read, so a refusal names nothing hidden.
+    """
+
+    total: int
+    visible_names: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class AreaOfInterest:
     id: UUID
     name: str

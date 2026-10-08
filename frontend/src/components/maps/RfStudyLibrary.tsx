@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { readRfStudy, type RfStudySnapshot } from '@/lib/map/rfStudy';
 import { subscribeRfWorkspaceReset } from '@/lib/map/rfWorkspaceAccess';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import { useWorkspaces, useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
 import { RfStudyComparison } from './RfStudyComparison';
@@ -160,14 +161,25 @@ export function RfStudyLibrary({
                 >
                   Update selected
                 </button>
-                <button
-                  type="button"
-                  className="rf-text-button"
-                  disabled={library.busy}
-                  onClick={() => void library.remove(item.id)}
+                <ConfirmButton
+                  label="Delete selected study"
+                  className="text-xs"
+                  busy={library.busy}
+                  title={`Delete radio study “${item.title}”?`}
+                  confirmLabel="Delete study"
+                  busyLabel="Deleting study…"
+                  onConfirm={() => void library.remove(item.id)}
                 >
-                  Delete selected study
-                </button>
+                  <p>
+                    <span className="font-medium text-text">Workspace:</span>{' '}
+                    {workspaces.label(item.teamId)}
+                  </p>
+                  <p>
+                    This permanently deletes the saved inputs, result summary and terrain samples
+                    for everyone who can open it. The setup on the map now is not changed.
+                  </p>
+                  <p className="font-medium text-critical">This cannot be undone.</p>
+                </ConfirmButton>
               </div>
             )}
           </>

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AiPolicy, AiPolicyInput } from '@/lib/api/aiUsage';
 import { aiPolicy, policyId, teamId } from '@/test/fixtures.aiUsage';
+import { installDialogStub } from '@/test/dialogStub';
 import { adminUser } from '@/test/fixtures';
 import { team } from '@/test/fixtures.teams';
 import { apiError } from '@/test/handlers';
@@ -12,7 +13,17 @@ import { server } from '@/test/server';
 
 import { AiUsagePolicies } from './AiUsagePolicies';
 
+installDialogStub();
+
 const teams = [{ ...team, id: teamId, name: 'Northern desk' }];
+
+async function confirmDisable(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const dialog = await screen.findByRole('alertdialog', {
+    name: `Disable allowance policy “${label}”?`,
+  });
+  await user.click(within(dialog).getByRole('button', { name: 'Disable policy' }));
+  return dialog;
+}
 const teamPolicy = aiPolicy({
   id: '77777777-7777-4777-8777-777777777777',
   scope: 'team',
@@ -111,6 +122,10 @@ describe('AiUsagePolicies states', () => {
     await screen.findByRole('region', { name: 'Temporary overrides for Team · Northern desk' });
     await user.click(teamRow.getByRole('button', { name: 'Edit Team · Northern desk' }));
     await user.click(teamRow.getByRole('button', { name: 'Disable Team · Northern desk' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent('stops for new provider calls');
+    expect(dialog).not.toHaveTextContent('last active policy');
+    await confirmDisable(user, 'Team · Northern desk');
 
     await waitFor(() => {
       expect(screen.queryByText('Team · Northern desk')).not.toBeInTheDocument();
@@ -134,6 +149,7 @@ describe('AiUsagePolicies states', () => {
     await user.click(globalRow.getByRole('button', { name: 'Edit Everyone' }));
     const teamRow = await row('Team · Northern desk');
     await user.click(teamRow.getByRole('button', { name: 'Disable Team · Northern desk' }));
+    await confirmDisable(user, 'Team · Northern desk');
     await waitFor(() => {
       expect(screen.queryByText('Team · Northern desk')).not.toBeInTheDocument();
     });
@@ -156,7 +172,30 @@ describe('AiUsagePolicies states', () => {
     const user = setup();
     const globalRow = await row('Everyone');
     await user.click(globalRow.getByRole('button', { name: 'Disable Everyone' }));
-    expect(await screen.findByText('Administrator MFA required.')).toBeInTheDocument();
+    const dialog = await confirmDisable(user, 'Everyone');
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Administrator MFA required.',
+    );
     expect(screen.getByText('Everyone', { selector: 'span' })).toBeInTheDocument();
+  });
+
+  it('warns that disabling the last active policy leaves no AI caps, and Cancel sends nothing', async () => {
+    let calls = 0;
+    server.use(
+      http.delete('/api/admin/ai-usage/policies/:id', () => {
+        calls += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const user = setup([aiPolicy()]);
+    const globalRow = await row('Everyone');
+    await user.click(globalRow.getByRole('button', { name: 'Disable Everyone' }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Disable allowance policy “Everyone”?',
+    });
+    expect(dialog).toHaveTextContent('no AI caps will apply');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(calls).toBe(0);
   });
 });

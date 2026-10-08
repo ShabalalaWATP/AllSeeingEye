@@ -44,8 +44,17 @@ Reconciliation runs opportunistically during admission, at most once a minute pe
 process, in a bounded batch of 20 calls. A reservation still `reserved` after one hour
 (`STALE_RESERVATION_AGE`) is released when dispatch was never recorded and marked
 `unknown` when it was, keeping the charge conservative. The administrator preview
-reports the number of calls held as unknown. There is no automatic release of unknown
-calls; an explicit review action is future work.
+reports the number of calls held as unknown.
+
+An `unknown` reservation is held for at most 24 hours from reservation
+(`UNKNOWN_RESOLUTION_AGE`, KAN-198). After that, the same reconciliation pass settles it,
+in its own short transaction, as one failed request: the request counts against every
+request limit, tokens are charged only if the provider reported them (normally none),
+and the held worst-case token reservation returns to the allowance. No provider call or
+report run lasts anywhere near that long (report runs stop after 30 minutes), so no
+late settlement can arrive. The observed monthly totals keep the call as an unknown
+request and are not rewritten. Before this rule, an unknown call held its reservation
+until the period ended.
 
 ### Retention
 
@@ -60,7 +69,7 @@ number of rows removed per table and no account or team identifiers.
 
 | Rows | Removed when | Never removed |
 | --- | --- | --- |
-| `ai_usage_reservations` | status `released` or `settled` and `period_end` more than 90 days ago (`RESERVATION_RETENTION`) | `reserved` (in flight or awaiting reconciliation) and `unknown` (awaiting review) |
+| `ai_usage_reservations` | status `released` or `settled` and `period_end` more than 90 days ago (`RESERVATION_RETENTION`) | `reserved` (in flight or awaiting reconciliation) and `unknown` (awaiting its 24-hour resolution) |
 | `ai_usage_counters` | `period_end` more than 400 days ago (`PERIOD_RETENTION`, about 13 months) | any counter still carrying a reserved request or token |
 | `ai_usage_totals` | `period_end` more than 400 days ago | none beyond the age rule |
 
