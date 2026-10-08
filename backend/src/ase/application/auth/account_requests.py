@@ -23,6 +23,15 @@ from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import AccountRequest, RequestStatus, normalise_email
 
 
+def _enforce(limiter: RateLimiter, window: int, *buckets: tuple[str, int]) -> None:
+    # Per-client buckets come first so one client cannot spend the shared allowance
+    # beyond its own limit.
+    for key, limit in buckets:
+        retry_after = limiter.hit(key, limit, window)
+        if retry_after is not None:
+            raise RateLimited(retry_after)
+
+
 class RequestAccountUseCase:
     def __init__(
         self,
@@ -45,18 +54,23 @@ class RequestAccountUseCase:
     async def execute(
         self, email: str, display_name: str, reason: str | None, context: RequestContext
     ) -> None:
-        retry_after = self._limiter.hit(
-            f"request-account:ip:{context.ip}",
-            self._limits.request_account_per_ip,
+        _enforce(
+            self._limiter,
             self._limits.hourly_window_seconds,
+            (f"request-account:ip:{context.client_key}", self._limits.request_account_per_ip),
+            ("request-account:global", self._limits.request_account_global),
         )
-        if retry_after is not None:
-            raise RateLimited(retry_after)
         email = normalise_email(email)
         duplicate = await self._users.get_by_email(
             email
         ) is not None or await self._requests.has_pending_for_email(email)
-        if not duplicate:
+        # A full review queue drops new requests behind the same response, so callers
+        # learn nothing about the queue or the address. Administrators see it in audit.
+        queue_full = (
+            not duplicate
+            and await self._requests.count_pending() >= self._limits.pending_account_requests_max
+        )
+        if not duplicate and not queue_full:
             await self._requests.add(
                 AccountRequest(
                     id=uuid4(),
@@ -73,7 +87,7 @@ class RequestAccountUseCase:
             AuditAction.ACCOUNT_REQUESTED,
             subject=email,
             ip=context.ip,
-            details={"duplicate": duplicate},
+            details={"duplicate": duplicate, "queue_full": queue_full},
         )
         await self._uow.commit()
 
@@ -106,13 +120,12 @@ class ForgotPasswordUseCase:
     async def execute(
         self, email: str, context: RequestContext, *, send_email: bool = True
     ) -> str | None:
-        retry_after = self._limiter.hit(
-            f"forgot:ip:{context.ip}",
-            self._limits.forgot_per_ip,
+        _enforce(
+            self._limiter,
             self._limits.hourly_window_seconds,
+            (f"forgot:ip:{context.client_key}", self._limits.forgot_per_ip),
+            ("forgot:global", self._limits.forgot_global),
         )
-        if retry_after is not None:
-            raise RateLimited(retry_after)
         email = normalise_email(email)
         user = await self._users.lock_by_email(email)
         link: str | None = None

@@ -18,13 +18,28 @@ class InMemorySlidingWindowLimiter:
         now = self._clock.now().timestamp()
         window = self._hits.setdefault(key, deque())
         self._hits.move_to_end(key)  # least recently used keys are evicted first
+        retry = self._retry_after(window, limit, window_seconds, now)
+        if retry is not None:
+            return retry
+        window.append(now)
+        self._evict_if_needed()
+        return None
+
+    def peek(self, key: str, limit: int, window_seconds: int) -> int | None:
+        window = self._hits.get(key)
+        if window is None:
+            return None
+        return self._retry_after(window, limit, window_seconds, self._clock.now().timestamp())
+
+    @staticmethod
+    def _retry_after(
+        window: deque[float], limit: int, window_seconds: int, now: float
+    ) -> int | None:
         cutoff = now - window_seconds
         while window and window[0] <= cutoff:
             window.popleft()
         if len(window) >= limit:
             return max(1, math.ceil(window[0] + window_seconds - now))
-        window.append(now)
-        self._evict_if_needed()
         return None
 
     def reset(self) -> None:

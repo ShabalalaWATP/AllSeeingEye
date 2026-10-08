@@ -14,6 +14,13 @@ administrator approval. Administrators must enrol and verify multi-factor
 authentication before entering the administration workspace. Authenticator and
 email options depend on the installation's configuration.
 
+Password hashing runs in a small bounded worker pool so sign-in load cannot stall
+other requests. Public sign-in endpoints are limited per client, with IPv6 clients
+grouped by /64 prefix. Account and reset requests also have installation-wide hourly
+caps, and the pending account request queue has a maximum size. Each account has a
+budget of failed second-factor proofs across challenges and methods. These limits
+are held in memory and reset when the API restarts.
+
 Access tokens are short-lived and held in browser memory. Refresh sessions use
 an HttpOnly cookie, server-side records and rotation. Protected requests check
 the current account and session state. Routes that release private material after

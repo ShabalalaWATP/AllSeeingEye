@@ -67,7 +67,12 @@ class Settings(BaseSettings):
     rate_limit_login_per_ip: int = Field(default=10, ge=1)
     rate_limit_login_per_email: int = Field(default=5, ge=1)
     rate_limit_request_account_per_ip: int = Field(default=3, ge=1)
+    rate_limit_request_account_global: int = Field(default=30, ge=1)
+    account_requests_pending_max: int = Field(default=100, ge=1, le=10_000)
     rate_limit_forgot_per_ip: int = Field(default=3, ge=1)
+    rate_limit_forgot_global: int = Field(default=60, ge=1)
+    # Concurrent argon2id calls; each one holds 64 MiB while it runs.
+    password_hash_concurrency: int = Field(default=2, ge=1, le=8)
     rate_limit_set_password_per_ip: int = Field(default=10, ge=1)
     rate_limit_reports_per_user: int = Field(default=10, ge=1)
     # Versioned UTC-month report model ceilings; operators may only reduce them.
@@ -252,7 +257,10 @@ class Settings(BaseSettings):
             login_per_ip=self.rate_limit_login_per_ip,
             login_per_email=self.rate_limit_login_per_email,
             request_account_per_ip=self.rate_limit_request_account_per_ip,
+            request_account_global=self.rate_limit_request_account_global,
+            pending_account_requests_max=self.account_requests_pending_max,
             forgot_per_ip=self.rate_limit_forgot_per_ip,
+            forgot_global=self.rate_limit_forgot_global,
             set_password_per_ip=self.rate_limit_set_password_per_ip,
             reports_per_user=self.rate_limit_reports_per_user,
         )

@@ -105,7 +105,7 @@ class MfaUseCase:
         if challenge.email_sent_at and now - challenge.email_sent_at < timedelta(seconds=60):
             raise InvalidRequest("Wait a minute before requesting another code.")
         code = f"{secrets.randbelow(1_000_000):06d}"
-        challenge.code_hash = self.d.hasher.hash(code)
+        challenge.code_hash = await self.d.hasher.hash(code)
         challenge.email_sent_at = None
         await self.d.save(challenge)
         revision = challenge.revision
@@ -142,6 +142,7 @@ class MfaUseCase:
     ) -> AuthSession:
         self.d.limit(context, token)
         challenge, user = await self.d.load(token, MfaPurpose.LOGIN)
+        await self.d.throttle(user, context)
         if method is MfaMethod.RECOVERY:
             valid = bool(
                 not challenge.enrollment_required
@@ -181,7 +182,7 @@ class MfaUseCase:
                 challenge.email_sent_at
                 and challenge.code_hash
                 and self.d.clock.now() - challenge.email_sent_at < timedelta(minutes=5)
-                and self.d.hasher.verify(challenge.code_hash, code)
+                and await self.d.hasher.verify(challenge.code_hash, code)
             )
         state = await self.d.totp.get(user.id)
         if challenge.enrollment_required:

@@ -75,7 +75,7 @@ async def create_user(
             display_name=email.partition("@")[0].title(),
             role=role,
             is_active=is_active,
-            password_hash=container.hasher.hash(password) if password else None,
+            password_hash=await container.hasher.hash(password) if password else None,
             failed_login_count=0,
             last_failed_at=None,
             locked_until=None,

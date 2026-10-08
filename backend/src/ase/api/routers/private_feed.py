@@ -10,6 +10,7 @@ from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_notifications import FeedEnableIn, FeedStatusOut, FeedTokenOut
 from ase.api.session_fence import FenceDep
 from ase.container.notifications import private_feed
+from ase.domain.client_address import rate_limit_key
 
 router = APIRouter(tags=["notifications"])
 _basic = HTTPBasic(auto_error=False)
@@ -64,7 +65,7 @@ async def read_feed(
     # Basic authentication is supported by feed readers and keeps the credential out
     # of URLs, browser history, referrers, reverse-proxy and ordinary request logs.
     secret = credentials.password if credentials and credentials.username == "feed" else ""
-    client_key = request.client.host if request.client else "unknown"
+    client_key = rate_limit_key(request.client.host if request.client else None)
     feed = await private_feed(container, session).read(secret, client_key)
     return Response(
         render_atom(feed, container.settings.public_base_url),

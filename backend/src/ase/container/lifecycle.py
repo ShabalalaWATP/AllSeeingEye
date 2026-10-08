@@ -12,6 +12,7 @@ async def dispose_resources(container: "Container") -> None:
         # Registration is reversed: dependants close before their clients and DB.
         # A failing callback cannot skip later callbacks; exceptions remain chained.
         cleanup.push_async_callback(container.engine.dispose)
+        cleanup.callback(container.password_hasher.close)
         cleanup.push_async_callback(container.archiver.aclose)
         cleanup.push_async_callback(container.tiles.aclose)
         cleanup.push_async_callback(container._embedding_gateway.aclose)

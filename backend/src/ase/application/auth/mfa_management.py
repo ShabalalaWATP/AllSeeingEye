@@ -75,11 +75,12 @@ class MfaManagement:
         challenge, user = await self.d.load(token, purpose)
         if user.id != actor.id or user.security_version != actor.security_version:
             raise InvalidCredentials()
+        await self.d.throttle(user, context)
         if not (
             challenge.code_hash
             and challenge.email_sent_at
             and self.d.clock.now() - challenge.email_sent_at < timedelta(minutes=5)
-            and self.d.hasher.verify(challenge.code_hash, code)
+            and await self.d.hasher.verify(challenge.code_hash, code)
         ):
             await self.d.fail(challenge, user, context)
         await self.d.consume(challenge)
