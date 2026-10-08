@@ -73,6 +73,9 @@
   inset: 20%;
   animation: story-spin 60s linear infinite reverse;
 }
+[data-motion='still'] :is(.orbit-ring-outer, .orbit-ring-inner) {
+  animation: none;
+}
 .orbit-core {
   position: absolute;
   inset: 38%;

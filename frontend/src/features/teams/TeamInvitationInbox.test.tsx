@@ -45,8 +45,11 @@ function mount(items: TeamInvitation[], onAccepted = vi.fn(() => Promise.resolve
 }
 
 describe('TeamInvitationInbox', () => {
-  it('loads nothing until opened and shows the empty state for non-pending invitations', async () => {
+  it('loads on mount, stays closed with nothing pending and shows the empty state', async () => {
     const { user } = mount([invitation({ status: 'accepted' })]);
+    expect(screen.getByText('Checking for invitations')).toBeInTheDocument();
+    expect(await screen.findByText('None pending')).toBeInTheDocument();
+    expect(screen.getByText('Team invitations').closest('details')).not.toHaveAttribute('open');
     expect(screen.queryByText('No pending team invitations.')).not.toBeInTheDocument();
     await user.click(screen.getByText('Team invitations'));
     expect(await screen.findByText('No pending team invitations.')).toBeInTheDocument();
@@ -56,8 +59,8 @@ describe('TeamInvitationInbox', () => {
     });
   });
 
-  it('lists pending invitations with fallbacks for missing names and dates', async () => {
-    const { user } = mount([
+  it('opens by default with a count and lists pending invitations with fallbacks', async () => {
+    mount([
       invitation({ note: 'Join the night shift' }),
       invitation({
         id: '22222222-2222-4333-8444-555555555555',
@@ -66,8 +69,9 @@ describe('TeamInvitationInbox', () => {
         expires_at: 'not-a-date',
       }),
     ]);
-    await user.click(screen.getByText('Team invitations'));
     expect(await screen.findByText('Northern desk')).toBeInTheDocument();
+    expect(screen.getByText('2 pending')).toBeInTheDocument();
+    expect(screen.getByText('Team invitations').closest('details')).toHaveAttribute('open');
     expect(screen.getByText('Join the night shift')).toBeInTheDocument();
     expect(screen.getByText(/Invited by Mina Manager/)).toBeInTheDocument();
     const fallback = screen.getByText('Team workspace').closest('li')!;
@@ -84,13 +88,13 @@ describe('TeamInvitationInbox', () => {
       }),
     );
     const { user, onAccepted } = mount([invitation()]);
-    await user.click(screen.getByText('Team invitations'));
     await user.click(await screen.findByRole('button', { name: 'Accept' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Invitation accepted.');
     expect(body).toEqual({ expected_revision: 3 });
     expect(onAccepted).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Northern desk')).not.toBeInTheDocument();
     expect(screen.getByText('No pending team invitations.')).toBeInTheDocument();
+    expect(screen.getByText('None pending')).toBeInTheDocument();
   });
 
   it('declines an invitation without reloading teams', async () => {
@@ -100,7 +104,6 @@ describe('TeamInvitationInbox', () => {
       ),
     );
     const { user, onAccepted } = mount([invitation()]);
-    await user.click(screen.getByText('Team invitations'));
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Invitation declined.');
     expect(onAccepted).not.toHaveBeenCalled();
@@ -119,7 +122,6 @@ describe('TeamInvitationInbox', () => {
     );
     const user = userEvent.setup();
     render(<TeamInvitationInbox onAccepted={() => Promise.resolve()} />);
-    await user.click(screen.getByText('Team invitations'));
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('The invitation changed.');
     expect(loads).toBe(2);
@@ -135,8 +137,39 @@ describe('TeamInvitationInbox', () => {
     );
     const user = userEvent.setup();
     render(<TeamInvitationInbox onAccepted={() => Promise.resolve()} />);
+    expect(await screen.findByText('Could not check')).toBeInTheDocument();
     await user.click(screen.getByText('Team invitations'));
     expect(await screen.findByRole('alert')).toHaveTextContent('Invitations unavailable.');
     expect(screen.queryByText('No pending team invitations.')).not.toBeInTheDocument();
+  });
+
+  it('retries a failed load when opened and then shows the invitations', async () => {
+    let loads = 0;
+    server.use(
+      http.get('/api/me/team-invitations', () => {
+        loads += 1;
+        return loads === 1
+          ? apiError(500, 'server_error', 'Invitations unavailable.')
+          : HttpResponse.json(page([invitation()]));
+      }),
+    );
+    const user = userEvent.setup();
+    render(<TeamInvitationInbox onAccepted={() => Promise.resolve()} />);
+    expect(await screen.findByText('Could not check')).toBeInTheDocument();
+    await user.click(screen.getByText('Team invitations'));
+    expect(await screen.findByText('Northern desk')).toBeInTheDocument();
+    expect(screen.getByText('1 pending')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(loads).toBe(2);
+  });
+
+  it('keeps the section closed after the reader closes it', async () => {
+    const { user } = mount([invitation()]);
+    expect(await screen.findByText('Northern desk')).toBeInTheDocument();
+    await user.click(screen.getByText('Team invitations'));
+    await waitFor(() =>
+      expect(screen.getByText('Team invitations').closest('details')).not.toHaveAttribute('open'),
+    );
+    expect(screen.queryByText('Northern desk')).not.toBeInTheDocument();
   });
 });

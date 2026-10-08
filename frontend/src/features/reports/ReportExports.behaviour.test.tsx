@@ -45,6 +45,22 @@ it('supports directional and boundary keyboard navigation without hijacking the 
   expect(saveBinaryFile).not.toHaveBeenCalled();
 });
 
+it('describes why STIX is disabled until a marking is chosen', async () => {
+  const user = userEvent.setup();
+  render(<ReportExports id="report" version={4} title="Field report" />);
+  await user.click(screen.getByRole('button', { name: 'Export' }));
+  const stix = screen.getByRole('menuitem', { name: 'Download STIX 2.1' });
+  expect(stix).toBeDisabled();
+  expect(stix).toHaveAccessibleDescription('Choose a TLP marking above first.');
+  const pdf = screen.getByRole('menuitem', { name: 'Download PDF' });
+  expect(pdf).not.toHaveAttribute('aria-describedby');
+
+  await user.selectOptions(screen.getByRole('combobox', { name: 'STIX sharing marking' }), 'green');
+  expect(stix).toBeEnabled();
+  expect(stix).not.toHaveAttribute('aria-describedby');
+  expect(screen.queryByText('Choose a TLP marking above first.')).not.toBeInTheDocument();
+});
+
 it('uses the exact version and a safe ZIP fallback when Markdown has no server filename', async () => {
   server.use(
     http.get('/api/reports/:id/markdown', ({ request }) => {

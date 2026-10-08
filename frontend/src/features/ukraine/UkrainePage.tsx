@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/ui/PageHeader';
 import { LAUNCHER_SCROLL_PADDING } from '@/components/assistant/launcherClearance';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
+import { PendingSection } from '@/components/ui/SectionPending';
 import { describeError } from '@/lib/api/errors';
 import {
   fetchUkraineBoard,
@@ -37,6 +38,12 @@ const SECTIONS = [
   ['equipment', 'Equipment'],
   ['lenses', 'Lenses'],
   ['sources', 'Sources'],
+] as const;
+
+const REFERENCE_SECTIONS = [
+  ['timeline', 'Timeline of the war'],
+  ['forces', 'Force organisation'],
+  ['equipment', 'Equipment catalogue'],
 ] as const;
 
 function Freshness({ board, now }: { board: UkraineBoard; now: number }) {
@@ -83,6 +90,10 @@ export default function UkrainePage({
   const reference = useUkraineReference(loadReference);
   const data = loaded?.board ?? null;
   const now = loaded?.loadedAt ?? 0;
+  // Jump-link targets stay mounted while the board loads or after it fails.
+  const boardPending = (id: string, title: string) => (
+    <PendingSection id={id} title={title} loading={loading} subject="the Ukraine board" />
+  );
   return (
     <article
       className={`flex h-full flex-col gap-6 overflow-y-auto p-6 pb-28 ${LAUNCHER_SCROLL_PADDING}`}
@@ -125,8 +136,8 @@ export default function UkrainePage({
       {loading && !data ? <LoadingNote label="Loading the Ukraine board" /> : null}
       <UkraineMap loaders={{ control: loadControl, ...mapLoaders }} />
       <DigestPanel load={loadDigest} {...(refreshDigest ? { refresh: refreshDigest } : {})} />
-      {data ? <UpdatesTabs updates={data.updates} /> : null}
-      {data ? <FiguresStrip board={data} /> : null}
+      {data ? <UpdatesTabs updates={data.updates} /> : boardPending('updates', 'Latest updates')}
+      {data ? <FiguresStrip board={data} /> : boardPending('figures', 'Headline figures')}
       {reference.error ? (
         <Alert tone="warning">
           Reference notes are unavailable: {describeError(reference.error)}
@@ -138,8 +149,22 @@ export default function UkrainePage({
           <ForcesSection reference={reference.data} fetcher={imageFetcher} />
           <EquipmentSection reference={reference.data} fetcher={imageFetcher} />
         </>
-      ) : null}
-      {data ? <LensSections board={data} /> : null}
+      ) : (
+        REFERENCE_SECTIONS.map(([id, title]) => (
+          <PendingSection
+            key={id}
+            id={id}
+            title={title}
+            loading={reference.loading}
+            subject="the reference notes"
+          />
+        ))
+      )}
+      {data ? (
+        <LensSections board={data} />
+      ) : (
+        boardPending('lenses', 'Equipment, workforce and casualty news')
+      )}
       <SourcesFooter control={data?.control ?? null} />
     </article>
   );

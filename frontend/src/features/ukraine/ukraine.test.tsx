@@ -94,6 +94,36 @@ describe('Ukraine war page', () => {
       /Reference: HTTP 500/,
     );
     expect(screen.getByRole('heading', { name: /Sources and what this page/ })).toBeInTheDocument();
+    // Every jump link keeps a target that explains why it is empty.
+    for (const id of ['updates', 'figures', 'lenses']) {
+      expect(document.getElementById(id)).toHaveTextContent(
+        'Not available: the Ukraine board could not be loaded.',
+      );
+    }
+    for (const link of within(
+      screen.getByRole('navigation', { name: 'Page sections' }),
+    ).getAllByRole('link')) {
+      expect(document.querySelector(link.getAttribute('href') ?? '')).toBeInTheDocument();
+    }
+  });
+
+  it('keeps board and reference targets mounted while they load', async () => {
+    server.use(
+      http.get('/api/conflicts/ukraine', () => new Promise<Response>(() => undefined)),
+      http.get('/api/conflicts/ukraine/reference', () => new Promise<Response>(() => undefined)),
+    );
+    renderApp('/conflicts/ukraine', 'user');
+    await screen.findByRole('navigation', { name: 'Page sections' }, { timeout: 5000 });
+    for (const id of ['updates', 'figures', 'lenses']) {
+      expect(document.getElementById(id)).toHaveTextContent(
+        'Waiting for the Ukraine board to load.',
+      );
+    }
+    for (const id of ['timeline', 'forces', 'equipment']) {
+      expect(document.getElementById(id)).toHaveTextContent(
+        'Waiting for the reference notes to load.',
+      );
+    }
   });
 
   it('reaches the page from the rail', async () => {
