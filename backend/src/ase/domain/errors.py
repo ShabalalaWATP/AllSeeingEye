@@ -99,9 +99,11 @@ class EmailTaken(AppError):
     default_message = "A user with this email address already exists."
 
 
-class UsernameTaken(AppError):
-    code = "username_taken"
-    default_message = "That directory username is already in use."
+class UsernameUnavailable(AppError):
+    """One answer for every held handle, so the response never says whose it is."""
+
+    code = "username_unavailable"
+    default_message = "That directory username is unavailable. Choose another."
 
 
 class SelfModification(AppError):

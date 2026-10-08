@@ -36,7 +36,7 @@ from ase.domain.directory_profile import (
     DirectoryPage,
     DirectoryProfile,
 )
-from ase.domain.errors import UsernameTaken
+from ase.domain.errors import UsernameUnavailable
 
 # One boolean column per owner-selectable field keeps directory filtering portable SQL.
 _VISIBILITY_COLUMNS = {field: f"show_{field.value}" for field in DirectoryField}
@@ -179,7 +179,7 @@ class SqlDirectoryProfileRepository:
         except IntegrityError as exc:
             # Do not surface database constraint text, which can disclose schema details.
             if "username" in str(exc.orig).lower():
-                raise UsernameTaken() from None
+                raise UsernameUnavailable() from None
             raise
 
     async def search(self, query: str, limit: int, offset: int) -> DirectoryPage:

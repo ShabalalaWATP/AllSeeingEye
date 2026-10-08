@@ -14,6 +14,10 @@ from ase.domain.mfa import PendingMfa
 from ase.domain.users import User, normalise_email
 
 
+def _email_key(email: str) -> str:
+    return f"login:email:{email}"
+
+
 class LoginUseCase:
     def __init__(
         self,
@@ -48,6 +52,9 @@ class LoginUseCase:
         email = normalise_email(email)
         self._enforce_limits(email, context)
         user = await self._users.lock_by_email(email)
+        # Earlier attempts record their failure before releasing the account lock, so
+        # rechecking here stops concurrent guesses from overshooting the failure budget.
+        self._refuse_exhausted_email(email)
         now = self._clock.now()
         if user is None:
             # Burn the same hashing cost as a real check so timing does not reveal existence.
@@ -76,18 +83,30 @@ class LoginUseCase:
         return session
 
     def _enforce_limits(self, email: str, context: RequestContext) -> None:
-        window = self._limits.login_window_seconds
-        for key, limit in (
-            (f"login:ip:{context.client_key}", self._limits.login_per_ip),
-            (f"login:email:{email}", self._limits.login_per_email),
-        ):
-            retry_after = self._limiter.hit(key, limit, window)
-            if retry_after is not None:
-                raise RateLimited(retry_after)
+        retry_after = self._limiter.hit(
+            f"login:ip:{context.client_key}",
+            self._limits.login_per_ip,
+            self._limits.login_window_seconds,
+        )
+        if retry_after is not None:
+            raise RateLimited(retry_after)
+        self._refuse_exhausted_email(email)
+
+    def _refuse_exhausted_email(self, email: str) -> None:
+        # Only failed attempts spend the per-email budget. Successful sign-ins never
+        # consume it, and the owner regains access as soon as failures age out.
+        retry_after = self._limiter.peek(
+            _email_key(email), self._limits.login_per_email, self._limits.login_window_seconds
+        )
+        if retry_after is not None:
+            raise RateLimited(retry_after)
 
     async def _fail(
         self, user: User | None, email: str, context: RequestContext, reason: str
     ) -> None:
+        self._limiter.hit(
+            _email_key(email), self._limits.login_per_email, self._limits.login_window_seconds
+        )
         await self._auditor.record(
             AuditAction.LOGIN_FAILED,
             actor=user.id if user else None,
