@@ -23,7 +23,7 @@ from ase.domain.ai_usage import AiReservationStatus
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-# Only finished reservations may go; ``reserved`` is in flight and ``unknown`` awaits review.
+# Only finished reservations may go; ``reserved`` is in flight and ``unknown`` awaits resolution.
 _PRUNABLE = (AiReservationStatus.RELEASED.value, AiReservationStatus.SETTLED.value)
 
 
