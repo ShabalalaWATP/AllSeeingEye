@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from heapq import nlargest
 from itertools import islice
 
@@ -37,6 +37,8 @@ DC_TERMS = "http://purl.org/dc/terms/"
 DC_ELEMENTS = "http://purl.org/dc/elements/1.1/"
 ATOM = "http://www.w3.org/2005/Atom"
 BODY_TAGS = ("description", "summary", "content", "encoded")
+# Publisher clocks and time zones drift; a stamp further ahead than this is not trusted.
+FUTURE_TOLERANCE = timedelta(days=1)
 
 
 @dataclass(frozen=True, slots=True)
@@ -238,7 +240,9 @@ class RssConnector:
             None if self._options.headlines_only else strip_html(_child_text(item, *BODY_TAGS))
         )
         source_dates = feed_source_dates(item)
-        published = feed_publication(item)
+        declared = feed_publication(item)
+        # A far-future stamp would pin the item to the top of every newest-first view.
+        published = now if declared is not None and declared > now + FUTURE_TOLERANCE else declared
         point = _point(item)
         country = _country(item, self._options.country_category_domain)
         if point is not None:
@@ -278,7 +282,11 @@ class RssConnector:
                 }
             ),
             content_hash=content_hash(
-                key, title, summary, published.isoformat() if published else None
+                # The declared value keeps the hash stable while a clamped stamp is in force.
+                key,
+                title,
+                summary,
+                declared.isoformat() if declared else None,
             ),
         )
 

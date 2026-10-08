@@ -93,6 +93,7 @@ class AdminWiring(ContainerCore):
             self._auditor(r),
             r.uow,
             tuple(self.settings.disabled_feed_ids),
+            withdraw=self.scheduler.withdraw,
         )
 
     def approve_request(self, session: AsyncSession) -> ApproveRequestUseCase:
