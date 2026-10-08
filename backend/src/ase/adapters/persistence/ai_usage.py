@@ -8,9 +8,16 @@ from ase.adapters.persistence.ai_usage_ledger import SqlAiLedger
 from ase.adapters.persistence.ai_usage_policies import SqlAiPolicyStore
 from ase.adapters.persistence.ai_usage_pruning import SqlAiUsagePruning
 from ase.adapters.persistence.ai_usage_totals import SqlAiTotalsReader
+from ase.adapters.persistence.ai_usage_unknown import SqlAiUnknownResolution
 
 
-class SqlAiUsageRepository(SqlAiPolicyStore, SqlAiLedger, SqlAiTotalsReader, SqlAiUsagePruning):
+class SqlAiUsageRepository(
+    SqlAiPolicyStore,
+    SqlAiLedger,
+    SqlAiTotalsReader,
+    SqlAiUsagePruning,
+    SqlAiUnknownResolution,
+):
     """Policy and ledger adapter. Callers own the transaction and commit boundary."""
 
     def __init__(self, session: AsyncSession) -> None:

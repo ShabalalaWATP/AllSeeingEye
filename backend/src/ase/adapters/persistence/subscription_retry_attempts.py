@@ -18,6 +18,10 @@ from ase.adapters.persistence.subscription_edition_models import (
 )
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.report_jobs.budget import token_count
+from ase.application.schedules.subscription_admission_wait import (
+    BUDGET_RETRY_AFTER,
+    JOB_BLOCK_REASONS,
+)
 from ase.domain.report_jobs import ReportJob, job_error
 from ase.domain.subscription_editions import EditionAttempt, SubscriptionEdition
 
@@ -197,6 +201,25 @@ async def due_retry_ids(session: AsyncSession, now: datetime, limit: int = 20) -
             SubscriptionAttemptRow.next_retry_at <= now,
         )
         .order_by(SubscriptionAttemptRow.next_retry_at, SubscriptionEditionRow.id)
+        .limit(limit)
+    )
+    return list(rows)
+
+
+async def due_blocked_ids(session: AsyncSession, now: datetime, limit: int = 20) -> list[UUID]:
+    """Job-bearing budget blocks whose hourly admission probe is due, oldest first."""
+    rows = await session.scalars(
+        select(SubscriptionEditionRow.id)
+        .join(ScheduleRow, SubscriptionEditionRow.subscription_id == ScheduleRow.id)
+        .where(
+            ScheduleRow.enabled.is_(True),
+            ScheduleRow.archived_at.is_(None),
+            SubscriptionEditionRow.workflow == "blocked",
+            SubscriptionEditionRow.job_id.is_not(None),
+            SubscriptionEditionRow.safe_reason.in_(sorted(JOB_BLOCK_REASONS)),
+            SubscriptionEditionRow.updated_at <= now - BUDGET_RETRY_AFTER,
+        )
+        .order_by(SubscriptionEditionRow.updated_at, SubscriptionEditionRow.id)
         .limit(limit)
     )
     return list(rows)

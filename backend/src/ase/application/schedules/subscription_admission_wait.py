@@ -13,6 +13,12 @@ BUDGET_BLOCK_REASON = "monthly_budget_exhausted"
 BUDGET_RETRY_AFTER = timedelta(hours=1)
 RESEARCH_BLOCK_REASON = "research_usage_limit"
 RESEARCH_RETRY_AFTER = timedelta(minutes=5)
+# Blocks on a retained job that a month rollover, raised allowance or freed budget can
+# clear. They share the hourly budget probe; scope, capability and authentication
+# blocks need a person and are never probed.
+JOB_BLOCK_REASONS = frozenset(
+    {"monthly_budget", "monthly_budget_exhausted", "ai_allowance_exhausted", "budget_unavailable"}
+)
 
 
 def admission_wait(

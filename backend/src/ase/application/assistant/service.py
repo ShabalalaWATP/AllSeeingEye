@@ -5,6 +5,7 @@ import re
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
+from uuid import UUID
 
 from ase.application.access import AccessPolicy
 from ase.application.ai_usage import AiUsageAccounting
@@ -43,6 +44,19 @@ from ase.domain.users import User
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
 ANSWER_SECONDS = 120
 FOLLOWUP_REFERENCE = re.compile(r"\b(those|these|them|earlier|previous|above)\b", re.I)
+
+
+def routing_binding(actor: User, context: AssistantContext) -> tuple[UUID | None, UUID | None]:
+    """Route through the authorised saved record's binding, never the actor's own.
+
+    A team report or alert uses its team binding; a personal one uses its owner's, so an
+    administrator asking about another person's report uses that person's model.
+    """
+    if context.alert:
+        return context.alert.team_id, context.alert.created_by
+    if context.report:
+        return context.report.team_id, context.report.created_by or actor.id
+    return None, actor.id
 
 
 class MapAssistant:
@@ -172,9 +186,9 @@ class MapAssistant:
                         self.clock.now(),
                     )
                 try:
+                    team_id, owner_id = routing_binding(actor, context)
                     routing = await self.routing.snapshot(
-                        team_id=context.alert.team_id if context.alert else None,
-                        personal_owner_id=(context.alert.created_by if context.alert else actor.id),
+                        team_id=team_id, personal_owner_id=owner_id
                     )
                     profile = routing.required(LlmRole.ASSESSMENT)
                 finally:

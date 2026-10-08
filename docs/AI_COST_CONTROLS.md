@@ -76,6 +76,13 @@ increase a shared site or team limit. A user must be authorised for a team to ch
 work to it. Temporary overrides are dated and revocable; resolve active or future
 overrides before changing an underlying daily preset.
 
+A call that times out or is cancelled after it was sent holds its reservation as
+`unknown`, because the provider may still have charged it. After 24 hours the
+reservation is settled as one failed request with only the tokens the provider
+reported, normally none, so a lost call cannot reduce a monthly token allowance until
+the month ends. The request itself still counts, and usage history keeps it as an
+unknown call. An administrator can compare that count with the provider's own billing.
+
 A fresh installation starts with these protective token policies:
 
 | Scope | Period | Tokens |
@@ -145,6 +152,18 @@ forecast.
 Start with a cadence that matches how quickly the subject changes. Inspect a completed
 edition's coverage and usage before increasing frequency or depth. Pausing stops
 further scheduled admissions; it does not refund work already sent to a provider.
+
+When an AI allowance refuses a report call, nothing is sent to the provider. The job
+pauses with an allowance message, keeps its saved sections and does not spend any of
+its lifetime or per-stage call limits. A subscription edition whose retained job stops
+on the monthly report budget, an AI allowance or a lifetime-budget check is blocked
+rather than failed. Once an hour the worker probes it under the same capacity, saved
+allowance and monthly budget checks as a manual resume, and resumes the same job when
+there is room again, for example after the UTC month rolls over or an administrator
+raises an allowance. An AI allowance is rechecked only when the resumed job next
+reserves a call, so a still-exhausted allowance blocks the edition again without
+sending anything. Blocks caused by revoked access or a missing model need a person
+and are not probed.
 
 ## Estimated spend
 
