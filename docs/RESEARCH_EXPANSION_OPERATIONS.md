@@ -209,9 +209,11 @@ activity or change, and remain separate from frozen report evidence.
 
 Contracts Finder collects one bounded publication page and matches supplied terms
 locally. It does not claim a complete procurement or company award history.
-UK Sanctions List and OFAC SDN research use explicitly configured local snapshots:
-`ASE_UKSL_SNAPSHOT_PATH` and `ASE_OFAC_SDN_SNAPSHOT_PATH`. Use
-`uv run ase import-designations --help` in `backend` for the bounded CSV import.
+UK Sanctions List, OFAC SDN, UN Security Council Consolidated List and EU
+consolidated financial sanctions research use explicitly configured local snapshots:
+`ASE_UKSL_SNAPSHOT_PATH`, `ASE_OFAC_SDN_SNAPSHOT_PATH`, `ASE_UN_SC_SNAPSHOT_PATH`
+and `ASE_EU_FSF_SNAPSHOT_PATH`. Use `uv run ase import-designations --help` in
+`backend` for the bounded import (native CSV for UK and OFAC, XML for UN and EU).
 Imports retain source hashes, dates and licence metadata and refuse to overwrite
 an existing snapshot. No operator snapshot has been imported during development.
 Names remain identity candidates; a name match is not a confirmed designation.
