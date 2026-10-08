@@ -12001,6 +12001,13 @@ export interface components {
             /** Code */
             code: string;
         };
+        /** MfaEnrolAppIn */
+        MfaEnrolAppIn: {
+            /** Challenge Token */
+            challenge_token: string;
+            /** Email Code */
+            email_code?: string | null;
+        };
         /**
          * MfaMethod
          * @enum {string}
@@ -12032,6 +12039,11 @@ export interface components {
             enrollment_required: boolean;
             /** Email Sent */
             email_sent: boolean;
+            /**
+             * Authenticator Email Proof
+             * @description Confirm an emailed code before a first authenticator can be set up.
+             */
+            authenticator_email_proof: boolean;
         };
         /** MfaStatusOut */
         MfaStatusOut: {
@@ -19241,7 +19253,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MfaChallengeIn"];
+                "application/json": components["schemas"]["MfaEnrolAppIn"];
             };
         };
         responses: {

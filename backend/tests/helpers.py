@@ -103,9 +103,15 @@ async def login(client: AsyncClient, email: str, password: str) -> Response:
     pending = response.json()
     challenge = pending["challenge_token"]
     if pending["enrollment_required"]:
-        enrolment = await client.post(
-            "/api/auth/mfa/enrol-app", json={"challenge_token": challenge}
-        )
+        body = {"challenge_token": challenge}
+        if pending["authenticator_email_proof"]:
+            # With email delivery configured, a first authenticator needs an emailed code.
+            sent = await client.post("/api/auth/mfa/email", json={"challenge_token": challenge})
+            assert sent.status_code == 200, sent.text
+            sender = container.email_sender
+            assert isinstance(sender, RecordingEmailSender)
+            body["email_code"] = sender.codes[-1][1]
+        enrolment = await client.post("/api/auth/mfa/enrol-app", json=body)
         assert enrolment.status_code == 200, enrolment.text
         secret = enrolment.json()["secret"]
     else:

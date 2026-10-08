@@ -118,6 +118,7 @@ describe('personal recovery codes', () => {
           methods: ['email'],
           enrollment_required: false,
           email_sent: true,
+          authenticator_email_proof: false,
         });
       }),
       http.post('/api/auth/mfa/recovery/generate', async ({ request }) => {

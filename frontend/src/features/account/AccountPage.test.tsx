@@ -157,6 +157,7 @@ describe('account settings', () => {
           methods: ['email'],
           enrollment_required: false,
           email_sent: true,
+          authenticator_email_proof: false,
         });
       }),
       http.post('/api/me/password', async ({ request }) => {
@@ -200,6 +201,7 @@ describe('account settings', () => {
               methods: ['email'],
               enrollment_required: false,
               email_sent: true,
+              authenticator_email_proof: false,
             });
       }),
       http.post('/api/auth/refresh', () => {

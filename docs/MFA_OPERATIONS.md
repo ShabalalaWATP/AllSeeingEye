@@ -28,6 +28,28 @@ transport delivers activation and reset links. Unconfigured email is shown as
 unavailable; MFA codes are never returned through an administrator fallback link.
 At least one method must be configured before an unenrolled administrator can sign in.
 
+## Administrator first enrolment
+
+An administrator without a factor reaches enrolment with only a password. When email
+delivery is configured, setting up the first authenticator app requires a six-digit
+code sent to the account address first, so a password phished before enrolment cannot
+bind the attacker's authenticator. Choosing email as the first method already needs
+that code. The proof is single-use: it cannot also enable email MFA. Wrong codes count
+against the challenge and the account's second-factor failure budget. A fresh sign-in
+starts a new challenge. Someone who holds the password can keep spending that budget,
+which refuses enrolment for up to 15 minutes at a time; treat repeated
+`second_factor_rate_limited` audit events for an administrator as a compromised
+password and reset it.
+
+Without email delivery, the authenticator is bound after the password alone. That is
+the accepted trade-off for installations with no mail service: protect administrator
+passwords until enrolment is complete, enrol promptly after an account is created or
+recovered, and configure SMTP where possible. If SMTP is configured but delivery is
+failing, or the account address cannot receive mail, an unenrolled administrator
+cannot complete either method until delivery works. Check the address when creating
+an administrator. A host operator can instead remove the SMTP settings and restart,
+which returns to password-only enrolment, then restore them after enrolment.
+
 ## Sign-in and recovery
 
 A correct password opens the MFA step only when the account has an enabled factor,

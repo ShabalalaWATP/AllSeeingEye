@@ -14,7 +14,7 @@ security contract; [team management](TEAMS_API.md) and
 - Refresh token: opaque 48-byte URL-safe random string delivered only as the cookie `ase_refresh` (`HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=14 days; Secure` when `ASE_COOKIE_SECURE=true`). Stored hashed (SHA-256) with a family id; rotated on every refresh; reuse of a rotated token revokes the whole family.
 - CSRF: cookie `ase_csrf` (random, `SameSite=Strict; Path=/`, readable by script) is set with the refresh cookie. `POST /api/auth/refresh` and `POST /api/auth/logout` require header `X-CSRF-Token` equal to the cookie (constant-time compare). Failure: 403 `csrf_failed`.
 - Request bodies above 64 KB are refused with 413 `payload_too_large` (configurable with `ASE_MAX_REQUEST_BYTES`; Caddy enforces the same cap at the edge).
-- Rate limits: 429 `rate_limited` with a `Retry-After` header. Defaults: login 10 per minute per IP and 5 per minute per email; request-account and forgot-password 3 per hour per IP; set-password 10 per hour per IP; authenticated password changes 5 per minute per account and per IP.
+- Rate limits: 429 `rate_limited` with a `Retry-After` header. Defaults: login 10 attempts per minute per IP and 5 failed attempts per minute per email (successful sign-ins do not count, and failures age out after the minute); request-account and forgot-password 3 per hour per IP; set-password 10 per hour per IP; authenticated password changes 5 per minute per account and per IP.
 - Failed login attempts are bounded by per-IP and per-email rate limits. They do not persistently lock the named account, so knowing an email address is not enough to deny its owner access.
 - No account enumeration: all login failures use a generic 401 response. Account requests and forgot-password requests use the same 202 message for known and unknown/ineligible addresses; they do not report whether an account exists.
 - Security headers on every API response: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'`, and `Cache-Control: no-store` on authentication, administrator and private operational routes. Binary document downloads preserve `private, no-store`.
@@ -69,7 +69,9 @@ receive a restricted challenge instead of access or refresh tokens. Administrato
 without a factor must complete enrolment through that challenge before signing in.
 
 `MfaPendingOut` contains `mfa_required: true`, opaque `challenge_token`, `expires_at`,
-`methods` (`authenticator` and/or `email`), `enrollment_required` and `email_sent`.
+`methods` (`authenticator` and/or `email`), `enrollment_required`, `email_sent` and
+`authenticator_email_proof`. The last is true when an administrator's first
+authenticator may be bound only after a code sent to the account email is confirmed.
 An email-only login automatically sends a code. With both factors, the user can
 choose email instead of the authenticator. Challenges expire after ten minutes;
 email codes expire after five minutes and replacement codes invalidate prior ones.
@@ -79,7 +81,7 @@ Five failed attempts exhaust that challenge. A fresh valid-password login can cr
 |---|---|---|
 | `POST /api/auth/mfa/verify` | Challenge, `{challenge_token, method, code}` | TokenResponse and session cookies only after successful factor verification |
 | `POST /api/auth/mfa/email` | Challenge, `{challenge_token}` | Sends or replaces login email code; MfaPendingOut |
-| `POST /api/auth/mfa/enrol-app` | Restricted administrator enrolment challenge | `{secret, provisioning_uri, expires_in}`; confirm through `/verify` |
+| `POST /api/auth/mfa/enrol-app` | Restricted administrator enrolment challenge, `{challenge_token, email_code?}` | `{secret, provisioning_uri, expires_in}`; confirm through `/verify`. With email delivery configured, the first call needs a current six-digit `email_code` from `/mfa/email`; a missing or wrong code is a failed proof (401) |
 | `GET /api/auth/mfa` | Bearer | `{methods, available_methods, required}` |
 | `GET /api/auth/totp` | Bearer | `{enabled, available}` |
 | `POST /api/auth/totp/enrol` | Bearer, `{password}` | New secret/provisioning URI; expires in 600 seconds |

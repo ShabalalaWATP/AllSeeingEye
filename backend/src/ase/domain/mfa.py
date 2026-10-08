@@ -43,3 +43,5 @@ class PendingMfa:
     methods: tuple[MfaMethod, ...]
     enrollment_required: bool
     email_sent: bool
+    # A first authenticator may be bound only after an emailed code is confirmed.
+    authenticator_email_proof: bool = False

@@ -30,6 +30,7 @@ const pending = {
   expires_at: '2026-09-06T12:00:00Z',
   methods: ['email'],
   email_sent: true,
+  authenticator_email_proof: false,
   enrollment_required: false,
 };
 

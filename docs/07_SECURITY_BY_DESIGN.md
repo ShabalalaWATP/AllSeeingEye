@@ -12,13 +12,17 @@ instructions. These are implemented safeguards, not a security certification.
 Passwords use Argon2id hashing and a common-password check. Account requests need
 administrator approval. Administrators must enrol and verify multi-factor
 authentication before entering the administration workspace. Authenticator and
-email options depend on the installation's configuration.
+email options depend on the installation's configuration. When email delivery is
+configured, an administrator's first authenticator is bound only after a code sent
+to the account address is confirmed.
 
 Password hashing runs in a small bounded worker pool so sign-in load cannot stall
 other requests. Public sign-in endpoints are limited per client, with IPv6 clients
 grouped by /64 prefix. Account and reset requests also have installation-wide hourly
-caps, and the pending account request queue has a maximum size. Each account has a
-budget of failed second-factor proofs across challenges and methods. These limits
+caps, and the pending account request queue has a maximum size. The per-email
+sign-in budget counts failed attempts only. Each account has a budget of failed
+second-factor proofs across challenges and methods, and of directory username changes;
+a taken username is reported as unavailable whoever holds it. These limits
 are held in memory and reset when the API restarts.
 
 Access tokens are short-lived and held in browser memory. Refresh sessions use

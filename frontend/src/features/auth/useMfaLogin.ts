@@ -21,13 +21,22 @@ export function useMfaLogin(challenge: PendingMfa) {
   const [code, setCode] = useState('');
   const [emailSent, setEmailSent] = useState(challenge.email_sent);
   const [enrolment, setEnrolment] = useState<MfaEnrolment | null>(null);
+  // Confirms the account address before a first authenticator is bound, when required.
+  const [emailProof, setEmailProof] = useState('');
   const action = useAsyncAction(async (intent: 'verify' | 'email' | 'app') => {
     if (intent === 'email') {
       await sendMfaEmail(challenge.challenge_token);
       setEmailSent(true);
       setCode('');
+      setEmailProof('');
     } else if (intent === 'app') {
-      setEnrolment(await enrolLoginApp(challenge.challenge_token));
+      setEnrolment(
+        await enrolLoginApp(
+          challenge.challenge_token,
+          challenge.authenticator_email_proof ? emailProof : undefined,
+        ),
+      );
+      setEmailProof('');
     } else {
       const controller = new AbortController();
       verification.current = controller;
@@ -46,5 +55,15 @@ export function useMfaLogin(challenge: PendingMfa) {
     setCode('');
     action.clearError();
   };
-  return { ...action, method, chooseMethod, code, setCode, emailSent, enrolment };
+  return {
+    ...action,
+    method,
+    chooseMethod,
+    code,
+    setCode,
+    emailSent,
+    enrolment,
+    emailProof,
+    setEmailProof,
+  };
 }
