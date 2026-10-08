@@ -82,3 +82,14 @@ updates:
       frontend-images-minor-and-patch:
         patterns: ['*']
         update-types: [minor, patch]
+  # The production database image in docker-compose.yml. CI's PostgreSQL service pins
+  # the same image (scripts/tests/test_database_image_pin.py keeps them equal), so
+  # update both together when this pull request arrives.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # A PostgreSQL major upgrade needs a dump and restore, never an image bump.
+      - dependency-name: postgis/postgis
+        update-types: ['version-update:semver-major']
