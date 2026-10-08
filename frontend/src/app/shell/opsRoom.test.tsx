@@ -1,8 +1,10 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, renderHook, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { useGlobeStore } from '@/stores/globe';
 import { renderApp } from '@/test/render';
+
+import { useOpsRoomRoute } from './useOpsRoomRoute';
 
 describe('ops room', () => {
   it('can exit with a pointer or touch without a hardware keyboard', async () => {
@@ -26,6 +28,31 @@ describe('ops room', () => {
     expect(screen.queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    expect(useGlobeStore.getState().opsRoom).toBe(false);
+  });
+
+  it('ends when another route opens, so returning to the map does not resume it', async () => {
+    const { user, router } = renderApp('/', 'user');
+    expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    await user.keyboard('o');
+    await waitFor(() => {
+      expect(screen.queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
+    });
+    // Leaving by any route, such as the search palette, ends it.
+    await act(() => router.navigate('/reports'));
+    expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    await waitFor(() => expect(useGlobeStore.getState().opsRoom).toBe(false));
+  });
+
+  it('survives arriving at the map, so the shortcut still works from other pages', () => {
+    const { rerender } = renderHook(({ path }) => useOpsRoomRoute(path), {
+      initialProps: { path: '/reports' },
+    });
+    // The shortcut sets the flag while the old page is still showing, then arrives home.
+    act(() => useGlobeStore.getState().setOpsRoom(true));
+    rerender({ path: '/' });
+    expect(useGlobeStore.getState().opsRoom).toBe(true);
+    rerender({ path: '/research' });
     expect(useGlobeStore.getState().opsRoom).toBe(false);
   });
 

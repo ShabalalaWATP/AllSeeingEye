@@ -43,7 +43,7 @@ it('requests permission from the gesture then registers only endpoint keys', asy
       return HttpResponse.json({ id: 'device', endpoint_hash: 'hash', created_at: 'now' });
     }),
   );
-  const result = enablePush('BA', []);
+  const result = enablePush('BA', [], 'user-a');
   expect(requestPermission).toHaveBeenCalledOnce();
   await result;
   expect(subscribe).toHaveBeenCalledWith({
@@ -61,7 +61,7 @@ it('requests permission from the gesture then registers only endpoint keys', asy
 
 it('denied permission never creates a subscription', async () => {
   const { subscribe } = browser('denied');
-  await expect(enablePush('BA', [])).rejects.toThrow(/permission/);
+  await expect(enablePush('BA', [], 'user-a')).rejects.toThrow(/permission/);
   expect(subscribe).not.toHaveBeenCalled();
 });
 
@@ -70,7 +70,7 @@ it('failed server registration unsubscribes the browser', async () => {
   server.use(
     http.post('/api/me/notifications/push', () => new HttpResponse(null, { status: 422 })),
   );
-  await expect(enablePush('BA', [])).rejects.toThrow();
+  await expect(enablePush('BA', [], 'user-a')).rejects.toThrow();
   expect(unsubscribe).toHaveBeenCalledOnce();
 });
 

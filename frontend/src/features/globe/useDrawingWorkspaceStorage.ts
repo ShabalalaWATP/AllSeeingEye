@@ -5,7 +5,7 @@ import {
   listMapWorkspaceDocuments,
   updateMapWorkspaceDocument,
 } from '@/lib/api/mapWorkspace';
-import { scopedMutation, subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
+import { scopedMutation, scopedRead, subscribeWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { describeError } from '@/lib/api/errors';
 import { drawingAuthority } from '@/lib/map/drawingAuthority';
@@ -97,7 +97,7 @@ export function useDrawingWorkspaceStorage(
         setHasMore(false);
         setNextOffset(0);
       }
-      const result = await scopedMutation(() =>
+      const result = await scopedRead(() =>
         listMapWorkspaceDocuments('drawings', signal, { offset, limit: 100 }),
       );
       if (signal.aborted) return;
@@ -116,7 +116,7 @@ export function useDrawingWorkspaceStorage(
       );
   };
   const read = async (id: string, signal: AbortSignal, expected: number) => {
-    const result = await scopedMutation(() => getMapWorkspaceDocument(id, signal));
+    const result = await scopedRead(() => getMapWorkspaceDocument(id, signal));
     if (signal.aborted) return;
     ensureUnchanged(expected);
     if (result.kind !== 'drawings') throw new Error('This document is not a drawing collection.');

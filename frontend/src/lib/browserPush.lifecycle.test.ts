@@ -2,7 +2,15 @@ import { webcrypto } from 'node:crypto';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { server } from '@/test/server';
-import { currentPush, disablePush, enablePush, endpointHash } from './browserPush';
+import {
+  clearBrowserPush,
+  currentPush,
+  disablePush,
+  enablePush,
+  endpointHash,
+  pushRecord,
+  rememberPush,
+} from './browserPush';
 
 const registered = vi.fn();
 const removed = vi.fn();
@@ -49,7 +57,7 @@ function browser(keys: Record<string, string> = { p256dh: 'key', auth: 'secret' 
 it('refuses unsupported browsers and treats a missing worker registration as unsubscribed', async () => {
   const { serviceWorker } = browser();
   vi.stubGlobal('isSecureContext', false);
-  await expect(enablePush('BA', [])).rejects.toThrow('Push is unsupported');
+  await expect(enablePush('BA', [], 'user-a')).rejects.toThrow('Push is unsupported');
   expect(serviceWorker.register).not.toHaveBeenCalled();
   vi.stubGlobal('isSecureContext', true);
   serviceWorker.getRegistration.mockResolvedValue(undefined);
@@ -65,7 +73,7 @@ it.each([true, false])('replaces a browser subscription with a %s server match',
     endpoint_hash: known ? hash : 'another-hash',
     created_at: 'now',
   };
-  await enablePush('BA', [previous]);
+  await enablePush('BA', [previous], 'user-a');
   if (known) {
     expect(removed).toHaveBeenCalledWith('previous');
     expect(removed.mock.invocationCallOrder[0]).toBeLessThan(
@@ -90,7 +98,7 @@ it.each(incompleteKeys)(
   'discards a newly created subscription with incomplete keys %j',
   async (keys) => {
     const { subscription } = browser(keys);
-    await expect(enablePush('BA', [])).rejects.toThrow('incomplete push keys');
+    await expect(enablePush('BA', [], 'user-a')).rejects.toThrow('incomplete push keys');
     expect(registered).not.toHaveBeenCalled();
     expect(subscription.unsubscribe).toHaveBeenCalledOnce();
   },
@@ -111,3 +119,16 @@ it.each([true, false])(
     expect(subscription.unsubscribe).toHaveBeenCalledTimes(matches ? 1 : 0);
   },
 );
+
+it('records which account opted this browser in, and forgets it when push is removed', async () => {
+  const { subscription, manager } = browser();
+  await enablePush('BA', [], 'user-a');
+  expect(pushRecord()).toEqual({ owner: 'user-a', hash: 'new-hash' });
+  manager.getSubscription.mockResolvedValue(subscription);
+  const hash = await endpointHash(subscription as unknown as PushSubscription);
+  await disablePush({ id: 'new', endpoint_hash: hash, created_at: 'now' });
+  expect(pushRecord()).toBeNull();
+  rememberPush('user-a', hash);
+  await clearBrowserPush();
+  expect(pushRecord()).toBeNull();
+});

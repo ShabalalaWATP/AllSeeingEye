@@ -8,11 +8,16 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { usePushRenewal } from '@/lib/hooks/usePushRenewal';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 
 export function RequireAuth() {
   const status = useAuthStore((state) => state.status);
+  const owner = useAuthStore((state) =>
+    state.status === 'authenticated' ? (state.user?.id ?? null) : null,
+  );
   const location = useLocation();
+  usePushRenewal(owner);
 
   if (status === 'unknown') {
     return <LoadingScreen label="Checking your session" />;

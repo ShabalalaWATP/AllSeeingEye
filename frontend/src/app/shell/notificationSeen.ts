@@ -10,7 +10,8 @@ export function seenKey(userId: string): string {
   return `${PREFIX}${userId}`;
 }
 
-export function markNotificationsSeen(userId: string, at: number = Date.now()): number {
+/** Stamp with server time (a record's `updated_at`), so client clock skew cannot strand items. */
+export function markNotificationsSeen(userId: string, at: number): number {
   writeStored(seenKey(userId), String(at));
   return at;
 }

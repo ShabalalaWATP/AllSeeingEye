@@ -81,6 +81,11 @@ export function useNotificationBell(userId: string): NotificationBellState {
   const finished = (jobs.data ?? [])
     .filter((job) => FINISHED.has(job.status))
     .sort((a, b) => time(b.updated_at) - time(a.updated_at));
+  // Server time of the newest finished run, so a skewed client clock cannot keep it counted.
+  const newest = (jobs.data ?? []).reduce(
+    (latest, job) => (FINISHED.has(job.status) ? Math.max(latest, time(job.updated_at)) : latest),
+    0,
+  );
   const unseenJobs = researchMuted
     ? 0
     : finished.filter((job) => time(job.updated_at) > seenAt).length;
@@ -95,10 +100,10 @@ export function useNotificationBell(userId: string): NotificationBellState {
       return;
     }
     setOpenedFrom(seenAt);
-    setSeenAt(markNotificationsSeen(userId));
+    if (newest > 0) setSeenAt(markNotificationsSeen(userId, newest));
     // Reconcile with changes made in another session before the reader acts.
     void refresh();
-  }, [openedFrom, seenAt, userId, refresh]);
+  }, [openedFrom, seenAt, newest, userId, refresh]);
   const { error: bellError, reload: reloadBell } = bell;
   const { error: jobsError, reload: reloadJobs } = jobs;
   const retry = useCallback(() => {

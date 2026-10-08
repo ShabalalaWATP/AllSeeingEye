@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { apiCall, apiSend } from './client';
 import type { components } from './types.gen';
-import { scopedMutation } from '@/lib/workspaceAccess';
+import { scopedMutation, scopedRead } from '@/lib/workspaceAccess';
 
 export const llmRoleSchema = z.enum([
   'direction',
@@ -79,7 +79,7 @@ export function fetchLlmModels(
   id: string,
   signal?: AbortSignal,
 ): Promise<components['schemas']['LlmModelsOut']> {
-  return scopedMutation(() =>
+  return scopedRead(() =>
     apiCall(`/api/admin/llm/profiles/${encodeURIComponent(id)}/models`, {
       schema: modelsSchema,
       ...(signal ? { signal } : {}),
