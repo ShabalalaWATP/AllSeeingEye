@@ -23,6 +23,7 @@ jobs:
     env:
       HOST: allseeingeyeosint.com
       CERT_WARN_DAYS: "14"
+      HSTS_MIN_AGE: "31536000"
     steps:
       - name: Check the site, API health and readiness
         run: |
@@ -41,6 +42,22 @@ jobs:
           probe /api/health '"status":"ok"' || status=1
           probe /api/ready '"status":"ready"' || status=1
           exit $status
+      - name: Check the site sends a year-long HSTS policy
+        run: |
+          headers=
+          for attempt in 1 2 3; do
+            headers=$(curl --silent --show-error --fail --max-time 15 --head "https://$HOST/") && break
+            headers=
+            sleep 20
+          done
+          hsts=$(printf '%s\n' "$headers" | tr -d '\r' \
+            | grep -i -m 1 '^strict-transport-security:' || true)
+          age=$(printf '%s\n' "$hsts" | grep -i -o 'max-age=[0-9]*' | head -n 1 | cut -d= -f2 || true)
+          echo "HSTS on /: ${hsts:-missing}"
+          if [ -z "$age" ] || [ "$age" -lt "$HSTS_MIN_AGE" ]; then
+            echo "::error title=Uptime::/ must send Strict-Transport-Security with max-age of at least $HSTS_MIN_AGE"
+            exit 1
+          fi
       - name: Check the TLS certificate is not about to expire
         run: |
           end=$(echo | openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
