@@ -9,6 +9,7 @@ from uuid import UUID
 
 
 class AuditAction(StrEnum):
+    ENQUIRY_SUBMITTED = "enquiry.submitted"
     SOURCE_ACTIVATION_CHANGED = "source_activation_changed"
     FIRMS_DRAFT_SAVED = "firms.draft_saved"
     FIRMS_TEST_STARTED = "firms.test_started"
@@ -35,6 +36,7 @@ class AuditAction(StrEnum):
     TOKEN_REFRESHED = "token_refreshed"
     REFRESH_REUSE_DETECTED = "refresh_reuse_detected"
     LOGOUT = "logout"
+    SESSION_IDLE_EXPIRED = "session.idle_expired"
     ACCOUNT_REQUESTED = "account_requested"
     ACCOUNT_REQUEST_APPROVED = "account_request_approved"
     ACCOUNT_REQUEST_REJECTED = "account_request_rejected"

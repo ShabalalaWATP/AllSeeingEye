@@ -3,6 +3,8 @@
 # A new authenticated route must do one or the other; add it here only when a
 # reviewer agrees nothing private is released after slow work. One "METHOD /path"
 # per line; test_session_fence_architecture.py keeps this list exact.
+# POST /api/enquiries is deliberately public and excluded from authenticated routes:
+# it accepts bounded input and returns a fixed receipt, never stored private data.
 # GET /api/reports/{report_id} and its /markdown export are listed because their
 # final session read happens uncached inside application/reports/document_release.py.
 DELETE /api/admin/sources/firms_viirs_noaa20/connection
@@ -70,7 +72,6 @@ GET /api/relationship-reviews/assertions
 GET /api/relationship-reviews/{relationship_id}
 GET /api/relationship-reviews/{relationship_id}/revisions/{revision_id}
 GET /api/report-methodology
-GET /api/report-search
 GET /api/reports
 GET /api/reports/templates
 GET /api/reports/{report_id}
@@ -139,8 +140,6 @@ POST /api/me/sessions/revoke-others
 POST /api/me/team-invitations/{invitation_id}/accept
 POST /api/me/team-invitations/{invitation_id}/decline
 POST /api/relationship-reviews
-POST /api/report-search/index
-POST /api/report-search/query
 POST /api/reports/{report_id}/original-assets
 POST /api/reports/{report_id}/versions/{number}/source-assessment-snapshots
 POST /api/reports/{report_id}/versions/{number}/source-reviews
@@ -160,3 +159,6 @@ PUT /api/me/library/{report_id}
 PUT /api/reports/{report_id}/original-assets/{asset_id}/content
 PUT /api/teams/{team_id}/members
 PUT /api/warning/indicators/{indicator_id}
+
+# Activity owns its account lock, session check and commit; it returns no private payload.
+POST /api/auth/activity

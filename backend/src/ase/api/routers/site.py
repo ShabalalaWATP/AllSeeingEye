@@ -17,4 +17,7 @@ router = APIRouter(tags=["site"])
 @router.get("/site")
 async def site(container: ContainerDep, response: Response) -> PublicSiteOut:
     response.headers["Cache-Control"] = "no-store"
-    return PublicSiteOut(product_page_enabled=container.settings.public_product_page_enabled)
+    return PublicSiteOut(
+        product_page_enabled=container.settings.public_product_page_enabled,
+        enterprise_enquiries_enabled=container.settings.enterprise_enquiries_enabled,
+    )

@@ -30,6 +30,11 @@ class Unauthenticated(AppError):
     default_message = "Authentication is required."
 
 
+class SessionIdleExpired(Unauthenticated):
+    code = "session_idle_expired"
+    default_message = "Your session ended after inactivity. Sign in again."
+
+
 class Forbidden(AppError):
     code = "forbidden"
     default_message = "You do not have permission to do that."

@@ -10,6 +10,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from ase.application.dto import AuthSession
 from ase.domain.audit import AuditEntry
+from ase.domain.session_activity import SessionActivity
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
 
@@ -73,11 +74,28 @@ class UserOut(BaseModel):
         )
 
 
+class SessionActivityOut(BaseModel):
+    server_now: datetime
+    last_activity_at: datetime
+    idle_expires_at: datetime
+    idle_minutes: int
+
+    @classmethod
+    def from_activity(cls, activity: SessionActivity) -> Self:
+        return cls(
+            server_now=activity.server_now,
+            last_activity_at=activity.last_activity_at,
+            idle_expires_at=activity.idle_expires_at,
+            idle_minutes=activity.idle_minutes,
+        )
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"  # noqa: S105
     expires_in: int
     user: UserOut
+    activity: SessionActivityOut
 
     @classmethod
     def from_session(cls, session: AuthSession) -> Self:
@@ -85,6 +103,7 @@ class TokenResponse(BaseModel):
             access_token=session.access.token,
             expires_in=session.access.expires_in,
             user=UserOut.from_user(session.user),
+            activity=SessionActivityOut.from_activity(session.activity),
         )
 
 
@@ -170,6 +189,7 @@ class PublicSiteOut(BaseModel):
     """Facts the signed-out pages need about this installation; nothing private."""
 
     product_page_enabled: bool
+    enterprise_enquiries_enabled: bool
 
 
 class ReadyOut(BaseModel):

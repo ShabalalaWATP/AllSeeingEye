@@ -2,11 +2,10 @@
 
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.notify.smtp_email import SmtpEmailSender
-from ase.application.ports.services import EmailSender
 from ase.infrastructure.settings import Settings
 
 
-def build_email_sender(settings: Settings) -> EmailSender:
+def build_email_sender(settings: Settings) -> SmtpEmailSender | NullEmailSender:
     if not settings.smtp_host or not settings.smtp_from_email:
         return NullEmailSender()
     return SmtpEmailSender(
@@ -17,4 +16,7 @@ def build_email_sender(settings: Settings) -> EmailSender:
         username=settings.smtp_username,
         password=settings.smtp_password.get_secret_value() if settings.smtp_password else None,
         timeout_seconds=settings.smtp_timeout_seconds,
+        operator_email=str(settings.enterprise_enquiry_notify_email)
+        if settings.enterprise_enquiry_notify_email
+        else None,
     )

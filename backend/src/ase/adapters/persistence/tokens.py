@@ -11,6 +11,12 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import PasswordTokenRow, RefreshTokenRow
+from ase.adapters.persistence.session_activity import (
+    RefreshFamilyActivityRow,
+    active_activity,
+    read_activity,
+    touch_activity,
+)
 from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.token_families import (
     family_is_revoked,
@@ -20,6 +26,7 @@ from ase.adapters.persistence.token_families import (
 )
 from ase.adapters.persistence.web_push_devices import remove_push_family, remove_push_user
 from ase.domain.errors import NotFound
+from ase.domain.session_activity import SessionActivity, SessionIdlePolicy
 from ase.domain.tokens import PasswordToken, RefreshToken, TokenPurpose
 
 
@@ -43,8 +50,27 @@ class SqlRefreshTokenRepository:
     """Bulk revocations below are plain UPDATEs: rows already loaded in the same session are
     not refreshed, so callers must not rely on previously loaded token objects afterwards."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, idle_policy: SessionIdlePolicy) -> None:
         self._session = session
+        self._idle_policy = idle_policy
+
+    async def start_family(self, user_id: UUID, family_id: UUID, now: datetime) -> None:
+        self._session.add(
+            RefreshFamilyActivityRow(
+                user_id=user_id,
+                family_id=family_id,
+                last_activity_at=now,
+            )
+        )
+        await self._session.flush()
+
+    async def activity(
+        self, user_id: UUID, family_id: UUID, now: datetime
+    ) -> SessionActivity | None:
+        return await read_activity(self._session, user_id, family_id, now, self._idle_policy)
+
+    async def touch_activity(self, family_id: UUID, now: datetime) -> bool:
+        return await touch_activity(self._session, family_id, now)
 
     async def family_is_active(
         self, user_id: UUID, family_id: UUID, now: datetime, *, require_mfa: bool = False
@@ -58,6 +84,7 @@ class SqlRefreshTokenRepository:
                         RefreshTokenRow.revoked_at.is_(None),
                         RefreshTokenRow.expires_at > now,
                         ~family_is_revoked(),
+                        active_activity(user_id, family_id, now, self._idle_policy),
                         RefreshTokenRow.mfa_verified.is_(True) if require_mfa else true(),
                     )
                 )
@@ -103,6 +130,9 @@ class SqlRefreshTokenRepository:
                 RefreshTokenRow.revoked_at.is_(None),
                 RefreshTokenRow.expires_at > now,
                 ~family_is_revoked(),
+                active_activity(
+                    RefreshTokenRow.user_id, RefreshTokenRow.family_id, now, self._idle_policy
+                ),
             )
             .values(revoked_at=now)
             .returning(RefreshTokenRow.id)

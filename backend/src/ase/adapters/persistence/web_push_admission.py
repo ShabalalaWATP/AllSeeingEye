@@ -11,10 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.operational_models import AlertRow
-from ase.adapters.persistence.tokens import SqlRefreshTokenRepository
 from ase.adapters.persistence.web_push_devices import remove_push_device
 from ase.adapters.persistence.web_push_models import PushDeliveryRow, PushDeviceRow
 from ase.application.access import AccessContext, AccessPolicy
+from ase.application.ports import RefreshTokenRepository
 from ase.domain.access import Visibility
 from ase.domain.errors import Forbidden, NotFound, Unauthenticated
 
@@ -22,12 +22,16 @@ NAMESPACE = UUID("ef669ff2-851e-4ffc-b912-35840b38c8a1")
 
 
 async def device_access(
-    session: AsyncSession, access: AccessPolicy, device: PushDeviceRow, now: datetime
+    session: AsyncSession,
+    access: AccessPolicy,
+    device: PushDeviceRow,
+    now: datetime,
+    tokens: RefreshTokenRepository,
 ) -> AccessContext:
     current = await access.background(device.user_id, None, for_update=True)
     if (
         current.actor.security_version != device.security_version
-        or not await SqlRefreshTokenRepository(session).family_is_active(
+        or not await tokens.family_is_active(
             device.user_id,
             device.family_id,
             now,
@@ -54,6 +58,7 @@ async def enqueue_push(
     sessions: async_sessionmaker[AsyncSession],
     access: Callable[[AsyncSession], AccessPolicy],
     now: datetime,
+    tokens: Callable[[AsyncSession], RefreshTokenRepository],
 ) -> None:
     async with sessions() as session:
         await session.execute(
@@ -84,7 +89,9 @@ async def enqueue_push(
             if device is None:
                 continue
             try:
-                current = await device_access(session, access(session), device, now)
+                current = await device_access(
+                    session, access(session), device, now, tokens(session)
+                )
             except (Forbidden, NotFound, Unauthenticated):
                 await remove_push_device(session, device_id)
                 await session.commit()

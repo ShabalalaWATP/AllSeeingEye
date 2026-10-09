@@ -150,8 +150,16 @@ describe('administrator source controls', () => {
         await user.click(source.getByRole('button', { name: 'Confirm disable' }));
       await waitFor(() => expect(calls).toBe(1));
       const otherAdmin = { ...adminUser, id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' };
-      server.use(http.get('/api/me', () => HttpResponse.json(otherAdmin)));
-      act(() => useAuthStore.getState().setSession(tokenFor(otherAdmin)));
+      const otherSession = tokenFor(otherAdmin);
+      server.use(
+        http.get('/api/me', () => HttpResponse.json(otherAdmin)),
+        // The default fixture gate recognises only the original administrator.
+        http.get('/api/admin/sources', ({ request }) => {
+          expect(request.headers.get('Authorization')).toBe(`Bearer ${otherSession.access_token}`);
+          return HttpResponse.json({ items: sources });
+        }),
+      );
+      act(() => useAuthStore.getState().setSession(otherSession));
       expect(signal?.aborted).toBe(true);
       await act(async () => {
         release();

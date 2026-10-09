@@ -44,6 +44,7 @@ from ase.application.ports.schedules import ScheduleRepository
 from ase.application.ports.team_board import TeamBoardRepository
 from ase.application.ports.team_invitations import TeamInvitationRepository
 from ase.application.ports.warning import AlertRepository, IndicatorRepository
+from ase.domain.session_activity import SessionIdlePolicy
 
 
 @dataclass(slots=True)
@@ -72,12 +73,12 @@ class Repositories:
     uow: UnitOfWork
 
 
-def build_repositories(session: AsyncSession) -> Repositories:
+def build_repositories(session: AsyncSession, idle_policy: SessionIdlePolicy) -> Repositories:
     return Repositories(
         claims=SqlClaimRepository(session),
         users=SqlUserRepository(session),
         requests=SqlAccountRequestRepository(session),
-        refresh_tokens=SqlRefreshTokenRepository(session),
+        refresh_tokens=SqlRefreshTokenRepository(session, idle_policy),
         password_tokens=SqlPasswordTokenRepository(session),
         audit=SqlAuditLogRepository(session),
         llm_profiles=SqlLlmProfileRepository(session),

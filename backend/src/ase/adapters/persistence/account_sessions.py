@@ -10,16 +10,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.base import UTCDateTime
 from ase.adapters.persistence.models import RefreshTokenRow
+from ase.adapters.persistence.session_activity import active_activity
 from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.token_families import RefreshFamilyRevocationRow, family_is_revoked
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.domain.session_summary import SessionPage, SessionSummary
 
 SESSION_LIMIT = 100
 
 
 class SqlAccountSessionRepository:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, idle_policy: SessionIdlePolicy) -> None:
         self._session = session
+        self._idle_policy = idle_policy
 
     async def list_active(self, user_id: UUID, current_family: UUID, now: datetime) -> SessionPage:
         # Rotations belong to one device session. Retain its original creation time,
@@ -52,6 +55,9 @@ class SqlAccountSessionRepository:
                 RefreshTokenRow.revoked_at.is_(None),
                 RefreshTokenRow.expires_at > now,
                 ~family_is_revoked(),
+                active_activity(
+                    RefreshTokenRow.user_id, RefreshTokenRow.family_id, now, self._idle_policy
+                ),
             )
             .subquery()
         )

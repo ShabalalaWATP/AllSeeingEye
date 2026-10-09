@@ -45,11 +45,15 @@ class Settings(BaseSettings):
     # How long a release fence or stream may trust a recent session check when no
     # committed change was signalled in this process (see ADR 0021).
     session_recheck_seconds: int = Field(default=15, ge=1, le=60)
+    session_idle_minutes: int = Field(default=180, ge=5, le=1440)
+    admin_session_idle_minutes: int | None = Field(default=None, ge=5, le=1440)
     refresh_token_days: int = Field(default=14, ge=1, le=90)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     # The signed-out product page at /enterprise. Off so other installations do not show it.
     public_product_page_enabled: bool = False
+    enterprise_enquiries_enabled: bool = False
+    enterprise_enquiry_notify_email: EmailStr | None = Field(default=None, max_length=254)
     log_level: str = "INFO"
     smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
     smtp_port: int = Field(default=587, ge=1, le=65535)
@@ -158,6 +162,14 @@ class Settings(BaseSettings):
     def _validate_web_push(self) -> Self:
         if bool(self.web_push_vapid_private_key) != bool(self.web_push_vapid_subject):
             raise ValueError("Browser push requires both a VAPID private key and contact subject.")
+        return self
+
+    @model_validator(mode="after")
+    def _validate_enterprise_enquiries(self) -> Self:
+        if self.enterprise_enquiries_enabled and not (
+            self.enterprise_enquiry_notify_email and self.smtp_host and self.smtp_from_email
+        ):
+            raise ValueError("Enterprise enquiries require a notify address and configured SMTP")
         return self
 
     @model_validator(mode="after")

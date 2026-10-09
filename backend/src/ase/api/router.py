@@ -39,6 +39,7 @@ from ase.api.routers import (
     directory,
     economy,
     economy_news,
+    enquiries,
     events,
     figures,
     footprints,
@@ -108,6 +109,7 @@ api_router = APIRouter()
 # Public liveness and readiness.
 api_router.include_router(health.router)
 api_router.include_router(site.router)
+api_router.include_router(enquiries.router)
 
 # Auth, accounts, teams and schedules share paths or reverse names; keep their order.
 api_router.include_router(auth.router)

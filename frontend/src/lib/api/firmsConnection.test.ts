@@ -73,5 +73,5 @@ it('discards connection mutation output if authority changes while the server re
       { expected_revision: 1, test_generation: 1 },
       new AbortController().signal,
     ),
-  ).rejects.toMatchObject({ code: 'access_changed' });
+  ).rejects.toMatchObject({ code: 'session_changed' });
 });

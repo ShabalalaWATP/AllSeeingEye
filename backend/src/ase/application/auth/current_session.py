@@ -2,7 +2,7 @@
 
 from ase.application.dto import AccessClaims
 from ase.application.ports import Clock, RefreshTokenRepository, UserRepository
-from ase.domain.errors import Unauthenticated
+from ase.domain.errors import SessionIdleExpired, Unauthenticated
 from ase.domain.users import User
 
 
@@ -20,9 +20,13 @@ async def validate_current_session(
         or user is None
         or not user.is_active
         or user.security_version != claims.security_version
-        or not await refresh_tokens.family_is_active(
-            user.id, claims.family_id, now, require_mfa=user.is_admin
-        )
     ):
+        raise Unauthenticated("The session has ended. Sign in again.")
+    if not await refresh_tokens.family_is_active(
+        user.id, claims.family_id, now, require_mfa=user.is_admin
+    ):
+        activity = await refresh_tokens.activity(user.id, claims.family_id, now)
+        if activity is not None and activity.expired:
+            raise SessionIdleExpired(fields={"idle_minutes": str(activity.idle_minutes)})
         raise Unauthenticated("The session has ended. Sign in again.")
     return user
