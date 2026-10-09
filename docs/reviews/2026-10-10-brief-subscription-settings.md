@@ -35,14 +35,12 @@ the due slot. Recurrence changes select the next matching future local slot.
   was reproduced with both SQL and JSON null, fixed, and independently rechecked.
 - All changed handwritten source files remain below 350 lines.
 
-## Pending before publication
-
-The new UI tests and adjacent subscription UI regressions have **not yet run**.
-KAN-206 currently reserves the full frontend test runtime. The coordinator owns
-the deferred focused run, shared API reconciliation and final integration checks.
-The supplied tests cover bounded requests, pending/error/success states, retained
-drafts, stale revisions, cancellation, focus, unmount cancellation and structural
-accessibility. Their presence is not evidence that they pass.
+The coordinator's focused frontend run passed all 34 tests across six files:
+`BriefScheduleEdit`, `briefScheduleEditing`, `BriefScheduleCopy.coverage`,
+`schedules.controls`, `schedules.fieldErrors` and `BriefSubscriptionForm`.
+These cover bounded requests, pending/error/success states, retained drafts,
+stale revisions, cancellation, focus, unmount cancellation and structural
+accessibility. Whole-branch CI and combined integration checks remain pending.
 
 No PostgreSQL server was used: its statement was compiled, while execution and
 concurrency checks used synthetic in-memory or disposable SQLite databases.
