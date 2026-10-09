@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import ScalarResult, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence import alert_feedback
@@ -205,6 +206,17 @@ class SqlWarningStore:
                 .limit(1)
             )
             return None if row is None else _alert_from_row(row)
+
+    async def alerted_event_ids(self, indicator_id: UUID, since: datetime) -> frozenset[str]:
+        # Both predicates run in SQL; only the cited ids column is loaded, with no limit,
+        # so an older alert inside the window can never be dropped and re-fire.
+        async with self._session_factory() as session:
+            cited: ScalarResult[list[Any]] = await session.scalars(
+                select(AlertRow.event_ids).where(
+                    AlertRow.indicator_id == indicator_id, AlertRow.fired_at >= since
+                )
+            )
+            return frozenset(str(item) for ids in cited for item in ids or ())
 
     async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
         if (
