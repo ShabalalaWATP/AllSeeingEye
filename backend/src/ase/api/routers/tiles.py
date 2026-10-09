@@ -19,6 +19,7 @@ TILE_CACHE_CONTROL = "private, max-age=86400"
 async def os_tile(
     user: CurrentUser, container: ContainerDep, layer: str, z: int, x: int, y: int
 ) -> Response:
+    container.source_licences.require("map:os_maps")
     if not container.tiles.configured:
         raise NotFound("OS Maps tiles are not configured on this server.")
     if not is_valid_os_tile(layer, z, x, y):

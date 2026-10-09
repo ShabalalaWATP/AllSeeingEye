@@ -17,6 +17,7 @@ from typing import Any
 from ase.adapters.feeds.conflict_values import text
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.application.ports import Clock
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 from ase.domain.ukraine.frontline import (
     MAX_FRONTLINE_FEATURES,
     MAX_SPOTTED,
@@ -199,10 +200,18 @@ class FrontlineProviders:
     """Chooses one provider from the operator's flags and serves its cached snapshot."""
 
     def __init__(
-        self, http: FeedHttpClient, clock: Clock, *, deepstate: bool, ocha: bool, spotted: bool
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        *,
+        deepstate: bool,
+        ocha: bool,
+        spotted: bool,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self._http, self._clock = http, clock
         self._deepstate, self._ocha, self._spotted = deepstate, ocha, spotted
+        self._licences = licences or SourceLicencePolicy(())
         self._lock = asyncio.Lock()
         self._frontline: FrontlineState | None = None
         self._frontline_due: datetime | None = None
@@ -210,6 +219,9 @@ class FrontlineProviders:
         self._spotted_due: datetime | None = None
 
     async def snapshot(self) -> FrontlineState:
+        selected = "ukraine:deepstate" if self._deepstate else "ukraine:ocha_frontline"
+        if (self._deepstate or self._ocha) and not self._licences.allowed(selected):
+            return FrontlineState(FrontlineStatus.DISABLED, LICENCE_UNAVAILABLE)
         if not self._deepstate and not self._ocha:
             return FrontlineState(
                 FrontlineStatus.DISABLED,
@@ -247,6 +259,8 @@ class FrontlineProviders:
         return FrontlineState(FrontlineStatus.READY, "Provider snapshot", snapshot)
 
     async def spotted(self) -> SpottedState:
+        if self._spotted and not self._licences.allowed("ukraine:warspotting"):
+            return SpottedState(FrontlineStatus.DISABLED, LICENCE_UNAVAILABLE, SPOTTED_TERMS, None)
         if not self._spotted:
             return SpottedState(
                 FrontlineStatus.DISABLED,

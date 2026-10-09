@@ -10,16 +10,25 @@ from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.event_similarity import distance_km
 from ase.domain.events import Point
 from ase.domain.navigation import NavigationRoute, RouteMode
+from ase.domain.source_licences import SourceLicencePolicy
 
 
 class RoutePlanner:
-    def __init__(self, gateway: RoutingGateway, limiter: RateLimiter) -> None:
+    def __init__(
+        self,
+        gateway: RoutingGateway,
+        limiter: RateLimiter,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
         self._gateway, self._limiter = gateway, limiter
+        self._licences = licences or SourceLicencePolicy(())
         self._busy = False
 
     async def calculate(
         self, actor_id: UUID, mode: RouteMode, waypoints: tuple[Point, ...]
     ) -> NavigationRoute:
+        self._licences.require("map:valhalla_routing")
         if mode not in {"driving", "walking", "cycling"} or not 2 <= len(waypoints) <= 8:
             raise InvalidRequest("Choose a supported travel mode and two to eight waypoints.")
         distance = sum(distance_km(a, b) for a, b in pairwise(waypoints))

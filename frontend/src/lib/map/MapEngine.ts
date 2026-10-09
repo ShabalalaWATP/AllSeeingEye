@@ -70,6 +70,8 @@ export interface EngineOptions {
   captureEnabled?: boolean;
   /** Returns the session's access token for requests to our own API (tile proxy), or null. */
   authHeader?: () => string | null;
+  /** Installation policy, resolved before mounting any provider-backed style or imagery. */
+  sourceAllowed?: (sourceId: string) => boolean;
 }
 
 export interface MapEngine extends MapFocus {

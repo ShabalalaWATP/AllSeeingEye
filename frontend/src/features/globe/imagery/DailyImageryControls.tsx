@@ -11,8 +11,11 @@ import {
 
 import { GibsCredit, formatImageryDate } from './DailyImageryAttribution';
 import { selectDailyImagery, useDailyImageryStore } from './dailyImageryStore';
+import { sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 export function DailyImageryControls() {
+  const policy = useMapSourcePolicy();
+  const reason = sourceUnavailable(policy, 'map:nasa_gibs_daily');
   const id = useId();
   const state = useDailyImageryStore();
   const now = useNow();
@@ -27,10 +30,11 @@ export function DailyImageryControls() {
         <button
           type="button"
           role="switch"
-          aria-checked={state.enabled}
+          aria-checked={state.enabled && !reason}
+          disabled={Boolean(reason)}
           aria-label="Daily satellite imagery"
           onClick={() => {
-            state.setEnabled(!state.enabled);
+            if (!reason) state.setEnabled(!state.enabled);
           }}
           className="map-tool-text-button shrink-0 px-2"
         >
@@ -41,7 +45,8 @@ export function DailyImageryControls() {
         NASA true-colour daily composites for a chosen date, to check clouds, smoke plumes, floods
         and burn scars beside FIRMS detections. Off by default.
       </p>
-      {state.enabled && (
+      {reason && <p role="status" className="map-tool-help">{reason}</p>}
+      {state.enabled && !reason && (
         <>
           <label className="map-tool-field">
             <span>Imagery product</span>

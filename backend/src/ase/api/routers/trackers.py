@@ -119,6 +119,7 @@ async def cyber_board(user: CurrentUser, container: ContainerDep, fence: FenceDe
 async def conflict_board(
     user: CurrentUser, container: ContainerDep, fence: FenceDep
 ) -> ConflictBoardOut:
+    container.source_licences.require("reference:conflicts")
     cards = await read_board_response(
         container,
         fence,
@@ -133,6 +134,7 @@ async def conflict_board(
 async def conflict_detail(
     conflict_id: str, user: CurrentUser, container: ContainerDep, fence: FenceDep
 ) -> ConflictDetailOut:
+    container.source_licences.require("reference:conflicts")
     return ConflictDetailOut.from_detail(
         await read_board_response(
             container,

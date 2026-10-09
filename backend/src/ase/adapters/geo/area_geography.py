@@ -39,6 +39,7 @@ from ase.domain.area_context import (
 )
 from ase.domain.area_inventory import MAX_LISTED_ITEMS, RegisterEntry, RegisterItem
 from ase.domain.research_area import ResearchArea
+from ase.domain.source_licences import SourceLicencePolicy
 
 EXACT = "exact"
 PLACE_LEVEL = frozenset({"city", "admin1"})
@@ -159,8 +160,12 @@ def _country_polygons() -> tuple[tuple[str, Polygon], ...]:
     return tuple(result)
 
 
-def _camera_entry(scope: ResolvedScope) -> RegisterEntry | None:
-    matched = [row for row in _cameras() if scope.contains_point(row[2], row[3])]
+def _camera_entry(scope: ResolvedScope, licences: SourceLicencePolicy) -> RegisterEntry | None:
+    matched = [
+        row
+        for row in _cameras()
+        if licences.allowed(f"camera:{row[0]}") and scope.contains_point(row[2], row[3])
+    ]
     if not matched:
         return None
     listed = tuple(
@@ -199,6 +204,24 @@ def _scope_for(
 class PackagedAreaGeography:
     """The only geography service: packaged outlines, exact tests and no invention."""
 
+    def __init__(self, *, licences: SourceLicencePolicy | None = None) -> None:
+        self._licences = licences or SourceLicencePolicy(())
+
+    def _scope(
+        self,
+        area: ResearchArea | None,
+        country_isos: tuple[str, ...],
+        box: tuple[float, float, float, float] | None,
+        box_label: str | None,
+    ) -> ResolvedScope | None:
+        if (
+            area is None
+            and country_isos
+            and not self._licences.allowed("map:natural_earth_countries")
+        ):
+            return None
+        return _scope_for(area, country_isos, box, box_label)
+
     def assemble(
         self,
         *,
@@ -210,12 +233,17 @@ class PackagedAreaGeography:
         cameras: bool = False,
     ) -> AreaGeographyResult | None:
         try:
-            scope = _scope_for(area, country_isos, box, box_label)
+            scope = self._scope(area, country_isos, box, box_label)
         except ValueError:
             return None
         if scope is None:
             return None
-        receipt = ScopeReceipt(scope.scope.basis, scope.scope.label, scope.scope.limitation)
+        limitation = scope.scope.limitation
+        if self._licences.commercial_use:
+            limitation += (
+                " Only datasets permitted by this installation's licence policy are included."
+            )
+        receipt = ScopeReceipt(scope.scope.basis, scope.scope.label, limitation)
         containment = _classify(scope, placements)
         breakdown = tuple(
             row
@@ -223,21 +251,23 @@ class PackagedAreaGeography:
                 _breakdown(
                     "geoBoundaries Ukraine oblasts",
                     OBLAST_ATTRIBUTION,
-                    _oblasts(),
+                    _oblasts() if self._licences.allowed("ukraine:oblast_outlines") else (),
                     scope,
                     placements,
                 ),
                 _breakdown(
                     "Natural Earth countries",
                     COUNTRY_ATTRIBUTION,
-                    _country_polygons(),
+                    _country_polygons()
+                    if self._licences.allowed("map:natural_earth_countries")
+                    else (),
                     scope,
                     placements,
                 ),
             )
             if row is not None
         )
-        coverage = _camera_entry(scope) if cameras else None
+        coverage = _camera_entry(scope, self._licences) if cameras else None
         registers = (coverage,) if coverage is not None else ()
         return AreaGeographyResult(receipt, containment, breakdown, registers)
 
@@ -252,7 +282,7 @@ class PackagedAreaGeography:
     ) -> frozenset[str]:
         """The same resolved scope as assemble, asked only whether a point is inside it."""
         try:
-            scope = _scope_for(area, country_isos, box, box_label)
+            scope = self._scope(area, country_isos, box, box_label)
         except ValueError:
             return frozenset()
         if scope is None:
@@ -263,10 +293,16 @@ class PackagedAreaGeography:
         self, *, area: ResearchArea | None, country_isos: tuple[str, ...], classes: Sequence[str]
     ) -> tuple[RegisterEntry, ...]:
         """Kept for callers that need the register scan without the containment work."""
-        scope = _scope_for(area, country_isos, None, None)
+        scope = self._scope(area, country_isos, None, None)
         if scope is None:
             return ()
-        wanted = frozenset(AssetClass(value) for value in classes if value in set(AssetClass))
+        wanted = frozenset(
+            AssetClass(value)
+            for value in classes
+            if value in set(AssetClass) and self._licences.allowed(f"map:{value}")
+        )
+        if not wanted:
+            return ()
         isos = () if area is not None else country_isos
         return scan_registers(wanted, scope, country_isos=isos)
 

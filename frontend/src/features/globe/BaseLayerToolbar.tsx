@@ -6,6 +6,7 @@ import { MapToolIntro } from '@/components/maps/MapToolIntro';
 
 import { BASE_LAYER_OPTIONS } from './engine/baseLayers';
 import './referenceTools.css';
+import { basemapSources, basemapUnavailable, sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 export interface BaseLayerToolbarProps {
   value: BaseLayer;
@@ -31,6 +32,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
   initialExpanded = false,
   embedded = false,
 }: BaseLayerToolbarProps) {
+  const policy = useMapSourcePolicy();
   const [open, setOpen] = useState(initialExpanded);
   const panelId = useId();
   const hintId = useId();
@@ -102,7 +104,8 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
           <fieldset aria-describedby={hintId} className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">Base layer</legend>
             {BASE_LAYER_OPTIONS.map((option) => {
-              const unavailable = option.needsOs && !osAvailable;
+              const policyReason = basemapSources(option.id).map((id) => sourceUnavailable(policy, id)).find(Boolean) ?? null;
+              const unavailable = Boolean(policyReason) || (option.needsOs && !osAvailable);
               return (
                 <Fragment key={option.id}>
                   {option.id === 'os_road' && (
@@ -110,7 +113,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                       <div className="flex items-start justify-between gap-2">
                         <p className="map-tool-section-title">Ordnance Survey · Great Britain</p>
                         <span className="map-reference-badge">
-                          {osChecking
+                          {policyReason && policy.loaded ? 'Unavailable' : osChecking
                             ? 'Checking'
                             : osError
                               ? 'Check failed'
@@ -124,7 +127,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                         role={osError ? 'alert' : 'status'}
                         className="map-tool-help"
                       >
-                        {osChecking
+                        {policyReason && policy.loaded ? policyReason : osChecking
                           ? 'Checking the server’s Ordnance Survey configuration…'
                           : osError
                             ? 'Configuration check failed. Try again to check whether OS maps are available.'
@@ -132,7 +135,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                               ? 'The server has an OS key configured. This check does not test tile delivery. Coverage is Great Britain at zoom 7–16.'
                               : 'OS maps are unavailable. An administrator must configure an OS Data Hub Maps API key before these styles can be selected.'}
                       </p>
-                      {!osAvailable && !osChecking && !osError && (
+                      {!osAvailable && !osChecking && !osError && !policyReason && (
                         <details className="map-tool-disclosure">
                           <summary>How to enable OS maps</summary>
                           <ol className="map-tool-help mt-2 list-decimal space-y-2 pl-4">
@@ -165,7 +168,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                       )}
                     </div>
                   )}
-                  <label className="map-reference-choice">
+                  <label className="map-reference-choice" title={policyReason ?? undefined}>
                     <input
                       type="radio"
                       name={panelId}
@@ -176,7 +179,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                       aria-describedby={option.needsOs ? osHintId : undefined}
                       onKeyDown={closeOnEscape}
                       onChange={() => {
-                        onChange(option.id);
+                        if (!unavailable) onChange(option.id);
                       }}
                       className="size-3.5 shrink-0 accent-ember focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
                     />
@@ -199,7 +202,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                       />
                     </svg>
                     <span className="map-reference-choice-title">{option.label}</span>
-                    {option.needsOs && (
+                    {(option.needsOs || policyReason) && (
                       <span className="map-reference-badge">
                         {unavailable ? 'Unavailable' : 'GB'}
                       </span>
@@ -214,6 +217,7 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
       <div id={hintId} className="map-tool-section map-reference-footnote">
         <p className="map-tool-section-title">{selected.coverage}</p>
         <p className="map-tool-help">{selected.description}</p>
+        {basemapUnavailable(policy, value) && <p role="status" className="map-tool-help">{basemapUnavailable(policy, value)}</p>}
         {imagery && (
           <p className="map-tool-help">
             Non-commercial use only.{' '}

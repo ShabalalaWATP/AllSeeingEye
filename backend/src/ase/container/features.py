@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.mastodon_watch import watch_terms
-from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.indicator_baselines import SqlIndicatorBaselines
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
@@ -348,6 +347,3 @@ class FeatureWiring(ReportWiring):
         async with self.session_factory() as session:
             await self.repositories(session).llm_usage.add(usage)
             await session.commit()
-
-    def public_infrastructure(self) -> dict[str, Any]:
-        return public_infrastructure()

@@ -116,7 +116,7 @@ function ProviderNote({
 }
 
 export function UkraineMap({ loaders }: { loaders?: MapLoaders }) {
-  const { container, supported, failed, hover, control, frontline, spotted, refit } =
+  const { container, supported, failed, policyReason, hover, control, frontline, spotted, refit } =
     useUkraineMap(loaders);
   const summary = control.data?.summary ?? null;
   const kinds = [...new Set((frontline.data?.features ?? []).map((feature) => feature.kind))];
@@ -139,6 +139,7 @@ export function UkraineMap({ loaders }: { loaders?: MapLoaders }) {
         </div>
       </div>
       {control.error ? <Alert tone="error">{describeError(control.error)}</Alert> : null}
+      {policyReason && <p role="status" className="text-sm text-muted">{policyReason}</p>}
       {control.loading && !control.data ? <LoadingNote label="Loading control snapshot" /> : null}
       {supported ? (
         <div className="relative h-[28rem] overflow-hidden rounded-card border border-line bg-surface">

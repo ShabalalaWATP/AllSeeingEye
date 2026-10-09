@@ -25,6 +25,7 @@ async def lookup_reference(
     fence: FenceDep,
     container: ContainerDep,
 ) -> ReferenceLookupOut:
+    container.source_licences.require("reference:entities")
     catalogue = container.reference_catalogue
     wanted = tuple(key.strip() for key in keys.split(",") if key.strip())[:MAX_LOOKUP_KEYS]
     entries = catalogue.lookup(kind, wanted)

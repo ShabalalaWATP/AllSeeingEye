@@ -58,6 +58,7 @@ class UkraineWiring(ContainerCore):
         return load_reference_catalogue()
 
     def ukraine_image(self, image_id: str) -> bytes | None:
+        self.source_licences.require("ukraine:reference_catalogue")
         return load_reference_image(image_id)
 
     @cached_property
@@ -77,9 +78,13 @@ class UkraineWiring(ContainerCore):
             deepstate=settings.ukraine_deepstate_access == "granted",
             ocha=settings.ukraine_ocha_humanitarian,
             spotted=settings.ukraine_warspotting,
+            licences=self.source_licences,
         )
 
     def ukraine(self) -> UkraineBoardService:
+        # Board and digest use these same packaged datasets, including background work.
+        for source in ("viina_control", "oryx_losses", "hrmmu_casualties"):
+            self.source_licences.require(f"ukraine:{source}")
         return UkraineBoardService(
             self.store,
             self.clock,

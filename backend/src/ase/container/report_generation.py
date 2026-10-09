@@ -69,7 +69,11 @@ class ReportGenerationWiring:
                 gateway=container.embedding_gateway,
                 ai_usage=container.ai_usage_accounting,
             ),
-            area_context=AreaContextService(PackagedAreaGeography(), r.baselines, container.jam),
+            area_context=AreaContextService(
+                PackagedAreaGeography(licences=container.source_licences),
+                r.baselines,
+                container.jam,
+            ),
         )
         return GenerateReportUseCase(
             producer=producer,

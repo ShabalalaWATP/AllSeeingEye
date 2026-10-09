@@ -16,6 +16,7 @@ from ase.api.schemas_navigation import (
 from ase.api.session_fence import FenceDep
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Point
+from ase.domain.source_licences import LICENCE_UNAVAILABLE
 
 router = APIRouter(prefix="/navigation", tags=["navigation"])
 router.include_router(places_router)
@@ -25,7 +26,11 @@ INPUT_SCHEMA["properties"]["waypoints"]["items"] = INPUT_SCHEMA.pop("$defs")["Na
 
 @router.get("/capabilities")
 async def capabilities(user: CurrentUser, container: ContainerDep) -> NavigationCapabilitiesOut:
-    return navigation_capabilities(container.settings.feeds_contact)
+    result = navigation_capabilities(container.settings.feeds_contact)
+    if not container.source_licences.allowed("map:valhalla_routing"):
+        result.available = False
+        result.configuration_message = LICENCE_UNAVAILABLE
+    return result
 
 
 @router.post(
@@ -46,6 +51,7 @@ async def calculate_route(
 ) -> NavigationRouteOut:
     # Authenticate before body intake. Bound bytes as well as waypoint counts.
     await fence.confirm()
+    container.source_licences.require("map:valhalla_routing")
     capability = navigation_capabilities(container.settings.feeds_contact)
     if not capability.available:
         raise InvalidRequest(capability.configuration_message)

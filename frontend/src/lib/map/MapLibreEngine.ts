@@ -27,12 +27,13 @@ import { normaliseCamera, normaliseViewport, validateBounds, validateFitOptions 
 import { GLOBE_SKY, PAINT_OVERRIDES, applyRasterLayer } from './mapAppearance';
 import { captureMapImage } from './mapCapture';
 import { createBaseMap } from './mapInitialisation';
+import { basemapSources, LICENCE_UNAVAILABLE } from './sourcePolicy';
+import { MapSpin } from './MapSpin';
 
 export { GLOBE_SKY, PAINT_OVERRIDES } from './mapAppearance';
 export { DARK_STYLE_URL };
 export { INITIAL_CENTER, INITIAL_ZOOM } from './mapInitialisation';
-export const SPIN_DEGREES = 15;
-export const SPIN_STEP_MS = 30_000;
+export { SPIN_DEGREES, SPIN_STEP_MS } from './MapSpin';
 
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
@@ -49,8 +50,7 @@ export class MapLibreEngine implements MapEngine {
   private lite = false;
   private styleReady = false;
   private contextLost = false;
-  private spinning = false;
-  private stepping = false;
+  private readonly spinner = new MapSpin(() => this.map);
   private revision = 0;
   private captureAbort: AbortController | null = null;
   private captureFailed = false;
@@ -60,6 +60,8 @@ export class MapLibreEngine implements MapEngine {
 
   mount(container: HTMLElement): void {
     if (this.map !== null) return;
+    if (!this.allowed('map:openfreemap')) throw new Error(LICENCE_UNAVAILABLE);
+    if (!basemapSources(this.baseLayer).every((id) => this.allowed(id))) this.baseLayer = 'dark';
     this.styleUrl = vectorStyleFor(this.baseLayer);
     const map = createBaseMap(container, this.styleUrl, this.options);
     this.map = map;
@@ -110,37 +112,12 @@ export class MapLibreEngine implements MapEngine {
       (window as unknown as { __aseMap?: MapLibreMap }).__aseMap = map;
     }
     map.on('moveend', () => {
-      if (this.spinning) this.spinStep();
+      this.spinner.step();
     });
   }
 
   spin(enabled: boolean): void {
-    if (this.spinning === enabled) return;
-    this.spinning = enabled;
-    if (enabled) this.spinStep();
-    else this.map?.stop();
-  }
-
-  /** One slow eastward step; moveend chains the next while spinning stays on. */
-  private spinStep(): void {
-    const map = this.map;
-    if (map === null || !this.spinning) return;
-    // Reduced motion can make easeTo finish synchronously and emit moveend immediately.
-    if (this.stepping) {
-      this.spinning = false;
-      return;
-    }
-    const center = map.getCenter();
-    this.stepping = true;
-    try {
-      map.easeTo({
-        center: [center.lng + SPIN_DEGREES, center.lat],
-        duration: SPIN_STEP_MS,
-        easing: (t: number) => t,
-      });
-    } finally {
-      this.stepping = false;
-    }
+    this.spinner.set(enabled);
   }
 
   setProjection(projection: Projection): void {
@@ -151,6 +128,7 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setBaseLayer(layer: BaseLayer): void {
+    if (!basemapSources(layer).every((id) => this.allowed(id))) layer = 'dark';
     this.sketch?.cancel();
     this.revision += 1;
     this.baseLayer = layer;
@@ -168,6 +146,7 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setDailyImagery(imagery: DailyImagery | null): void {
+    if (!this.allowed('map:nasa_gibs_daily')) imagery = null;
     this.revision += 1;
     this.imagery = imagery;
     if (this.map !== null && this.styleReady) applyDailyImagery(this.map, imagery);
@@ -315,7 +294,7 @@ export class MapLibreEngine implements MapEngine {
     const removedMap = this.map;
     this.captureAbort?.abort();
     this.revision += 1;
-    this.spinning = false;
+    this.spinner.set(false);
     this.sketch?.destroy();
     this.sketch = null;
     this.overlays?.destroy();
@@ -343,8 +322,13 @@ export class MapLibreEngine implements MapEngine {
   private applyBaseLayer(): void {
     const map = this.map;
     if (map === null || !this.styleReady) return;
-    applyRasterLayer(map, this.baseLayer);
-    applyDailyImagery(map, this.imagery);
+    const layer = basemapSources(this.baseLayer).every((id) => this.allowed(id)) ? this.baseLayer : 'dark';
+    applyRasterLayer(map, layer);
+    applyDailyImagery(map, this.allowed('map:nasa_gibs_daily') ? this.imagery : null);
+  }
+
+  private allowed(id: string): boolean {
+    return this.options.sourceAllowed?.(id) ?? true;
   }
 }
 

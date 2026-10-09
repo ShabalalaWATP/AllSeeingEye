@@ -12,10 +12,13 @@ import { useGlobeCanvas } from './useGlobeCanvas';
 import { useGlobePreferences } from './useGlobePreferences';
 import { useGlobePanelRoute } from './useGlobePanelRoute';
 import './dashboard.css';
+import { basemapUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 export { FOCUS_ZOOM } from './useMapFocus';
 export default function GlobePage() {
   const display = useGlobePreferences();
+  const policy = useMapSourcePolicy();
+  const policyReason = basemapUnavailable(policy, display.baseLayer);
   const visible = usePageVisible();
   const reducedMotion = useReducedMotion();
   const canvas = useGlobeCanvas(display, visible);
@@ -49,6 +52,7 @@ export default function GlobePage() {
       <div className="globe-dashboard absolute inset-0 bg-ground">
         <GlobeHeading mode={mode} showRef={opsRoom ? null : route.showPanel} />
         <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
+        {policyReason && <p role="status" className="absolute top-20 left-3 z-10 max-w-sm rounded bg-surface p-3 text-xs">{policyReason}. Choose an available basemap in map style settings.</p>}
         {!opsRoom && <ModeToolbar mode={mode} onChange={display.setMode} />}
         {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
         <GlobeEventViews

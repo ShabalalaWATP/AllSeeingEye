@@ -14,4 +14,6 @@ class PublicFigureWiring(ContainerCore):
         return load_public_figures()
 
     def public_figures(self) -> PublicFigureService:
-        return PublicFigureService(self.store, self.clock, self.figure_catalogue)
+        return PublicFigureService(
+            self.store, self.clock, self.figure_catalogue, licences=self.source_licences
+        )

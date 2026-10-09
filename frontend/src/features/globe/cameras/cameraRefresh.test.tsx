@@ -1,9 +1,30 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { expect, it, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { fetchCameras, type CameraCatalogue } from '@/lib/api/cameras';
 import { useCameras } from './useCameras';
+import { useCapabilitiesStore } from '@/stores/capabilities';
 
 vi.mock('@/lib/api/cameras', () => ({ fetchCameras: vi.fn() }));
+
+beforeEach(() => {
+  useCapabilitiesStore.setState({ loaded: true, error: null, commercialUse: false, sourceLicences: {} });
+});
+
+it('loads descriptive policy statuses without requesting restricted provider catalogues', async () => {
+  useCapabilitiesStore.setState({ loaded: true, commercialUse: true, sourceLicences: {} });
+  const value = catalogue('tfl');
+  value.providers[0]!.status = 'licence_blocked';
+  const fetch = vi.mocked(fetchCameras);
+  fetch.mockClear();
+  fetch.mockResolvedValue(value);
+  const { result } = renderHook(useCameras);
+  act(() => result.current.setEnabled(true));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(fetch.mock.calls.map((args) => args[1])).toEqual([undefined]);
+  expect(result.current.visible).toEqual([]);
+  act(() => result.current.toggleProvider('wsdot'));
+  expect(result.current.providers.wsdot).toBeUndefined();
+});
 
 function catalogue(provider: string, empty = false): CameraCatalogue {
   return {

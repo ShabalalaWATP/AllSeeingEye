@@ -117,7 +117,8 @@ def cached_cameras(
         if not injection_flags(camera.title, camera.attribution)
     ]
     unloaded = sum(
-        provider.status in ("not_loaded", "unavailable") for provider in catalogue.providers
+        provider.status in ("not_loaded", "unavailable", "licence_blocked")
+        for provider in catalogue.providers
     )
     notes = (
         "Cached CCTV metadata only; no images, streams or provider refreshes.",
