@@ -33,6 +33,7 @@ describe('api client', () => {
       }),
     );
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'token-1',
       refreshAccessToken: () => Promise.resolve(null),
       onSessionLost: vi.fn(),
@@ -102,6 +103,7 @@ describe('api client', () => {
     const refresh = vi.fn(() => Promise.resolve('fresh'));
     const lost = vi.fn();
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'stale',
       refreshAccessToken: refresh,
       onSessionLost: lost,
@@ -116,6 +118,7 @@ describe('api client', () => {
     server.use(http.get('/api/thing', () => apiError(401, 'unauthenticated', 'Sign in required.')));
     const lost = vi.fn();
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'stale',
       refreshAccessToken: () => Promise.resolve(null),
       onSessionLost: lost,
@@ -136,6 +139,7 @@ describe('api client', () => {
     );
     const lost = vi.fn();
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'stale',
       refreshAccessToken: () => Promise.resolve('fresh'),
       onSessionLost: lost,
@@ -149,6 +153,7 @@ describe('api client', () => {
     server.use(http.get('/api/thing', () => apiError(401, 'invalid_refresh', 'Expired.')));
     const refresh = vi.fn(() => Promise.resolve('fresh'));
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'stale',
       refreshAccessToken: refresh,
       onSessionLost: vi.fn(),

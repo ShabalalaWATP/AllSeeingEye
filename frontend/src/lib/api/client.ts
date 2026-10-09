@@ -8,12 +8,16 @@
  */
 import type { ZodType } from 'zod';
 
-import { ApiError } from './errors';
+import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
+
+import { ApiError, sessionChangedError } from './errors';
 import { parseRetryAfter, unexpectedResponseError } from './errorResponses';
 import { errorEnvelopeSchema } from './schemas';
 
 export interface SessionBridge {
   getAccessToken(): string | null;
+  /** A login generation stays stable when its access token is refreshed. */
+  getSessionGeneration(): number;
   /**
    * Refreshes the session and resolves to the new access token, or null on failure.
    * The refresher decides whether a failure ends the session; a transient one must not.
@@ -24,6 +28,7 @@ export interface SessionBridge {
 
 const noSession: SessionBridge = {
   getAccessToken: () => null,
+  getSessionGeneration: () => 0,
   refreshAccessToken: () => Promise.resolve(null),
   onSessionLost: () => undefined,
 };
@@ -58,35 +63,42 @@ export async function apiCall<T>(
   path: string,
   options: CallOptions & { schema: ZodType<T> },
 ): Promise<T> {
-  const response = await execute(path, options);
-  const data: unknown = await response.json();
-  const parsed = options.schema.safeParse(data);
-  if (!parsed.success) {
-    throw new ApiError(
-      response.status,
-      'invalid_response',
-      'The server sent an unexpected response.',
-    );
-  }
-  return parsed.data;
+  return execute(path, options, async (response) => {
+    const data: unknown = await response.json();
+    const parsed = options.schema.safeParse(data);
+    if (!parsed.success) {
+      throw new ApiError(
+        response.status,
+        'invalid_response',
+        'The server sent an unexpected response.',
+      );
+    }
+    return parsed.data;
+  });
 }
 
 /** Performs a request whose successful body is plain text (for example a Markdown export). */
 export async function apiText(path: string, options: CallOptions = {}): Promise<string> {
-  const response = await execute(path, {
-    ...options,
-    headers: { Accept: 'text/plain, text/markdown', ...options.headers },
-  });
-  return response.text();
+  return execute(
+    path,
+    {
+      ...options,
+      headers: { Accept: 'text/plain, text/markdown', ...options.headers },
+    },
+    (response) => response.text(),
+  );
 }
 
 /** Fetches an authenticated binary export through the same session and error handling. */
 export async function apiBlob(path: string, options: CallOptions = {}): Promise<Blob> {
-  const response = await execute(path, {
-    ...options,
-    headers: { Accept: 'application/octet-stream', ...options.headers },
-  });
-  return response.blob();
+  return execute(
+    path,
+    {
+      ...options,
+      headers: { Accept: 'application/octet-stream', ...options.headers },
+    },
+    (response) => response.blob(),
+  );
 }
 
 export interface DownloadedFile {
@@ -96,33 +108,67 @@ export interface DownloadedFile {
 
 /** Fetches a binary or text download together with its safe server-provided file name. */
 export async function apiFile(path: string, options: CallOptions = {}): Promise<DownloadedFile> {
-  const response = await execute(path, {
-    ...options,
-    headers: { Accept: 'application/octet-stream', ...options.headers },
-  });
-  return {
-    blob: await response.blob(),
-    filename: safeDownloadFilename(response.headers.get('Content-Disposition')),
-  };
+  return execute(
+    path,
+    {
+      ...options,
+      headers: { Accept: 'application/octet-stream', ...options.headers },
+    },
+    async (response) => ({
+      blob: await response.blob(),
+      filename: safeDownloadFilename(response.headers.get('Content-Disposition')),
+    }),
+  );
 }
 
 /** Performs a request whose successful response has no body of interest (for example 204). */
 export async function apiSend(path: string, options: CallOptions = {}): Promise<void> {
-  await execute(path, options);
+  await execute(path, options, () => Promise.resolve());
 }
 
-async function execute(path: string, options: CallOptions): Promise<Response> {
+async function execute<T>(
+  path: string,
+  options: CallOptions,
+  read: (response: Response) => Promise<T>,
+): Promise<T> {
+  const bridge = session;
+  const generation = bridge.getSessionGeneration();
+  const assertCurrent = () => {
+    options.signal?.throwIfAborted();
+    if (
+      (options.auth ?? true) &&
+      (session !== bridge || bridge.getSessionGeneration() !== generation)
+    ) {
+      throw sessionChangedError();
+    }
+  };
+  const response = await executeResponse(path, options, bridge, assertCurrent);
+  const result = await read(response);
+  // Response bodies can arrive after their headers, including streamed downloads.
+  assertCurrent();
+  return result;
+}
+
+async function executeResponse(
+  path: string,
+  options: CallOptions,
+  bridge: SessionBridge,
+  assertCurrent: () => void,
+): Promise<Response> {
   if (options.body !== undefined && options.rawBody !== undefined) {
     throw new ApiError(0, 'invalid_request', 'Choose either a JSON or binary request body.');
   }
   options.signal?.throwIfAborted();
   const auth = options.auth ?? true;
-  const first = await send(path, options, auth ? session.getAccessToken() : null);
+  const first = await send(path, options, auth ? bridge.getAccessToken() : null);
+  assertCurrent();
   if (first.status !== 401 || !auth) {
     return ensureOk(first);
   }
   options.signal?.throwIfAborted();
-  const token = await session.refreshAccessToken();
+  const token = await bridge.refreshAccessToken();
+  // A definite rejection can clear its own session and still retain its 401 error.
+  if (token !== null) assertCurrent();
   options.signal?.throwIfAborted();
   if (token === null) {
     throw await toApiError(first);
@@ -134,9 +180,12 @@ async function execute(path: string, options: CallOptions): Promise<Response> {
       'Your session has been refreshed. This request was not repeated automatically. Please submit it again if needed.',
     );
   }
+  const retryCookie = readCookie(CSRF_COOKIE);
   const second = await send(path, options, token);
-  if (second.status === 401) {
-    session.onSessionLost();
+  assertCurrent();
+  // Another tab can replace shared cookies and push without changing this tab's generation.
+  if (second.status === 401 && readCookie(CSRF_COOKIE) === retryCookie) {
+    bridge.onSessionLost();
   }
   return ensureOk(second);
 }

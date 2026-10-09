@@ -35,6 +35,14 @@ export function isApiError(value: unknown): value is ApiError {
   return value instanceof ApiError;
 }
 
+export function sessionChangedError(): ApiError {
+  return new ApiError(
+    409,
+    'session_changed',
+    'Your session changed. Please submit the request again.',
+  );
+}
+
 /** Normalises any thrown value to an ApiError so pages can branch on `code`. */
 export function asApiError(value: unknown): ApiError {
   if (isApiError(value)) return value;
