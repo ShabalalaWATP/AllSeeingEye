@@ -17,6 +17,15 @@ export function AuthLayout() {
   const { chosenPause } = useMotionPause();
   const site = useSiteFacts();
   const productPage = site.status === 'ready' && site.facts.product_page_enabled;
+  const enquiryLink =
+    site.status === 'ready' && site.facts.enterprise_enquiries_enabled ? (
+      <Link
+        className="mt-3 inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+        to="/enterprise#contact"
+      >
+        Self-hosting for organisations
+      </Link>
+    ) : null;
 
   return (
     <div className="auth-shell">
@@ -43,6 +52,7 @@ export function AuthLayout() {
             <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
             <div className="mt-5 hidden min-[900px]:block">
               <PolicyLinks />
+              {enquiryLink}
             </div>
             {productPage ? (
               <Link className="auth-discover" to="/enterprise">
@@ -68,6 +78,7 @@ export function AuthLayout() {
           </div>
           <div className="mt-6 min-[900px]:hidden">
             <PolicyLinks />
+            {enquiryLink}
           </div>
         </div>
       </main>

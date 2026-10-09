@@ -18,6 +18,7 @@ import { ToolsChapter } from './chapters/ToolsChapter';
 import { TrustChapter } from './chapters/TrustChapter';
 import { WorkspacesChapter } from './chapters/WorkspacesChapter';
 import { useProductMetadata } from './useProductMetadata';
+import { useProductContactNavigation } from './useProductContactNavigation';
 import { StoryMotionContext, useStoryMotionSource } from './motion/useStoryMotion';
 import { ProductHeader } from './ProductHeader';
 
@@ -31,6 +32,7 @@ import './story-close.css';
 export function ProductStory({ enquiriesEnabled = false }: { enquiriesEnabled?: boolean }) {
   const motion = useStoryMotionSource();
   useProductMetadata();
+  useProductContactNavigation();
   return (
     <StoryMotionContext.Provider value={motion}>
       <div className="product-story" data-motion={motion.still ? 'still' : 'moving'}>

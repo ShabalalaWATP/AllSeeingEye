@@ -19,6 +19,11 @@ The public site-facts request fails closed. The backend independently rejects
 submissions when enquiries are disabled. A form that receives that response
 removes its controls and explains that enquiries are unavailable.
 
+The quiet sign-in link appears beside the desktop and mobile privacy links only
+when enquiries are enabled. It targets `/enterprise#contact`; once the lazy,
+configuration-gated story mounts, it scrolls to the contact chapter without
+animation and focuses its heading. Sign-in form controls and tabs are unchanged.
+
 ## Form behaviour
 
 - Name, work email, organisation, deployment interest and expected users are
@@ -46,16 +51,19 @@ The product import boundary continues to exclude account stores and app runtimes
 ## Acceptance evidence
 
 The source worktree starts at `c02bfdff` (KAN-172 metadata/import controls and the
-KAN-166/167 API contract). The KAN-165 public documents and policy-link integration
-are required before final browser acceptance. Publication remains subject to the
-legal/content approval gate; implementation is not evidence of that approval.
+KAN-166/167 API contract), with KAN-165 public documents (`3865e51a`) and KAN-182
+session handling (`0e243da5`) integrated. Regenerating the merged API types produced
+no difference. Publication remains subject to the legal/content approval gate;
+implementation is not evidence of that approval.
 
-Before policy-link integration, using Node 24.19.0 and pnpm 11.25.0: frozen
-installation, scoped ESLint, TypeScript, production build, formatting, file-length
-and product-import checks passed. All 12 Node tooling tests passed. The product
-route measured 23,123 bytes gzip against its 153,600-byte ceiling; the initial
-payload was 205,333 bytes and the additional globe closure 810,684 bytes, both
-within their existing limits. These sizes must be remeasured after integration.
+After policy/session integration and the contact-navigation fix, using Node
+24.19.0 and pnpm 11.25.0: frozen installation, TypeScript, full ESLint, production
+build, formatting and file-length checks passed. The product import guard
+traversed 74 source files; all 23 Node tooling/policy tests and all 20 Python
+publication/crawler-policy tests passed. The product closure is 23,306 bytes gzip
+against its 153,600-byte ceiling, initial JavaScript 209,134 bytes against 245,760
+and the additional globe closure 810,693 bytes against 870,400. The integrated
+KAN-184 preview-heading repair also passed focused ESLint.
 
 Prepared Vitest/MSW cases cover success, client and server validation, throttling,
 admission being disabled, the honeypot, duplicate requests, abort, no public auth
