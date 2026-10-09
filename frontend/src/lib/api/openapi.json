@@ -767,7 +767,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MfaChallengeIn"
+                "$ref": "#/components/schemas/MfaEnrolAppIn"
               }
             }
           },
@@ -41165,6 +41165,33 @@
         ],
         "title": "MfaConfirmIn"
       },
+      "MfaEnrolAppIn": {
+        "properties": {
+          "challenge_token": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 16,
+            "title": "Challenge Token"
+          },
+          "email_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_token"
+        ],
+        "title": "MfaEnrolAppIn"
+      },
       "MfaMethod": {
         "type": "string",
         "enum": [
@@ -41220,6 +41247,11 @@
           "email_sent": {
             "type": "boolean",
             "title": "Email Sent"
+          },
+          "authenticator_email_proof": {
+            "type": "boolean",
+            "title": "Authenticator Email Proof",
+            "description": "Confirm an emailed code before a first authenticator can be set up."
           }
         },
         "type": "object",
@@ -41228,7 +41260,8 @@
           "expires_at",
           "methods",
           "enrollment_required",
-          "email_sent"
+          "email_sent",
+          "authenticator_email_proof"
         ],
         "title": "MfaPendingOut"
       },

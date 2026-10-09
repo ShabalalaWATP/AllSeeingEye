@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { getPushSettings, type PushDevice } from '@/lib/api/webPush';
 import { disablePush, enablePush, pushSupported } from '@/lib/browserPush';
+import { initialAuthState, useAuthStore } from '@/stores/auth';
+import { plainUser, tokenFor } from '@/test/fixtures';
 import { PushSettings } from './PushSettings';
 
 vi.mock('@/lib/api/webPush', () => ({ getPushSettings: vi.fn() }));
@@ -23,6 +25,15 @@ beforeEach(() => {
   vi.mocked(pushSupported).mockReset().mockReturnValue(true);
   vi.mocked(enablePush).mockReset().mockResolvedValue(device);
   vi.mocked(disablePush).mockReset().mockResolvedValue();
+  useAuthStore.getState().setSession(tokenFor(plainUser));
+});
+
+it('records nothing without a signed-in account', async () => {
+  useAuthStore.setState(initialAuthState);
+  render(<PushSettings />);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole('button', { name: 'Enable push on this browser' }));
+  expect(enablePush).not.toHaveBeenCalled();
 });
 
 it('shows a load failure without an enable control', async () => {
@@ -46,7 +57,7 @@ it('keeps controls busy while enabling and refreshes the registered device list'
   render(<PushSettings />);
   const user = userEvent.setup();
   await user.click(await screen.findByRole('button', { name: 'Enable push on this browser' }));
-  expect(enablePush).toHaveBeenCalledWith('public-key', []);
+  expect(enablePush).toHaveBeenCalledWith('public-key', [], plainUser.id);
   expect(screen.getByRole('button', { name: 'Updating…' })).toBeDisabled();
   await act(async () => {
     finish(device);

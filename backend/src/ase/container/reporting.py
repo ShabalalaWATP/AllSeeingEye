@@ -102,6 +102,7 @@ class ReportWiring(
             clock=self.clock,
             limiter=self.limiter,
             lock=self.embedding_lock,
+            slots=self.search_slots,
             uow=r.uow,
             access=self.access_policy(session),
             ai_usage=self.ai_usage_accounting,

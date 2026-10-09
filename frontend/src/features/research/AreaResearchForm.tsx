@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import type { SavedMapView } from '@/lib/api/mapViews';
 import type { Profile } from '@/lib/api/profile';
 import { describeError } from '@/lib/api/errors';
+import { useKeyedConsent } from '@/lib/hooks/useKeyedConsent';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -42,7 +43,6 @@ export function AreaResearchForm({
   const [mode, setMode] = useState(preferences.research_mode);
   const [language, setLanguage] = useState(preferences.report_language);
   const [style, setStyle] = useState(preferences.report_style);
-  const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const action = useResearchRun();
   const teamId = saved.view.team_id;
@@ -65,6 +65,8 @@ export function AreaResearchForm({
       until: fixedUntil,
     },
   });
+  // The question, depth, interval and sources all feed the plan key, so any edit withdraws it.
+  const [consent, setConsent] = useKeyedConsent(plan.key);
   const writable =
     !workspaces.loading &&
     workspaces.canAcknowledge(teamId) &&
@@ -150,13 +152,7 @@ export function AreaResearchForm({
           required
           rows={4}
         />
-        <ProjectHistory
-          value={history}
-          onChange={(value) => {
-            setHistory(value);
-            setConsent(false);
-          }}
-        />
+        <ProjectHistory value={history} onChange={setHistory} />
         {!historical && (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -165,10 +161,7 @@ export function AreaResearchForm({
                 type="datetime-local"
                 step="1"
                 value={since}
-                onChange={(e) => {
-                  setSince(e.target.value);
-                  setConsent(false);
-                }}
+                onChange={(e) => setSince(e.target.value)}
                 required
               />
               <TextField
@@ -176,10 +169,7 @@ export function AreaResearchForm({
                 type="datetime-local"
                 step="1"
                 value={until}
-                onChange={(e) => {
-                  setUntil(e.target.value);
-                  setConsent(false);
-                }}
+                onChange={(e) => setUntil(e.target.value)}
                 required
               />
             </div>

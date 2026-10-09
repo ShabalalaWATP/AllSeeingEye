@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 import type { ExportChoice, ExportDescription } from './exportFormats';
 
 /** One export format: what it is for, and any limitation that applies to it. */
@@ -7,6 +9,7 @@ export function ExportMenuItem({
   preferred,
   busy,
   caveat,
+  unavailableReason = null,
   onSelect,
 }: {
   format: ExportChoice;
@@ -14,16 +17,22 @@ export function ExportMenuItem({
   preferred: boolean;
   busy: boolean;
   caveat: string | null;
+  /** Why the item cannot be chosen yet; shown and announced while it is disabled. */
+  unavailableReason?: string | null;
   onSelect: () => void;
 }) {
   const caveatId = caveat ? `export-caveat-${format}` : undefined;
+  const reasonId = useId();
+  const describedBy = [unavailableReason ? reasonId : null, caveatId ?? null]
+    .filter((id) => id !== null)
+    .join(' ');
   return (
     <button
       type="button"
       role="menuitem"
       aria-label={`Download ${description.short}`}
-      {...(caveatId ? { 'aria-describedby': caveatId } : {})}
-      disabled={busy}
+      {...(describedBy ? { 'aria-describedby': describedBy } : {})}
+      disabled={busy || unavailableReason !== null}
       className="flex w-full flex-col gap-1 rounded px-2 py-3 text-left transition-colors hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ember disabled:opacity-50 motion-reduce:transition-none"
       onClick={onSelect}
     >
@@ -44,6 +53,11 @@ export function ExportMenuItem({
         </span>
       </span>
       <span className="block text-xs leading-5 text-muted">{description.detail}</span>
+      {unavailableReason && (
+        <span id={reasonId} className="block text-xs leading-5 text-text">
+          {unavailableReason}
+        </span>
+      )}
       {caveat && (
         <span id={caveatId} className="block text-xs leading-5 text-amber">
           {caveat}

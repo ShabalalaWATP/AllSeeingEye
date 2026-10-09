@@ -187,6 +187,44 @@ it('requires a current exact-area preview and submits its fixed dates without a 
   });
 });
 
+it('withdraws disclosure consent when the question, depth or sources change', async () => {
+  server.use(
+    http.get('/api/map/views/:view/revisions/:revision', () => HttpResponse.json(saved)),
+    http.post('/api/research/runs/plan', async ({ request }) =>
+      HttpResponse.json(preview((await request.json()) as ResearchPlanInput)),
+    ),
+  );
+  const { user } = renderApp(path, 'user');
+  const question = await screen.findByLabelText('Your area research question');
+  await user.type(question, 'What was observed?');
+  fireEvent.change(screen.getByLabelText('Acquisition / publication from (UTC)'), {
+    target: { value: '2020-01-01T10:00' },
+  });
+  fireEvent.change(screen.getByLabelText('Acquisition / publication until (UTC, exclusive)'), {
+    target: { value: '2020-01-01T12:00' },
+  });
+  await user.click(screen.getByText('Collection plan (required)'));
+  const consent = screen.getByLabelText(
+    'Allow selected providers to receive this area and interval for collection.',
+  );
+  const previewAndConsent = async () => {
+    await user.click(screen.getByRole('button', { name: /Preview collection plan/ }));
+    await screen.findByText('Current preview');
+    await user.click(consent);
+    expect(consent).toBeChecked();
+  };
+  await previewAndConsent();
+  await user.type(question, ' Since when?');
+  expect(consent).not.toBeChecked();
+  await previewAndConsent();
+  await user.click(screen.getByRole('radio', { name: /Advanced/ }));
+  expect(consent).not.toBeChecked();
+  await previewAndConsent();
+  await user.click(screen.getByRole('checkbox', { name: 'Copernicus' }));
+  expect(consent).not.toBeChecked();
+  expect(screen.getByRole('button', { name: 'Research saved area' })).toBeDisabled();
+});
+
 it('does not fall back to ordinary research for an incomplete map link', async () => {
   renderApp(`/research?map_view=${viewId}`, 'user');
   expect(await screen.findByRole('alert')).toHaveTextContent('exact saved map revision');

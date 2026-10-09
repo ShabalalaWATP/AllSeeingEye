@@ -17,6 +17,7 @@ from ase.domain.original_assets import (
     MAX_GLOBAL_BYTES,
     MAX_GLOBAL_RECORDS,
     MAX_PENDING_UPLOADS,
+    MAX_PENDING_UPLOADS_PER_USER,
     MAX_PERSONAL_BYTES,
     MAX_PERSONAL_RECORDS,
     MAX_SELECTED_ASSETS,
@@ -124,7 +125,11 @@ class OriginalAssets:
         item, digest, filename, media_type = original_anchor(version, request.evidence_label)
         if request.media_type != media_type:
             raise InvalidRequest("The declared media type differs from the frozen original.")
-        if await self.assets.pending_count() >= MAX_PENDING_UPLOADS:
+        # The administration guard serialises admission, so these counts cannot race.
+        if (
+            await self.assets.pending_count(access.actor.id) >= MAX_PENDING_UPLOADS_PER_USER
+            or await self.assets.pending_count() >= MAX_PENDING_UPLOADS
+        ):
             raise RateLimited(60)
         await self._quota(report.created_by, report.team_id, request.byte_count, 1)
         now = self.clock.now()

@@ -155,6 +155,7 @@ async def test_reservations_count_before_upload_and_deleted_records_remain_bound
     monkeypatch,
 ):
     monkeypatch.setattr(service, "MAX_PERSONAL_RECORDS", 2)
+    monkeypatch.setattr(service, "MAX_PENDING_UPLOADS_PER_USER", 2)
     record, _ = await original_report(container, user)
     headers = bearer(await login_token(client, user.email, USER_PASSWORD))
     first = (await client.post(asset_path(record), headers=headers, json=reserve_body())).json()

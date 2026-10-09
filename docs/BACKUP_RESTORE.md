@@ -159,8 +159,15 @@ and matches byte for byte. Only then is `scheduled-<UTC time>.tar.gpg` moved int
 the backup root. The plaintext bundle and tar never leave a private temporary
 directory that is removed afterwards. At least 1 GiB must be free.
 
+A run or drill that is killed part way can leave its plaintext `.work-*` or
+`.drill-*` temporary directory behind. Each `run` and `drill` therefore first
+removes such leftovers while holding the root's lock. It removes only real
+directories whose names match the job's own temporary pattern; files, symbolic
+links and junctions of the same name are left alone and never followed.
+
 Retention keeps the newest `--keep` archives (default 30, minimum 3) and deletes
 only files named `scheduled-*.tar.gpg` in the root. Other bundles are never touched.
+A `--keep` value below 3 is refused before the backup starts.
 A failed run never prunes. `status.json` in the root records the last attempt, the
 last success, the archive name and size, and any failure message.
 

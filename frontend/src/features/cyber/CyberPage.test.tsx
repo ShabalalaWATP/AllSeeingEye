@@ -250,6 +250,28 @@ it('handles unavailable sources and disabled actor reference without replacing g
   expect(await screen.findByText('Actor reference is disabled.')).toBeVisible();
   expect(screen.queryByText('APT29')).not.toBeInTheDocument();
   expect(screen.queryByRole('list', { name: 'Cyber focus areas' })).not.toBeInTheDocument();
+  // Every jump link still has a target, and each data section says why it is empty.
+  for (const link of within(
+    screen.getByRole('navigation', { name: 'Cyber workspace sections' }),
+  ).getAllByRole('link')) {
+    expect(document.querySelector(link.getAttribute('href') ?? '')).toBeInTheDocument();
+  }
+  for (const id of ['overview', 'focus', 'nation-state', 'gnss', 'vulnerabilities', 'sources']) {
+    expect(document.getElementById(`cyber-${id}`)).toHaveTextContent(
+      'Not available: cyber activity could not be loaded.',
+    );
+  }
+});
+
+it('keeps every section target mounted while the snapshot loads', async () => {
+  server.use(http.get('/api/cyber', () => new Promise<Response>(() => undefined)));
+  renderApp('/cyber', 'user');
+  await screen.findByRole('navigation', { name: 'Cyber workspace sections' });
+  for (const id of ['overview', 'focus', 'gnss', 'activity', 'sources']) {
+    expect(document.getElementById(`cyber-${id}`)).toHaveTextContent(
+      'Waiting for cyber activity to load.',
+    );
+  }
 });
 
 it('keeps actor references useful without reporting zero activity when the snapshot fails', async () => {

@@ -7,6 +7,11 @@ shared-read library and caller-driven retention assumptions below.
 Amended by [ADR 0022](0022-live-store-snapshot.md), 26 September 2026: raw live
 events still never enter the database or this index, but one disposable, size-capped
 snapshot file of the live store now survives restarts.
+Amended by KAN-212, 8 October 2026: queries no longer take the indexing lock. Each
+account may run one query at a time within a process-wide cap of four, and model calls
+are limited to 30 per account and 300 per process per hour, so one or two accounts
+cannot exhaust the shared allowance. Indexing still holds the single lock so the
+global vector capacity check stays exact.
 
 ## Context
 
@@ -45,8 +50,9 @@ before saving; searching re-reads current reports after the outbound request.
 Changing a model or profile requires re-indexing. Key rotation alone does not
 change the embedding space.
 
-One process-local lock covers indexing and querying. Model calls are limited to
-30 per user and 60 globally per hour, and usage outcomes are recorded. Embedding
+One process-local lock covers indexing. Queries take a per-account slot within a
+process-wide cap (see the KAN-212 amendment). Model calls are limited per account and
+globally per hour, and usage outcomes are recorded. Embedding
 responses use identity encoding, a 2 MiB streaming cap and a 30-second endpoint
 deadline; the application also bounds the overall call. Redirects and provider
 error excerpts are refused. Administrators may select a local model endpoint,

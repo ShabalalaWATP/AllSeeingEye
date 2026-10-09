@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query
@@ -28,6 +28,13 @@ def parse_categories(value: str | None) -> frozenset[Category]:
         return frozenset(Category(part.strip()) for part in value.split(",") if part.strip())
     except ValueError as exc:
         raise InvalidQuery(fields={"categories": "Unknown category"}) from exc
+
+
+def as_utc(value: datetime | None) -> datetime | None:
+    """A timestamp without an offset is read as UTC, so comparisons never mix the two kinds."""
+    if value is None or value.utcoffset() is not None:
+        return value
+    return value.replace(tzinfo=UTC)
 
 
 def parse_bbox(value: str | None) -> BoundingBox | None:
@@ -67,7 +74,7 @@ async def list_events(
         categories=parse_categories(categories),
         bbox=parse_bbox(bbox),
         country_iso=country.upper() if country else None,
-        since=since,
+        since=as_utc(since),
         source_ids=frozenset(s.strip() for s in sources.split(",") if s.strip())
         if sources
         else frozenset(),

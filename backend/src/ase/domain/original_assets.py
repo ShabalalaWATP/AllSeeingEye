@@ -12,7 +12,10 @@ MAX_GLOBAL_BYTES = 1024 * 1024 * 1024
 MAX_PERSONAL_RECORDS = 64
 MAX_TEAM_RECORDS = 256
 MAX_GLOBAL_RECORDS = 4096
-MAX_PENDING_UPLOADS = 2
+# Reservations awaiting bytes: one per uploader, with a small shared backstop so a
+# single account cannot occupy every intake slot.
+MAX_PENDING_UPLOADS = 4
+MAX_PENDING_UPLOADS_PER_USER = 1
 MAX_SELECTED_ASSETS = 20
 MAX_EXPORT_ASSET_BYTES = 24 * 1024 * 1024
 AssetStatus = Literal["reserved", "uploading", "active", "deleted", "expired"]

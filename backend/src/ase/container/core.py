@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from ase.application.ports.trackers import ConflictDirectory
     from ase.application.ports.warning import AlertNotifier
     from ase.application.reports.access import GetReportUseCase
+    from ase.application.reports.search_slots import SearchSlots
     from ase.application.trackers.aviation import WatchedArea
     from ase.container.repositories import Repositories
     from ase.domain.aviation import JamMap
@@ -70,6 +71,7 @@ class ContainerCore:
     email_sender: EmailSender
     embedding_gateway: EmbeddingGateway
     embedding_lock: asyncio.Lock
+    search_slots: SearchSlots
     generator: TokenGenerator
     hasher: PasswordHasher
     health: HealthRegistry

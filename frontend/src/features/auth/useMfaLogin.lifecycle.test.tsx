@@ -16,6 +16,7 @@ const challenge: PendingMfa = {
   methods: ['authenticator'],
   enrollment_required: false,
   email_sent: false,
+  authenticator_email_proof: false,
 };
 
 it('keeps a replacement identity when an earlier MFA request completes while still mounted', async () => {

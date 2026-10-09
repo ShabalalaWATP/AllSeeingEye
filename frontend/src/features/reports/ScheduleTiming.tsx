@@ -19,10 +19,12 @@ const MONTHS = [
 export const calendarCadence = (cadence: Cadence) =>
   ['monthly', 'quarterly', 'semiannual', 'annual'].includes(cadence);
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const HOURS = Array.from({ length: 24 }, (_, hour) => ({
-  value: String(hour),
-  label: `${String(hour).padStart(2, '0')}:00 UTC`,
-}));
+/** Hours in the subscription's own timezone, which existing subscriptions may set. */
+const hourOptions = (timezone: string, minute: number) =>
+  Array.from({ length: 24 }, (_, hour) => ({
+    value: String(hour),
+    label: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${timezone}`,
+  }));
 
 export function describeCadence(schedule: Schedule): string {
   const at =
@@ -47,6 +49,8 @@ export function describeCadence(schedule: Schedule): string {
 export function ScheduleTiming({
   cadence,
   hour,
+  timezone = 'UTC',
+  minute = 0,
   weekday,
   monthday,
   anchorMonth,
@@ -62,6 +66,8 @@ export function ScheduleTiming({
 }: {
   cadence: Cadence;
   hour: string;
+  timezone?: string;
+  minute?: number;
   weekday: string;
   monthday: string;
   anchorMonth: string;
@@ -99,7 +105,7 @@ export function ScheduleTiming({
           label="Hour"
           value={hour}
           onChange={(event) => onHour(event.target.value)}
-          options={HOURS}
+          options={hourOptions(timezone, minute)}
         />
         {cadence === 'weekly' && (
           <SelectField
@@ -159,8 +165,9 @@ export function ScheduleTiming({
         )}
       </div>
       <p className="text-xs text-muted">
-        Times use UTC all year. The server must be running. Updates are saved in the app, not
-        emailed.
+        Times use UTC all year. The server must be running. Updates are saved in the app. Email is
+        optional and off by default: after saving, choose it under Email preferences beside the
+        subscription.
       </p>
     </fieldset>
   );

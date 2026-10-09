@@ -51,11 +51,27 @@ identifiers. Providers run only when selected and admitted within the run's budg
 | Domains | Google Public DNS, Verisign RDAP for .com/.net and SSLMate certificate transparency | Current resolver, registry and certificate records. No target-host scan, historical ownership conclusion or complete subdomain search. |
 | Scholarship and public policy | OpenAlex, Crossref and UK Parliament written questions | Publication or official-record metadata. Indexing and official publication do not validate the underlying claims. |
 | Economics | World Bank annual indicators, ONS UK CPIH and ECB reference rates | Explicit bounded series with recorded units, dates and missing values. These are not a general market-data terminal. |
-| Procurement, aid and designations | UK Contracts Finder, an imported AidData catalogue, imported UK Sanctions List and OFAC SDN snapshots | Notices and recorded assertions. A name match is a lead; absence from a bounded search is not clearance. |
+| Procurement, aid and designations | UK Contracts Finder, an imported AidData catalogue, and imported UK Sanctions List, OFAC SDN, UN Security Council Consolidated List and EU consolidated financial sanctions (FSF) snapshots | Notices and recorded assertions. A name match is a lead; absence from a bounded search is not clearance. |
+| Humanitarian context | HDX HAPI aggregates for one selected country: IOM DTM internally displaced people, IPC food security and OCHA operational presence | One page of at most 20 dated rows per topic, not a complete total. Reference periods are not publication dates, and HDX is a distributor, not independent corroboration. No conflict-event or ACLED data is collected. |
 | Area and environmental research | Retained geolocated feeds, USGS, EONET, OpenAQ, OpenStreetMap features and packaged asset registers | Records intersecting the supported area/time selection. Coverage can be uneven and some records describe a snapshot rather than a current condition. |
 | Satellite acquisition context | Copernicus Sentinel-2 catalogue footprints | Acquisition metadata and footprints, not downloaded or interpreted imagery. |
 | Connectivity | IODA outage events, OONI country aggregates and Cloudflare Radar distributions | Bounded observations or aggregate shares, subject to provider-specific permissions. |
 | Supplied documents and media | Private TXT, CSV, JSON, PDF and DOCX inputs; supported images and videos | Extracted passages, metadata, OCR and sampled frames. Extraction does not authenticate authorship, capture date or location. |
+
+The four designation lists are searched only in local snapshots. An operator obtains
+each native file (CSV for the UK and OFAC lists, XML for the UN and EU lists), imports
+it with `ase import-designations` and sets the matching `ASE_UKSL_SNAPSHOT_PATH`,
+`ASE_OFAC_SDN_SNAPSHOT_PATH`, `ASE_UN_SC_SNAPSHOT_PATH` or `ASE_EU_FSF_SNAPSHOT_PATH`.
+The app never downloads the lists and a search sends nothing outbound. A snapshot is
+only as current as its import, and the authenticity of the supplied file is not verified.
+
+HDX HAPI research needs an operator-generated application identifier in
+`ASE_HAPI_APP_IDENTIFIER`. Each selected topic sends one request to
+`hapi.humdata.org` with the country's ISO alpha-3 code, the run's start and end dates
+and a 20-row limit. The identifier, which encodes the operator's email address, goes
+only in that origin's `X-HDX-HAPI-APP-IDENTIFIER` header, and the request carries the
+usual User-Agent with `ASE_FEEDS_CONTACT`. No question text is sent, and the identifier
+is never stored in evidence.
 
 Selected original-document acquisition has its own source permissions, size and time
 limits. Do not assume that every linked page or a complete document was read. Inspect
@@ -134,7 +150,8 @@ needed for your use and review their reuse terms.
 | UCDP and OpenAlex | Optional authenticated routes; the app also implements public access |
 | Cloudflare Radar research | Token and explicit suitable-use acknowledgement |
 | OONI and IODA research | Explicit acknowledgement of the relevant data-use terms |
-| AidData and sanctions research | Validated local catalogue or snapshot import |
+| AidData and sanctions research | Validated local catalogue or snapshot import (UK, OFAC, UN and EU lists) |
+| HDX HAPI research | Operator-generated HDX HAPI application identifier, kept as a secret |
 | OCR and video extraction | Local extraction tools supported by the installation |
 
 The exact setting names are in [`.env.example`](../.env.example). Keys belong in the

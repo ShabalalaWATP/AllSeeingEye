@@ -3,7 +3,7 @@ import { archiveMapView, createMapView, listMapViews, updateMapView } from '@/li
 import type { MapState, MapViewPage, SavedMapView } from '@/lib/api/mapViews';
 import { describeError } from '@/lib/api/errors';
 import { useMapRequest } from './useMapRequest';
-import { scopedMutation } from '@/lib/workspaceAccess';
+import { scopedRead } from '@/lib/workspaceAccess';
 
 export function useSavedMapViews(reportId: string, version: number, initial?: SavedMapView) {
   const request = useMapRequest();
@@ -28,7 +28,7 @@ export function useSavedMapViews(reportId: string, version: number, initial?: Sa
   };
   const browse = (offset = 0) =>
     run(async (signal) => {
-      const result = await scopedMutation(() => listMapViews(reportId, offset, signal));
+      const result = await scopedRead(() => listMapViews(reportId, offset, signal));
       if (!signal.aborted) setPage(result);
     });
   const save = (state: MapState, copy: boolean) =>

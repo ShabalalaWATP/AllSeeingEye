@@ -112,7 +112,12 @@ export function useScheduleForm({
     initial?.research_source_ids ?? null,
   );
   const [chooseSources, setChooseSources] = useDraftState(form, 'chooseSources', false);
-  const [hour, setHour] = useDraftState(form, 'hour', String(initial?.hour_utc ?? 6));
+  // The hour is sent back as the local hour in the subscription's own timezone.
+  const [hour, setHour] = useDraftState(
+    form,
+    'hour',
+    String(initial?.local_hour ?? initial?.hour_utc ?? 6),
+  );
   const [cadence, updateCadence] = useDraftState<Cadence>(
     form,
     'cadence',

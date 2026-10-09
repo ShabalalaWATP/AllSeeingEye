@@ -13,7 +13,8 @@ import httpx
 from ase.adapters.feeds.bounded_gzip import BoundedGzipError
 from ase.application.ports.feed_diagnostics import FeedRateLimited
 
-MAX_RETRY_AFTER = timedelta(hours=1)
+# Only HTTP 429 carries a parsed wait; a daily quota reset can legitimately be hours away.
+MAX_RETRY_AFTER = timedelta(hours=24)
 EPOCH_FLOOR = 1_000_000_000
 
 
@@ -50,7 +51,7 @@ class FeedRateLimitedError(FeedHttpStatusError, FeedRateLimited):
 
 
 def parse_retry_after(headers: httpx.Headers, now: datetime | None = None) -> timedelta | None:
-    """Retry-After seconds or HTTP-date, else a reset header; bounded to one second..one hour."""
+    """Retry-After seconds or HTTP-date, else a reset header; bounded to one second..one day."""
     raw = (headers.get("retry-after") or headers.get("x-ratelimit-reset") or "").strip()
     if not raw or len(raw) > 32:
         return None

@@ -17,6 +17,7 @@ export const pendingMfaSchema: z.ZodType<PendingMfa> = z.object({
   methods: z.array(methodSchema),
   enrollment_required: z.boolean(),
   email_sent: z.boolean(),
+  authenticator_email_proof: z.boolean(),
 });
 const statusSchema: z.ZodType<MfaStatus> = z.object({
   methods: z.array(methodSchema),
@@ -54,10 +55,11 @@ export function sendMfaEmail(challenge_token: string) {
     auth: false,
   });
 }
-export function enrolLoginApp(challenge_token: string) {
+/** An emailed code is sent only when the challenge requires proof of the account address. */
+export function enrolLoginApp(challenge_token: string, email_code?: string) {
   return apiCall('/api/auth/mfa/enrol-app', {
     method: 'POST',
-    body: { challenge_token },
+    body: email_code === undefined ? { challenge_token } : { challenge_token, email_code },
     schema: enrolmentSchema,
     auth: false,
   });

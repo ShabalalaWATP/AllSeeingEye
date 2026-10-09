@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -7,13 +7,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { describeError } from '@/lib/api/errors';
 import type { PendingMfa } from '@/lib/api/mfa';
 
+import { AuthenticatorEnrolment } from './AuthenticatorEnrolment';
 import { useMfaLogin } from './useMfaLogin';
-
-// The QR encoder is only needed during authenticator enrolment, so keep it out of the entry chunk.
-const AuthenticatorQr = lazy(async () => {
-  const module = await import('@/components/account/AuthenticatorQr');
-  return { default: module.AuthenticatorQr };
-});
 
 export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onBack: () => void }) {
   const mfa = useMfaLogin(challenge);
@@ -78,42 +73,20 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
         </div>
       ) : null}
       {isApp && challenge.enrollment_required ? (
-        <section className="space-y-3 border-y border-line py-4" aria-label="Authenticator setup">
-          <p className="text-sm text-muted">
-            Scan the QR code or enter the setup key in your authenticator app, then enter its
-            six-digit code.
-          </p>
-          {mfa.enrolment === null ? (
-            <Button
-              variant="secondary"
-              busy={mfa.busy}
-              onClick={() => {
-                void mfa.run('app');
-              }}
-            >
-              Set up authenticator app
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <Suspense
-                fallback={
-                  <p role="status" className="flex h-52 w-52 items-center text-sm text-muted">
-                    Preparing QR code...
-                  </p>
-                }
-              >
-                <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
-              </Suspense>
-              <p className="mb-2 text-xs text-muted">Setup key</p>
-              <code className="block select-all break-all rounded bg-surface-2 p-3 font-mono text-sm tracking-wider">
-                {mfa.enrolment.secret}
-              </code>
-              <p className="mt-2 text-xs text-muted">
-                Keep this key private. Choose a time-based account in your app.
-              </p>
-            </div>
-          )}
-        </section>
+        <AuthenticatorEnrolment
+          enrolment={mfa.enrolment}
+          emailProofRequired={challenge.authenticator_email_proof}
+          emailSent={mfa.emailSent}
+          emailProof={mfa.emailProof}
+          busy={mfa.busy}
+          onEmailProofChange={mfa.setEmailProof}
+          onSendEmail={() => {
+            void mfa.run('email');
+          }}
+          onSetUp={() => {
+            void mfa.run('app');
+          }}
+        />
       ) : null}
       {mfa.method === 'email' ? (
         <div className="space-y-3">

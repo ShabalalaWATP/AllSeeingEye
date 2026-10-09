@@ -15,6 +15,7 @@ const pending = {
   methods: ['authenticator'],
   enrollment_required: false,
   email_sent: false,
+  authenticator_email_proof: false,
 };
 async function begin(overrides = {}) {
   server.use(http.post('/api/auth/login', () => HttpResponse.json({ ...pending, ...overrides })));
@@ -137,6 +138,81 @@ describe('MFA sign-in', () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/admin');
     });
+  });
+
+  it('confirms an emailed code before issuing a first authenticator key', async () => {
+    const bodies: unknown[] = [];
+    let sent = 0;
+    server.use(
+      http.post('/api/auth/mfa/email', () => {
+        sent += 1;
+        return HttpResponse.json({ ...pending, email_sent: true });
+      }),
+      http.post('/api/auth/mfa/enrol-app', async ({ request }) => {
+        const body = await request.json();
+        bodies.push(body);
+        if ((body as { email_code?: string }).email_code !== '246810') {
+          return apiError(401, 'invalid_credentials', 'Invalid or expired code.');
+        }
+        return HttpResponse.json({
+          secret: 'SYNTHETICSETUPKEY',
+          provisioning_uri: 'otpauth://totp/test',
+          expires_in: 600,
+        });
+      }),
+      http.post('/api/auth/mfa/verify', () => HttpResponse.json(tokenFor(adminUser))),
+    );
+    const { user, router } = await begin({
+      enrollment_required: true,
+      methods: ['authenticator', 'email'],
+      authenticator_email_proof: true,
+    });
+    expect(screen.getByText(/confirm a code sent to your account email/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Set up authenticator app' })).toBeNull();
+    expect(screen.queryByLabelText('Authenticator code')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Send email code' }));
+    const proof = await screen.findByLabelText('Email confirmation code');
+    expect(sent).toBe(1);
+    const setUp = screen.getByRole('button', { name: 'Set up authenticator app' });
+    expect(setUp).toBeDisabled();
+    await user.type(proof, '111111');
+    await user.click(setUp);
+    expect(await screen.findByRole('alert')).toHaveTextContent('invalid or has expired');
+    expect(screen.queryByText('SYNTHETICSETUPKEY')).not.toBeInTheDocument();
+
+    await user.clear(proof);
+    await user.type(proof, '246810');
+    await user.click(screen.getByRole('button', { name: 'Set up authenticator app' }));
+    expect(await screen.findByText('SYNTHETICSETUPKEY')).toBeVisible();
+    expect(screen.queryByLabelText('Email confirmation code')).not.toBeInTheDocument();
+    expect(bodies).toEqual([
+      { challenge_token: pending.challenge_token, email_code: '111111' },
+      { challenge_token: pending.challenge_token, email_code: '246810' },
+    ]);
+    await user.type(screen.getByLabelText('Authenticator code'), '123456');
+    await user.click(screen.getByRole('button', { name: 'Enable MFA and continue' }));
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/admin');
+    });
+  });
+
+  it('omits the email code when the challenge does not require one', async () => {
+    let body: unknown;
+    server.use(
+      http.post('/api/auth/mfa/enrol-app', async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({
+          secret: 'SYNTHETICSETUPKEY',
+          provisioning_uri: 'otpauth://totp/test',
+          expires_in: 600,
+        });
+      }),
+    );
+    const { user } = await begin({ enrollment_required: true });
+    await user.click(screen.getByRole('button', { name: 'Set up authenticator app' }));
+    expect(await screen.findByText('SYNTHETICSETUPKEY')).toBeVisible();
+    expect(body).toEqual({ challenge_token: pending.challenge_token });
   });
 });
 

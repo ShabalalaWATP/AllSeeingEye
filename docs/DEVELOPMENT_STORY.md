@@ -6085,3 +6085,18 @@ synthetic, nothing third-party loads and the CSP is unchanged. Reduced motion an
 the brand pause show every scene in its final state. Independent quality and
 security reviews led to fixes for line endings, a source with unclear reuse
 terms, globe loop restarts, per-frame allocation and cached fetch failures.
+
+### KAN-212 account-security gaps and data-scope edge cases, 8 October 2026
+
+Directory handle changes now share a ten-per-hour budget per account, and a held
+handle answers `username_unavailable` whether its owner is discoverable or hidden.
+The per-email sign-in budget counts failed attempts only, rechecked under the account
+lock so concurrent guesses cannot overshoot it; successful sign-ins no longer spend
+it. With email delivery configured, an administrator's first authenticator is bound
+only after an emailed code is confirmed; without email the password-only enrolment
+remains as a documented trade-off. Semantic queries take a per-account slot within a
+shared cap instead of the indexing lock, with 30 model calls per account and 300 per
+process each hour. Upload reservations are capped at one per uploader with a shared
+cap of four. Source track records filter reviews and verdicts to the relevant reports
+and versions in SQL before their row limits. Orphaned citation verdicts were already
+removed on report deletion by KAN-199, with SQLite tests.

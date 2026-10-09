@@ -84,6 +84,10 @@ export function initialDraft(
   };
 }
 
+/** Its preview control sits under Advanced options, which the form reopens for this issue. */
+export const STALE_PLAN_ISSUE =
+  'Preview your edited collection plan under Advanced options, in Scope and sources, before starting research.';
+
 /** The first reason the draft cannot be sent, in the order a reader meets the fields. */
 export function researchIssue(draft: ResearchDraft, ctx: ResearchContext): string | null {
   const { parent, countries, historical, interval, plan } = ctx;
@@ -104,8 +108,7 @@ export function researchIssue(draft: ResearchDraft, ctx: ResearchContext): strin
     return `Enter a ${draft.focus === 'company' ? 'company name' : 'domain name'}.`;
   if (privateFocus && !draft.inputId && !parent?.report.version.evidence.length)
     return 'Attach a document or media file before starting this research.';
-  if (!parent && !privateFocus && plan.customised && !plan.current)
-    return 'Preview your edited collection plan before starting research.';
+  if (!parent && !privateFocus && plan.customised && !plan.current) return STALE_PLAN_ISSUE;
   if (!parent && !historical) {
     if (draft.dates) {
       const dateError = researchDateError(draft.dates);

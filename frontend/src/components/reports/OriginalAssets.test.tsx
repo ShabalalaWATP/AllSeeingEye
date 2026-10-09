@@ -153,7 +153,10 @@ it.each([false, true])('reserves then submits original bytes; mismatch=%s', asyn
     permitted_use: 'Public licence',
     retention_days: 30,
   });
-  expect(screen.getByLabelText<HTMLInputElement>('Original file').files).toHaveLength(0);
+  // A failed upload keeps the chosen file for a retry; a retained one clears it.
+  expect(screen.getByLabelText<HTMLInputElement>('Original file').files).toHaveLength(
+    mismatch ? 1 : 0,
+  );
 });
 it('clears private draft and selections on account and version changes', async () => {
   list();

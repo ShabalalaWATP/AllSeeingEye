@@ -176,9 +176,10 @@ team's vectors to fit the caller's library. A full index returns 422
 `invalid_request` for new slots; already indexed reports remain searchable.
 Global maintenance removes orphaned/superseded rows independently of the caller.
 Profile fingerprints and version numbers determine whether a stored vector can
-be searched. Model calls are limited to 30 per user and 60 globally per hour,
-with one process-local search/index operation at a time. Busy/rate-limited
-operations return 429. Search rechecks visibility after its outbound call;
+be searched. Model calls are limited to 30 per account and 300 per process per
+hour; a refusal by either limit spends neither. Indexing runs one operation at a
+time per process. Each account may run one query at a time, with at most four
+concurrent queries per process. Busy/rate-limited operations return 429. Search rechecks visibility after its outbound call;
 indexing rechecks authority/version before saving. No raw live event is indexed.
 
 ## Streams, private terms and upgrade

@@ -48,7 +48,9 @@ the exported data before an operator enables the setting. With no installation
 URL, explicitly selected per-rule destinations remain independent.
 
 The installation copy now uses the durable outbox rather than a second immediate
-POST. Unchanged matching and cooldown logic still stores and streams every alert.
+POST. Matching and cooldown logic still stores and streams every alert. A rule
+counts only evidence its earlier alerts in the same window have not already cited,
+so it fires again only on new evidence rather than on every cooldown.
 
 ## Delivery and operations
 
@@ -56,8 +58,9 @@ An alert and its unique per-channel destination intents commit together. Deliver
 occurs afterwards. Each worker processes at most 25 intents per tick and waits
 30 seconds between ticks. Each intent has at most three attempts. Known rejection
 retries after five minutes times the attempt number; unavailable SMTP waits
-15 minutes. A lost response, server error or interrupted claim is conservatively
-`uncertain` and never automatically retried. A claim older than two minutes is
+15 minutes. Webhook answers 408, 502, 503 and 504 count as known rejections and
+retry on the same schedule. A lost response, any other server error or an
+interrupted claim is conservatively `uncertain` and never automatically retried. A claim older than two minutes is
 recovered as uncertain. Idempotency-Key carries the alert ID for receivers that
 support it; exactly-once delivery is not promised.
 

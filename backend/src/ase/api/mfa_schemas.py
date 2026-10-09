@@ -16,6 +16,9 @@ class MfaPendingOut(BaseModel):
     methods: list[MfaMethod]
     enrollment_required: bool
     email_sent: bool
+    authenticator_email_proof: bool = Field(
+        description="Confirm an emailed code before a first authenticator can be set up."
+    )
 
     @classmethod
     def from_pending(cls, pending: PendingMfa) -> Self:
@@ -25,11 +28,16 @@ class MfaPendingOut(BaseModel):
             methods=list(pending.methods),
             enrollment_required=pending.enrollment_required,
             email_sent=pending.email_sent,
+            authenticator_email_proof=pending.authenticator_email_proof,
         )
 
 
 class MfaChallengeIn(BaseModel):
     challenge_token: str = Field(min_length=16, max_length=512, repr=False)
+
+
+class MfaEnrolAppIn(MfaChallengeIn):
+    email_code: str | None = Field(default=None, pattern=r"^[0-9]{6}$", repr=False)
 
 
 class MfaConfirmIn(MfaChallengeIn):

@@ -1,4 +1,7 @@
-"""Alert routing to a webhook: one JSON POST per alert to a public address, never retried."""
+"""Alert routing to a webhook: one JSON POST per alert to a public address.
+
+The adapter itself never retries; the outbox does, for outcomes reported as RETRYABLE.
+"""
 
 from __future__ import annotations
 
@@ -17,6 +20,9 @@ from ase.domain.warning import Alert, Indicator
 log = structlog.get_logger(__name__)
 
 TIMEOUT_SECONDS = 10.0
+# Gateway, overload and request-timeout answers mean the receiver did not accept the alert.
+# Every attempt carries the alert id as its Idempotency-Key, so a retry cannot duplicate it.
+RETRYABLE_SERVER_STATUSES = frozenset({502, 503, 504})
 
 
 def alert_payload(alert: Alert, indicator: Indicator) -> dict[str, object]:
@@ -107,7 +113,9 @@ class WebhookNotifier:
             return DeliveryOutcome.UNCERTAIN if attempted else DeliveryOutcome.RETRYABLE
         if not 200 <= status < 300:
             log.warning("alert_webhook_rejected", status=status)
-            return DeliveryOutcome.UNCERTAIN if status >= 500 else DeliveryOutcome.RETRYABLE
+            if status >= 500 and status not in RETRYABLE_SERVER_STATUSES:
+                return DeliveryOutcome.UNCERTAIN
+            return DeliveryOutcome.RETRYABLE  # Includes 408 and the other 4xx refusals.
         return DeliveryOutcome.SENT
 
 

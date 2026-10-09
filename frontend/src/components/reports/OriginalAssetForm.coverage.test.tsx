@@ -137,6 +137,16 @@ it('refuses non-active upload results and cleans the reservation without hiding 
   expect(await screen.findByRole('alert')).toHaveTextContent('The original was not retained');
   await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
   expect(api.deleteOriginalAsset).toHaveBeenCalledOnce();
+  // KAN-208: the chosen file stays selected so the reader can retry without choosing it again.
+  expect(screen.getByLabelText<HTMLInputElement>('Original file').files).toHaveLength(1);
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Your chosen file is still selected. Select Retain original to try again.',
+  );
+  vi.mocked(api.uploadOriginalAsset).mockResolvedValue(asset);
+  await user.click(screen.getByRole('button', { name: 'Retain original' }));
+  await screen.findByText(/File retained/);
+  expect(api.uploadOriginalAsset).toHaveBeenCalledTimes(2);
+  expect(vi.mocked(api.uploadOriginalAsset).mock.calls[1]?.[2]).toBeInstanceOf(File);
   expect(screen.getByLabelText<HTMLInputElement>('Original file').files).toHaveLength(0);
 });
 
