@@ -27,7 +27,8 @@ site facts expose the configured retention period for the privacy notice.
 - Strict mypy passed across 1,603 source files. Ruff, formatting, all three import
   contracts, Bandit on new boundaries and the existing file-length check passed.
 - Frontend API generation, whole TypeScript check, focused ESLint and Prettier
-  passed. Frontend runtime checks wait for the KAN-206 full-suite reservation.
+  passed. The coordinator's integrated KAN-169 run passed all 31 tests across
+  site facts, the enquiry workspace and adjacent administration/navigation.
 - A fresh independent read-only review found no actionable issue in the
   transaction, authorisation, expiry and privacy boundaries.
 
