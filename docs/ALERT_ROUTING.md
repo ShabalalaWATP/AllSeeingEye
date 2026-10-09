@@ -151,13 +151,25 @@ so it fires again only on new evidence rather than on every cooldown.
 
 An alert and its unique per-channel destination intents commit together. Delivery
 occurs afterwards. Each worker processes at most 25 intents per tick and waits
-30 seconds between ticks. Each intent has at most three attempts. Known rejection
-retries after five minutes times the attempt number; unavailable SMTP waits
-15 minutes. Webhook answers 408, 502, 503 and 504 count as known rejections and
-retry on the same schedule. A lost response, any other server error or an
-interrupted claim is conservatively `uncertain` and never automatically retried. A claim older than two minutes is
-recovered as uncertain. Idempotency-Key carries the alert ID for receivers that
-support it; exactly-once delivery is not promised.
+30 seconds between ticks. Each intent has at most three attempts. Retryable
+outcomes wait five minutes after the first attempt and ten after the second;
+unavailable SMTP waits 15 minutes.
+
+Webhooks use a bounded at-least-once retry policy for HTTP 3xx/4xx responses
+(including 408 and 429) and gateway responses 502, 503 and 504. These responses
+do not prove non-acceptance: a receiver may apply the alert before its gateway
+returns an error. Retrying can therefore deliver the same alert more than once.
+Every attempt carries the alert ID as `Idempotency-Key`; receivers must implement
+their own deduplication for the key to prevent repeated effects. Neither eventual
+delivery nor exactly-once processing is guaranteed. A final `failed` state means
+the attempts were exhausted without confirmed transport acceptance, even if the
+receiver applied one or more requests. The internal `transport_rejected` reason
+labels a retryable transport outcome, not proof that the receiver did nothing.
+
+A lost response, any other server error or an interrupted claim is conservatively
+`uncertain` and never automatically retried. A claim older than two minutes is
+recovered as uncertain. These terminal cases retain the existing cautious policy;
+they do not make the responses selected for retry safe from duplication.
 
 Immediately before network I/O the worker rechecks the rule's existence, enabled
 state and original personal/team scope; the rule owner's active account and
