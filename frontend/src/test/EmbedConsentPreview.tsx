@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import '@/styles/theme.css';
 import { EmbedPrivacyPreferences } from '@/components/privacy/EmbedPrivacyPreferences';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { MarketWorkspace } from '@/features/economy/MarketWorkspace';
 import { CameraStream } from '@/features/globe/cameras/CameraStream';
 import type { Camera } from '@/lib/api/cameras';
@@ -31,7 +32,7 @@ function Preview() {
   const [selection, setSelection] = useState(0);
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-5 text-text">
-      <h1 className="text-2xl font-semibold">External media consent verification</h1>
+      <PageHeader title="External media consent verification" type="status" />
       <p>Local fixtures. All provider responses must be intercepted by the verification browser.</p>
       <MarketWorkspace region="US" />
       <section aria-label="YouTube camera" className="space-y-3">
