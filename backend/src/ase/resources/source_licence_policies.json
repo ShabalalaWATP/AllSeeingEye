@@ -1,0 +1,1290 @@
+{
+  "schema_version": 1,
+  "assessed_on": "2026-10-09",
+  "policies": {
+    "unknown-publisher": {
+      "name": "Publisher rights not reviewed",
+      "terms_url": null,
+      "additional_terms_urls": [],
+      "licence": "Not established",
+      "review_status": "not_reviewed",
+      "terms_checked_on": null,
+      "lookup_attempted_on": null,
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Retain publisher, author, date and original link; this is not a licence.",
+      "redistribution": "No republication, export or retained-excerpt grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "RSS availability and a source link do not establish commercial, hosted, AI or republication rights. Review this publisher and underlying contributors individually."
+    },
+    "unknown-source": {
+      "name": "Provider rights not reviewed",
+      "terms_url": null,
+      "additional_terms_urls": [],
+      "licence": "Not established",
+      "review_status": "not_reviewed",
+      "terms_checked_on": null,
+      "lookup_attempted_on": null,
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source identity and record-level credits pending review.",
+      "redistribution": "No onward-reuse grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Existing code licence notes are leads, not independently verified rights. Review the exact data product, service contract and intended use."
+    },
+    "camera-owner-rights": {
+      "name": "Camera owner and host rights not reviewed",
+      "terms_url": null,
+      "additional_terms_urls": [],
+      "licence": "Index metadata and camera media have separate rights",
+      "review_status": "not_reviewed",
+      "terms_checked_on": null,
+      "lookup_attempted_on": null,
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Keep each camera owner and provider credit; do not substitute directory credit.",
+      "redistribution": "Public stream/embed URLs and an allowlisted host do not authorise copying, proxying, capture, resale or report export.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Review each host, camera owner and delivery method. OSIRIS MIT catalogue code/data notices do not license third-party streams. A directory or government index does not establish rights in every image."
+    },
+    "mixed-evidence": {
+      "name": "Mixed or user-supplied evidence",
+      "terms_url": null,
+      "additional_terms_urls": [],
+      "licence": "Per-item rights; no blanket licence",
+      "review_status": "not_reviewed",
+      "terms_checked_on": null,
+      "lookup_attempted_on": null,
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve originating author/provider, licence and any required notices.",
+      "redistribution": "Each selected item retains its own restrictions; combining it into a report grants no new rights.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Applies to uploads, retained feeds, mixed curated assets and web-search evidence. Review source-specific licences, privacy, image rights and onward use."
+    },
+    "cloudflare-radar": {
+      "name": "Cloudflare Radar API data",
+      "terms_url": "https://radar.cloudflare.com/about",
+      "additional_terms_urls": [
+        "https://creativecommons.org/licenses/by-nc/4.0/"
+      ],
+      "licence": "CC BY-NC 4.0 (API/download data)",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Credit Cloudflare Radar, source link and CC BY-NC 4.0; identify changes.",
+      "redistribution": "Non-commercial sharing subject to the licence. Commercial display/export needs a separate grant.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "API data is distinct from CC BY 4.0 embeddable/downloadable graphs. Non-commercial hosted suitability is fact-specific; no project exception verified."
+    },
+    "ooni": {
+      "name": "OONI data",
+      "terms_url": "https://github.com/ooni/license/blob/master/data/LICENSE.md",
+      "additional_terms_urls": [
+        "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+      ],
+      "licence": "CC BY-NC-SA 4.0",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Credit OONI, link source and licence, identify changes.",
+      "redistribution": "Non-commercial sharing/adaptations subject to attribution and share-alike; no commercial grant verified.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "The acknowledgement setting records an operator assertion, not permission. Review whether the actual hosted use is non-commercial and the effect on derived outputs."
+    },
+    "adsb-fi": {
+      "name": "adsb.fi open data",
+      "terms_url": "https://github.com/adsbfi/opendata/blob/main/README.md",
+      "additional_terms_urls": [],
+      "licence": "Personal, non-commercial terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Cite adsb.fi and link its home page.",
+      "redistribution": "No licensing, sale, rental or lease of the data/service under the public terms.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Commercial enquiries are invited. Current aviation code uses adsb.lol instead; do not confuse the providers or assume personal use covers team hosting."
+    },
+    "adsb-lol": {
+      "name": "ADSB.lol API data",
+      "terms_url": "https://www.adsb.lol/docs/open-data/api/",
+      "additional_terms_urls": [
+        "https://opendatacommons.org/licenses/odbl/1-0/",
+        "https://www.adsb.lol/privacy-license/"
+      ],
+      "licence": "ODbL 1.0",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit ADSB.lol and ODbL; preserve database notices.",
+      "redistribution": "ODbL attribution/share-alike and derivative-database obligations apply.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "The API page specifies ODbL. Its separate contributor CC0 grant is not a replacement API-output licence. Review derived databases and publication; no availability guarantee."
+    },
+    "deepstate": {
+      "name": "DeepState API",
+      "terms_url": "https://deepstatemap.live/license.html",
+      "additional_terms_urls": [
+        "https://api.deepstatemap.live/request"
+      ],
+      "licence": "Provider API licence; commercial use by prior agreement",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve DeepState identification and approved links/branding.",
+      "redistribution": "API distribution, publication, proxying or transfer is restricted without authorisation.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Visual/text material reuse rules are separate from API rights. Hosted cache/display and exports require express scope confirmation; no grant verified."
+    },
+    "eox-2024": {
+      "name": "EOxCloudless 2024",
+      "terms_url": "https://cloudless.eox.at/license-non-commercial",
+      "additional_terms_urls": [
+        "https://cloudless.eox.at/documentation/license"
+      ],
+      "licence": "CC BY-NC-SA 4.0 or suitable EOX commercial licence",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2024).",
+      "redistribution": "Preserve visible attribution; independent downstream reuse/sublicensing needs scope review.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "2018–2025 imagery is non-commercial under published free terms. The 2016 CC BY offer does not cover the implemented 2024 layer. Map export declarations are not licence verification."
+    },
+    "independent-rss": {
+      "name": "The Independent RSS",
+      "terms_url": "https://www.independent.co.uk/service/rss-feeds-775086.html",
+      "additional_terms_urls": [
+        "https://www.independent.co.uk/service/user-policies-a6184151.html"
+      ],
+      "licence": "Personal, non-commercial RSS terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Keep publisher notices and links; agreed licensing credit remains unverified.",
+      "redistribution": "Republication needs licensing; general terms restrict network storage accessible to others.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Request hosted display, selected-excerpt retention and report-export permission before relying on these uses."
+    },
+    "cna-rss": {
+      "name": "CNA RSS",
+      "terms_url": "https://www.channelnewsasia.com/rss/rssterms",
+      "additional_terms_urls": [
+        "https://www.channelnewsasia.com/contact-us/help-and-feedback"
+      ],
+      "licence": "Personal, non-commercial RSS terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Direct link to the full article; no intermediate page; preserve supplied content.",
+      "redistribution": "Third-party distribution, forwarding, licensing and transfer restricted, including non-commercial use.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Attribution alone does not authorise multi-user redistribution. Seek a separate content-hosting agreement."
+    },
+    "reddit": {
+      "name": "Reddit Data API",
+      "terms_url": "https://redditinc.com/policies/data-api-terms",
+      "additional_terms_urls": [
+        "https://support.reddithelp.com/hc/en-us/articles/42728983564564-Responsible-Builder-Policy"
+      ],
+      "licence": "Data API Terms and Responsible Builder Policy",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Developer-policy attribution and owner restrictions; exact display specification needs review.",
+      "redistribution": "Only approved app use; limited display rights are not general resale or independent redistribution.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Current policy requires API approval and written commercial approval. Retention, deletion and sensitive inference need review. No current catalogue connector."
+    },
+    "open-meteo": {
+      "name": "Open-Meteo data and service",
+      "terms_url": "https://open-meteo.com/en/terms",
+      "additional_terms_urls": [
+        "https://open-meteo.com/en/licence"
+      ],
+      "licence": "CC BY 4.0 data; free API non-commercial; commercial service subscription",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit Open-Meteo beside displayed data, link source/licence and identify changes.",
+      "redistribution": "Data redistribution is allowed under CC BY 4.0; API subscription/access conditions still apply.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Commercial calls to the free API are not authorised by the open data licence. Paid entitlement is unverified; no current catalogue connector."
+    },
+    "gfw": {
+      "name": "Global Fishing Watch",
+      "terms_url": "https://globalfishingwatch.org/terms-of-use/",
+      "additional_terms_urls": [],
+      "licence": "CC BY-NC 4.0 default plus service/dataset terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Source/access date, licence and provider notices; include the specified apparent-fishing disclaimer where applicable.",
+      "redistribution": "Non-commercial reuse is conditional and dataset-specific; terms additionally address same-term reuse.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "API/bulk registration is not commercial permission. Third-party data and hosted audience need review; software Apache licensing is not a data grant."
+    },
+    "opensanctions": {
+      "name": "OpenSanctions",
+      "terms_url": "https://www.opensanctions.org/licensing/",
+      "additional_terms_urls": [
+        "https://www.opensanctions.org/docs/terms/data/202509/",
+        "https://www.opensanctions.org/docs/terms/api/202609/",
+        "https://www.opensanctions.org/docs/commercial/exemption/"
+      ],
+      "licence": "Public CC BY-NC 4.0; separate API/bulk commercial contracts",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "CC credit/link/change notice for public data; confirm paid-contract requirements.",
+      "redistribution": "Bulk internal, bulk reseller and API grants differ. Substantial standalone dataset redistribution is restricted.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Current paid API terms contemplate customer-facing products; do not apply the bulk internal-only rule to that contract. No purchased entitlement or catalogue connector verified."
+    },
+    "acled": {
+      "name": "ACLED event data",
+      "terms_url": "https://acleddata.com/eula",
+      "additional_terms_urls": [
+        "https://acleddata.com/contentusage",
+        "https://acleddata.com/attributionpolicy"
+      ],
+      "licence": "Eligibility and licence-specific EULA",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Prominent ACLED credit, access date, data scope and changes, including visualisations.",
+      "redistribution": "Raw sharing restricted. Non-commercial external outputs must be transformative and prevent dataset reconstruction; a dashboard alone is insufficient.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Corporate/public-sector and third-party-service permissions require the appropriate agreement. Account/API entitlement is not redistribution permission."
+    },
+    "openfreemap": {
+      "name": "OpenFreeMap maps",
+      "terms_url": "https://openfreemap.org/",
+      "additional_terms_urls": [
+        "https://openfreemap.org/tos/",
+        "https://www.openstreetmap.org/copyright"
+      ],
+      "licence": "Commercial use stated; OSM/ODbL and OpenMapTiles rights remain",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "OpenFreeMap (optional), © OpenMapTiles, Data from OpenStreetMap; retain links and printed/export credit.",
+      "redistribution": "Observe underlying data/style licences and ODbL. Service terms do not grant unrestricted bulk extraction.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Commercial web/app maps expressly contemplated. Public service has no SLA; reconcile automated bulk collection with service terms. Existing image export must retain credits."
+    },
+    "osm": {
+      "name": "OpenStreetMap data",
+      "terms_url": "https://www.openstreetmap.org/copyright",
+      "additional_terms_urls": [
+        "https://opendatacommons.org/licenses/odbl/1-0/"
+      ],
+      "licence": "ODbL 1.0",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "© OpenStreetMap contributors; link copyright/ODbL and preserve required notices.",
+      "redistribution": "Data/derivative-database share-alike conditions differ from produced-work image attribution.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Data rights do not grant unlimited use of OSM or third-party tile/geocoding/routing servers. Review service policy separately."
+    },
+    "osm-service": {
+      "name": "OSM-derived public service",
+      "terms_url": "https://www.openstreetmap.org/copyright",
+      "additional_terms_urls": [
+        "https://github.com/komoot/photon",
+        "https://valhalla.openstreetmap.de/"
+      ],
+      "licence": "ODbL data; service entitlement not reviewed",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve OpenStreetMap and service attribution.",
+      "redistribution": "Data licence does not settle hosted service quotas, result caching or redistribution.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Photon/Valhalla/Overpass are separate operators. Review exact public-instance terms or self-host before approving commercial service use."
+    },
+    "natural-earth": {
+      "name": "Natural Earth",
+      "terms_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+      "additional_terms_urls": [],
+      "licence": "Public domain",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit optional; suggested: Made with Natural Earth.",
+      "redistribution": "Electronic and printed redistribution and modification permitted.",
+      "risk": "low",
+      "actions": [
+        "keep"
+      ],
+      "notes": "The provider explicitly permits commercial use. This does not settle third-party overlays or jurisdiction-specific boundary presentation."
+    },
+    "wikidata-mixed": {
+      "name": "Wikidata plus separately licensed media",
+      "terms_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "additional_terms_urls": [],
+      "licence": "Structured data CC0; other text/media separate",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Wikidata credit useful; preserve individual Commons author/licence/change notices.",
+      "redistribution": "CC0 facts do not license linked portraits, photographs, prose or curated source material.",
+      "risk": "high",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Review every included image and seed source before approving the whole mixed catalogue. Do not label the complete asset CC0."
+    },
+    "govuk": {
+      "name": "GOV.UK published content",
+      "terms_url": "https://www.gov.uk/help/terms-conditions",
+      "additional_terms_urls": [
+        "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      ],
+      "licence": "OGL v3 for covered content, with exceptions",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Attribute the originating department and OGL; identify third-party material.",
+      "redistribution": "Reuse covered Crown content under OGL; exclude content carrying separate rights.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "GOV.UK permits feed reuse. Service-specific terms, personal data, logos and third-party rights still need review."
+    },
+    "ecb": {
+      "name": "ECB reference rates and releases",
+      "terms_url": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html",
+      "additional_terms_urls": [],
+      "licence": "ECB reproduction conditions",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Cite ECB, reproduce accurately and identify modifications.",
+      "redistribution": "Sold documents require notice before payment and at access that ECB information is freely available; authored papers have separate restrictions.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Reference rates are informational, not transaction prices. Apply the free-source notice to relevant commercial reports/subscriptions."
+    },
+    "gleif": {
+      "name": "GLEIF LEI data",
+      "terms_url": "https://www.gleif.org/en/meta/lei-data-terms-of-use",
+      "additional_terms_urls": [],
+      "licence": "CC0 data with access-service terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "GLEIF provenance recommended; no CC0 attribution condition.",
+      "redistribution": "CC0 reuse of covered LEI data; service terms and unrelated materials remain separate.",
+      "risk": "low",
+      "actions": [
+        "keep",
+        "attribute"
+      ],
+      "notes": "No licence claim is made for linked company filings or third-party source documents."
+    },
+    "openalex": {
+      "name": "OpenAlex metadata",
+      "terms_url": "https://help.openalex.org/access/overview/",
+      "additional_terms_urls": [],
+      "licence": "CC0 metadata; service tiers separate",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "OpenAlex provenance recommended; retain original publication/DOI references.",
+      "redistribution": "Metadata reuse permitted; this does not relicense linked full text or images.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute"
+      ],
+      "notes": "Data openness does not establish a particular API tier or allowance."
+    },
+    "crossref": {
+      "name": "Crossref metadata",
+      "terms_url": "https://www.crossref.org/services/metadata-retrieval/",
+      "additional_terms_urls": [],
+      "licence": "Metadata reuse without restriction, as described by Crossref",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Preserve Crossref provenance, authors and DOI links.",
+      "redistribution": "Metadata access is not a grant to republish linked full articles or third-party images.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Review any source-specific copyrighted abstract/full-text field before exporting more than the implemented metadata."
+    },
+    "digitraffic": {
+      "name": "Fintraffic Digitraffic",
+      "terms_url": "https://www.digitraffic.fi/en/terms-of-service/",
+      "additional_terms_urls": [],
+      "licence": "CC BY 4.0 data and service terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Source: Fintraffic / digitraffic.fi, licence CC BY 4.0; identify changes.",
+      "redistribution": "Covered data may be reused with licence conditions; verify any third-party exception.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Review camera-image scope separately where contributor rights differ; preserve rate limits and service identification."
+    },
+    "usgs": {
+      "name": "USGS-produced data",
+      "terms_url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "additional_terms_urls": [],
+      "licence": "US public-domain USGS-produced data; third-party exceptions",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit USGS and retain third-party notices where present.",
+      "redistribution": "USGS-produced information reusable; non-USGS images and other supplied materials can retain copyright.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "This assessment covers earthquake observations, not a blanket licence for every linked page or image."
+    },
+    "nasa-data": {
+      "name": "NASA Earth science products",
+      "terms_url": "https://www.earthdata.nasa.gov/engage/open-data-services-software/data-use-policy",
+      "additional_terms_urls": [],
+      "licence": "NASA-led mission data CC0 unless marked otherwise; contributor exceptions",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Use product-specific NASA/LANCE/FIRMS/GIBS credit and dataset citation.",
+      "redistribution": "Check each product or contributing source restriction; no blanket NASA-site clearance.",
+      "risk": "high",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "General policy located, but per-product and EONET contributing-source terms need completion. The older Worldview copyright URL was inaccessible in this lookup."
+    },
+    "mitre": {
+      "name": "MITRE ATT&CK",
+      "terms_url": "https://attack.mitre.org/resources/legal-and-branding/terms-of-use/",
+      "additional_terms_urls": [],
+      "licence": "MITRE ATT&CK licence",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Retain MITRE copyright designation and full licence in copies.",
+      "redistribution": "Research/development/commercial copying permitted with the specified notices.",
+      "risk": "low",
+      "actions": [
+        "keep",
+        "attribute"
+      ],
+      "notes": "Trademark/branding and third-party linked reports remain separate."
+    },
+    "telegram": {
+      "name": "Telegram content",
+      "terms_url": "https://telegram.org/tos/content-licensing",
+      "additional_terms_urls": [],
+      "licence": "Restricted platform content licence; owner rights remain",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Retain channel/author and post link; credit is not permission.",
+      "redistribution": "Non-standard access and transfer restricted. Content-owner conditions apply separately.",
+      "risk": "high",
+      "actions": [
+        "legal_review",
+        "request_permission",
+        "replace"
+      ],
+      "notes": "The current terms broadly prohibit scraping/aggregation and use for AI development, enhancement or deployment without specific consent. Legal review needed for existing collectors, model input and frozen report evidence."
+    },
+    "youtube": {
+      "name": "YouTube Data API metadata",
+      "terms_url": "https://developers.google.com/youtube/terms/developer-policies",
+      "additional_terms_urls": [],
+      "licence": "YouTube API terms and developer policies",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "YouTube-required branding/links and uploader attribution; review exact presentation.",
+      "redistribution": "Non-authorised API data requires delete/refresh within 30 days; redistribution and independent media reuse are not blanket permissions.",
+      "risk": "high",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Review saved evidence, exports, retention/deletion and application privacy/terms before approving use. A key alone does not establish compliance."
+    },
+    "bluesky": {
+      "name": "Bluesky user content",
+      "terms_url": "https://bsky.social/about/support/tos",
+      "additional_terms_urls": [],
+      "licence": "Platform terms; user-owned content",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve author, post URL and platform identity.",
+      "redistribution": "Bluesky platform licences do not establish blanket third-party report/export rights.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Review developer terms, deletion propagation and individual author rights; AT Protocol accessibility is not a public-domain dedication."
+    },
+    "ioda": {
+      "name": "IODA public data",
+      "terms_url": "https://ioda.inetintel.cc.gatech.edu/resources",
+      "additional_terms_urls": [],
+      "licence": "Terms not extractable from current page",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Credit IODA/Georgia Tech and originating measurements pending exact terms.",
+      "redistribution": "No verified commercial or hosted redistribution grant.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Lookup returned only a logo. Existing research acknowledgement is not permission; live feed paths have different gates."
+    },
+    "gdelt": {
+      "name": "GDELT datasets",
+      "terms_url": "https://www.gdeltproject.org/about.html#termsofuse",
+      "additional_terms_urls": [],
+      "licence": "GDELT published data-use terms",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Cite GDELT and link its website.",
+      "redistribution": "Dataset redistribution, mirrors and commercial use permitted under the published terms.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "This covers GDELT data, not copyright in linked news articles, photographs or publisher excerpts."
+    },
+    "nws": {
+      "name": "NOAA National Weather Service data",
+      "terms_url": "https://www.weather.gov/disclaimer",
+      "additional_terms_urls": [],
+      "licence": "Public domain for NWS-produced information unless otherwise noted",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Retain notices; credit NWS; do not imply endorsement or present modified data as official.",
+      "redistribution": "Lawful reuse permitted for covered NWS data; third-party material requires separate review.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Applies to NWS/NHC/SWPC/tsunami information, not every item hosted anywhere on noaa.gov."
+    },
+    "geoboundaries": {
+      "name": "geoBoundaries",
+      "terms_url": "https://www.geoboundaries.org/index.html",
+      "additional_terms_urls": [],
+      "licence": "CC BY 4.0",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit geoBoundaries and its requested Runfola et al. (2020) citation.",
+      "redistribution": "Commercial reuse and redistribution with attribution, licence notice and indication of changes.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Confirm the packaged boundary release and preserve its source-specific metadata."
+    },
+    "wri-power": {
+      "name": "WRI Global Power Plant Database",
+      "terms_url": "https://github.com/wri/global-power-plant-database",
+      "additional_terms_urls": [],
+      "licence": "CC BY 4.0 (database); MIT (code)",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Credit WRI Global Power Plant Database and link licence/source.",
+      "redistribution": "Database reuse with CC BY conditions; retain provenance and identify alterations.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Latest published database version is 1.3.0; maintenance stopped. Software MIT is separate from data rights."
+    },
+    "viina": {
+      "name": "VIINA territorial-control data",
+      "terms_url": "https://github.com/zhukovyuri/VIINA",
+      "additional_terms_urls": [],
+      "licence": "ODbL 1.0; database contents licence",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Retain VIINA notices and follow the README citation requirements.",
+      "redistribution": "ODbL attribution/share-alike and access to adapted databases may apply to public outputs.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Review the exact adapted snapshot and report exports. Linked publishers retain separate article rights."
+    },
+    "celestrak": {
+      "name": "CelesTrak service usage",
+      "terms_url": "https://celestrak.org/usage-policy.php",
+      "additional_terms_urls": [],
+      "licence": "Usage policy reviewed; commercial redistribution licence not established",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Retain CelesTrak and upstream provenance pending rights clarification.",
+      "redistribution": "Free service access does not by itself establish downstream licensing rights.",
+      "risk": "medium",
+      "actions": [
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Policy updated 22 May 2026: download once per update (GP every two hours); stop on non-200 responses. Check scheduler/backoff compliance separately."
+    },
+    "bbc-rss": {
+      "name": "BBC RSS",
+      "terms_url": "https://www.bbc.co.uk/usingthebbc/terms/",
+      "additional_terms_urls": [
+        "https://downloads.bbc.co.uk/usingthebbc/bbc_terms_of_use_19September2022english.pdf"
+      ],
+      "licence": "Current terms lookup blocked; older BBC terms available",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Older terms require prominent BBC News name and linked source; preserve embedded branding.",
+      "redistribution": "No current commercial or multi-user grant verified; do not treat historical personal-use terms as clearance.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Current page blocked by robots. Official September 2022 PDF section 15 requires permission for business RSS and a metadata licence. Confirm current scope before use."
+    },
+    "guardian": {
+      "name": "Guardian",
+      "terms_url": "https://www.theguardian.com/help/terms-of-service",
+      "additional_terms_urls": [],
+      "licence": "Restricted",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve notices.",
+      "redistribution": "Commercial aggregation and AI reuse require approval.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Review section 3."
+    },
+    "bls": {
+      "name": "US Bureau of Labor Statistics",
+      "terms_url": "https://www.bls.gov/bls/linksite.htm",
+      "additional_terms_urls": [],
+      "licence": "Public-domain BLS material; photo/illustration exceptions",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Cite BLS; do not use its emblem without authority.",
+      "redistribution": "Covered public-domain statistics may be redistributed; exclude separately copyrighted material.",
+      "risk": "low",
+      "actions": [
+        "keep",
+        "attribute"
+      ],
+      "notes": "BLS permits reuse of its public-domain publications; emblem and previously copyrighted images are excluded."
+    },
+    "google-news": {
+      "name": "Google News aggregation",
+      "terms_url": "https://policies.google.com/terms",
+      "additional_terms_urls": [],
+      "licence": "Google service terms; publisher content separately owned",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "The Other content section requires publisher permission or a lawful basis. General Google access does not license third-party News material. RSS-specific permission remains unresolved."
+    },
+    "dw-rss": {
+      "name": "Deutsche Welle RSS",
+      "terms_url": "https://b2b.dw.com/page/dw-terms-conditions",
+      "additional_terms_urls": [
+        "https://amp.dw.com/en/benefit-from-smart-content-made-in-germany/a-19470839"
+      ],
+      "licence": "Distribution registration and product-specific terms",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "DW promotes German News Service integration, but that is a specific registered offering. Do not assume the existing world/business feeds have its rights. Exact feed and report/export agreement unverified."
+    },
+    "anadolu": {
+      "name": "Anadolu Agency",
+      "terms_url": "https://www.aa.com.tr/tr/ayrimcilikhatti/p/yasal-uyari",
+      "additional_terms_urls": [],
+      "licence": "Subscription agreement required",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Official Turkish notice requires website publisher subscription and restricts use and transfer outside the contract; no project subscription or onward-use scope established."
+    },
+    "france24": {
+      "name": "France 24",
+      "terms_url": "https://www.france24.com/en/legal-notice",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary lookup inaccessible; site search also blocked. Obtain current terms and precise feed/hosted rights from the publisher."
+    },
+    "cgtn": {
+      "name": "CGTN",
+      "terms_url": "https://www.cgtn.com/terms-of-use",
+      "additional_terms_urls": [],
+      "licence": "Personal, non-commercial site access",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve CGTN and contributor copyright notices; branding is separately restricted.",
+      "redistribution": "No commercial resale, third-party copying or automated extraction grant under ordinary access.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Terms updated 1 May 2026 restrict extraction, derivatives and third-party copying. Commercial reuse needs express written consent."
+    },
+    "scmp": {
+      "name": "South China Morning Post",
+      "terms_url": "https://www.scmp.com/terms-conditions",
+      "additional_terms_urls": [],
+      "licence": "Personal, non-commercial access; written permission for reuse",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "Written permission required for copying/distribution and restricted automated/AI uses; third-party rights remain.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "15 September 2026 terms section 3 covers extracts and metadata, automated collection, analytics and AI/RAG. Primary indexed terms retrieved after direct fetch failed; no exception verified."
+    },
+    "ncsc": {
+      "name": "UK NCSC",
+      "terms_url": "https://www.ncsc.gov.uk/section/about-this-website/terms-and-conditions",
+      "additional_terms_urls": [],
+      "licence": "OGL v3 for covered Crown content",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "conditional",
+      "hosted_multi_user_use": "conditional",
+      "attribution": "Acknowledge NCSC source and link OGL where possible.",
+      "redistribution": "Covered Crown content reusable under OGL; obtain third-party and logo permission separately.",
+      "risk": "medium",
+      "actions": [
+        "keep",
+        "attribute",
+        "legal_review"
+      ],
+      "notes": "Official indexed terms allow OGL reuse; third-party images/material and logos are excluded. Confirm the exact report notices."
+    },
+    "iranwire": {
+      "name": "IranWire",
+      "terms_url": "https://iranwire.com/en/pages/terms",
+      "additional_terms_urls": [],
+      "licence": "Personal use; commercial licence required",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Credit IranWire and identified contributors; retain linked source.",
+      "redistribution": "Commercial reuse requires licence; personal extracts are not an onward-hosting grant.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Terms reserve commercial use and prohibit text/data mining and scraping. Quotation provision does not establish rights for the implemented hosted collector or AI reports."
+    },
+    "meduza": {
+      "name": "Meduza",
+      "terms_url": "https://meduza.io/en/pages/terms",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary terms candidate inaccessible and primary-domain search did not establish current reuse terms. Ask publisher for the current policy and scope."
+    },
+    "aljazeera": {
+      "name": "Al Jazeera",
+      "terms_url": "https://www.aljazeera.com/terms-and-conditions",
+      "additional_terms_urls": [],
+      "licence": "Restricted",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve source credit.",
+      "redistribution": "Commercial reuse and automated collection need permission.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Review section 6."
+    },
+    "bellingcat": {
+      "name": "Bellingcat",
+      "terms_url": "https://www.bellingcat.com/terms-and-conditions/",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary terms lookup failed. Establish current publication-specific licensing before approving collection, hosted excerpts or exports."
+    },
+    "kyiv-independent": {
+      "name": "Kyiv Independent",
+      "terms_url": "https://kyivindependent.com/terms-of-use/",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary terms candidate could not be retrieved; do not confuse this publisher with The Independent."
+    },
+    "economist": {
+      "name": "The Economist",
+      "terms_url": "https://www.economist.com/syndication/permissions",
+      "additional_terms_urls": [],
+      "licence": "Permission/licensing service",
+      "review_status": "partial_review",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Official permissions page offers a licence for the specified reuse. General terms direct access blocked; no project licence or automated-feed/AI scope verified."
+    },
+    "lemonde": {
+      "name": "Le Monde RSS",
+      "terms_url": "https://www.lemonde.fr/le-monde-et-vous/article/2025/07/14/les-flux-rss-du-monde_fr_5498778_3237.html",
+      "additional_terms_urls": [],
+      "licence": "Personal, non-professional and non-collective RSS use",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve Le Monde and author attribution and original link.",
+      "redistribution": "Team or commercial republication is outside the personal RSS allowance.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Other RSS exploitation requires authorisation and payment. Verify language-edition/feed scope and saved evidence with syndication."
+    },
+    "nikkei": {
+      "name": "Nikkei Asia RSS",
+      "terms_url": "https://info.asia.nikkei.com/rss",
+      "additional_terms_urls": [],
+      "licence": "Personal, non-commercial headline reading",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No onward republication/copying/redistribution grant in the public RSS terms.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Feed terms expressly prohibit republication, copying and redistribution. A subscription does not establish the required separate scope."
+    },
+    "dawn": {
+      "name": "Dawn",
+      "terms_url": "https://www.dawn.com/terms/",
+      "additional_terms_urls": [],
+      "licence": "Restricted",
+      "review_status": "terms_checked",
+      "terms_checked_on": "2026-10-09",
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "permission_required",
+      "hosted_multi_user_use": "permission_required",
+      "attribution": "Preserve notices.",
+      "redistribution": "Commercial reuse requires prior written permission.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Review intellectual-property terms."
+    },
+    "nytimes": {
+      "name": "New York Times",
+      "terms_url": "https://www.nytimes.com/content/help/rights/terms/terms-of-service.html",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Terms retrieval and primary-domain search blocked. Obtain current terms and RSS syndication permission."
+    },
+    "npr": {
+      "name": "NPR",
+      "terms_url": "https://www.npr.org/about-npr/179876898/terms-of-use",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary terms blocked; indexed programme notices reserve rights and refer to permission policy. No current grant verified."
+    },
+    "crisisgroup": {
+      "name": "International Crisis Group",
+      "terms_url": "https://www.crisisgroup.org/legal",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary legal page returned 403; search found a feed description but no current republication grant."
+    },
+    "reach-manchester": {
+      "name": "Manchester Evening News",
+      "terms_url": "https://www.manchestereveningnews.co.uk/terms-conditions/",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Terms redirected to an inaccessible Tollbit page; primary-domain search did not establish reuse rights."
+    },
+    "herald-scotland": {
+      "name": "Herald Scotland",
+      "terms_url": "https://www.heraldscotland.com/terms/",
+      "additional_terms_urls": [],
+      "licence": "Unverified",
+      "review_status": "lookup_blocked",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve source, author, date and links; confirm required credit.",
+      "redistribution": "No project-specific onward-sharing or export grant established.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Primary terms and domain search blocked; exact publisher rights remain unresolved."
+    }
+  }
+}
