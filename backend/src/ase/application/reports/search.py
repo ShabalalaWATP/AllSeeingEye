@@ -21,6 +21,12 @@ from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.reports.access import GetReportUseCase
+from ase.application.reports.search_slots import (
+    EMBEDDING_CALLS_GLOBAL,
+    EMBEDDING_CALLS_PER_USER,
+    EMBEDDING_WINDOW_SECONDS,
+    SearchSlots,
+)
 from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.errors import InvalidRequest, NoModelAvailable, NotFound, RateLimited
 from ase.domain.llm import LlmProfile, LlmUsage
@@ -61,8 +67,10 @@ class ReportSearchService:
         access: AccessPolicy,
         bindings: LlmBindingRepository | None = None,
         ai_usage: AiUsageAccounting | None = None,
+        slots: SearchSlots | None = None,
     ) -> None:
         self._ai_usage = ai_usage
+        self._slots = slots or SearchSlots()
         self._reports = reports
         self._embeddings = embeddings
         self._routing = ModelRouting(profiles, bindings)
@@ -91,10 +99,17 @@ class ReportSearchService:
         return SearchStatus(profile is not None, indexed, total)
 
     def _budget(self, actor: User) -> None:
-        for key, limit in ((f"embedding:user:{actor.id}", 30), ("embedding:global", 60)):
-            retry = self._limiter.hit(key, limit, 3600)
+        buckets = (
+            (f"embedding:user:{actor.id}", EMBEDDING_CALLS_PER_USER),
+            ("embedding:global", EMBEDDING_CALLS_GLOBAL),
+        )
+        # Check every bucket before spending any, so a refusal costs no allowance.
+        for key, limit in buckets:
+            retry = self._limiter.peek(key, limit, EMBEDDING_WINDOW_SECONDS)
             if retry is not None:
                 raise RateLimited(retry)
+        for key, limit in buckets:
+            self._limiter.hit(key, limit, EMBEDDING_WINDOW_SECONDS)
 
     async def _embed(
         self, actor: User, profile: LlmProfile, texts: Sequence[str]
@@ -147,7 +162,8 @@ class ReportSearchService:
         return EmbeddingResult(vectors, result.latency_ms, result.prompt_tokens)
 
     async def index(self, actor: User) -> SearchStatus:
-        # One shared lock spans the cache check and write, preventing duplicate paid calls.
+        # One shared lock spans the cache check and write, preventing duplicate paid calls
+        # and keeping the global vector capacity check exact. Queries do not take it.
         if self._lock.locked():
             raise RateLimited(1)
         async with self._lock:
@@ -204,9 +220,8 @@ class ReportSearchService:
         text = query.strip()
         if not 1 <= len(text) <= 500 or not 1 <= limit <= 20:
             raise InvalidRequest("Enter a search of 1 to 500 characters and at most 20 results.")
-        if self._lock.locked():
-            raise RateLimited(1)
-        async with self._lock:
+        # Queries only read the index, so each account gets its own slot within a shared cap.
+        async with self._slots.claim(actor.id):
             records = await self._records(actor)
             profile = await self._profile()
             if profile is None:

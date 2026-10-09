@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.application.ports.embeddings import EmbeddingGatewayError
 from ase.application.reports.search import ReportSearchService
+from ase.application.reports.search_slots import SearchSlots
 from ase.container import Container
 from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.report_records import ReportRecord, ReportVersion
@@ -80,6 +81,7 @@ def service(
     session: AsyncSession,
     gateway: FakeEmbeddings,
     lock: asyncio.Lock | None = None,
+    slots: SearchSlots | None = None,
 ) -> ReportSearchService:
     repos = container.repositories(session)
     return ReportSearchService(
@@ -92,6 +94,7 @@ def service(
         clock=container.clock,
         limiter=container.limiter,
         lock=lock or asyncio.Lock(),
+        slots=slots,
         uow=repos.uow,
         access=container.access_policy(session),
     )

@@ -96,11 +96,11 @@ class SqlOriginalAssetRepository:
         count, size = (await self.session.execute(query)).one()
         return int(count), int(size)
 
-    async def pending_count(self) -> int:
-        return int(
-            await self.session.scalar(select(func.count(Row.id)).where(Row.status.in_(PENDING)))
-            or 0
-        )
+    async def pending_count(self, uploader_id: UUID | None = None) -> int:
+        query = select(func.count(Row.id)).where(Row.status.in_(PENDING))
+        if uploader_id is not None:
+            query = query.where(Row.uploader_id == uploader_id)
+        return int(await self.session.scalar(query) or 0)
 
     async def create(self, asset: OriginalAsset) -> None:
         if asset.status != "reserved":

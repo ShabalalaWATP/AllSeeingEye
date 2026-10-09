@@ -54,6 +54,7 @@ from ase.application.ports.language import LanguageDetector
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier
+from ase.application.reports.search_slots import SearchSlots
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
@@ -185,6 +186,7 @@ class Container(
         self.embedding_gateway = OpenAiEmbeddingGateway()
         self._embedding_gateway = self.embedding_gateway
         self.embedding_lock = asyncio.Lock()
+        self.search_slots = SearchSlots()
 
     def _initialise_language(self) -> None:
         settings = self.settings

@@ -12,6 +12,7 @@ from sqlalchemy import select
 
 from ase.adapters.persistence.models import ReportRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow, SqlReportEmbeddingRepository
+from ase.application.reports.search_slots import EMBEDDING_CALLS_GLOBAL, EMBEDDING_CALLS_PER_USER
 from ase.container import Container
 from ase.domain.errors import InvalidRequest, NoModelAvailable, RateLimited, Unauthenticated
 from ase.domain.report_search import IndexedReport, profile_fingerprint
@@ -143,8 +144,8 @@ async def test_limits_concurrency_dimensions_and_corrupt_cache(
         async with lock:
             with pytest.raises(RateLimited):
                 await search.index(user)
-            with pytest.raises(RateLimited):
-                await search.query(user, "busy")
+            # Queries only read the index and no longer wait on the indexing lock.
+            assert (await search.query(user, "busy")).items == ()
         await search.index(user)
         gateway.dimensions = 3
         with pytest.raises(InvalidRequest, match="dimensions changed"):
@@ -155,8 +156,8 @@ async def test_limits_concurrency_dimensions_and_corrupt_cache(
         await session.commit()
         assert (await search.status(user)).indexed == 0
         await search.index(user)
-        for _ in range(30):
-            container.limiter.hit(f"embedding:user:{user.id}", 30, 3600)
+        for _ in range(EMBEDDING_CALLS_PER_USER):
+            container.limiter.hit(f"embedding:user:{user.id}", EMBEDDING_CALLS_PER_USER, 3600)
         with pytest.raises(RateLimited):
             await search.query(user, "budget")
 
@@ -178,8 +179,8 @@ async def test_new_versions_during_index_are_not_saved(container: Container, use
         assert (await search.index(user)).indexed == 0
         gateway.during_call = None
         assert (await search.index(user)).indexed == 1
-        for _ in range(60):
-            container.limiter.hit("embedding:global", 60, 3600)
+        for _ in range(EMBEDDING_CALLS_GLOBAL):
+            container.limiter.hit("embedding:global", EMBEDDING_CALLS_GLOBAL, 3600)
         with pytest.raises(RateLimited):
             await search.query(user, "global call budget")
 

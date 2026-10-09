@@ -122,7 +122,7 @@ async def test_username_is_unique_and_updates_are_revision_checked(
         json={"username": "SHARED_NAME"},
     )
     assert duplicate.status_code == 409
-    assert duplicate.json()["error"]["code"] == "username_taken"
+    assert duplicate.json()["error"]["code"] == "username_unavailable"
 
     stale = await client.patch(
         "/api/me/directory-profile",

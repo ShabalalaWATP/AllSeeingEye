@@ -101,6 +101,8 @@ async def test_concurrent_enrolment_loser_cannot_save_pending_secret() -> None:
     mfa = use_case(user, pending)
     mfa.d.provider.enrol.return_value = TotpEnrolment("synthetic", "otpauth://test", "encrypted")
     mfa.d.totp.begin.return_value = False
+    # Isolate the authenticator race from the emailed proof, covered separately.
+    mfa.d.email.available = False
     with pytest.raises(InvalidRequest, match="enrolment changed"):
         await mfa.enrol_app("pending", RequestContext())
     assert pending.pending_encrypted is None

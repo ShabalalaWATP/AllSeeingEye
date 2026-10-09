@@ -7,6 +7,7 @@ from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.mfa_schemas import (
     MfaChallengeIn,
     MfaConfirmIn,
+    MfaEnrolAppIn,
     MfaPasswordIn,
     MfaPendingOut,
     MfaStatusOut,
@@ -61,13 +62,13 @@ async def email(
 
 @router.post("/enrol-app")
 async def enrol_app(
-    body: MfaChallengeIn,
+    body: MfaEnrolAppIn,
     response: Response,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> TotpEnrolOut:
-    result = await container.mfa(session).enrol_app(body.challenge_token, context)
+    result = await container.mfa(session).enrol_app(body.challenge_token, context, body.email_code)
     response.headers["Cache-Control"] = "no-store"
     return TotpEnrolOut(secret=result.secret, provisioning_uri=result.provisioning_uri)
 

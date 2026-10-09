@@ -37,6 +37,7 @@ describe('signed-out pages have no axe violations', () => {
             methods: ['authenticator', 'email'],
             enrollment_required: false,
             email_sent: false,
+            authenticator_email_proof: false,
           }),
         ),
       );
@@ -45,6 +46,36 @@ describe('signed-out pages have no axe violations', () => {
       await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
       await user.click(screen.getByRole('button', { name: 'Sign in' }));
       await screen.findByRole('heading', { level: 1, name: /Verify your sign-in/ });
+      await expectNoAxeViolations();
+    },
+    PAGE,
+  );
+
+  it(
+    'administrator enrolment with an emailed confirmation code',
+    async () => {
+      const challenge = {
+        mfa_required: true,
+        challenge_token: 'synthetic-login-challenge',
+        expires_at: '2099-01-01T00:00:00Z',
+        methods: ['authenticator', 'email'],
+        enrollment_required: true,
+        email_sent: false,
+        authenticator_email_proof: true,
+      };
+      server.use(
+        http.post('/api/auth/login', () => HttpResponse.json(challenge)),
+        http.post('/api/auth/mfa/email', () =>
+          HttpResponse.json({ ...challenge, email_sent: true }),
+        ),
+      );
+      const { user } = renderApp('/login', 'anonymous');
+      await user.type(await screen.findByLabelText('Email'), plainUser.email);
+      await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
+      await user.click(screen.getByRole('button', { name: 'Sign in' }));
+      await screen.findByRole('heading', { level: 1, name: /Secure your account/ });
+      await user.click(screen.getByRole('button', { name: 'Send email code' }));
+      await screen.findByLabelText('Email confirmation code');
       await expectNoAxeViolations();
     },
     PAGE,

@@ -86,6 +86,24 @@ class MfaUseCase:
             methods,
             challenge.enrollment_required,
             challenge.email_sent_at is not None,
+            MfaMethod.AUTHENTICATOR in methods and self.authenticator_needs_email(challenge),
+        )
+
+    def authenticator_needs_email(self, challenge: MfaChallenge) -> bool:
+        """Whether binding a first authenticator must wait for an emailed code.
+
+        A password alone would otherwise bind an administrator's first factor, so a
+        password phished before enrolment would yield a full administrator. When email
+        delivery is configured, possession of the account address is proved first. A
+        challenge that already holds a pending secret has passed that proof. Without
+        email delivery the password-only enrolment remains (see MFA_OPERATIONS.md).
+        """
+
+        return (
+            challenge.purpose is MfaPurpose.LOGIN
+            and challenge.enrollment_required
+            and challenge.pending_encrypted is None
+            and self.d.email.available
         )
 
     async def send_email(
@@ -124,11 +142,22 @@ class MfaUseCase:
             raise InvalidRequest("The verification email could not be sent. Try again later.")
         return await self.pending(token, current, user)
 
-    async def enrol_app(self, token: str, context: RequestContext) -> TotpEnrolment:
+    async def enrol_app(
+        self, token: str, context: RequestContext, email_code: str | None = None
+    ) -> TotpEnrolment:
         self.d.limit(context, token)
         challenge, user = await self.d.load(token, MfaPurpose.LOGIN)
         if not challenge.enrollment_required or await self.methods(user):
             raise InvalidCredentials()
+        if self.authenticator_needs_email(challenge):
+            if email_code is None:
+                # Not a guess, so it spends no failure budget that the owner relies on.
+                raise InvalidCredentials()
+            await self.d.throttle(user, context)
+            if not await self.email_code_matches(challenge, email_code):
+                await self.d.fail(challenge, user, context)
+            # The emailed code proves the address once; it cannot also enable email MFA.
+            challenge.code_hash = None
         enrolment = self.d.provider.enrol(user.email)
         if not await self.d.totp.begin(user.id, enrolment.encrypted, challenge.expires_at):
             raise InvalidRequest("Authenticator enrolment changed. Sign in again.")
@@ -178,12 +207,7 @@ class MfaUseCase:
         ):
             return False
         if method is MfaMethod.EMAIL:
-            return bool(
-                challenge.email_sent_at
-                and challenge.code_hash
-                and self.d.clock.now() - challenge.email_sent_at < timedelta(minutes=5)
-                and await self.d.hasher.verify(challenge.code_hash, code)
-            )
+            return await self.email_code_matches(challenge, code)
         state = await self.d.totp.get(user.id)
         if challenge.enrollment_required:
             encrypted = challenge.pending_encrypted
@@ -197,3 +221,11 @@ class MfaUseCase:
             return False
         step = self.d.provider.verify(state.secret_encrypted, code, self.d.clock.now())
         return step is not None and await self.d.totp.consume(user.id, state.secret_encrypted, step)
+
+    async def email_code_matches(self, challenge: MfaChallenge, code: str) -> bool:
+        return bool(
+            challenge.email_sent_at
+            and challenge.code_hash
+            and self.d.clock.now() - challenge.email_sent_at < timedelta(minutes=5)
+            and await self.d.hasher.verify(challenge.code_hash, code)
+        )

@@ -19,8 +19,13 @@ from ase.application.ports import (
 from ase.application.ports.directory_profile import DirectoryProfileRepository
 from ase.domain.audit import AuditAction
 from ase.domain.directory_profile import DirectoryPage, DirectoryProfile, normalise_username
-from ase.domain.errors import Conflict, InvalidRequest, RateLimited, UsernameTaken
+from ase.domain.errors import Conflict, InvalidRequest, RateLimited, UsernameUnavailable
 from ase.domain.users import User
+
+# Each attempt to claim a new handle is a probe of whether it is held, including by
+# accounts hidden from the directory, so handle changes share a small per-account budget.
+HANDLE_CHANGES_PER_WINDOW = 10
+HANDLE_CHANGE_WINDOW_SECONDS = 3600
 
 
 async def resolve_exact_handle(
@@ -103,9 +108,17 @@ class DirectoryProfileUseCase:
             )
         except (TypeError, ValueError) as exc:
             raise InvalidRequest("Invalid directory profile") from exc
+        if profile.username is not None and profile.username != previous.username:
+            retry_after = self._limiter.hit(
+                f"directory-handle-change:{current.id}",
+                HANDLE_CHANGES_PER_WINDOW,
+                HANDLE_CHANGE_WINDOW_SECONDS,
+            )
+            if retry_after is not None:
+                raise RateLimited(retry_after)
         try:
             await self._profiles.save(profile)
-        except UsernameTaken:
+        except UsernameUnavailable:
             await self._uow.rollback()
             raise
         await self._auditor.record(
