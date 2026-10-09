@@ -13,6 +13,7 @@ from notification_migration_helpers import (
     NOTIFICATION_TABLES,
     NOW,
     assert_preserved,
+    current_head,
     insert_row,
     revision,
     schema_state,
@@ -26,7 +27,7 @@ from owned_postgres import owned_migration_test
 
 
 def assert_head(connection):
-    assert revision(connection) == "0089"
+    assert revision(connection) == current_head()
     changed = NOTIFICATION_TABLES | {
         "team_invitation_receipts",
         "report_job_monthly_usage",

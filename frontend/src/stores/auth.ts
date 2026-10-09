@@ -18,10 +18,11 @@ import { create } from 'zustand';
 import * as authApi from '@/lib/api/auth';
 import type { PendingMfa } from '@/lib/api/mfa';
 import { bindSession } from '@/lib/api/client';
-import { isApiError } from '@/lib/api/errors';
+import { isApiError, sessionChangedError } from '@/lib/api/errors';
 import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
 import type { TokenResponse, User } from '@/lib/api/schemas';
 import { clearBrowserPush } from '@/lib/browserPush';
+import { responseIdentity, sessionIdentity } from '@/lib/sessionIdentity';
 
 export type AuthStatus = 'unknown' | 'anonymous' | 'authenticated';
 
@@ -29,7 +30,10 @@ export interface AuthState {
   status: AuthStatus;
   user: User | null;
   accessToken: string | null;
+  /** Stable through refresh rotations; changes for each explicit login or clear. */
+  sessionGeneration: number;
   pendingRefresh: Promise<string | null> | null;
+  pendingLogout: Promise<void> | null;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<PendingMfa | null>;
   logout: () => Promise<void>;
@@ -42,10 +46,14 @@ export const initialAuthState = {
   status: 'unknown' as AuthStatus,
   user: null,
   accessToken: null,
+  sessionGeneration: 0,
   pendingRefresh: null,
+  pendingLogout: null,
 };
 
 const REFRESH_LOCK = 'ase-refresh';
+// Never reuse generations, including when a test or development preview resets state.
+let nextSessionGeneration = 0;
 
 function rejectsSession(error: unknown): boolean {
   return isApiError(error) && (error.status === 401 || error.status === 403);
@@ -63,30 +71,67 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   ...initialAuthState,
 
   setSession: (token) => {
-    set({ status: 'authenticated', user: token.user, accessToken: token.access_token });
+    responseIdentity(token);
+    set({
+      status: 'authenticated',
+      user: token.user,
+      accessToken: token.access_token,
+      sessionGeneration: ++nextSessionGeneration,
+      pendingRefresh: null,
+    });
   },
 
   clearSession: () => {
     void clearBrowserPush().catch(() => {
       /* The revoked server session also prevents delivery. */
     });
-    set({ status: 'anonymous', user: null, accessToken: null });
+    set({
+      status: 'anonymous',
+      user: null,
+      accessToken: null,
+      sessionGeneration: ++nextSessionGeneration,
+      pendingRefresh: null,
+    });
   },
 
   refresh: () => {
-    const pending = get().pendingRefresh;
+    const owner = get();
+    const pending = owner.pendingRefresh;
     if (pending !== null) return pending;
-    const attempt = withRefreshLock(() => authApi.refreshSession())
+    const expected = owner.accessToken === null ? null : sessionIdentity(owner.accessToken);
+    // Do not turn an unrecognised authenticated session into a cookie-only bootstrap.
+    if (
+      owner.status === 'authenticated' &&
+      (expected === null || expected.userId !== owner.user?.id)
+    ) {
+      return Promise.resolve(null);
+    }
+    const current = () =>
+      get().sessionGeneration === owner.sessionGeneration && get().user?.id === owner.user?.id;
+    const csrf = readCookie(CSRF_COOKIE);
+    const attempt = withRefreshLock(() =>
+      current() ? authApi.refreshSession() : Promise.resolve(null),
+    )
       .then((token) => {
-        get().setSession(token);
+        if (!current() || token === null) return null;
+        const identity = responseIdentity(token);
+        if (expected !== null) {
+          if (identity.userId !== expected.userId || identity.familyId !== expected.familyId)
+            return null;
+          // Rotation belongs to the same login, so concurrent requests keep their owner.
+          set({ status: 'authenticated', user: token.user, accessToken: token.access_token });
+        } else {
+          get().setSession(token);
+        }
         return token.access_token;
       })
       .catch((error: unknown) => {
-        if (rejectsSession(error)) get().clearSession();
+        if (current() && readCookie(CSRF_COOKIE) === csrf && rejectsSession(error))
+          get().clearSession();
         return null;
       })
       .finally(() => {
-        set({ pendingRefresh: null });
+        if (get().pendingRefresh === attempt) set({ pendingRefresh: null });
       });
     set({ pendingRefresh: attempt });
     return attempt;
@@ -106,24 +151,43 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   login: async (email, password) => {
+    const generation = ++nextSessionGeneration;
+    set({ sessionGeneration: generation, pendingRefresh: null });
+    // An older logout response deletes shared cookies. Let it finish before login sets new ones.
+    const pendingLogout = get().pendingLogout;
+    if (pendingLogout !== null) await pendingLogout;
+    if (get().sessionGeneration !== generation) throw sessionChangedError();
     const result = await authApi.login(email, password);
+    if (get().sessionGeneration !== generation) throw sessionChangedError();
     if ('mfa_required' in result) return result;
     get().setSession(result);
     return null;
   },
 
-  logout: async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // The local session is cleared regardless of the server outcome.
+  logout: () => {
+    const pending = get().pendingLogout;
+    if (pending !== null) {
+      get().clearSession();
+      return pending;
     }
+    const attempt = Promise.resolve()
+      .then(() => authApi.logout())
+      .catch(() => {
+        // The local session is cleared regardless of the server outcome.
+      })
+      .finally(() => {
+        if (get().pendingLogout === attempt) set({ pendingLogout: null });
+      });
+    // Publish the cookie mutation before making the UI anonymous, so a new login waits.
+    set({ pendingLogout: attempt });
     get().clearSession();
+    return attempt;
   },
 }));
 
 bindSession({
   getAccessToken: () => useAuthStore.getState().accessToken,
+  getSessionGeneration: () => useAuthStore.getState().sessionGeneration,
   refreshAccessToken: () => useAuthStore.getState().refresh(),
   onSessionLost: () => {
     useAuthStore.getState().clearSession();

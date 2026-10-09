@@ -36,7 +36,7 @@ async def rerank_for_job(
 
     A resumed job keeps its frozen selection, so it never pays for a second call.
     """
-    if reranker is None or resumed:
+    if reranker is None or resumed or job.request.alert_origin is not None:
         return RerankOutcome()
     plan = plan_for_job(store, job, direction, runtime_query=query, receipt=receipt)
     outcome = await reranker.rank(

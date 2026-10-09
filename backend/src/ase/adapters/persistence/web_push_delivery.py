@@ -14,6 +14,7 @@ from ase.adapters.persistence.web_push_devices import decrypt_subscription, remo
 from ase.adapters.persistence.web_push_models import PushDeliveryRow, PushDeviceRow
 from ase.adapters.security.cipher import CipherUnavailable
 from ase.application.access import AccessPolicy
+from ase.application.ports import RefreshTokenRepository
 from ase.application.ports.llm import SecretCipher
 from ase.domain.errors import Forbidden, NotFound, Unauthenticated
 from ase.domain.web_push import PushDelivery, PushOutcome
@@ -25,11 +26,13 @@ class SqlPushDeliveryStore:
         sessions: async_sessionmaker[AsyncSession],
         access: Callable[[AsyncSession], AccessPolicy],
         cipher: SecretCipher,
+        tokens: Callable[[AsyncSession], RefreshTokenRepository],
     ) -> None:
         self._sessions, self._access, self._cipher = sessions, access, cipher
+        self._tokens = tokens
 
     async def enqueue(self, now: datetime) -> None:
-        await enqueue_push(self._sessions, self._access, now)
+        await enqueue_push(self._sessions, self._access, now, self._tokens)
 
     async def claim(self, now: datetime) -> PushDelivery | None:
         async with self._sessions() as session:
@@ -76,7 +79,9 @@ class SqlPushDeliveryStore:
             if device is None:
                 return False
             try:
-                current = await device_access(session, self._access(session), device, now)
+                current = await device_access(
+                    session, self._access(session), device, now, self._tokens(session)
+                )
             except (Forbidden, NotFound, Unauthenticated):
                 await remove_push_device(session, device.id)
                 await session.commit()

@@ -13,6 +13,7 @@ from ase.application.ports.warning import IndicatorRepository
 from ase.application.report_jobs.controls import ReportJobCapacity
 from ase.application.report_jobs.service import ReportJobService
 from ase.application.reports.request import ReportRequest
+from ase.domain.alert_reports import AlertReportOrigin
 from ase.domain.errors import (
     Conflict,
     Forbidden,
@@ -28,14 +29,21 @@ def alert_request_key(alert_id: UUID) -> UUID:
     return uuid5(NAMESPACE_URL, f"ase:alert-report:{alert_id}")
 
 
-def alert_report_request(rule: Indicator, alert: Alert) -> ReportRequest:
-    """Anchor the existing rounded window to its firing, even after capacity retries."""
+def alert_report_request(
+    rule: Indicator, alert: Alert, origin: AlertReportOrigin | None = None
+) -> ReportRequest:
+    """Keep every native request dimension; frozen origin retains the remaining predicates."""
     if rule.report_template is None:
         raise Forbidden()
     return ReportRequest(
         template_id=rule.report_template,
-        country_iso=rule.countries[0] if len(rule.countries) == 1 else None,
-        research_since=alert.fired_at - timedelta(hours=max(1, -(-rule.window_minutes // 60))),
+        country_isos=rule.countries,
+        categories=rule.categories,
+        research_terms=rule.keywords,
+        alert_origin=origin,
+        research_since=max(
+            alert.fired_at - rule.window, rule.resumed_at or alert.fired_at - rule.window
+        ),
         # The evaluator includes the firing instant; report intervals are half-open.
         research_until=alert.fired_at + timedelta(microseconds=1),
         plan_id=rule.plan_id,
@@ -89,10 +97,17 @@ class AdmitAlertReport:
                 rule = await self.indicators.get(alert.indicator_id) if alert.indicator_id else None
                 if rule is None or rule.updated_at != revision:
                     raise Forbidden()
+                snapshot = await self.queue.snapshot(alert.id)
+                if snapshot is None:
+                    await self.queue.stop(alert.id, "evidence_unavailable")
+                    await self.uow.commit()
+                    return
                 owner = await self._current(alert, rule, locked=False)
                 await self.uow.rollback()
                 candidate = await self.jobs.prepare_candidate(
-                    owner, alert_request_key(alert.id), alert_report_request(rule, alert)
+                    owner,
+                    alert_request_key(alert.id),
+                    alert_report_request(rule, alert, snapshot.origin),
                 )
                 candidate.payload["alert_id"] = str(alert.id)
                 async with self.guard():

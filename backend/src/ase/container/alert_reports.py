@@ -8,8 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.alert_reports import SqlAlertReportQueue
 from ase.adapters.persistence.operational_models import AlertRow, IndicatorRow
+from ase.application.report_jobs.snapshots import InvalidJobSnapshot
+from ase.application.reports.alert_origin import origin_from_dict
 from ase.application.schedules.runner import ScheduleRunner
 from ase.application.warning.report_admission import AdmitAlertReport, alert_request_key
+from ase.container.alert_report_preparation import prepare_alert_report
 from ase.domain.errors import Forbidden
 from ase.domain.report_jobs import ReportJob
 
@@ -33,7 +36,12 @@ class AlertReportAdmission:
                 await AdmitAlertReport(
                     SqlAlertReportQueue(session),
                     repos.indicators,
-                    container.report_jobs(session),
+                    container.report_jobs(
+                        session,
+                        prepare_job=lambda actor, request: prepare_alert_report(
+                            container, session, actor, request
+                        ),
+                    ),
                     container.access_policy(session),
                     repos.uow,
                     container.clock,
@@ -58,6 +66,12 @@ async def require_alert_origin(session: AsyncSession, job: ReportJob) -> None:
     except (TypeError, ValueError, AttributeError):
         raise Forbidden() from None
     alert = await session.get(AlertRow, alert_id, populate_existing=True)
+    try:
+        origin = origin_from_dict(job.payload.get("input", {}).get("scope", {}).get("alert_origin"))
+        if origin is None:
+            raise ValueError("Missing frozen alert evidence")
+    except (TypeError, ValueError):
+        raise InvalidJobSnapshot("The original alert evidence is unavailable.") from None
     rule = (
         await session.get(IndicatorRow, alert.indicator_id, populate_existing=True)
         if alert is not None and alert.indicator_id is not None
@@ -65,6 +79,11 @@ async def require_alert_origin(session: AsyncSession, job: ReportJob) -> None:
     )
     if (
         alert is None
+        or origin is None
+        or (origin.alert_id, origin.rule_id, origin.rule_revision)
+        != (alert.id, alert.indicator_id, alert.report_rule_revision)
+        or (origin.owner_id, origin.team_id) != (job.owner_id, job.team_id)
+        or origin.event_ids != tuple(alert.event_ids)
         or rule is None
         or not rule.enabled
         or rule.updated_at != alert.report_rule_revision

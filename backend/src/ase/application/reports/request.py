@@ -8,7 +8,9 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 from uuid import UUID
 
+from ase.application.reports.alert_origin import origin_from_dict as alert_origin_from_dict
 from ase.application.reports.templates import AREA_TEMPLATES
+from ase.domain.alert_reports import AlertReportOrigin
 from ase.domain.events import Category
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import ReportLanguage
@@ -48,6 +50,8 @@ class ReportRequest:
     plan_id: UUID | None = None
     team_id: UUID | None = None
     automation: bool = False
+    # Internal only: admission supplies its matching frozen evidence, never a browser body.
+    alert_origin: AlertReportOrigin | None = None
     # Server-assigned by the fixed workspace briefing factories; absent from public schemas.
     briefing: BriefingKind | None = None
     research_mode: ResearchMode | None = None
@@ -97,6 +101,21 @@ class ReportRequest:
         self._validate_scope()
         self._validate_plan()
         self._validate_interval()
+        self._validate_alert_origin()
+
+    def _validate_alert_origin(self) -> None:
+        origin = self.alert_origin
+        if origin is not None and (
+            self.country_isos != origin.countries
+            or self.categories != origin.categories
+            or self.research_terms != origin.keywords
+            or (self.research_since, self.research_until) != (origin.since, origin.until)
+            or self.research_mode is not None
+            or self.research_area is not None
+            or self.research_input_id is not None
+            or self.parent_report_id is not None
+        ):
+            raise ValueError("Report settings do not match the original alert scope")
 
     def _validate_scope(self) -> None:
         if self.briefing is not None and self.briefing not in BRIEFING_KINDS:
@@ -220,6 +239,7 @@ class ReportRequest:
         origin = origin_from_dict(scope.get("map_origin"))
         return cls(
             template_id=template_id,
+            alert_origin=alert_origin_from_dict(scope.get("alert_origin")),
             research_time_basis=EvidenceTimeBasis(scope["research_time_basis"])
             if scope.get("research_time_basis")
             else None,

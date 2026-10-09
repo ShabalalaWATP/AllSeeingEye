@@ -66,7 +66,12 @@ async def get_current_user(
         user = await validate_current_session(
             claims, repositories.users, repositories.refresh_tokens, container.clock
         )
-    container.session_freshness.remember(claims, user, checked_at)
+        activity = await repositories.refresh_tokens.activity(
+            claims.user_id, claims.family_id, container.clock.now()
+        )
+        if activity is None:
+            raise Unauthenticated()
+    container.session_freshness.remember(claims, user, checked_at, activity.idle_expires_at)
     return user
 
 

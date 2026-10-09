@@ -27,6 +27,7 @@ it('validates the daily briefing envelope and refuses an invalid refresh date', 
 it('does not replay admission silently after session refresh', async () => {
   const start = vi.fn(() => apiError(401, 'unauthenticated', 'Session expired.'));
   bindSession({
+    getSessionGeneration: () => 0,
     getAccessToken: () => 'stale',
     refreshAccessToken: () => Promise.resolve('fresh'),
     onSessionLost: vi.fn(),

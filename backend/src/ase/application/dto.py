@@ -7,6 +7,7 @@ from datetime import datetime
 from uuid import UUID
 
 from ase.domain.audit import AuditEntry
+from ase.domain.session_activity import SessionActivity
 from ase.domain.users import Role, User
 
 
@@ -46,6 +47,7 @@ class AuthSession:
     refresh_secret: str
     csrf_token: str
     user: User
+    activity: SessionActivity
 
 
 @dataclass(frozen=True, slots=True)

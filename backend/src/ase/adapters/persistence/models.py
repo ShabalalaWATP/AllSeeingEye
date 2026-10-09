@@ -46,6 +46,7 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import research_brief_models as _research_brief_models  # noqa: F401
 from ase.adapters.persistence import research_usage_models as _research_usage_models  # noqa: F401
 from ase.adapters.persistence import selected_index_models as _selected_index_models  # noqa: F401
+from ase.adapters.persistence import session_activity as _session_activity  # noqa: F401
 from ase.adapters.persistence import source_review_models as _source_review_models  # noqa: F401
 from ase.adapters.persistence import (
     subscription_edition_models as _subscription_edition_models,  # noqa: F401
