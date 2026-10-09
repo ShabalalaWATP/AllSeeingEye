@@ -36,12 +36,14 @@ Directory-scoped `coverage run --source=src/ase -m pytest ... --no-cov`, followe
 an explicit report include list, ran successfully. No coverage floor was lowered.
 
 Migration 0093's own SQLite upgrade and protected downgrade passed in an empty
-disposable database. Its parent 0092 is delivered by KAN-182; full-chain SQLite
-and PostgreSQL migration checks must run after that dependency is integrated.
+disposable database. After integrating KAN-182's 0092, the combined historical,
+idle-session and enquiry migration group passed 34 tests, with seven optional
+PostgreSQL skips. The final idle-session frontend is also integrated. OpenAPI
+export and TypeScript regeneration reproduce the committed contracts.
 The existing deployment controller treats Alembic changes as manual rollout.
 No operator database was migrated or production feature enabled.
 
-The full repository suite/CI, final migration chain and authorised merge remain
+The full repository suite/CI, native PostgreSQL execution and authorised merge remain
 outstanding. SMTP was mocked, not contacted. Enabling the feature also requires
 the approved privacy/controller information, administrator workflow and retention
 from KAN-165/167, and the KAN-168 public form. Failed SMTP leaves the enquiry stored

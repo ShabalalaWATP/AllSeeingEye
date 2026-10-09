@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 
+import { sessionActivitySchema } from '@/lib/sessionActivity';
+
 export const roleSchema = z.enum(['user', 'manager', 'admin']);
 export type Role = z.infer<typeof roleSchema>;
 
@@ -46,6 +48,7 @@ export const tokenResponseSchema = z.object({
   token_type: z.literal('bearer'),
   expires_in: z.number().int(),
   user: userSchema,
+  activity: sessionActivitySchema,
 });
 export type TokenResponse = z.infer<typeof tokenResponseSchema>;
 

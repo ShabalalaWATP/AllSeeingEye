@@ -9,7 +9,7 @@ import pytest
 from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import template_for
-from ase.domain.collection import CollectionPlan
+from ase.domain.collection import CollectionPlan, Pir
 from ase.domain.errors import InvalidRequest
 from test_exact_reusable_areas import triangle
 from test_warning import NOW
@@ -23,7 +23,20 @@ async def test_area_guard_precedes_background_and_job_creation(missing):
     )
     provider = AsyncMock(return_value="background")
     builder = ReportJobBuilder(Mock(), Mock(), aois, {"ask": provider})
-    plan = CollectionPlan(uuid4(), "plan", "", uuid4(), (), (), True, uuid4(), NOW, NOW)
+    # A valid question keeps this regression focused on the geometry admission,
+    # which must still happen before the external background provider is called.
+    plan = CollectionPlan(
+        uuid4(),
+        "plan",
+        "",
+        uuid4(),
+        (),
+        (Pir("P1", "What changed?"),),
+        True,
+        uuid4(),
+        NOW,
+        NOW,
+    )
     with pytest.raises(InvalidRequest, match="unavailable" if missing else "cannot honour"):
         await builder.build(
             Mock(),

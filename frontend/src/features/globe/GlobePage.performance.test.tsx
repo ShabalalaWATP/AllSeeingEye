@@ -10,6 +10,7 @@ import { FakeEventStreamClient } from '@/test/fakeStream';
 import { liveEvent } from '@/test/fixtures';
 import { openMapTool } from '@/test/mapTools';
 import { renderApp } from '@/test/render';
+import type { Cluster } from './layers/clusters';
 // Load the real route after Vitest hoists its mocks, outside timed layer assertions.
 import './GlobePage';
 
@@ -60,16 +61,18 @@ vi.mock('./MapDisplaySettings', async (load) => counted(await load(), 'MapDispla
 vi.mock('./BaseLayerToolbar', async (load) => counted(await load(), 'BaseLayerToolbar'));
 vi.mock('./MapControlIcon', async (load) => counted(await load(), 'MapControlIcon'));
 
-interface TestLayer {
+interface TestLayer<T = { id: string }> {
   id: string;
   props: {
-    onClick: (info: { object: { lon: number; lat: number } }) => void;
-    data: { id: string }[];
+    onClick: (info: { object: T }) => void;
+    data: T[];
   };
 }
 
-function layer(id: string): TestLayer | undefined {
-  return (MapboxOverlay.instances[0]!.props.layers as TestLayer[]).find((item) => item.id === id);
+function layer<T = { id: string }>(id: string): TestLayer<T> | undefined {
+  return (MapboxOverlay.instances[0]!.props.layers as TestLayer<T>[]).find(
+    (item) => item.id === id,
+  );
 }
 
 async function mount() {
@@ -224,12 +227,16 @@ describe('globe rendering and motion', () => {
     const zoom = vi.spyOn(map, 'getZoom');
     zoom.mockReturnValue(0.8);
     act(() => map.fire('move'));
-    const clustered = layer('clusters');
+    const clustered = layer<Cluster>('clusters');
     zoom.mockReturnValue(1.2);
     act(() => map.fire('move'));
     expect(layer('clusters')).toBe(clustered);
-    act(() => clustered!.props.onClick({ object: { lon: 1, lat: 1 } }));
-    expect(map.flyTo).toHaveBeenLastCalledWith({ center: [1, 1], zoom: 3.7 });
+    // Deck picks a generated datum, including its identity and members, not just coordinates.
+    const cluster = clustered!.props.data.find((item) => item.category === 'news')!;
+    act(() => clustered!.props.onClick({ object: cluster }));
+    expect(map.flyTo).toHaveBeenLastCalledWith({ center: [cluster.lon, cluster.lat], zoom: 3.7 });
+    expect(screen.getByRole('complementary', { name: 'Map details' })).toBeVisible();
+    expect(screen.getByText(/3 currently visible items/)).toBeVisible();
   });
 
   it('keeps ops-room motion off when reduced motion is already enabled', async () => {
