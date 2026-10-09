@@ -39,7 +39,8 @@ describe('public product page', () => {
     ]) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();
     }
-    expect(document.title).toMatch(/Self-hosted open-source intelligence/);
+    // The title is set in an effect, which can land after the headings on a busy runner.
+    await waitFor(() => expect(document.title).toMatch(/Self-hosted open-source intelligence/));
     const layers = screen.getByRole('region', { name: 'Observe' });
     for (const layer of STORY_LAYERS)
       expect(within(layers).getByText(layer.label)).toBeInTheDocument();
