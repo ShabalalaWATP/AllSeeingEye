@@ -101,8 +101,11 @@ it('releases successful-save navigation and protects subsequent edits again', as
   vi.spyOn(briefs, 'createBrief').mockResolvedValue(saved);
   vi.spyOn(briefs, 'fetchBrief').mockResolvedValue(saved);
   const { user, router } = await editNewBrief();
+  const originalEditor = screen.getByRole('region', { name: 'Research Brief editor' });
   await user.click(screen.getByRole('button', { name: 'Save brief' }));
   await waitFor(() => expect(router.state.location.search).toContain(`brief=${saved.identity.id}`));
+  // Saved text also appears in the outgoing editor before the route reload commits.
+  await waitFor(() => expect(originalEditor).not.toBeInTheDocument());
   await screen.findByText('Exact saved revision 1.', { exact: false });
   expect(confirm).not.toHaveBeenCalled();
   expect(reloadWouldLoseDraft()).toBe(false);
