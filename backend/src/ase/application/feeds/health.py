@@ -50,6 +50,8 @@ class CircuitBreaker:
     disable_after: int = 8
     base_backoff: timedelta = timedelta(seconds=60)
     max_backoff: timedelta = timedelta(hours=1)
+    # An upstream's explicit HTTP 429 wait is honoured beyond max_backoff, up to a day.
+    max_rate_limit_wait: timedelta = timedelta(hours=24)
     cooldown: timedelta = timedelta(hours=6)
     max_cooldown: timedelta = timedelta(hours=24)
 
@@ -159,7 +161,7 @@ class HealthRegistry:
         entry.polls += 1
         self._transition(entry, SourceStatus.DEGRADED, "rate_limited")
         wait = max(self.breaker.backoff_for(entry.consecutive_failures), retry_after or timedelta())
-        entry.next_poll_at = now + min(wait, self.breaker.max_backoff)
+        entry.next_poll_at = now + min(wait, self.breaker.max_rate_limit_wait)
         return entry
 
     def reset(self, source_id: str) -> SourceHealth:

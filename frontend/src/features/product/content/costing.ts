@@ -42,7 +42,7 @@ export const LIMITS = {
   uplift: { min: 0, max: 200 },
 } as const;
 
-export function clampTo(value: number, min: number, max: number): number {
+function clampTo(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min;
   return Math.min(max, Math.max(min, value));
 }

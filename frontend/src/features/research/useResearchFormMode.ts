@@ -26,5 +26,7 @@ export function useResearchFormMode({
     /** True when the full form cannot be hidden for the current draft. */
     required,
     toggle: () => setExpanded((value) => !value),
+    /** Show the full form, for example so a reader can reach a control an issue names. */
+    open: () => setExpanded(true),
   };
 }

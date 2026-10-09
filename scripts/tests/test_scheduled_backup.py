@@ -191,6 +191,37 @@ class RunTests(Workspace):
         shutil.rmtree(self.root)
         self.assertEqual(scheduled_backup.main(self.options()), 1)
 
+    def test_tiny_retention_is_refused_before_any_backup(self) -> None:
+        with mock.patch.object(scheduled_backup.backup, "main") as backup_main:
+            self.assertEqual(scheduled_backup.main(self.options("--keep", "2")), 2)
+        backup_main.assert_not_called()
+        self.assertFalse((self.root / "status.json").exists())
+
+    def test_run_sweeps_only_its_own_stale_work_directories(self) -> None:
+        for name in (".work-abc_1234", ".drill-zz99xy_0"):
+            (self.root / name).mkdir()
+            (self.root / name / "plaintext.dump").write_text("secret")
+        kept = [".work-short", "work-abcd1234", ".work-ABCD1234"]
+        for name in kept:
+            (self.root / name).mkdir()
+        (self.root / ".work-file1234").write_text("not a directory")
+        kept.append(".work-file1234")
+        outside = self.tmp / "outside"
+        outside.mkdir()
+        (outside / "keep.txt").write_text("x")
+        try:
+            (self.root / ".drill-link1234").symlink_to(
+                outside, target_is_directory=True
+            )
+            kept.append(".drill-link1234")
+        except OSError:
+            pass  # Creating links can need extra privileges on Windows.
+        self.assertEqual(self.run_with(), 0)
+        names = {path.name for path in self.root.iterdir()}
+        self.assertFalse({".work-abc_1234", ".drill-zz99xy_0"} & names)
+        self.assertTrue(set(kept) <= names)
+        self.assertTrue((outside / "keep.txt").is_file())
+
 
 class DrillAndRecoveryTests(Workspace):
     def fake_decrypt(self, _archive: Path, _key: Path, tar_path: Path) -> None:
@@ -232,6 +263,13 @@ class DrillAndRecoveryTests(Workspace):
         self.assertFalse(
             [p for p in self.root.iterdir() if p.name.startswith(".drill-")]
         )
+
+    def test_drill_sweeps_a_crashed_drill_first(self) -> None:
+        (self.root / "scheduled-20260925T031701Z.tar.gpg").write_text("new")
+        (self.root / ".drill-abcd1234").mkdir()
+        (self.root / ".drill-abcd1234" / "bundle.tar").write_text("plaintext")
+        self.assertEqual(self.drill(0), 0)
+        self.assertFalse((self.root / ".drill-abcd1234").exists())
 
     def test_drill_reports_a_failed_verification(self) -> None:
         (self.root / "scheduled-20260925T031701Z.tar.gpg").write_text("new")

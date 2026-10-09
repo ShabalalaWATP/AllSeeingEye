@@ -2,7 +2,9 @@
 
 An indicator watches part of the picture (an area, nations, categories, keywords) and fires
 when at least `threshold` matching items were published inside its window. A cooldown stops
-the same indicator firing again every cycle while the situation persists.
+the same indicator firing again every cycle while the situation persists, and items cited by
+the indicator's earlier alerts inside the window do not count again, so a rule re-fires only on
+new evidence. An alert cites at most MAX_EVIDENCE items.
 """
 
 from __future__ import annotations
@@ -133,8 +135,12 @@ def evaluate(
     events: list[Event],
     now: datetime,
     last_fired: datetime | None,
+    alerted: frozenset[str] = frozenset(),
 ) -> Firing | None:
-    """Count known publication times in the closed interval [now - window, now]."""
+    """Count known publication times in the closed interval [now - window, now].
+
+    `alerted` holds the event ids the rule's earlier alerts already cited; they are not counted.
+    """
     if not indicator.enabled:
         return None
     if last_fired is not None and now - last_fired < indicator.cooldown:
@@ -147,7 +153,9 @@ def evaluate(
     country_latest: dict[str, tuple[datetime, str]] = {}
     for event in events:
         published = evidence_time(event)
-        if published is None or not since <= published <= now or not indicator.matches(event):
+        if published is None or not since <= published <= now or event.id in alerted:
+            continue
+        if not indicator.matches(event):
             continue
         count += 1
         key = (published, event.id)

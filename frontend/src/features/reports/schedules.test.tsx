@@ -68,4 +68,15 @@ describe('schedules', () => {
       });
     });
   });
+
+  it('says that subscription email is optional, off by default and set per subscription', async () => {
+    renderApp('/research/recurring', 'user');
+    const form = await screen.findByRole('form', { name: 'New subscription' });
+    expect(within(form).queryByText(/not emailed/)).not.toBeInTheDocument();
+    expect(within(form).getByText(/Updates are saved in the app\./)).toHaveTextContent(
+      'Email is optional and off by default: after saving, choose it under Email preferences beside the subscription.',
+    );
+    const table = await screen.findByRole('table', { name: 'Subscriptions' });
+    expect(within(table).getByRole('link', { name: 'Email preferences' })).toBeInTheDocument();
+  });
 });

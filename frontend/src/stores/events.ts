@@ -30,6 +30,7 @@ import {
 import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import { ORDERED_CATEGORIES } from '@/lib/categories';
 import type { SseMessage, StreamStatus } from '@/lib/sse';
+import { useAuthStore } from '@/stores/auth';
 
 export interface EventsState {
   byId: Record<string, LiveEvent>;
@@ -215,4 +216,12 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       set({ ...initialEventsState });
     },
   };
+});
+
+// Public events stay mirrored, but one account's selection and filters never carry over.
+useAuthStore.subscribe((next, previous) => {
+  // Signing in from no account keeps choices made on the way in, such as a deep link.
+  if (previous.user === null || next.user?.id === previous.user.id) return;
+  const { hidden, country, windowHours, selectedId, selectionOwner } = initialEventsState;
+  useEventsStore.setState({ hidden, country, windowHours, selectedId, selectionOwner });
 });

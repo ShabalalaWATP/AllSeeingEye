@@ -35,10 +35,14 @@ async def test_all_scopes_filter_and_evaluate_one_snapshot_off_loop(
         return original_select(snapshot, query)
 
     def evaluate(
-        rule: Indicator, events: list[Event], now: datetime, last: datetime | None
+        rule: Indicator,
+        events: list[Event],
+        now: datetime,
+        last: datetime | None,
+        alerted: frozenset[str] = frozenset(),
     ) -> Firing | None:
         assert threading.get_ident() != loop_thread, "matching must run off the event loop"
-        return original_evaluate(rule, events, now, last)
+        return original_evaluate(rule, events, now, last, alerted)
 
     monkeypatch.setattr(memory, "select_events", select)
     monkeypatch.setattr(evaluator, "evaluate", evaluate)

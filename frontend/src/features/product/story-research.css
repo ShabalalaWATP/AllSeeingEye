@@ -100,6 +100,12 @@
   background: var(--story-ember-faint);
   transform: translateY(-3px);
 }
+[data-motion='still'] .console-caret {
+  animation: none;
+}
+[data-motion='still'] .depth-select li {
+  transition: none;
+}
 @keyframes story-blink {
   50% {
     opacity: 0;

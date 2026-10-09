@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { apiCall, apiBlob, apiSend } from './client';
 import type { components } from './types.gen';
 import { annotationComparisonSchema } from './annotationComparisons';
-import { scopedMutation } from '@/lib/workspaceAccess';
+import { scopedMutation, scopedRead } from '@/lib/workspaceAccess';
 export type AnnotationMonitor = components['schemas']['AnnotationMonitorOut'];
 export type MonitorCreate = components['schemas']['AnnotationMonitorCreateIn'];
 export type MonitorUpdate = components['schemas']['AnnotationMonitorUpdateIn'];
@@ -126,7 +126,7 @@ export function exportMonitorTransition(
   const body: components['schemas']['AnnotationTransitionExportIn'] = {
     expected_comparison_sha256: digest,
   };
-  return scopedMutation(() =>
+  return scopedRead(() =>
     apiBlob(`${transitionPath(id, transition)}/export`, {
       method: 'POST',
       body,

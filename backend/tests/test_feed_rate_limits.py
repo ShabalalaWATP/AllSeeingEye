@@ -35,7 +35,10 @@ URL = "https://93.184.216.34/feed"
         ({"Retry-After": "120"}, timedelta(seconds=120)),
         ({"Retry-After": "2.5"}, timedelta(seconds=2.5)),
         ({"Retry-After": "0"}, timedelta(seconds=1)),
-        ({"Retry-After": "86400"}, timedelta(hours=1)),
+        ({"Retry-After": "7200"}, timedelta(hours=2)),
+        ({"Retry-After": "86400"}, timedelta(hours=24)),
+        ({"Retry-After": "604800"}, timedelta(hours=24)),
+        ({"Retry-After": "Sat, 05 Sep 2026 06:00:00 GMT"}, timedelta(hours=6)),
         ({"Retry-After": "Sat, 05 Sep 2026 00:10:00 GMT"}, timedelta(minutes=10)),
         ({"Retry-After": "Fri, 04 Sep 2026 23:00:00 GMT"}, timedelta(seconds=1)),
         ({"X-RateLimit-Reset": "40"}, timedelta(seconds=40)),
@@ -85,7 +88,12 @@ def test_health_waits_for_the_longer_of_backoff_and_retry_after_and_never_disabl
     for _ in range(20):
         entry = registry.record_rate_limited("s", "HTTP 429", NOW, timedelta(hours=5))
     assert entry.status is SourceStatus.DEGRADED
-    assert entry.next_poll_at == NOW + timedelta(hours=1)
+    # A long explicit 429 wait is honoured past the one-hour failure backoff ceiling.
+    assert entry.next_poll_at == NOW + timedelta(hours=5)
+    capped = registry.record_rate_limited("s", "HTTP 429", NOW, timedelta(days=3))
+    assert capped.next_poll_at == NOW + timedelta(hours=24)
+    without_wait = registry.record_rate_limited("s", "HTTP 429", NOW, None)
+    assert without_wait.next_poll_at == NOW + timedelta(hours=1)  # backoff alone stays capped
 
 
 class ThrottledConnector:

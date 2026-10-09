@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { apiCall, apiBlob } from './client';
 import type { components } from './types.gen';
 import { researchInputReceiptSchema } from './researchInputs';
-import { scopedMutation } from '@/lib/workspaceAccess';
+import { scopedMutation, scopedRead } from '@/lib/workspaceAccess';
 export type SecFilingsSearch = components['schemas']['SecFilingsSearchIn'];
 export type SecFilingChoice = components['schemas']['SecFilingChoiceOut'];
 export type SecFilingsPage = components['schemas']['SecFilingsPageOut'];
@@ -25,7 +25,7 @@ export const secFilingsPageSchema = z.object({
   limitations: z.array(z.string().max(2000)).max(30),
 }) satisfies z.ZodType<SecFilingsPage>;
 export function searchSecFilings(body: SecFilingsSearch, signal: AbortSignal) {
-  return scopedMutation(() =>
+  return scopedRead(() =>
     apiCall('/api/research/sec/filings', {
       method: 'POST',
       body,
@@ -44,7 +44,7 @@ export function importSecFiling(id: string, signal: AbortSignal) {
   );
 }
 export function downloadSecOriginal(id: string, signal: AbortSignal) {
-  return scopedMutation(() =>
+  return scopedRead(() =>
     apiBlob(`/api/research/sec/filings/${encodeURIComponent(id)}/original`, {
       signal,
       headers: { Accept: 'application/octet-stream' },

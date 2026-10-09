@@ -2,11 +2,18 @@ import type { AiLimitState, AiPolicy } from '@/lib/api/aiUsage';
 import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
 
-/** Blank means unlimited; anything else must be a whole number, where zero blocks. */
+/** The largest limit the server stores (a signed 32-bit integer). */
+export const MAX_AI_LIMIT = 2 ** 31 - 1;
+/** The accepted range, written for messages. */
+export const AI_LIMIT_RANGE = `from 0 to ${MAX_AI_LIMIT.toLocaleString('en-GB')}`;
+
+/** Blank means unlimited; anything else must be a whole number in range, where zero blocks. */
 export function parseLimit(value: string): number | null {
   if (value.trim() === '') return null;
   const number = Number(value);
-  return Number.isSafeInteger(number) && number >= 0 ? number : Number.NaN;
+  return Number.isSafeInteger(number) && number >= 0 && number <= MAX_AI_LIMIT
+    ? number
+    : Number.NaN;
 }
 
 export function policyLabel(

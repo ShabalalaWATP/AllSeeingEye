@@ -285,8 +285,11 @@
   opacity: 0;
   transform: translateY(28px);
 }
-[data-motion='still'] .story-reveal {
+[data-motion='still'] :is(.story-reveal, .story-nav a, .story-button) {
   transition: none;
+}
+[data-motion='still'] .story-button:hover {
+  transform: none;
 }
 @media print {
   .story-reveal[data-shown='false'] {

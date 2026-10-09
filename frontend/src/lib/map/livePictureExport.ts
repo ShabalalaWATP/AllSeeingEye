@@ -113,8 +113,17 @@ function xml(value: unknown): string {
     );
 }
 
+export type LivePictureCollection = ReturnType<typeof livePictureCollection>;
+
 export function exportLivePicture(events: readonly LiveEvent[], format: 'geojson' | 'kml'): string {
-  const collection = livePictureCollection(events);
+  return serialiseLivePicture(livePictureCollection(events), format);
+}
+
+/** Serialises an already built collection so callers can show its counts first. */
+export function serialiseLivePicture(
+  collection: LivePictureCollection,
+  format: 'geojson' | 'kml',
+): string {
   if (format === 'geojson') return JSON.stringify(collection, null, 2);
   const placemarks = collection.features
     .map((feature) => {
