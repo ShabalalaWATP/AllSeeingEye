@@ -14,6 +14,7 @@ from sqlalchemy.sql.selectable import Exists
 
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.models import RefreshTokenRow
+from ase.adapters.persistence.session_activity import RefreshFamilyActivityRow
 
 # Settings cap a refresh lifetime at 90 days. Keep an additional day before
 # collecting expired revoked families, and retain any family with a live token.
@@ -69,6 +70,12 @@ async def prune_revoked_families(session: AsyncSession, now: datetime) -> None:
         delete(RefreshTokenRow).where(
             RefreshTokenRow.family_id.in_(old_families),
             RefreshTokenRow.expires_at <= now,
+        )
+    )
+    await session.execute(
+        delete(RefreshFamilyActivityRow).where(
+            RefreshFamilyActivityRow.last_activity_at <= now - REVOCATION_RETENTION,
+            ~exists().where(RefreshTokenRow.family_id == RefreshFamilyActivityRow.family_id),
         )
     )
     await session.execute(

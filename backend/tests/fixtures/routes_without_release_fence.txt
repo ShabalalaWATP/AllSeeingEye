@@ -157,3 +157,6 @@ PUT /api/me/library/{report_id}
 PUT /api/reports/{report_id}/original-assets/{asset_id}/content
 PUT /api/teams/{team_id}/members
 PUT /api/warning/indicators/{indicator_id}
+
+# Activity owns its account lock, session check and commit; it returns no private payload.
+POST /api/auth/activity

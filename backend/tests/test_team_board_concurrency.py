@@ -26,6 +26,7 @@ from ase.application.teams.board_moderation import TeamBoardModerationService
 from ase.application.teams.board_subjects import BoardSubjects
 from ase.container.repositories import build_repositories
 from ase.domain.errors import Conflict
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.domain.team_board import TeamBoardPost
 from ase.domain.teams import MembershipRole, Team, TeamMembership
 from ase.domain.users import Role, User
@@ -61,7 +62,7 @@ async def _seed(
     team_id = uuid4()
     ids = [uuid4() for _ in range(posts)]
     async with factory() as session:
-        repos = build_repositories(session)
+        repos = build_repositories(session, SessionIdlePolicy())
         await repos.users.add(manager)
         teams = SqlTeamRepository(session)
         await teams.add(Team(team_id, "Race desk", True, manager.id, NOW, NOW))
@@ -74,7 +75,7 @@ async def _seed(
 
 
 def _services(session: AsyncSession) -> tuple[TeamBoardService, TeamBoardModerationService]:
-    repos = build_repositories(session)
+    repos = build_repositories(session, SessionIdlePolicy())
     clock = FakeClock(NOW)
     arguments = (
         SqlTeamBoardRepository(session),

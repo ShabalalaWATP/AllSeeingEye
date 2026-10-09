@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     # How long a release fence or stream may trust a recent session check when no
     # committed change was signalled in this process (see ADR 0021).
     session_recheck_seconds: int = Field(default=15, ge=1, le=60)
+    session_idle_minutes: int = Field(default=180, ge=5, le=1440)
+    admin_session_idle_minutes: int | None = Field(default=None, ge=5, le=1440)
     refresh_token_days: int = Field(default=14, ge=1, le=90)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"

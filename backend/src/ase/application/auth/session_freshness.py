@@ -30,7 +30,7 @@ class SessionFreshness:
             raise ValueError("Session freshness needs a positive age and capacity.")
         self._clock, self._signals = clock, signals
         self.max_age, self._capacity = max_age, capacity
-        self._checks: OrderedDict[Key, tuple[User, datetime]] = OrderedDict()
+        self._checks: OrderedDict[Key, tuple[User, datetime, datetime | None]] = OrderedDict()
 
     @staticmethod
     def _key(claims: AccessClaims) -> Key:
@@ -42,19 +42,31 @@ class SessionFreshness:
         entry = self._checks.get(key)
         if entry is None:
             return None
-        user, checked_at = entry
-        if self.is_due(claims.user_id, checked_at):
+        user, checked_at, idle_deadline = entry
+        if self.is_due(claims.user_id, checked_at) or (
+            idle_deadline is not None and self._clock.now() >= idle_deadline
+        ):
             del self._checks[key]
             return None
         self._checks.move_to_end(key)
         return user
 
-    def remember(self, claims: AccessClaims, user: User, checked_at: datetime) -> None:
+    def idle_deadline(self, claims: AccessClaims) -> datetime | None:
+        entry = self._checks.get(self._key(claims))
+        return None if entry is None else entry[2]
+
+    def remember(
+        self,
+        claims: AccessClaims,
+        user: User,
+        checked_at: datetime,
+        idle_deadline: datetime | None = None,
+    ) -> None:
         """Record a successful database check that began at `checked_at`."""
         key = self._key(claims)
         current = self._checks.get(key)
         if current is None or current[1] <= checked_at:
-            self._checks[key] = (user, checked_at)
+            self._checks[key] = (user, checked_at, idle_deadline)
         self._checks.move_to_end(key)
         while len(self._checks) > self._capacity:
             self._checks.popitem(last=False)

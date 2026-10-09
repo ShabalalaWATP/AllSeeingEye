@@ -54,7 +54,12 @@ async def run_web_push(container: Container) -> None:
         await asyncio.Event().wait()
         return
     await WebPushWorker(
-        SqlPushDeliveryStore(container.session_factory, container.access_policy, container.cipher),
+        SqlPushDeliveryStore(
+            container.session_factory,
+            container.access_policy,
+            container.cipher,
+            lambda session: container.repositories(session).refresh_tokens,
+        ),
         sender,
         container.clock,
     ).run()
