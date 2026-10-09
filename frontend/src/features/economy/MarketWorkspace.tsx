@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
+import { ClickToLoadEmbed } from '@/components/privacy/ClickToLoadEmbed';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
 import { useAuthStore } from '@/stores/auth';
@@ -51,11 +52,6 @@ function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light'
                 options={choices.map((item) => ({ value: item.symbol, label: item.name }))}
               />
             </div>
-            {enabled && (
-              <Button variant="secondary" onClick={() => setEnabled(false)}>
-                Stop charts
-              </Button>
-            )}
           </div>
         )}
       </div>
@@ -77,27 +73,40 @@ function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light'
             <span className="text-text">{instrument.timing}</span>
             <span className="text-muted">Market hours and provider availability apply</span>
           </div>
-          {running ? (
-            <ProviderChart
-              key={`${instrument.symbol}:${theme}`}
-              instrument={instrument}
-              theme={theme}
-            />
-          ) : (
-            <div className="flex min-h-64 flex-col items-start justify-center gap-4 border-y border-line bg-surface/40 px-4 py-8 sm:px-8">
-              <div>
-                <h3 className="text-lg font-medium text-text">
-                  {enabled ? 'Charts paused while this tab is hidden' : 'Market charts paused'}
-                </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-                  {enabled
-                    ? 'The chart resumes automatically when you return to this tab.'
-                    : `Resume the interactive chart for ${instrument.name} when you are ready.`}
-                </p>
-              </div>
-              {!enabled && <Button onClick={() => setEnabled(true)}>Resume charts</Button>}
-            </div>
-          )}
+          <ClickToLoadEmbed provider="tradingview" content="chart">
+            {() => (
+              <>
+                {enabled && (
+                  <Button variant="secondary" onClick={() => setEnabled(false)}>
+                    Stop charts
+                  </Button>
+                )}
+                {running ? (
+                  <ProviderChart
+                    key={`${instrument.symbol}:${theme}`}
+                    instrument={instrument}
+                    theme={theme}
+                  />
+                ) : (
+                  <div className="flex min-h-64 flex-col items-start justify-center gap-4 border-y border-line bg-surface/40 px-4 py-8 sm:px-8">
+                    <div>
+                      <h3 className="text-lg font-medium text-text">
+                        {enabled
+                          ? 'Charts paused while this tab is hidden'
+                          : 'Market charts paused'}
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                        {enabled
+                          ? 'The chart resumes automatically when you return to this tab.'
+                          : `Resume the interactive chart for ${instrument.name} when you are ready.`}
+                      </p>
+                    </div>
+                    {!enabled && <Button onClick={() => setEnabled(true)}>Resume charts</Button>}
+                  </div>
+                )}
+              </>
+            )}
+          </ClickToLoadEmbed>
           <p className="mt-3 text-sm leading-relaxed text-muted">{instrument.explanation}</p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
             <a
@@ -115,10 +124,11 @@ function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light'
               Chart provider, timing & privacy
             </summary>
             <p className="mt-2 max-w-3xl">
-              TradingView charts load automatically. Your browser connects directly to TradingView,
-              which receives your IP address and the selected public symbol. Your research and
-              account details are not sent. Stock and index prices may be delayed or end-of-day. One
-              interactive market chart runs at a time and pauses when this tab is hidden.
+              TradingView charts load after you choose to load them or remember a provider choice.
+              Your browser connects directly to TradingView, which receives your IP address and the
+              selected public symbol. Your research and account details are not sent. Stock and
+              index prices may be delayed or end-of-day. One interactive market chart runs at a time
+              and pauses when this tab is hidden.
             </p>
           </details>
         </>

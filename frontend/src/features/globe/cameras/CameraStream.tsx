@@ -2,19 +2,56 @@ import { useEffect, useRef, useState } from 'react';
 import type { Camera } from '@/lib/api/cameras';
 import { isCameraStreamUrl } from '@/lib/api/cameras';
 import { usePageVisible } from '@/components/brand/useMotionPreferences';
+import { ClickToLoadEmbed } from '@/components/privacy/ClickToLoadEmbed';
+import { cameraEmbed } from '@/lib/api/cameraEmbed';
 
 /** The player exists only after an explicit request, and releases streams on close. */
 export function CameraStream({ camera }: { camera: Camera }) {
-  const [playing, setPlaying] = useState(false);
-  const visible = usePageVisible();
   const safe = isCameraStreamUrl(camera.stream_url, camera.stream_type === 'iframe');
   if (!safe || !camera.stream_url) return null;
+  if (camera.stream_type === 'iframe') {
+    const embed = cameraEmbed(camera.stream_url);
+    if (!embed) return null;
+    return (
+      <ClickToLoadEmbed key={`${camera.id}:${embed.url}`} provider={embed.provider} content="video">
+        {(loadedHere) => (
+          <CameraPlayback camera={camera} url={embed.url} initiallyPlaying={loadedHere} />
+        )}
+      </ClickToLoadEmbed>
+    );
+  }
+  return (
+    <CameraPlayback
+      key={`${camera.id}:${camera.stream_url}`}
+      camera={camera}
+      url={camera.stream_url}
+    />
+  );
+}
+
+function CameraPlayback({
+  camera,
+  url,
+  initiallyPlaying = false,
+}: {
+  camera: Camera;
+  url: string;
+  initiallyPlaying?: boolean;
+}) {
+  const [playing, setPlaying] = useState(initiallyPlaying);
+  const visible = usePageVisible();
   return (
     <section className="space-y-2" aria-label="Camera video">
       <p>
         {camera.stream_type === 'mp4' ? 'Provider video clip' : 'Provider stream'} · Availability
         and delay vary.
       </p>
+      {camera.stream_type !== 'iframe' && (
+        <p className="text-muted">
+          Playing connects directly to the camera provider, which receives your IP address and
+          browser details. Availability and the provider’s privacy policy apply.
+        </p>
+      )}
       <button
         type="button"
         className="min-h-11 rounded border border-line px-3 text-cyan"
@@ -24,12 +61,7 @@ export function CameraStream({ camera }: { camera: Camera }) {
       </button>
       {playing && !visible && <p role="status">Video paused while this tab is hidden.</p>}
       {playing && visible && (
-        <Player
-          key={`${camera.id}:${camera.stream_url}`}
-          url={camera.stream_url}
-          kind={camera.stream_type ?? 'mp4'}
-          title={camera.title}
-        />
+        <Player url={url} kind={camera.stream_type ?? 'mp4'} title={camera.title} />
       )}
     </section>
   );
