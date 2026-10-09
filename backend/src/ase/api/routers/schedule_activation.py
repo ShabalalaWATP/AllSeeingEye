@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_schedules import ScheduleOut
 from ase.api.session_fence import FenceDep, SessionFence
+from ase.api.subscription_projection import schedule_outputs
 from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.container.subscription_schedule_controls import control_schedule
@@ -35,9 +36,11 @@ async def _control(
         context,
         check_session=lambda: fence.confirm(session=session),
     )
+    result = (await schedule_outputs(container, session, user, [schedule]))[0]
+    await fence.confirm(session=session)
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return ScheduleOut.from_schedule(schedule)
+    return result
 
 
 @router.post("/{schedule_id}/pause")

@@ -101,6 +101,7 @@ class SubscriptionEditionOut(BaseModel):
     job_id: UUID | None
     report_id: UUID | None
     version_id: UUID | None
+    version_number: int | None = None
     covered_by_edition_id: UUID | None
     accepted_as_baseline: bool
     safe_reason: str | None
@@ -110,7 +111,11 @@ class SubscriptionEditionOut(BaseModel):
 
     @classmethod
     def from_edition(
-        cls, edition: SubscriptionEdition, comparison: EditionComparison | None = None
+        cls,
+        edition: SubscriptionEdition,
+        comparison: EditionComparison | None = None,
+        *,
+        version_number: int | None = None,
     ) -> "SubscriptionEditionOut":
         return cls(
             id=edition.id,
@@ -129,6 +134,7 @@ class SubscriptionEditionOut(BaseModel):
             job_id=edition.job_id,
             report_id=edition.report_id,
             version_id=edition.version_id,
+            version_number=version_number,
             covered_by_edition_id=edition.covered_by_edition_id,
             accepted_as_baseline=edition.accepted_as_baseline,
             safe_reason=edition.safe_reason,

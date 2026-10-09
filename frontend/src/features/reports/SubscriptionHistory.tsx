@@ -40,13 +40,18 @@ function statusLabel(edition: SubscriptionEdition): string {
 }
 
 function editionLink(edition: SubscriptionEdition) {
-  if (edition.report_id) {
+  if (edition.report_id && edition.version_id && edition.version_number) {
     return (
-      <Link className="text-ember underline" to={`/reports/${edition.report_id}`}>
+      <Link
+        className="text-ember underline"
+        to={`/reports/${edition.report_id}?version=${edition.version_number}`}
+      >
         Read report
       </Link>
     );
   }
+  if (edition.report_id || edition.version_id || edition.workflow === 'completed')
+    return <span className="text-muted">Saved edition unavailable</span>;
   if (edition.job_id) {
     return (
       <Link className="text-ember underline" to={`/research/jobs/${edition.job_id}`}>

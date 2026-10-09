@@ -9,6 +9,7 @@ import { formatUtc } from '@/lib/format';
 import { describeCadence } from './ScheduleTiming';
 import { SubscriptionHistory } from './SubscriptionHistory';
 import { BriefScheduleCopy } from './BriefScheduleCopy';
+import { BriefScheduleEdit } from './BriefScheduleEdit';
 
 export function ScheduleRow({
   item,
@@ -21,6 +22,7 @@ export function ScheduleRow({
   onEdit,
   onDuplicate,
   onBriefCopied,
+  onBriefEdited,
 }: {
   item: Schedule;
   workspaces: Workspaces;
@@ -32,6 +34,7 @@ export function ScheduleRow({
   onEdit: (item: Schedule, trigger: HTMLButtonElement) => void;
   onDuplicate: (item: Schedule, trigger: HTMLButtonElement) => void;
   onBriefCopied: () => void;
+  onBriefEdited: () => void;
 }) {
   const [params] = useSearchParams();
   const requestedSubscription = params.get('subscription') === item.id;
@@ -44,6 +47,13 @@ export function ScheduleRow({
       scroll.call(target, { block: 'start' });
   }, [requestedSubscription]);
   const [copyBrief, setCopyBrief] = useState(false);
+  const [editBrief, setEditBrief] = useState(false);
+  const editButton = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(false);
+  useEffect(() => {
+    if (wasEditing.current && !editBrief) editButton.current?.focus();
+    wasEditing.current = editBrief;
+  }, [editBrief]);
   const duplicateButton = useRef<HTMLSpanElement>(null);
   return (
     <>
@@ -75,14 +85,17 @@ export function ScheduleRow({
               No material change identified in the latest comparison.
             </p>
           )}
-          {item.last_change?.previous_report_id && (
-            <Link
-              className="mt-1 block text-xs font-normal underline"
-              to={`/reports/${item.last_change.previous_report_id}`}
-            >
-              Previous update
-            </Link>
-          )}
+          {item.last_change?.previous_report_id &&
+            (item.previous_version_number ? (
+              <Link
+                className="mt-1 block text-xs font-normal underline"
+                to={`/reports/${item.last_change.previous_report_id}?version=${item.previous_version_number}`}
+              >
+                Previous update
+              </Link>
+            ) : (
+              <p className="mt-1 text-xs text-muted">Previous edition unavailable</p>
+            ))}
           {item.question && (
             <details className="mt-2 text-xs font-normal">
               <summary className="cursor-pointer">Saved question</summary>
@@ -137,15 +150,22 @@ export function ScheduleRow({
           )}
           {item.last_error !== null && <p className="mb-2 text-critical">{item.last_error}</p>}
           {item.last_report_id !== null ? (
-            <Link to={`/reports/${item.last_report_id}`} className="hover:underline">
-              {item.last_outcome === 'failed' || item.last_error !== null
-                ? 'Last successful update'
-                : item.last_outcome === 'needs_review'
-                  ? 'Review latest update'
-                  : item.last_coverage === 'partial'
-                    ? 'Review partial update'
-                    : 'Latest update'}
-            </Link>
+            item.last_version_number ? (
+              <Link
+                to={`/reports/${item.last_report_id}?version=${item.last_version_number}`}
+                className="hover:underline"
+              >
+                {item.last_outcome === 'failed' || item.last_error !== null
+                  ? 'Last successful update'
+                  : item.last_outcome === 'needs_review'
+                    ? 'Review latest update'
+                    : item.last_coverage === 'partial'
+                      ? 'Review partial update'
+                      : 'Latest update'}
+              </Link>
+            ) : (
+              <span className="text-muted">Latest edition unavailable</span>
+            )
           ) : item.last_error === null ? (
             <span className="text-muted">not yet</span>
           ) : null}
@@ -170,16 +190,20 @@ export function ScheduleRow({
               History
             </Button>
             <Button
+              ref={editButton}
               variant="secondary"
-              disabled={!workspaces.canManage(item) || busy || !!item.brief_id}
-              onClick={(event) => onEdit(item, event.currentTarget)}
+              disabled={!workspaces.canManage(item) || busy || editBrief || copyBrief}
+              onClick={(event) => {
+                if (item.brief_id) setEditBrief(true);
+                else onEdit(item, event.currentTarget);
+              }}
             >
               Edit
             </Button>
             <span ref={duplicateButton}>
               <Button
                 variant="secondary"
-                disabled={!workspaces.canManage(item) || busy}
+                disabled={!workspaces.canManage(item) || busy || editBrief}
                 onClick={(event) => {
                   if (item.brief_id) setCopyBrief(true);
                   else onDuplicate(item, event.currentTarget);
@@ -197,8 +221,8 @@ export function ScheduleRow({
             </Button>
             {item.brief_id && (
               <p className="basis-full text-xs text-muted">
-                This copies the pinned brief revision and timing. Edit the Research Brief to change
-                its questions or sources.
+                Edit changes the name and timing. Duplicate copies the pinned brief revision. Edit
+                the Research Brief to change its questions or sources.
               </p>
             )}
             <ConfirmButton
@@ -219,6 +243,24 @@ export function ScheduleRow({
           </div>
         </Td>
       </tr>
+      {editBrief && item.brief_id && workspaces.canManage(item) && (
+        <tr>
+          <td colSpan={6} className="p-3">
+            <BriefScheduleEdit
+              source={item}
+              onCancel={() => {
+                setEditBrief(false);
+                editButton.current?.focus();
+              }}
+              onSaved={() => {
+                setEditBrief(false);
+                editButton.current?.focus();
+                onBriefEdited();
+              }}
+            />
+          </td>
+        </tr>
+      )}
       {copyBrief && item.brief_id && (
         <tr>
           <td colSpan={6} className="p-3">

@@ -173,7 +173,7 @@ it('keeps the latest successful report accessible when a later scheduled run fai
   expect(table.getByText('The latest collection could not complete.')).toBeVisible();
   expect(table.getByRole('link', { name: 'Last successful update' })).toHaveAttribute(
     'href',
-    `/reports/${schedule.last_report_id ?? ''}`,
+    `/reports/${schedule.last_report_id ?? ''}?version=1`,
   );
 });
 

@@ -8,6 +8,24 @@ Each admission tick reads at most 16 overdue schedules and 16 capacity-pending e
 
 This release supports one API process with its database and the existing shared source-control guard. Do not run multiple API scheduler processes against an operator database until leader election, cross-process fairness and recovery have been tested. The repository's SQLite tests exercise local behaviour; the PostgreSQL migration and concurrency acceptance in the implementation plan remain outstanding. Back up and verify the operator database before applying any migration. Do not run test fixtures or `alembic upgrade` against the operator database by accident.
 
+## Edit a brief subscription
+
+Use **Edit** beside a Research Brief subscription to change its name, timezone,
+local time or recurrence. The pinned brief revision, collection window, sources,
+owner, team and edition history stay unchanged. A paused subscription stays paused.
+Changing recurrence sets the next matching slot strictly after the current time;
+renaming alone leaves the existing due slot untouched. Short months use their last
+day. A daylight-saving gap uses the next valid minute, and a repeated local time
+runs once at its first occurrence.
+
+The dedicated `PUT /api/schedules/{id}/brief-settings` action requires the current
+`settings_revision` returned by the schedule API. This token identifies the name,
+recurrence and pinned identity, rather than run activity or pause state. A stale
+edit returns `409`; reload the subscriptions list before reopening the editor.
+The request rejects other fields, and the database update changes only the name
+and recurrence. Existing owner, team manager and administrator write rules apply.
+Archived subscriptions cannot be edited. No database migration is needed.
+
 ## Observe and diagnose
 
 An administrator with a current session can request `GET /api/admin/subscriptions/diagnostics`. It returns counts and timestamps only: enabled and overdue subscriptions, oldest due lag, active edition workflows, uncertain-outcome and source-failure editions, most recent admitted job, open jobs and queue saturation. Responses are `private, no-store`. It does not test a provider, prove source availability or expose users' questions. A non-administrator cannot use this endpoint. Users can see only their own authorised edition history and monthly usage in Subscriptions.

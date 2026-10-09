@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from typing import Protocol
 from uuid import UUID
 
@@ -22,6 +22,12 @@ class ReportRepository(Protocol):
 
     async def get(self, report_id: UUID) -> ReportRecord | None: ...
     async def get_version(self, report_id: UUID, number: int) -> ReportVersion | None: ...
+
+    async def version_numbers(
+        self, visibility: Visibility, references: Collection[tuple[UUID, UUID]]
+    ) -> dict[tuple[UUID, UUID], int]:
+        """Resolve visible exact (report, version) pairs without a latest-version fallback."""
+        ...
 
     async def set_archives(
         self, version_id: UUID, archives: Mapping[str, str], markdown: str

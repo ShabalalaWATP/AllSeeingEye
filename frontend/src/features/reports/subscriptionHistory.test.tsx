@@ -45,6 +45,7 @@ it('opens the selected subscription history and links its durable edition', asyn
             job_id: null,
             report_id: reportId,
             version_id: 'e3e3e3e3-e3e3-43e3-83e3-e3e3e3e3e3e3',
+            version_number: 2,
             comparison: {
               previous_version_id: 'f4f4f4f4-f4f4-44f4-84f4-f4f4f4f4f4f4',
               current_version_id: 'e3e3e3e3-e3e3-43e3-83e3-e3e3e3e3e3e3',
@@ -70,7 +71,7 @@ it('opens the selected subscription history and links its durable edition', asyn
   expect(within(history).getByText('Ready')).toBeVisible();
   expect(within(history).getByRole('link', { name: 'Read report' })).toHaveAttribute(
     'href',
-    `/reports/${reportId}`,
+    `/reports/${reportId}?version=2`,
   );
   expect(within(history).getByText('Compared with the previous report')).toBeVisible();
   expect(within(history).getByText('The assessment changed between exact versions.')).toBeVisible();
