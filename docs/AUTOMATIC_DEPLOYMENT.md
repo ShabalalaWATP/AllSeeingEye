@@ -40,6 +40,10 @@ Ordinary application, frontend, dependency and Caddy changes can use the automat
 
 The workflow uses a GitHub `production` environment, the `VPS_DEPLOY_KEY`, `VPS_HOST` and `VPS_PORT` secrets and a `VPS_KNOWN_HOSTS` variable. Keep the environment's branch rules and any required approvals aligned with your release policy.
 
+The [release approval proposal and verification procedure](RELEASE_APPROVAL.md)
+specifies the required reviewer and a harmless gate check. Preparing or merging
+that procedure does not apply environment settings or authorise a release.
+
 The host-side key is restricted to the controller's `check` and `deploy` commands with a full commit SHA. It does not provide an interactive shell, file transfer or forwarding. The installed controller should be administrator-owned and protected from modification by the deployment account.
 
 Keep database credentials, application encryption keys and backup authentication material on the host or in your private secret store. They are not supplied by the GitHub deployment workflow. Merged application code and Dockerfiles remain trusted production code, so review and branch protection still matter.

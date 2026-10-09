@@ -1,0 +1,16 @@
+name: Release approval gate check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  approval-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    environment: production
+    steps:
+      - name: Record approval without deploying
+        run: echo 'The production approval gate released this check. No deployment was performed.' >> "$GITHUB_STEP_SUMMARY"
