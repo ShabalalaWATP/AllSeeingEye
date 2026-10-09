@@ -255,10 +255,10 @@ describe('AdminEnquiriesPage', () => {
     });
     server.use(http.get('/api/admin/enquiries', () => HttpResponse.json({ items: [], total: 0 })));
     const { user, router } = renderApp('/admin/users', 'admin');
-    const trigger = await screen.findByRole('button', { name: 'Open navigation' });
+    const trigger = await screen.findByRole('button', { name: 'Open administration navigation' });
     trigger.focus();
     await user.keyboard('{Enter}');
-    const dialog = screen.getByRole('dialog', { name: 'Navigation' });
+    const dialog = screen.getByRole('dialog', { name: 'Administration navigation' });
     const nav = within(dialog).getByRole('navigation', { name: 'Administration' });
     expect(within(dialog).queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
     const link = await within(nav).findByRole('link', { name: 'Enquiries' });

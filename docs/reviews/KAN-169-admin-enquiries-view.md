@@ -29,14 +29,16 @@ diagnostic were corrected. Final TypeScript and focused ESLint pass, including
 the review repairs. The production build and existing bundle budgets pass
 (initial JavaScript 204,839 bytes gzip; additional globe route 808,167 bytes).
 
-Frontend runtime checks are deliberately pending the KAN-206 full-suite resource
-reservation. Real-browser phone-width reflow and native-dialog focus checks,
-coverage and repository CI remain outstanding. No test or
-browser acceptance is claimed in this source milestone.
+All 31 focused tests passed across the enquiry workspace, public site facts,
+administration navigation, shell and navigation configuration. The new mobile
+case initially used the research navigation labels; it now asserts the actual
+administration trigger and dialog labels. Real-browser phone-width reflow,
+native-dialog focus, scoped coverage and repository CI remain outstanding.
 
 ## Delivery
 
 Depends on KAN-167's administrator API and KAN-166's opt-in enquiry storage.
-Final KAN-182 session frontend and combined API generation must be integrated
-before publication. This branch does not enable the feature, send enquiries,
+Final KAN-182 session frontend is integrated and included in the focused run.
+Combined API generation remains required before publication.
+This branch does not enable the feature, send enquiries,
 change production, or grant release approval.
