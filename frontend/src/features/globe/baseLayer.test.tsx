@@ -12,7 +12,9 @@ import { serverCapabilities } from '@/test/fixtures.researchMetadata';
 import { BaseLayerToolbar } from './BaseLayerToolbar';
 
 describe('BaseLayerToolbar', () => {
-  beforeEach(() => { useCapabilitiesStore.setState({ loaded: true, commercialUse: false }); });
+  beforeEach(() => {
+    useCapabilitiesStore.setState({ loaded: true, commercialUse: false });
+  });
   it('keeps embedded choices open and lets the enclosing drawer handle Escape', async () => {
     const escape = vi.fn();
     const onChange = vi.fn();
@@ -175,7 +177,11 @@ describe('capabilities store', () => {
     server.use(
       http.get('/api/capabilities', () => {
         requests += 1;
-        return HttpResponse.json({ ...serverCapabilities, os_maps: true, os_layers: ['Road_3857'] });
+        return HttpResponse.json({
+          ...serverCapabilities,
+          os_maps: true,
+          os_layers: ['Road_3857'],
+        });
       }),
     );
     await useCapabilitiesStore.getState().load();
@@ -222,7 +228,11 @@ describe('capabilities store', () => {
       http.get('/api/capabilities', async () => {
         requests += 1;
         await barrier;
-        return HttpResponse.json({ ...serverCapabilities, os_maps: true, os_layers: ['Road_3857'] });
+        return HttpResponse.json({
+          ...serverCapabilities,
+          os_maps: true,
+          os_layers: ['Road_3857'],
+        });
       }),
     );
     const pending = useCapabilitiesStore.getState().load(true);

@@ -33,6 +33,13 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
         {source.licence_note && (
           <p className="mt-1 max-w-sm text-xs text-muted">{source.licence_note}</p>
         )}
+        {source.licence && (
+          <p className="mt-1 max-w-sm text-xs text-muted">
+            Commercial use: {source.licence.commercial_use.replace(/_/g, ' ')}.
+            {source.licence.acknowledged && ' Operator permission acknowledged.'}
+            {source.licence.attribution_required && ' Attribution required.'}
+          </p>
+        )}
         {source.flags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {source.flags.map((flag) => (

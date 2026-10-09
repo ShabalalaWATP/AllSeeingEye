@@ -201,7 +201,9 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                 .includes(term),
           );
           if (!rows.length) return null;
-          const selected = rows.filter((p) => p.status !== 'licence_blocked' && cameras.providers[p.id]).length;
+          const selected = rows.filter(
+            (p) => p.status !== 'licence_blocked' && cameras.providers[p.id],
+          ).length;
           return (
             <details
               key={name}
@@ -246,7 +248,10 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                     type="button"
                     role="switch"
                     aria-label={provider.name}
-                    aria-checked={provider.status !== 'licence_blocked' && (cameras.providers[provider.id] ?? false)}
+                    aria-checked={
+                      provider.status !== 'licence_blocked' &&
+                      (cameras.providers[provider.id] ?? false)
+                    }
                     disabled={provider.status === 'licence_blocked'}
                     onClick={() => cameras.toggleProvider(provider.id)}
                     className="flex min-h-11 w-full items-center gap-3 text-left font-medium focus-visible:outline-2 focus-visible:outline-cyan"
@@ -263,7 +268,11 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                   </button>
                   <p className="text-muted">
                     {provider.count} cameras ·{' '}
-                    {provider.status === 'not_loaded' ? 'Not loaded' : provider.status === 'licence_blocked' ? 'Licence restriction' : provider.status}
+                    {provider.status === 'not_loaded'
+                      ? 'Not loaded'
+                      : provider.status === 'licence_blocked'
+                        ? 'Licence restriction'
+                        : provider.status}
                   </p>
                   {provider.message && <p className="text-muted">{provider.message}</p>}
                 </div>

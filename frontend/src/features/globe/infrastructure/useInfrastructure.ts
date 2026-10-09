@@ -50,7 +50,10 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
   const [energyEnabled, setEnergyEnabled] = useState(false);
   const [semiconductorEnabled, setSemiconductorEnabled] = useState(false);
   const [militaryEnabled, setMilitaryEnabled] = useState(false);
-  const militaryCountries = useMemo(() => militaryReason ? [] : militaryCountryReferences(countries), [countries, militaryReason]);
+  const militaryCountries = useMemo(
+    () => (militaryReason ? [] : militaryCountryReferences(countries)),
+    [countries, militaryReason],
+  );
   const [data, setData] = useState<Infrastructure | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +124,8 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
     nuclearEnabled: nuclearEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear),
     dataCentresEnabled: dataCentresEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.data_centre),
     energyEnabled: energyEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.energy_site),
-    semiconductorEnabled: semiconductorEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site),
+    semiconductorEnabled:
+      semiconductorEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site),
     militaryEnabled: militaryEnabled && !militaryReason,
     militaryCountries,
     selected,

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, Field
 
@@ -148,6 +148,7 @@ class SourceHealthOut(BaseModel):
 
 class SourceOut(BaseModel):
     licence: SourceLicenceOut | None = None
+    collection_mode: Literal["scheduled", "on_demand"] | None = None
     enabled: bool = True
     test_available: bool = True
     environment_disabled: bool = False

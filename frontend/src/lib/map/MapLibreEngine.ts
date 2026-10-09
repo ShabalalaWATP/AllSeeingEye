@@ -322,7 +322,9 @@ export class MapLibreEngine implements MapEngine {
   private applyBaseLayer(): void {
     const map = this.map;
     if (map === null || !this.styleReady) return;
-    const layer = basemapSources(this.baseLayer).every((id) => this.allowed(id)) ? this.baseLayer : 'dark';
+    const layer = basemapSources(this.baseLayer).every((id) => this.allowed(id))
+      ? this.baseLayer
+      : 'dark';
     applyRasterLayer(map, layer);
     applyDailyImagery(map, this.allowed('map:nasa_gibs_daily') ? this.imagery : null);
   }

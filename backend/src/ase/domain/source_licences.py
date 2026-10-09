@@ -53,8 +53,12 @@ class SourceLicencePolicy:
 
     def decision(self, source_id: str) -> SourceLicenceDecision:
         entry = self._entries.get(source_id)
-        acknowledged = source_id in self._acknowledgements
         status = entry.commercial_use if entry else "licence_required"
+        acknowledged = (
+            entry is not None
+            and status == "licence_required"
+            and (source_id in self._acknowledgements)
+        )
         available = not self._commercial_use or (
             entry is not None
             and (status == "allowed" or (status == "licence_required" and acknowledged))

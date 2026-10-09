@@ -50,7 +50,10 @@ function ExportBody({ saved }: { saved: SavedMapView }) {
     setReady(false);
   };
   const preview = async () => {
-    if (policyReason) { setError(policyReason); return; }
+    if (policyReason) {
+      setError(policyReason);
+      return;
+    }
     const signal = request();
     setBusy(true);
     setError(null);
@@ -90,7 +93,10 @@ function ExportBody({ saved }: { saved: SavedMapView }) {
     }
   };
   const download = async () => {
-    if (policyReason) { setError(policyReason); return; }
+    if (policyReason) {
+      setError(policyReason);
+      return;
+    }
     if (!snapshot || !capture.current) return;
     const signal = request();
     setBusy(true);
@@ -126,7 +132,11 @@ function ExportBody({ saved }: { saved: SavedMapView }) {
   return (
     <section aria-label="Saved map image export" className="space-y-3 border-t border-line pt-3">
       <h3 className="font-medium">Export saved map image</h3>
-      {policyReason && <p role="status" className="text-sm text-muted">{policyReason}. The saved revision remains unchanged.</p>}
+      {policyReason && (
+        <p role="status" className="text-sm text-muted">
+          {policyReason}. The saved revision remains unchanged.
+        </p>
+      )}
       <p className="text-xs text-muted">
         Create an image and provenance ZIP from saved revision {saved.revision.number}. Opening the
         preview fetches current basemap tiles from its configured provider and discloses the viewed
@@ -135,7 +145,12 @@ function ExportBody({ saved }: { saved: SavedMapView }) {
         evidence.
       </p>
       {!snapshot && (
-        <Button variant="secondary" busy={busy} disabled={Boolean(policyReason)} onClick={() => void preview()}>
+        <Button
+          variant="secondary"
+          busy={busy}
+          disabled={Boolean(policyReason)}
+          onClick={() => void preview()}
+        >
           Open saved image preview
         </Button>
       )}

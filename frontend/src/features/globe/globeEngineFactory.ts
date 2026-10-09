@@ -6,6 +6,7 @@ import { mapSourceAllowed } from '@/lib/map/sourcePolicy';
 /** The engine's origin check keeps session tokens restricted to our own tile proxy. */
 export const createEngine = (options: EngineOptions = {}) =>
   createMapLibreEngine({
-    ...options, sourceAllowed: mapSourceAllowed,
+    ...options,
+    sourceAllowed: mapSourceAllowed,
     authHeader: () => useAuthStore.getState().accessToken,
   });

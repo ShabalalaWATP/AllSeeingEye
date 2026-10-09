@@ -7,7 +7,12 @@ import { useCapabilitiesStore } from '@/stores/capabilities';
 vi.mock('@/lib/api/cameras', () => ({ fetchCameras: vi.fn() }));
 
 beforeEach(() => {
-  useCapabilitiesStore.setState({ loaded: true, error: null, commercialUse: false, sourceLicences: {} });
+  useCapabilitiesStore.setState({
+    loaded: true,
+    error: null,
+    commercialUse: false,
+    sourceLicences: {},
+  });
 });
 
 it('loads descriptive policy statuses without requesting restricted provider catalogues', async () => {

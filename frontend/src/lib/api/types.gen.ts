@@ -6675,7 +6675,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "available" | "stale" | "unavailable" | "not_loaded";
+            status: "available" | "stale" | "unavailable" | "not_loaded" | "licence_blocked";
             /** Count */
             count: number;
             /** Fetched At */
@@ -6694,6 +6694,12 @@ export interface components {
             os_layers: string[];
             /** Ai Research */
             ai_research: boolean;
+            /** Commercial Use */
+            commercial_use: boolean;
+            /** Source Licences */
+            source_licences: {
+                [key: string]: components["schemas"]["SourceLicenceOut"];
+            };
         };
         /** CapabilityPrerequisite */
         CapabilityPrerequisite: {
@@ -7701,7 +7707,7 @@ export interface components {
          * ConnectionState
          * @enum {string}
          */
-        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment" | "blocked_upstream" | "available";
+        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment" | "disabled_by_licence" | "blocked_upstream" | "available";
         /**
          * ContentCapability
          * @enum {string}
@@ -16762,8 +16768,29 @@ export interface components {
          * @enum {string}
          */
         SourceKind: "api" | "rss" | "geojson" | "websocket";
+        /** SourceLicenceOut */
+        SourceLicenceOut: {
+            /**
+             * Commercial Use
+             * @enum {string}
+             */
+            commercial_use: "allowed" | "forbidden" | "licence_required";
+            /** Attribution Required */
+            attribution_required: boolean;
+            /** Licence Ref */
+            licence_ref: string;
+            /** Available */
+            available: boolean;
+            /** Acknowledged */
+            acknowledged: boolean;
+            /** Reason */
+            reason: string;
+        };
         /** SourceOut */
         SourceOut: {
+            licence?: components["schemas"]["SourceLicenceOut"] | null;
+            /** Collection Mode */
+            collection_mode?: ("scheduled" | "on_demand") | null;
             /**
              * Enabled
              * @default true

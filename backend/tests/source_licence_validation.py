@@ -99,7 +99,7 @@ REGISTER = record(
         "schema_version": {"const": 1},
         "assessed_on": DATE,
         "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "enforcement": {"const": "inventory_only"},
+        "enforcement": {"const": "commercial_mode_opt_in"},
         "sources": {**array(SOURCE), "minItems": 1},
         "supplementary_sources": array(
             record(

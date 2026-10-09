@@ -6,6 +6,7 @@ import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
 import { activateSource, testSource } from '@/lib/api/sourceControls';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { isOnDemandSource } from './sourceStatus';
 
 export function SourceActions({
   source,
@@ -23,6 +24,7 @@ export function SourceActions({
   const [notice, setNotice] = useState('');
   const begin = useAccountRequest();
   const enabled = source.enabled !== false;
+  const licenceBlocked = source.licence?.available === false;
   const action = useAsyncAction(async (operation: 'activation' | 'test' | 'reset') => {
     const signal = begin();
     setNotice('');
@@ -55,7 +57,9 @@ export function SourceActions({
         <Button
           ref={toggle}
           variant="secondary"
-          disabled={action.busy || source.environment_disabled === true}
+          disabled={
+            action.busy || (!enabled && (source.environment_disabled === true || licenceBlocked))
+          }
           onClick={() => {
             setConfirm(true);
             action.clearError();
@@ -64,11 +68,11 @@ export function SourceActions({
         >
           {enabled ? 'Disable' : 'Enable'}
         </Button>
-        {source.test_available !== false && (
+        {!isOnDemandSource(source) && (
           <>
             <Button
               variant="secondary"
-              disabled={action.busy}
+              disabled={action.busy || licenceBlocked || source.test_available === false}
               onClick={() => void action.run('test')}
               aria-label={`Test ${source.name}`}
             >
@@ -76,7 +80,7 @@ export function SourceActions({
             </Button>
             <Button
               variant="secondary"
-              disabled={action.busy}
+              disabled={action.busy || licenceBlocked || source.test_available === false}
               onClick={() => void action.run('reset')}
               aria-label={`Reset ${source.name}`}
             >
@@ -85,7 +89,7 @@ export function SourceActions({
           </>
         )}
       </div>
-      {source.test_available === false && (
+      {isOnDemandSource(source) && !licenceBlocked && (
         <p className="text-xs text-muted">
           On-demand source. Test through a scoped research query.
         </p>
@@ -93,6 +97,7 @@ export function SourceActions({
       {source.environment_disabled === true && (
         <p className="text-xs text-muted">Disabled in operator configuration.</p>
       )}
+      {licenceBlocked && <p className="text-xs text-amber">{source.licence?.reason}</p>}
       {confirm && (
         <div className="space-y-2 text-xs">
           <p>

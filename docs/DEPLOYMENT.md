@@ -32,6 +32,21 @@ Clone the repository and select the revision you intend to run. From its root, c
 
 Compose supplies the database URL from the `POSTGRES_*` settings. Keep provider credentials server-side. AI connections are configured and tested through the app; a running server alone does not enable AI research.
 
+Commercial source enforcement is opt-in with `ASE_COMMERCIAL_USE=true`; its
+default is `false`. Review [source licences](SOURCE_LICENCES.md) before enabling
+it. Set `ASE_SOURCE_LICENCE_ACKNOWLEDGEMENTS` only to exact catalogue IDs for which
+you have permission covering the installation and intended use. This is a
+comma-separated list, not a wildcard or a place for credentials or correspondence.
+Unverified and partly reviewed sources remain unavailable without that explicit
+acknowledgement. Forbidden sources, including EOX imagery, cannot be opened by
+acknowledgement, an API key or administrator activation.
+
+Restart after changing these settings. Startup validates packaged metadata and
+reports refused source IDs without logging credentials. Check Administration,
+Sources and the user Source catalogue for effective availability, then verify
+the permitted map styles and workflows. Enabling the technical control does not
+approve a commercial offer, buy a licence or authorise a production release.
+
 Preserve `ASE_ENCRYPTION_KEY` separately from the database backup. It is needed to decrypt saved provider credentials and authenticator secrets. Replacing it does not re-encrypt existing data.
 
 The API's `data/` bind mount must be writable by its non-root container user (UID/GID `10001`). For a new installation on Linux, create that directory with the appropriate ownership before starting. Keep the parser's network isolation, read-only filesystem and resource limits intact.

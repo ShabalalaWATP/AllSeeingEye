@@ -22,11 +22,15 @@ async def list_sources(
 ) -> SourcesOut:
     response.headers["Cache-Control"] = "no-store"
     items = await container.admin_source_controls(session).list(claims)
+    scheduled_ids = {connector.spec.id for connector in container.scheduler.connectors}
     return SourcesOut(
         items=[
             SourceOut.from_spec(item.spec, item.health).model_copy(
                 update={
                     "enabled": item.enabled,
+                    "collection_mode": (
+                        "scheduled" if item.spec.id in scheduled_ids else "on_demand"
+                    ),
                     "test_available": item.test_available,
                     "environment_disabled": item.environment_disabled,
                     "licence": SourceLicenceOut.model_validate(

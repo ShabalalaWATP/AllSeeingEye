@@ -4,7 +4,9 @@ KAN-194 records source rights and current code defaults at revision
 `13efceef48efbc6d5f2895e60c55076db5d40e3f`, inspected on 9 October 2026.
 This is a due-diligence register, not legal advice, a signed provider agreement,
 or approval to enable a source. Contentious interpretations require legal review.
-No runtime configuration or provider permission changed as part of this register.
+KAN-194 changed no runtime configuration or provider permission. KAN-195 adds
+the opt-in runtime controls and the `map:os_maps` catalogue entry described below;
+provider permission is still a separate requirement.
 
 ## Coverage and evidence limits
 
@@ -26,7 +28,8 @@ KAN-195 adds explicit `commercial_use`, `attribution_required` and `licence_ref`
 fields to each source row. The runtime validates source classifications against
 every primary and additional provider's `commercial_use_policy`. These are
 deployment decisions, separate from the researched rights statuses below.
-The default setting remains off. KAN-165 owns the public attribution presentation.
+The metadata enforcement marker is `commercial_mode_opt_in`; the default setting
+remains off. KAN-165 owns the public attribution presentation.
 Consumers must not interpret unknown or
 permission-required records as approved, or treat conditional records as proof
 that this deployment satisfies the conditions.
@@ -46,7 +49,8 @@ not a fabricated verification. Review the linked provider and exact product.
 ## Priority decisions for Alex
 
 1. Obtain permission or replace EOX 2024 for a commercial offering. `hybrid` is
-   the initial basemap and includes this imagery. The image-export declaration
+   the initial basemap outside commercial mode and includes this imagery. Commercial
+   mode blocks it in selection, saved-map previews and image exports. The image-export declaration
    does not grant browser display or downstream image rights.
 2. Resolve Cloudflare Radar and OONI non-commercial restrictions. Radar's token-only
    live/attack paths differ from its acknowledgement-gated research paths.

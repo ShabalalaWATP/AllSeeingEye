@@ -43,6 +43,7 @@ class _Source(BaseModel):
 
 class _Register(BaseModel):
     schema_version: Literal[1]
+    enforcement: Literal["commercial_mode_opt_in"]
     sources: list[_Source] = Field(min_length=1)
 
 

@@ -45,7 +45,11 @@ export function DailyImageryControls() {
         NASA true-colour daily composites for a chosen date, to check clouds, smoke plumes, floods
         and burn scars beside FIRMS detections. Off by default.
       </p>
-      {reason && <p role="status" className="map-tool-help">{reason}</p>}
+      {reason && (
+        <p role="status" className="map-tool-help">
+          {reason}
+        </p>
+      )}
       {state.enabled && !reason && (
         <>
           <label className="map-tool-field">

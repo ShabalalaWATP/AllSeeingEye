@@ -8,7 +8,10 @@ import { DAILY_IMAGERY_SOURCE_ID } from '@/lib/map/dailyImagery';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 
-beforeEach(() => { FakeMap.reset(); MapboxOverlay.reset(); });
+beforeEach(() => {
+  FakeMap.reset();
+  MapboxOverlay.reset();
+});
 
 it('never schedules denied default or restored raster and daily imagery requests', () => {
   const engine = createMapLibreEngine({ sourceAllowed: (id) => id === 'map:openfreemap' });

@@ -27,6 +27,11 @@ export const CONNECTION_META: Record<ConnectionState, ConnectionMeta> = {
   on_demand: { label: 'On demand', tone: 'cyan', group: 'on_demand' },
   disabled_by_admin: { label: 'Switched off by an administrator', tone: 'muted', group: 'off' },
   disabled_by_environment: { label: 'Off on this server', tone: 'muted', group: 'off' },
+  disabled_by_licence: {
+    label: 'Unavailable due to licence terms',
+    tone: 'amber',
+    group: 'blocked',
+  },
 };
 
 export const GROUPS: readonly ConnectionGroup[] = [
@@ -44,7 +49,7 @@ export const GROUP_LABELS: Record<ConnectionGroup, string> = {
   unconfirmed: 'Not yet confirmed',
   on_demand: 'On demand',
   setup: 'Needs key or setup',
-  blocked: 'Blocked upstream',
+  blocked: 'Unavailable or blocked',
   retrying: 'Retrying or failing',
   off: 'Off by operator choice',
 };
@@ -79,6 +84,7 @@ export function isActionable(state: ConnectionState, requirement: SourceRequirem
 }
 
 const ACTION_RANK: Partial<Record<ConnectionState, number>> = {
+  disabled_by_licence: 0,
   blocked_upstream: 0,
   failing: 1,
   key_missing: 2,

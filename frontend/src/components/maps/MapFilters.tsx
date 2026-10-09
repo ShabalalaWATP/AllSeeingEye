@@ -168,19 +168,35 @@ export function MapFilters({
               </label>
             ))}
           </fieldset>
-          <label className="block text-sm">Evidence basemap
-          <select aria-label="Evidence basemap"
-            value={state.basemap}
-            className="mt-1 block w-full rounded border border-line bg-surface p-2"
-            onChange={(event) => {
-              const basemap = event.target.value as MapState['basemap'];
-              if (!basemapUnavailable(policy, basemap)) onChange({ ...state, basemap });
-            }}>
-            {BASE_LAYER_OPTIONS.map((option) => <option key={option.id} value={option.id} disabled={Boolean(basemapUnavailable(policy, option.id))}>
-              {option.label} ({option.coverage}){basemapUnavailable(policy, option.id) ? ' · Unavailable' : ''}
-            </option>)}
-          </select></label>
-          {basemapUnavailable(policy, state.basemap) && <p role="status" className="text-xs text-muted">{basemapUnavailable(policy, state.basemap)}. Choose another style to create a new revision.</p>}
+          <label className="block text-sm">
+            Evidence basemap
+            <select
+              aria-label="Evidence basemap"
+              value={state.basemap}
+              className="mt-1 block w-full rounded border border-line bg-surface p-2"
+              onChange={(event) => {
+                const basemap = event.target.value as MapState['basemap'];
+                if (!basemapUnavailable(policy, basemap)) onChange({ ...state, basemap });
+              }}
+            >
+              {BASE_LAYER_OPTIONS.map((option) => (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  disabled={Boolean(basemapUnavailable(policy, option.id))}
+                >
+                  {option.label} ({option.coverage})
+                  {basemapUnavailable(policy, option.id) ? ' · Unavailable' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          {basemapUnavailable(policy, state.basemap) && (
+            <p role="status" className="text-xs text-muted">
+              {basemapUnavailable(policy, state.basemap)}. Choose another style to create a new
+              revision.
+            </p>
+          )}
         </div>
       </details>
     </div>

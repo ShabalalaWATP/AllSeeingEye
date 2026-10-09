@@ -194,7 +194,13 @@ export default function EvidenceMapCanvas({
   useEffect(() => {
     if (focusRequest) focusSelection();
   }, [focusRequest, policyReason]);
-  if (policyReason) return <p role="status" className="p-4 text-sm text-muted">{policyReason}. The saved map revision is unchanged; its evidence remains available in the list.</p>;
+  if (policyReason)
+    return (
+      <p role="status" className="p-4 text-sm text-muted">
+        {policyReason}. The saved map revision is unchanged; its evidence remains available in the
+        list.
+      </p>
+    );
   if (!supported)
     return (
       <p role="status" className="p-4 text-sm text-muted">

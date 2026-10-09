@@ -26,6 +26,7 @@ export function summarise(sources: readonly Source[]): string {
       [summary.idle, 'waiting'],
       [summary.switchedOff, 'switched off'],
       [summary.blockedByOperator, 'blocked by operator'],
+      [summary.blockedByLicence, 'unavailable due to licence terms'],
       [summary.onDemand, 'on-demand'],
     ] as const
   )

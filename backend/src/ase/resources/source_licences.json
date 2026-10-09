@@ -2,7 +2,7 @@
   "schema_version": 1,
   "assessed_on": "2026-10-09",
   "source_revision": "13efceef48efbc6d5f2895e60c55076db5d40e3f",
-  "enforcement": "inventory_only",
+  "enforcement": "commercial_mode_opt_in",
   "sources": [
     {
       "id": "acled_events",

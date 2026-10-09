@@ -6,7 +6,12 @@ import { MapToolIntro } from '@/components/maps/MapToolIntro';
 
 import { BASE_LAYER_OPTIONS } from './engine/baseLayers';
 import './referenceTools.css';
-import { basemapSources, basemapUnavailable, sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
+import {
+  basemapSources,
+  basemapUnavailable,
+  sourceUnavailable,
+  useMapSourcePolicy,
+} from '@/lib/map/sourcePolicy';
 
 export interface BaseLayerToolbarProps {
   value: BaseLayer;
@@ -104,7 +109,10 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
           <fieldset aria-describedby={hintId} className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">Base layer</legend>
             {BASE_LAYER_OPTIONS.map((option) => {
-              const policyReason = basemapSources(option.id).map((id) => sourceUnavailable(policy, id)).find(Boolean) ?? null;
+              const policyReason =
+                basemapSources(option.id)
+                  .map((id) => sourceUnavailable(policy, id))
+                  .find(Boolean) ?? null;
               const unavailable = Boolean(policyReason) || (option.needsOs && !osAvailable);
               return (
                 <Fragment key={option.id}>
@@ -113,13 +121,15 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                       <div className="flex items-start justify-between gap-2">
                         <p className="map-tool-section-title">Ordnance Survey · Great Britain</p>
                         <span className="map-reference-badge">
-                          {policyReason && policy.loaded ? 'Unavailable' : osChecking
-                            ? 'Checking'
-                            : osError
-                              ? 'Check failed'
-                              : osAvailable
-                                ? 'Configured'
-                                : 'Connection required'}
+                          {policyReason && policy.loaded
+                            ? 'Unavailable'
+                            : osChecking
+                              ? 'Checking'
+                              : osError
+                                ? 'Check failed'
+                                : osAvailable
+                                  ? 'Configured'
+                                  : 'Connection required'}
                         </span>
                       </div>
                       <p
@@ -127,13 +137,15 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
                         role={osError ? 'alert' : 'status'}
                         className="map-tool-help"
                       >
-                        {policyReason && policy.loaded ? policyReason : osChecking
-                          ? 'Checking the server’s Ordnance Survey configuration…'
-                          : osError
-                            ? 'Configuration check failed. Try again to check whether OS maps are available.'
-                            : osAvailable
-                              ? 'The server has an OS key configured. This check does not test tile delivery. Coverage is Great Britain at zoom 7–16.'
-                              : 'OS maps are unavailable. An administrator must configure an OS Data Hub Maps API key before these styles can be selected.'}
+                        {policyReason && policy.loaded
+                          ? policyReason
+                          : osChecking
+                            ? 'Checking the server’s Ordnance Survey configuration…'
+                            : osError
+                              ? 'Configuration check failed. Try again to check whether OS maps are available.'
+                              : osAvailable
+                                ? 'The server has an OS key configured. This check does not test tile delivery. Coverage is Great Britain at zoom 7–16.'
+                                : 'OS maps are unavailable. An administrator must configure an OS Data Hub Maps API key before these styles can be selected.'}
                       </p>
                       {!osAvailable && !osChecking && !osError && !policyReason && (
                         <details className="map-tool-disclosure">
@@ -217,7 +229,11 @@ export const BaseLayerToolbar = memo(function BaseLayerToolbar({
       <div id={hintId} className="map-tool-section map-reference-footnote">
         <p className="map-tool-section-title">{selected.coverage}</p>
         <p className="map-tool-help">{selected.description}</p>
-        {basemapUnavailable(policy, value) && <p role="status" className="map-tool-help">{basemapUnavailable(policy, value)}</p>}
+        {basemapUnavailable(policy, value) && (
+          <p role="status" className="map-tool-help">
+            {basemapUnavailable(policy, value)}
+          </p>
+        )}
         {imagery && (
           <p className="map-tool-help">
             Non-commercial use only.{' '}
