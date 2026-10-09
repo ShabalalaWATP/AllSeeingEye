@@ -16259,6 +16259,10 @@ export interface components {
             last_report_id: string | null;
             /** Last Version Id */
             last_version_id: string | null;
+            /** Last Version Number */
+            last_version_number?: number | null;
+            /** Previous Version Number */
+            previous_version_number?: number | null;
             last_outcome: components["schemas"]["ReportStatus"] | null;
             last_coverage: components["schemas"]["CoverageState"] | null;
             /** Last Error */
@@ -17298,6 +17302,8 @@ export interface components {
             report_id: string | null;
             /** Version Id */
             version_id: string | null;
+            /** Version Number */
+            version_number?: number | null;
             /** Covered By Edition Id */
             covered_by_edition_id: string | null;
             /** Accepted As Baseline */

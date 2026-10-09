@@ -175,6 +175,8 @@ class ScheduleOut(BaseModel):
     last_run_at: datetime | None
     last_report_id: UUID | None
     last_version_id: UUID | None
+    last_version_number: int | None = None
+    previous_version_number: int | None = None
     last_outcome: ReportStatus | None
     last_coverage: CoverageState | None
     last_error: str | None
@@ -191,7 +193,13 @@ class ScheduleOut(BaseModel):
     research_source_ids: list[str] | None
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> ScheduleOut:
+    def from_schedule(
+        cls,
+        schedule: Schedule,
+        *,
+        last_version_number: int | None = None,
+        previous_version_number: int | None = None,
+    ) -> ScheduleOut:
         return cls(
             id=schedule.id,
             name=schedule.name,
@@ -238,6 +246,8 @@ class ScheduleOut(BaseModel):
             last_run_at=schedule.last_run_at,
             last_report_id=schedule.last_report_id,
             last_version_id=schedule.last_version_id,
+            last_version_number=last_version_number,
+            previous_version_number=previous_version_number,
             last_outcome=schedule.last_outcome,
             last_coverage=schedule.last_coverage,
             last_error=schedule.last_error,

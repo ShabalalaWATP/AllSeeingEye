@@ -75,14 +75,17 @@ export function ScheduleRow({
               No material change identified in the latest comparison.
             </p>
           )}
-          {item.last_change?.previous_report_id && (
-            <Link
-              className="mt-1 block text-xs font-normal underline"
-              to={`/reports/${item.last_change.previous_report_id}`}
-            >
-              Previous update
-            </Link>
-          )}
+          {item.last_change?.previous_report_id &&
+            (item.previous_version_number ? (
+              <Link
+                className="mt-1 block text-xs font-normal underline"
+                to={`/reports/${item.last_change.previous_report_id}?version=${item.previous_version_number}`}
+              >
+                Previous update
+              </Link>
+            ) : (
+              <p className="mt-1 text-xs text-muted">Previous edition unavailable</p>
+            ))}
           {item.question && (
             <details className="mt-2 text-xs font-normal">
               <summary className="cursor-pointer">Saved question</summary>
@@ -137,15 +140,22 @@ export function ScheduleRow({
           )}
           {item.last_error !== null && <p className="mb-2 text-critical">{item.last_error}</p>}
           {item.last_report_id !== null ? (
-            <Link to={`/reports/${item.last_report_id}`} className="hover:underline">
-              {item.last_outcome === 'failed' || item.last_error !== null
-                ? 'Last successful update'
-                : item.last_outcome === 'needs_review'
-                  ? 'Review latest update'
-                  : item.last_coverage === 'partial'
-                    ? 'Review partial update'
-                    : 'Latest update'}
-            </Link>
+            item.last_version_number ? (
+              <Link
+                to={`/reports/${item.last_report_id}?version=${item.last_version_number}`}
+                className="hover:underline"
+              >
+                {item.last_outcome === 'failed' || item.last_error !== null
+                  ? 'Last successful update'
+                  : item.last_outcome === 'needs_review'
+                    ? 'Review latest update'
+                    : item.last_coverage === 'partial'
+                      ? 'Review partial update'
+                      : 'Latest update'}
+              </Link>
+            ) : (
+              <span className="text-muted">Latest edition unavailable</span>
+            )
           ) : item.last_error === null ? (
             <span className="text-muted">not yet</span>
           ) : null}

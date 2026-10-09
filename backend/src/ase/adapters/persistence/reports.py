@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import case, delete, select, update
+from sqlalchemy import case, delete, exists, select, tuple_, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.annotation_outbox import delete_report_monitors
@@ -202,6 +203,28 @@ class SqlReportRepository:
             )
         ).first()
         return _version_from_row(row) if row else None
+
+    async def version_numbers(
+        self, visibility: Visibility, references: Collection[tuple[UUID, UUID]]
+    ) -> dict[tuple[UUID, UUID], int]:
+        if not references:
+            return {}
+        duplicate = aliased(ReportVersionRow)
+        rows = await self._session.execute(
+            select(ReportVersionRow.report_id, ReportVersionRow.id, ReportVersionRow.number)
+            .join(ReportRow, ReportRow.id == ReportVersionRow.report_id)
+            .where(
+                tuple_(ReportVersionRow.report_id, ReportVersionRow.id).in_(set(references)),
+                visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility),
+                # Legacy duplicate numbers cannot identify one frozen version in a URL.
+                ~exists().where(
+                    duplicate.report_id == ReportVersionRow.report_id,
+                    duplicate.number == ReportVersionRow.number,
+                    duplicate.id != ReportVersionRow.id,
+                ),
+            )
+        )
+        return {(report_id, version_id): number for report_id, version_id, number in rows}
 
     async def set_archives(
         self, version_id: UUID, archives: Mapping[str, str], markdown: str

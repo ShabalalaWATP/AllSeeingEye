@@ -53105,6 +53105,28 @@
             ],
             "title": "Last Version Id"
           },
+          "last_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Version Number"
+          },
+          "previous_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Number"
+          },
           "last_outcome": {
             "anyOf": [
               {
@@ -56202,6 +56224,17 @@
               }
             ],
             "title": "Version Id"
+          },
+          "version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Number"
           },
           "covered_by_edition_id": {
             "anyOf": [

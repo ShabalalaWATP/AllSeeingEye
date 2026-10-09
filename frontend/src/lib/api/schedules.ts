@@ -70,6 +70,8 @@ export const scheduleSchema = z.object({
   last_run_at: z.string().nullable(),
   last_report_id: z.string().nullable(),
   last_version_id: z.string().nullable().default(null),
+  last_version_number: z.number().int().positive().nullable().default(null),
+  previous_version_number: z.number().int().positive().nullable().default(null),
   last_outcome: z.enum(['ready', 'needs_review', 'failed']).nullable().default(null),
   last_coverage: z
     .enum(['complete', 'partial', 'not_applicable', 'unknown'])
