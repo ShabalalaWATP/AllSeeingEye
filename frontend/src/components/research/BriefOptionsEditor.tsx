@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { BriefDraft } from '@/lib/api/researchBriefSchema';
+import { nextIndicatorId } from '@/lib/researchBriefDraft';
 
 import { BriefListField } from './BriefListField';
 
@@ -166,7 +167,7 @@ export function BriefOptionsEditor({
               setMonitoring({
                 indicators: [
                   ...monitoring.indicators,
-                  { id: `indicator-${monitoring.indicators.length + 1}`, condition: '' },
+                  { id: nextIndicatorId(monitoring.indicators), condition: '' },
                 ],
               })
             }
