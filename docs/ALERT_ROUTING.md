@@ -13,6 +13,14 @@ existing durable report queue. It uses the rule owner's current personal or team
 permissions and the usual report allowance and capacity controls. Full capacity
 defers admission for five minutes; requests still waiting after 24 hours expire.
 The report interval stays anchored to the alert's firing time while it waits.
+Its exact minute window, country set, category, keyword, severity and rectangle
+predicates are retained with the rule revision. The rectangle takes precedence
+over countries, as in alert matching. Reports use the alert's at most 20 cited
+events frozen at firing, including original text and source provenance. The full
+match count stays separate from this bounded sample; larger populations receive
+an explicit evidence-sample finding. Changes or eviction in the live store cannot
+replace the frozen evidence. Automatic reports support at most eight valid ISO
+country codes; exact-shape rules continue to support alerts only.
 
 The alert shows pending, queued, running, paused, failed or completed progress,
 including a link to the report job when one exists. The warning list refreshes
@@ -27,8 +35,18 @@ terminal and cannot cause a fresh automatic submission.
 Migration 0090 adds nullable intent and job-link fields to alerts. Historical alerts
 do not enqueue reports after upgrade. Apply the migration before starting the new
 application workers. Preserve the additive schema on application rollback; downgrade
-refuses to remove retained alert report history. Existing report scope and template
-selection rules retain their existing filters and rounded-hour duration.
+refuses to remove retained alert report history. Migration 0091 adds the bounded
+evidence snapshot. Old pending requests without a snapshot become failed with
+`evidence_unavailable`; old queued jobs without their exact origin cannot execute
+or resume. There is no attempt to reconstruct a historical firing from current
+live events. Both migrations preserve existing alerts and completed reports.
+
+Alert reports can resume through their durable job while its rule remains current.
+Manual regeneration is explicitly rejected because it would recollect evidence.
+Create a standalone report for a fresh assessment. Before rolling application code
+back to a version without frozen alert snapshots, stop admission and drain or cancel
+pending alert work. Retaining the schema alone cannot make an older worker honour
+these exact scope constraints.
 
 Personal rule owners and administrators can manage personal routes. Team routes
 require a current manager of the active team or an administrator. Merely reading

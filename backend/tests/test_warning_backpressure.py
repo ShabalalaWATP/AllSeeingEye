@@ -38,7 +38,7 @@ class RecordingWarnings:
         self.considered.append(indicator_id)
         return None
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
+    async def add_alert(self, alert: Alert, indicator: Indicator, *, report_snapshot=None) -> bool:
         assert alert.indicator_id == indicator.id
         self.alerts.append(alert)
         return True

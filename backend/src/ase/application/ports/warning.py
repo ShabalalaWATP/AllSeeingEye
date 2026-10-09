@@ -8,6 +8,7 @@ from uuid import UUID
 
 from ase.domain.access import Visibility
 from ase.domain.alert_feedback import AlertDisposition
+from ase.domain.alert_reports import AlertReportSnapshot
 from ase.domain.indicator_baseline import IndicatorBaseline
 from ase.domain.warning import Alert, Indicator
 
@@ -45,7 +46,13 @@ class WarningStore(Protocol):
         """Event ids cited by the indicator's alerts fired at or after `since`."""
         ...
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool: ...
+    async def add_alert(
+        self,
+        alert: Alert,
+        indicator: Indicator,
+        *,
+        report_snapshot: AlertReportSnapshot | None = None,
+    ) -> bool: ...
     async def attach_report(self, alert_id: UUID, report_id: UUID) -> bool: ...
     async def prune(self, before: datetime) -> int: ...
 
