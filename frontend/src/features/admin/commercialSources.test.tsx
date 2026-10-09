@@ -88,9 +88,12 @@ it('shows an honest installation reason to ordinary users', async () => {
       }),
     ),
   );
-  renderApp('/sources');
+  renderApp('/sources', 'user');
+  const attention = within(await screen.findByRole('region', { name: 'Needs attention' }));
   expect(
-    await screen.findByText('Not available on this installation due to licence terms'),
+    attention.getByText('Not available on this installation due to licence terms'),
   ).toBeVisible();
+  expect(screen.getByRole('button', { name: /^Licence unavailable\s*1$/ })).toBeVisible();
+  expect(screen.getByRole('button', { name: /^Blocked upstream\s*0$/ })).toBeVisible();
   expect(screen.queryByText(licence.reason)).not.toBeInTheDocument();
 });

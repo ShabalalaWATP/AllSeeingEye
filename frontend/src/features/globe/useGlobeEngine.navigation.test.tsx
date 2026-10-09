@@ -40,14 +40,16 @@ function Harness({
   command,
   mode = 'globe',
   enabled = true,
+  deferred = false,
 }: {
   factory: MapEngineFactory;
   command: Command;
   mode?: ViewMode;
   enabled?: boolean;
+  deferred?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
-  const engine = useGlobeEngine(container, { enabled, mode, createEngine: factory });
+  const engine = useGlobeEngine(container, { enabled, deferred, mode, createEngine: factory });
   return (
     <>
       <div ref={container} />
@@ -61,6 +63,37 @@ const lastCamera = { ...firstCamera, center: [30, 40] as [number, number] };
 const focus = { center: [50, 60] as [number, number], zoom: 4 };
 
 describe('engine-owned navigation handoff', () => {
+  it.each(['focus', 'camera'] as const)(
+    'retains the latest %s while admission is pending',
+    (kind) => {
+      const instance = fakeEngine();
+      const factory = () => instance;
+      const command: Command = (engine) => {
+        engine.restoreCamera?.(firstCamera, 'globe');
+        if (kind === 'focus') engine.flyTo(focus);
+        else engine.restoreCamera?.(lastCamera, 'globe');
+      };
+      const view = render(<Harness factory={factory} command={command} enabled={false} deferred />);
+      expect(instance.mount).not.toHaveBeenCalled();
+      expect(instance.flyTo).not.toHaveBeenCalled();
+      expect(instance.restoreCamera).not.toHaveBeenCalled();
+      view.rerender(<Harness factory={factory} command={command} />);
+      expect(instance.mount).toHaveBeenCalledOnce();
+      if (kind === 'focus') expect(instance.flyTo).toHaveBeenCalledExactlyOnceWith(focus);
+      else expect(instance.restoreCamera).toHaveBeenCalledExactlyOnceWith(lastCamera);
+    },
+  );
+
+  it('discards deferred navigation after admission is refused', () => {
+    const instance = fakeEngine();
+    const factory = () => instance;
+    const command: Command = (engine) => engine.restoreCamera?.(firstCamera, 'globe');
+    const view = render(<Harness factory={factory} command={command} enabled={false} deferred />);
+    view.rerender(<Harness factory={factory} command={command} enabled={false} />);
+    view.rerender(<Harness factory={factory} command={command} />);
+    expect(instance.restoreCamera).not.toHaveBeenCalled();
+  });
+
   it.each(['camera-camera', 'focus-camera', 'camera-focus', 'focus-focus'] as const)(
     'applies only the latest pre-mount intent for %s',
     (order) => {

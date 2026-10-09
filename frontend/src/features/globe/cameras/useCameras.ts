@@ -10,7 +10,7 @@ import {
   matchesCameraSearch,
   type CameraMediaKind,
 } from './cameraMediaFilters';
-import { mapSourceAllowed, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
+import { mapSourceAllowed, sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 interface CachedCatalogue {
   revision: number;
@@ -189,23 +189,12 @@ export function useCameras() {
       ? (catalogue?.cameras ?? []).filter(
           (camera) =>
             providers[camera.provider] &&
-            mapSourceAllowed(`camera:${camera.provider}`) &&
+            sourceUnavailable(policy, `camera:${camera.provider}`) === null &&
             matchesCameraSearch(camera, term, providerNames.get(camera.provider) ?? '') &&
             matchesCameraMedia(camera, mediaKind),
         )
       : [];
-  }, [
-    catalogue,
-    enabled,
-    providers,
-    term,
-    mediaKind,
-    providerNames,
-    policy.sourceLicences,
-    policy.commercialUse,
-    policy.loaded,
-    policy.error,
-  ]);
+  }, [catalogue, enabled, providers, term, mediaKind, providerNames, policy]);
   const selected = useMemo(
     () =>
       selectedId === null ? null : (visible.find((camera) => camera.id === selectedId) ?? null),

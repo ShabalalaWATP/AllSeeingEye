@@ -2,7 +2,7 @@ import type { ConnectionState, SourceRequirement } from '@/lib/api/sourceContext
 
 export type ConnectionTone = 'good' | 'amber' | 'critical' | 'cyan' | 'muted';
 export type ConnectionGroup =
-  'live' | 'unconfirmed' | 'retrying' | 'setup' | 'blocked' | 'on_demand' | 'off';
+  'live' | 'unconfirmed' | 'retrying' | 'setup' | 'blocked' | 'licence' | 'on_demand' | 'off';
 
 export interface ConnectionMeta {
   label: string;
@@ -30,7 +30,7 @@ export const CONNECTION_META: Record<ConnectionState, ConnectionMeta> = {
   disabled_by_licence: {
     label: 'Unavailable due to licence terms',
     tone: 'amber',
-    group: 'blocked',
+    group: 'licence',
   },
 };
 
@@ -40,6 +40,7 @@ export const GROUPS: readonly ConnectionGroup[] = [
   'on_demand',
   'setup',
   'blocked',
+  'licence',
   'retrying',
   'off',
 ];
@@ -49,7 +50,8 @@ export const GROUP_LABELS: Record<ConnectionGroup, string> = {
   unconfirmed: 'Not yet confirmed',
   on_demand: 'On demand',
   setup: 'Needs key or setup',
-  blocked: 'Unavailable or blocked',
+  blocked: 'Blocked upstream',
+  licence: 'Licence unavailable',
   retrying: 'Retrying or failing',
   off: 'Off by operator choice',
 };
@@ -60,6 +62,7 @@ export const GROUP_TONE: Record<ConnectionGroup, string> = {
   on_demand: 'text-cyan',
   setup: 'text-critical',
   blocked: 'text-critical',
+  licence: 'text-amber',
   retrying: 'text-amber',
   off: 'text-muted',
 };
@@ -80,7 +83,7 @@ export function connectionGroup(state: ConnectionState): ConnectionGroup {
 export function isActionable(state: ConnectionState, requirement: SourceRequirement | null) {
   const group = connectionGroup(state);
   if (group === 'setup') return !requirement?.optional;
-  return state === 'failing' || group === 'blocked';
+  return state === 'failing' || group === 'blocked' || group === 'licence';
 }
 
 const ACTION_RANK: Partial<Record<ConnectionState, number>> = {

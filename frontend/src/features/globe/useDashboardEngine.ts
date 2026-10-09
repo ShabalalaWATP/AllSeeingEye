@@ -27,6 +27,7 @@ export function useDashboardEngine(options: {
   const engine = useGlobeEngine(containerRef, {
     ...options,
     enabled: supported && sourceUnavailable(policy, 'map:openfreemap') === null,
+    deferred: supported && !policy.loaded,
     createEngine,
     dailyImagery,
     onImageryError,

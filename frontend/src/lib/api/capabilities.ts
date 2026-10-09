@@ -5,8 +5,9 @@ import type { components } from './types.gen';
 import { sourceLicenceSchema } from './sourceLicences';
 
 type ServerCapabilities = components['schemas']['CapabilitiesOut'];
-export type Capabilities = Omit<ServerCapabilities, 'ai_research'> &
-  Partial<Pick<ServerCapabilities, 'ai_research'>>;
+export type Capabilities = Omit<ServerCapabilities, 'ai_research'> & {
+  ai_research?: ServerCapabilities['ai_research'] | undefined;
+};
 export type SourceLicenceDecision = Capabilities['source_licences'][string];
 
 export const capabilitiesSchema: z.ZodType<Capabilities> = z.object({

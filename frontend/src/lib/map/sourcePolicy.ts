@@ -37,8 +37,9 @@ export function mapSourceAllowed(id: string): boolean {
 
 export function useMapSourcePolicy() {
   const policy = useCapabilitiesStore();
+  const load = policy.load;
   useEffect(() => {
-    void policy.load();
-  }, [policy.load]);
+    void load();
+  }, [load]);
   return policy;
 }
