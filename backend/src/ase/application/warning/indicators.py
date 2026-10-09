@@ -21,6 +21,7 @@ from ase.domain.audit import AuditAction
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import ResearchArea, validate_direct_area
+from ase.domain.research_scope import normalise_countries
 from ase.domain.users import User
 from ase.domain.warning import (
     MAX_COOLDOWN_MINUTES,
@@ -70,6 +71,14 @@ def _validate_area(data: IndicatorInput) -> None:
             )
 
 
+def _validate_report_countries(data: IndicatorInput) -> None:
+    if data.report_template is not None:
+        try:
+            normalise_countries(None, tuple(c.strip().upper() for c in data.countries if c.strip()))
+        except ValueError as exc:
+            raise InvalidRequest(str(exc), fields={"countries": str(exc)}) from exc
+
+
 def build_indicator(
     data: IndicatorInput,
     *,
@@ -84,6 +93,7 @@ def build_indicator(
     if not name:
         raise InvalidRequest("An alert rule needs a name.", fields={"name": "Enter a name."})
     _validate_area(data)
+    _validate_report_countries(data)
     if not 7 <= data.baseline_days <= 30:
         raise InvalidRequest("The baseline window must be between 7 and 30 days.")
     if data.baseline_ratio is not None and (

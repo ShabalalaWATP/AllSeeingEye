@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, Request, Response, status
+from fastapi.responses import JSONResponse
 
 from ase.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
-from ase.api.deps import ContainerDep, ContextDep, SessionDep, require_csrf
+from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, SessionDep, require_csrf
 from ase.api.mfa_schemas import MfaPendingOut
 from ase.api.schemas import (
     ForgotPasswordIn,
@@ -15,10 +18,12 @@ from ase.api.schemas import (
     LoginIn,
     MessageOut,
     RequestAccountIn,
+    SessionActivityOut,
     SetPasswordIn,
     TokenResponse,
 )
 from ase.domain.mfa import PendingMfa
+from ase.domain.session_activity import SessionActivity
 from ase.domain.tokens import TokenPurpose
 from ase.domain.users import normalise_email
 
@@ -64,25 +69,58 @@ async def refresh(
     # This invokes the refresh use case, not a SQL cursor; its repository binds values.
     # nosemgrep: python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute  # noqa: E501
     secret = request.cookies.get(REFRESH_COOKIE)
-    auth = await container.refresh(session).execute(secret, context)
+    auth = await container.refresh(session).execute(
+        secret, context, activity_signal=request.headers.get("x-ase-activity") == "1"
+    )
     set_session_cookies(response, auth, container.settings)
     return TokenResponse.from_session(auth)
 
 
+@router.post("/activity", dependencies=[Depends(require_csrf)])
+async def activity(
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+    response: Response,
+) -> SessionActivityOut:
+    state = await container.session_activity(session).execute(claims, context)
+    response.headers["Cache-Control"] = "no-store"
+    return SessionActivityOut.from_activity(state)
+
+
 @router.post(
-    "/logout", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_csrf)]
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+    responses={200: {"model": SessionActivityOut}},
 )
 async def logout(
     request: Request,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
+    x_ase_session_family: Annotated[UUID | None, Header()] = None,
+    x_ase_idle_expired: Annotated[str | None, Header()] = None,
 ) -> Response:
     # This invokes the logout use case, not a SQL cursor; its repository binds values.
     # nosemgrep: python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute  # noqa: E501
-    await container.logout(session).execute(request.cookies.get(REFRESH_COOKIE), context)
+    owned = await container.logout(session).execute(
+        request.cookies.get(REFRESH_COOKIE),
+        context,
+        expected_family=x_ase_session_family,
+        idle_only=x_ase_idle_expired == "1",
+    )
+    if isinstance(owned, SessionActivity):
+        return JSONResponse(
+            SessionActivityOut.from_activity(owned).model_dump(mode="json"),
+            headers={"Cache-Control": "no-store"},
+        )
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
-    clear_session_cookies(response, container.settings)
+    # Conditional expiry must not clear cookies set by a later login while this
+    # response was in flight. The revoked old cookie is rejected on its next use.
+    if owned and x_ase_idle_expired != "1":
+        clear_session_cookies(response, container.settings)
     return response
 
 

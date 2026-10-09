@@ -18,6 +18,7 @@ from ase.application.account.directory_profile import DirectoryProfileUseCase
 from ase.application.account.profile import ProfileUseCase
 from ase.application.account.session_management import AccountSessionManagement
 from ase.application.auth.account_requests import ForgotPasswordUseCase, RequestAccountUseCase
+from ase.application.auth.activity import SessionActivityUseCase
 from ase.application.auth.change_password import ChangePasswordUseCase
 from ase.application.auth.login import LoginUseCase
 from ase.application.auth.mfa import MfaUseCase
@@ -29,6 +30,7 @@ from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
 from ase.application.auth.totp import TotpUseCase
 from ase.container.core import ContainerCore
+from ase.domain.session_activity import SessionIdlePolicy
 
 if TYPE_CHECKING:
     from ase.container.repositories import Repositories
@@ -93,9 +95,17 @@ class AuthWiring(ContainerCore):
             self._auditor(r), r.uow,
         )  # fmt: skip
 
+    def session_activity(self, session: AsyncSession) -> SessionActivityUseCase:
+        r = self.repositories(session)
+        return SessionActivityUseCase(
+            r.users, r.refresh_tokens, self.clock, self._auditor(r), r.uow
+        )
+
     def logout(self, session: AsyncSession) -> LogoutUseCase:
         r = self.repositories(session)
-        return LogoutUseCase(r.refresh_tokens, self.generator, self.clock, self._auditor(r), r.uow)
+        return LogoutUseCase(
+            r.users, r.refresh_tokens, self.generator, self.clock, self._auditor(r), r.uow
+        )
 
     def request_account(self, session: AsyncSession) -> RequestAccountUseCase:
         r = self.repositories(session)
@@ -165,7 +175,12 @@ class AuthWiring(ContainerCore):
         return AccountSessionManagement(
             r.users,
             r.refresh_tokens,
-            SqlAccountSessionRepository(session),
+            SqlAccountSessionRepository(
+                session,
+                SessionIdlePolicy(
+                    self.settings.session_idle_minutes, self.settings.admin_session_idle_minutes
+                ),
+            ),
             self.clock,
             self._auditor(r),
             r.uow,

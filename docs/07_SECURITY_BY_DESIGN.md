@@ -25,6 +25,23 @@ second-factor proofs across challenges and methods, and of directory username ch
 a taken username is reported as unavailable whoever holds it. These limits
 are held in memory and reset when the API restarts.
 
+Refresh families keep a server-owned `last_activity_at`. Their idle limit is
+180 minutes by default, with a separate optional administrator override, both
+bounded to 5–1440 minutes. Only explicit activity extends it, at most once per
+minute per family. Automatic refresh, polling, streams and scheduled work are
+passive. Expiry is checked before accepting activity, including refresh carrying
+`x-ase-activity: 1`. A CSRF-protected heartbeat is bound to the original bearer
+family, so changed shared cookies cannot extend another account's session.
+
+Shared access checks remain read-only to preserve caller-owned transactions.
+Expired refresh, heartbeat or logout transactions durably revoke the family,
+remove its push registrations and record `session.idle_expired` once. Passive
+fences reject expired sessions without committing unrelated writes. Cached checks
+are bounded by the observed idle deadline; streams recheck within the configured
+session interval and send `access.changed` before ending for idle expiry.
+[Idle session operation](SESSION_IDLE_TIMEOUT.md) covers the warning, migration
+and limits of this policy.
+
 Access tokens are short-lived and held in browser memory. Refresh sessions use
 an HttpOnly cookie, server-side records and rotation. Protected requests check
 the current account and session state. Routes that release private material after
@@ -135,7 +152,7 @@ replace patching, authentication, access controls or a reviewed configuration.
 The sign-in, account request and password pages, and the optional product page at
 `/enterprise`, work without a session. `GET /api/site` tells them, without
 authentication, whether `ASE_PUBLIC_PRODUCT_PAGE_ENABLED` is on (off by default).
-It returns that single boolean, uncached, and reads no database or session; any new
+It returns public feature booleans, uncached, and reads no database or session; any new
 field there is public and needs a security review. If the request fails, the page
 stays hidden.
 
@@ -145,3 +162,19 @@ content: no live events, no account data, no third-party scripts, frames or font
 and no change to the content security policy. Public copy must not name sources whose
 terms forbid commercial or promotional use, or whose reuse terms are unclear; a unit
 test checks the page content against a list of such sources.
+
+## Deployment enquiries
+
+The optional public enquiry endpoint is disabled by default. Enabling it requires
+the approved privacy notice, an operator recipient and configured SMTP. It accepts
+bounded structured input, rejects unknown fields and single-line header breaks,
+and applies client, email and global limits. Honeypots and duplicate submissions
+receive the same receipt as accepted enquiries. It cannot send mail to a visitor
+or select an arbitrary recipient or subject.
+
+Private enquiry storage contains no client IP. Audit records identify only the
+enquiry, without its name, email or message. Responses are uncached and release no
+stored records, so the public route has no session release fence. Limits use the
+existing process-local limiter and reset on restart. See the
+[enquiry API contract](api/ENTERPRISE_ENQUIRIES.md) for limits, migration order and
+the administrator, retention and privacy dependencies before enablement.

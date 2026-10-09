@@ -11,6 +11,7 @@ from ase.application.report_jobs.budget import ReportCallBudget
 from ase.application.report_jobs.fresh_web_allocation import WEB_PLAN_KEY
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.save_production import SaveProduction
+from ase.container.alert_reports import publish_alert_report
 from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_gateways import bind_report_job_gateways
 from ase.container.report_original_followthrough import make_original_followthrough
@@ -133,6 +134,7 @@ async def execute_job(
                     research_required=job.request.research_mode is not None,
                 )
                 await link_original_followup(session, container, stored, result.version)
+                await publish_alert_report(session, stored)
 
             record = ReportRecord(
                 id=stored.report_id,

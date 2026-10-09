@@ -54,6 +54,22 @@ export const alertSchema = z.object({
   baseline_mean: z.number().nullable().optional(),
   baseline_ratio: z.number().nullable().optional(),
   report_id: z.string().nullable(),
+  report_job_id: z.string().nullable().optional(),
+  report_status: z
+    .enum([
+      'pending',
+      'queued',
+      'running',
+      'paused',
+      'failed',
+      'completed',
+      'needs_review',
+      'cancelled',
+      'discarded',
+    ])
+    .nullable()
+    .optional(),
+  report_error: z.string().nullable().optional(),
   created_by: z.string().nullable().default(null),
   owner_name: z.string().nullable().default(null),
 });

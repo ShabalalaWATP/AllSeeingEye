@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
-from uuid import UUID
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,9 +25,7 @@ from ase.application.direction.plans import (
     PlanEvidenceUseCase,
     UpdatePlanUseCase,
 )
-from ase.application.dto import RequestContext
 from ase.application.model_routing import ModelRouting
-from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES
 from ase.application.schedules.manage import (
     CreateScheduleUseCase,
@@ -62,7 +59,6 @@ from ase.container.reporting import ReportWiring
 from ase.container.subscription_enqueue import SubscriptionAdmission
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
-from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
     from ase.container import Container
@@ -257,31 +253,9 @@ class FeatureWiring(ReportWiring):
             self.bus,
             self.notifier,
             self.clock,
-            reporter=self.alert_report,
             baselines=SqlIndicatorBaselines(self.session_factory, self.access_policy),
+            source_profiles=self.source_profiles,
         )
-
-    async def alert_report(self, indicator: Indicator, alert: Alert) -> UUID | None:
-        """The report an indicator asked for, produced as its owner; None when that cannot be."""
-        if indicator.report_template is None:
-            return None
-        async with self.session_factory() as session:
-            owner = await self.repositories(session).users.get_by_id(indicator.created_by)
-            if owner is None or not owner.is_active:
-                log.warning("alert_report_skipped", reason="owner unavailable")
-                return None
-            request = ReportRequest(
-                template_id=indicator.report_template,
-                country_iso=indicator.countries[0] if len(indicator.countries) == 1 else None,
-                window_hours=max(1, -(-indicator.window_minutes // 60)),
-                plan_id=indicator.plan_id,
-                team_id=indicator.team_id,
-                automation=True,
-            )
-            record, _version = await self.generate_report(session).execute(
-                owner, request, RequestContext()
-            )
-            return record.id
 
     def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:
         r = self.repositories(session)

@@ -48,6 +48,22 @@ def test_a_remembered_check_is_reused_until_the_window_closes() -> None:
     assert cache.recent(token) is None  # The expired entry was dropped.
 
 
+def test_idle_deadline_bounds_cache_reuse_before_the_normal_window() -> None:
+    clock = FakeClock(START)
+    cache, _ = freshness(clock)
+    token, user = claims(), SimpleNamespace(name="user")
+    deadline = START + timedelta(seconds=1)
+    cache.remember(token, user, clock.now(), deadline)
+    assert cache.idle_deadline(token) == deadline
+    clock.advance(timedelta(seconds=1))
+    assert cache.recent(token) is None
+    # The next authoritative check may see another tab's accepted heartbeat.
+    extended = clock.now() + timedelta(minutes=5)
+    cache.remember(token, user, clock.now(), extended)
+    assert cache.recent(token) is user
+    assert cache.idle_deadline(token) == extended
+
+
 def test_a_change_signalled_after_the_check_began_ends_reuse() -> None:
     clock = FakeClock(START)
     cache, signals = freshness(clock)

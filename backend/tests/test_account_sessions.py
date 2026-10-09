@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from ase.adapters.persistence.account_sessions import SqlAccountSessionRepository
 from ase.container import Container
 from ase.domain.errors import Unauthenticated
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.domain.tokens import RefreshToken
 from ase.domain.users import User
 from helpers import (
@@ -119,6 +120,7 @@ async def test_bounded_listing_prioritises_current_and_excludes_revocations_and_
         repos = container.repositories(session)
         for index in range(104):
             family = current if index == 0 else uuid4()
+            await repos.refresh_tokens.start_family(user.id, family, now)
             await repos.refresh_tokens.add(
                 RefreshToken(
                     id=uuid4(),
@@ -136,7 +138,7 @@ async def test_bounded_listing_prioritises_current_and_excludes_revocations_and_
                 )
             )
         await repos.uow.commit()
-        repository = SqlAccountSessionRepository(session)
+        repository = SqlAccountSessionRepository(session, SessionIdlePolicy())
         page = await repository.list_active(user.id, current, now)
         assert len(page.items) == 100
         assert page.truncated is True

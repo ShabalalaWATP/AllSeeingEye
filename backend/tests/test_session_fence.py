@@ -40,7 +40,12 @@ def fence_with(
         session_factory=lambda: context,
         clock=clock,
         repositories=lambda session: SimpleNamespace(
-            users=("users", session), refresh_tokens=("tokens", session)
+            users=("users", session),
+            refresh_tokens=SimpleNamespace(
+                activity=AsyncMock(
+                    return_value=SimpleNamespace(idle_expires_at=START + timedelta(hours=3))
+                )
+            ),
         ),
         session_signals=signals,
         session_freshness=SessionFreshness(clock, signals, timedelta(seconds=15)),

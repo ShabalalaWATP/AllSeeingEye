@@ -16,6 +16,7 @@ from notification_migration_helpers import (
     NOW,
     MigrationDatabase,
     assert_preserved,
+    current_head,
     insert_row,
     revision,
     seed_legacy,
@@ -55,7 +56,7 @@ def rekey_database(request, tmp_path):
 @owned_migration_test
 def test_rekey_graph_keeps_released_history_and_has_one_head():
     scripts = ScriptDirectory.from_config(alembic_config("sqlite+aiosqlite://"))
-    assert scripts.get_heads() == ["0089"]
+    assert len(scripts.get_heads()) == 1
     assert scripts.get_revision("0075").down_revision == "0066"
     for number in range(76, 90):
         assert scripts.get_revision(f"{number:04d}").down_revision == f"{number - 1:04d}"
@@ -175,7 +176,7 @@ def assert_released_schema(connection, before):
 @owned_migration_test
 async def test_fresh_rekey_upgrade_is_complete_unenrolled_and_repeatable(rekey_database):
     await rekey_database.migrate("head")
-    assert await rekey_database.run(revision) == "0089"
+    assert await rekey_database.run(revision) == current_head()
     await rekey_database.run(assert_unenrolled)
     await rekey_database.run(assert_model_parity)
     state = await rekey_database.run(retained_state)
@@ -203,7 +204,7 @@ async def test_populated_main0081_upgrade_preserves_released_features(rekey_data
     original = await rekey_database.run(seed_released_features)
     old_schema = await rekey_database.run(stable_schema)
     await rekey_database.migrate("head")
-    assert await rekey_database.run(revision) == "0089"
+    assert await rekey_database.run(revision) == current_head()
     await rekey_database.run(assert_released_schema, old_schema)
     await rekey_database.run(assert_backfills, original)
     await rekey_database.run(assert_unenrolled)
@@ -238,7 +239,7 @@ async def test_main0081_corrupt_checkpoint_upgrade_is_repairable(rekey_database)
     await rekey_database.run(assert_preserved, before[1])
     await rekey_database.run(corrupt_checkpoint, original["job"], valid_hash)
     await rekey_database.migrate("head")
-    assert await rekey_database.run(revision) == "0089"
+    assert await rekey_database.run(revision) == current_head()
     await rekey_database.run(assert_backfills, original)
     await rekey_database.run(assert_unenrolled)
 

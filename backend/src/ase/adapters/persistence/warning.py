@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence import alert_feedback
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
+from ase.adapters.persistence.alert_reports import report_outcomes
 from ase.adapters.persistence.models import (
     ActivitySampleRow,
     AlertRow,
@@ -27,8 +28,10 @@ from ase.adapters.persistence.warning_mapping import (
     _indicator_from_row,
 )
 from ase.application.access import AccessContext, AccessPolicy
+from ase.application.warning.report_snapshot import snapshot_to_dict
 from ase.domain.access import Visibility
 from ase.domain.alert_feedback import AlertDisposition
+from ase.domain.alert_reports import AlertReportSnapshot
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.indicator_baseline import matching_semantics
 from ase.domain.warning import Alert, Indicator
@@ -113,7 +116,11 @@ class SqlAlertRepository:
 
     async def get(self, alert_id: UUID) -> Alert | None:
         row = await self._session.get(AlertRow, alert_id, populate_existing=True)
-        return None if row is None else _alert_from_row(row)
+        return (
+            None
+            if row is None
+            else (await report_outcomes(self._session, [_alert_from_row(row)]))[0]
+        )
 
     async def list_recent(self, since: datetime, limit: int, visibility: Visibility) -> list[Alert]:
         rows = await self._session.scalars(
@@ -125,7 +132,7 @@ class SqlAlertRepository:
             .order_by(AlertRow.fired_at.desc())
             .limit(limit)
         )
-        return [_alert_from_row(row) for row in rows]
+        return await report_outcomes(self._session, [_alert_from_row(row) for row in rows])
 
     async def save(self, alert: Alert) -> None:
         row = await self._session.get(AlertRow, alert.id)
@@ -218,7 +225,13 @@ class SqlWarningStore:
             )
             return frozenset(str(item) for ids in cited for item in ids or ())
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
+    async def add_alert(
+        self,
+        alert: Alert,
+        indicator: Indicator,
+        *,
+        report_snapshot: AlertReportSnapshot | None = None,
+    ) -> bool:
         if (
             alert.report_id is not None
             or alert.indicator_id is None
@@ -241,7 +254,18 @@ class SqlWarningStore:
             )
             if latest is not None and alert.fired_at - latest.fired_at < indicator.cooldown:
                 return False
-            session.add(_alert_row(alert))
+            stored = _alert_row(alert)
+            if indicator.report_template is not None:
+                stored.report_status = "pending" if report_snapshot is not None else "failed"
+                stored.report_error = (
+                    None if report_snapshot is not None else "evidence_unavailable"
+                )
+                stored.report_rule_revision = indicator.updated_at
+                stored.report_next_attempt_at = alert.fired_at
+                stored.report_snapshot = (
+                    snapshot_to_dict(report_snapshot) if report_snapshot else None
+                )
+            session.add(stored)
             await session.flush()
             await enqueue_alert_notifications(
                 session, alert, installation_copy=self._installation_copy

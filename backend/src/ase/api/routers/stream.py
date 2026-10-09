@@ -28,7 +28,7 @@ from ase.application.dto import AccessClaims
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
 from ase.domain.bell import BELL_CHANGED
-from ase.domain.errors import NotFound, RateLimited, Unauthenticated
+from ase.domain.errors import NotFound, RateLimited, SessionIdleExpired, Unauthenticated
 from ase.domain.events import Category
 from ase.domain.warning import Alert
 
@@ -49,6 +49,8 @@ async def _stream_access(claims: AccessClaims, container: Container) -> AccessCo
                 claims, repos.users, repos.refresh_tokens, container.clock
             )
             return await container.access_policy(session).context(actor)
+        except SessionIdleExpired:
+            raise
         except Unauthenticated:
             return None
 

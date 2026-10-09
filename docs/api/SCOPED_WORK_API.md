@@ -182,6 +182,12 @@ time per process. Each account may run one query at a time, with at most four
 concurrent queries per process. Busy/rate-limited operations return 429. Search rechecks visibility after its outbound call;
 indexing rechecks authority/version before saving. No raw live event is indexed.
 
+All three routes confirm the originally presented session before releasing their
+response. Indexing also confirms it before saving vectors and committing them.
+Logout, session revocation or token expiry during model work returns 401 without
+new index entries; usage for model work already performed remains recorded. A
+normal refresh in the same session family preserves an unexpired request's access.
+
 ## Streams, private terms and upgrade
 
 `GET /api/stream` carries shared public events/source health and scoped alerts.

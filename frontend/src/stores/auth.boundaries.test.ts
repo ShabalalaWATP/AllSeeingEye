@@ -11,7 +11,7 @@ import { useAuthStore } from './auth';
 
 it('refreshes through the bound auth store and retries with the rotated bearer token', async () => {
   const original = tokenFor(plainUser);
-  const refreshed = { ...original, access_token: 'synthetic-refreshed-token' };
+  const refreshed = tokenFor(plainUser, { revision: 'refreshed' });
   const authorisation: (string | null)[] = [];
   const csrf: (string | null)[] = [];
   server.use(
@@ -47,7 +47,7 @@ it('refreshes through the bound auth store and retries with the rotated bearer t
 
 it('clears the actual store when the server also rejects a successfully refreshed session', async () => {
   const original = tokenFor(plainUser);
-  const refreshed = { ...original, access_token: 'synthetic-rejected-token' };
+  const refreshed = tokenFor(plainUser, { revision: 'rejected' });
   const authorisation: (string | null)[] = [];
   let refreshes = 0;
   server.use(

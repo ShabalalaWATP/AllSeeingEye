@@ -9,6 +9,7 @@ from ase.api.routers import (
     account_sessions,
     admin_ai_usage,
     admin_audit,
+    admin_enquiries,
     admin_evaluations,
     admin_firms_credentials,
     admin_llm,
@@ -39,6 +40,7 @@ from ase.api.routers import (
     directory,
     economy,
     economy_news,
+    enquiries,
     events,
     figures,
     footprints,
@@ -108,6 +110,7 @@ api_router = APIRouter()
 # Public liveness and readiness.
 api_router.include_router(health.router)
 api_router.include_router(site.router)
+api_router.include_router(enquiries.router)
 
 # Auth, accounts, teams and schedules share paths or reverse names; keep their order.
 api_router.include_router(auth.router)
@@ -149,6 +152,7 @@ api_router.include_router(source_track_record.router)
 # Administration and research usage share the admin path family.
 api_router.include_router(research_usage.router)
 api_router.include_router(admin_requests.router)
+api_router.include_router(admin_enquiries.router)
 api_router.include_router(admin_runtime.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)

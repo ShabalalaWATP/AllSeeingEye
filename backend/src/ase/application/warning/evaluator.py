@@ -2,8 +2,8 @@
 
 An alert is stored, published on the bus (the stream carries it to open pages), handed to the
 notifier (a webhook when one is configured) and, when the indicator names a report template,
-turned into a report through the reporter the container supplies. Failures in any route are
-logged and never stop the others.
+given a durable report admission intent in the alert transaction. A separate worker admits
+reports, so model latency and failures never delay the next rule or evaluation cycle.
 """
 
 from __future__ import annotations
@@ -11,17 +11,19 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.warning import AlertNotifier, IndicatorBaselineStore, WarningStore
+from ase.application.warning.report_snapshot import capture_report
 from ase.application.worker_progress import run_cycle
 from ase.domain.errors import RateLimited
+from ase.domain.grading import SourceProfile
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
 log = logging.getLogger(__name__)
@@ -29,7 +31,6 @@ log = logging.getLogger(__name__)
 INTERVAL = timedelta(seconds=60)
 MAX_ADMISSION_RETRIES = 2
 ADMISSION_RETRY_SECONDS = 1.0
-Reporter = Callable[[Indicator, Alert], Awaitable[UUID | None]]
 SleepFn = Callable[[float], Awaitable[None]]
 
 
@@ -71,8 +72,8 @@ class IndicatorEvaluator:
         notifier: AlertNotifier,
         clock: Clock,
         *,
-        reporter: Reporter | None = None,
         baselines: IndicatorBaselineStore | None = None,
+        source_profiles: Mapping[str, SourceProfile] | None = None,
         interval: timedelta = INTERVAL,
         sleep: SleepFn = asyncio.sleep,
     ) -> None:
@@ -81,8 +82,8 @@ class IndicatorEvaluator:
         self._bus = bus
         self._notifier = notifier
         self._clock = clock
-        self._reporter = reporter
         self._baselines = baselines
+        self._source_profiles = source_profiles or {}
         self._interval = interval
         self._sleep = sleep
         self._task: asyncio.Task[None] | None = None
@@ -122,7 +123,15 @@ class IndicatorEvaluator:
                 alert = replace(
                     alert, baseline_mean=baseline.mean, baseline_ratio=firing.count / baseline.mean
                 )
-            if not await self._warnings.add_alert(alert, indicator):
+            snapshot = None
+            if indicator.report_template is not None:
+                try:
+                    snapshot = capture_report(indicator, alert, firing, self._source_profiles)
+                except ValueError:
+                    alert = replace(
+                        alert, report_status="failed", report_error="evidence_unavailable"
+                    )
+            if not await self._warnings.add_alert(alert, indicator, report_snapshot=snapshot):
                 continue
             log.info("alert_fired", extra={"indicator": indicator.name, "count": alert.count})
             await self._route(alert, indicator)
@@ -190,17 +199,6 @@ class IndicatorEvaluator:
             await self._notifier.notify(alert, indicator)
         except Exception:
             log.exception("alert_notify_failed", extra={"indicator": indicator.name})
-        if self._reporter is None or indicator.report_template is None:
-            return
-        try:
-            if not await self._warnings.can_run(indicator):
-                return
-            report_id = await self._reporter(indicator, alert)
-        except Exception:
-            log.exception("alert_report_failed", extra={"indicator": indicator.name})
-            return
-        if report_id is not None:
-            await self._warnings.attach_report(alert.id, report_id)
 
     async def start(self) -> None:
         if self._task is None:

@@ -40,12 +40,14 @@ class ScheduleRunner:
         interval: timedelta = INTERVAL,
         acquisition_interval: timedelta = INTERVAL,
         sleep: SleepFn = asyncio.sleep,
+        worker_name: str = "schedule_runner",
     ) -> None:
         self._enqueue_tick = enqueue_tick
         self._acquisition_tick = acquisition_tick
         self._interval = interval
         self._acquisition_interval = acquisition_interval
         self._sleep = sleep
+        self._worker_name = worker_name
         self._task: asyncio.Task[None] | None = None
         self._acquisition_task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
@@ -59,7 +61,7 @@ class ScheduleRunner:
     async def start(self) -> None:
         if self._task is None:
             self._stopping.clear()
-            self._task = asyncio.create_task(self._run(), name="subscription-enqueue")
+            self._task = asyncio.create_task(self._run(), name=self._worker_name)
             if self._acquisition_tick is not None:
                 self._acquisition_task = asyncio.create_task(
                     self._run_acquisition(), name="subscription-selected-index"
@@ -81,9 +83,9 @@ class ScheduleRunner:
     async def _run(self) -> None:
         while not self._stopping.is_set():
             try:
-                await run_cycle("schedule_runner", self._interval.total_seconds(), self.run_once)
+                await run_cycle(self._worker_name, self._interval.total_seconds(), self.run_once)
             except Exception:
-                log.warning("subscription_enqueue_cycle_failed")
+                log.warning("admission_cycle_failed", extra={"worker": self._worker_name})
             await self._sleep(self._interval.total_seconds())
 
     async def _run_acquisition(self) -> None:

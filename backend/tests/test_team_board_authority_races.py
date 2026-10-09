@@ -10,6 +10,7 @@ from ase.application.auditing import Auditor
 from ase.application.teams.service import TeamService
 from ase.container.repositories import build_repositories
 from ase.domain.errors import NotFound
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.domain.teams import MembershipRole, TeamMembership
 from ase.domain.users import Role
 from helpers import FakeClock
@@ -21,7 +22,7 @@ async def test_membership_removal_waits_for_authorised_board_commit(tmp_path, mo
     engine, factory, member, team_id, (post_id,) = await _seed(tmp_path, 1)
     admin = _user(Role.ADMIN)
     async with factory() as session:
-        repos = build_repositories(session)
+        repos = build_repositories(session, SessionIdlePolicy())
         await repos.users.add(admin)
         await SqlTeamRepository(session).put_membership(
             TeamMembership(team_id, admin.id, MembershipRole.MANAGER, NOW)
@@ -54,7 +55,7 @@ async def test_membership_removal_waits_for_authorised_board_commit(tmp_path, mo
 
     async def revoke():
         async with factory() as session:
-            repos = build_repositories(session)
+            repos = build_repositories(session, SessionIdlePolicy())
             clock = FakeClock(NOW)
             teams = TeamService(
                 SqlTeamRepository(session),
