@@ -3,6 +3,7 @@ import type { Country } from '@/lib/api/geoSchemas';
 import type { LlmProfile } from '@/lib/api/llm';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
 import { accessTokenFor } from './accessTokens';
+import type { SessionActivity } from '@/lib/sessionActivity';
 
 export const CSRF_VALUE = 'csrf-test-value';
 export const ADMIN_PASSWORD = 'correct-horse-battery-staple';
@@ -37,6 +38,15 @@ export const plainUser: User = {
 export const ADMIN_TOKEN = accessTokenFor(adminUser.id);
 export const USER_TOKEN = accessTokenFor(plainUser.id);
 
+export function sessionActivity(now = Date.now(), idleMinutes = 180): SessionActivity {
+  return {
+    server_now: new Date(now).toISOString(),
+    last_activity_at: new Date(now).toISOString(),
+    idle_expires_at: new Date(now + idleMinutes * 60_000).toISOString(),
+    idle_minutes: idleMinutes,
+  };
+}
+
 export function tokenFor(
   user: User,
   options: { familyId?: string; revision?: string } = {},
@@ -46,6 +56,7 @@ export function tokenFor(
     token_type: 'bearer',
     expires_in: 900,
     user,
+    activity: sessionActivity(),
   };
 }
 

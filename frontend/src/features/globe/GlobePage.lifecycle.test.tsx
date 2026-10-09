@@ -2,6 +2,8 @@ import { act, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventsStore } from '@/stores/events';
+import { useAuthStore } from '@/stores/auth';
+import { installDialogStub } from '@/test/dialogStub';
 import { useGlobeStore } from '@/stores/globe';
 import { mockWebGl2, resetVisibility, setVisibility } from '@/test/env';
 import { MapboxOverlay } from '@/test/fakeDeck';
@@ -15,6 +17,7 @@ import './GlobePage';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
+installDialogStub();
 
 function layerIds(): string[] {
   const layers = MapboxOverlay.instances.at(-1)?.props.layers as { id: string }[] | undefined;
@@ -39,6 +42,20 @@ describe('globe page composition lifecycle', () => {
   });
   afterEach(() => {
     resetVisibility();
+  });
+
+  it('closes the stream and private workspace immediately when the idle session expires', async () => {
+    const { router } = await mount();
+    const stream = FakeEventStreamClient.instances[0]!;
+    const map = FakeMap.instances[0]!;
+    act(() => {
+      void useAuthStore.getState().expireIdleSession();
+    });
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
+    expect(stream.stop).toHaveBeenCalledOnce();
+    expect(map.remove).toHaveBeenCalledOnce();
+    expect(useAuthStore.getState().accessToken).toBeNull();
+    await useAuthStore.getState().pendingLogout;
   });
 
   it('keeps one engine, overlay and stream through panel, selection and preference changes', async () => {

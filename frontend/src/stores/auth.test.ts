@@ -9,6 +9,7 @@ import {
   USER_TOKEN,
   adminUser,
   plainUser,
+  sessionActivity,
 } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { server } from '@/test/server';
@@ -27,6 +28,7 @@ describe('auth store', () => {
           token_type: 'bearer',
           expires_in: 900,
           user: adminUser,
+          activity: sessionActivity(),
         });
       }),
     );
@@ -75,6 +77,7 @@ describe('auth store', () => {
           token_type: 'bearer',
           expires_in: 900,
           user: adminUser,
+          activity: sessionActivity(),
         });
       }),
     );
@@ -135,6 +138,7 @@ describe('auth store', () => {
       token_type: 'bearer',
       expires_in: 900,
       user: adminUser,
+      activity: sessionActivity(),
     });
     expect(selectIsAdmin(useAuthStore.getState())).toBe(true);
   });

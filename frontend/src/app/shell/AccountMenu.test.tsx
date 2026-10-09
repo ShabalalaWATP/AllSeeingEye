@@ -104,7 +104,7 @@ describe('narrow account menu', () => {
     expect(useAuthStore.getState().status).toBe('authenticated');
   });
 
-  it('shows sign-out progress and signs out only when Logout is activated', async () => {
+  it('clears protected content immediately and waits for the requested server sign-out', async () => {
     let finish: () => void = () => undefined;
     server.use(
       http.post('/api/auth/logout', async () => {
@@ -121,18 +121,17 @@ describe('narrow account menu', () => {
     expect(signOuts).toBe(0);
     const menu = within(menuOf(trigger));
     await user.click(menu.getByRole('button', { name: 'Logout' }));
-    await waitFor(() => {
-      expect(menu.getByRole('status')).toHaveTextContent('Signing out…');
-    });
-    expect(menu.getByRole('button', { name: 'Logout' })).toHaveAttribute('aria-busy', 'true');
-    expect(signOuts).toBe(1);
-    act(() => {
-      finish();
-    });
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/login');
-    });
+    await waitFor(() => expect(signOuts).toBe(1));
     expect(useAuthStore.getState().status).toBe('anonymous');
+    expect(useAuthStore.getState().pendingLogout).not.toBeNull();
+    expect(trigger).not.toBeInTheDocument();
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
+    await act(async () => {
+      finish();
+      await useAuthStore.getState().pendingLogout;
+    });
+    expect(useAuthStore.getState().pendingLogout).toBeNull();
+    expect(signOuts).toBe(1);
   });
 
   it('still ends the local session when the server cannot record the sign-out', async () => {
