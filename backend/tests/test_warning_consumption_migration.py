@@ -21,8 +21,12 @@ def test_consumption_migration_preserves_alerts_and_marks_only_matching_scope(tm
         metadata = sa.MetaData()
         metadata.reflect(engine)
         with engine.begin() as connection:
-            owner = _insert(connection, metadata.tables["users"], role="user")
-            other = _insert(connection, metadata.tables["users"], role="user")
+            owner = _insert(
+                connection, metadata.tables["users"], role="user", email="owner@example.com"
+            )
+            other = _insert(
+                connection, metadata.tables["users"], role="user", email="other@example.com"
+            )
             rule = _insert(
                 connection, metadata.tables["indicators"], created_by=owner, team_id=None
             )

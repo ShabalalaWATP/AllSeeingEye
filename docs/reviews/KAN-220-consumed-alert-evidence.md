@@ -70,9 +70,18 @@ now explicitly removes its state, and the follow-up passes.
   global capacity, and a reopened on-disk database retained consumption after a
   committed transaction whose acknowledgement was lost.
 
+The coordinator's exact predecessor head `b4466812` was merged after the reviewed
+implementation commit. Alembic reports one head, `0094`. All 15 selected integration
+checks now pass: five migration checks covering 0090 through 0094, plus ten
+consumption/scope/recovery checks. The new migration test initially failed before
+0094 because its two test users shared an email; the fixture was corrected and
+that check passed. It verifies the real upgrade chain, legacy scope filtering,
+alert preservation, refusal to discard retained state and the empty-state
+downgrade. Strict mypy also passed the combined 1,612-source-file tree.
+
 The focused suite used isolated synthetic fixtures with shared database variables
 cleared. PostgreSQL and the full repository coverage suite were not run here.
-Migration-chain verification follows integration of the coordinator's committed
-0092/0093 predecessors. Full repository CI and release approval remain with the
-coordinator. There are no frontend, package or generated API changes and no live
-provider calls.
+Full repository CI and release approval remain with the coordinator. KAN-220 adds
+no frontend, package or generated API changes and makes no live provider calls.
+The predecessor merge contains the coordinator's existing changes in those areas;
+their final API reconciliation remains coordinator-owned.
