@@ -6100,3 +6100,24 @@ process each hour. Upload reservations are capped at one per uploader with a sha
 cap of four. Source track records filter reviews and verdicts to the relevant reports
 and versions in SQL before their row limits. Orphaned citation verdicts were already
 removed on report deletion by KAN-199, with SQLite tests.
+
+### KAN-216 codebase review implementation, 10 October 2026
+
+The review included Claude's latest merged KAN-215 session and was reconciled
+against current Jira work before implementation. Isolated ticket branches now
+cover request/session security, alert publication and evidence, Brief editing,
+idle expiry, public enquiries/privacy, source licensing, external embed consent,
+CI reliability and maintainability. A separate integration branch preserves the
+primary checkout's uncommitted contributor changes. The
+[implementation ledger](reviews/KAN-216-implementation-ledger.md) records every
+ticket and its precise acceptance state.
+
+Independent review found and corrected transaction rollback, stale-tab expiry,
+pagination focus, nullable subscription configuration and contact navigation
+defects. Native PostgreSQL exposed two invalid edition-link test fixtures; the
+repaired fixtures pass on both database engines without weakening foreign keys.
+Commercial-policy review identified additional private-input and conflict-data
+consumers whose repairs remain subject to independent re-review. The first
+combined backend group passed all 82 tests; complete CI and browser acceptance
+are still in progress. Production, licence and privacy decisions are not inferred
+from implementation approval.
