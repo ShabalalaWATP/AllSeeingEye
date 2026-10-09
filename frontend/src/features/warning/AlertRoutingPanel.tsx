@@ -123,7 +123,8 @@ function RoutingFields({
         )}
         <p className="text-xs text-muted">
           The webhook receives the rule name, alert title and summary, countries and event IDs. Only
-          destinations in this rule's workspace can be selected.
+          destinations in this rule's workspace can be selected. Webhook retries can deliver an
+          alert more than once. The receiver must handle duplicates.
         </p>
         <Button
           onClick={() =>
@@ -207,10 +208,7 @@ function RoutingFields({
         </details>
       </fieldset>
       {saved && <p role="status">Notification routing saved.</p>}
-      <p className="text-xs text-muted">
-        Unavailable destinations do not stop alerts. Ambiguous external sends are not automatically
-        repeated.
-      </p>
+      <p className="text-xs text-muted">Unavailable destinations do not stop alerts.</p>
     </section>
   );
 }
