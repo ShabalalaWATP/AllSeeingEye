@@ -16,6 +16,7 @@ export interface AdminDestination {
   readonly label: string;
   readonly description: string;
   readonly icon: AdminIconName;
+  readonly enquiriesOnly?: boolean;
 }
 
 export interface AdminSection {
@@ -39,6 +40,13 @@ export const adminSections: readonly AdminSection[] = [
         label: 'Account requests',
         description: 'Review applications, approve account access and assign an initial role.',
         icon: 'requests',
+      },
+      {
+        to: '/admin/enquiries',
+        label: 'Enquiries',
+        description: 'Review deployment enquiries, record contact and handle erasure requests.',
+        icon: 'requests',
+        enquiriesOnly: true,
       },
       {
         to: '/admin/users',

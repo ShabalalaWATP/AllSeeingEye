@@ -5,6 +5,7 @@ import { AdminIcon } from '@/components/admin/AdminIcon';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { adminOverview, adminSections, type AdminDestination } from '@/lib/adminNavigation';
 import { useShellStore } from '@/stores/shell';
+import { useSiteFacts } from '@/lib/useSiteFacts';
 
 /** Administrator-only destinations. Research controls never appear in this rail. */
 export function AdminNavigation({
@@ -18,6 +19,8 @@ export function AdminNavigation({
   const toggleRail = useShellStore((state) => state.toggleRail);
   const collapsed = railCollapsed && !mobile;
   const railId = useId();
+  const site = useSiteFacts();
+  const enquiriesEnabled = site.status === 'ready' && site.facts.enterprise_enquiries_enabled;
   return (
     <aside
       id={railId}
@@ -60,9 +63,16 @@ export function AdminNavigation({
                 {section.title}
               </p>
             )}
-            {section.items.map((item) => (
-              <AdminLink key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
-            ))}
+            {section.items
+              .filter((item) => !item.enquiriesOnly || enquiriesEnabled)
+              .map((item) => (
+                <AdminLink
+                  key={item.to}
+                  item={item}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                />
+              ))}
           </div>
         ))}
       </nav>
