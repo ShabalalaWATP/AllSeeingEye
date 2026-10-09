@@ -269,7 +269,11 @@ export function BriefEditor({
           Save brief
         </Button>
         {step === 'run' && (
-          <Button onClick={() => void run()} disabled={!saved || dirty || !!runReason || busy}>
+          <Button
+            onClick={() => void run()}
+            disabled={!saved || dirty || !!runReason || busy}
+            aria-describedby={runReason ? 'brief-run-unavailable' : undefined}
+          >
             {execution.error ? 'Retry research run' : 'Run once'}
           </Button>
         )}
@@ -292,7 +296,7 @@ export function BriefEditor({
         </p>
       )}
       {runReason && (
-        <p className="text-xs text-muted">
+        <p id="brief-run-unavailable" className="text-xs text-muted">
           Run unavailable: {runReason}{' '}
           <Link to="/research" className="underline">
             Open Research

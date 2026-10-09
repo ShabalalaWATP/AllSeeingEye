@@ -120,6 +120,7 @@ export function TextAreaField({
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 export interface SelectFieldProps
@@ -148,7 +149,7 @@ export function SelectField({
         {...rest}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}

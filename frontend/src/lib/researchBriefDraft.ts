@@ -138,7 +138,7 @@ export function draftFromBrief(brief: ResearchBrief): BriefDraft {
 
 export function briefCanSubscribe(draft: BriefDraft): string | null {
   if (draft.private_inputs.some((input) => input.kind === 'session'))
-    return 'Session files need renewed authority. Remove them or use a durable report input.';
+    return 'Session files need renewed authority for each run, so they cannot be used for subscriptions. This editor cannot replace private references.';
   if (draft.observation.policy === 'explicit')
     return 'Choose a rolling or template-default period for future updates.';
   return null;
@@ -150,7 +150,7 @@ export function briefCanRun(draft: BriefDraft, now: Date = new Date()): string |
       (input) => input.expires_at !== null && Date.parse(input.expires_at) <= now.getTime(),
     )
   )
-    return 'A private input has expired. Renew the input before starting research.';
+    return 'A private input has expired. This editor cannot renew attachments. Open Research to upload the file again for separate research; this brief keeps its existing references.';
   return null;
 }
 

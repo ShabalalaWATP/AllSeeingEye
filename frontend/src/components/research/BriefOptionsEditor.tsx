@@ -181,7 +181,7 @@ export function BriefOptionsEditor({
         draft.private_inputs.length > 0) && (
         <p className="text-sm text-muted">
           Saved translations, planned tasks, hypotheses and private references remain pinned to this
-          revision. Review or renew private access before admission.
+          revision. This editor cannot attach, replace or renew private inputs.
         </p>
       )}
     </div>
