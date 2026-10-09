@@ -1,10 +1,11 @@
-/** Auth endpoints from docs/api/AUTH_API.md. None of these attach a bearer token. */
+/** Auth endpoints, with explicit bearer ownership for activity and verification. */
 import { z } from 'zod';
 
 import { csrfHeaders } from '@/lib/csrf';
+import { sessionActivitySchema, type SessionActivity } from '@/lib/sessionActivity';
 
 import { pendingMfaSchema, type PendingMfa } from './mfa';
-import { apiCall, apiSend } from './client';
+import { apiCall, apiOptional, apiSend } from './client';
 import { messageResponseSchema, tokenResponseSchema, userSchema } from './schemas';
 import type { TokenResponse, User } from './schemas';
 import type { components } from './types.gen';
@@ -33,8 +34,42 @@ export function refreshSession(): Promise<TokenResponse> {
   });
 }
 
-export function logout(): Promise<void> {
-  return apiSend('/api/auth/logout', { method: 'POST', headers: csrfHeaders(), auth: false });
+export function logout(familyId?: string): Promise<void> {
+  return apiSend('/api/auth/logout', {
+    method: 'POST',
+    headers: {
+      ...csrfHeaders(),
+      ...(familyId === undefined ? {} : { 'X-ASE-Session-Family': familyId }),
+    },
+    auth: false,
+  });
+}
+
+/** Check the original family's server deadline without revoking a family kept live elsewhere. */
+export async function checkIdleExpiry(familyId: string): Promise<SessionActivity | null> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 10_000);
+  try {
+    return await apiOptional('/api/auth/logout', {
+      method: 'POST',
+      headers: { ...csrfHeaders(), 'X-ASE-Session-Family': familyId, 'X-ASE-Idle-Expired': '1' },
+      schema: sessionActivitySchema,
+      auth: false,
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+/** Never replay against whichever login happens to own the global store later. */
+export function recordActivity(accessToken: string): Promise<SessionActivity> {
+  return apiCall('/api/auth/activity', {
+    method: 'POST',
+    headers: { ...csrfHeaders(), Authorization: `Bearer ${accessToken}` },
+    schema: sessionActivitySchema,
+    auth: false,
+  });
 }
 
 export interface AccountRequestInput {
