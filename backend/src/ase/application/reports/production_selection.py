@@ -16,6 +16,7 @@ from ase.application.reports.selection import (
 from ase.application.reports.subscription_updates import previous_signatures
 from ase.application.reports.targeted_evidence import targeted_evidence_scope
 from ase.domain.direction import Direction
+from ase.domain.errors import InvalidRequest
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.regions import region_countries
@@ -90,6 +91,8 @@ def plan_for_job(
     reserve_challenge_slots: bool = False,
 ) -> SelectionPlan:
     """The deterministic prefilter for this job, before any similarity ordering."""
+    if job.request.alert_origin is not None:
+        raise InvalidRequest("Frozen alert reports cannot select new live evidence.")
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
     area = job.request.effective_area is not None
     window = int(job.window.total_seconds() // 3600)
@@ -182,6 +185,16 @@ def select_for_job(
     rerank_reason: str = "",
 ) -> Selection:
     """Freeze this job's evidence, optionally reordered by the supplied similarity map."""
+    origin = job.request.alert_origin
+    if origin is not None:
+        if tuple(row.event_id for row in job.reused_evidence) != origin.event_ids:
+            raise InvalidRequest("The original alert evidence is unavailable.")
+        safe = tuple(row for row in job.reused_evidence if not row.flags)
+        return Selection(
+            tuple(replace(row, label=f"E{index}") for index, row in enumerate(safe, 1)),
+            len(job.reused_evidence) - len(safe),
+            origin.matched_count,
+        )
     plan = plan_for_job(
         store,
         job,

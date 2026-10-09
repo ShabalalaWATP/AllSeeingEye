@@ -89,6 +89,7 @@ from ase.container.source_inventory import SourceInventoryWiring
 from ase.container.team_board import TeamBoardWiring
 from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Environment, Settings
@@ -283,7 +284,12 @@ class Container(
         await dispose_resources(self)
 
     def repositories(self, session: AsyncSession) -> Repositories:
-        return build_repositories(session)
+        return build_repositories(
+            session,
+            SessionIdlePolicy(
+                self.settings.session_idle_minutes, self.settings.admin_session_idle_minutes
+            ),
+        )
 
     def _auditor(self, repos: Repositories) -> Auditor:
         return Auditor(repos.audit, self.clock)

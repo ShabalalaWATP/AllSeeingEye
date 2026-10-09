@@ -254,6 +254,7 @@ class FeatureWiring(ReportWiring):
             self.notifier,
             self.clock,
             baselines=SqlIndicatorBaselines(self.session_factory, self.access_policy),
+            source_profiles=self.source_profiles,
         )
 
     def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:

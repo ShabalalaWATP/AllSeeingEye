@@ -15,6 +15,7 @@ from ase.adapters.persistence.tokens import SqlPasswordTokenRepository, SqlRefre
 from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.domain.errors import InvalidToken, NotFound
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.domain.tokens import PasswordToken, RefreshToken, TokenPurpose
 from ase.domain.users import User
 from helpers import FakeClock
@@ -37,7 +38,7 @@ async def test_refresh_save_persists_revocation_and_expiry_but_not_identity(
         None,
     )
     async with container.session_factory() as session:
-        repo = SqlRefreshTokenRepository(session)
+        repo = SqlRefreshTokenRepository(session, SessionIdlePolicy())
         await repo.add(token)
         token.revoked_at = clock.now()
         token.expires_at = clock.now() + timedelta(hours=1)
@@ -46,7 +47,7 @@ async def test_refresh_save_persists_revocation_and_expiry_but_not_identity(
             await repo.save(replace(token, id=uuid4()))
         await session.commit()
     async with container.session_factory() as session:
-        repo = SqlRefreshTokenRepository(session)
+        repo = SqlRefreshTokenRepository(session, SessionIdlePolicy())
         saved = await repo.get_by_hash("refresh-hash")
         assert saved == token
         assert await repo.get_by_hash("must-not-replace-hash") is None
@@ -85,7 +86,7 @@ async def test_revoking_empty_family_blocks_late_arriving_descendant(
 ) -> None:
     family = uuid4()
     async with container.session_factory() as session:
-        repo = SqlRefreshTokenRepository(session)
+        repo = SqlRefreshTokenRepository(session, SessionIdlePolicy())
         assert await repo.revoke_family(family, clock.now()) == 0
         await session.commit()
     token = RefreshToken(
@@ -101,7 +102,7 @@ async def test_revoking_empty_family_blocks_late_arriving_descendant(
         None,
     )
     async with container.session_factory() as session:
-        repo = SqlRefreshTokenRepository(session)
+        repo = SqlRefreshTokenRepository(session, SessionIdlePolicy())
         await repo.add(token)
         await session.commit()
         assert not await repo.family_is_active(user.id, family, clock.now())

@@ -68,54 +68,61 @@ it('submitting without selecting a method does not mutate factors or the session
   });
 });
 
-it('clears factor proofs but retains a replacement identity after an earlier account changes MFA', async () => {
-  let release!: () => void;
-  const response = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  let submitted: unknown;
-  server.use(
-    http.get('/api/auth/mfa', () => HttpResponse.json(status)),
-    http.post('/api/auth/totp/disable', async ({ request }) => {
-      submitted = await request.json();
-      await response;
-      return new HttpResponse(null, { status: 204 });
-    }),
-  );
-  useAuthStore.getState().setSession(tokenFor(plainUser));
-  const { result } = renderHook(useTotpSettings);
-  await waitFor(() => expect(result.current.resource.loading).toBe(false));
-  act(() => {
-    result.current.setMethod('authenticator');
-    result.current.setPassword('synthetic-current-password');
-    result.current.setCode('123456');
-  });
-  let confirmation!: Promise<void>;
-  act(() => {
-    confirmation = result.current.action.run();
-  });
-  await waitFor(() =>
-    expect(submitted).toEqual({ password: 'synthetic-current-password', code: '123456' }),
-  );
+it.each(['another account', 'same account new family'])(
+  'clears factor proofs and retains %s after an earlier session changes MFA',
+  async (kind) => {
+    let release!: () => void;
+    const response = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let submitted: unknown;
+    server.use(
+      http.get('/api/auth/mfa', () => HttpResponse.json(status)),
+      http.post('/api/auth/totp/disable', async ({ request }) => {
+        submitted = await request.json();
+        await response;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    useAuthStore.getState().setSession(tokenFor(plainUser));
+    const { result } = renderHook(useTotpSettings);
+    await waitFor(() => expect(result.current.resource.loading).toBe(false));
+    act(() => {
+      result.current.setMethod('authenticator');
+      result.current.setPassword('synthetic-current-password');
+      result.current.setCode('123456');
+    });
+    let confirmation!: Promise<void>;
+    act(() => {
+      confirmation = result.current.action.run();
+    });
+    await waitFor(() =>
+      expect(submitted).toEqual({ password: 'synthetic-current-password', code: '123456' }),
+    );
 
-  const replacement = tokenFor(adminUser);
-  act(() => useAuthStore.getState().setSession(replacement));
-  await act(async () => {
-    release();
-    await confirmation;
-  });
+    const replacement =
+      kind === 'another account'
+        ? tokenFor(adminUser)
+        : tokenFor(plainUser, { familyId: 'new-login' });
+    act(() => useAuthStore.getState().setSession(replacement));
+    expect(result.current).toMatchObject({ password: '', code: '', method: null });
+    await act(async () => {
+      release();
+      await confirmation;
+    });
 
-  expect(result.current).toMatchObject({
-    method: null,
-    password: '',
-    code: '',
-    challenge: null,
-    enrolment: null,
-    action: { busy: false, error: null },
-  });
-  expect(useAuthStore.getState()).toMatchObject({
-    status: 'authenticated',
-    user: adminUser,
-    accessToken: replacement.access_token,
-  });
-});
+    expect(result.current).toMatchObject({
+      method: null,
+      password: '',
+      code: '',
+      challenge: null,
+      enrolment: null,
+      action: { busy: false, error: null },
+    });
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      user: replacement.user,
+      accessToken: replacement.access_token,
+    });
+  },
+);

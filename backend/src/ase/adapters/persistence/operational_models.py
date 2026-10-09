@@ -213,6 +213,9 @@ class AlertRow(Base):
     report_error: Mapped[str | None] = mapped_column(String(120), nullable=True)
     report_rule_revision: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     report_next_attempt_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    report_snapshot: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True, deferred=True
+    )
 
 
 class ScheduleRow(Base):

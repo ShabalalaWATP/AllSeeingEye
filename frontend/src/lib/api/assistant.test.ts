@@ -16,7 +16,12 @@ it('refreshes an expired session without automatically repeating a paid assistan
     return Promise.resolve(token);
   });
   const lost = vi.fn();
-  bindSession({ getAccessToken: () => token, refreshAccessToken: refresh, onSessionLost: lost });
+  bindSession({
+    getSessionGeneration: () => 0,
+    getAccessToken: () => token,
+    refreshAccessToken: refresh,
+    onSessionLost: lost,
+  });
   server.use(
     http.post('/api/assistant/answer', ({ request }) => {
       authorisations.push(request.headers.get('Authorization'));

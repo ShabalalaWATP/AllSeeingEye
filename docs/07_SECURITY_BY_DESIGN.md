@@ -25,6 +25,23 @@ second-factor proofs across challenges and methods, and of directory username ch
 a taken username is reported as unavailable whoever holds it. These limits
 are held in memory and reset when the API restarts.
 
+Refresh families keep a server-owned `last_activity_at`. Their idle limit is
+180 minutes by default, with a separate optional administrator override, both
+bounded to 5–1440 minutes. Only explicit activity extends it, at most once per
+minute per family. Automatic refresh, polling, streams and scheduled work are
+passive. Expiry is checked before accepting activity, including refresh carrying
+`x-ase-activity: 1`. A CSRF-protected heartbeat is bound to the original bearer
+family, so changed shared cookies cannot extend another account's session.
+
+Shared access checks remain read-only to preserve caller-owned transactions.
+Expired refresh, heartbeat or logout transactions durably revoke the family,
+remove its push registrations and record `session.idle_expired` once. Passive
+fences reject expired sessions without committing unrelated writes. Cached checks
+are bounded by the observed idle deadline; streams recheck within the configured
+session interval and send `access.changed` before ending for idle expiry.
+[Idle session operation](SESSION_IDLE_TIMEOUT.md) covers the warning, migration
+and limits of this policy.
+
 Access tokens are short-lived and held in browser memory. Refresh sessions use
 an HttpOnly cookie, server-side records and rotation. Protected requests check
 the current account and session state. Routes that release private material after

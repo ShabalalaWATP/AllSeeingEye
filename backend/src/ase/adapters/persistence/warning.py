@@ -28,8 +28,10 @@ from ase.adapters.persistence.warning_mapping import (
     _indicator_from_row,
 )
 from ase.application.access import AccessContext, AccessPolicy
+from ase.application.warning.report_snapshot import snapshot_to_dict
 from ase.domain.access import Visibility
 from ase.domain.alert_feedback import AlertDisposition
+from ase.domain.alert_reports import AlertReportSnapshot
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.indicator_baseline import matching_semantics
 from ase.domain.warning import Alert, Indicator
@@ -223,7 +225,13 @@ class SqlWarningStore:
             )
             return frozenset(str(item) for ids in cited for item in ids or ())
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
+    async def add_alert(
+        self,
+        alert: Alert,
+        indicator: Indicator,
+        *,
+        report_snapshot: AlertReportSnapshot | None = None,
+    ) -> bool:
         if (
             alert.report_id is not None
             or alert.indicator_id is None
@@ -248,9 +256,15 @@ class SqlWarningStore:
                 return False
             stored = _alert_row(alert)
             if indicator.report_template is not None:
-                stored.report_status = "pending"
+                stored.report_status = "pending" if report_snapshot is not None else "failed"
+                stored.report_error = (
+                    None if report_snapshot is not None else "evidence_unavailable"
+                )
                 stored.report_rule_revision = indicator.updated_at
                 stored.report_next_attempt_at = alert.fired_at
+                stored.report_snapshot = (
+                    snapshot_to_dict(report_snapshot) if report_snapshot else None
+                )
             session.add(stored)
             await session.flush()
             await enqueue_alert_notifications(

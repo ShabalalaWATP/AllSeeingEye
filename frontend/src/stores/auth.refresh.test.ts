@@ -9,6 +9,8 @@ import { server } from '@/test/server';
 import { useAuthStore } from './auth';
 
 const unsubscribe = vi.fn(() => Promise.resolve(true));
+const later = tokenFor(adminUser, { revision: 'later' });
+const rotated = tokenFor(adminUser, { revision: 'rotated' });
 
 /** A push-capable browser with one subscription, so a cleared session unsubscribes it. */
 function pushBrowser() {
@@ -54,11 +56,7 @@ describe('refresh failure handling', () => {
   ])('keeps the session after %s and lets a later refresh succeed', async (_label, failure) => {
     signedIn();
     let fail = true;
-    server.use(
-      http.post('/api/auth/refresh', () =>
-        fail ? failure() : HttpResponse.json({ ...tokenFor(adminUser), access_token: 'later' }),
-      ),
-    );
+    server.use(http.post('/api/auth/refresh', () => (fail ? failure() : HttpResponse.json(later))));
     await expect(useAuthStore.getState().refresh()).resolves.toBeNull();
     expect(useAuthStore.getState()).toMatchObject({
       status: 'authenticated',
@@ -68,7 +66,7 @@ describe('refresh failure handling', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(unsubscribe).not.toHaveBeenCalled();
     fail = false;
-    await expect(useAuthStore.getState().refresh()).resolves.toBe('later');
+    await expect(useAuthStore.getState().refresh()).resolves.toBe(later.access_token);
   });
 
   it('settles an unavailable bootstrap as signed out without touching browser push', async () => {
@@ -89,7 +87,7 @@ describe('cross-tab refresh serialisation', () => {
     server.use(
       http.post('/api/auth/refresh', () => {
         sent += 1;
-        return HttpResponse.json({ ...tokenFor(adminUser), access_token: 'rotated' });
+        return HttpResponse.json(rotated);
       }),
     );
     let grant!: () => void;
@@ -106,7 +104,7 @@ describe('cross-tab refresh serialisation', () => {
     expect(request).toHaveBeenCalledWith('ase-refresh', expect.any(Function));
     expect(sent).toBe(0);
     grant();
-    await expect(attempt).resolves.toBe('rotated');
+    await expect(attempt).resolves.toBe(rotated.access_token);
     expect(sent).toBe(1);
   });
 

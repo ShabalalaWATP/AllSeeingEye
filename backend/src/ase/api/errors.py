@@ -19,6 +19,7 @@ STATUS_BY_CODE: dict[str, int] = {
     "invalid_credentials": 401,
     "invalid_refresh": 401,
     "unauthenticated": 401,
+    "session_idle_expired": 401,
     "forbidden": 403,
     "csrf_failed": 403,
     "invalid_token": 400,

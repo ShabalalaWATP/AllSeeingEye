@@ -69,7 +69,10 @@ async def register(client, container):
 
 def worker(container, sender):
     store = SqlPushDeliveryStore(
-        container.session_factory, container.access_policy, container.cipher
+        container.session_factory,
+        container.access_policy,
+        container.cipher,
+        lambda session: container.repositories(session).refresh_tokens,
     )
     return WebPushWorker(store, sender, container.clock), store
 
@@ -80,6 +83,32 @@ async def test_default_unavailable_and_no_devices(client, container, user):
     assert result.json() == {"available": False, "public_key": None, "devices": []}
     assert result.headers["cache-control"] == "private, no-store"
     assert (await client.post(PATH, headers=bearer(token), json=subscription())).status_code == 422
+
+
+@pytest.mark.parametrize("already_queued", [False, True])
+async def test_idle_session_blocks_both_push_admission_and_delivery(
+    client,
+    container,
+    user,
+    configured,
+    already_queued,
+):
+    container.settings.session_idle_minutes = 5
+    await register(client, container)
+    await _alert(container, user)
+    sender = Sender()
+    runner, store = worker(container, sender)
+    delivery = None
+    if already_queued:
+        await store.enqueue(container.clock.now())
+        delivery = await store.claim(container.clock.now())
+        assert delivery is not None
+    container.clock.advance(timedelta(minutes=5))
+    if delivery is not None:
+        assert not await store.authorise(delivery, container.clock.now())
+    else:
+        await runner.tick()
+    assert sender.messages == []
 
 
 async def test_registration_encrypts_endpoint_and_only_new_alert_ids_send(
