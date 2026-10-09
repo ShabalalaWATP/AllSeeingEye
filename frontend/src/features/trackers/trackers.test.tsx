@@ -5,11 +5,17 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { useEventsStore } from '@/stores/events';
 import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+import { preloadResearchRoutes } from '@/test/researchRoutes';
 import { server } from '@/test/server';
 
 // Load route modules before measuring their MSW/render behaviour on a cold worker.
 beforeAll(async () => {
-  await Promise.all([import('./TrackersPage'), import('./ConflictPage'), import('./HazardPage')]);
+  await Promise.all([
+    import('./TrackersPage'),
+    import('./ConflictPage'),
+    import('./HazardPage'),
+    preloadResearchRoutes(),
+  ]);
 });
 
 describe('trackers', () => {

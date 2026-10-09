@@ -50,6 +50,20 @@ afterEach(() => {
 });
 
 describe('fresh administrator session gate', () => {
+  it('ends an explicitly idle session without trying a token refresh', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    const refresh = vi.fn(() => HttpResponse.json(tokenFor(adminUser)));
+    server.use(http.post('/api/auth/refresh', refresh));
+    vi.mocked(verifySession).mockRejectedValueOnce(
+      new ApiError(401, 'session_idle_expired', 'Idle session.'),
+    );
+    mount();
+    await waitFor(() => expect(useAuthStore.getState().status).toBe('anonymous'));
+    expect(refresh).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().idleExpiredMinutes).toBe(180);
+    await useAuthStore.getState().pendingLogout;
+  });
+
   it('hides protected content until the captured session is verified', async () => {
     const request = deferred();
     vi.mocked(verifySession).mockReturnValueOnce(request.promise);

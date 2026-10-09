@@ -279,16 +279,23 @@
         }
       }
     },
-    "/api/auth/logout": {
+    "/api/auth/activity": {
       "post": {
         "tags": [
           "auth"
         ],
-        "summary": "Logout",
-        "operationId": "logout_api_auth_logout_post",
+        "summary": "Activity",
+        "operationId": "activity_api_auth_activity_post",
         "responses": {
-          "204": {
-            "description": "Successful Response"
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionActivityOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Unprocessable Content",
@@ -309,6 +316,90 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_auth_logout_post",
+        "parameters": [
+          {
+            "name": "x-ase-session-family",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Ase-Session-Family"
+            }
+          },
+          {
+            "name": "x-ase-idle-expired",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Ase-Idle-Expired"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionActivityOut"
+                }
+              }
+            },
+            "description": "OK"
           }
         }
       }
@@ -53765,6 +53856,37 @@
         ],
         "title": "SecFilingsSearchIn"
       },
+      "SessionActivityOut": {
+        "properties": {
+          "server_now": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Now"
+          },
+          "last_activity_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Activity At"
+          },
+          "idle_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Idle Expires At"
+          },
+          "idle_minutes": {
+            "type": "integer",
+            "title": "Idle Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "server_now",
+          "last_activity_at",
+          "idle_expires_at",
+          "idle_minutes"
+        ],
+        "title": "SessionActivityOut"
+      },
       "SetPasswordIn": {
         "properties": {
           "token": {
@@ -58725,13 +58847,17 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserOut"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/SessionActivityOut"
           }
         },
         "type": "object",
         "required": [
           "access_token",
           "expires_in",
-          "user"
+          "user",
+          "activity"
         ],
         "title": "TokenResponse"
       },

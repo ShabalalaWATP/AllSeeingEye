@@ -9,6 +9,7 @@ import type { PendingMfa } from '@/lib/api/mfa';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
+import { idleDuration } from '@/lib/sessionActivity';
 
 import { MfaLoginStep } from './MfaLoginStep';
 import { redirectTarget } from './redirect';
@@ -16,6 +17,7 @@ import { redirectTarget } from './redirect';
 export function LoginPage() {
   const location = useLocation();
   const status = useAuthStore((state) => state.status);
+  const expiredMinutes = useAuthStore((state) => state.idleExpiredMinutes);
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +34,16 @@ export function LoginPage() {
   const isAdmin = useAuthStore(selectIsAdmin);
   const destination = redirectTarget(location.state, isAdmin ? '/admin' : '/');
   const state: unknown = location.state;
+  const idleMinutes =
+    typeof state === 'object' &&
+    state !== null &&
+    'idleMinutes' in state &&
+    typeof state.idleMinutes === 'number' &&
+    Number.isInteger(state.idleMinutes) &&
+    state.idleMinutes >= 5 &&
+    state.idleMinutes <= 1440
+      ? state.idleMinutes
+      : expiredMinutes;
   const passwordChanged =
     typeof state === 'object' &&
     state !== null &&
@@ -69,6 +81,12 @@ export function LoginPage() {
         description="Use your approved account to continue."
       />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
+      {idleMinutes === null ? null : (
+        <Alert tone="warning">
+          You were signed out after {idleDuration(idleMinutes)} without activity. Unsaved work and
+          in-memory drafts were lost. Sign in to continue.
+        </Alert>
+      )}
       {passwordChanged ? (
         <Alert tone="success">Your password has changed. Sign in with your new password.</Alert>
       ) : null}
