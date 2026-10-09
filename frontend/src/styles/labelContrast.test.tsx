@@ -179,6 +179,7 @@ describe('label contrast in every theme', () => {
     expect(dotOf(chips[1]!)).toHaveClass('bg-chart-1');
   });
 
+  // Reading the full production tree needs bounded filesystem I/O time under coverage on Windows.
   it('never draws text in a categorical chart colour anywhere in the app', () => {
     const offenders = files
       .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
@@ -186,7 +187,7 @@ describe('label contrast in every theme', () => {
         [...read(file).matchAll(/\btext-chart-\d\b/g)].map((match) => `${file} ${match[0]}`),
       );
     expect(offenders).toEqual([]);
-  });
+  }, 30_000);
 
   it('never colours label text with a category or timeline phase data colour', () => {
     const offenders = files
