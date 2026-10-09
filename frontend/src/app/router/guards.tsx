@@ -7,12 +7,16 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
+import { SessionIdleWarning } from '@/components/account/SessionIdleWarning';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { usePushRenewal } from '@/lib/hooks/usePushRenewal';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
+import { useSessionActivity } from '@/stores/useSessionActivity';
 
 export function RequireAuth() {
   const status = useAuthStore((state) => state.status);
+  const idleMinutes = useAuthStore((state) => state.idleExpiredMinutes);
+  const now = useSessionActivity();
   const owner = useAuthStore((state) =>
     state.status === 'authenticated' ? (state.user?.id ?? null) : null,
   );
@@ -23,10 +27,21 @@ export function RequireAuth() {
     return <LoadingScreen label="Checking your session" />;
   }
   if (status === 'anonymous') {
-    const from = `${location.pathname}${location.search}`;
-    return <Navigate to="/login" replace state={{ from }} />;
+    const from = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from, ...(idleMinutes === null ? {} : { idleMinutes }) }}
+      />
+    );
   }
-  return <Outlet />;
+  return (
+    <>
+      <SessionIdleWarning now={now} />
+      <Outlet />
+    </>
+  );
 }
 
 export function RequireAdmin() {

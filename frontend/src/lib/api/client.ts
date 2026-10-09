@@ -9,6 +9,7 @@
 import type { ZodType } from 'zod';
 
 import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
+import { parseIdleMinutes } from '@/lib/sessionActivity';
 
 import { ApiError, sessionChangedError } from './errors';
 import { parseRetryAfter, unexpectedResponseError } from './errorResponses';
@@ -24,6 +25,8 @@ export interface SessionBridge {
    */
   refreshAccessToken(): Promise<string | null>;
   onSessionLost(): void;
+  /** Explicit idle expiry must never trigger a token refresh. */
+  onSessionIdle?(minutes?: number): void;
 }
 
 const noSession: SessionBridge = {
@@ -63,18 +66,30 @@ export async function apiCall<T>(
   path: string,
   options: CallOptions & { schema: ZodType<T> },
 ): Promise<T> {
-  return execute(path, options, async (response) => {
-    const data: unknown = await response.json();
-    const parsed = options.schema.safeParse(data);
-    if (!parsed.success) {
-      throw new ApiError(
-        response.status,
-        'invalid_response',
-        'The server sent an unexpected response.',
-      );
-    }
-    return parsed.data;
-  });
+  return execute(path, options, (response) => readJson(response, options.schema));
+}
+
+/** A conditional action may return a validated JSON result or204 without a body. */
+export function apiOptional<T>(
+  path: string,
+  options: CallOptions & { schema: ZodType<T> },
+): Promise<T | null> {
+  return execute(path, options, (response) =>
+    response.status === 204 ? Promise.resolve(null) : readJson(response, options.schema),
+  );
+}
+
+async function readJson<T>(response: Response, schema: ZodType<T>): Promise<T> {
+  const data: unknown = await response.json();
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new ApiError(
+      response.status,
+      'invalid_response',
+      'The server sent an unexpected response.',
+    );
+  }
+  return parsed.data;
 }
 
 /** Performs a request whose successful body is plain text (for example a Markdown export). */
@@ -165,13 +180,19 @@ async function executeResponse(
   if (first.status !== 401 || !auth) {
     return ensureOk(first);
   }
+  const firstError = await toApiError(first);
+  assertCurrent();
+  if (firstError.code === 'session_idle_expired') {
+    bridge.onSessionIdle?.(parseIdleMinutes(firstError.fields.idle_minutes));
+    throw firstError;
+  }
   options.signal?.throwIfAborted();
   const token = await bridge.refreshAccessToken();
   // A definite rejection can clear its own session and still retain its 401 error.
   if (token !== null) assertCurrent();
   options.signal?.throwIfAborted();
   if (token === null) {
-    throw await toApiError(first);
+    throw firstError;
   }
   if (options.retryAfterRefresh === false) {
     throw new ApiError(
@@ -184,8 +205,13 @@ async function executeResponse(
   const second = await send(path, options, token);
   assertCurrent();
   // Another tab can replace shared cookies and push without changing this tab's generation.
-  if (second.status === 401 && readCookie(CSRF_COOKIE) === retryCookie) {
-    bridge.onSessionLost();
+  if (second.status === 401) {
+    const error = await toApiError(second);
+    assertCurrent();
+    if (error.code === 'session_idle_expired')
+      bridge.onSessionIdle?.(parseIdleMinutes(error.fields.idle_minutes));
+    else if (readCookie(CSRF_COOKIE) === retryCookie) bridge.onSessionLost();
+    throw error;
   }
   return ensureOk(second);
 }
