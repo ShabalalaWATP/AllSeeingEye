@@ -12,6 +12,10 @@ export const INITIAL_JS_GZIP_BUDGET = 240 * 1024;
 // excluding what the initial load already fetched. Measured at 772 KiB gzip on 1 October
 // 2026; about 10 percent headroom. See docs/01_ARCHITECTURE.md for what it covers.
 export const GLOBE_ROUTE_GZIP_BUDGET = 850 * 1024;
+// The public /enterprise route's static closure beyond the common entry, including
+// shared route dependencies. This is a separate ceiling, not extra initial allowance.
+export const PRODUCT_ROUTE_GZIP_BUDGET = 150 * 1024;
+const PRODUCT_ROUTE = /^ProductPage-[\w-]+\.js$/;
 // Libraries reached only through lazy routes. Loading one up front costs every visitor.
 const LAZY_ONLY = /^(?:deck|maplibre|three|hls|GlobePage)-/;
 // Fixture pages mounted only by the development server.
@@ -71,7 +75,7 @@ function globeRouteChunks(dist, assets, initial) {
   ).filter((chunk) => !loaded.has(chunk));
 }
 
-/** Returns the initial and globe-route chunks, their gzip totals and any failures. */
+/** Returns the initial and lazy-route chunks, their gzip totals and any failures. */
 export function inspectBundle(dist) {
   const chunks = initialChunks(dist);
   const assets = readdirSync(path.join(dist, 'assets'));
@@ -89,6 +93,24 @@ export function inspectBundle(dist) {
   }
   const routeChunks = globeRouteChunks(dist, assets, chunks);
   const route = { chunks: routeChunks ?? [], gzipBytes: gzipTotal(dist, routeChunks ?? []) };
+  const productEntries = assets.filter((name) => PRODUCT_ROUTE.test(name));
+  const productChunks = staticClosure(
+    dist,
+    productEntries.map((name) => `assets/${name}`),
+  ).filter((chunk) => !chunks.includes(chunk));
+  const product = { chunks: productChunks, gzipBytes: gzipTotal(dist, productChunks) };
+  if (productEntries.length === 0)
+    failures.push('No ProductPage chunk was found for the product route budget.');
+  for (const chunk of productChunks) {
+    if (LAZY_ONLY.test(path.posix.basename(chunk)))
+      failures.push(
+        `${chunk} is in the public product route but belongs to an application runtime.`,
+      );
+  }
+  if (product.gzipBytes > PRODUCT_ROUTE_GZIP_BUDGET)
+    failures.push(
+      `Product route JavaScript is ${product.gzipBytes} bytes gzip, over the ${PRODUCT_ROUTE_GZIP_BUDGET} budget.`,
+    );
   if (routeChunks === null) {
     failures.push('No GlobePage chunk was found for the globe route budget.');
   } else {
@@ -108,16 +130,19 @@ export function inspectBundle(dist) {
       failures.push(`${name} is a fixed-name MapLibre file; ship the hashed chunks only.`);
     if (DEV_ONLY.test(name)) failures.push(`${name} is a development preview in the build.`);
   }
-  return { chunks, gzipBytes, route, failures };
+  return { chunks, gzipBytes, route, product, failures };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { chunks, gzipBytes, route, failures } = inspectBundle(process.argv[2] ?? 'dist');
+  const { chunks, gzipBytes, route, product, failures } = inspectBundle(process.argv[2] ?? 'dist');
   console.log(
     `Initial JavaScript: ${chunks.length} chunks, ${gzipBytes} bytes gzip (budget ${INITIAL_JS_GZIP_BUDGET}).`,
   );
   console.log(
     `Globe route JavaScript: ${route.chunks.length} more chunks, ${route.gzipBytes} bytes gzip (budget ${GLOBE_ROUTE_GZIP_BUDGET}).`,
+  );
+  console.log(
+    `Product route JavaScript: ${product.chunks.length} more chunks, ${product.gzipBytes} bytes gzip (budget ${PRODUCT_ROUTE_GZIP_BUDGET}).`,
   );
   for (const failure of failures) console.error(`check-bundle: ${failure}`);
   process.exit(failures.length ? 1 : 0);

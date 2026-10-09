@@ -1,12 +1,11 @@
 /**
- * Whether the story may move. The device's reduced-motion request, a signed-in
- * account's saved preference and the brand pause control (the same choice the
- * sign-in eye honours) all hold every scene in its final, readable state.
+ * Device-only motion for the public story. It never reads account preferences or
+ * starts authenticated requests, including when a signed-in visitor opens the page.
  */
 import { createContext, useContext } from 'react';
 
-import { useMotionPause } from '@/components/brand/useMotionPause';
-import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
+import { useProductMotionPause } from './useProductMotionPause';
+import { usePageVisible } from '@/components/brand/useDeviceMotion';
 
 export interface StoryMotion {
   /** No pinning, parallax, count-ups or animation: every scene shows its end state. */
@@ -16,10 +15,9 @@ export interface StoryMotion {
 }
 
 export function useStoryMotionSource(): StoryMotion {
-  const reduced = useReducedMotion();
-  const { chosenPause } = useMotionPause();
+  const { paused } = useProductMotionPause();
   const visible = usePageVisible();
-  const still = reduced || chosenPause;
+  const still = paused;
   return { still, idle: still || !visible };
 }
 

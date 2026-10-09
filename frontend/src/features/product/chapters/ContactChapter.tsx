@@ -5,7 +5,7 @@
  */
 import { Link } from 'react-router';
 
-import { BrandMark } from '@/components/brand/BrandMark';
+import { ProductBrandMark } from '../ProductMotionControls';
 
 import { Reveal } from '../motion/Reveal';
 
@@ -14,7 +14,7 @@ export function ContactChapter() {
     <section id="contact" aria-label="Talk to us" className="story-chapter story-contact">
       <div className="contact-glow" aria-hidden="true" />
       <Reveal className="contact-inner">
-        <BrandMark size={56} decorative />
+        <ProductBrandMark size={56} />
         <p className="story-eyebrow">10 · Talk to us</p>
         <h2 className="story-title">Bring The All Seeing Eye inside your organisation.</h2>
         <p className="story-lead">

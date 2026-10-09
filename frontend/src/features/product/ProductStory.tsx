@@ -2,7 +2,6 @@
  * The public product story: header, eleven scroll chapters and a footer. Rendered
  * outside the app shell and account themes, on its own fixed dark palette.
  */
-import { useEffect } from 'react';
 import { Link } from 'react-router';
 
 import { AskChapter } from './chapters/AskChapter';
@@ -17,7 +16,7 @@ import { SourcesChapter } from './chapters/SourcesChapter';
 import { ToolsChapter } from './chapters/ToolsChapter';
 import { TrustChapter } from './chapters/TrustChapter';
 import { WorkspacesChapter } from './chapters/WorkspacesChapter';
-import { PAGE_DESCRIPTION, PAGE_TITLE } from './content/chapters';
+import { useProductMetadata } from './useProductMetadata';
 import { StoryMotionContext, useStoryMotionSource } from './motion/useStoryMotion';
 import { ProductHeader } from './ProductHeader';
 
@@ -28,30 +27,9 @@ import './story-research.css';
 import './story-review.css';
 import './story-close.css';
 
-function useDocumentMeta(): void {
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = PAGE_TITLE;
-    let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const created = meta === null;
-    if (meta === null) {
-      meta = document.createElement('meta');
-      meta.name = 'description';
-      document.head.append(meta);
-    }
-    const previousDescription = meta.content;
-    meta.content = PAGE_DESCRIPTION;
-    return () => {
-      document.title = previousTitle;
-      if (created) meta.remove();
-      else meta.content = previousDescription;
-    };
-  }, []);
-}
-
 export function ProductStory() {
   const motion = useStoryMotionSource();
-  useDocumentMeta();
+  useProductMetadata();
   return (
     <StoryMotionContext.Provider value={motion}>
       <div className="product-story" data-motion={motion.still ? 'still' : 'moving'}>

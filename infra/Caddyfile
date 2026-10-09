@@ -56,6 +56,14 @@
 	}
 
 	handle {
+		# App URLs must not enter search results. Keep public documents and assets
+		# crawlable; a blanket noindex in index.html would prevent JS rendering of
+		# the opt-in product page. Match before the SPA rewrite below.
+		@app_page {
+			not path /enterprise /enterprise/
+			not path /assets/* /brand/* /robots.txt /site.webmanifest /push-worker.js /.well-known/*
+		}
+		header @app_page X-Robots-Tag "noindex, follow"
 		header {
 			X-Content-Type-Options nosniff
 			Referrer-Policy no-referrer
