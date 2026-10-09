@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 
 from ase.adapters.persistence.map_view_models import MapViewRow
 from ase.application.research import map_views
-from helpers import USER_PASSWORD, bearer, login_token
-from test_report_team_scope import save_team_report
+from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, login_token
+from test_report_team_scope import save_team_report, team_for
 
 
 @pytest.fixture
@@ -27,11 +27,18 @@ async def test_two_concurrent_saves_cannot_both_claim_last_scope_slot(
     client,
     container,
     user,
+    admin,
     monkeypatch,
 ):
     monkeypatch.setattr(map_views, "MAX_SCOPE_VIEWS", 1)
-    report = await save_team_report(container, user, None)
-    headers = bearer(await login_token(client, user.email, USER_PASSWORD))
+    # Distinct authorised accounts reach the shared quota without the per-account
+    # intake budget rejecting the second save before it reaches persistence.
+    team = await team_for(container, admin, user)
+    report = await save_team_report(container, user, team.id)
+    actors = [
+        bearer(await login_token(client, user.email, USER_PASSWORD)),
+        bearer(await login_token(client, admin.email, ADMIN_PASSWORD)),
+    ]
     body = {
         "report_id": str(report.id),
         "version_number": 1,
@@ -39,7 +46,7 @@ async def test_two_concurrent_saves_cannot_both_claim_last_scope_slot(
         "state": {"camera": {"longitude": 0, "latitude": 0, "zoom": 2}},
     }
     results = await asyncio.gather(
-        *(client.post("/api/map/views", headers=headers, json=body) for _ in range(2))
+        *(client.post("/api/map/views", headers=headers, json=body) for headers in actors)
     )
     assert sorted(response.status_code for response in results) == [201, 422]
     async with container.session_factory() as session:

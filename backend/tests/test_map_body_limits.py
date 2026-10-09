@@ -1,9 +1,13 @@
 """Map JSON allowances remain bounded and cannot widen other endpoint limits."""
 
+from unittest.mock import AsyncMock, patch
+from uuid import UUID
+
 import pytest
 from starlette.types import Message
 
-from ase.api.middleware import MAP_VIEW_MAX_BODY_BYTES, BodySizeLimitMiddleware
+from ase.api.map_body_admission import MAP_VIEW_MAX_BODY_BYTES
+from ase.api.middleware import BodySizeLimitMiddleware
 
 
 async def send_body(path, method, chunks, declared=None):
@@ -35,7 +39,11 @@ async def send_body(path, method, chunks, declared=None):
         "method": method,
         "headers": [] if declared is None else [(b"content-length", str(declared).encode())],
     }
-    await BodySizeLimitMiddleware(application)(scope, receive, send)
+    # This transport-only harness supplies identity; full-app auth has separate tests.
+    with patch(
+        "ase.api.map_body_admission.authenticated_map_user", AsyncMock(return_value=UUID(int=1))
+    ):
+        await BodySizeLimitMiddleware(application)(scope, receive, send)
     return responses[0]["status"], seen
 
 
@@ -46,7 +54,7 @@ async def send_body(path, method, chunks, declared=None):
 async def test_saved_map_accepts_bounded_chunked_geometry_above_ordinary_limit(method, path):
     chunks = [b"x" * 40000, b"y" * 40000]
     status, seen = await send_body(path, method, chunks)
-    assert status == 204 and seen == chunks
+    assert status == 204 and seen == [b"".join(chunks)]
 
 
 @pytest.mark.parametrize("declared", [None, MAP_VIEW_MAX_BODY_BYTES + 1])

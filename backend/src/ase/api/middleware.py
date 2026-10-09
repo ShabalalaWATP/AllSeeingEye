@@ -5,11 +5,13 @@ from __future__ import annotations
 import re
 
 from fastapi import Request
+from starlette._utils import get_route_path
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from ase.api.catalogue_responses import CATALOGUE_PATHS
 from ase.api.errors import PayloadTooLarge, handle_app_error
+from ase.api.map_body_admission import SavedMapBodyMiddleware, saved_map_body_limit
 
 NO_STORE_PREFIXES = (
     "/api/auth",
@@ -40,12 +42,8 @@ ORIGINAL_UPLOAD_PATH = re.compile(
 )
 MAP_IMAGE_MAX_BODY_BYTES = 12 * 1024 * 1024
 MAP_IMAGE_PATH = re.compile(rf"/api/map/views/{_UUID_PATH}/revisions/{_UUID_PATH}/image-package")
-MAP_VIEW_MAX_BODY_BYTES = 6 * 1024 * 1024 + 16 * 1024
 MAP_WORKSPACE_MAX_BODY_BYTES = 128 * 1024 + 4 * 1024
 MAP_WORKSPACE_PATH = re.compile(rf"/api/map/workspaces/{_UUID_PATH}")
-MAP_VIEW_REVISION_PATH = re.compile(
-    r"/api/map/views/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
-)
 
 
 class SecurityHeadersMiddleware:
@@ -58,7 +56,7 @@ class SecurityHeadersMiddleware:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
-        path = str(scope.get("path", ""))
+        path = get_route_path(scope)
 
         async def send_with_headers(message: Message) -> None:
             if message["type"] == "http.response.start":
@@ -96,6 +94,8 @@ class BodySizeLimitMiddleware:
     def __init__(self, app: ASGIApp, max_bytes: int = DEFAULT_MAX_BODY_BYTES) -> None:
         self.app = app
         self.max_bytes = max_bytes
+        # Early authentication/admission errors need the same headers as route responses.
+        self._saved_maps = SecurityHeadersMiddleware(SavedMapBodyMiddleware(app, max_bytes))
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -107,10 +107,9 @@ class BodySizeLimitMiddleware:
             scope.get("method") == "PUT"
             and ORIGINAL_UPLOAD_PATH.fullmatch(scope.get("path", "")) is not None
         )
-        saving_map = (scope.get("path") == "/api/map/views" and scope.get("method") == "POST") or (
-            scope.get("method") == "PATCH"
-            and MAP_VIEW_REVISION_PATH.fullmatch(scope.get("path", "")) is not None
-        )
+        if saved_map_body_limit(scope, self.max_bytes) is not None:
+            await self._saved_maps(scope, receive, send)
+            return
         saving_workspace = (
             scope.get("path") == "/api/map/workspaces" and scope.get("method") == "POST"
         ) or (
@@ -128,8 +127,6 @@ class BodySizeLimitMiddleware:
             if exporting_image
             else IMPORT_MAX_BODY_BYTES
             if importing
-            else MAP_VIEW_MAX_BODY_BYTES
-            if saving_map
             else MAP_WORKSPACE_MAX_BODY_BYTES
             if saving_workspace
             else self.max_bytes
