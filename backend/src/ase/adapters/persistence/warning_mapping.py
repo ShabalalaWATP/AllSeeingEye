@@ -1,10 +1,12 @@
 """Mapping durable warning rows to scoped domain records."""
 
+from typing import cast
+
 from ase.adapters.persistence.models import AlertRow, IndicatorRow
 from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import area_from_dict, area_to_dict
-from ase.domain.warning import Alert, Indicator
+from ase.domain.warning import Alert, AlertReportStatus, Indicator
 
 
 def _indicator_from_row(row: IndicatorRow) -> Indicator:
@@ -86,6 +88,9 @@ def _alert_from_row(row: AlertRow) -> Alert:
         disposition_note=row.disposition_note,
         baseline_mean=row.baseline_mean,
         report_id=row.report_id,
+        report_job_id=row.report_job_id,
+        report_status=cast(AlertReportStatus | None, row.report_status),
+        report_error=row.report_error,
         created_by=row.created_by,
         team_id=row.team_id,
     )
@@ -112,6 +117,9 @@ def _alert_row(alert: Alert) -> AlertRow:
         baseline_mean=alert.baseline_mean,
         baseline_ratio=alert.baseline_ratio,
         report_id=alert.report_id,
+        report_job_id=alert.report_job_id,
+        report_status=alert.report_status,
+        report_error=alert.report_error,
         created_by=alert.created_by,
         team_id=alert.team_id,
     )

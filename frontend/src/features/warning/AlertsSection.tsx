@@ -11,7 +11,7 @@ import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import type { ConfirmedAction } from '@/lib/hooks/useConfirmedAction';
 import { useOwnershipScope } from '@/lib/hooks/useOwnershipScope';
-import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { usePolledResource } from '@/lib/hooks/usePolledResource';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { belongsToSomeoneElse, ownerLabel } from '@/lib/ownershipScope';
 import type { OwnedRecord } from '@/lib/ownershipScope';
@@ -68,8 +68,8 @@ function SharedAcknowledgement({
 export function AlertsSection({ workspaces }: { workspaces: Workspaces }) {
   const ownership = useOwnershipScope();
   const { scope, viewerId } = ownership;
-  const load = useCallback(() => fetchAlerts(undefined, undefined, scope), [scope]);
-  const alerts = useScopedResource(load);
+  const load = useCallback((signal: AbortSignal) => fetchAlerts(undefined, signal, scope), [scope]);
+  const alerts = usePolledResource(load, 30_000);
   const setAlerts = alerts.setData;
   const heading = useRef<HTMLHeadingElement>(null);
 

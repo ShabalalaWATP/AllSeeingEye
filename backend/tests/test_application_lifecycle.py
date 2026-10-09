@@ -24,6 +24,7 @@ WORKERS = (
     "conflict_screening",
     "social_monitor",
     "schedule_runner",
+    "alert_report_admission",
     "report_job_worker",
 )
 
@@ -47,6 +48,7 @@ def runtime(monkeypatch):
         "ase.app_lifecycle.build_annotation_monitor_worker", lambda _: SimpleNamespace(run=idle)
     )
     monkeypatch.setattr("ase.app_lifecycle.build_live_snapshot", lambda c: c.live_snapshot)
+    monkeypatch.setattr("ase.app_lifecycle.alert_report_runner", lambda c: c.alert_report_admission)
     container = SimpleNamespace(
         settings=SimpleNamespace(feeds_enabled=True),
         dispose=AsyncMock(),

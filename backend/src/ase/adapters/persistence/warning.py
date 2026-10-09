@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence import alert_feedback
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
+from ase.adapters.persistence.alert_reports import report_outcomes
 from ase.adapters.persistence.models import (
     ActivitySampleRow,
     AlertRow,
@@ -113,7 +114,11 @@ class SqlAlertRepository:
 
     async def get(self, alert_id: UUID) -> Alert | None:
         row = await self._session.get(AlertRow, alert_id, populate_existing=True)
-        return None if row is None else _alert_from_row(row)
+        return (
+            None
+            if row is None
+            else (await report_outcomes(self._session, [_alert_from_row(row)]))[0]
+        )
 
     async def list_recent(self, since: datetime, limit: int, visibility: Visibility) -> list[Alert]:
         rows = await self._session.scalars(
@@ -125,7 +130,7 @@ class SqlAlertRepository:
             .order_by(AlertRow.fired_at.desc())
             .limit(limit)
         )
-        return [_alert_from_row(row) for row in rows]
+        return await report_outcomes(self._session, [_alert_from_row(row) for row in rows])
 
     async def save(self, alert: Alert) -> None:
         row = await self._session.get(AlertRow, alert.id)
@@ -241,7 +246,12 @@ class SqlWarningStore:
             )
             if latest is not None and alert.fired_at - latest.fired_at < indicator.cooldown:
                 return False
-            session.add(_alert_row(alert))
+            stored = _alert_row(alert)
+            if indicator.report_template is not None:
+                stored.report_status = "pending"
+                stored.report_rule_revision = indicator.updated_at
+                stored.report_next_attempt_at = alert.fired_at
+            session.add(stored)
             await session.flush()
             await enqueue_alert_notifications(
                 session, alert, installation_copy=self._installation_copy

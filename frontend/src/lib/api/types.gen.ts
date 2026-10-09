@@ -5563,6 +5563,12 @@ export interface components {
             baseline_ratio?: number | null;
             /** Report Id */
             report_id: string | null;
+            /** Report Job Id */
+            report_job_id?: string | null;
+            /** Report Status */
+            report_status?: ("pending" | "queued" | "running" | "paused" | "failed" | "completed" | "needs_review" | "cancelled" | "discarded") | null;
+            /** Report Error */
+            report_error?: string | null;
             /** Created By */
             created_by: string | null;
             /** Team Id */

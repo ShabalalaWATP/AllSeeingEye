@@ -4,6 +4,32 @@ Open **Warning**, save an indicator, then select **Notifications** beside that
 rule. In-app storage and streaming always remain enabled. Email and a registered
 webhook are independent optional channels. No migration enables either one.
 
+## Automatic reports
+
+When a rule has a report template, its alert and report request are stored in the
+same transaction. Evaluation continues without waiting for model calls. A separate
+admission worker checks up to eight requests every minute and submits them to the
+existing durable report queue. It uses the rule owner's current personal or team
+permissions and the usual report allowance and capacity controls. Full capacity
+defers admission for five minutes; requests still waiting after 24 hours expire.
+The report interval stays anchored to the alert's firing time while it waits.
+
+The alert shows pending, queued, running, paused, failed or completed progress,
+including a link to the report job when one exists. The warning list refreshes
+while visible. Configuration or admission failures remain visible on the alert.
+Pausing, editing or removing the rule, or removing its owner's workspace access,
+prevents further report work and publication. Calls already released to a provider
+cannot be recalled. Interrupted paid work retains its reservations and requires
+explicit resume through the report progress page; restarting the server does not
+automatically replay it. Discarding job progress leaves the alert's report request
+terminal and cannot cause a fresh automatic submission.
+
+Migration 0090 adds nullable intent and job-link fields to alerts. Historical alerts
+do not enqueue reports after upgrade. Apply the migration before starting the new
+application workers. Preserve the additive schema on application rollback; downgrade
+refuses to remove retained alert report history. Existing report scope and template
+selection rules retain their existing filters and rounded-hour duration.
+
 Personal rule owners and administrators can manage personal routes. Team routes
 require a current manager of the active team or an administrator. Merely reading
 a team rule, or creating it as a regular team member, does not authorise external

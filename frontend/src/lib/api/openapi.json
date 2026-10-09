@@ -23128,6 +23128,51 @@
             ],
             "title": "Report Id"
           },
+          "report_job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Job Id"
+          },
+          "report_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "queued",
+                  "running",
+                  "paused",
+                  "failed",
+                  "completed",
+                  "needs_review",
+                  "cancelled",
+                  "discarded"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Status"
+          },
+          "report_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Error"
+          },
           "created_by": {
             "anyOf": [
               {
