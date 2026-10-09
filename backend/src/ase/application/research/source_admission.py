@@ -3,6 +3,7 @@
 from ase.application.ports.research import ResearchProvider
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.provider_capabilities import ProviderDecorator
+from ase.application.source_admission import source_denial_reason
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch, ResearchQuery
 
 
@@ -18,8 +19,10 @@ class ControlledResearchProvider(ProviderDecorator):
                     self.id,
                     self.name,
                     CollectionStatus.UNAVAILABLE,
-                    explanation=(
-                        "This source is disabled by the administrator. No results were admitted."
+                    explanation=source_denial_reason(
+                        self._admission,
+                        self.id,
+                        "This source is disabled by the administrator. No results were admitted.",
                     ),
                 ),
             )

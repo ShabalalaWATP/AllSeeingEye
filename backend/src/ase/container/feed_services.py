@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+import structlog
+
 from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
@@ -19,6 +21,8 @@ from ase.infrastructure.settings import Environment
 if TYPE_CHECKING:
     from ase.container import Container
 
+log = structlog.get_logger(__name__)
+
 
 def build_research_service(container: Container) -> ResearchCollectionService:
     settings = container.settings
@@ -27,6 +31,7 @@ def build_research_service(container: Container) -> ResearchCollectionService:
         container.clock,
         tuple(settings.disabled_feed_ids),
         admission=container.source_admission,
+        licences=container.source_licences,
         requirements=source_requirements(settings),
         retained_store=container.store,
         sec_client=container.sec_client,
@@ -143,4 +148,18 @@ def build_feed_connectors(
     )
     if connectors is None and watchlists.spec.id not in settings.disabled_feed_ids:
         result.append(watchlists)
+    source_ids = {spec.id for spec in container.research_sources}
+    if connectors is None:
+        source_ids.update(connector.spec.id for connector in result)
+    # Explicit connector injection is a testing seam, not part of the packaged catalogue.
+    container.source_licences.validate_ids(source_ids)
+    for source_id in sorted(source_ids):
+        decision = container.source_licences.decision(source_id)
+        if not decision.available:
+            log.warning(
+                "source_licence_refused",
+                source_id=source_id,
+                commercial_use=decision.commercial_use,
+                reason=decision.reason,
+            )
     return result

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from ase.application.ports.source_controls import SourceAdmission
+from ase.application.ports.source_controls import SourceAdmission, SourceControlAdmission
 from ase.application.research.source_allocation_types import AllocationProfile
 from ase.application.source_capabilities import ResolvedCapability, SourceCapabilityRegistry
 from ase.application.source_inventory import SourceRequirement
@@ -123,7 +123,15 @@ async def load_research_allocation(
             }
         )
     )
-    enabled = await admission.enabled_many(keys) if keys else {}
+    # A logical parent switch is not another fetched product or licence acknowledgement.
+    # Exact provider IDs retain the immutable policy veto; extra keys are operator controls.
+    if isinstance(admission, SourceControlAdmission):
+        enabled = await admission.enabled_many(provider_ids) if provider_ids else {}
+        controls = tuple(key for key in keys if key not in enabled)
+        if controls:
+            enabled.update(await admission.controls_enabled_many(controls))
+    else:
+        enabled = await admission.enabled_many(keys) if keys else {}
     return compose_research_allocation(
         provider_ids, enabled=enabled, requirements=requirements, disabled=disabled
     )

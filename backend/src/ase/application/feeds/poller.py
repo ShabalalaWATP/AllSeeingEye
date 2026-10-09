@@ -24,7 +24,9 @@ from ase.application.ports.feed_diagnostics import (
 from ase.application.ports.feed_release import FeedUnavailable, FetchedBatch, GuardedFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.events import Event
+from ase.domain.source_licences import LICENCE_UNAVAILABLE
 
 log = logging.getLogger(__name__)
 
@@ -108,6 +110,14 @@ class FeedPoller:
         """Bounds work after the fetch, including waits for the shared release guard."""
         return asyncio.timeout_at(asyncio.get_running_loop().time() + self._processing_seconds)
 
+    def _disabled(self, source_id: str, fallback: str) -> str:
+        reason = source_denial_reason(self._admission, source_id, fallback)
+        if reason == LICENCE_UNAVAILABLE:
+            self._health.licence_disabled(source_id, reason)
+        else:
+            self._health.administratively_disabled(source_id)
+        return reason
+
     async def _poll(self, connector: FeedConnector) -> PollOutcome:
         source_id = connector.spec.id
         started = self._clock.now()
@@ -115,8 +125,7 @@ class FeedPoller:
         batch: FetchedBatch | None = None
         try:
             if self._admission is not None and not await self._admission.enabled(source_id):
-                self._health.administratively_disabled(source_id)
-                raise FeedUnavailable("Disabled by administrator.")
+                raise FeedUnavailable(self._disabled(source_id, "Disabled by administrator."))
             # Waiting for a fetch slot, or for a paced host's turn, does not count
             # against the upstream's deadline (see fetch_budget).
             async with fetch_budget(self._fetch_slots, self._fetch_seconds(source_id)):
@@ -157,9 +166,10 @@ class FeedPoller:
         guard = self._admission.guard() if self._admission else contextlib.nullcontext()
         async with guard:
             if self._admission is not None and not await self._admission.enabled(source_id):
-                self._health.administratively_disabled(source_id)
                 return PollOutcome(
-                    source_id, ok=False, error="Disabled before results were admitted."
+                    source_id,
+                    ok=False,
+                    error=self._disabled(source_id, "Disabled before results were admitted."),
                 )
             if batch is not None and isinstance(connector, GuardedFeedConnector):
                 async with connector.release_guard(batch.generation) as current:

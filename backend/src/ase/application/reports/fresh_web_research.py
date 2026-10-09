@@ -21,6 +21,7 @@ from ase.application.report_jobs.budget import JobBudgetExhausted
 from ase.application.report_jobs.fresh_web_allocation import validate_web_discovery_plan
 from ase.application.reports.fresh_web_context import web_query_context
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
+from ase.application.reports.web_research_admission import unavailable_web_context
 from ase.domain.ai_usage import AiAttribution
 from ase.domain.errors import EncryptionUnavailable
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage
@@ -275,18 +276,8 @@ class FreshWebResearch:
             return self._disabled(record)
         return context, key
 
-    @staticmethod
-    def _disabled(record: WebResearchRecord) -> WebResearchRecord:
-        return replace(
-            record,
-            status="unavailable",
-            synthesis="",
-            citations=(),
-            consulted_urls=(),
-            explanation=(
-                "The administrator disabled fresh web search. No web context was admitted."
-            ),
-        )
+    def _disabled(self, record: WebResearchRecord) -> WebResearchRecord:
+        return unavailable_web_context(record, self._admission)
 
     async def _account(
         self, job: Job, profile: LlmProfile, totals: Totals, record: WebResearchRecord

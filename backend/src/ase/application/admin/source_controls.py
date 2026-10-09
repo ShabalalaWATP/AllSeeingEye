@@ -23,6 +23,7 @@ from ase.application.ports.source_controls import SourceAdmission, SourceControl
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound, RateLimited, Unauthenticated
 from ase.domain.source_controls import source_control_keys
+from ase.domain.source_licences import SourceLicencePolicy
 from ase.domain.sources import SourceSpec
 
 
@@ -60,6 +61,7 @@ class AdminSourceControls:
         uow: UnitOfWork,
         disabled: tuple[str, ...] = (),
         withdraw: Callable[[str], Awaitable[object]] | None = None,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self._users, self._refresh, self._controls = users, refresh, controls
         self._admission, self._health, self._resume = admission, health, resume
@@ -69,6 +71,7 @@ class AdminSourceControls:
         self._specs.update({connector.spec.id: connector.spec for connector in connectors})
         self._disabled = frozenset(disabled)
         self._withdraw = withdraw
+        self._licences = licences or SourceLicencePolicy(())
 
     async def _guard(self, claims: AccessClaims) -> None:
         await self._users.lock_administration()
@@ -92,7 +95,7 @@ class AdminSourceControls:
                 spec,
                 self._health.get(spec.id),
                 enabled[spec.id],
-                spec.id in self._connectors,
+                spec.id in self._connectors and self._licences.allowed(spec.id),
                 any(key in self._disabled for key in source_control_keys(spec.id)),
             )
             for spec in sorted(
@@ -116,6 +119,8 @@ class AdminSourceControls:
     ) -> None:
         self._spec(source_id)
         await self._guard(claims)
+        if enabled:
+            self._licences.require(source_id)
         keys = source_control_keys(source_id)
         if enabled and any(key in self._disabled for key in keys):
             raise InvalidRequest(
@@ -151,6 +156,7 @@ class AdminSourceControls:
         if source_id not in self._connectors:
             raise InvalidRequest("On-demand sources have no live polling circuit to reset.")
         await self._guard(claims)
+        self._licences.require(source_id)
         self._resume(source_id)
         await self._auditor.record(
             AuditAction.SOURCE_RESET, actor=claims.user_id, subject=source_id, ip=context.ip
@@ -163,6 +169,7 @@ class AdminSourceControls:
     ) -> SourceTestResult:
         self._spec(source_id)
         await self._guard(claims)
+        self._licences.require(source_id)
         connector = self._connectors.get(source_id)
         if connector is None:
             raise InvalidRequest("This on-demand source requires a scoped research query to test.")
