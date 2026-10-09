@@ -17,6 +17,7 @@ from ase.application.ports import (
 from ase.application.ports.research_inputs import ResearchInputReceipt, ResearchInputStore
 from ase.application.ports.sec_filings import SecFilingProvider, SecSelectionStore
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.errors import InvalidRequest, RateLimited, Unauthenticated
 from ase.domain.sec_filings import SecFilingChoice, SecFilingPage
 from ase.domain.users import User
@@ -52,7 +53,13 @@ class SecFilings:
 
     async def _enabled(self) -> None:
         if not await self.admission.enabled("research-sec-submissions"):
-            raise InvalidRequest("SEC research is disabled by the administrator.")
+            raise InvalidRequest(
+                source_denial_reason(
+                    self.admission,
+                    "research-sec-submissions",
+                    "SEC research is disabled by the administrator.",
+                )
+            )
 
     def _limit(self, claims: AccessClaims) -> None:
         retry = self.limiter.hit(f"sec-filings:{claims.user_id}", 20, 900)

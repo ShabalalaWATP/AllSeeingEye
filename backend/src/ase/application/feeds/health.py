@@ -178,6 +178,12 @@ class HealthRegistry:
     def administratively_disabled(self, source_id: str) -> None:
         self._transition(self.get(source_id), SourceStatus.DISABLED, "administrator_disabled")
 
+    def licence_disabled(self, source_id: str, reason: str) -> None:
+        entry = self.get(source_id)
+        self._transition(entry, SourceStatus.DISABLED, "licence_unavailable")
+        entry.blocked_reason = reason
+        entry.next_poll_at = None
+
     @staticmethod
     def _transition(entry: SourceHealth, status: SourceStatus, reason: str) -> None:
         if entry.status != status or (

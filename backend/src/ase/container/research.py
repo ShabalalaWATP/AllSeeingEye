@@ -62,6 +62,7 @@ from ase.container.research_allocation import ResearchAllocationContext, load_re
 from ase.container.research_feeds import public_research_feeds
 from ase.domain.research import ResearchFocus, ResearchQuery
 from ase.domain.source_controls import source_control_keys
+from ase.domain.source_licences import SourceLicencePolicy
 
 
 def research_service(
@@ -70,6 +71,7 @@ def research_service(
     disabled: tuple[str, ...] = (),
     *,
     admission: SourceAdmission | None = None,
+    licences: SourceLicencePolicy | None = None,
     retained_store: EventStore | None = None,
     sec_client: SecClient | None = None,
     ooni_noncommercial_use_acknowledged: bool = False,
@@ -184,7 +186,7 @@ def research_service(
             )
         selected.extend(
             (
-                AssetRegisterProvider(),
+                AssetRegisterProvider(licences=licences),
                 procurement,
                 aiddata,
                 CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
