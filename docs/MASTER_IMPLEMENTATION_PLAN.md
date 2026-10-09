@@ -1524,3 +1524,24 @@ still exceed target and remain reported. Current-main CI passes 4,637 frontend
 tests with 92.28% branch coverage. The completed browser trace contains no
 stream-flush task over 50 ms; separate task and interaction outliers remain
 explicit. See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md).
+
+### 10 October 2026: KAN-216 review implementation
+
+The 9 October review covers 32 delivery tickets and parent KAN-216. Each ticket
+has an isolated implementation branch; the coordinator combines reviewed changes
+on `codex/KAN-216-review-integration`. The exact scope, draft PRs, completed checks
+and outstanding acceptance are maintained in the
+[implementation ledger](reviews/KAN-216-implementation-ledger.md).
+
+At integration revision `06d9b476`, all 82 selected cross-feature backend tests
+passed, covering schedule mapping and editing, frozen edition links, enquiry
+authorisation/retention, migrations and alert-template geometry. Whole-tree Ruff,
+formatting and the expanded source-size gate also passed. Commercial-policy
+review repairs, public/admin browser acceptance, the new browser CI lane and
+final whole-branch CI remain in progress. Local test groups overlap and must not
+be added together as an overall test count.
+
+No `main` merge, live migration or production release has occurred. Controller
+facts and privacy approval, the software-licence/offer decision and live GitHub
+production approval settings remain explicit operator decisions. Those decisions
+do not block preparation, testing or review of the implementation.
