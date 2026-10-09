@@ -42,6 +42,7 @@ POLICY = record(
         "terms_checked_on": {"anyOf": [DATE, {"type": "null"}]},
         "lookup_attempted_on": {"anyOf": [DATE, {"type": "null"}]},
         "commercial_use": RIGHTS,
+        "commercial_use_policy": {"enum": ["allowed", "forbidden", "licence_required"]},
         "hosted_multi_user_use": RIGHTS,
         "attribution": TEXT,
         "redistribution": TEXT,

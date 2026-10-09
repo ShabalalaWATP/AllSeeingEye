@@ -12,6 +12,7 @@ Rights = Literal["unknown", "conditional", "permission_required"]
 
 
 class _Evidence(BaseModel):
+    commercial_use_policy: CommercialUse
     commercial_use: Rights
     hosted_multi_user_use: Rights
     review_status: Literal[
@@ -62,10 +63,15 @@ def parse_source_licences(register: object, evidence: object) -> tuple[SourceLic
             raise ValueError(f"Repeated source policy: {row.id}")
         if any(key not in policies for key in keys):
             raise ValueError(f"Missing policy for source: {row.id}")
+        if row.commercial_use != "forbidden" and any(
+            policies[key].commercial_use_policy == "forbidden" for key in keys
+        ):
+            raise ValueError(f"Source includes a forbidden commercial component: {row.id}")
         if row.commercial_use == "allowed" and (
             row.family == "camera_index"
             or any(
                 policies[key].review_status != "terms_checked"
+                or policies[key].commercial_use_policy != "allowed"
                 or policies[key].commercial_use != "conditional"
                 or policies[key].hosted_multi_user_use != "conditional"
                 for key in keys

@@ -19,7 +19,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "RSS availability and a source link do not establish commercial, hosted, AI or republication rights. Review this publisher and underlying contributors individually."
+      "notes": "RSS availability and a source link do not establish commercial, hosted, AI or republication rights. Review this publisher and underlying contributors individually.",
+      "commercial_use_policy": "licence_required"
     },
     "unknown-source": {
       "name": "Provider rights not reviewed",
@@ -38,7 +39,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Existing code licence notes are leads, not independently verified rights. Review the exact data product, service contract and intended use."
+      "notes": "Existing code licence notes are leads, not independently verified rights. Review the exact data product, service contract and intended use.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-owner-rights": {
       "name": "Per-camera owner and delivery rights",
@@ -57,7 +59,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review each host, camera owner and delivery method. OSIRIS MIT catalogue code/data notices do not license third-party streams. A directory or government index does not establish rights in every image."
+      "notes": "Review each host, camera owner and delivery method. OSIRIS MIT catalogue code/data notices do not license third-party streams. A directory or government index does not establish rights in every image.",
+      "commercial_use_policy": "licence_required"
     },
     "mixed-evidence": {
       "name": "Mixed or user-supplied evidence",
@@ -76,7 +79,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Applies to uploads, retained feeds, mixed curated assets and web-search evidence. Review source-specific licences, privacy, image rights and onward use."
+      "notes": "Applies to uploads, retained feeds, mixed curated assets and web-search evidence. Review source-specific licences, privacy, image rights and onward use.",
+      "commercial_use_policy": "licence_required"
     },
     "cloudflare-radar": {
       "name": "Cloudflare Radar API data",
@@ -97,7 +101,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "API data is distinct from CC BY 4.0 embeddable/downloadable graphs. Non-commercial hosted suitability is fact-specific; no project exception verified."
+      "notes": "API data is distinct from CC BY 4.0 embeddable/downloadable graphs. Non-commercial hosted suitability is fact-specific; no project exception verified.",
+      "commercial_use_policy": "forbidden"
     },
     "ooni": {
       "name": "OONI data",
@@ -118,7 +123,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "The acknowledgement setting records an operator assertion, not permission. Review whether the actual hosted use is non-commercial and the effect on derived outputs."
+      "notes": "The acknowledgement setting records an operator assertion, not permission. Review whether the actual hosted use is non-commercial and the effect on derived outputs.",
+      "commercial_use_policy": "forbidden"
     },
     "adsb-fi": {
       "name": "adsb.fi open data",
@@ -137,7 +143,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Commercial enquiries are invited. Current aviation code uses adsb.lol instead; do not confuse the providers or assume personal use covers team hosting."
+      "notes": "Commercial enquiries are invited. Current aviation code uses adsb.lol instead; do not confuse the providers or assume personal use covers team hosting.",
+      "commercial_use_policy": "forbidden"
     },
     "adsb-lol": {
       "name": "ADSB.lol API data",
@@ -160,7 +167,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "The API page specifies ODbL. Its separate contributor CC0 grant is not a replacement API-output licence. Review derived databases and publication; no availability guarantee."
+      "notes": "The API page specifies ODbL. Its separate contributor CC0 grant is not a replacement API-output licence. Review derived databases and publication; no availability guarantee.",
+      "commercial_use_policy": "allowed"
     },
     "deepstate": {
       "name": "DeepState API",
@@ -181,7 +189,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Visual/text material reuse rules are separate from API rights. Hosted cache/display and exports require express scope confirmation; no grant verified."
+      "notes": "Visual/text material reuse rules are separate from API rights. Hosted cache/display and exports require express scope confirmation; no grant verified.",
+      "commercial_use_policy": "licence_required"
     },
     "eox-2024": {
       "name": "EOxCloudless 2024",
@@ -202,7 +211,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "2018–2025 imagery is non-commercial under published free terms. The 2016 CC BY offer does not cover the implemented 2024 layer. Map export declarations are not licence verification."
+      "notes": "2018–2025 imagery is non-commercial under published free terms. The 2016 CC BY offer does not cover the implemented 2024 layer. Map export declarations are not licence verification.",
+      "commercial_use_policy": "forbidden"
     },
     "independent-rss": {
       "name": "The Independent RSS",
@@ -223,7 +233,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Request hosted display, selected-excerpt retention and report-export permission before relying on these uses."
+      "notes": "Request hosted display, selected-excerpt retention and report-export permission before relying on these uses.",
+      "commercial_use_policy": "forbidden"
     },
     "cna-rss": {
       "name": "CNA RSS",
@@ -244,7 +255,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Attribution alone does not authorise multi-user redistribution. Seek a separate content-hosting agreement."
+      "notes": "Attribution alone does not authorise multi-user redistribution. Seek a separate content-hosting agreement.",
+      "commercial_use_policy": "forbidden"
     },
     "reddit": {
       "name": "Reddit Data API",
@@ -265,7 +277,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current policy requires API approval and written commercial approval. Retention, deletion and sensitive inference need review. No current catalogue connector."
+      "notes": "Current policy requires API approval and written commercial approval. Retention, deletion and sensitive inference need review. No current catalogue connector.",
+      "commercial_use_policy": "licence_required"
     },
     "open-meteo": {
       "name": "Open-Meteo data and service",
@@ -286,7 +299,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Commercial calls to the free API are not authorised by the open data licence. Paid entitlement is unverified; no current catalogue connector."
+      "notes": "Commercial calls to the free API are not authorised by the open data licence. Paid entitlement is unverified; no current catalogue connector.",
+      "commercial_use_policy": "forbidden"
     },
     "gfw": {
       "name": "Global Fishing Watch",
@@ -305,7 +319,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "API/bulk registration is not commercial permission. Third-party data and hosted audience need review; software Apache licensing is not a data grant."
+      "notes": "API/bulk registration is not commercial permission. Third-party data and hosted audience need review; software Apache licensing is not a data grant.",
+      "commercial_use_policy": "forbidden"
     },
     "opensanctions": {
       "name": "OpenSanctions",
@@ -328,7 +343,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current paid API terms contemplate customer-facing products; do not apply the bulk internal-only rule to that contract. No purchased entitlement or catalogue connector verified."
+      "notes": "Current paid API terms contemplate customer-facing products; do not apply the bulk internal-only rule to that contract. No purchased entitlement or catalogue connector verified.",
+      "commercial_use_policy": "forbidden"
     },
     "acled": {
       "name": "ACLED event data",
@@ -350,7 +366,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Corporate/public-sector and third-party-service permissions require the appropriate agreement. Account/API entitlement is not redistribution permission."
+      "notes": "Corporate/public-sector and third-party-service permissions require the appropriate agreement. Account/API entitlement is not redistribution permission.",
+      "commercial_use_policy": "licence_required"
     },
     "openfreemap": {
       "name": "OpenFreeMap maps",
@@ -373,7 +390,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Commercial web/app maps expressly contemplated. Public service has no SLA; reconcile automated bulk collection with service terms. Existing image export must retain credits."
+      "notes": "Commercial web/app maps expressly contemplated. Public service has no SLA; reconcile automated bulk collection with service terms. Existing image export must retain credits.",
+      "commercial_use_policy": "allowed"
     },
     "osm": {
       "name": "OpenStreetMap data",
@@ -395,7 +413,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Data rights do not grant unlimited use of OSM or third-party tile/geocoding/routing servers. Review service policy separately."
+      "notes": "Data rights do not grant unlimited use of OSM or third-party tile/geocoding/routing servers. Review service policy separately.",
+      "commercial_use_policy": "allowed"
     },
     "osm-service": {
       "name": "OSM-derived public service",
@@ -417,7 +436,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Photon/Valhalla/Overpass are separate operators. Review exact public-instance terms or self-host before approving commercial service use."
+      "notes": "Photon/Valhalla/Overpass are separate operators. Review exact public-instance terms or self-host before approving commercial service use.",
+      "commercial_use_policy": "licence_required"
     },
     "natural-earth": {
       "name": "Natural Earth",
@@ -435,7 +455,8 @@
       "actions": [
         "keep"
       ],
-      "notes": "The provider explicitly permits commercial use. This does not settle third-party overlays or jurisdiction-specific boundary presentation."
+      "notes": "The provider explicitly permits commercial use. This does not settle third-party overlays or jurisdiction-specific boundary presentation.",
+      "commercial_use_policy": "allowed"
     },
     "wikidata-mixed": {
       "name": "Wikidata plus separately licensed media",
@@ -454,7 +475,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Review every included image and seed source before approving the whole mixed catalogue. Do not label the complete asset CC0."
+      "notes": "Review every included image and seed source before approving the whole mixed catalogue. Do not label the complete asset CC0.",
+      "commercial_use_policy": "licence_required"
     },
     "govuk": {
       "name": "GOV.UK published content",
@@ -476,7 +498,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "GOV.UK permits feed reuse. Service-specific terms, personal data, logos and third-party rights still need review."
+      "notes": "GOV.UK permits feed reuse. Service-specific terms, personal data, logos and third-party rights still need review.",
+      "commercial_use_policy": "allowed"
     },
     "ecb": {
       "name": "ECB reference rates and releases",
@@ -496,7 +519,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Reference rates are informational, not transaction prices. Apply the free-source notice to relevant commercial reports/subscriptions."
+      "notes": "Reference rates are informational, not transaction prices. Apply the free-source notice to relevant commercial reports/subscriptions.",
+      "commercial_use_policy": "allowed"
     },
     "gleif": {
       "name": "GLEIF LEI data",
@@ -515,7 +539,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "No licence claim is made for linked company filings or third-party source documents."
+      "notes": "No licence claim is made for linked company filings or third-party source documents.",
+      "commercial_use_policy": "allowed"
     },
     "openalex": {
       "name": "OpenAlex metadata",
@@ -534,7 +559,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "Data openness does not establish a particular API tier or allowance."
+      "notes": "Data openness does not establish a particular API tier or allowance.",
+      "commercial_use_policy": "allowed"
     },
     "crossref": {
       "name": "Crossref metadata",
@@ -554,7 +580,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Review any source-specific copyrighted abstract/full-text field before exporting more than the implemented metadata."
+      "notes": "Review any source-specific copyrighted abstract/full-text field before exporting more than the implemented metadata.",
+      "commercial_use_policy": "allowed"
     },
     "digitraffic": {
       "name": "Fintraffic Digitraffic",
@@ -574,7 +601,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Review camera-image scope separately where contributor rights differ; preserve rate limits and service identification."
+      "notes": "Review camera-image scope separately where contributor rights differ; preserve rate limits and service identification.",
+      "commercial_use_policy": "allowed"
     },
     "usgs": {
       "name": "USGS-produced data",
@@ -594,7 +622,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "This assessment covers earthquake observations, not a blanket licence for every linked page or image."
+      "notes": "This assessment covers earthquake observations, not a blanket licence for every linked page or image.",
+      "commercial_use_policy": "licence_required"
     },
     "nasa-data": {
       "name": "NASA Earth science products",
@@ -613,7 +642,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "General policy located, but per-product and EONET contributing-source terms need completion. The older Worldview copyright URL was inaccessible in this lookup."
+      "notes": "General policy located, but per-product and EONET contributing-source terms need completion. The older Worldview copyright URL was inaccessible in this lookup.",
+      "commercial_use_policy": "licence_required"
     },
     "mitre": {
       "name": "MITRE ATT&CK",
@@ -632,7 +662,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "Trademark/branding and third-party linked reports remain separate."
+      "notes": "Trademark/branding and third-party linked reports remain separate.",
+      "commercial_use_policy": "allowed"
     },
     "telegram": {
       "name": "Telegram content",
@@ -652,7 +683,8 @@
         "request_permission",
         "replace"
       ],
-      "notes": "The current terms broadly prohibit scraping/aggregation and use for AI development, enhancement or deployment without specific consent. Legal review needed for existing collectors, model input and frozen report evidence."
+      "notes": "The current terms broadly prohibit scraping/aggregation and use for AI development, enhancement or deployment without specific consent. Legal review needed for existing collectors, model input and frozen report evidence.",
+      "commercial_use_policy": "licence_required"
     },
     "youtube": {
       "name": "YouTube Data API metadata",
@@ -671,7 +703,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Review saved evidence, exports, retention/deletion and application privacy/terms before approving use. A key alone does not establish compliance."
+      "notes": "Review saved evidence, exports, retention/deletion and application privacy/terms before approving use. A key alone does not establish compliance.",
+      "commercial_use_policy": "licence_required"
     },
     "bluesky": {
       "name": "Bluesky user content",
@@ -690,7 +723,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review developer terms, deletion propagation and individual author rights; AT Protocol accessibility is not a public-domain dedication."
+      "notes": "Review developer terms, deletion propagation and individual author rights; AT Protocol accessibility is not a public-domain dedication.",
+      "commercial_use_policy": "licence_required"
     },
     "ioda": {
       "name": "IODA public data",
@@ -713,7 +747,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Resources, About and API documentation returned application shells without legal text. Official Markup Studio/data-download announcement supports analyses and visualisations but establishes no commercial redistribution licence. Live feeds and acknowledgement-gated research paths differ."
+      "notes": "Resources, About and API documentation returned application shells without legal text. Official Markup Studio/data-download announcement supports analyses and visualisations but establishes no commercial redistribution licence. Live feeds and acknowledgement-gated research paths differ.",
+      "commercial_use_policy": "licence_required"
     },
     "gdelt": {
       "name": "GDELT datasets",
@@ -732,7 +767,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "This covers GDELT data, not copyright in linked news articles, photographs or publisher excerpts."
+      "notes": "This covers GDELT data, not copyright in linked news articles, photographs or publisher excerpts.",
+      "commercial_use_policy": "allowed"
     },
     "nws": {
       "name": "NOAA National Weather Service data",
@@ -751,7 +787,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Applies to NWS/NHC/SWPC/tsunami information, not every item hosted anywhere on noaa.gov."
+      "notes": "Applies to NWS/NHC/SWPC/tsunami information, not every item hosted anywhere on noaa.gov.",
+      "commercial_use_policy": "allowed"
     },
     "geoboundaries": {
       "name": "geoBoundaries",
@@ -770,7 +807,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Confirm the packaged boundary release and preserve its source-specific metadata."
+      "notes": "Confirm the packaged boundary release and preserve its source-specific metadata.",
+      "commercial_use_policy": "allowed"
     },
     "wri-power": {
       "name": "WRI Global Power Plant Database",
@@ -789,7 +827,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Latest published database version is 1.3.0; maintenance stopped. Software MIT is separate from data rights."
+      "notes": "Latest published database version is 1.3.0; maintenance stopped. Software MIT is separate from data rights.",
+      "commercial_use_policy": "allowed"
     },
     "viina": {
       "name": "VIINA territorial-control data",
@@ -808,7 +847,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Review the exact adapted snapshot and report exports. Linked publishers retain separate article rights."
+      "notes": "Review the exact adapted snapshot and report exports. Linked publishers retain separate article rights.",
+      "commercial_use_policy": "allowed"
     },
     "celestrak": {
       "name": "CelesTrak service usage",
@@ -827,7 +867,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Policy updated 22 May 2026: download once per update (GP every two hours); stop on non-200 responses. Check scheduler/backoff compliance separately."
+      "notes": "Policy updated 22 May 2026: download once per update (GP every two hours); stop on non-200 responses. Check scheduler/backoff compliance separately.",
+      "commercial_use_policy": "licence_required"
     },
     "bbc-rss": {
       "name": "BBC RSS",
@@ -848,7 +889,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current page blocked by robots. Official September 2022 PDF section 15 requires permission for business RSS and a metadata licence. Confirm current scope before use."
+      "notes": "Current page blocked by robots. Official September 2022 PDF section 15 requires permission for business RSS and a metadata licence. Confirm current scope before use.",
+      "commercial_use_policy": "licence_required"
     },
     "guardian": {
       "name": "Guardian",
@@ -867,7 +909,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review section 3."
+      "notes": "Review section 3.",
+      "commercial_use_policy": "licence_required"
     },
     "bls": {
       "name": "US Bureau of Labor Statistics",
@@ -886,7 +929,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "BLS permits reuse of its public-domain publications; emblem and previously copyrighted images are excluded."
+      "notes": "BLS permits reuse of its public-domain publications; emblem and previously copyrighted images are excluded.",
+      "commercial_use_policy": "allowed"
     },
     "google-news": {
       "name": "Google News aggregation",
@@ -905,7 +949,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "The Other content section requires publisher permission or a lawful basis. General Google access does not license third-party News material. RSS-specific permission remains unresolved."
+      "notes": "The Other content section requires publisher permission or a lawful basis. General Google access does not license third-party News material. RSS-specific permission remains unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "dw-rss": {
       "name": "Deutsche Welle RSS",
@@ -926,7 +971,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "DW promotes German News Service integration, but that is a specific registered offering. Do not assume the existing world/business feeds have its rights. Exact feed and report/export agreement unverified."
+      "notes": "DW promotes German News Service integration, but that is a specific registered offering. Do not assume the existing world/business feeds have its rights. Exact feed and report/export agreement unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "anadolu": {
       "name": "Anadolu Agency",
@@ -945,7 +991,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official Turkish notice requires website publisher subscription and restricts use and transfer outside the contract; no project subscription or onward-use scope established."
+      "notes": "Official Turkish notice requires website publisher subscription and restricts use and transfer outside the contract; no project subscription or onward-use scope established.",
+      "commercial_use_policy": "licence_required"
     },
     "france24": {
       "name": "France 24",
@@ -964,7 +1011,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary lookup inaccessible; site search also blocked. Obtain current terms and precise feed/hosted rights from the publisher."
+      "notes": "Primary lookup inaccessible; site search also blocked. Obtain current terms and precise feed/hosted rights from the publisher.",
+      "commercial_use_policy": "licence_required"
     },
     "cgtn": {
       "name": "CGTN",
@@ -983,7 +1031,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms updated 1 May 2026 restrict extraction, derivatives and third-party copying. Commercial reuse needs express written consent."
+      "notes": "Terms updated 1 May 2026 restrict extraction, derivatives and third-party copying. Commercial reuse needs express written consent.",
+      "commercial_use_policy": "forbidden"
     },
     "scmp": {
       "name": "South China Morning Post",
@@ -1002,7 +1051,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "15 September 2026 terms section 3 covers extracts and metadata, automated collection, analytics and AI/RAG. Primary indexed terms retrieved after direct fetch failed; no exception verified."
+      "notes": "15 September 2026 terms section 3 covers extracts and metadata, automated collection, analytics and AI/RAG. Primary indexed terms retrieved after direct fetch failed; no exception verified.",
+      "commercial_use_policy": "forbidden"
     },
     "ncsc": {
       "name": "UK NCSC",
@@ -1022,7 +1072,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Official indexed terms allow OGL reuse; third-party images/material and logos are excluded. Confirm the exact report notices."
+      "notes": "Official indexed terms allow OGL reuse; third-party images/material and logos are excluded. Confirm the exact report notices.",
+      "commercial_use_policy": "allowed"
     },
     "iranwire": {
       "name": "IranWire",
@@ -1041,7 +1092,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms reserve commercial use and prohibit text/data mining and scraping. Quotation provision does not establish rights for the implemented hosted collector or AI reports."
+      "notes": "Terms reserve commercial use and prohibit text/data mining and scraping. Quotation provision does not establish rights for the implemented hosted collector or AI reports.",
+      "commercial_use_policy": "licence_required"
     },
     "meduza": {
       "name": "Meduza",
@@ -1060,7 +1112,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms candidate inaccessible and primary-domain search did not establish current reuse terms. Ask publisher for the current policy and scope."
+      "notes": "Primary terms candidate inaccessible and primary-domain search did not establish current reuse terms. Ask publisher for the current policy and scope.",
+      "commercial_use_policy": "licence_required"
     },
     "aljazeera": {
       "name": "Al Jazeera",
@@ -1079,7 +1132,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review section 6."
+      "notes": "Review section 6.",
+      "commercial_use_policy": "licence_required"
     },
     "bellingcat": {
       "name": "Bellingcat",
@@ -1098,7 +1152,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms lookup failed. Establish current publication-specific licensing before approving collection, hosted excerpts or exports."
+      "notes": "Primary terms lookup failed. Establish current publication-specific licensing before approving collection, hosted excerpts or exports.",
+      "commercial_use_policy": "licence_required"
     },
     "kyiv-independent": {
       "name": "Kyiv Independent",
@@ -1117,7 +1172,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms candidate could not be retrieved; do not confuse this publisher with The Independent."
+      "notes": "Primary terms candidate could not be retrieved; do not confuse this publisher with The Independent.",
+      "commercial_use_policy": "licence_required"
     },
     "economist": {
       "name": "The Economist",
@@ -1136,7 +1192,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official permissions page offers a licence for the specified reuse. General terms direct access blocked; no project licence or automated-feed/AI scope verified."
+      "notes": "Official permissions page offers a licence for the specified reuse. General terms direct access blocked; no project licence or automated-feed/AI scope verified.",
+      "commercial_use_policy": "licence_required"
     },
     "lemonde": {
       "name": "Le Monde RSS",
@@ -1157,7 +1214,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Other RSS exploitation requires authorisation and payment. Verify language-edition/feed scope and saved evidence with syndication."
+      "notes": "Other RSS exploitation requires authorisation and payment. Verify language-edition/feed scope and saved evidence with syndication.",
+      "commercial_use_policy": "licence_required"
     },
     "nikkei": {
       "name": "Nikkei Asia RSS",
@@ -1176,7 +1234,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Feed terms expressly prohibit republication, copying and redistribution. A subscription does not establish the required separate scope."
+      "notes": "Feed terms expressly prohibit republication, copying and redistribution. A subscription does not establish the required separate scope.",
+      "commercial_use_policy": "forbidden"
     },
     "dawn": {
       "name": "Dawn",
@@ -1195,7 +1254,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review intellectual-property terms."
+      "notes": "Review intellectual-property terms.",
+      "commercial_use_policy": "licence_required"
     },
     "nytimes": {
       "name": "New York Times",
@@ -1214,7 +1274,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms retrieval and primary-domain search blocked. Obtain current terms and RSS syndication permission."
+      "notes": "Terms retrieval and primary-domain search blocked. Obtain current terms and RSS syndication permission.",
+      "commercial_use_policy": "licence_required"
     },
     "npr": {
       "name": "NPR",
@@ -1233,7 +1294,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms blocked; indexed programme notices reserve rights and refer to permission policy. No current grant verified."
+      "notes": "Primary terms blocked; indexed programme notices reserve rights and refer to permission policy. No current grant verified.",
+      "commercial_use_policy": "licence_required"
     },
     "crisisgroup": {
       "name": "International Crisis Group",
@@ -1252,7 +1314,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary legal page returned 403; search found a feed description but no current republication grant."
+      "notes": "Primary legal page returned 403; search found a feed description but no current republication grant.",
+      "commercial_use_policy": "licence_required"
     },
     "reach-manchester": {
       "name": "Manchester Evening News",
@@ -1271,7 +1334,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms redirected to an inaccessible Tollbit page; primary-domain search did not establish reuse rights."
+      "notes": "Terms redirected to an inaccessible Tollbit page; primary-domain search did not establish reuse rights.",
+      "commercial_use_policy": "licence_required"
     },
     "herald-scotland": {
       "name": "Herald Scotland",
@@ -1290,7 +1354,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms and domain search blocked; exact publisher rights remain unresolved."
+      "notes": "Primary terms and domain search blocked; exact publisher rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-tfl": {
       "name": "TfL JamCam snapshots",
@@ -1311,7 +1376,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Registration applies. Camera guidance explicitly allows website/intranet images; retain supplied form/branding, no cropping, and update within 15 minutes. This does not cover other CCTV footage. The shared Amazon S3 hostname is linked here only for the /jamcams.tfl.gov.uk/ path constrained by this adapter, not for unrelated buckets or media."
+      "notes": "Registration applies. Camera guidance explicitly allows website/intranet images; retain supplied form/branding, no cropping, and update within 15 minutes. This does not cover other CCTV footage. The shared Amazon S3 hostname is linked here only for the /jamcams.tfl.gov.uk/ path constrained by this adapter, not for unrelated buckets or media.",
+      "commercial_use_policy": "allowed"
     },
     "camera-hongkong": {
       "name": "Hong Kong traffic snapshots",
@@ -1332,7 +1398,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms include photographs and commercial distribution. Official indexed snapshot dataset reviewed; direct dataset fetch timed out. Confirm the catalogue tis_1 endpoint against the reviewed tis_2 dataset and image owners."
+      "notes": "Terms include photographs and commercial distribution. Official indexed snapshot dataset reviewed; direct dataset fetch timed out. Confirm the catalogue tis_1 endpoint against the reviewed tis_2 dataset and image owners.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-fintraffic": {
       "name": "Fintraffic camera snapshots",
@@ -1353,7 +1420,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Fintraffic FAQ expressly permits own-service camera-image embedding via Digitraffic. Applies to supplied snapshots and metadata, not unrelated third-party or live footage."
+      "notes": "Fintraffic FAQ expressly permits own-service camera-image embedding via Digitraffic. Applies to supplied snapshots and metadata, not unrelated third-party or live footage.",
+      "commercial_use_policy": "allowed"
     },
     "camera-wsdot": {
       "name": "WSDOT camera records and imagery",
@@ -1375,7 +1443,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current travel disclaimer returned 403; indexed text established disclaimers only. API camera schema includes non-WSDOT owners. Registration and image URLs do not establish onward rights."
+      "notes": "Current travel disclaimer returned 403; indexed text established disclaimers only. API camera schema includes non-WSDOT owners. Registration and image URLs do not establish onward rights.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-caltrans": {
       "name": "Caltrans CWWP2",
@@ -1396,7 +1465,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "CWWP2 targets commercial/media applications and CCTV information; camera-specific documentation retrieval failed. Metadata distribution does not clear every image or stream."
+      "notes": "CWWP2 targets commercial/media applications and CCTV information; camera-specific documentation retrieval failed. Metadata distribution does not clear every image or stream.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-ontario": {
       "name": "Ontario 511 developer data",
@@ -1418,7 +1488,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Developer agreement requires proposed use and downstream recipients disclosed for review. Underlying image/partner rights are unverified. Direct OGL page returned 403; official indexed licence retrieved."
+      "notes": "Developer agreement requires proposed use and downstream recipients disclosed for review. Underlying image/partner rights are unverified. Direct OGL page returned 403; official indexed licence retrieved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-alberta": {
       "name": "Alberta 511",
@@ -1439,7 +1510,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Commercial reproduction/distribution/promotion requires written government permission. Registered API access is not a separate image or redistribution licence."
+      "notes": "Commercial reproduction/distribution/promotion requires written government permission. Registered API access is not a separate image or redistribution licence.",
+      "commercial_use_policy": "forbidden"
     },
     "camera-drivebc": {
       "name": "DriveBC HighwayCams",
@@ -1461,7 +1533,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official catalogue/indexed licence support metadata reuse. Historical government API repository says images and data OGL-BC; its draft status does not clear every current partner camera. Current licence fetch returned 502; catalogue rendered a shell."
+      "notes": "Official catalogue/indexed licence support metadata reuse. Historical government API repository says images and data OGL-BC; its draft status does not clear every current partner camera. Current licence fetch returned 502; catalogue rendered a shell.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-nzta": {
       "name": "NZTA Traffic and Travel information",
@@ -1480,7 +1553,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official indexed terms include snapshots/webcams; direct fetch 403. Redistributors must register independently; preserve images/notices and freshness. Charging for value-added features differs from charging for information. Current endpoint mapping unresolved after historic InfoConnect closure."
+      "notes": "Official indexed terms include snapshots/webcams; direct fetch 403. Redistributors must register independently; preserve images/notices and freshness. Charging for value-added features differs from charging for information. Current endpoint mapping unresolved after historic InfoConnect closure.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-singapore": {
       "name": "Singapore Traffic Images",
@@ -1501,7 +1575,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Official Traffic Images dataset permits commercial use. Licence excludes third-party rights/personal data; do not extend to different LTA DataMall contracts or other footage."
+      "notes": "Official Traffic Images dataset permits commercial use. Licence excludes third-party rights/personal data; do not extend to different LTA DataMall contracts or other footage.",
+      "commercial_use_policy": "allowed"
     },
     "ons": {
       "name": "Office for National Statistics",
@@ -1521,7 +1596,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Feed reuse in websites/apps is expressly contemplated. Third-party photos/illustrations/video excluded. Follow fair-use policy; permission needed to charge merely for clicking ONS links."
+      "notes": "Feed reuse in websites/apps is expressly contemplated. Third-party photos/illustrations/video excluded. Follow fair-use policy; permission needed to charge merely for clicking ONS links.",
+      "commercial_use_policy": "allowed"
     },
     "sec": {
       "name": "SEC/EDGAR",
@@ -1540,7 +1616,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "SEC permits copying/distribution of website information without its permission. This does not establish that every third-party filing attachment is copyright-free. Review fair-access policy and exact document rights."
+      "notes": "SEC permits copying/distribution of website information without its permission. This does not establish that every third-party filing attachment is copyright-free. Review fair-access policy and exact document rights.",
+      "commercial_use_policy": "licence_required"
     },
     "federal-reserve": {
       "name": "Federal Reserve Board",
@@ -1559,7 +1636,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "Non-Board material and branding require separate permission. Linked external sites retain their own conditions."
+      "notes": "Non-Board material and branding require separate permission. Linked external sites retain their own conditions.",
+      "commercial_use_policy": "allowed"
     },
     "bank-england": {
       "name": "Bank of England publications",
@@ -1578,7 +1656,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "The RSS publications path is not the statistical Database. Its OGL database grant must not be applied to speeches/releases or third-party LSEG data."
+      "notes": "The RSS publications path is not the statistical Database. Its OGL database grant must not be applied to speeches/releases or third-party LSEG data.",
+      "commercial_use_policy": "forbidden"
     },
     "bank-canada": {
       "name": "Bank of Canada publications",
@@ -1598,7 +1677,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Paid service/documents must disclose before sale/distribution that source content is freely available from the Bank. Third-party material, banknote images and logos are excluded."
+      "notes": "Paid service/documents must disclose before sale/distribution that source content is freely available from the Bank. Third-party material, banknote images and logos are excluded.",
+      "commercial_use_policy": "allowed"
     },
     "eia": {
       "name": "US Energy Information Administration",
@@ -1617,7 +1697,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "Data/files/reports/charts may be used/distributed. Protected third-party works require permission; translations identify translator and original source."
+      "notes": "Data/files/reports/charts may be used/distributed. Protected third-party works require permission; translations identify translator and original source.",
+      "commercial_use_policy": "allowed"
     },
     "bis": {
       "name": "BIS speeches/publications",
@@ -1636,7 +1717,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Limited non-statistical excerpts in products must stay within 400 words or two tables/graphs and at most 10% of the publication. Other reuse requires permission; third-party speeches need exact provenance review."
+      "notes": "Limited non-statistical excerpts in products must stay within 400 words or two tables/graphs and at most 10% of the publication. Other reuse requires permission; third-party speeches need exact provenance review.",
+      "commercial_use_policy": "allowed"
     },
     "pravda": {
       "name": "Ukrainska Pravda",
@@ -1655,7 +1737,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Free online-publication reuse has source/link conditions, but commercial access exploitation is prohibited. Interfax-Ukraine material and Getty media explicitly excluded. Clarify paid OSINT/report scope."
+      "notes": "Free online-publication reuse has source/link conditions, but commercial access exploitation is prohibited. Interfax-Ukraine material and Getty media explicitly excluded. Clarify paid OSINT/report scope.",
+      "commercial_use_policy": "licence_required"
     },
     "times-israel": {
       "name": "Times of Israel",
@@ -1674,7 +1757,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Other storage, catalogue, copying, republication and derivatives require express written permission. AP material has separate restrictions."
+      "notes": "Other storage, catalogue, copying, republication and derivatives require express written permission. AP material has separate restrictions.",
+      "commercial_use_policy": "forbidden"
     },
     "cisa": {
       "name": "CISA",
@@ -1693,7 +1777,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary policy lookup failed and official-domain search did not establish the current product-specific permission. No federal-public-domain assumption applied."
+      "notes": "Primary policy lookup failed and official-domain search did not establish the current product-specific permission. No federal-public-domain assumption applied.",
+      "commercial_use_policy": "licence_required"
     },
     "census": {
       "name": "US Census",
@@ -1712,7 +1797,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary policy lookup failed and official-domain search did not establish the current product-specific permission. No federal-public-domain assumption applied."
+      "notes": "Primary policy lookup failed and official-domain search did not establish the current product-specific permission. No federal-public-domain assumption applied.",
+      "commercial_use_policy": "licence_required"
     },
     "bank-japan": {
       "name": "Bank of Japan",
@@ -1731,7 +1817,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Text copying with credit is subject to exceptions. Commercial purposes, specified material and image data require advance permission; changes also need approval."
+      "notes": "Text copying with credit is subject to exceptions. Commercial purposes, specified material and image data require advance permission; changes also need approval.",
+      "commercial_use_policy": "licence_required"
     },
     "bank-russia": {
       "name": "Bank of Russia",
@@ -1750,7 +1837,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Official policy permits reproduction on internet servers/media with source reference. Structured site/catalogue hyperlinks require notification to Press Service; review deployment and any separately marked rights."
+      "notes": "Official policy permits reproduction on internet servers/media with source reference. Structured site/catalogue hyperlinks require notification to Press Service; review deployment and any separately marked rights.",
+      "commercial_use_policy": "allowed"
     },
     "rbi": {
       "name": "Reserve Bank of India",
@@ -1769,7 +1857,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer prohibits caching/framing except authorised uses; home-page linking requires notification and internal links require permission. No broader commercial reproduction licence verified."
+      "notes": "Disclaimer prohibits caching/framing except authorised uses; home-page linking requires notification and internal links require permission. No broader commercial reproduction licence verified.",
+      "commercial_use_policy": "licence_required"
     },
     "who": {
       "name": "WHO publications",
@@ -1788,7 +1877,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Commercial use requires permission. Confirm Disease Outbreak News product-specific notice; other WHO publication/classification licences differ, and third-party material remains separate."
+      "notes": "Commercial use requires permission. Confirm Disease Outbreak News product-specific notice; other WHO publication/classification licences differ, and third-party material remains separate.",
+      "commercial_use_policy": "forbidden"
     },
     "emsc": {
       "name": "EMSC SeismicPortal datasets",
@@ -1807,7 +1897,8 @@
         "keep",
         "attribute"
       ],
-      "notes": "The website/services/databases themselves remain copyrighted separately. Follow exact web-service documentation and dataset notice."
+      "notes": "The website/services/databases themselves remain copyrighted separately. Follow exact web-service documentation and dataset notice.",
+      "commercial_use_policy": "allowed"
     },
     "gdacs": {
       "name": "GDACS disaster information",
@@ -1828,7 +1919,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms describe modelled/uncertain disaster information, not validated official warnings. Linked EC policy licenses EU-owned content CC BY 4.0 but excludes third-party rights; exact combined data grant needs confirmation."
+      "notes": "Terms describe modelled/uncertain disaster information, not validated official warnings. Linked EC policy licenses EU-owned content CC BY 4.0 but excludes third-party rights; exact combined data grant needs confirmation.",
+      "commercial_use_policy": "licence_required"
     },
     "un-web": {
       "name": "United Nations web material",
@@ -1847,7 +1939,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary terms/copyright pages returned 403. News, press, sanctions and OHCHR products can differ; do not infer public-domain or blanket rights from UN origin."
+      "notes": "Primary terms/copyright pages returned 403. News, press, sanctions and OHCHR products can differ; do not infer public-domain or blanket rights from UN origin.",
+      "commercial_use_policy": "licence_required"
     },
     "reliefweb": {
       "name": "ReliefWeb",
@@ -1866,7 +1959,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current terms page returned a JavaScript human-verification challenge. API appname approval does not settle originating report publishers or onward reuse."
+      "notes": "Current terms page returned a JavaScript human-verification challenge. API appname approval does not settle originating report publishers or onward reuse.",
+      "commercial_use_policy": "licence_required"
     },
     "hapi": {
       "name": "HDX HAPI",
@@ -1885,7 +1979,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Documentation candidates inaccessible and official API home returned 403. Review each original humanitarian dataset licence and HAPI terms; app identifier is not permission."
+      "notes": "Documentation candidates inaccessible and official API home returned 403. Review each original humanitarian dataset licence and HAPI terms; app identifier is not permission.",
+      "commercial_use_policy": "licence_required"
     },
     "wto": {
       "name": "World Trade Organization",
@@ -1904,7 +1999,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Primary copyright candidate inaccessible; official contact page returned 402. No current publication/RSS commercial terms verified."
+      "notes": "Primary copyright candidate inaccessible; official contact page returned 402. No current publication/RSS commercial terms verified.",
+      "commercial_use_policy": "licence_required"
     },
     "ifrc-go": {
       "name": "IFRC GO",
@@ -1923,7 +2019,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms route rendered only the application shell. No copyright/data licence could be extracted; review exact GO records and originator rights."
+      "notes": "Terms route rendered only the application shell. No copyright/data licence could be extracted; review exact GO records and originator rights.",
+      "commercial_use_policy": "licence_required"
     },
     "tass": {
       "name": "TASS text and RSS",
@@ -1942,7 +2039,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "RSS is explicitly covered. Free text use is limited to permitted non-commercial cases and at most 30% of quoted material, unchanged. Paid access/advertising-supported use needs an agreement."
+      "notes": "RSS is explicitly covered. Free text use is limited to permitted non-commercial cases and at most 30% of quoted material, unchanged. Paid access/advertising-supported use needs an agreement.",
+      "commercial_use_policy": "forbidden"
     },
     "bleepingcomputer": {
       "name": "BleepingComputer",
@@ -1961,7 +2059,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Written permission is required for publication/sale/redistribution. Stored copies outside personal non-commercial use and business use of contributions are restricted."
+      "notes": "Written permission is required for publication/sale/redistribution. Stored copies outside personal non-commercial use and business use of contributions are restricted.",
+      "commercial_use_policy": "forbidden"
     },
     "paloalto": {
       "name": "Palo Alto Networks / Unit 42",
@@ -1980,7 +2079,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "General site terms restrict ordinary access to single-copy personal/non-commercial internal use. Check any specific Unit 42 blog permission or existing business contract; none verified."
+      "notes": "General site terms restrict ordinary access to single-copy personal/non-commercial internal use. Check any specific Unit 42 blog permission or existing business contract; none verified.",
+      "commercial_use_policy": "forbidden"
     },
     "microsoft-web": {
       "name": "Microsoft website documents",
@@ -1999,7 +2099,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Document permission excludes network posting/broadcast and modifications unless another licence applies. Check individual security-blog exceptions rather than extending software licences to articles."
+      "notes": "Document permission excludes network posting/broadcast and modifications unless another licence applies. Check individual security-blog exceptions rather than extending software licences to articles.",
+      "commercial_use_policy": "forbidden"
     },
     "camera-asfinag": {
       "name": "ASFINAG webcams",
@@ -2021,7 +2122,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current official webcam page still links March 2012 partner and August 2007 general terms. Ordinary use is private. Approved partners may link supplied indexes; broader redistribution and multi-camera views need a separate agreement. Public index access does not clear proxying, copying snapshots or video."
+      "notes": "Current official webcam page still links March 2012 partner and August 2007 general terms. Ordinary use is private. Approved partners may link supplied indexes; broader redistribution and multi-camera views need a separate agreement. Public index access does not clear proxying, copying snapshots or video.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-rws": {
       "name": "Rijkswaterstaat cameras",
@@ -2042,7 +2144,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official indexed copyright policy inspected; direct retrieval timed out twice. Images and video are excluded from CC0. Camera-specific index, snapshot, embed and stream rights remain unresolved."
+      "notes": "Official indexed copyright policy inspected; direct retrieval timed out twice. Images and video are excluded from CC0. Camera-specific index, snapshot, embed and stream rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-iceland": {
       "name": "Vegagerdin data and photographs",
@@ -2063,7 +2166,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Current Icelandic service terms expressly include cameras and photographs unless otherwise stated. English page retains older September 2014 wording. Commercial hosting and redistribution of covered metadata/snapshots are conditional; separate live-video/player grants were not established."
+      "notes": "Current Icelandic service terms expressly include cameras and photographs unless otherwise stated. English page retains older September 2014 wording. Commercial hosting and redistribution of covered metadata/snapshots are conditional; separate live-video/player grants were not established.",
+      "commercial_use_policy": "allowed"
     },
     "camera-dgt": {
       "name": "DGT camera metadata",
@@ -2084,7 +2188,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official hourly static-road-data catalogue labels camera metadata Creative Commons Attribution without a version. General legal notice indexed restrictions conflict with broad reuse assumptions; direct legal retrieval failed. No snapshot, embed or live-footage grant established."
+      "notes": "Official hourly static-road-data catalogue labels camera metadata Creative Commons Attribution without a version. General legal notice indexed restrictions conflict with broad reuse assumptions; direct legal retrieval failed. No snapshot, embed or live-footage grant established.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-nsw": {
       "name": "Transport for NSW camera metadata",
@@ -2107,7 +2212,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Dataset describes image URLs, coordinates and descriptions, not an express licence to every linked image. Official indexed data licence defaults to CC BY 4.0; portal contract requires registration and no credential sharing. Direct Hub pages returned 403 and PDF retrieval failed. Separate image/stream rights remain unverified."
+      "notes": "Dataset describes image URLs, coordinates and descriptions, not an express licence to every linked image. Official indexed data licence defaults to CC BY 4.0; portal contract requires registration and no credential sharing. Direct Hub pages returned 403 and PDF retrieval failed. Separate image/stream rights remain unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-scotland": {
       "name": "Traffic Scotland images and indexes",
@@ -2129,7 +2235,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Direct links to camera images and private-network use require express authorisation. Developer hub offers approved subscribers images and camera lists over FTP. Subscriber portal requires authentication; actual agreement is unverified."
+      "notes": "Direct links to camera images and private-network use require express authorisation. Developer hub offers approved subscribers images and camera lists over FTP. Subscriber portal requires authentication; actual agreement is unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-norway": {
       "name": "Statens vegvesen DATEX cameras",
@@ -2151,7 +2258,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Provider expressly offers licensed camera images to media/service providers, with registration. This covers supplied DATEX metadata and images; it does not establish rights for unrelated HLS, website embeds or non-DATEX endpoints. The implemented Atlas road-weather-and-view measurement-sites API exposes stillImageUrl and HLS videoUrl. Equivalence to the licensed DATEX delivery has not been established; implemented-path commercial and hosted rights remain unknown."
+      "notes": "Provider expressly offers licensed camera images to media/service providers, with registration. This covers supplied DATEX metadata and images; it does not establish rights for unrelated HLS, website embeds or non-DATEX endpoints. The implemented Atlas road-weather-and-view measurement-sites API exposes stillImageUrl and HLS videoUrl. Equivalence to the licensed DATEX delivery has not been established; implemented-path commercial and hosted rights remain unknown.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-ireland": {
       "name": "TII traffic cameras",
@@ -2172,7 +2280,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "General PSI policy permits commercial reuse of covered released information, excluding personal and unauthorised third-party content. Traffic-map help returned an application shell; no camera-specific index, snapshot, embed or stream release established."
+      "notes": "General PSI policy permits commercial reuse of covered released information, excluding personal and unauthorised third-party content. Traffic-map help returned an application shell; no camera-specific index, snapshot, embed or stream release established.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-skyline": {
       "name": "SkylineWebcams",
@@ -2193,7 +2302,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "April 2020 terms cover frames, images, footage and text. Supplied sharing links do not authorise feed extraction, proxying, recording or a new player. Downloading, screenshots, copying, publication and commercial exploitation require written VisioRay permission."
+      "notes": "April 2020 terms cover frames, images, footage and text. Supplied sharing links do not authorise feed extraction, proxying, recording or a new player. Downloading, screenshots, copying, publication and commercial exploitation require written VisioRay permission.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-earthcam": {
       "name": "EarthCam",
@@ -2216,7 +2326,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms permit one personal non-commercial home copy. Linking policy prohibits live-image embedding and page framing. FAQ distinguishes prescribed social sharing from licensed website/app embeds and rebroadcasting. No directory-data redistribution grant established."
+      "notes": "Terms permit one personal non-commercial home copy. Linking policy prohibits live-image embedding and page framing. FAQ distinguishes prescribed social sharing from licensed website/app embeds and rebroadcasting. No directory-data redistribution grant established.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-opencctv": {
       "name": "OpenCCTV directory",
@@ -2240,7 +2351,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official About, sourcing and privacy pages describe an index/embedding service operated by Impactful Technology LLC. They do not establish an index reuse licence or underlying camera permission. Targeted search and failed terms routes did not resolve commercial hosting, snapshots or streams."
+      "notes": "Official About, sourcing and privacy pages describe an index/embedding service operated by Impactful Technology LLC. They do not establish an index reuse licence or underlying camera permission. Targeted search and failed terms routes did not resolve commercial hosting, snapshots or streams.",
+      "commercial_use_policy": "licence_required"
     },
     "interfax": {
       "name": "Interfax",
@@ -2259,7 +2371,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Rules distinguish personal copying and purpose-justified quotation from licensed reuse; they expressly reserve press/broadcast/RSS retransmission and require a written agreement for contractual use. No general commercial aggregation grant exists in these rules. Third-party material has its own restrictions."
+      "notes": "Rules distinguish personal copying and purpose-justified quotation from licensed reuse; they expressly reserve press/broadcast/RSS retransmission and require a written agreement for contractual use. No general commercial aggregation grant exists in these rules. Third-party material has its own restrictions.",
+      "commercial_use_policy": "licence_required"
     },
     "the-bell": {
       "name": "The Bell",
@@ -2278,7 +2391,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "October 2024 subscription terms prohibit sharing subscription content commercially or non-commercially. They do not establish a public RSS republication licence. Obtain endpoint-specific rights instead of treating a subscription as permission."
+      "notes": "October 2024 subscription terms prohibit sharing subscription content commercially or non-commercially. They do not establish a public RSS republication licence. Obtain endpoint-specific rights instead of treating a subscription as permission.",
+      "commercial_use_policy": "licence_required"
     },
     "intellinews": {
       "name": "bne IntelliNews",
@@ -2297,7 +2411,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms page returned 403. Indexed subscription-renewal text does not establish content rights. Commercial/hosted publication and exports remain unverified."
+      "notes": "Terms page returned 403. Indexed subscription-renewal text does not establish content rights. Commercial/hosted publication and exports remain unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "abc-australia": {
       "name": "ABC Australia",
@@ -2316,7 +2431,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "July 2026 terms reserve ABC and licensor rights. Reproduction, republication, adaptation and translation beyond specific service exceptions require prior written permission. Library Sales is the content permission route."
+      "notes": "July 2026 terms reserve ABC and licensor rights. Reproduction, republication, adaptation and translation beyond specific service exceptions require prior written permission. Library Sales is the content permission route.",
+      "commercial_use_policy": "forbidden"
     },
     "arab-news": {
       "name": "Arab News",
@@ -2337,7 +2453,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms restrict public or commercial copying, editing, redistribution and derivative works without written publisher approval; photographs require specific consent. Terms URL redirected to the official backup host."
+      "notes": "Terms restrict public or commercial copying, editing, redistribution and derivative works without written publisher approval; photographs require specific consent. Terms URL redirected to the official backup host.",
+      "commercial_use_policy": "licence_required"
     },
     "euronews": {
       "name": "Euronews and Africanews",
@@ -2356,7 +2473,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms expressly cover both domains. Personal downloading does not authorise commercial exploitation, republication, translation or redistribution; permission from publisher and relevant rightsholders is required."
+      "notes": "Terms expressly cover both domains. Personal downloading does not authorise commercial exploitation, republication, translation or redistribution; permission from publisher and relevant rightsholders is required.",
+      "commercial_use_policy": "forbidden"
     },
     "ndtv": {
       "name": "NDTV",
@@ -2377,7 +2495,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current official service terms prohibit copying, storage, publication and systematic retrieval unless expressly permitted. Older general content terms allow personal non-commercial use only. Confirm the exact Hindi RSS and AI summarisation grant before commercial hosting."
+      "notes": "Current official service terms prohibit copying, storage, publication and systematic retrieval unless expressly permitted. Older general content terms allow personal non-commercial use only. Confirm the exact Hindi RSS and AI summarisation grant before commercial hosting.",
+      "commercial_use_policy": "licence_required"
     },
     "hindustan-times": {
       "name": "Hindustan Times",
@@ -2396,7 +2515,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Review sections C and D."
+      "notes": "Review sections C and D.",
+      "commercial_use_policy": "licence_required"
     },
     "indian-express": {
       "name": "The Indian Express",
@@ -2415,7 +2535,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms restrict systematic databases, hosted retrieval, curation and third-party storage. Section 9 expressly addresses AI summarisation and commercial use requiring a binding licence. A public feed or subscription does not establish those rights."
+      "notes": "Terms restrict systematic databases, hosted retrieval, curation and third-party storage. Section 9 expressly addresses AI summarisation and commercial use requiring a binding licence. A public feed or subscription does not establish those rights.",
+      "commercial_use_policy": "forbidden"
     },
     "infobae": {
       "name": "Infobae",
@@ -2434,7 +2555,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Section 3 reserves reproduction, reuse, public communication and distribution absent express written authorisation. Access does not transfer rights. Obtain a grant covering excerpts, translation, hosting and exports."
+      "notes": "Section 3 reserves reproduction, reuse, public communication and distribution absent express written authorisation. Access does not transfer rights. Obtain a grant covering excerpts, translation, hosting and exports.",
+      "commercial_use_policy": "licence_required"
     },
     "national-uae": {
       "name": "The National",
@@ -2453,7 +2575,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Copyright section restricts storage, redistribution and other website/network use without prior written consent. Publisher and licensed third-party materials have separate ownership."
+      "notes": "Copyright section restricts storage, redistribution and other website/network use without prior written consent. Publisher and licensed third-party materials have separate ownership.",
+      "commercial_use_policy": "forbidden"
     },
     "bangkok-post": {
       "name": "Bangkok Post",
@@ -2472,7 +2595,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Targeted official-domain search did not establish reuse terms; candidate terms page was inaccessible."
+      "notes": "Targeted official-domain search did not establish reuse terms; candidate terms page was inaccessible.",
+      "commercial_use_policy": "licence_required"
     },
     "batimes": {
       "name": "Buenos Aires Times",
@@ -2491,7 +2615,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Targeted official-domain search and candidate terms route did not establish applicable reuse rights."
+      "notes": "Targeted official-domain search and candidate terms route did not establish applicable reuse rights.",
+      "commercial_use_policy": "licence_required"
     },
     "antara": {
       "name": "ANTARA English",
@@ -2510,7 +2635,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Search located copyright notices and syndication references, but candidate copyright page was inaccessible and no endpoint-specific reuse grant established."
+      "notes": "Search located copyright notices and syndication references, but candidate copyright page was inaccessible and no endpoint-specific reuse grant established.",
+      "commercial_use_policy": "licence_required"
     },
     "cdt": {
       "name": "China Digital Times",
@@ -2529,7 +2655,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Targeted search found third-party documents rather than a publisher-wide licence; candidate copyright route was inaccessible."
+      "notes": "Targeted search found third-party documents rather than a publisher-wide licence; candidate copyright route was inaccessible.",
+      "commercial_use_policy": "licence_required"
     },
     "express-urdu": {
       "name": "Express Urdu",
@@ -2548,7 +2675,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Search result /terms was a news-tag page, not legal terms. Candidate terms-and-conditions route failed."
+      "notes": "Search result /terms was a news-tag page, not legal terms. Candidate terms-and-conditions route failed.",
+      "commercial_use_policy": "licence_required"
     },
     "cbc": {
       "name": "CBC",
@@ -2567,7 +2695,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official terms retrieval was blocked by robots; no current publisher reuse grant verified."
+      "notes": "Official terms retrieval was blocked by robots; no current publisher reuse grant verified.",
+      "commercial_use_policy": "licence_required"
     },
     "abc-us": {
       "name": "ABC News US",
@@ -2586,7 +2715,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "RSS/terms search did not establish the current publisher licence; candidate terms route failed. Do not apply Australian ABC terms."
+      "notes": "RSS/terms search did not establish the current publisher licence; candidate terms route failed. Do not apply Australian ABC terms.",
+      "commercial_use_policy": "licence_required"
     },
     "cbs": {
       "name": "CBS News",
@@ -2605,7 +2735,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate current corporate terms could not be retrieved. Historical local-feed terms do not resolve this world-news endpoint."
+      "notes": "Candidate current corporate terms could not be retrieved. Historical local-feed terms do not resolve this world-news endpoint.",
+      "commercial_use_policy": "licence_required"
     },
     "japan-times": {
       "name": "The Japan Times",
@@ -2624,7 +2755,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; commercial/hosted reuse remains unverified."
+      "notes": "Candidate terms route was inaccessible; commercial/hosted reuse remains unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "middle-east-eye": {
       "name": "Middle East Eye",
@@ -2643,7 +2775,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route timed out; no rights verified."
+      "notes": "Candidate terms route timed out; no rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "pbs": {
       "name": "PBS NewsHour",
@@ -2662,7 +2795,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms route returned 403; no current reuse rights verified."
+      "notes": "Terms route returned 403; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "rappler": {
       "name": "Rappler",
@@ -2681,7 +2815,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "elpais": {
       "name": "El Pais",
@@ -2700,7 +2835,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate legal-notice route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate legal-notice route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "publico": {
       "name": "Publico",
@@ -2719,7 +2855,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "mercopress": {
       "name": "MercoPress",
@@ -2738,7 +2875,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "mexico-news": {
       "name": "Mexico News Daily",
@@ -2757,7 +2895,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "newsroom": {
       "name": "Newsroom NZ",
@@ -2776,7 +2915,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms retrieval/search was blocked by robots. A donation-site privacy result is not a news-content licence."
+      "notes": "Terms retrieval/search was blocked by robots. A donation-site privacy result is not a news-content licence.",
+      "commercial_use_policy": "licence_required"
     },
     "premium-times": {
       "name": "Premium Times",
@@ -2795,7 +2935,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "nation": {
       "name": "Nation Africa",
@@ -2814,7 +2955,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "myjoyonline": {
       "name": "MyJoyOnline",
@@ -2833,7 +2975,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "sky": {
       "name": "Sky News",
@@ -2852,7 +2995,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "diplomat": {
       "name": "The Diplomat",
@@ -2871,7 +3015,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "timesca": {
       "name": "The Times of Central Asia",
@@ -2890,7 +3035,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "sabc": {
       "name": "SABC News",
@@ -2909,7 +3055,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; no current reuse rights verified."
+      "notes": "Candidate terms route was inaccessible; no current reuse rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "hrana-en": {
       "name": "HRANA English",
@@ -2928,7 +3075,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "About page and targeted copyright search did not locate applicable content-reuse terms; annual-report copyright notices do not establish an RSS licence."
+      "notes": "About page and targeted copyright search did not locate applicable content-reuse terms; annual-report copyright notices do not establish an RSS licence.",
+      "commercial_use_policy": "licence_required"
     },
     "hrana-fa": {
       "name": "HRANA Persian",
@@ -2947,7 +3095,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Targeted official-domain search returned copyrighted reports, not a feed-wide reuse licence."
+      "notes": "Targeted official-domain search returned copyrighted reports, not a feed-wide reuse licence.",
+      "commercial_use_policy": "licence_required"
     },
     "oc-media": {
       "name": "OC Media",
@@ -2966,7 +3115,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route failed; targeted republishing search did not establish a grant. Partner republication examples are not permission for this project."
+      "notes": "Candidate terms route failed; targeted republishing search did not establish a grant. Partner republication examples are not permission for this project.",
+      "commercial_use_policy": "licence_required"
     },
     "dabanga": {
       "name": "Radio Dabanga",
@@ -2985,7 +3135,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "About page and copyright search do not establish a reuse licence. Hosted third-party reports and images retain their own rights."
+      "notes": "About page and copyright search do not establish a reuse licence. Hosted third-party reports and images retain their own rights.",
+      "commercial_use_policy": "licence_required"
     },
     "insightcrime": {
       "name": "InSight Crime",
@@ -3004,7 +3155,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate republishing route failed; targeted official-domain search did not locate applicable commercial or hosted terms."
+      "notes": "Candidate republishing route failed; targeted official-domain search did not locate applicable commercial or hosted terms.",
+      "commercial_use_policy": "licence_required"
     },
     "stv": {
       "name": "STV News",
@@ -3023,7 +3175,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official terms route displayed its heading and navigation without readable substantive terms. No permission inferred from the empty page."
+      "notes": "Official terms route displayed its heading and navigation without readable substantive terms. No permission inferred from the empty page.",
+      "commercial_use_policy": "licence_required"
     },
     "insider": {
       "name": "The Insider",
@@ -3042,7 +3195,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage was inspected; no applicable reuse licence was found in the returned content."
+      "notes": "Official homepage was inspected; no applicable reuse licence was found in the returned content.",
+      "commercial_use_policy": "licence_required"
     },
     "mediazona": {
       "name": "Mediazona",
@@ -3061,7 +3215,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage was inspected; no applicable reuse licence was found in the returned content."
+      "notes": "Official homepage was inspected; no applicable reuse licence was found in the returned content.",
+      "commercial_use_policy": "licence_required"
     },
     "record": {
       "name": "The Record",
@@ -3080,7 +3235,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Homepage links privacy and contact, but no content licence was established; attempted terms-of-use route failed."
+      "notes": "Homepage links privacy and contact, but no content licence was established; attempted terms-of-use route failed.",
+      "commercial_use_policy": "licence_required"
     },
     "acsc": {
       "name": "Australian Cyber Security Centre",
@@ -3099,7 +3255,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "January 2026 reviewed policy excludes coat of arms, logos, third-party content and specifically excluded material."
+      "notes": "January 2026 reviewed policy excludes coat of arms, logos, third-party content and specifically excluded material.",
+      "commercial_use_policy": "allowed"
     },
     "cert-eu": {
       "name": "CERT-EU",
@@ -3118,7 +3275,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Legal notice permits reuse with credit and changes identified; excludes marks and unauthorised third-party rights. Check individual report notices and personal-image permissions."
+      "notes": "Legal notice permits reuse with credit and changes identified; excludes marks and unauthorised third-party rights. Check individual report notices and personal-image permissions.",
+      "commercial_use_policy": "allowed"
     },
     "cert-fr": {
       "name": "CERT-FR",
@@ -3137,7 +3295,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Legal notice applies the open licence unless otherwise stated. ANSSI logos/marks require separate approval; republication does not imply ANSSI endorsement."
+      "notes": "Legal notice applies the open licence unless otherwise stated. ANSSI logos/marks require separate approval; republication does not imply ANSSI endorsement.",
+      "commercial_use_policy": "allowed"
     },
     "ic3": {
       "name": "FBI IC3 public advisories",
@@ -3156,7 +3315,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Site policy permits information distribution/copying subject to restrictions on FBI seal/name/initials and implied endorsement. Does not clear external or specifically copyrighted material."
+      "notes": "Site policy permits information distribution/copying subject to restrictions on FBI seal/name/initials and implied endorsement. Does not clear external or specifically copyrighted material.",
+      "commercial_use_policy": "allowed"
     },
     "deutschlandfunk": {
       "name": "Deutschlandfunk",
@@ -3175,7 +3335,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms restrict reproduction, storage, translation and redistribution, including excerpts, without prior written consent. Advertising, sponsorship and subscription benefit are expressly commercial; sharing links does not license copied content."
+      "notes": "Terms restrict reproduction, storage, translation and redistribution, including excerpts, without prior written consent. Advertising, sponsorship and subscription benefit are expressly commercial; sharing links does not license copied content.",
+      "commercial_use_policy": "forbidden"
     },
     "copernicus": {
       "name": "Copernicus Data Space footprints",
@@ -3196,7 +3357,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Sentinel legal notice permits lawful reproduction, distribution and adaptation with source notices. Other portal content is non-commercial and not generally redistributable. Confirm that exact catalogue footprints are covered Sentinel data/service information rather than assuming all portal metadata inherits the grant."
+      "notes": "Sentinel legal notice permits lawful reproduction, distribution and adaptation with source notices. Other portal content is non-commercial and not generally redistributable. Confirm that exact catalogue footprints are covered Sentinel data/service information rather than assuming all portal metadata inherits the grant.",
+      "commercial_use_policy": "licence_required"
     },
     "world-bank": {
       "name": "World Bank indicators",
@@ -3217,7 +3379,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Summary expressly permits commercial products, adaptation and sharing unless indicator metadata states otherwise. Additional dispute terms apply. Linked full dataset terms redirected to general terms, so retain this limit and check the exact dataset before deployment."
+      "notes": "Summary expressly permits commercial products, adaptation and sharing unless indicator metadata states otherwise. Additional dispute terms apply. Linked full dataset terms redirected to general terms, so retain this limit and check the exact dataset before deployment.",
+      "commercial_use_policy": "licence_required"
     },
     "parliament": {
       "name": "UK Parliament",
@@ -3236,7 +3399,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Commercial products, copying, publishing, distribution and adaptation of covered Parliamentary information are allowed. Personal data, unreleased information, marks and unauthorised third-party rights are excluded."
+      "notes": "Commercial products, copying, publishing, distribution and adaptation of covered Parliamentary information are allowed. Personal data, unreleased information, marks and unauthorised third-party rights are excluded.",
+      "commercial_use_policy": "allowed"
     },
     "openaq": {
       "name": "OpenAQ API and underlying observations",
@@ -3257,7 +3421,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Platform terms require registered authorised access, prohibit API-key transfer and services substantially duplicating/competing with OpenAQ. Underlying providers have distinct terms and OpenAQ gives no blanket assurance of their rights. Exact observations require provider-level licence checks."
+      "notes": "Platform terms require registered authorised access, prohibit API-key transfer and services substantially duplicating/competing with OpenAQ. Underlying providers have distinct terms and OpenAQ gives no blanket assurance of their rights. Exact observations require provider-level licence checks.",
+      "commercial_use_policy": "licence_required"
     },
     "google-dns": {
       "name": "Google Public DNS",
@@ -3278,7 +3443,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Public DNS incorporates Google APIs terms. API access does not establish third-party content rights. Permanent copies, cache duration, redistribution and attribution conditions require evaluation for retained DNS evidence."
+      "notes": "Public DNS incorporates Google APIs terms. API access does not establish third-party content rights. Permanent copies, cache duration, redistribution and attribution conditions require evaluation for retained DNS evidence.",
+      "commercial_use_policy": "licence_required"
     },
     "openai-search": {
       "name": "OpenAI web-search evidence",
@@ -3300,7 +3466,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Agreement assigns OpenAI rights in output between the parties while prohibiting infringement of third-party rights. It does not give a blanket licence to copy discovered pages or photographs. Inspect the actual account agreement and original publishers for retained excerpts and exports."
+      "notes": "Agreement assigns OpenAI rights in output between the parties while prohibiting infringement of third-party rights. It does not give a blanket licence to copy discovered pages or photographs. Inspect the actual account agreement and original publishers for retained excerpts and exports.",
+      "commercial_use_policy": "licence_required"
     },
     "tilezen-terrain": {
       "name": "Tilezen/Mapzen terrain",
@@ -3319,7 +3486,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official project attribution file requires multiple source credits and directs users to investigate each data provider. Hosted-service credit differs from underlying data. No single global product/export grant inferred."
+      "notes": "Official project attribution file requires multiple source credits and directs users to investigate each data provider. Hosted-service credit differs from underlying data. No single global product/export grant inferred.",
+      "commercial_use_policy": "licence_required"
     },
     "state-travel": {
       "name": "US Consular Affairs advisories",
@@ -3338,7 +3506,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Policy permits copying/distribution of unmarked site information. Many photographs are copyrighted and require owner permission; Country Commercial Guides have separate international copyright. Linked sites are not cleared."
+      "notes": "Policy permits copying/distribution of unmarked site information. Many photographs are copyrighted and require owner permission; Country Commercial Guides have separate international copyright. Linked sites are not cleared.",
+      "commercial_use_policy": "allowed"
     },
     "whitehouse": {
       "name": "White House",
@@ -3357,7 +3526,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Official policy says government-produced site materials are not copyright protected, but the government can hold assigned rights. Check the actual item and third-party/mark rights rather than treating the whole host as public domain."
+      "notes": "Official policy says government-produced site materials are not copyright protected, but the government can hold assigned rights. Check the actual item and third-party/mark rights rather than treating the whole host as public domain.",
+      "commercial_use_policy": "allowed"
     },
     "cccs": {
       "name": "Canadian Centre for Cyber Security",
@@ -3376,7 +3546,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate public-site terms routes failed. Separate authenticated portal terms and a report copyright warning do not resolve the public-advisory feed."
+      "notes": "Candidate public-site terms routes failed. Separate authenticated portal terms and a report copyright warning do not resolve the public-advisory feed.",
+      "commercial_use_policy": "licence_required"
     },
     "belfast-live": {
       "name": "Belfast Live",
@@ -3395,7 +3566,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official terms route returned 402; do not automatically substitute another Reach publication policy."
+      "notes": "Official terms route returned 402; do not automatically substitute another Reach publication policy.",
+      "commercial_use_policy": "licence_required"
     },
     "birmingham-live": {
       "name": "Birmingham Live",
@@ -3414,7 +3586,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official terms route returned 402; exact publication rights remain unverified."
+      "notes": "Official terms route returned 402; exact publication rights remain unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "wales-online": {
       "name": "Wales Online",
@@ -3433,7 +3606,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official terms route returned 402; exact publication rights remain unverified."
+      "notes": "Official terms route returned 402; exact publication rights remain unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "northern-echo": {
       "name": "Northern Echo",
@@ -3452,7 +3626,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; do not substitute another Newsquest publication policy."
+      "notes": "Candidate terms route was inaccessible; do not substitute another Newsquest publication policy.",
+      "commercial_use_policy": "licence_required"
     },
     "rfi": {
       "name": "RFI",
@@ -3471,7 +3646,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official-domain search/retrieval was robots-blocked. Historic RSS instructions do not establish current commercial redistribution rights."
+      "notes": "Official-domain search/retrieval was robots-blocked. Historic RSS instructions do not establish current commercial redistribution rights.",
+      "commercial_use_policy": "licence_required"
     },
     "ukrinform": {
       "name": "Ukrinform",
@@ -3490,7 +3666,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; reuse grant not verified."
+      "notes": "Candidate terms route was inaccessible; reuse grant not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "trt": {
       "name": "TRT Haber",
@@ -3509,7 +3686,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; reuse grant not verified."
+      "notes": "Candidate terms route was inaccessible; reuse grant not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "belta": {
       "name": "Belta",
@@ -3528,7 +3706,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate about/copyright routes were inaccessible; reuse grant not verified."
+      "notes": "Candidate about/copyright routes were inaccessible; reuse grant not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "tehran-times": {
       "name": "Tehran Times",
@@ -3547,7 +3726,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route was inaccessible; reuse grant not verified."
+      "notes": "Candidate terms route was inaccessible; reuse grant not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "maariv": {
       "name": "Maariv",
@@ -3566,7 +3746,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route could not be opened; reuse grant not verified."
+      "notes": "Candidate terms route could not be opened; reuse grant not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "contracts-finder": {
       "name": "Contracts Finder",
@@ -3585,7 +3766,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms, help and homepage retrieval failed. A hosted tender attachment is not evidence of the API dataset licence."
+      "notes": "Candidate terms, help and homepage retrieval failed. A hosted tender attachment is not evidence of the API dataset licence.",
+      "commercial_use_policy": "licence_required"
     },
     "sslmate": {
       "name": "SSLMate Certificate Transparency search",
@@ -3604,7 +3786,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate API terms and general terms routes failed; no product-specific commercial/export rights verified."
+      "notes": "Candidate API terms and general terms routes failed; no product-specific commercial/export rights verified.",
+      "commercial_use_policy": "licence_required"
     },
     "rdap": {
       "name": "RDAP discovery and registry responses",
@@ -3623,7 +3806,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "IANA discovery and candidate terms routes failed. Each responding registry may apply its own terms and privacy limits; bootstrap discovery is not a blanket registry-data licence."
+      "notes": "IANA discovery and candidate terms routes failed. Each responding registry may apply its own terms and privacy limits; bootstrap discovery is not a blanket registry-data licence.",
+      "commercial_use_policy": "licence_required"
     },
     "defcon-social": {
       "name": "DEF CON Social",
@@ -3642,7 +3826,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Instance terms route was inaccessible. Software licensing does not license users posts; owner rights and federation terms remain unresolved."
+      "notes": "Instance terms route was inaccessible. Software licensing does not license users posts; owner rights and federation terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "eupolicy-social": {
       "name": "EU Policy Social",
@@ -3661,7 +3846,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Instance terms route was inaccessible. User-post commercial/hosted reuse rights remain unresolved."
+      "notes": "Instance terms route was inaccessible. User-post commercial/hosted reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "journa-host": {
       "name": "Journa.host",
@@ -3680,7 +3866,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Instance terms route was inaccessible. User-post commercial/hosted reuse rights remain unresolved."
+      "notes": "Instance terms route was inaccessible. User-post commercial/hosted reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "us-dod": {
       "name": "US Department of Defense news",
@@ -3699,7 +3886,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official candidate image-policy retrieval failed; no whole-feed reuse grant inferred from government affiliation."
+      "notes": "Official candidate image-policy retrieval failed; no whole-feed reuse grant inferred from government affiliation.",
+      "commercial_use_policy": "licence_required"
     },
     "russia-mfa": {
       "name": "Russian Ministry of Foreign Affairs",
@@ -3718,7 +3906,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate copyright route was inaccessible; commercial and hosted reuse not verified."
+      "notes": "Candidate copyright route was inaccessible; commercial and hosted reuse not verified.",
+      "commercial_use_policy": "licence_required"
     },
     "cert-ua": {
       "name": "CERT-UA",
@@ -3737,7 +3926,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage returned no readable content; applicable terms not established."
+      "notes": "Official homepage returned no readable content; applicable terms not established.",
+      "commercial_use_policy": "licence_required"
     },
     "talos": {
       "name": "Cisco Talos blog",
@@ -3756,7 +3946,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Blog footer did not establish a reuse policy. Cisco.com general terms were inspected but their scope cannot automatically be extended to this separate blog domain."
+      "notes": "Blog footer did not establish a reuse policy. Cisco.com general terms were inspected but their scope cannot automatically be extended to this separate blog domain.",
+      "commercial_use_policy": "licence_required"
     },
     "sans-isc": {
       "name": "SANS Internet Storm Center",
@@ -3775,7 +3966,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage showed copyright and privacy links; candidate terms route failed. API availability does not establish a diary-content reuse licence."
+      "notes": "Official homepage showed copyright and privacy links; candidate terms route failed. API availability does not establish a diary-content reuse licence.",
+      "commercial_use_policy": "licence_required"
     },
     "google-threat-blog": {
       "name": "Google Threat Intelligence blog",
@@ -3794,7 +3986,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Blog and cloud-service terms were inspected without establishing a specific blog republication licence. Do not substitute GCP service terms or developer-documentation licences."
+      "notes": "Blog and cloud-service terms were inspected without establishing a specific blog republication licence. Do not substitute GCP service terms or developer-documentation licences.",
+      "commercial_use_policy": "licence_required"
     },
     "agencia-brasil": {
       "name": "Agencia Brasil",
@@ -3813,7 +4006,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage has a reserved-rights footer; targeted search did not establish applicable English-feed reuse terms."
+      "notes": "Official homepage has a reserved-rights footer; targeted search did not establish applicable English-feed reuse terms.",
+      "commercial_use_policy": "licence_required"
     },
     "radio-okapi": {
       "name": "Radio Okapi",
@@ -3832,7 +4026,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official homepage inspected; candidate conditions route failed and no applicable reuse licence established."
+      "notes": "Official homepage inspected; candidate conditions route failed and no applicable reuse licence established.",
+      "commercial_use_policy": "licence_required"
     },
     "companies-house": {
       "name": "Companies House API",
@@ -3851,7 +4046,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Developer documentation and linked register guidance inspected; candidate API terms routes failed. GOV.UK guidance-page OGL does not itself establish all company-file/officer/PSC data rights. Confirm register reuse and privacy obligations."
+      "notes": "Developer documentation and linked register guidance inspected; candidate API terms routes failed. GOV.UK guidance-page OGL does not itself establish all company-file/officer/PSC data rights. Confirm register reuse and privacy obligations.",
+      "commercial_use_policy": "licence_required"
     },
     "aiddata": {
       "name": "AidData projects",
@@ -3870,7 +4066,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Dataset catalogue inspected after candidate terms route failed. Exact project dataset/version licence and upstream documents remain unresolved."
+      "notes": "Dataset catalogue inspected after candidate terms route failed. Exact project dataset/version licence and upstream documents remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "ofac": {
       "name": "OFAC SDN list",
@@ -3889,7 +4086,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official FAQ and Treasury privacy-page lookup did not establish an endpoint-specific reuse grant. Government affiliation alone is not recorded as permission."
+      "notes": "Official FAQ and Treasury privacy-page lookup did not establish an endpoint-specific reuse grant. Government affiliation alone is not recorded as permission.",
+      "commercial_use_policy": "licence_required"
     },
     "mastodon-social": {
       "name": "Mastodon.social",
@@ -3908,7 +4106,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms redirect returned an application shell without substantive terms. User posts remain independently owned; no blanket commercial reuse grant established."
+      "notes": "Terms redirect returned an application shell without substantive terms. User posts remain independently owned; no blanket commercial reuse grant established.",
+      "commercial_use_policy": "licence_required"
     },
     "eu-sanctions": {
       "name": "EU financial sanctions data",
@@ -3927,7 +4126,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Portal legal notice applies CC0 to portal metadata and CC BY 4.0 to EU-owned editorial content. Linked resources require their own licence; exact financial-sanctions download scope remains unresolved."
+      "notes": "Portal legal notice applies CC0 to portal metadata and CC BY 4.0 to EU-owned editorial content. Linked resources require their own licence; exact financial-sanctions download scope remains unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "aisstream": {
       "name": "AISstream",
@@ -3946,7 +4146,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official documentation supports a backend proxy supplying needed client information and operational persistence. It limits connections and subscription changes. These service directions do not establish a general commercial redistribution licence or attribution rule."
+      "notes": "Official documentation supports a backend proxy supplying needed client information and operational persistence. It limits connections and subscription changes. These service directions do not establish a general commercial redistribution licence or attribution rule.",
+      "commercial_use_policy": "licence_required"
     },
     "barentswatch": {
       "name": "BarentsWatch open AIS",
@@ -3967,7 +4168,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "November 2023 terms explicitly permit commercial reuse/redistribution with credit. Registration required, no misleading affiliation, and high loads require contact. Special-access data is excluded; retain delivered data contents."
+      "notes": "November 2023 terms explicitly permit commercial reuse/redistribution with credit. Registration required, no misleading affiliation, and high loads require contact. Special-access data is excluded; retain delivered data contents.",
+      "commercial_use_policy": "allowed"
     },
     "gvp": {
       "name": "Smithsonian Global Volcanism Program",
@@ -3988,7 +4190,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "GVP identifies its principal reports/database compilation as federal-employee products but also requires written permission for commercial products/services incorporating content. Smithsonian general terms permit specifically CC0-designated content, not all GVP material. Resolve this scope conflict before commercial use."
+      "notes": "GVP identifies its principal reports/database compilation as federal-employee products but also requires written permission for commercial products/services incorporating content. Smithsonian general terms permit specifically CC0-designated content, not all GVP material. Resolve this scope conflict before commercial use.",
+      "commercial_use_policy": "licence_required"
     },
     "isw": {
       "name": "Institute for the Study of War",
@@ -4007,7 +4210,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "January 2026 policy inspected in official indexed text; direct retrieval returned 403. It requires consent for modification, commercial exploitation and integration into analytical systems, datasets and mapping platforms. Bulk/API redistribution is prohibited without permission; limited published-form sharing/excerpts do not clear this integration."
+      "notes": "January 2026 policy inspected in official indexed text; direct retrieval returned 403. It requires consent for modification, commercial exploitation and integration into analytical systems, datasets and mapping platforms. Bulk/API redistribution is prohibited without permission; limited published-form sharing/excerpts do not clear this integration.",
+      "commercial_use_policy": "licence_required"
     },
     "jtwc": {
       "name": "Joint Typhoon Warning Center",
@@ -4026,7 +4230,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official public site could not be retrieved. Historical research/partner access is not a commercial public-feed licence; third-party graphics and inputs remain unresolved."
+      "notes": "Official public site could not be retrieved. Historical research/partner access is not a commercial public-feed licence; third-party graphics and inputs remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "launch-library": {
       "name": "The Space Devs Launch Library",
@@ -4047,7 +4252,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Official FAQ permits data use in any form and sharing resulting creations, encouraging added value, local caching and backend client delivery. LL2 free limit is 15 calls/hour/IP. No blanket grant established for linked third-party imagery/webcasts."
+      "notes": "Official FAQ permits data use in any form and sharing resulting creations, encouraging added value, local caching and backend client delivery. LL2 free limit is 15 calls/hour/IP. No blanket grant established for linked third-party imagery/webcasts.",
+      "commercial_use_policy": "allowed"
     },
     "nga-navwarnings": {
       "name": "NGA Navigational Warnings",
@@ -4068,7 +4274,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official maritime product description establishes purpose, not reuse rights. MSI legal-disclaimer content could not be retrieved. Do not substitute Digital Nautical Chart terms for NavWarnings."
+      "notes": "Official maritime product description establishes purpose, not reuse rights. MSI legal-disclaimer content could not be retrieved. Do not substitute Digital Nautical Chart terms for NavWarnings.",
+      "commercial_use_policy": "licence_required"
     },
     "ransomware-live": {
       "name": "Ransomware.live",
@@ -4089,7 +4296,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Provider announcement requires clients to use the integrating product backend and written permission for publishing raw data or another API/feed. Linked full terms could not be resolved. Commercial derivative scope, exact fair-use limits and third-party media remain unresolved."
+      "notes": "Provider announcement requires clients to use the integrating product backend and written permission for publishing raw data or another API/feed. Linked full terms could not be resolved. Commercial derivative scope, exact fair-use limits and third-party media remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "ucdp": {
       "name": "UCDP candidate events",
@@ -4108,7 +4316,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "FAQ updated May 2026 expressly identifies CC BY 4.0 and dataset-specific citations. Commercial hosted reuse is conditional on exceptions and attribution. API operational terms and underlying news/media rights are separate."
+      "notes": "FAQ updated May 2026 expressly identifies CC BY 4.0 and dataset-specific citations. Commercial hosted reuse is conditional on exceptions and attribution. API operational terms and underlying news/media rights are separate.",
+      "commercial_use_policy": "allowed"
     },
     "russianwarship": {
       "name": "General Staff figures via russianwarship.rip",
@@ -4130,7 +4339,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official site credits General Staff and offers a widget, but neither establishes broad commercial/API redistribution. API documentation returned no readable terms. Intermediary service rights and accompanying graphics need separate review."
+      "notes": "Official site credits General Staff and offers a widget, but neither establishes broad commercial/API redistribution. API documentation returned no readable terms. Intermediary service rights and accompanying graphics need separate review.",
+      "commercial_use_policy": "licence_required"
     },
     "oryx": {
       "name": "Oryx equipment losses",
@@ -4149,7 +4359,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official site has an Oryx copyright notice; no commercial, hosted-republication or dataset redistribution grant was located. Public article and linked evidence do not clear third-party media."
+      "notes": "Official site has an Oryx copyright notice; no commercial, hosted-republication or dataset redistribution grant was located. Public article and linked evidence do not clear third-party media.",
+      "commercial_use_policy": "licence_required"
     },
     "warspotting": {
       "name": "WarSpotting",
@@ -4168,7 +4379,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "FAQ permits credited nonprofit research, academia and news reporting and requests API use instead of scraping. Commercial users must contact first. Dataset permission does not establish ownership of photo evidence."
+      "notes": "FAQ permits credited nonprofit research, academia and news reporting and requests API use instead of scraping. Commercial users must contact first. Dataset permission does not establish ownership of photo evidence.",
+      "commercial_use_policy": "licence_required"
     },
     "ocha-frontline": {
       "name": "OCHA hosted Ukraine front line",
@@ -4189,7 +4401,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Exact layer metadata could not be retrieved. OCHA guidance requires dataset-specific licences or humanitarian-only designations and says old COD/FOD terms are no longer valid. Hosting and UN boundary disclaimers do not establish commercial rights."
+      "notes": "Exact layer metadata could not be retrieved. OCHA guidance requires dataset-specific licences or humanitarian-only designations and says old COD/FOD terms are no longer valid. Hosting and UN boundary disclaimers do not establish commercial rights.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-alaska": {
       "name": "Alaska 511",
@@ -4210,7 +4423,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer provides warranties, not an affirmative reuse licence. Keyed developer application access and image URLs do not clear index or pixels."
+      "notes": "Disclaimer provides warranties, not an affirmative reuse licence. Keyed developer application access and image URLs do not clear index or pixels.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-arizona": {
       "name": "Arizona 511",
@@ -4231,7 +4445,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "ADOT retains distribution rights and warns reproduction may require permission. AZ511 traffic disclaimer adds no grant; obtain scope for hosted indexes/images."
+      "notes": "ADOT retains distribution rights and warns reproduction may require permission. AZ511 traffic disclaimer adds no grant; obtain scope for hosted indexes/images.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-connecticut": {
       "name": "Connecticut CTroads",
@@ -4252,7 +4467,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer inaccessible. Developer help describes keys, requests and cameras but no verified image/index redistribution licence. Current catalogue ctroads.org and documentation ctroads.com require endpoint correspondence review."
+      "notes": "Disclaimer inaccessible. Developer help describes keys, requests and cameras but no verified image/index redistribution licence. Current catalogue ctroads.org and documentation ctroads.com require endpoint correspondence review.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-florida": {
       "name": "Florida 511",
@@ -4273,7 +4489,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official agreement catalogue lists recipient-specific CCTV memoranda/video agreements. Public FL511 viewing is not a blanket grant; obtain applicable FDOT agreement. Candidate disclaimer inaccessible."
+      "notes": "Official agreement catalogue lists recipient-specific CCTV memoranda/video agreements. Public FL511 viewing is not a blanket grant; obtain applicable FDOT agreement. Candidate disclaimer inaccessible.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-georgia": {
       "name": "Georgia 511",
@@ -4294,7 +4511,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer inaccessible. Official indexed developer documentation describes registered access and cameras without a verified reuse grant."
+      "notes": "Disclaimer inaccessible. Official indexed developer documentation describes registered access and cameras without a verified reuse grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-idaho": {
       "name": "Idaho 511",
@@ -4313,7 +4531,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer identifies ITD property and prohibits sale, value-added processing for resale or other for-profit distribution. Non-commercial hosted/camera-specific rights remain insufficiently specified."
+      "notes": "Disclaimer identifies ITD property and prohibits sale, value-added processing for resale or other for-profit distribution. Non-commercial hosted/camera-specific rights remain insufficiently specified.",
+      "commercial_use_policy": "forbidden"
     },
     "camera-illinois": {
       "name": "Travel Midwest / Illinois",
@@ -4334,7 +4553,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Registered redistribution programme covers information and JPEG camera snapshots, with at least five-minute XML/image request intervals. Commercial applications are contemplated, subject to approval and originating-agency conditions. It is not a full-motion grant."
+      "notes": "Registered redistribution programme covers information and JPEG camera snapshots, with at least five-minute XML/image request intervals. Commercial applications are contemplated, subject to approval and originating-agency conditions. It is not a full-motion grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-indiana": {
       "name": "Indiana TrafficWise",
@@ -4355,7 +4575,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Site returned an application shell and disclaimer was inaccessible. Vendor XML request programme is an access route, not agency reuse permission."
+      "notes": "Site returned an application shell and disclaimer was inaccessible. Vendor XML request programme is an access route, not agency reuse permission.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-iowa": {
       "name": "Iowa DOT cameras",
@@ -4377,7 +4598,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "General photo/video and commercial republication require written consent. GIS CC0/CC BY exceptions cannot automatically be applied to camera pixels. Exact camera catalogue licence did not extract."
+      "notes": "General photo/video and commercial republication require written consent. GIS CC0/CC BY exceptions cannot automatically be applied to camera pixels. Exact camera catalogue licence did not extract.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-kansas": {
       "name": "Kansas KanDrive",
@@ -4399,7 +4621,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official description was indexed but direct retrieval returned 403; application homepage was a shell. Vendor XML request programme gives no agency image licence."
+      "notes": "Official description was indexed but direct retrieval returned 403; application homepage was a shell. Vendor XML request programme gives no agency image licence.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-louisiana": {
       "name": "Louisiana 511",
@@ -4420,7 +4643,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer addresses accounts, warranties and liability. Developer application access does not establish a commercial camera index/image grant."
+      "notes": "Disclaimer addresses accounts, warranties and liability. Developer application access does not establish a commercial camera index/image grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-massachusetts": {
       "name": "Massachusetts MassDOT cameras",
@@ -4442,7 +4666,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official indexed developer agreement permits limited revocable reproduction/redistribution and profitable projects. Camera documentation specifies a TrafficLand JPEG feed at one frame per 120 seconds; obtain its terms. Direct PDFs failed; no full-motion grant."
+      "notes": "Official indexed developer agreement permits limited revocable reproduction/redistribution and profitable projects. Camera documentation specifies a TrafficLand JPEG feed at one frame per 120 seconds; obtain its terms. Direct PDFs failed; no full-motion grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-michigan": {
       "name": "Michigan MiDrive",
@@ -4461,7 +4686,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official research references Policy 10212 and signed camera/video-sharing documents but is not the operative licence. Operational contact found; current reuse policy remains unverified."
+      "notes": "Official research references Policy 10212 and signed camera/video-sharing documents but is not the operative licence. Operational contact found; current reuse policy remains unverified.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-minnesota": {
       "name": "Minnesota 511",
@@ -4482,7 +4708,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Homepage returned an application shell; official search did not establish camera terms. Vendor access programme does not grant agency image rights."
+      "notes": "Homepage returned an application shell; official search did not establish camera terms. Vendor access programme does not grant agency image rights.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-nevada": {
       "name": "Nevada 511",
@@ -4504,7 +4731,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer inaccessible. Developer camera schema and public-viewing/non-recording FAQ establish no commercial index or image redistribution grant."
+      "notes": "Disclaimer inaccessible. Developer camera schema and public-viewing/non-recording FAQ establish no commercial index or image redistribution grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-newengland": {
       "name": "New England 511",
@@ -4523,7 +4751,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Separate Maine, New Hampshire and Vermont terms were inspected. They address service acceptance, responsibilities, warranties and fees, without an affirmative camera copyright or commercial redistribution grant. Seek each agency separately."
+      "notes": "Separate Maine, New Hampshire and Vermont terms were inspected. They address service acceptance, responsibilities, warranties and fees, without an affirmative camera copyright or commercial redistribution grant. Seek each agency separately.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-newyork": {
       "name": "New York 511",
@@ -4544,7 +4773,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Programme covers camera images/video and an authorised map embed. Official indexed access agreement supports approved value-added redistribution with business/market and intermediate-recipient disclosure; canonical agreement unreadable. Obtain product-specific approval."
+      "notes": "Programme covers camera images/video and an authorised map embed. Official indexed access agreement supports approved value-added redistribution with business/market and intermediate-recipient disclosure; canonical agreement unreadable. Obtain product-specific approval.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-northcarolina": {
       "name": "North Carolina DriveNC",
@@ -4563,7 +4793,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "NCDOT permits unaltered non-commercial copying/distribution unless otherwise stated. Third-party licensed photos/video may be excluded. No special commercial DriveNC camera grant verified."
+      "notes": "NCDOT permits unaltered non-commercial copying/distribution unless otherwise stated. Third-party licensed photos/video may be excluded. No special commercial DriveNC camera grant verified.",
+      "commercial_use_policy": "forbidden"
     },
     "camera-oregon": {
       "name": "Oregon TripCheck",
@@ -4585,7 +4816,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official inventory documentation includes partner-camera still-image URLs. Developer subscription requires terms not retrieved here; endpoint access does not clear pixels."
+      "notes": "Official inventory documentation includes partner-camera still-image URLs. Developer subscription requires terms not retrieved here; endpoint access does not clear pixels.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-pennsylvania": {
       "name": "Pennsylvania 511",
@@ -4606,7 +4838,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "February 2014 programme permits approved value-added camera redistribution including advertising, requires multi-user developer-server replication, and restricts images to current traffic. Other OSINT purposes require written approval. Confirm current applicability; general site terms are more restrictive."
+      "notes": "February 2014 programme permits approved value-added camera redistribution including advertising, requires multi-user developer-server replication, and restricts images to current traffic. Other OSINT purposes require written approval. Confirm current applicability; general site terms are more restrictive.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-puertorico": {
       "name": "Puerto Rico ITS",
@@ -4628,7 +4861,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official searches did not locate camera reuse terms. Candidate ITS About.aspx and TermsOfUse.aspx routes failed and were not established as operative terms."
+      "notes": "Official searches did not locate camera reuse terms. Candidate ITS About.aspx and TermsOfUse.aspx routes failed and were not established as operative terms.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-utah": {
       "name": "Utah UDOT Traffic",
@@ -4649,7 +4883,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Public-service warranties and road cautions provide no affirmative camera reuse licence. Camera API describes metadata and image URLs, not pixel rights."
+      "notes": "Public-service warranties and road cautions provide no affirmative camera reuse licence. Camera API describes metadata and image URLs, not pixel rights.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-manitoba": {
       "name": "Manitoba 511",
@@ -4671,7 +4906,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer/terms retrieval failed. Camera/view schemas document access but do not establish image or index reuse rights."
+      "notes": "Disclaimer/terms retrieval failed. Camera/view schemas document access but do not establish image or index reuse rights.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-newbrunswick": {
       "name": "New Brunswick 511",
@@ -4693,7 +4929,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Disclaimer/terms retrieval failed. Developer docs and FAQ mention freely viewable government/private-operator images; free viewing is not redistribution permission."
+      "notes": "Disclaimer/terms retrieval failed. Developer docs and FAQ mention freely viewable government/private-operator images; free viewing is not redistribution permission.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-newfoundland": {
       "name": "Newfoundland and Labrador 511",
@@ -4712,7 +4949,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms address use, warranties, termination and third-party links without an affirmative commercial or hosted camera grant."
+      "notes": "Terms address use, warranties, termination and third-party links without an affirmative commercial or hosted camera grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-novascotia": {
       "name": "Nova Scotia 511",
@@ -4731,7 +4969,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Posted traffic/weather information may be reproduced personally and publicly for non-commercial purposes, subject to exceptions. Commercial permission and third-party imagery/full-motion rights are not granted."
+      "notes": "Posted traffic/weather information may be reproduced personally and publicly for non-commercial purposes, subject to exceptions. Commercial permission and third-party imagery/full-motion rights are not granted.",
+      "commercial_use_policy": "forbidden"
     },
     "camera-saskatchewan": {
       "name": "Saskatchewan Highway Hotline",
@@ -4753,7 +4992,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Linked general policy requires advance written commercial permission and Crown credit for qualifying accurate non-commercial copies. Linked terms exclude other gov.sk.ca sites; exact Hotline coverage is ambiguous."
+      "notes": "Linked general policy requires advance written commercial permission and Crown credit for qualifying accurate non-commercial copies. Linked terms exclude other gov.sk.ca sites; exact Hotline coverage is ambiguous.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-yukon": {
       "name": "Yukon 511",
@@ -4772,7 +5012,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official indexed disclaimer addresses warranties, privacy and third parties, without an affirmative commercial/hosted camera reuse grant."
+      "notes": "Official indexed disclaimer addresses warranties, privacy and third parties, without an affirmative commercial/hosted camera reuse grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-ottawa": {
       "name": "Ottawa traffic cameras",
@@ -4794,7 +5035,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "FAQ expressly supports developer applications delivering images from their own servers. Registered still-image API has a minimum 60-second interval and invokes Ottawa OGL v2. MTO-owned cameras and other unauthorised third-party rights remain excluded; no continuous-video grant. The implemented /beta/camera_list and /map/camera?id= paths differ from the registered /opendata/camera certificate API. No equivalence of their delivery rights was verified, so the implemented-path commercial and hosted rights remain unknown."
+      "notes": "FAQ expressly supports developer applications delivering images from their own servers. Registered still-image API has a minimum 60-second interval and invokes Ottawa OGL v2. MTO-owned cameras and other unauthorised third-party rights remain excluded; no continuous-video grant. The implemented /beta/camera_list and /map/camera?id= paths differ from the registered /opendata/camera certificate API. No equivalence of their delivery rights was verified, so the implemented-path commercial and hosted rights remain unknown.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-montreal": {
       "name": "Montreal live traffic cameras",
@@ -4815,7 +5057,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Live-index catalogue route inaccessible. A separate annotated archive dataset has CC BY 4.0, which cannot be extended to live image bytes or current index without linkage."
+      "notes": "Live-index catalogue route inaccessible. A separate annotated archive dataset has CC BY 4.0, which cannot be extended to live image bytes or current index without linkage.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-quebec": {
       "name": "Quebec traffic camera metadata",
@@ -4836,7 +5079,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official indexed metadata dataset licenses locations and video URLs under CC BY 4.0. This does not clear image bytes or partner footage. FAQ describes refreshed five-second loops and stills, not necessarily continuous live video."
+      "notes": "Official indexed metadata dataset licenses locations and video URLs under CC BY 4.0. This does not clear image bytes or partner footage. FAQ describes refreshed five-second loops and stills, not necessarily continuous live video.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-toronto": {
       "name": "Toronto traffic camera metadata",
@@ -4857,7 +5101,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Dataset page identifies Toronto OGL, but substantive dynamic description did not extract. OGL permits commercial distribution of covered information with acknowledgement and third-party exclusions; linked image bytes/footage are not proven covered."
+      "notes": "Dataset page identifies Toronto OGL, but substantive dynamic description did not extract. OGL permits commercial distribution of covered information with acknowledgement and third-party exclusions; linked image bytes/footage are not proven covered.",
+      "commercial_use_policy": "licence_required"
     },
     "osiris-curated": {
       "name": "OSIRIS-derived mixed camera catalogue",
@@ -4879,7 +5124,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Pinned upstream licence inspected and local camera NOTICE/CAMERA_WORLD scope checked. MIT supports reuse of covered copied material with notice, but does not grant underlying owners image, stream, poster, recording or export rights. Curated regions mix YouTube, Skyline links and other operators."
+      "notes": "Pinned upstream licence inspected and local camera NOTICE/CAMERA_WORLD scope checked. MIT supports reuse of covered copied material with notice, but does not grant underlying owners image, stream, poster, recording or export rights. Curated regions mix YouTube, Skyline links and other operators.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-ipcamlive": {
       "name": "IPCamLive platform",
@@ -4898,7 +5144,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Terms bind visitors and subscribers and govern streaming service use. They do not establish a blanket third-party right to redistribute every hosted camera, snapshot or recording. Obtain actual owner authorisation and delivery scope."
+      "notes": "Terms bind visitors and subscribers and govern streaming service use. They do not establish a blanket third-party right to redistribute every hosted camera, snapshot or recording. Obtain actual owner authorisation and delivery scope.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-youtube": {
       "name": "YouTube camera embeds",
@@ -4917,7 +5164,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership."
+      "notes": "YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-camsecure": {
       "name": "Camsecure",
@@ -4936,7 +5184,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; streaming supplier is not necessarily camera owner."
+      "notes": "Candidate terms route inaccessible; streaming supplier is not necessarily camera owner.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-argyll": {
       "name": "Argyll and Bute council",
@@ -4955,7 +5204,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate policy route inaccessible; exact image reuse terms remain unresolved."
+      "notes": "Candidate policy route inaccessible; exact image reuse terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-isleofman": {
       "name": "Isle of Man government cameras",
@@ -4974,7 +5224,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate legal notice inaccessible; exact image reuse terms remain unresolved."
+      "notes": "Candidate legal notice inaccessible; exact image reuse terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-western-isles": {
       "name": "Comhairle nan Eilean Siar cameras",
@@ -4993,7 +5244,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved."
+      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-tamar": {
       "name": "Tamar Crossings cameras",
@@ -5012,7 +5264,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved."
+      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-chuv": {
       "name": "CHUV camera",
@@ -5031,7 +5284,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved."
+      "notes": "Candidate terms route inaccessible; exact image reuse terms remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-uab": {
       "name": "UAB camera CDN",
@@ -5050,7 +5304,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate copyright route inaccessible; CDN hostname does not establish every camera owner or terms."
+      "notes": "Candidate copyright route inaccessible; CDN hostname does not establish every camera owner or terms.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-uss": {
       "name": "USS Group delivery host",
@@ -5069,7 +5324,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; delivery supplier and camera-owner rights remain separate."
+      "notes": "Candidate terms route inaccessible; delivery supplier and camera-owner rights remain separate.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-butler": {
       "name": "Butler Sheriff cameras",
@@ -5088,7 +5344,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate terms route inaccessible; public agency ownership is not treated as a footage reuse grant."
+      "notes": "Candidate terms route inaccessible; public agency ownership is not treated as a footage reuse grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-home-solutions": {
       "name": "Home Solutions Bulgaria",
@@ -5107,7 +5364,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Provider site returned 403; image/stream reuse rights remain unresolved."
+      "notes": "Provider site returned 403; image/stream reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-tkchopin": {
       "name": "TK Chopin cameras",
@@ -5126,7 +5384,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Provider site inaccessible; image/stream reuse rights remain unresolved."
+      "notes": "Provider site inaccessible; image/stream reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-smartburgas": {
       "name": "Smart Burgas cameras",
@@ -5145,7 +5404,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Provider site inaccessible; image/stream reuse rights remain unresolved."
+      "notes": "Provider site inaccessible; image/stream reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-carsprogram": {
       "name": "CARS platform delivery",
@@ -5164,7 +5424,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate provider site inaccessible; a shared traffic-platform hostname does not establish agency-specific image rights. public.carsprogram.org is shared by Indiana, Minnesota and Massachusetts adapters; a host-wide licence is not inferred from any one agency programme."
+      "notes": "Candidate provider site inaccessible; a shared traffic-platform hostname does not establish agency-specific image rights. public.carsprogram.org is shared by Indiana, Minnesota and Massachusetts adapters; a host-wide licence is not inferred from any one agency programme.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-uzivo": {
       "name": "Uzivo Beograd cameras",
@@ -5183,7 +5444,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate provider site inaccessible; image/stream reuse rights remain unresolved."
+      "notes": "Candidate provider site inaccessible; image/stream reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-mgw": {
       "name": "MGW delivery hosts",
@@ -5202,7 +5464,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate provider site inaccessible; exact owner and hosted image/stream rights remain unresolved."
+      "notes": "Candidate provider site inaccessible; exact owner and hosted image/stream rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-neotel": {
       "name": "Neotel delivery host",
@@ -5221,7 +5484,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate provider site inaccessible; delivery service does not establish camera-owner permission."
+      "notes": "Candidate provider site inaccessible; delivery service does not establish camera-owner permission.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-kcscout": {
       "name": "Kansas City Scout",
@@ -5240,7 +5504,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Candidate disclaimer inaccessible; exact camera index/pixel reuse rights remain unresolved."
+      "notes": "Candidate disclaimer inaccessible; exact camera index/pixel reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-river-japan": {
       "name": "MLIT river cameras",
@@ -5259,7 +5524,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official portal inspected without establishing an applicable camera-image licence. Do not infer snapshot redistribution from public display."
+      "notes": "Official portal inspected without establishing an applicable camera-image licence. Do not infer snapshot redistribution from public display.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-amss": {
       "name": "AMSS Serbia cameras",
@@ -5278,7 +5544,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official provider homepage inspected without an applicable commercial camera reuse grant."
+      "notes": "Official provider homepage inspected without an applicable commercial camera reuse grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-chavo": {
       "name": "Chavo weather camera",
@@ -5297,7 +5564,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official weather page returned no readable terms. Image/stream reuse rights remain unresolved."
+      "notes": "Official weather page returned no readable terms. Image/stream reuse rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-inmoves": {
       "name": "Inmoves delivery service",
@@ -5316,7 +5584,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official provider homepage shows copyright/contact but no applicable downstream camera-owner grant."
+      "notes": "Official provider homepage shows copyright/contact but no applicable downstream camera-owner grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-slupsk": {
       "name": "Slupsk city cameras",
@@ -5335,7 +5604,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official city homepage links cameras and privacy, but no applicable camera reuse licence was established."
+      "notes": "Official city homepage links cameras and privacy, but no applicable camera reuse licence was established.",
+      "commercial_use_policy": "licence_required"
     },
     "mixed-osm-wikidata": {
       "name": "Combined OSM/Wikidata/reference assets",
@@ -5356,7 +5626,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Existing code and resource notes identify OSM breadth, Wikidata coordinates/identities and curated text. Component licences do not establish a single unrestricted grant over every curated record or linked source. Ground-station and entity files contain repository-authored notes; no project-wide content licence was found."
+      "notes": "Existing code and resource notes identify OSM breadth, Wikidata coordinates/identities and curated text. Component licences do not establish a single unrestricted grant over every curated record or linked source. Ground-station and entity files contain repository-authored notes; no project-wide content licence was found.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-autostrade": {
       "name": "Autostrade Italy",
@@ -5375,7 +5646,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official site readable, legal-page lookup failed. No applicable index, still-image or video reuse grant found."
+      "notes": "Official site readable, legal-page lookup failed. No applicable index, still-image or video reuse grant found.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-derbyshire": {
       "name": "Derbyshire traffic cameras",
@@ -5396,7 +5668,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "General council data policy declares CC0 unless otherwise stated and asks credit, timely updates and short caches. Coverage of photographs on the separate camera application remains unresolved. Camera information describes ten-minute stills."
+      "notes": "General council data policy declares CC0 unless otherwise stated and asks credit, timely updates and short caches. Coverage of photographs on the separate camera application remains unresolved. Camera information describes ten-minute stills.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-durham": {
       "name": "Durham traffic cameras",
@@ -5417,7 +5690,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "October 2024 location-data record specifies OGL; September 2026 successor record has no licence set. Reconcile metadata licences; contractor-hosted image rights remain unresolved."
+      "notes": "October 2024 location-data record specifies OGL; September 2026 successor record has no licence set. Reconcile metadata licences; contractor-hosted image rights remain unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-estonia": {
       "name": "Estonia Tarktee",
@@ -5438,7 +5712,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official DATEX/current-service pages returned application shells. No applicable camera metadata/image licence established; third-party licence claims were excluded."
+      "notes": "Official DATEX/current-service pages returned application shells. No applicable camera metadata/image licence established; third-party licence claims were excluded.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-hungary": {
       "name": "Hungary Utinform",
@@ -5460,7 +5735,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Service required JavaScript. Official operator announcements identify Slovenian and Austrian camera integration, so underlying owner rights vary. No commercial reuse grant verified."
+      "notes": "Service required JavaScript. Official operator announcements identify Slovenian and Austrian camera integration, so underlying owner rights vary. No commercial reuse grant verified.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-lithuania": {
       "name": "Lithuania Eismoinfo",
@@ -5479,7 +5755,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Service returned no readable terms. Licences for other traffic datasets cannot be transferred to camera metadata or pixels."
+      "notes": "Service returned no readable terms. Licences for other traffic datasets cannot be transferred to camera metadata or pixels.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-luxembourg": {
       "name": "Luxembourg CITA",
@@ -5500,7 +5777,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Exact cameras.kml location resource is CC0 in the official dataset, updated August 2022. This clears covered metadata, not separately hosted stills or video; CITA homepage adds no media grant."
+      "notes": "Exact cameras.kml location resource is CC0 in the official dataset, updated August 2022. This clears covered metadata, not separately hosted stills or video; CITA homepage adds no media grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-lyon": {
       "name": "GrandLyon Criter cameras",
@@ -5521,7 +5799,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official catalogue updated 9 October 2026 applies Licence Ouverte 2.0. It describes locations and access to minute-by-minute stills; whether separately hosted image bytes are covered remains ambiguous."
+      "notes": "Official catalogue updated 9 October 2026 applies Licence Ouverte 2.0. It describes locations and access to minute-by-minute stills; whether separately hosted image bytes are covered remains ambiguous.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-madrid": {
       "name": "Madrid Informo cameras",
@@ -5542,7 +5821,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "CC BY 4.0 dataset expressly covers KML locations and five-minute snapshots. General terms permit commercial reproduction and public communication, with source/update metadata preserved and no misleading changes. No continuous-video grant."
+      "notes": "CC BY 4.0 dataset expressly covers KML locations and five-minute snapshots. General terms permit commercial reproduction and public communication, with source/update metadata preserved and no misleading changes. No continuous-video grant.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-northeast": {
       "name": "North East UTMC camera service",
@@ -5563,7 +5843,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "OGL 3.0 service documentation explicitly includes names, locations and still JPEGs and identifies netrafficcams as a consumer. Scope to matching documented service cameras, not arbitrary feeds."
+      "notes": "OGL 3.0 service documentation explicitly includes names, locations and still JPEGs and identifies netrafficcams as a consumer. Scope to matching documented service cameras, not arbitrary feeds.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-northyorkshire": {
       "name": "North Yorkshire weather cameras",
@@ -5582,7 +5863,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Council terms did not establish a camera grant. The restrictive Ordnance Survey map clause applies to map data and cannot automatically classify camera photographs."
+      "notes": "Council terms did not establish a camera grant. The restrictive Ordnance Survey map clause applies to map data and cannot automatically classify camera photographs.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-queensland": {
       "name": "Queensland Traffic cameras",
@@ -5604,7 +5886,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official GeoJSON webcam metadata is CC BY 4.0; developer page encourages applications. Separate website copyright restricts content not expressly CC-licensed to personal/non-commercial use. Exact image coverage unresolved."
+      "notes": "Official GeoJSON webcam metadata is CC BY 4.0; developer page encourages applications. Separate website copyright restricts content not expressly CC-licensed to personal/non-commercial use. Exact image coverage unresolved.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-taiwan": {
       "name": "Taiwan Highway Bureau CCTV",
@@ -5627,7 +5910,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official dataset uses Government Data Licence 1.0; service rules require Highway Bureau credit and at least 60 seconds between retrievals. Schema includes stream URLs/intended display, but does not conclusively clear separately delivered streams for commercial proxying/archives."
+      "notes": "Official dataset uses Government Data Licence 1.0; service rules require Highway Bureau credit and at least 60 seconds between retrievals. Schema includes stream URLs/intended display, but does not conclusively clear separately delivered streams for commercial proxying/archives.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-tallinn": {
       "name": "Tallinn crossings",
@@ -5648,7 +5932,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Service/help pages establish no reuse licence. Operator recording retention and law-enforcement extracts do not grant public commercial redistribution."
+      "notes": "Service/help pages establish no reuse licence. Operator recording retention and law-enforcement extracts do not grant public commercial redistribution.",
+      "commercial_use_policy": "licence_required"
     },
     "camera-westmorland": {
       "name": "Westmorland and Furness weather cameras",
@@ -5669,7 +5954,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Current disclaimer supplies no reuse grant. Legacy Eden copyright policy requires permission for photographs/commercial use unless open data, but cannot be assumed to govern the current application."
+      "notes": "Current disclaimer supplies no reuse grant. Legacy Eden copyright policy requires permission for photographs/commercial use unless open data, but cannot be assumed to govern the current application.",
+      "commercial_use_policy": "licence_required"
     },
     "first-epss": {
       "name": "FIRST EPSS score enrichment",
@@ -5690,7 +5976,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "The FAQ permits free score access without registration and requests attribution. API guidance supports small lookups, while bulk synchronisation should use daily files. These pages do not supply an explicit blanket commercial redistribution licence. The default CISA connector attaches EPSS probability, percentile and date to retained events; its API batch pattern also needs service-use review."
+      "notes": "The FAQ permits free score access without registration and requests attribution. API guidance supports small lookups, while bulk synchronisation should use daily files. These pages do not supply an explicit blanket commercial redistribution licence. The default CISA connector attaches EPSS probability, percentile and date to retained events; its API batch pattern also needs service-use review.",
+      "commercial_use_policy": "licence_required"
     },
     "nist-nvd": {
       "name": "NIST NVD severity enrichment",
@@ -5711,7 +5998,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "NIST general terms permit worldwide reuse of its own non-SRD employee-created data with acknowledgement and change notices. They distinguish copyrighted SRD and third-party/extramural works. The NVD developer page returned no readable terms, so this does not clear every NVD-supplied metric. The default CISA enrichment retains the primary/fallback CVSS metric, source and date, potentially from an external CNA. Confirm that contributor scope and current NVD API conditions."
+      "notes": "NIST general terms permit worldwide reuse of its own non-SRD employee-created data with acknowledgement and change notices. They distinguish copyrighted SRD and third-party/extramural works. The NVD developer page returned no readable terms, so this does not clear every NVD-supplied metric. The default CISA enrichment retains the primary/fallback CVSS metric, source and date, potentially from an external CNA. Confirm that contributor scope and current NVD API conditions.",
+      "commercial_use_policy": "licence_required"
     },
     "wikidata-structured": {
       "name": "Wikidata structured-data enrichment",
@@ -5730,7 +6018,8 @@
         "attribute",
         "legal_review"
       ],
-      "notes": "Scope only to structured entity data, not every resource reached through its links."
+      "notes": "Scope only to structured entity data, not every resource reached through its links.",
+      "commercial_use_policy": "allowed"
     },
     "os-maps": {
       "name": "Ordnance Survey Maps API",
@@ -5751,7 +6040,8 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "Official product information lists OpenData, Premium and Public Sector plans. The attempted licensing documentation was inaccessible. A configured API key does not identify the account agreement or establish commercial display/export permission."
+      "notes": "Official product information lists OpenData, Premium and Public Sector plans. The attempted licensing documentation was inaccessible. A configured API key does not identify the account agreement or establish commercial display/export permission.",
+      "commercial_use_policy": "licence_required"
     }
   }
 }

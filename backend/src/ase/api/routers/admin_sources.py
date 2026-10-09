@@ -7,6 +7,7 @@ from fastapi import APIRouter, Response
 from ase.api.deps import AdminUser, ClaimsDep, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas_events import SourceHealthOut, SourceOut, SourcesOut
 from ase.api.schemas_source_controls import SourceActivationIn, SourceTestOut
+from ase.api.schemas_source_licences import SourceLicenceOut
 
 router = APIRouter(prefix="/admin/sources", tags=["admin"])
 
@@ -28,6 +29,9 @@ async def list_sources(
                     "enabled": item.enabled,
                     "test_available": item.test_available,
                     "environment_disabled": item.environment_disabled,
+                    "licence": SourceLicenceOut.model_validate(
+                        container.source_licences.decision(item.spec.id)
+                    ),
                 }
             )
             for item in items

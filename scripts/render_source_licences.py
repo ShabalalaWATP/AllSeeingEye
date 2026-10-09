@@ -37,8 +37,12 @@ discovery/provenance link, not a substitute for `terms_url`. Unknown terms remai
 null. `additional_policies` links enrichment providers whose conditions also apply;
 the primary row's status never overrides those additional conditions.
 `upstream_licence_note` preserves an existing code claim as an unverified lead.
-These files are inventory only; KAN-195 owns runtime enforcement and KAN-165 owns
-the public attribution presentation. Consumers must not interpret unknown or
+KAN-195 adds explicit `commercial_use`, `attribution_required` and `licence_ref`
+fields to each source row. The runtime validates source classifications against
+every primary and additional provider's `commercial_use_policy`. These are
+deployment decisions, separate from the researched rights statuses below.
+The default setting remains off. KAN-165 owns the public attribution presentation.
+Consumers must not interpret unknown or
 permission-required records as approved, or treat conditional records as proof
 that this deployment satisfies the conditions.
 
@@ -158,7 +162,7 @@ def render() -> str:
                     f"| <a id=\"source-{row['id']}\"></a>`{row['id']}` {link} | "
                     f"{terms}; {policy['review_status']}; {check} | "
                     f"{policy['commercial_use']} / {policy['hosted_multi_user_use']} | "
-                    f"{policy_links} | "
+                    f"{policy_links}; deployment: {row['commercial_use']} | "
                     f"{row['current_default']}; {cell(gate)} | {policy['risk']}; "
                     f"{', '.join(policy['actions'])}; {cell(row['source_specific_action'])} |\n"
                 )
@@ -190,6 +194,7 @@ def render() -> str:
             f"Attempted: {policy['lookup_attempted_on'] or 'not attempted'}.\n\n",
             f"Commercial: `{policy['commercial_use']}`. "
             f"Hosted/multi-user: `{policy['hosted_multi_user_use']}`.\n\n",
+            f"Commercial deployment policy: `{policy['commercial_use_policy']}`.\n\n",
             f"Attribution: {policy['attribution']}\n\n"
             f"Redistribution: {policy['redistribution']}\n\n",
             f"{policy['notes']}\n\nRisk: {policy['risk']}. "

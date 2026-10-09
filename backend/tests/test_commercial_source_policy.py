@@ -73,6 +73,15 @@ def test_startup_rejects_missing_additional_policy() -> None:
         parse_source_licences(register, evidence)
 
 
+def test_additional_component_prohibition_cannot_be_reduced_to_acknowledgement() -> None:
+    register, evidence = documents()
+    row = next(row for row in register["sources"] if row["id"] == "map:nuclear_facilities")
+    row["commercial_use"] = "licence_required"
+    evidence["policies"]["wikidata-structured"]["commercial_use_policy"] = "forbidden"
+    with pytest.raises(ValueError, match="forbidden commercial component"):
+        parse_source_licences(register, evidence)
+
+
 def test_packaged_noncommercial_imagery_and_sources_are_never_acknowledged_open() -> None:
     blocked = {"map:eox_s2cloudless", "research-ooni-aggregate"}
     policy = load_source_licences(commercial_use=True, acknowledgements=frozenset(blocked))
