@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:5173"
     # The signed-out product page at /enterprise. Off so other installations do not show it.
     public_product_page_enabled: bool = False
+    commercial_use: bool = False
+    # Exact catalogue IDs only; each entry acknowledges actual permission for this deployment.
+    source_licence_acknowledgements: str = Field(default="", max_length=65_536)
     log_level: str = "INFO"
     smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
     smtp_port: int = Field(default=587, ge=1, le=65535)
@@ -222,6 +225,14 @@ class Settings(BaseSettings):
     @property
     def disabled_feed_ids(self) -> list[str]:
         return [item.strip() for item in self.feeds_disabled.split(",") if item.strip()]
+
+    @property
+    def acknowledged_source_licences(self) -> frozenset[str]:
+        return frozenset(
+            value.strip()
+            for value in self.source_licence_acknowledgements.split(",")
+            if value.strip()
+        )
 
     @property
     def encryption_key_value(self) -> str | None:

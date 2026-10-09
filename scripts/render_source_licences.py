@@ -155,7 +155,8 @@ def render() -> str:
             )
             out += [
                 (
-                    f"| `{row['id']}` {link} | {terms}; {policy['review_status']}; {check} | "
+                    f"| <a id=\"source-{row['id']}\"></a>`{row['id']}` {link} | "
+                    f"{terms}; {policy['review_status']}; {check} | "
                     f"{policy['commercial_use']} / {policy['hosted_multi_user_use']} | "
                     f"{policy_links} | "
                     f"{row['current_default']}; {cell(gate)} | {policy['risk']}; "

@@ -5731,6 +5731,27 @@
         "legal_review"
       ],
       "notes": "Scope only to structured entity data, not every resource reached through its links."
+    },
+    "os-maps": {
+      "name": "Ordnance Survey Maps API",
+      "terms_url": "https://www.ordnancesurvey.co.uk/products/os-maps-api",
+      "additional_terms_urls": [
+        "https://docs.os.uk/os-apis/core-concepts/licensing"
+      ],
+      "licence": "Operator plan and product terms unresolved",
+      "review_status": "lookup_inconclusive",
+      "terms_checked_on": null,
+      "lookup_attempted_on": "2026-10-09",
+      "commercial_use": "unknown",
+      "hosted_multi_user_use": "unknown",
+      "attribution": "Preserve OS and underlying data-owner attribution; confirm current plan requirements.",
+      "redistribution": "No blanket commercial tile, cache or export grant verified for the operator account.",
+      "risk": "high",
+      "actions": [
+        "request_permission",
+        "legal_review"
+      ],
+      "notes": "Official product information lists OpenData, Premium and Public Sector plans. The attempted licensing documentation was inaccessible. A configured API key does not identify the account agreement or establish commercial display/export permission."
     }
   }
 }
