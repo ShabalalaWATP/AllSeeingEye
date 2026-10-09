@@ -30,7 +30,14 @@ POLICY = record(
         "additional_terms_urls": array(URL),
         "licence": TEXT,
         "review_status": {
-            "enum": ["terms_checked", "partial_review", "lookup_blocked", "not_reviewed"]
+            "enum": [
+                "terms_checked",
+                "partial_review",
+                "lookup_blocked",
+                "lookup_inconclusive",
+                "not_reviewed",
+                "per_item_required",
+            ]
         },
         "terms_checked_on": {"anyOf": [DATE, {"type": "null"}]},
         "lookup_attempted_on": {"anyOf": [DATE, {"type": "null"}]},
@@ -61,6 +68,7 @@ SOURCE = record(
         "name": TEXT,
         "family": TEXT,
         "policy": TEXT,
+        "additional_policies": array(TEXT),
         "source_url": {"anyOf": [URL, {"type": "null"}]},
         "source_url_kind": {
             "enum": ["publisher_or_provider", "catalogue_provenance_only", "per_item_provenance"]
@@ -104,6 +112,7 @@ REGISTER = record(
                     "host": {"type": "string", "pattern": r"^[a-z0-9.*-]+$"},
                     "uses": {**array({"enum": ["media", "frames"]}), "minItems": 1},
                     "policy": TEXT,
+                    "provider_policy": {"anyOf": [TEXT, {"type": "null"}]},
                 }
             )
         ),
@@ -132,23 +141,33 @@ def validate_register(register: dict[str, Any], policy_document: dict[str, Any])
     )
     for row in register["sources"]:
         assert row["code_checked_on"] <= register["assessed_on"], "Future code check"
+        assert row["policy"] not in row["additional_policies"], "Repeated primary policy"
+        assert all(key in policies for key in row["additional_policies"]), (
+            "Missing additional provider policy"
+        )
         if row["current_default"] == "off_until_configured":
             assert row["gating_flags"], "Disabled source needs an identified prerequisite"
+    for row in register["camera_hosts"]:
+        if row["provider_policy"]:
+            assert row["provider_policy"] in policies, "Missing camera provider policy"
     for policy in policies.values():
-        checked, attempted = policy["terms_checked_on"], policy["lookup_attempted_on"]
-        status = policy["review_status"]
-        if status in {"terms_checked", "partial_review"}:
-            assert policy["terms_url"] and checked and attempted, (
-                "Verified terms need evidence/date"
-            )
-            assert checked <= attempted <= policy_document["assessed_on"], "Future verification"
-        else:
-            assert checked is None, "Unchecked terms must not carry a verification date"
-            assert policy["commercial_use"] == policy["hosted_multi_user_use"] == "unknown"
-            if status == "lookup_blocked":
-                assert policy["terms_url"] and attempted, "Blocked lookup needs attempted URL/date"
-                assert attempted <= policy_document["assessed_on"]
-            else:
-                assert attempted is None, "Unattempted review must not claim a lookup date"
+        validate_policy_dates(policy, policy_document["assessed_on"])
         if "permission_required" in {policy["commercial_use"], policy["hosted_multi_user_use"]}:
             assert {"request_permission", "replace", "legal_review"} & set(policy["actions"])
+
+
+def validate_policy_dates(policy: dict[str, Any], assessed_on: str) -> None:
+    """A failed lookup must not acquire a verification date or permissive rights."""
+    checked, attempted = policy["terms_checked_on"], policy["lookup_attempted_on"]
+    status = policy["review_status"]
+    if status in {"terms_checked", "partial_review"}:
+        assert policy["terms_url"] and checked and attempted, "Verified terms need evidence/date"
+        assert checked <= attempted <= assessed_on, "Future verification"
+    else:
+        assert checked is None, "Unchecked terms must not carry a verification date"
+        assert policy["commercial_use"] == policy["hosted_multi_user_use"] == "unknown"
+        if status in {"lookup_blocked", "lookup_inconclusive"}:
+            assert policy["terms_url"] and attempted, "Lookup needs attempted URL/date"
+            assert attempted <= assessed_on
+        else:
+            assert attempted is None, "Unattempted review must not claim a lookup date"

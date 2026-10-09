@@ -34,7 +34,9 @@ The machine-readable inputs are packaged with the backend:
 Join a source's `policy` to `policies[policy]` for terms, dates, commercial and
 hosted status, attribution, redistribution, risk and action. `source_url` is a
 discovery/provenance link, not a substitute for `terms_url`. Unknown terms remain
-null. `upstream_licence_note` preserves an existing code claim as an unverified lead.
+null. `additional_policies` links enrichment providers whose conditions also apply;
+the primary row's status never overrides those additional conditions.
+`upstream_licence_note` preserves an existing code claim as an unverified lead.
 These files are inventory only; KAN-195 owns runtime enforcement and KAN-165 owns
 the public attribution presentation. Consumers must not interpret unknown or
 permission-required records as approved, or treat conditional records as proof
@@ -42,8 +44,13 @@ that this deployment satisfies the conditions.
 
 `terms_checked` means the cited terms were inspected, not that an agreement exists.
 `partial_review` identifies narrower evidence or unresolved product rights.
-`lookup_blocked` dates an attempted lookup only; `not_reviewed` has no terms-check
-or attempted-lookup date. The code inventory date is separate from all of these.
+`lookup_blocked` dates an inaccessible lookup; `lookup_inconclusive` dates a
+search that did not establish applicable terms. Neither has a verification date.
+Their links identify the attempted terms page or provider discovery page, not a
+verified grant. `not_reviewed` has no terms-check or attempted-lookup date.
+All dates use UTC. The code inventory date is separate from all of these.
+`per_item_required` is a mixed/user-supplied content boundary with no blanket
+provider grant. Each item's original rights and owner must be assessed separately.
 For unchecked rows the missing primary terms link and date are outstanding work,
 not a fabricated verification. Review the linked provider and exact product.
 
@@ -61,8 +68,12 @@ not a fabricated verification. Review the linked provider and exact product.
 5. Keep DeepState API permission separate from the visual-content licence. Review
    ACLED's actual account agreement and permitted external transformations.
 6. Complete per-camera owner/host rights and the remaining unverified products
-   before treating any of them as commercially cleared. IODA's failed lookup must
+   before treating any of them as commercially cleared. IODA's unverified terms must
    be resolved; its existing live feeds have different gates from research.
+7. Obtain ISW's written permission for analytical/map/dataset integration. Check
+   purpose restrictions as well as commercial status: Pennsylvania's documented
+   camera programme is for current traffic information, which does not establish
+   permission for an OSINT evidence archive.
 
 [Unsent permission requests](source-audit/KAN-194-permission-requests.md) are for
 Alex to review and send. [Replacement candidates](source-audit/KAN-194-replacements.md)
@@ -98,12 +109,10 @@ def cell(value: str) -> str:
 
 
 def render() -> str:
-    metadata = json.loads(
-        (RESOURCES / "source_licences.json").read_text(encoding="utf-8")
-    )
-    policies = json.loads(
-        (RESOURCES / "source_licence_policies.json").read_text(encoding="utf-8")
-    )["policies"]
+    metadata = json.loads((RESOURCES / "source_licences.json").read_text(encoding="utf-8"))
+    policies = json.loads((RESOURCES / "source_licence_policies.json").read_text(encoding="utf-8"))[
+        "policies"
+    ]
     sources = metadata["sources"]
     counts = Counter(policies[row["policy"]]["review_status"] for row in sources)
     out = [
@@ -117,7 +126,8 @@ def render() -> str:
     for family in sorted({row["family"] for row in sources}):
         out += [
             f"\n## {family.replace('_', ' ').capitalize()}\n\n",
-            "| Source ID and discovery link | Terms and check | C / H | Attribution / redistribution | Current default and gates | Risk and action |\n",
+            "| Source ID and discovery link | Terms and check | C / H | "
+            "Attribution / redistribution | Current default and gates | Risk and action |\n",
             "| --- | --- | --- | --- | --- | --- |\n",
         ]
         for row in sources:
@@ -125,11 +135,7 @@ def render() -> str:
                 continue
             policy = policies[row["policy"]]
             name = cell(row["name"])
-            link = (
-                f"[{name}]({row['source_url']})"
-                if row["source_url"]
-                else name + " (per-item)"
-            )
+            link = f"[{name}]({row['source_url']})" if row["source_url"] else name + " (per-item)"
             if row["source_url_kind"] == "catalogue_provenance_only":
                 link += " (catalogue provenance only)"
             check = policy["terms_checked_on"] or (
@@ -137,36 +143,37 @@ def render() -> str:
                 if policy["lookup_attempted_on"]
                 else "not checked"
             )
+            evidence_label = "terms/evidence" if policy["terms_checked_on"] else "attempted page"
             terms = (
-                f"[terms]({policy['terms_url']})"
+                f"[{evidence_label}]({policy['terms_url']})"
                 if policy["terms_url"]
                 else "terms unverified"
             )
-            gate = (
-                "; ".join(row["gating_flags"])
-                or "No source-specific prerequisite recorded"
+            gate = "; ".join(row["gating_flags"]) or "No source-specific prerequisite recorded"
+            policy_links = "; ".join(
+                f"[{key}](#policy-{key})" for key in [row["policy"], *row["additional_policies"]]
             )
             out += [
                 (
                     f"| `{row['id']}` {link} | {terms}; {policy['review_status']}; {check} | "
                     f"{policy['commercial_use']} / {policy['hosted_multi_user_use']} | "
-                    f"[{row['policy']}](#policy-{row['policy']}) | "
+                    f"{policy_links} | "
                     f"{row['current_default']}; {cell(gate)} | {policy['risk']}; "
                     f"{', '.join(policy['actions'])}; {cell(row['source_specific_action'])} |\n"
                 )
             ]
     out += [
         "\n## Supplementary sources\n\n",
-        "These are reviewed historical/candidate providers, not extra active catalogue entries.\n\n",
+        "These are reviewed historical/candidate providers, "
+        "not extra active catalogue entries.\n\n",
         "| Provider | Status | Policy |\n| --- | --- | --- |\n",
     ]
     for row in metadata["supplementary_sources"]:
-        out += [
-            f"| {row['id']} | {row['status']} | [{row['policy']}](#policy-{row['policy']}) |\n"
-        ]
+        out += [f"| {row['id']} | {row['status']} | [{row['policy']}](#policy-{row['policy']}) |\n"]
     out += [
         "\n## Policy details\n\n",
-        "Policy text is shared to keep repeated source rows consistent. Inspect each exact product and deployment before relying on it.\n",
+        "Policy text is shared to keep repeated source rows consistent. "
+        "Inspect each exact product and deployment before relying on it.\n",
     ]
     for key, policy in sorted(policies.items()):
         out += [
@@ -174,13 +181,18 @@ def render() -> str:
             f"**{policy['name']}**: {policy['licence']}.\n\n",
         ]
         if policy["terms_url"]:
-            out += [f"[Primary terms]({policy['terms_url']}). "]
+            label = "Primary terms/evidence" if policy["terms_checked_on"] else "Attempted page"
+            out += [f"[{label}]({policy['terms_url']}). "]
         out += [
-            f"Status: `{policy['review_status']}`. Checked: {policy['terms_checked_on'] or 'not verified'}. ",
+            f"Status: `{policy['review_status']}`. "
+            f"Checked: {policy['terms_checked_on'] or 'not verified'}. ",
             f"Attempted: {policy['lookup_attempted_on'] or 'not attempted'}.\n\n",
-            f"Commercial: `{policy['commercial_use']}`. Hosted/multi-user: `{policy['hosted_multi_user_use']}`.\n\n",
-            f"Attribution: {policy['attribution']}\n\nRedistribution: {policy['redistribution']}\n\n",
-            f"{policy['notes']}\n\nRisk: {policy['risk']}. Action: {', '.join(policy['actions'])}.\n",
+            f"Commercial: `{policy['commercial_use']}`. "
+            f"Hosted/multi-user: `{policy['hosted_multi_user_use']}`.\n\n",
+            f"Attribution: {policy['attribution']}\n\n"
+            f"Redistribution: {policy['redistribution']}\n\n",
+            f"{policy['notes']}\n\nRisk: {policy['risk']}. "
+            f"Action: {', '.join(policy['actions'])}.\n",
         ]
         if policy["additional_terms_urls"]:
             out += [
@@ -193,24 +205,39 @@ def render() -> str:
             ]
     out += [
         "\n## Camera host review queue\n\n",
-        f"All {len(metadata['camera_hosts'])} configured media/frame hosts remain under the ",
-        "[camera-owner-rights](#policy-camera-owner-rights) policy. This is an allowlist inventory, ",
+        f"All {len(metadata['camera_hosts'])} configured media/frame hosts retain the ",
+        "[camera-owner-rights](#policy-camera-owner-rights) policy. "
+        "This is an allowlist inventory, ",
         "not evidence that every camera on a host is authorised. No live stream was fetched. ",
-        "Confirm the actual owner, embedding, proxying, recording, export and commercial terms separately.\n\n",
-        "| Host | Configured use | Rights |\n| --- | --- | --- |\n",
+        "Provider-policy evidence is a separate reference "
+        "and does not clear every camera owner or delivery method. ",
+        "Confirm embedding, proxying, recording, export and commercial terms separately.\n\n",
+        "| Host | Configured use | Owner rights | Provider-policy evidence |\n"
+        "| --- | --- | --- | --- |\n",
     ]
     out += [
-        f"| `{row['host']}` | {', '.join(row['uses'])} | unknown |\n"
+        f"| `{row['host']}` | {', '.join(row['uses'])} | unknown | "
+        + (
+            f"[{row['provider_policy']}](#policy-{row['provider_policy']})"
+            if row["provider_policy"]
+            else "Owner-specific review required"
+        )
+        + " |\n"
         for row in metadata["camera_hosts"]
     ]
     out += [
         "\n## Maintenance\n\n",
-        "Review JSON changes by source ID; never copy a permissive policy solely because another product uses the same provider. ",
-        "Keep grants and correspondence in controlled records, with a non-sensitive reference if needed. ",
-        "Recheck terms before a commercial release and when a provider, product, endpoint or licence changes.\n\n",
-        "Regenerate this file with `python scripts/render_source_licences.py`; verify it with `--check`. ",
+        "Review JSON changes by source ID; never copy a permissive policy "
+        "solely because another product uses the same provider. ",
+        "Keep grants and correspondence in controlled records, "
+        "with a non-sensitive reference if needed. ",
+        "Recheck terms before a commercial release "
+        "and when a provider, product, endpoint or licence changes.\n\n",
+        "Regenerate this file with `python scripts/render_source_licences.py`; "
+        "verify it with `--check`. ",
         "Run `uv run pytest tests/test_source_licences.py --no-cov` in `backend`. ",
-        "Adding a catalogue ID without an explicit row must fail. No network lookup occurs during these checks.\n",
+        "Adding a catalogue ID without an explicit row must fail. "
+        "No network lookup occurs during these checks.\n",
     ]
     return "".join(out)
 

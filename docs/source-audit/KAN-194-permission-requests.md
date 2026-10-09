@@ -167,6 +167,53 @@ provide the proposed audience, volumes and charging model before agreement.
 Thank you,
 Alex Orr
 
+## Institute for the Study of War
+
+Contact: use the current permission route in ISW's
+[fair-use and attribution policy](https://understandingwar.org/fair-use-and-attribution-policy/).
+Subject: Permission enquiry for territorial-control analysis integration
+
+Hello ISW team,
+
+I maintain The All Seeing Eye, an open-source OSINT application. Its implemented
+connector can ingest territorial-control data for maps and research reports. I am
+reviewing whether this can be offered to authenticated teams or through a
+potentially paid hosted service. I do not claim an existing licence.
+
+Your policy requires written permission for analytical, dataset and mapping
+integration. Would you consider permission for server-side collection, bounded
+caching, attributed multi-user display and selected retained/exported evidence?
+Please identify permitted products, use restrictions, attribution, retention,
+derived analysis, AI-assisted summaries and onward-sharing conditions. I can
+supply intended volumes, audience and commercial arrangements before agreement.
+
+Thank you,
+Alex Orr
+
+## Pennsylvania traffic cameras
+
+Contact: use the current PennDOT developer contact route linked from its
+[511PA developer terms](https://www.pa.gov/content/dam/copapwp-pagov/en/penndot/documents/programs-and-doing-business/onlineservices/511pa_developers_corner-tcs.pdf).
+Subject: Scope enquiry for 511PA cameras in an analytical application
+
+Hello PennDOT developer team,
+
+I maintain The All Seeing Eye, an open-source OSINT application with accounts,
+teams and research reports. I am reviewing its camera integration and possible
+hosted or commercial use. The published developer document I found is dated
+February 2014, so please first confirm the current applicable terms.
+
+The documented programme limits images to current traffic information. Our
+application supports wider analysis and potentially retained evidence, which I do
+not assume that programme permits. Would you consider a separate written grant
+covering the intended purpose, multi-user display, server delivery, screenshots,
+retained report extracts and exports? Please specify any prohibited purposes,
+retention and refresh limits, approval process, credit and fees. If the wider
+purpose is unsuitable, please say so before any operational use is authorised.
+
+Thank you,
+Alex Orr
+
 ## Recording replies
 
 Keep correspondence and any signed agreement in Alex's controlled records, not

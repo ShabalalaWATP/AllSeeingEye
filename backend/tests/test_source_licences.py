@@ -77,6 +77,19 @@ def test_generated_document_is_fresh() -> None:
     assert (ROOT / "docs/SOURCE_LICENCES.md").read_text(encoding="utf-8") == renderer["render"]()
 
 
+def test_composite_kev_scores_retain_both_enrichment_provider_policies() -> None:
+    # A SourceSpec-only inventory would miss these retained score providers.
+    rows = {row["id"]: row for row in load("source_licences.json")["sources"]}
+    assert rows["cisa_kev"]["policy"] == "cisa"
+    assert set(rows["cisa_kev"]["additional_policies"]) == {"first-epss", "nist-nvd"}
+
+
+@pytest.mark.parametrize("source_id", ["map:nuclear_facilities", "map:submarine_cables"])
+def test_bundled_infrastructure_retains_structured_fact_provenance(source_id: str) -> None:
+    rows = {row["id"]: row for row in load("source_licences.json")["sources"]}
+    assert "wikidata-structured" in rows[source_id]["additional_policies"]
+
+
 @pytest.mark.parametrize(
     "mutation",
     [
@@ -85,6 +98,9 @@ def test_generated_document_is_fresh() -> None:
         "duplicate_id",
         "invalid_date",
         "blocked_verified",
+        "inconclusive_verified",
+        "missing_camera_provider",
+        "missing_enrichment_provider",
         "unknown_allowed",
         "future_check",
         "claim_enforcement",
@@ -103,6 +119,12 @@ def test_rejects_incomplete_or_misleading_metadata(mutation: str) -> None:
         register["sources"][0]["code_checked_on"] = "2026-02-30"
     elif mutation == "blocked_verified":
         policies["policies"]["ioda"]["terms_checked_on"] = "2026-10-09"
+    elif mutation == "inconclusive_verified":
+        policies["policies"]["mediazona"]["terms_checked_on"] = "2026-10-09"
+    elif mutation == "missing_camera_provider":
+        register["camera_hosts"][0]["provider_policy"] = "nonexistent"
+    elif mutation == "missing_enrichment_provider":
+        register["sources"][0]["additional_policies"] = ["nonexistent"]
     elif mutation == "unknown_allowed":
         policies["policies"]["unknown-publisher"]["commercial_use"] = "conditional"
     elif mutation == "future_check":
