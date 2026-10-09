@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from heapq import heappush, heapreplace
+from typing import Literal
 from uuid import UUID
 
 from ase.domain.alert_feedback import AlertDisposition
@@ -27,6 +28,17 @@ MAX_WINDOW_MINUTES = 7 * 24 * 60
 MAX_COOLDOWN_MINUTES = 24 * 60
 MAX_EVIDENCE = 20
 ALERT_RETENTION = timedelta(days=30)
+AlertReportStatus = Literal[
+    "pending",
+    "queued",
+    "running",
+    "paused",
+    "failed",
+    "completed",
+    "needs_review",
+    "cancelled",
+    "discarded",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,6 +122,9 @@ class Alert:
     baseline_mean: float | None = None
     baseline_ratio: float | None = None
     report_id: UUID | None = None
+    report_job_id: UUID | None = None
+    report_status: AlertReportStatus | None = None
+    report_error: str | None = None
     created_by: UUID | None = None
     team_id: UUID | None = None
 
@@ -192,4 +207,5 @@ def alert_from(indicator: Indicator, firing: Firing, alert_id: UUID, now: dateti
         countries=firing.countries,
         created_by=indicator.created_by,
         team_id=indicator.team_id,
+        report_status="pending" if indicator.report_template is not None else None,
     )

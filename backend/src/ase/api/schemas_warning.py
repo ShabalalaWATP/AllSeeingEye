@@ -12,7 +12,7 @@ from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.warning.indicators import IndicatorInput
 from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.events import Category
-from ase.domain.warning import Alert, Indicator
+from ase.domain.warning import Alert, AlertReportStatus, Indicator
 
 CountryCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Za-z]{2}$")]
 Keyword = Annotated[str, StringConstraints(max_length=60)]
@@ -151,6 +151,9 @@ class AlertOut(BaseModel):
     baseline_mean: float | None = None
     baseline_ratio: float | None = None
     report_id: UUID | None
+    report_job_id: UUID | None = None
+    report_status: AlertReportStatus | None = None
+    report_error: str | None = None
     created_by: UUID | None
     team_id: UUID | None
     owner_name: str | None = None
@@ -177,6 +180,9 @@ class AlertOut(BaseModel):
             baseline_mean=alert.baseline_mean,
             baseline_ratio=alert.baseline_ratio,
             report_id=alert.report_id,
+            report_job_id=alert.report_job_id,
+            report_status=alert.report_status,
+            report_error=alert.report_error,
             created_by=alert.created_by,
             team_id=alert.team_id,
             owner_name=owner_name,

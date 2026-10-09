@@ -10,6 +10,7 @@ from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.application.warning.evaluator import IndicatorEvaluator
 from ase.container import Container
+from ase.container.alert_reports import AlertReportAdmission
 from ase.domain.reports import ReportStatus
 from ase.domain.schedules import CoverageState, ScheduleRunResult
 from ase.domain.users import User
@@ -145,7 +146,6 @@ async def test_revocation_during_notification_stops_automatic_report(
     actors = warning_actors
     await create_indicator(container, actors.owner, actors.team.id, report="intsum")
     container.store.upsert(conflict_events(container.clock.now()))
-    reporter_calls: list[UUID] = []
 
     class RevokingNotifier:
         async def notify(self, alert: Alert, indicator: Indicator) -> bool:
@@ -153,21 +153,20 @@ async def test_revocation_during_notification_stops_automatic_report(
                 await service.remove_member(admin, actors.team.id, actors.owner.id, CONTEXT)
             return True
 
-    async def reporter(indicator: Indicator, alert: Alert) -> UUID | None:
-        reporter_calls.append(indicator.id)
-        return uuid4()
-
     evaluator = IndicatorEvaluator(
         container.store,
         SqlWarningStore(container.session_factory, container.access_policy),
         container.bus,
         RevokingNotifier(),
         container.clock,
-        reporter=reporter,
     )
     fired = await evaluator.run_once()
     assert len(fired) == 1 and fired[0].created_by == actors.owner.id
-    assert fired[0].team_id == actors.team.id and not reporter_calls
+    assert fired[0].team_id == actors.team.id
+    await AlertReportAdmission(container).tick()
+    async with container.session_factory() as session:
+        saved = await container.repositories(session).alerts.get(fired[0].id)
+    assert saved.report_status == "cancelled" and saved.report_job_id is None
     assert await evaluator.run_once() == []
 
 

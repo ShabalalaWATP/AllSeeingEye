@@ -19,13 +19,17 @@ from ase.adapters.persistence.warning import SqlWarningStore
 from ase.api.routers.stream import serialise
 from ase.application.warning.evaluator import IndicatorEvaluator
 from ase.container import Container
+from ase.container.alert_reports import AlertReportAdmission
 from ase.domain.users import User
 from ase.domain.warning import Alert, Indicator, alert_from, evaluate
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
-from report_helpers import PROFILE, ScriptedGateway, good_body
+from report_helpers import PROFILE
+from report_job_api_helpers import JobGateway, job_settings, work
 from test_warning import NOW, indicator
 from tracker_helpers import conflict_events
+
+__all__ = ["job_settings"]
 
 
 class RecordingNotifier:
@@ -42,7 +46,9 @@ async def test_evaluator_fires_routes_and_cools_down(
 ) -> None:
     admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment"]})
+    await seed_legacy_profile(
+        container, {**PROFILE, "roles": ["assessment"], "max_output_tokens": 32000}
+    )
     body = {
         "name": "Kharkiv strikes", "countries": ["ua"], "keywords": ["Kharkiv"],
         "window_minutes": 10080, "cooldown_minutes": 60, "report_template": "intsum",
@@ -50,7 +56,7 @@ async def test_evaluator_fires_routes_and_cools_down(
     created = await client.post("/api/warning/indicators", json=body, headers=bearer(token))
     assert created.status_code == 201, created.text
     container.store.upsert(conflict_events(container.clock.now()))
-    container.llm = ScriptedGateway(json.dumps(good_body()))
+    container.llm = JobGateway()
     notifier = RecordingNotifier()
     evaluator = IndicatorEvaluator(
         container.store,
@@ -58,7 +64,6 @@ async def test_evaluator_fires_routes_and_cools_down(
         container.bus,
         notifier,
         container.clock,
-        reporter=container.alert_report,
     )
     subscription = container.bus.subscribe()
     fired = await evaluator.run_once()
@@ -69,6 +74,9 @@ async def test_evaluator_fires_routes_and_cools_down(
     payload = serialise(message, frozenset())
     assert payload is not None and payload["title"] == "Kharkiv strikes: 1 item in the last 7 d"
     assert notifier.calls == [fired[0].id]
+    assert not container.llm.calls
+    assert await AlertReportAdmission(container).tick() == 1
+    await work(container)
 
     # The user's personal alert is outside the administrator's default view (KAN-90).
     mine = await client.get("/api/warning/alerts", headers=bearer(admin_token))

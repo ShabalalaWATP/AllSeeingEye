@@ -12,6 +12,7 @@ from fastapi import FastAPI
 
 from ase.application.worker_progress import worker_heartbeats
 from ase.container import Container
+from ase.container.alert_reports import alert_report_runner
 from ase.container.alert_routing import alert_dispatcher
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.live_snapshot import build_live_snapshot
@@ -78,6 +79,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             reporting = await cleanup.enter_async_context(AsyncExitStack())
             admission = await cleanup.enter_async_context(AsyncExitStack())
             await _start(admission, container.schedule_runner, phases, "schedule_runner")
+            await _start(
+                admission, alert_report_runner(container), phases, "alert_report_admission"
+            )
             asset_expiry = asyncio.create_task(
                 expire_original_assets(container.session_factory, container.clock)
             )
