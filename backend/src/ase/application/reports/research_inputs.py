@@ -13,9 +13,11 @@ from ase.application.reports.subscription_baseline import load_subscription_base
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import Event
 from ase.domain.evidence import EvidenceItem
+from ase.domain.private_input_sources import PRIVATE_SOURCE_IDS, private_input_source
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import KeyJudgement
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchFocus
+from ase.domain.source_licences import SourceLicencePolicy
 from ase.domain.users import User
 
 if TYPE_CHECKING:
@@ -93,9 +95,41 @@ def _input_metadata(stored: StoredResearchInput) -> dict[str, Any]:
 
 class ReportResearchInputs:
     def __init__(
-        self, access: AccessPolicy, reports: ReportRepository, inputs: ResearchInputStore | None
+        self,
+        access: AccessPolicy,
+        reports: ReportRepository,
+        inputs: ResearchInputStore | None,
+        *,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self._access, self._reports, self._inputs = access, reports, inputs
+        self._licences = licences or SourceLicencePolicy(())
+
+    def require_allowed(
+        self,
+        request: ReportRequest,
+        events: tuple[Event, ...] = (),
+        evidence: tuple[EvidenceItem, ...] = (),
+    ) -> None:
+        """Fresh use needs permission even when the source was retained before startup."""
+        if request.research_focus in PRIVATE_FOCUS:
+            self._licences.require(
+                "research_import"
+                if request.research_focus is ResearchFocus.DOCUMENT
+                else "research_media"
+            )
+        sources = {event.source_id for event in events}
+        sources.update(item.source_id for item in evidence)
+        sources.update(member.source_id for item in evidence for member in item.corroboration)
+        for source_id in sorted(sources & PRIVATE_SOURCE_IDS):
+            self._licences.require(source_id)
+
+    def require_prepared(self, job: "Job") -> None:
+        """Recheck frozen seeds and inherited evidence without reopening expired uploads."""
+        self.require_allowed(job.request, job.seed_events, job.reused_evidence)
+        for version in (job.previous, job.subscription_baseline):
+            if version is not None:
+                self.require_allowed(job.request, evidence=version.evidence)
 
     async def prepare(
         self,
@@ -125,6 +159,9 @@ class ReportResearchInputs:
                 raise InvalidRequest("Private input requires document or media research")
             current = await self._access.context(actor)
             stored = self._inputs.read(current.actor, request.research_input_id)
+            self._licences.require(
+                private_input_source(stored.receipt.filename, stored.receipt.media_type)
+            )
             events = stored.events
             metadata["research_input"] = _input_metadata(stored)
             attempts.append(
@@ -187,6 +224,10 @@ class ReportResearchInputs:
             raise InvalidRequest(
                 "Document and media research requires a private input or an authorised saved report"
             )
+        self.require_allowed(request, events, evidence)
+        for prior_version in (previous, baseline):
+            if prior_version is not None:
+                self.require_allowed(request, evidence=prior_version.evidence)
         return PreparedResearchInputs(
             events, evidence, judgements, tuple(attempts), parent, metadata, baseline
         )

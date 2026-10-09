@@ -171,6 +171,8 @@ class GenerateReportUseCase:
         before_persist: Callable[[], Awaitable[None]] | None = None,
     ) -> ProductionResult:
         """Produce a frozen job without saving its report; the caller owns the final transaction."""
+        # A queued job can outlive the process that admitted its private source inputs.
+        await self.revalidate_prepared(job)
 
         async def authorise() -> None:
             await self.revalidate_prepared(job)
@@ -213,6 +215,7 @@ class GenerateReportUseCase:
                 job.subscription_baseline.report_id, job.subscription_baseline.number, job.actor.id
             )
         await self._authorisation.finish(job.actor, job.request, None, plan, parent)
+        self._research_inputs.require_prepared(job)
 
     async def regenerate(
         self,

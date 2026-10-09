@@ -96,6 +96,8 @@ class ReportGenerationWiring:
             authorisation=ReportAuthorisation(
                 access, r.reports, r.plans, r.aois, r.uow, map_origin
             ),
-            research_inputs=ReportResearchInputs(access, r.reports, container.research_inputs),
+            research_inputs=ReportResearchInputs(
+                access, r.reports, container.research_inputs, licences=container.source_licences
+            ),
             research_usage=container.research_usage(session),
         )
