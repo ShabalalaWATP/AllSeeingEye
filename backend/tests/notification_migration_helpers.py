@@ -10,12 +10,22 @@ from uuid import uuid4
 import pytest
 import sqlalchemy as sa
 from alembic import command
+from alembic.script import ScriptDirectory
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.infrastructure.migrations import alembic_config
 
 NOW = datetime(2026, 9, 1, 12, tzinfo=UTC)
+
+
+def current_head() -> str:
+    """Keep head-upgrade tests current while the graph test protects released history."""
+    head = ScriptDirectory.from_config(alembic_config("sqlite+aiosqlite://")).get_current_head()
+    assert head is not None
+    return head
+
+
 NOTIFICATION_TABLES = {
     "notification_digest_preferences",
     "notification_digest_outbox",
