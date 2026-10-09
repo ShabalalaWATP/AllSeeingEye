@@ -43,16 +43,23 @@ Other Semgrep exceptions are local and documented: defusedxml type imports,
 an in-memory repository method, and tests asserting escaped malicious markup.
 Camera catalogue module imports are constrained to the fixed country allowlist.
 
-Caddy 2.11.4 cannot build with cel-go 0.29.0 or later: its CEL matcher passes
-`[]interpreter.Interpretable` where cel-go now expects `InterpretableV2`, and 0.32
-also moved to the `cel.dev/cel-go` module path (checked 25 September 2026 with
-0.29.2 and 0.32.0). Keep cel-go 0.28.1 until a Caddy release supports the new API;
-Dependabot ignores cel-go 0.29 and later until then. Advisory GHSA-gcjh-h69q-9w9g
-(private JSON fields exposed through `NativeTypes` and `ParseStructTag`) stays open
-as a reminder. It needs operator-written CEL expressions, and this Caddyfile uses no
-`expression` matchers. Retain the compatible x/net, gRPC and OpenTelemetry updates.
+KAN-227 updates Caddy to 2.11.7 and its compatible `cel.dev/cel-go` 0.32.0
+dependency, removing the old `github.com/google/cel-go` 0.28.1 dependency and
+the temporary Dependabot exclusion for GHSA-gcjh-h69q-9w9g. The shared Caddyfile
+does use expression matchers, so validation must include that configuration.
+The digest-pinned Go 1.27.2 builder and x/net 0.60.0 address the additional Go
+advisories reported by the image gate on 9 October 2026. Build metadata is
+available with `caddy build-info`; both module checksums and the production
+configuration are checked during validation. The Python lockfile includes Mako
+1.4.2 for GHSA-5639-2j2p-m4mx. Repeat package and image scans against the current
+advisory databases rather than treating these versions as permanently safe.
 The backend image stays on Python 3.13, the version CI tests, until both move together.
-Container builds apply available operating-system security updates.
+Its refreshed official-image digest provides Python 3.13.16 and invalidates the old
+package-update layer. The rebuilt image includes Debian OpenSSL 3.5.7-1~deb13u3,
+addressing CVE-2026-84782. Both rebuilt images passed the configured fixable
+HIGH/CRITICAL Trivy threshold locally on 9 October 2026. Container builds apply
+available operating-system updates, but a later security refresh must invalidate
+cached package-update layers as described in the deployment guide.
 
 Dependabot covers Actions, Python, JavaScript, Go and Docker. Generic Bandit,
 ESLint and Semgrep template workflows duplicate checks already present here;
