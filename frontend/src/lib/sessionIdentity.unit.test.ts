@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { sessionIdentity, responseIdentity } from './sessionIdentity';
 import { accessTokenFor } from '@/test/accessTokens';
+import { sessionActivity } from '@/test/fixtures';
 
 const encode = (claims: unknown) => `header.${btoa(JSON.stringify(claims))}.signature`;
 
@@ -39,6 +40,7 @@ describe('session continuity claims', () => {
         access_token: accessTokenFor('account'),
         token_type: 'bearer',
         expires_in: 900,
+        activity: sessionActivity(),
         user: {
           id: 'other',
           email: 'other@example.com',

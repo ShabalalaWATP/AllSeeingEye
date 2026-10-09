@@ -49,7 +49,8 @@ it('saves a canonical draft, runs its exact revision and cancels later edits', a
     }),
   );
   const { user, router } = renderApp('/research?brief=new', 'user');
-  let editor = within(await screen.findByRole('region', { name: 'Research Brief editor' }));
+  const originalEditor = await screen.findByRole('region', { name: 'Research Brief editor' });
+  let editor = within(originalEditor);
   await user.type(editor.getByLabelText('Brief title'), 'Port intelligence');
   await user.type(editor.getByLabelText('Main research question'), 'What changed at the port?');
   await user.click(editor.getByRole('button', { name: 'Add requirement' }));
@@ -67,7 +68,8 @@ it('saves a canonical draft, runs its exact revision and cancels later edits', a
     observation: { policy: 'relative', lookback_hours: 24 },
   });
   await waitFor(() => expect(router.state.location.search).toContain(`brief=${briefId}`));
-  // The editor remounts with the saved revision, so query the page rather than a stale region.
+  // The outgoing editor also renders saved text, so wait for its removal before querying again.
+  await waitFor(() => expect(originalEditor).not.toBeInTheDocument());
   await waitFor(() => expect(screen.getByText(/Exact saved revision 1/)).toBeVisible());
   await waitFor(() =>
     expect(screen.getByRole('heading', { name: 'Review and run' })).toHaveFocus(),
