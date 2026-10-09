@@ -9266,6 +9266,266 @@
         }
       }
     },
+    "/api/admin/enquiries": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Enquiries",
+        "operationId": "list_enquiries_api_admin_enquiries_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EnquiryStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnquiriesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/admin/enquiries/{enquiry_id}": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Enquiry",
+        "operationId": "get_enquiry_api_admin_enquiries__enquiry_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "enquiry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Enquiry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnquiryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Enquiry",
+        "operationId": "update_enquiry_api_admin_enquiries__enquiry_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "enquiry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Enquiry Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnquiryStatusIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnquiryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Delete Enquiry",
+        "operationId": "delete_enquiry_api_admin_enquiries__enquiry_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "enquiry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Enquiry Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/admin/runtime": {
       "get": {
         "tags": [
@@ -33068,6 +33328,27 @@
         ],
         "title": "EmailPreferencesOut"
       },
+      "EnquiriesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EnquiryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "EnquiriesOut"
+      },
       "EnquiryIn": {
         "properties": {
           "name": {
@@ -33123,6 +33404,91 @@
           "expected_users"
         ],
         "title": "EnquiryIn"
+      },
+      "EnquiryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "deployment_interest": {
+            "$ref": "#/components/schemas/DeploymentInterest"
+          },
+          "expected_users": {
+            "$ref": "#/components/schemas/ExpectedUsers"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EnquiryStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "organisation",
+          "role",
+          "deployment_interest",
+          "expected_users",
+          "message",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "EnquiryOut"
+      },
+      "EnquiryStatus": {
+        "type": "string",
+        "enum": [
+          "new",
+          "contacted",
+          "closed"
+        ],
+        "title": "EnquiryStatus"
+      },
+      "EnquiryStatusIn": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/EnquiryStatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "EnquiryStatusIn"
       },
       "EpssScoreOut": {
         "properties": {
@@ -45525,12 +45891,17 @@
           "enterprise_enquiries_enabled": {
             "type": "boolean",
             "title": "Enterprise Enquiries Enabled"
+          },
+          "enterprise_enquiry_retention_days": {
+            "type": "integer",
+            "title": "Enterprise Enquiry Retention Days"
           }
         },
         "type": "object",
         "required": [
           "product_page_enabled",
-          "enterprise_enquiries_enabled"
+          "enterprise_enquiries_enabled",
+          "enterprise_enquiry_retention_days"
         ],
         "title": "PublicSiteOut",
         "description": "Facts the signed-out pages need about this installation; nothing private."

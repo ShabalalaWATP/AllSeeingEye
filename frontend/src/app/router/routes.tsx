@@ -22,6 +22,7 @@ import { RedirectWithQuery, RequireAdmin, RequireAuth } from './guards';
 const GlobePage = lazy(() => import('@/features/globe/GlobePage'));
 const AdminOverviewPage = lazy(() => import('@/features/admin/AdminOverviewPage'));
 const AdminRequestsPage = lazy(() => import('@/features/admin/AdminRequestsPage'));
+const AdminEnquiriesPage = lazy(() => import('@/features/admin/AdminEnquiriesPage'));
 const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
 const AdminResearchQualityPage = lazy(() => import('@/features/admin/AdminResearchQualityPage'));
@@ -198,6 +199,7 @@ const pages: RouteObject[] = [
                 children: recoverable([
                   { index: true, element: <AdminOverviewPage /> },
                   { path: 'requests', element: <AdminRequestsPage /> },
+                  { path: 'enquiries', element: <AdminEnquiriesPage /> },
                   { path: 'users', element: <AdminUsersPage /> },
                   { path: 'teams', element: <TeamsPage /> },
                   { path: 'audit', element: <AdminAuditPage /> },

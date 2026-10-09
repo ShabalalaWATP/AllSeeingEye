@@ -18,7 +18,7 @@ Accepted, same-day duplicate and honeypot submissions return the identical `202`
 receipt: `{"message":"Thank you. Your enquiry has been received."}`. Limits return
 `429` with `Retry-After`; disabled installations return `404`. The ordinary request
 body limit defaults to 64 KiB. Responses are not cached. `/api/site` exposes only
-the `enterprise_enquiries_enabled` boolean, never the recipient or stored data.
+the enablement flag and retention period, never the recipient or stored data.
 
 The existing process-local limiter allows three submissions per client key per
 hour, two per normalised email per day, and fifty globally per day. Honeypots use
@@ -35,6 +35,38 @@ administrator follow-up; there is no automatic SMTP retry in this endpoint.
 
 Migration 0093 follows 0092. Apply it using the existing reviewed migration and
 backup workflow before enabling the endpoint. Downgrade refuses a non-empty table.
-No operator database is migrated during development. Administrator management and
-retention are delivered by KAN-167; the public form is KAN-168. Keep the feature
-disabled until those workflows and the privacy notice are ready.
+No operator database is migrated during development. The public form is KAN-168.
+Keep the feature disabled until that workflow and the privacy notice are ready.
+
+## Administrator review and erasure
+
+MFA-verified administrators can list `GET /api/admin/enquiries` with optional
+`status=new|contacted|closed`, `limit` (1 to 100, default 25) and `offset` (default
+0). Filtering precedes both the count and pagination. Results are newest first,
+with a stable ID tie-breaker. The response contains `items` and `total`.
+`GET /api/admin/enquiries/{id}` returns one currently retained record.
+
+`PATCH /api/admin/enquiries/{id}` accepts only `{"status":"contacted"}` (or
+`new`/`closed`), updates the decision timestamp and records the actor in audit.
+`DELETE` on the same URL permanently erases the record. All responses are
+`no-store`. Every route has an administrator-only session release fence; writes
+take the shared administration guard and freshly validate the session before
+committing. Audit records contain only the enquiry ID, actor, action and time.
+They never contain the enquiry's text, email address or IP address.
+
+## Retention
+
+`ASE_ENTERPRISE_ENQUIRY_RETENTION_DAYS` defaults to 365, with a minimum of 30 and
+maximum of 3,650. The cutoff uses the original submission time, so contacting or
+closing an enquiry never extends retention. Records older than that period are
+immediately excluded from list and direct reads, even when submissions are
+disabled. The existing housekeeping cycle permanently deletes up to 100 expired
+rows each minute. A restart or interrupted cycle is safe to repeat. A large
+backlog takes more than one cycle; stopped installations resume erasure on start.
+Only the committed deletion count is logged.
+
+`GET /api/site` publishes `enterprise_enquiry_retention_days` so the KAN-165
+privacy notice and KAN-168 form can show the configured period consistently.
+The notice must also explain separately managed backups and operator email
+copies: deleting the application's row does not erase either. Operators must
+include those copies in their retention and erasure procedure.

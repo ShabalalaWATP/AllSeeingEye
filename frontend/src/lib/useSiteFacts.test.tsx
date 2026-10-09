@@ -13,6 +13,7 @@ describe('useSiteFacts', () => {
         HttpResponse.json({
           product_page_enabled: true,
           enterprise_enquiries_enabled: true,
+          enterprise_enquiry_retention_days: 90,
         }),
       ),
     );
@@ -20,7 +21,11 @@ describe('useSiteFacts', () => {
     await waitFor(() =>
       expect(hook.result.current).toEqual({
         status: 'ready',
-        facts: { product_page_enabled: true, enterprise_enquiries_enabled: true },
+        facts: {
+          product_page_enabled: true,
+          enterprise_enquiries_enabled: true,
+          enterprise_enquiry_retention_days: 90,
+        },
       }),
     );
   });
@@ -39,14 +44,22 @@ describe('useSiteFacts', () => {
     await waitFor(() =>
       expect(first.result.current).toEqual({
         status: 'ready',
-        facts: { product_page_enabled: false, enterprise_enquiries_enabled: false },
+        facts: {
+          product_page_enabled: false,
+          enterprise_enquiries_enabled: false,
+          enterprise_enquiry_retention_days: 365,
+        },
       }),
     );
     const second = renderHook(() => useSiteFacts());
     await waitFor(() =>
       expect(second.result.current).toEqual({
         status: 'ready',
-        facts: { product_page_enabled: true, enterprise_enquiries_enabled: false },
+        facts: {
+          product_page_enabled: true,
+          enterprise_enquiries_enabled: false,
+          enterprise_enquiry_retention_days: 365,
+        },
       }),
     );
     expect(calls).toBe(2);
