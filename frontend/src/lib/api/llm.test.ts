@@ -54,7 +54,7 @@ describe('AI connection boundary', () => {
         }),
       );
     });
-    await expect(applyLlmConnection(input)).rejects.toMatchObject({ code: 'access_changed' });
+    await expect(applyLlmConnection(input)).rejects.toMatchObject({ code: 'session_changed' });
     expect(fetch.mock.calls[0]?.[1]).toMatchObject({
       method: 'PUT',
       credentials: 'include',
