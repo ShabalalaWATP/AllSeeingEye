@@ -63,6 +63,11 @@ class CameraPolicyTests(unittest.TestCase):
     def test_every_embedded_player_host_is_a_frame_source(self) -> None:
         self.assert_admits("frame-src", self.frames)
 
+    def test_only_privacy_enhanced_youtube_frames_are_admitted(self) -> None:
+        frames = https_hosts(self.policy["frame-src"])
+        self.assertIn("www.youtube-nocookie.com", frames)
+        self.assertNotIn("www.youtube.com", frames)
+
     def test_csp_reports_have_matching_endpoint(self) -> None:
         self.assertEqual(self.policy["report-to"], ["csp"])
         self.assertEqual(self.policy["report-uri"], ["/api/security/csp-reports"])

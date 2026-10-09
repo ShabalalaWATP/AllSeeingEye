@@ -87,7 +87,7 @@ export function isCameraStreamUrl(value: string | null | undefined, iframe = fal
       !url.password &&
       !url.port &&
       url.hostname !== 's3-eu-west-1.amazonaws.com' &&
-      (iframe ? hosts.frames : hosts.media).includes(url.hostname)
+      (iframe ? [...hosts.frames, ...hosts.legacyFrames] : hosts.media).includes(url.hostname)
     );
   } catch {
     return false;

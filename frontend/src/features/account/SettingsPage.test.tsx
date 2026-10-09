@@ -3,12 +3,23 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
+import { useEmbedConsentStore } from '@/stores/embedConsent';
 import { plainUser, tokenFor } from '@/test/fixtures';
 import { defaultProfile } from '@/test/handlers.profile';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
 describe('personal settings', () => {
+  it('offers external media withdrawal without opening another chart or camera', async () => {
+    const { user } = renderApp('/settings', 'user');
+    await user.click(await screen.findByRole('link', { name: 'External media' }));
+    expect(await screen.findByRole('heading', { name: 'External media' })).toBeVisible();
+    act(() => useEmbedConsentStore.getState().remember('youtube', true));
+    expect(screen.getByText('YouTube: remembered in this browser')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Forget YouTube choice' }));
+    expect(screen.getByText('YouTube: ask before loading')).toBeInTheDocument();
+    expect(document.querySelector('iframe, video')).toBeNull();
+  });
   it.each(['user', 'admin'] as const)(
     'gives %s personal settings and linked resources',
     async (session) => {

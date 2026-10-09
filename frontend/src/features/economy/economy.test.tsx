@@ -26,9 +26,9 @@ beforeEach(() =>
   ),
 );
 
-it('loads every country metric history and the market chart without an activation step', async () => {
+it('loads country metric histories but waits for consent before the external market chart', async () => {
   server.use(http.get('/api/economy', () => HttpResponse.json(economyDepthSnapshot)));
-  renderApp('/economy?region=GB', 'user');
+  const { user } = renderApp('/economy?region=GB', 'user');
   const country = within(
     await screen.findByRole('region', { name: 'United Kingdom economic indicators' }),
   );
@@ -36,8 +36,9 @@ it('loads every country metric history and the market chart without an activatio
     country.getAllByRole('button', { pressed: false }).length +
       country.getAllByRole('button', { pressed: true }).length,
   ).toBe(12);
+  expect(screen.queryByTitle('Pound / US dollar market chart')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Load chart from TradingView' }));
   expect(screen.getByTitle('Pound / US dollar market chart')).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'Load market charts' })).not.toBeInTheDocument();
   expect(screen.getByRole('img', { name: /GBP \/ USD history/ })).toBeInTheDocument();
 });
 
