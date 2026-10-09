@@ -69,14 +69,138 @@ The repository also provides an [automatic deployment workflow](AUTOMATIC_DEPLOY
 
 ### Database image
 
-Compose builds the database from `infra/postgis/Dockerfile`: the digest-pinned upstream PostGIS image with Alpine security updates applied and the Go-built `gosu` replaced by Alpine's `su-exec`. Application updates never rebuild or restart it, so its system packages age until you rebuild it. Automatic deployment refuses changes under `infra/postgis/` until they are rolled out manually. Rebuild it when the base pin changes or when the weekly `Database image` workflow turns red, and otherwise at least monthly:
+Compose builds the database from `infra/postgis/Dockerfile`: the digest-pinned upstream PostGIS image with Alpine security updates applied and the Go-built `gosu` replaced by Alpine's `su-exec`. Application updates never rebuild or restart it, so its system packages age until an operator refreshes it. Automatic deployment refuses changes under `infra/postgis/` until they are rolled out manually. Review a refresh when the base pin changes or the weekly `Database image` workflow turns red, and otherwise at least monthly.
 
-1. Take and verify a backup, then stop the API.
-2. `docker compose build --pull db`, then `docker compose up -d --no-deps db`, and wait until it is healthy.
-3. After a PostGIS version change, run `SELECT postgis_extensions_upgrade();` in the application database and confirm the versions in `pg_extension`.
-4. Start the API and verify health, readiness and sign-in.
+**A security refresh requires `--pull --no-cache`.** Docker can reuse an unchanged
+`RUN apk upgrade --no-cache` layer even when Alpine has released new packages.
+The `apk` flag controls its package cache, not Docker's build cache. Docker's
+`--no-cache` reruns build instructions; `--pull` checks the referenced base image.
+Neither option changes a pinned digest. These are separate controls, as described
+in Docker's [cache rules](https://docs.docker.com/build/cache/invalidation/),
+[Compose build options](https://docs.docker.com/reference/cli/docker/compose/build/)
+and [base-image pinning guidance](https://docs.docker.com/build/building/best-practices/#pin-base-image-versions).
 
-The same PostgreSQL major version reuses the data volume. A major version change needs a dump and restore, never an image change alone.
+The weekly workflow builds and scans a separate CI image. Its passing result does
+not establish the contents of an older running image. Its vulnerability threshold
+is fixable HIGH/CRITICAL findings. PostgreSQL and PostGIS in this image are built
+from source under `/usr/local`; `apk upgrade` does not update those binaries.
+Findings in them require a reviewed upstream pin change and compatibility checks.
+
+#### Build and inspect the candidate
+
+Use the intended reviewed revision and the installation's existing Compose project,
+configuration and deployment lock. Obtain authorisation for the host build, reserve
+disk and memory for it, and retain the previous image IDs and recovery material.
+Build before the maintenance window where practical; this command does not replace
+the running database:
+
+```bash
+set -e
+docker compose build --pull --no-cache db
+```
+
+Confirm the package-update instruction executed instead of reporting `CACHED`.
+Record the revision, build time, platform and successful build output. The supplied
+Compose file has no image-name override, so its default tag is `<project>-db`.
+Replace the example below with the actual tag reported by the build, including the
+correct Compose project name. Run the following blocks in the same Bash session
+and stop on any failed command:
+
+```bash
+set -e
+db_tag='<project>-db'
+db_image=$(docker image inspect --format '{{.Id}}' "$db_tag")
+docker image inspect --format '{{.Id}} {{.Created}} {{.Os}}/{{.Architecture}}' "$db_image"
+trivy image --image-src docker --scanners vuln --severity HIGH,CRITICAL \
+  --ignore-unfixed --exit-code 1 "$db_image"
+```
+
+Use an approved Trivy installation with a current vulnerability database. Retain
+its version, database metadata, report and scanned image ID in the private release
+record. These [Trivy options](https://trivy.dev/docs/latest/guide/references/configuration/cli/trivy_image/)
+apply the weekly database workflow's vulnerability threshold to the local candidate.
+A failed scan or a remaining finding at that threshold stops rollout for review;
+a clean result is limited to that scanner, database and threshold. A locally built
+image may have no registry digest, so retain its full image ID. Do not select the
+candidate using `docker compose images`: that command reports images used by
+[created containers](https://docs.docker.com/reference/cli/docker/compose/images/),
+which can still be running the old build.
+
+#### Recreate the database after approval
+
+1. Record the running database image ID and current PostgreSQL/PostGIS versions.
+   Take and authenticate a fresh backup, run its `--verify-only` check, and confirm
+   a successful restore drill into a separate destination and access to the matching
+   encryption key. Follow [backup and recovery](BACKUP_RESTORE.md#postgresql-compose-backup-and-recovery).
+   Keep the recovery point and previous images available off-host as appropriate.
+2. Obtain explicit release approval for the candidate image ID, scan result,
+   backup/recovery evidence and planned interruption before stopping services or
+   recreating containers. Honour the same deployment lock as automatic releases.
+   Do not combine this procedure with a PostgreSQL major-version change: that needs
+   a separately tested dump/restore migration, not reuse of the old data volume.
+3. Confirm the tag still identifies the scanned image, then stop the API and
+   recreate only the database. Preserve the existing Compose project and volume:
+
+   ```bash
+   set -e
+   test "$(docker image inspect --format '{{.Id}}' "$db_tag")" = "$db_image"
+   docker compose stop api
+   docker compose up -d --no-deps --no-build --pull never --force-recreate \
+     --wait --wait-timeout 120 db
+   test "$(docker inspect --format '{{.Image}}' "$(docker compose ps -q db)")" = "$db_image"
+   docker compose ps db
+   ```
+
+   `--no-build --pull never` prevents a different build or pulled image from replacing
+   the scanned candidate. The [Compose up options](https://docs.docker.com/reference/cli/docker/compose/up/)
+   provide the explicit recreation and health wait. Stop if identity or health
+   verification fails; keep the API stopped while investigating the approved
+   recovery plan. Do not delete volumes or assume an older database image can read
+   data changed by an upgrade.
+4. Compare database and extension versions with the recorded baseline and intended
+   target. Run this read-only check before the refresh and again after recreation:
+
+   ```bash
+   docker compose exec -T db sh -c 'exec psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
+   SHOW server_version;
+   SELECT postgis_full_version();
+   SELECT extname, extversion FROM pg_extension WHERE extname LIKE 'postgis%';
+   SQL
+   ```
+
+   After an approved PostGIS version change, run `SELECT postgis_extensions_upgrade();`
+   in the application database during the maintenance window, then repeat the
+   version checks. An Alpine-only refresh does not require that extension update.
+5. Start the existing API with `docker compose start api`. Verify container health,
+   HTTPS `/api/health` and `/api/ready`, sign-in and reading a saved report. Record
+   the running image ID and validation results before closing the maintenance work.
+
+#### API, parser and web security refreshes
+
+The same cache issue applies to `backend/Dockerfile` (`apt-get update` and
+`apt-get upgrade`) and the final stage of `frontend/Dockerfile` (`apk upgrade`).
+Ordinary source changes can leave these earlier layers cached. The parser uses
+the backend Dockerfile under its own Compose service/image tag, so include it in
+an authorised application-image refresh:
+
+```bash
+set -e
+docker compose build --pull --no-cache api parser web
+```
+
+Identify and scan each resulting `<project>-api`, `<project>-parser` and
+`<project>-web` image by its full ID, following the same candidate checks above.
+Review relevant Python, Caddy/Go and JavaScript findings too: rerunning a build
+does not update pinned bases, locked application dependencies or the locked Caddy
+build. Such changes need their own reviewed dependency updates and tests.
+
+Apply the same verified-backup, release-approval and deployment-lock requirements
+before replacing application containers. Use a reviewed rollout that selects the
+scanned image IDs without rebuilding or pulling a replacement, preserves the
+database, and verifies running identities, health/readiness, parser health, frontend
+loading and sign-in. The [automatic deployment controller](AUTOMATIC_DEPLOYMENT.md)
+builds its own application images; an earlier manual or CI scan does not establish
+the identity or package contents of that later build.
 
 ## Backups and recovery
 
