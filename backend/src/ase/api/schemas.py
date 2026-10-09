@@ -171,6 +171,7 @@ class PublicSiteOut(BaseModel):
 
     product_page_enabled: bool
     enterprise_enquiries_enabled: bool
+    enterprise_enquiry_retention_days: int
 
 
 class ReadyOut(BaseModel):

@@ -83,7 +83,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 admission, alert_report_runner(container), phases, "alert_report_admission"
             )
             asset_expiry = asyncio.create_task(
-                expire_original_assets(container.session_factory, container.clock)
+                expire_original_assets(
+                    container.session_factory,
+                    container.clock,
+                    container.settings.enterprise_enquiry_retention_days,
+                )
             )
             housekeeping.push_async_callback(
                 phases.run, "asset_expiry", lambda: _cancel(asset_expiry)

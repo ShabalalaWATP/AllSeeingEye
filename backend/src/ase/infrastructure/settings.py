@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     public_product_page_enabled: bool = False
     enterprise_enquiries_enabled: bool = False
     enterprise_enquiry_notify_email: EmailStr | None = Field(default=None, max_length=254)
+    enterprise_enquiry_retention_days: int = Field(default=365, ge=30, le=3650)
     log_level: str = "INFO"
     smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
     smtp_port: int = Field(default=587, ge=1, le=65535)
