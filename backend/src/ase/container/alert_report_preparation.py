@@ -29,6 +29,8 @@ async def prepare_alert_report(
     job, routing = await container.generate_report(session).prepare_job(
         actor, replace(request, alert_origin=None)
     )
+    # A question template may obtain its question from the authorised collection plan.
+    request = replace(request, question=job.request.question)
     return replace(
         job,
         request=request,

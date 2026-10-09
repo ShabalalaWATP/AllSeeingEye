@@ -188,6 +188,7 @@ class FeatureWiring(ReportWiring):
             self._auditor(r),
             r.uow,
             self.access_policy(session),
+            aois=r.aois,
         )
 
     def update_indicator(self, session: AsyncSession) -> UpdateIndicatorUseCase:
@@ -200,6 +201,7 @@ class FeatureWiring(ReportWiring):
             self._auditor(r),
             r.uow,
             self.access_policy(session),
+            aois=r.aois,
         )
 
     def delete_indicator(self, session: AsyncSession) -> DeleteIndicatorUseCase:

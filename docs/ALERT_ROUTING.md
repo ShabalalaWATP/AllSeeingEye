@@ -48,6 +48,20 @@ back to a version without frozen alert snapshots, stop admission and drain or ca
 pending alert work. Retaining the schema alone cannot make an older worker honour
 these exact scope constraints.
 
+The report selector offers products whose required inputs the rule can retain.
+Country briefs need exactly one country. Ask the Eye and area briefs need a linked
+collection plan with a question; its authorised question is retained in the queued
+job. Conflict and disaster products require tracker inputs that alert rules do not
+store, so use those products as standalone reports. A linked report plan must have
+an available area in the same workspace and cannot use an exact polygon.
+
+Saving or resuming a rule rejects missing report prerequisites with a field-specific
+repair message. An old incompatible selection stays visible while editing: choose
+a compatible product, repair its inputs, or select No report. It can also be paused
+without replacing the saved selection. Existing failures remain in alert history;
+repairing a rule applies to later firings. A configured model and current workspace
+access are still checked at report admission and execution.
+
 Personal rule owners and administrators can manage personal routes. Team routes
 require a current manager of the active team or an administrator. Merely reading
 a team rule, or creating it as a regular team member, does not authorise external

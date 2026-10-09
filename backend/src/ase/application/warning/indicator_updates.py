@@ -90,6 +90,8 @@ class UpdateIndicatorUseCase(_IndicatorUseCase):
             data, templates=self._templates, indicator_id=existing.id,
             owner=existing.created_by, created=existing.created_at, now=now,
             resumed_at=now if resumed else existing.resumed_at,
+            # Keep a way to stop an old incompatible report without silently replacing it.
+            validate_report=data.enabled or data.report_template != existing.report_template,
         )  # fmt: skip
         widened = widened_dimensions(existing, indicator)
         if widened and not confirm_wider_scope:
