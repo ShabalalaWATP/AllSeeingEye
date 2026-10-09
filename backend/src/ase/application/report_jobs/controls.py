@@ -71,8 +71,12 @@ def _scalar(value: Any) -> str:
 def request_digest(request: ReportRequest) -> str:
     """Hash the original request, including private input identity, without retaining it."""
     try:
+        fields = asdict(request)
+        if request.alert_origin is None:
+            # Preserve request identities created before the internal alert origin existed.
+            fields.pop("alert_origin")
         value = json.dumps(
-            asdict(request),
+            fields,
             default=_scalar,
             sort_keys=True,
             separators=(",", ":"),

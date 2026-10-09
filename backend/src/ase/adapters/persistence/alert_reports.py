@@ -11,12 +11,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.operational_models import AlertRow
 from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.warning_mapping import _alert_from_row
+from ase.application.warning.report_snapshot import snapshot_from_dict
+from ase.domain.alert_reports import AlertReportSnapshot
 from ase.domain.warning import Alert, AlertReportStatus
 
 
 class SqlAlertReportQueue:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def snapshot(self, alert_id: UUID) -> AlertReportSnapshot | None:
+        value = await self.session.scalar(
+            select(AlertRow.report_snapshot).where(AlertRow.id == alert_id)
+        )
+        return snapshot_from_dict(value) if value is not None else None
 
     async def due(self, now: datetime, limit: int) -> list[UUID]:
         return list(

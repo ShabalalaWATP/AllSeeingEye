@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import UTC, timedelta
 from typing import Any
 
+from ase.application.reports.alert_origin import origin_to_dict as alert_origin_to_dict
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template
 from ase.domain.collection import CollectionPlan
@@ -69,6 +70,14 @@ def report_origin(request: ReportRequest) -> str:
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
         "origin": report_origin(request),
+        **(
+            {
+                "alert_origin": alert_origin_to_dict(request.alert_origin),
+                "research_terms": list(request.research_terms or ()),
+            }
+            if request.alert_origin is not None
+            else {}
+        ),
         **({"briefing": request.briefing} if request.briefing is not None else {}),
         **({"regions": [region.value for region in request.regions]} if request.regions else {}),
         **(

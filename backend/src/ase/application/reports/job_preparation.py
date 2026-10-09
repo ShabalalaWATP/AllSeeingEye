@@ -50,6 +50,11 @@ class ReportJobBuilder:
         report_id: UUID | None = None,
         plan: CollectionPlan | None = None,
     ) -> Job:
+        if request.alert_origin is not None:
+            raise InvalidRequest(
+                "Alert reports retain their original frozen evidence. "
+                "Use their durable report job to resume, or create a new standalone report."
+            )
         if request.research_since is not None and request.research_until is not None:
             try:
                 validate_research_interval(

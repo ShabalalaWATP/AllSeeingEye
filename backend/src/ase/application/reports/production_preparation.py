@@ -23,6 +23,7 @@ from ase.domain.grading import SourceProfile
 from ase.domain.research import ResearchQuery
 from ase.domain.research_records import ResearchReceipt
 from ase.domain.research_runs import ResearchStage
+from ase.domain.validation import Finding, Severity
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +123,21 @@ async def prepare_production(
         )
 
     selection = snapshot.selection if snapshot is not None else select()
+    origin = job.request.alert_origin
+    if (
+        origin is not None
+        and origin.matched_count > len(origin.event_ids)
+        and not any(row.rule == "alert_evidence_sample" for row in totals.findings)
+    ):
+        totals.findings.append(
+            Finding(
+                "alert_evidence_sample",
+                Severity.WARNING,
+                "evidence",
+                f"This report uses a frozen sample of {len(origin.event_ids)} cited events "
+                f"from {origin.matched_count} alert matches, not the complete matched population.",
+            )
+        )
     original_context = ""
     if receipt is not None and original_followthrough is not None:
         if snapshot is None:
