@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
+import { MemoryRouter } from 'react-router';
 import { expect, it } from 'vitest';
 
 import type { BriefDraft } from '@/lib/api/researchBriefSchema';
@@ -22,7 +23,15 @@ function editor(initial: BriefDraft = newBriefDraft()) {
       />
     );
   }
-  return { ...render(<Harness />), user: userEvent.setup(), draft: () => current };
+  return {
+    ...render(
+      <MemoryRouter>
+        <Harness />
+      </MemoryRouter>,
+    ),
+    user: userEvent.setup(),
+    draft: () => current,
+  };
 }
 
 it('normalises country codes and clears geographical filters when selecting a named subject focus', async () => {

@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { BriefDraft } from '@/lib/api/researchBriefSchema';
 
@@ -18,6 +20,7 @@ export function BriefScopeEditor({
   change: (next: BriefDraft) => void;
 }) {
   const { scope, observation } = draft;
+  const hasPrivateEvidence = draft.private_inputs.length > 0 || scope.parent_report_id !== null;
   const setScope = (patch: Partial<typeof scope>) =>
     change({ ...draft, scope: { ...scope, ...patch } });
   const setObservation = (patch: Partial<typeof observation>) =>
@@ -56,6 +59,11 @@ export function BriefScopeEditor({
       />
       <SelectField
         label="Research focus"
+        hint={
+          hasPrivateEvidence
+            ? 'Existing private evidence references are kept. This editor cannot attach or renew files.'
+            : 'Private document and media focus require existing private evidence. This editor cannot attach or renew files.'
+        }
         value={scope.focus}
         disabled={!!scope.area || !!scope.map_origin || !!scope.map_view_id}
         onChange={(event) =>
@@ -68,10 +76,17 @@ export function BriefScopeEditor({
           { value: 'general', label: 'General' },
           { value: 'company', label: 'Company' },
           { value: 'domain', label: 'Domain' },
-          { value: 'document', label: 'Private document' },
-          { value: 'media', label: 'Private media' },
+          { value: 'document', label: 'Private document', disabled: !hasPrivateEvidence },
+          { value: 'media', label: 'Private media', disabled: !hasPrivateEvidence },
         ]}
       />
+      <p className="text-xs leading-relaxed text-muted">
+        <Link to="/research" className="text-ember underline">
+          Open Research uploads
+        </Link>
+        , expand Advanced options and choose Private document or Private media. Use that form for
+        separate research; its uploads do not attach to this brief.
+      </p>
       <TextField
         label="Research subject"
         hint={

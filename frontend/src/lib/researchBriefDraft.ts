@@ -22,6 +22,9 @@ export function validateBriefDraft(draft: BriefDraft): string | null {
     (draft.observation.policy !== 'explicit' || draft.scope.focus !== 'general')
   )
     return 'Recorded history needs an exact interval and general research focus.';
+  const indicators = draft.monitoring.indicators;
+  if (new Set(indicators.map((row) => row.id)).size !== indicators.length)
+    return 'monitoring.indicators: Indicator IDs must be unique.';
   const parsed = briefDraftSchema.safeParse(draft);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -34,10 +37,19 @@ export function validateBriefDraft(draft: BriefDraft): string | null {
 
 /** The next `req-N` not already in use, so removing and adding rows never duplicates an ID. */
 export function nextRequirementId(requirements: readonly { id: string }[]): string {
-  const taken = new Set(requirements.map((row) => row.id));
-  let number = requirements.length + 1;
-  while (taken.has(`req-${String(number)}`)) number += 1;
-  return `req-${String(number)}`;
+  return nextUnusedId(requirements, 'req');
+}
+
+/** Allocate a free monitoring ID without renumbering existing indicators. */
+export function nextIndicatorId(indicators: readonly { id: string }[]): string {
+  return nextUnusedId(indicators, 'indicator');
+}
+
+function nextUnusedId(rows: readonly { id: string }[], prefix: string): string {
+  const taken = new Set(rows.map((row) => row.id));
+  let number = rows.length + 1;
+  while (taken.has(`${prefix}-${String(number)}`)) number += 1;
+  return `${prefix}-${String(number)}`;
 }
 
 /** A complete canonical definition, so revisions retain options the editor does not expose. */
@@ -138,7 +150,7 @@ export function draftFromBrief(brief: ResearchBrief): BriefDraft {
 
 export function briefCanSubscribe(draft: BriefDraft): string | null {
   if (draft.private_inputs.some((input) => input.kind === 'session'))
-    return 'Session files need renewed authority. Remove them or use a durable report input.';
+    return 'Session files need renewed authority for each run, so they cannot be used for subscriptions. This editor cannot replace private references.';
   if (draft.observation.policy === 'explicit')
     return 'Choose a rolling or template-default period for future updates.';
   return null;
@@ -150,7 +162,7 @@ export function briefCanRun(draft: BriefDraft, now: Date = new Date()): string |
       (input) => input.expires_at !== null && Date.parse(input.expires_at) <= now.getTime(),
     )
   )
-    return 'A private input has expired. Renew the input before starting research.';
+    return 'A private input has expired. This editor cannot renew attachments. Open Research to upload the file again for separate research; this brief keeps its existing references.';
   return null;
 }
 

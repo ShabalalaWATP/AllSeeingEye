@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { BriefDraft } from '@/lib/api/researchBriefSchema';
+import { nextIndicatorId } from '@/lib/researchBriefDraft';
 
 import { BriefListField } from './BriefListField';
 
@@ -166,7 +167,7 @@ export function BriefOptionsEditor({
               setMonitoring({
                 indicators: [
                   ...monitoring.indicators,
-                  { id: `indicator-${monitoring.indicators.length + 1}`, condition: '' },
+                  { id: nextIndicatorId(monitoring.indicators), condition: '' },
                 ],
               })
             }
@@ -181,7 +182,7 @@ export function BriefOptionsEditor({
         draft.private_inputs.length > 0) && (
         <p className="text-sm text-muted">
           Saved translations, planned tasks, hypotheses and private references remain pinned to this
-          revision. Review or renew private access before admission.
+          revision. This editor cannot attach, replace or renew private inputs.
         </p>
       )}
     </div>
