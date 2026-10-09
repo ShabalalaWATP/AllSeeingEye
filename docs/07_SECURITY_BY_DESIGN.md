@@ -64,7 +64,16 @@ copies cannot be recalled.
 ## Untrusted sources, files and model output
 
 Public-feed requests use destination checks, redirect checks, bounded responses
-and deadlines. Private and local model endpoints are a separate, deliberate
+and deadlines. Their connection pool retains each original scheme, hostname and
+port, so hosts sharing an IP address cannot share TLS identity. New connections
+use the checked public IP; existing connections can be reused only for that
+original authority. Feed response cookies are not retained. Feed transport requires
+direct TCP connections: proxy and Unix-socket transports fail closed. This also
+applies to injected clients and camera/provider authentication requests using the
+shared feed transport. TLS, pinning, cookie and connection-limit regression tests
+must pass when upgrading HTTPX or HTTPcore.
+
+Private and local model endpoints are a separate, deliberate
 administrator choice, needed for self-hosted models. A source URL cannot silently
 become permission to use the administrator's model endpoint.
 
