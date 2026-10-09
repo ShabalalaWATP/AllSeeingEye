@@ -37,6 +37,7 @@ from ase.domain.research import (
     ResearchFocus,
     ResearchQuery,
 )
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 
 SOURCE_ID = "research-asset-register"
 
@@ -89,6 +90,9 @@ class AssetRegisterProvider:
         "Mapped cable routes always match by exact intersection with the outline. " + LIMITATIONS
     )
 
+    def __init__(self, *, licences: SourceLicencePolicy | None = None) -> None:
+        self._licences = licences or SourceLicencePolicy(())
+
     def supports(self, query: ResearchQuery) -> bool:
         """Cheap: no register is read and no outline is built to answer this."""
         return (
@@ -111,14 +115,24 @@ class AssetRegisterProvider:
     def _scope(self, query: ResearchQuery) -> ResolvedScope | None:
         if query.area is not None:
             return from_area(query.area)
+        if not self._licences.allowed("map:natural_earth_countries"):
+            return None
         return from_countries(query.country_isos) if query.country_isos else None
 
-    async def collect(self, query: ResearchQuery) -> ResearchBatch:
+    async def collect(self, query: ResearchQuery) -> ResearchBatch:  # noqa: PLR0911 - distinct refusal receipts
         if query.focus is not ResearchFocus.GENERAL:
             return self._receipt(CollectionStatus.UNSUPPORTED, self.spatial_scope)
         classes = _triggered(query)
         if not classes:
             return self._receipt(CollectionStatus.UNSUPPORTED, NO_TRIGGER_REASON)
+        denied = classes - frozenset(
+            asset for asset in classes if self._licences.allowed(f"map:{asset.value}")
+        )
+        classes -= denied
+        if not classes or (
+            query.area is None and not self._licences.allowed("map:natural_earth_countries")
+        ):
+            return self._receipt(CollectionStatus.UNSUPPORTED, LICENCE_UNAVAILABLE)
         if query.area is None and not query.country_isos:
             return self._receipt(CollectionStatus.UNSUPPORTED, NO_GEOGRAPHY_REASON)
         try:
@@ -141,6 +155,9 @@ class AssetRegisterProvider:
             + " ".join(entry.provenance() for entry in entries)
             + f" {LIMITATIONS}"
         )
+        if denied:
+            names = ", ".join(sorted(asset.value for asset in denied))
+            detail = f"Excluded due to licence terms: {names}. " + detail
         return self._receipt(
             CollectionStatus.COMPLETED if items else CollectionStatus.EMPTY, detail, items
         )
