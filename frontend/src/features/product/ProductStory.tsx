@@ -27,7 +27,7 @@ import './story-research.css';
 import './story-review.css';
 import './story-close.css';
 
-export function ProductStory() {
+export function ProductStory({ enquiriesEnabled = false }: { enquiriesEnabled?: boolean }) {
   const motion = useStoryMotionSource();
   useProductMetadata();
   return (
@@ -46,7 +46,7 @@ export function ProductStory() {
           <WorkspacesChapter />
           <TrustChapter />
           <DeployChapter />
-          <ContactChapter />
+          <ContactChapter enquiriesEnabled={enquiriesEnabled} />
         </main>
         <footer className="story-footer">
           <p>The All Seeing Eye. Self-hosted open-source intelligence.</p>

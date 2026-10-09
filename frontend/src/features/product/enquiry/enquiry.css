@@ -1,0 +1,30 @@
+.story-contact .contact-inner {
+  width: min(100%, 46rem);
+  min-width: 0;
+}
+.enterprise-enquiry {
+  width: 100%;
+  min-width: 0;
+  margin-top: 2.5rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--color-control-border);
+  border-radius: 1rem;
+  background: var(--story-surface);
+  text-align: left;
+}
+.enquiry-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+.enterprise-enquiry input,
+.enterprise-enquiry select,
+.enterprise-enquiry textarea {
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .enquiry-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
