@@ -5,12 +5,11 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
-import { BrandMark } from '@/components/brand/BrandMark';
-import { MotionToggle } from '@/components/brand/MotionToggle';
 import { Wordmark } from '@/components/brand/Wordmark';
 
 import { CHAPTER_LINKS } from './content/chapters';
 import { clamp01, subscribeScroll } from './motion/scrollScheduler';
+import { ProductBrandMark, ProductMotionToggle } from './ProductMotionControls';
 
 export function ProductHeader() {
   const barRef = useRef<HTMLDivElement>(null);
@@ -33,7 +32,7 @@ export function ProductHeader() {
         Skip to the story
       </a>
       <a className="story-brand" href="#top" aria-label="The All Seeing Eye, back to top">
-        <BrandMark size={26} decorative />
+        <ProductBrandMark />
         <Wordmark className="story-wordmark" />
       </a>
       <nav className="story-nav" aria-label="Chapters">
@@ -46,7 +45,7 @@ export function ProductHeader() {
         </ol>
       </nav>
       <div className="story-header-actions">
-        <MotionToggle tone="auth" compact className="story-motion" />
+        <ProductMotionToggle />
         <Link className="story-link" to="/login">
           Sign in
         </Link>

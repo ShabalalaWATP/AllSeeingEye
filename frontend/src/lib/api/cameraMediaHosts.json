@@ -119,8 +119,6 @@
     "www.westmorlandandfurness.gov.uk",
     "wzmedia.dot.ca.gov"
   ],
-  "frames": [
-    "ipcamlive.com",
-    "www.youtube.com"
-  ]
+  "frames": ["ipcamlive.com", "www.youtube-nocookie.com"],
+  "legacyFrames": ["www.youtube.com"]
 }

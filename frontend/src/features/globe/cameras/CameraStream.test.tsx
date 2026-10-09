@@ -4,6 +4,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import type { Camera } from '@/lib/api/cameras';
 import { isCameraStreamUrl } from '@/lib/api/cameras';
 import { CameraStream } from './CameraStream';
+import { useEmbedConsentStore } from '@/stores/embedConsent';
 const mock = vi.hoisted(() => ({
   destroy: vi.fn(),
   source: vi.fn(),
@@ -47,11 +48,55 @@ const camera: Camera = {
 };
 beforeEach(() => {
   vi.clearAllMocks();
+  useEmbedConsentStore.getState().resetSession();
   mock.supported = true;
   Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
   vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => undefined);
 });
+
+it('restores saved camera consent after a document restart but still waits for Play', async () => {
+  const selected = {
+    ...camera,
+    stream_type: 'iframe' as const,
+    stream_url: 'https://www.youtube.com/embed/UemFRPrl1hk',
+  };
+  const view = render(<CameraStream camera={selected} />);
+  await userEvent.click(screen.getByRole('checkbox', { name: /^Remember/ }));
+  await userEvent.click(screen.getByRole('checkbox', { name: /^Also save/ }));
+  await userEvent.click(screen.getByRole('button', { name: 'Load video from YouTube' }));
+  expect(document.querySelector('iframe')).not.toBeNull();
+  view.unmount();
+  useEmbedConsentStore.getState().resetSession();
+  render(<CameraStream camera={selected} />);
+  expect(document.querySelector('iframe')).toBeNull();
+  await userEvent.click(screen.getByRole('button', { name: 'Play video' }));
+  expect(document.querySelector('iframe')).not.toBeNull();
+});
+
+it.each([
+  ['youtube', 'YouTube', 'https://www.youtube.com/embed/UemFRPrl1hk'],
+  ['ipcamlive', 'IPCamLive', 'https://ipcamlive.com/player/player.php?alias=publiccamera'],
+] as const)(
+  'remembering %s never bypasses Play for the next camera',
+  async (provider, name, url) => {
+    const selected = { ...camera, stream_type: 'iframe' as const, stream_url: url };
+    const view = render(<CameraStream camera={selected} />);
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(screen.getByRole('link', { name: `${name} privacy policy` })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: /^Remember/ }));
+    await userEvent.click(screen.getByRole('button', { name: `Load video from ${name}` }));
+    expect(document.querySelector('iframe')).not.toBeNull();
+    view.rerender(<CameraStream camera={{ ...selected, id: 'next-camera' }} />);
+    expect(document.querySelector('iframe')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    expect(document.querySelector('iframe')).not.toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Stop video' }));
+    expect(screen.getByRole('button', { name: `Forget ${name} choice` })).toBeInTheDocument();
+    act(() => useEmbedConsentStore.getState().forget(provider));
+    expect(screen.getByRole('button', { name: `Load video from ${name}` })).toBeInTheDocument();
+  },
+);
 
 it('destroys HLS while hidden and resumes the chosen stream only when visible', async () => {
   render(<CameraStream camera={camera} />);
@@ -96,7 +141,11 @@ it.each(['iframe', 'mjpeg', 'mp4'] as const)(
         }}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: kind === 'iframe' ? 'Load video from YouTube' : 'Play video',
+      }),
+    );
     expect(view.container.querySelector('iframe,img,video')).not.toBeNull();
     act(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
@@ -136,7 +185,11 @@ it('shows an approved iframe only while enabled', async () => {
     />,
   );
   expect(screen.queryByTitle('Camera stream: Public webcam')).not.toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Play video' }));
+  await user.click(screen.getByRole('button', { name: 'Load video from YouTube' }));
+  expect(screen.getByTitle('Camera stream: Public webcam')).toHaveAttribute(
+    'src',
+    'https://www.youtube-nocookie.com/embed/UemFRPrl1hk',
+  );
   expect(screen.getByTitle('Camera stream: Public webcam')).toHaveAttribute(
     'sandbox',
     'allow-scripts allow-same-origin allow-presentation',

@@ -1,0 +1,140 @@
+.policy-page {
+  min-height: 100dvh;
+  background: #0b1018;
+  color: #edf1f7;
+  font:
+    1rem/1.7 Inter,
+    sans-serif;
+}
+.policy-header,
+.policy-footer {
+  max-width: 74rem;
+  margin: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+.policy-page main {
+  max-width: 64rem;
+  margin: auto;
+  padding: 2rem 1.5rem 5rem;
+}
+.policy-page h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.2;
+  font-weight: 650;
+  margin-bottom: 1.5rem;
+}
+.policy-page h2 {
+  font-size: 1.5rem;
+  line-height: 1.35;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.policy-page h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.policy-page section {
+  margin-top: 2.5rem;
+  scroll-margin-top: 1.5rem;
+}
+.policy-page p + p,
+.policy-page li + li {
+  margin-top: 0.75rem;
+}
+.policy-page a {
+  color: #bbd8ff;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.policy-page a:focus-visible,
+.policy-page summary:focus-visible {
+  outline: 2px solid #d6e6ff;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.policy-page ul,
+.policy-page ol {
+  padding-left: 1.5rem;
+}
+.policy-page ul {
+  list-style: disc;
+}
+.policy-page ol {
+  list-style: decimal;
+}
+.policy-page dl {
+  display: grid;
+  gap: 1rem;
+}
+.policy-page dt {
+  font-weight: 600;
+}
+.policy-page dd {
+  color: #c5ceda;
+  overflow-wrap: anywhere;
+}
+.policy-page .policy-draft {
+  padding: 1rem 1.25rem;
+  border: 1px solid #c59f55;
+  border-radius: 0.5rem;
+  background: #302717;
+  color: #ffebbf;
+}
+.policy-page .policy-table {
+  overflow-x: auto;
+}
+.policy-page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+}
+.policy-page th,
+.policy-page td {
+  padding: 0.85rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #465265;
+}
+.policy-page th {
+  font-weight: 600;
+}
+.policy-page code {
+  overflow-wrap: anywhere;
+}
+.policy-page details {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #465265;
+  border-radius: 0.5rem;
+}
+.policy-page summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.policy-page details dl {
+  margin-top: 1rem;
+}
+.policy-page .policy-skip {
+  position: absolute;
+  transform: translateY(-200%);
+  padding: 1rem;
+  background: #0b1018;
+  z-index: 10;
+}
+.policy-page .policy-skip:focus {
+  transform: none;
+}
+@media (max-width: 40rem) {
+  .policy-page th,
+  .policy-page td {
+    padding: 0.65rem 0.35rem;
+  }
+  .policy-page main {
+    padding-inline: 1rem;
+  }
+}

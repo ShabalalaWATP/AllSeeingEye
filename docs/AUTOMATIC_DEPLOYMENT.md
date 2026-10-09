@@ -20,7 +20,7 @@ flowchart LR
 
 1. Confirm the tested revision is still the head of `main`.
 2. Connect through a dedicated restricted deployment key with a pinned host key.
-3. Take the deployment lock and check the checkout, release compatibility, backup key and free disk space.
+3. Take the deployment lock and check the checkout, release compatibility, public-policy approval, backup key and free disk space.
 4. Build images from the tested commit and probe them as their runtime users. Running services remain online during the build.
 5. Create and authenticate a database backup, then verify the bundle.
 6. Recheck the revision, fast-forward the checkout and replace application services. Preserve the database, persistent volumes and environment file.
@@ -33,6 +33,13 @@ Deployments are serial. A newer merge can queue but does not cancel an active de
 Changes to Compose configuration, Alembic configuration, migrations, the migration runner/CLI or the database image (`infra/postgis/`) require a reviewed manual rollout. The API applies migrations at startup, so reverting application images cannot undo a schema change. Application deployments never rebuild the database, so a database image change would otherwise never reach it.
 
 The deployment controller scripts also require operator installation. Their installed contents must match the target commit before the controller accepts that change. A repository update cannot replace the installed controller by itself.
+
+The public-policy helper is part of that protected controller set. It validates the
+exact target revision's privacy notice and approval hash before touching the running
+release. Draft or changed wording blocks publication, including preflight checks.
+See [public-policy publication](PUBLIC_POLICY_PUBLICATION.md) for missing operator
+decisions and the manual installation boundary. Local and CI image builds remain
+possible while approval is pending; they are not release permission.
 
 Ordinary application, frontend, dependency and Caddy changes can use the automatic path once CI passes. Infrastructure and migration changes should include a specific verification and recovery plan.
 

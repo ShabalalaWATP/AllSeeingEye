@@ -1,6 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { NavigationType, useLocation, useNavigationType } from 'react-router';
 
+import { setDocumentMeta } from '@/lib/documentMetadata';
+
 import { APP_TITLE, pageTitle, withAppTitle } from './pageTitles';
 
 /** How long a lazily loaded page may take to render its heading before focus stays on main. */
@@ -58,6 +60,8 @@ export function useRouteFocus(
   const announcerRef = useRef<HTMLParagraphElement>(null);
   const previous = useRef<string | null>(null);
   const pending = useRef<() => void>(() => undefined);
+
+  useEffect(() => setDocumentMeta('robots', 'noindex, follow'), []);
 
   useEffect(() => {
     document.title = withAppTitle(name);

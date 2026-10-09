@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router';
 
 import { PageHeader } from '@/components/ui/PageHeader';
+import { EmbedPrivacyPreferences } from '@/components/privacy/EmbedPrivacyPreferences';
 import { useAuthStore } from '@/stores/auth';
 
 import { AiUsageSummary } from './AiUsageSummary';
@@ -15,6 +16,7 @@ const sections = [
   { id: 'research', label: 'Research defaults' },
   { id: 'reports', label: 'Report preferences' },
   { id: 'ai-usage', label: 'AI allowance' },
+  { id: 'external-media', label: 'External media' },
 ] as const;
 
 const resources = [
@@ -43,7 +45,7 @@ export default function SettingsPage() {
           title="Settings"
           eyebrow="Personal workspace"
           eyebrowTone="muted"
-          description="Set up the app for the way you work. These preferences apply only to you."
+          description="Set up the app for the way you work. Saved external media choices apply to this browser."
         />
         <div className="grid gap-8 py-7 md:grid-cols-[190px_minmax(0,1fr)] md:gap-12">
           <nav
@@ -74,6 +76,8 @@ export default function SettingsPage() {
               <AppearancePreferences />
             ) : selected.id === 'keyboard' ? (
               <KeyboardPreferences />
+            ) : selected.id === 'external-media' ? (
+              <EmbedPrivacyPreferences />
             ) : (
               <ProfilePreferences section={selected.id} />
             )}

@@ -32,7 +32,7 @@ remain gaps, never zeroes.
 | World Bank Indicators API | Twelve measures covering output, people, prices, jobs, trade, industry, investment and central government debt | Six regions, up to 12 annual observations each; shared 24-hour cache. Latest available year may differ by country and measure. |
 | European Central Bank | GBP, USD and CNY per euro | Daily reference rates, up to 90 days; shared one-hour cache. RUB is suspended and IRR is not published. |
 | Publisher RSS | Economic headlines, dates and source links | Select 2, 5, 7 or 14 days. Only known publication dates inside the selected period appear; economic cache retention is 14 days, within existing item and global memory caps. |
-| TradingView embedded chart | Selected equity, currency, commodity and index-proxy instruments | Loads automatically. Timing depends on the instrument, with delayed or end-of-day equities and clearly labelled CFD proxies. |
+| TradingView embedded chart | Selected equity, currency, commodity and index-proxy instruments | Loads after provider consent. Timing depends on the instrument, with delayed or end-of-day equities and clearly labelled CFD proxies. |
 
 Official documentation: [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation),
 [World Bank data terms](https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets),
@@ -45,7 +45,8 @@ The instrument list deliberately contains only verified symbols. US 500 and UK
 have economic statistics and reporting, but no supported direct local-equity
 chart in this selection. The app does not substitute unrelated prices.
 
-The external chart loads automatically, as requested. The provider details
+The external chart waits for Load chart from TradingView, unless the reader has
+explicitly remembered that provider. The provider details
 explain that TradingView receives the browser connection and public
 symbol. It receives no application token, question, report or account identity.
 One fixed-origin sandboxed iframe is active at a time. Hidden tabs suspend it;
@@ -53,6 +54,13 @@ Stop charts unmounts it and Resume charts restores it. Login changes reset
 the selected instrument and pause state. The server CSP
 allows only the documented widget frame origin, without adding external scripts
 to the parent page. TradingView attribution remains visible.
+
+Remembering a provider uses memory until reload, sign-out or account change.
+A separate unchecked option can save the choice in this browser, including for
+other accounts. Forget controls beside the chart and in Settings → External media
+withdraw it and stop open embeds. Stopping a chart does not forget its provider.
+See [external media privacy controls](EXTERNAL_MEDIA_PRIVACY.md) for the storage
+declaration and the distinction between request gating and legal assessment.
 
 ## Data analysis and comparisons
 

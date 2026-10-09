@@ -24,10 +24,16 @@ function chart() {
   return document.querySelector('iframe');
 }
 
+async function loadChart() {
+  await userEvent.click(screen.getByRole('button', { name: 'Load chart from TradingView' }));
+}
+
 describe('market workspace', () => {
-  it('automatically loads the selected chart and lets the user stop and resume it', async () => {
+  it('waits for consent before loading and lets the user stop and resume it', async () => {
     signIn();
     render(<MarketWorkspace region="US" />);
+    expect(chart()).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Load chart from TradingView' }));
     expect(screen.getByTitle('US 500 market chart')).toBeInTheDocument();
     expect(chart()).toHaveAttribute('loading', 'eager');
     expect(document.querySelector('script[src]')).toBeNull();
@@ -51,6 +57,7 @@ describe('market workspace', () => {
   it('switches curated instruments and regions with at most one mounted chart', async () => {
     signIn();
     const view = render(<MarketWorkspace region="US" />);
+    await loadChart();
     await userEvent.selectOptions(
       screen.getByRole('combobox', { name: 'Market instrument' }),
       'NASDAQ:AAPL',
@@ -68,6 +75,7 @@ describe('market workspace', () => {
   it('unmounts hidden-tab charts and resumes unless the user stopped charts', async () => {
     signIn();
     render(<MarketWorkspace region="GB" />);
+    await loadChart();
     act(() => setVisibility('hidden'));
     expect(chart()).toBeNull();
     expect(screen.getByText('Charts paused while this tab is hidden')).toBeInTheDocument();
@@ -79,18 +87,21 @@ describe('market workspace', () => {
     expect(chart()).toBeNull();
   });
 
-  it('does not connect while initially hidden and loads when the tab becomes visible', () => {
+  it('does not connect while initially hidden and still needs consent when visible', async () => {
     signIn();
     setVisibility('hidden');
     render(<MarketWorkspace region="GB" />);
     expect(chart()).toBeNull();
     act(() => setVisibility('visible'));
+    expect(chart()).toBeNull();
+    await loadChart();
     expect(screen.getByTitle('Pound / US dollar market chart')).toBeInTheDocument();
   });
 
   it('resets selections and pauses on identity changes and removes inactive sessions', async () => {
     signIn();
     render(<MarketWorkspace region="WORLD" />);
+    await loadChart();
     await userEvent.selectOptions(
       screen.getByRole('combobox', { name: 'Market instrument' }),
       'NASDAQ:AAPL',
@@ -99,6 +110,8 @@ describe('market workspace', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Stop charts' }));
     expect(chart()).toBeNull();
     act(() => useAuthStore.getState().setSession(tokenFor({ ...plainUser, id: 'another-user' })));
+    expect(chart()).toBeNull();
+    await loadChart();
     expect(screen.getByTitle('US 500 market chart')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Resume charts' })).not.toBeInTheDocument();
     act(() => useAuthStore.setState({ user: { ...plainUser, is_active: false } }));
@@ -123,13 +136,14 @@ describe('market workspace', () => {
     },
   );
 
-  it('uses only the signed-in user’s chart theme', () => {
+  it('uses only the signed-in user’s chart theme', async () => {
     signIn();
     useProfileStore.setState({
       owner: 'someone-else',
       profile: { ...defaultProfile, appearance_theme: 'light' },
     });
     render(<MarketWorkspace region="GB" />);
+    await loadChart();
     expect(decodeURIComponent(chart()!.src)).toContain('"theme":"dark"');
     act(() =>
       useProfileStore.setState({
@@ -143,6 +157,7 @@ describe('market workspace', () => {
   it('offers a manual reload and provider fallback without claiming third-party health', async () => {
     signIn();
     render(<MarketWorkspace region="GB" />);
+    await loadChart();
     const previousFrame = chart();
     await userEvent.click(screen.getByRole('button', { name: 'Reload chart' }));
     expect(chart()).not.toBe(previousFrame);

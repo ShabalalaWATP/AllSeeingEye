@@ -50,6 +50,7 @@ class DeploymentTests(unittest.TestCase):
             "require_latest",
             "require_clean",
             "require_compatible",
+            "require_publication",
             "git",
             "run",
             "current_images",
