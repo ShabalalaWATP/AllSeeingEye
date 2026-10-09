@@ -1,12 +1,9 @@
 import { Link } from 'react-router';
 
 /** Same-origin links only; safe in public and signed-in layouts. */
-export function PolicyLinks() {
+export function PolicyLinks({ label = 'Privacy and source information' }: { label?: string }) {
   return (
-    <nav
-      aria-label="Privacy and source information"
-      className="flex flex-wrap gap-x-5 gap-y-2 text-sm"
-    >
+    <nav aria-label={label} className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
       <Link
         className="rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
         to="/privacy"

@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { PublicRouteFocus } from '@/app/shell/PublicRouteFocus';
 import { PolicyLinks } from '@/components/privacy/PolicyLinks';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 import './policy.css';
 
@@ -18,11 +19,11 @@ export function PolicyLayout({ title, children }: { title: string; children: Rea
       </header>
       <main id="policy-main" tabIndex={-1}>
         <PublicRouteFocus title={title} />
-        <h1>{title}</h1>
+        <PageHeader title={title} type="workspace" className="mb-6" />
         {children}
       </main>
       <footer className="policy-footer">
-        <PolicyLinks />
+        <PolicyLinks label="Footer privacy and source information" />
       </footer>
     </div>
   );
