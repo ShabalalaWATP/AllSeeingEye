@@ -11,6 +11,7 @@ from ase.adapters.store import memory
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.ports.feeds import EventQuery
 from ase.application.warning import evaluator
+from ase.domain.consumed_evidence import EMPTY_CONSUMED, ConsumedEvidence
 from ase.domain.events import Event
 from ase.domain.warning import Firing, Indicator
 from test_warning import NOW
@@ -40,9 +41,11 @@ async def test_all_scopes_filter_and_evaluate_one_snapshot_off_loop(
         now: datetime,
         last: datetime | None,
         alerted: frozenset[str] = frozenset(),
+        *,
+        consumed: ConsumedEvidence = EMPTY_CONSUMED,
     ) -> Firing | None:
         assert threading.get_ident() != loop_thread, "matching must run off the event loop"
-        return original_evaluate(rule, events, now, last, alerted)
+        return original_evaluate(rule, events, now, last, alerted, consumed=consumed)
 
     monkeypatch.setattr(memory, "select_events", select)
     monkeypatch.setattr(evaluator, "evaluate", evaluate)

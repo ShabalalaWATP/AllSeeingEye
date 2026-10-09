@@ -17,6 +17,13 @@ from uuid import UUID
 
 from ase.domain.alert_feedback import AlertDisposition
 from ase.domain.area_membership import area_contains_event
+from ase.domain.consumed_evidence import (
+    EMPTY_CONSUMED,
+    MAX_CONSUMED_PER_RULE,
+    ConsumedEvidence,
+    Identity,
+    identity,
+)
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import evidence_time
 from ase.domain.research_area import ResearchArea
@@ -134,6 +141,8 @@ class Firing:
     count: int
     evidence: tuple[Event, ...]
     countries: tuple[str, ...]
+    consumed: tuple[Identity, ...] = ()
+    consumption_overflow: bool = False
 
 
 def describe_window(minutes: int) -> str:
@@ -151,12 +160,14 @@ def evaluate(
     now: datetime,
     last_fired: datetime | None,
     alerted: frozenset[str] = frozenset(),
+    *,
+    consumed: ConsumedEvidence = EMPTY_CONSUMED,
 ) -> Firing | None:
     """Count known publication times in the closed interval [now - window, now].
 
     `alerted` holds the event ids the rule's earlier alerts already cited; they are not counted.
     """
-    if not indicator.enabled:
+    if not indicator.enabled or consumed.unavailable:
         return None
     if last_fired is not None and now - last_fired < indicator.cooldown:
         return None
@@ -164,14 +175,22 @@ def evaluate(
     if indicator.resumed_at is not None and indicator.resumed_at > since:
         since = indicator.resumed_at
     count = 0
+    identities: dict[bytes, int] = {}
     evidence: list[tuple[datetime, str, int, Event]] = []
     country_latest: dict[str, tuple[datetime, str]] = {}
     for event in events:
         published = evidence_time(event)
         if published is None or not since <= published <= now or event.id in alerted:
             continue
-        if not indicator.matches(event):
+        if not indicator.matches(event) or (
+            consumed.legacy_before is not None and published <= consumed.legacy_before
+        ):
             continue
+        fingerprint, expiry = identity(event, published)
+        if fingerprint in consumed.identities or fingerprint in identities:
+            continue
+        if len(identities) <= MAX_CONSUMED_PER_RULE:
+            identities[fingerprint] = expiry
         count += 1
         key = (published, event.id)
         if event.country_iso:
@@ -185,7 +204,13 @@ def evaluate(
         return None
     countries = tuple(sorted(country_latest, key=lambda code: country_latest[code], reverse=True))
     newest = tuple(entry[3] for entry in sorted(evidence, reverse=True))
-    return Firing(count, newest, countries)
+    return Firing(
+        count,
+        newest,
+        countries,
+        tuple(identities.items()),
+        consumption_overflow=len(identities) > MAX_CONSUMED_PER_RULE,
+    )
 
 
 def alert_from(indicator: Indicator, firing: Firing, alert_id: UUID, now: datetime) -> Alert:

@@ -4,6 +4,43 @@ Open **Warning**, save an indicator, then select **Notifications** beside that
 rule. In-app storage and streaming always remain enabled. Email and a registered
 webhook are independent optional channels. No migration enables either one.
 
+## Repeated evidence and capacity
+
+A firing consumes every counted matching identity, independently of the 20 items
+shown as citations. Reopening the database or waiting through the cooldown does
+not make those identities new again. Unseen late arrivals with older publication
+times still count while inside the rule's window. Relative rules continue to use
+the complete hourly count for their baseline comparison and displayed ratio;
+another firing also requires the rule's threshold of previously unconsumed items.
+
+Consumption survives rule edits and is retained through each item's inclusive
+seven-day eligibility boundary, so widening a window does not replay old evidence.
+Deleting a rule removes its consumed state. This stores compact source/ID hashes
+and expiry instants, never raw events. The limits are 350,000 identities per rule
+and 1,000,000 across the installation, approximately 8 MiB per rule and 23 MiB of
+identity payload globally, plus small row metadata. The per-rule limit accommodates
+one complete default live store, including its 150,000-item disaster category.
+
+If a whole firing cannot fit, it creates no alert, report or notification and
+consumes nothing. The operational log records `indicator_evidence_deferred` with
+the rule ID and `rule_consumed_evidence_capacity` or
+`global_consumed_evidence_capacity`. Narrow broad rules or wait for eligible state
+to expire. Still-eligible identities are never evicted to admit another firing.
+Malformed state instead records `invalid_consumed_evidence` and requires restoring
+valid saved state; clearing it would replay evidence.
+
+Apply migration 0094 before starting these workers. Older alerts retained only
+their citation sample, so their complete consumption cannot be reconstructed.
+The migration records each rule's latest legacy firing as an explicit recovery
+boundary. Activity published at or before that boundary is deferred while eligible,
+with `legacy_consumption_unavailable` in the operational log. This necessarily
+includes ambiguous older late arrivals during the one-time upgrade recovery.
+Activity after the boundary remains usable. A deliberate pause/resume establishes
+a fresh publication boundary; otherwise the ambiguity expires with the window.
+Downgrade refuses to discard retained consumption. Older application versions do
+not honour the state, so stop warning evaluation before rolling application code
+back. Restore the matching database and application versions together.
+
 ## Automatic reports
 
 When a rule has a report template, its alert and report request are stored in the

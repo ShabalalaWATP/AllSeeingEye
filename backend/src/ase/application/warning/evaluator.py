@@ -14,6 +14,7 @@ import logging
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from typing import TypeGuard
 from uuid import uuid4
 
 from ase.application.ports import Clock
@@ -22,7 +23,10 @@ from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventS
 from ase.application.ports.warning import AlertNotifier, IndicatorBaselineStore, WarningStore
 from ase.application.warning.report_snapshot import capture_report
 from ase.application.worker_progress import run_cycle
+from ase.domain.alert_reports import AlertReportSnapshot
+from ase.domain.consumed_evidence import EMPTY_CONSUMED, ConsumedEvidence
 from ase.domain.errors import RateLimited
+from ase.domain.events import Event
 from ase.domain.grading import SourceProfile
 from ase.domain.warning import ALERT_RETENTION, Alert, Firing, Indicator, alert_from, evaluate
 
@@ -34,14 +38,86 @@ ADMISSION_RETRY_SECONDS = 1.0
 SleepFn = Callable[[float], Awaitable[None]]
 
 
+def _warn_consumption(rule: Indicator, consumed: ConsumedEvidence) -> None:
+    reason = consumed.unavailable or (
+        "legacy_consumption_unavailable" if consumed.legacy_before is not None else None
+    )
+    if reason:
+        log.warning(
+            "indicator_evidence_deferred",
+            extra={"indicator_id": str(rule.id), "reason": reason},
+        )
+
+
+def _ready_firing(firing: Firing | None, rule: Indicator) -> TypeGuard[Firing]:
+    if firing is None:
+        return False
+    if firing.consumption_overflow:
+        log.warning(
+            "indicator_evidence_deferred",
+            extra={"indicator_id": str(rule.id), "reason": "rule_consumed_evidence_capacity"},
+        )
+        return False
+    return True
+
+
+def _report_snapshot(
+    rule: Indicator,
+    alert: Alert,
+    firing: Firing,
+    profiles: Mapping[str, SourceProfile],
+) -> tuple[Alert, AlertReportSnapshot | None]:
+    if rule.report_template is None:
+        return alert, None
+    try:
+        return alert, capture_report(rule, alert, firing, profiles)
+    except ValueError:
+        return replace(alert, report_status="failed", report_error="evidence_unavailable"), None
+
+
 async def evaluate_candidates(
     store: EventStore,
     indicator: Indicator,
     now: datetime,
     last: datetime | None,
     alerted: frozenset[str] = frozenset(),
+    *,
+    consumed: ConsumedEvidence = EMPTY_CONSUMED,
 ) -> Firing | None:
     """Count every match on one admitted snapshot; bound only the exported evidence."""
+    return await _read_candidates(
+        store,
+        indicator,
+        now,
+        lambda events: evaluate(indicator, events, now, last, alerted, consumed=consumed),
+    )
+
+
+async def evaluate_relative_candidates(
+    store: EventStore,
+    rule: Indicator,
+    now: datetime,
+    last: datetime | None,
+    consumed: ConsumedEvidence,
+) -> tuple[Firing | None, Firing | None]:
+    hourly = replace(rule, threshold=0, window_minutes=60)
+    return await _read_candidates(
+        store,
+        hourly,
+        now,
+        lambda events: (
+            evaluate(hourly, events, now, None),
+            evaluate(rule, events, now, last, consumed=consumed),
+        ),
+    )
+
+
+async def _read_candidates[T](
+    store: EventStore,
+    indicator: Indicator,
+    now: datetime,
+    project: Callable[[list[Event]], T],
+) -> T:
     # Store intervals are half-open. The next representable instant includes exactly
     # now, without admitting a future publication. At datetime.max no later instant exists.
     until = now + datetime.resolution if now < datetime.max.replace(tzinfo=UTC) else None
@@ -57,10 +133,10 @@ async def evaluate_candidates(
     if isinstance(store, CooperativeEventReader):
         return await store.read_cooperatively(
             query,
-            lambda events: evaluate(indicator, events, now, last, alerted),
+            project,
             admission_key="internal:exact-indicators",
         )
-    return evaluate(indicator, store.query(query), now, last, alerted)
+    return project(store.query(query))
 
 
 class IndicatorEvaluator:
@@ -98,10 +174,13 @@ class IndicatorEvaluator:
                 continue
             latest = await self._warnings.latest_alert(indicator.id)
             last = None if latest is None else latest.fired_at
-            alerted = await self._alerted(indicator, now, last)
+            consumed = await self._warnings.consumed_evidence(indicator, now)
+            _warn_consumption(indicator, consumed)
+            if consumed.unavailable:
+                continue
             while True:
                 try:
-                    firing = await self._evaluate(indicator, now, last, alerted)
+                    firing = await self._evaluate(indicator, now, last, consumed)
                     break
                 except RateLimited:
                     if admission_retries == 0:
@@ -113,7 +192,7 @@ class IndicatorEvaluator:
                     # A cycle-wide budget prevents saturation multiplying delays by rule count.
                     admission_retries -= 1
                     await self._sleep(ADMISSION_RETRY_SECONDS)
-            if firing is None:
+            if not _ready_firing(firing, indicator):
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
             if indicator.baseline_ratio is not None and self._baselines is not None:
@@ -123,15 +202,13 @@ class IndicatorEvaluator:
                 alert = replace(
                     alert, baseline_mean=baseline.mean, baseline_ratio=firing.count / baseline.mean
                 )
-            snapshot = None
-            if indicator.report_template is not None:
-                try:
-                    snapshot = capture_report(indicator, alert, firing, self._source_profiles)
-                except ValueError:
-                    alert = replace(
-                        alert, report_status="failed", report_error="evidence_unavailable"
-                    )
-            if not await self._warnings.add_alert(alert, indicator, report_snapshot=snapshot):
+            alert, snapshot = _report_snapshot(indicator, alert, firing, self._source_profiles)
+            if not await self._warnings.add_alert(
+                alert,
+                indicator,
+                report_snapshot=snapshot,
+                consumed=firing.consumed,
+            ):
                 continue
             log.info("alert_fired", extra={"indicator": indicator.name, "count": alert.count})
             await self._route(alert, indicator)
@@ -141,52 +218,54 @@ class IndicatorEvaluator:
             log.info("alerts_pruned", extra={"count": pruned})
         return fired
 
-    async def _alerted(
-        self, rule: Indicator, now: datetime, last: datetime | None
-    ) -> frozenset[str]:
-        """Evidence already cited inside the window; skipped while cooling down or unneeded."""
-        since = now - rule.window
-        if last is None or last < since or now - last < rule.cooldown:
-            return frozenset()  # No alert inside the window, or evaluation stops at the cooldown.
-        if rule.baseline_ratio is not None:
-            return frozenset()  # Ratio rules compare the full hourly count with their baseline.
-        return await self._warnings.alerted_event_ids(rule.id, since)
-
     async def _evaluate(
         self,
         rule: Indicator,
         now: datetime,
         last: datetime | None,
-        alerted: frozenset[str] = frozenset(),
+        consumed: ConsumedEvidence = EMPTY_CONSUMED,
     ) -> Firing | None:
         if self._baselines is None:
             return (
                 None
                 if rule.baseline_ratio is not None
-                else await evaluate_candidates(self._store, rule, now, last, alerted)
+                else await evaluate_candidates(self._store, rule, now, last, consumed=consumed)
             )
-        hourly = await evaluate_candidates(
-            self._store,
-            replace(rule, threshold=0, window_minutes=60),
-            now,
-            None,
-        )
+        fresh = None
+        if rule.baseline_ratio is not None:
+            hourly, fresh = await evaluate_relative_candidates(
+                self._store, rule, now, last, consumed
+            )
+        else:
+            hourly = await evaluate_candidates(
+                self._store,
+                replace(rule, threshold=0, window_minutes=60),
+                now,
+                None,
+            )
         if hourly is not None:
             await self._baselines.record(
                 rule, now.replace(minute=0, second=0, microsecond=0), hourly.count
             )
         if rule.baseline_ratio is None:
-            return await evaluate_candidates(self._store, rule, now, last, alerted)
+            return await evaluate_candidates(self._store, rule, now, last, consumed=consumed)
         baseline = await self._baselines.summary(rule, now)
         if not baseline.ready or baseline.mean is None or hourly is None:
             return None
         if last is not None and now - last < rule.cooldown:
             return None
+        if hourly.count / baseline.mean < rule.baseline_ratio:
+            return None
+        # Relative counts and baseline samples describe the complete hourly picture.
+        # A new firing additionally needs a threshold of unconsumed matches.
         return (
-            hourly
-            if hourly.count >= rule.threshold
-            and hourly.count / baseline.mean >= rule.baseline_ratio
-            else None
+            None
+            if fresh is None
+            else replace(
+                hourly,
+                consumed=fresh.consumed,
+                consumption_overflow=fresh.consumption_overflow,
+            )
         )
 
     async def _route(self, alert: Alert, indicator: Indicator) -> None:

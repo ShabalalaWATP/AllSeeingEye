@@ -53,6 +53,9 @@ from ase.adapters.persistence import team_board_models as _team_board_models  # 
 from ase.adapters.persistence import (
     team_invitation_models as _team_invitation_models,  # noqa: F401
 )
+from ase.adapters.persistence import (
+    warning_consumption_models as _warning_consumption_models,  # noqa: F401
+)
 from ase.adapters.persistence import web_push_models as _web_push_models  # noqa: F401
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.operational_models import (
