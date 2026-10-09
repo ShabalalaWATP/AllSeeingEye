@@ -91,6 +91,7 @@ from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Environment, Settings
+from ase.infrastructure.source_licences import load_source_licences
 
 log = structlog.get_logger(__name__)
 
@@ -130,6 +131,10 @@ class Container(
         connectors: Sequence[FeedConnector] | None = None,
     ) -> None:
         self.settings = settings
+        self.source_licences = load_source_licences(
+            commercial_use=settings.commercial_use,
+            acknowledgements=settings.acknowledged_source_licences,
+        )
         self.clock: Clock = clock or SystemClock()
         self.limiter: RateLimiter = limiter or InMemorySlidingWindowLimiter(self.clock)
         self.email_sender: EmailSender = email_sender or build_email_sender(settings)
