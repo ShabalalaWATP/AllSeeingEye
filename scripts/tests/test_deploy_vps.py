@@ -60,6 +60,7 @@ class GuardTests(unittest.TestCase):
             "scripts/deploy_vps.py",
             "scripts/deploy_ssh.py",
             "scripts/deploy_build.py",
+            "scripts/privacy_publication.py",
         )
         for path in paths:
             with (
@@ -72,7 +73,7 @@ class GuardTests(unittest.TestCase):
                 deploy.require_compatible(OLD, NEW)
 
     def test_controller_upgrade_requires_exact_preinstalled_version(self):
-        for name in ("deploy_vps.py", "deploy_ssh.py", "deploy_build.py"):
+        for name in deploy.CONTROLLERS:
             installed = Path(deploy.__file__).with_name(name).read_text().strip()
             with (
                 self.subTest(name=name),

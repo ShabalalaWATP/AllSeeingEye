@@ -68,6 +68,9 @@ const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 const HelpPage = lazy(() => import('@/app/help/HelpPage'));
 // The signed-out product story; its own chunk so neither it nor the app loads the other.
 const ProductPage = lazy(() => import('@/features/product/ProductPage'));
+const PrivacyPage = lazy(() => import('@/features/public-policy/PrivacyPage'));
+const AttributionsPage = lazy(() => import('@/features/public-policy/AttributionsPage'));
+const PersonalDataPage = lazy(() => import('@/features/public-policy/PersonalDataPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -114,6 +117,19 @@ function recoverable(children: RouteObject[]): RouteObject[] {
 }
 
 const pages: RouteObject[] = [
+  ...[
+    { path: '/privacy', element: <PrivacyPage /> },
+    { path: '/attributions', element: <AttributionsPage /> },
+    { path: '/privacy/requests', element: <PersonalDataPage /> },
+  ].map((page) => ({
+    ...page,
+    element: (
+      <Suspense fallback={<main aria-busy="true">Loading information…</main>}>
+        {page.element}
+      </Suspense>
+    ),
+    errorElement: <RouteErrorPage />,
+  })),
   {
     element: <AuthLayout />,
     children: recoverable([

@@ -3,6 +3,7 @@
  * outside the app shell and account themes, on its own fixed dark palette.
  */
 import { Link } from 'react-router';
+import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 
 import { AskChapter } from './chapters/AskChapter';
 import { AssessChapter } from './chapters/AssessChapter';
@@ -58,6 +59,7 @@ export function ProductStory({ enquiriesEnabled = false }: { enquiriesEnabled?: 
             <Link to="/login">Sign in</Link>
             <Link to="/request-account">Request access</Link>
           </nav>
+          <PolicyLinks />
         </footer>
       </div>
     </StoryMotionContext.Provider>
