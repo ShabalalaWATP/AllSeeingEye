@@ -56,6 +56,7 @@ class GuardTests(unittest.TestCase):
             "backend/alembic.ini",
             "backend/src/ase/infrastructure/migrations.py",
             "backend/src/ase/cli.py",
+            "infra/postgis/Dockerfile",
             "scripts/deploy_vps.py",
             "scripts/deploy_ssh.py",
             "scripts/deploy_build.py",
@@ -130,6 +131,11 @@ class GuardTests(unittest.TestCase):
         ):
             deploy.run("curl", "--fail")
         self.assertEqual(str(caught.exception), "Operation failed: curl --fail")
+
+    def test_progress_output_to_a_closed_session_is_ignored(self):
+        with patch("builtins.print", side_effect=BrokenPipeError) as output:
+            deploy.progress("Building application images.")
+        output.assert_called_once_with("Building application images.", flush=True)
 
 
 class HealthTests(unittest.TestCase):

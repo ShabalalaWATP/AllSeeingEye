@@ -1,6 +1,7 @@
 """Deployment lifecycle regressions using temporary storage and mocked processes."""
 
 import json
+import signal
 import sys
 import tempfile
 import unittest
@@ -242,6 +243,56 @@ class RolloutTests(unittest.TestCase):
             deploy.rollout(NEW, OLD, NEW_IMAGES, OLD_IMAGES)
         self.assertNotIn(call("reset", "--hard", OLD), self.git.call_args_list)
         self.start.assert_called_once_with(NEW_IMAGES)
+
+    def test_dropped_session_output_still_completes_rollback(self):
+        self.healthy.side_effect = [deploy.DeploymentError("unhealthy"), None]
+        with (
+            patch("builtins.print", side_effect=BrokenPipeError),
+            self.assertRaisesRegex(
+                deploy.DeploymentError, "previous application release restored"
+            ),
+        ):
+            deploy.rollout(NEW, OLD, NEW_IMAGES, OLD_IMAGES)
+        self.assertIn(call("reset", "--hard", OLD), self.git.call_args_list)
+        self.assertEqual(self.head, OLD)
+        self.assertEqual(
+            self.start.call_args_list, [call(NEW_IMAGES), call(OLD_IMAGES)]
+        )
+        self.healthy.assert_called_with(OLD_IMAGES)
+
+    def test_stop_signal_during_rollback_does_not_abort_it(self):
+        # Install the production handler that turns these signals into errors.
+        for sig in deploy.STOP_SIGNALS:
+            self.addCleanup(signal.signal, sig, signal.getsignal(sig))
+            signal.signal(sig, deploy.interrupted)
+
+        def start(images):
+            if images is OLD_IMAGES:
+                for sig in deploy.STOP_SIGNALS:
+                    signal.raise_signal(sig)
+
+        self.start.side_effect = start
+        self.healthy.side_effect = [deploy.DeploymentError("unhealthy"), None]
+        with self.assertRaisesRegex(
+            deploy.DeploymentError, "previous application release restored"
+        ):
+            deploy.rollout(NEW, OLD, NEW_IMAGES, OLD_IMAGES)
+        self.assertEqual(self.head, OLD)
+        self.assertEqual(
+            self.healthy.call_args_list, [call(NEW_IMAGES), call(OLD_IMAGES)]
+        )
+        for sig in deploy.STOP_SIGNALS:
+            self.assertIs(signal.getsignal(sig), deploy.interrupted)
+
+    def test_failed_rollback_restores_signal_handlers(self):
+        for sig in deploy.STOP_SIGNALS:
+            self.addCleanup(signal.signal, sig, signal.getsignal(sig))
+            signal.signal(sig, deploy.interrupted)
+        self.healthy.side_effect = deploy.DeploymentError("unhealthy")
+        with self.assertRaisesRegex(deploy.DeploymentError, "unhealthy"):
+            deploy.rollout(NEW, OLD, NEW_IMAGES, OLD_IMAGES)
+        for sig in deploy.STOP_SIGNALS:
+            self.assertIs(signal.getsignal(sig), deploy.interrupted)
 
 
 if __name__ == "__main__":

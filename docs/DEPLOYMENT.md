@@ -69,7 +69,7 @@ The repository also provides an [automatic deployment workflow](AUTOMATIC_DEPLOY
 
 ### Database image
 
-Compose builds the database from `infra/postgis/Dockerfile`: the digest-pinned upstream PostGIS image with Alpine security updates applied and the Go-built `gosu` replaced by Alpine's `su-exec`. Application updates never rebuild or restart it, so its system packages age until you rebuild it. Rebuild it when the base pin changes or when the weekly `Database image` workflow turns red, and otherwise at least monthly:
+Compose builds the database from `infra/postgis/Dockerfile`: the digest-pinned upstream PostGIS image with Alpine security updates applied and the Go-built `gosu` replaced by Alpine's `su-exec`. Application updates never rebuild or restart it, so its system packages age until you rebuild it. Automatic deployment refuses changes under `infra/postgis/` until they are rolled out manually. Rebuild it when the base pin changes or when the weekly `Database image` workflow turns red, and otherwise at least monthly:
 
 1. Take and verify a backup, then stop the API.
 2. `docker compose build --pull db`, then `docker compose up -d --no-deps db`, and wait until it is healthy.

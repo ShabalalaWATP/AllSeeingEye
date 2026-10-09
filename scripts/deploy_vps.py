@@ -36,12 +36,25 @@ MANUAL_PATHS = (
     "backend/alembic.ini",
     "backend/src/ase/infrastructure/migrations.py",
     "backend/src/ase/cli.py",
+    # Compose builds the database here; application deploys never rebuild db.
+    "infra/postgis/",
     *(f"scripts/{name}" for name in CONTROLLERS),
+)
+# SIGHUP does not exist on Windows, where only the tests run.
+STOP_SIGNALS = tuple(
+    getattr(signal, name) for name in ("SIGTERM", "SIGHUP") if hasattr(signal, name)
 )
 
 
 class DeploymentError(RuntimeError):
     """A deployment was refused or did not complete safely."""
+
+
+def progress(message: str) -> None:
+    # A dropped SSH session turns writes into BrokenPipeError; never let that
+    # skip a cutover or rollback step.
+    with contextlib.suppress(OSError):
+        print(message, flush=True)
 
 
 def run(*args: str, cwd: Path = ROOT, timeout: int = 1200, mask: int = -1) -> str:
@@ -101,7 +114,8 @@ def require_compatible(previous: str, sha: str) -> None:
         path == rule or path.startswith(rule) for path in paths for rule in MANUAL_PATHS
     ):
         raise DeploymentError(
-            "Migration, Compose or deployment-controller change requires manual rollout."
+            "Migration, Compose, database image or deployment-controller change"
+            " requires manual rollout."
         )
 
 
@@ -192,15 +206,12 @@ def start(images: dict[str, str]) -> None:
 
 
 def build(sha: str, worktree: Path) -> dict[str, str]:
-    print(
-        "Building application images while the current release stays online.",
-        flush=True,
-    )
+    progress("Building application images while the current release stays online.")
     return build_images(sha, worktree, run)
 
 
 def backup(destination: Path) -> None:
-    print("Creating and verifying the pre-deployment database backup.", flush=True)
+    progress("Creating and verifying the pre-deployment database backup.")
     run(
         "python3",
         "scripts/backup.py",
@@ -233,16 +244,22 @@ def rollout(
         start(images)
         wait_healthy(images)
     except (DeploymentError, KeyboardInterrupt):
-        print("Cutover failed; restoring the previous application release.", flush=True)
-        # Reset only our own clean fast-forward; never discard an operator's changes.
-        require_clean()
-        if git("rev-parse", "HEAD") not in (sha, previous):
-            raise DeploymentError(
-                "Rollback refused: checkout changed during deployment."
-            )
-        git("reset", "--hard", previous)
-        start(old)
-        wait_healthy(old)
+        # A cancelled job or dropped session must not abandon a half-done rollback.
+        handlers = {sig: signal.signal(sig, signal.SIG_IGN) for sig in STOP_SIGNALS}
+        try:
+            progress("Cutover failed; restoring the previous application release.")
+            # Reset only our own clean fast-forward; never discard operator changes.
+            require_clean()
+            if git("rev-parse", "HEAD") not in (sha, previous):
+                raise DeploymentError(
+                    "Rollback refused: checkout changed during deployment."
+                )
+            git("reset", "--hard", previous)
+            start(old)
+            wait_healthy(old)
+        finally:
+            for sig, handler in handlers.items():
+                signal.signal(sig, handler)
         raise DeploymentError(
             "Deployment failed; previous application release restored."
         ) from None
@@ -257,7 +274,7 @@ def deploy(sha: str, *, check_only: bool = False) -> None:
         raise DeploymentError("Backup key missing or fewer than 6 GiB free on the VPS.")
     old = current_images()
     if check_only:
-        print(f"Preflight passed for {sha}. No release was changed.", flush=True)
+        progress(f"Preflight passed for {sha}. No release was changed.")
         return
     if previous == sha:
         labels = [
@@ -273,7 +290,7 @@ def deploy(sha: str, *, check_only: bool = False) -> None:
         ]
         if all(label == sha for label in labels):
             wait_healthy(old)
-            print(f"Already deployed and healthy: {sha}", flush=True)
+            progress(f"Already deployed and healthy: {sha}")
             return
     release = Path(tempfile.mkdtemp(prefix=f"{sha[:12]}-", dir=STATE))
     worktree = release / "source"
@@ -286,7 +303,7 @@ def deploy(sha: str, *, check_only: bool = False) -> None:
         backup(release / "backup")
         rollout(sha, previous, images, old)
         (release / "success").write_text(sha + "\n")
-        print(f"Deployment healthy: {sha}. Recovery record: {release}", flush=True)
+        progress(f"Deployment healthy: {sha}. Recovery record: {release}")
     finally:
         if worktree.exists():
             # Only remove the temporary worktree created by this invocation.
@@ -309,7 +326,7 @@ def main(sha: str, *, check_only: bool = False) -> int:
         except BlockingIOError:
             print("Another VPS deployment is in progress.", file=sys.stderr)
             return 1
-        for sig in (signal.SIGTERM, signal.SIGHUP):
+        for sig in STOP_SIGNALS:
             signal.signal(sig, interrupted)
         try:
             deploy(sha, check_only=check_only)
