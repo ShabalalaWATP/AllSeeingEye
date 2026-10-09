@@ -78,6 +78,8 @@ it('shows unchanged editions and keeps latest and previous updates accessible', 
             anchor_month: 4,
             monthday: 30,
             last_change_summary: 'No new supported development.',
+            last_version_number: 2,
+            previous_version_number: 1,
             last_change: {
               status: 'unchanged',
               report_id: schedule.last_report_id,
@@ -101,11 +103,11 @@ it('shows unchanged editions and keeps latest and previous updates accessible', 
   expect(table.getByText('day 30 every year, from April at 06:00 UTC')).toBeVisible();
   expect(table.getByRole('link', { name: 'Previous update' })).toHaveAttribute(
     'href',
-    `/reports/${previous}`,
+    `/reports/${previous}?version=1`,
   );
   expect(table.getByRole('link', { name: 'Latest update' })).toHaveAttribute(
     'href',
-    `/reports/${schedule.last_report_id}`,
+    `/reports/${schedule.last_report_id}?version=2`,
   );
 });
 

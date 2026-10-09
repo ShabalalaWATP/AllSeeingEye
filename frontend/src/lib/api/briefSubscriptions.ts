@@ -4,6 +4,7 @@ import { scopedMutation } from '@/lib/workspaceAccess';
 import { apiCall } from './client';
 import type { ResearchBrief } from './researchBriefSchema';
 import { scheduleSchema } from './schedules';
+import type { components } from './types.gen';
 
 export const briefSubscriptionSettingsSchema = z.object({
   name: z.string().min(1).max(120),
@@ -42,6 +43,22 @@ export function createBriefSubscription(
       body,
       schema: briefScheduleSchema,
       signal,
+      retryAfterRefresh: false,
+    }),
+  );
+}
+
+export function updateBriefSubscriptionSettings(
+  id: string,
+  body: components['schemas']['BriefSubscriptionSettingsIn'],
+  signal: AbortSignal,
+) {
+  return scopedMutation(() =>
+    apiCall(`/api/schedules/${encodeURIComponent(id)}/brief-settings`, {
+      method: 'PUT',
+      body,
+      signal,
+      schema: briefScheduleSchema.extend({ settings_revision: z.string().regex(/^[0-9a-f]{64}$/) }),
       retryAfterRefresh: false,
     }),
   );

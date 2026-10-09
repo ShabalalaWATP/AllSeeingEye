@@ -71,6 +71,7 @@ export const subscriptionEditionSchema = z.object({
   job_id: z.uuid().nullable(),
   report_id: z.uuid().nullable(),
   version_id: z.uuid().nullable(),
+  version_number: z.number().int().positive().nullable().default(null),
   accepted_as_baseline: z.boolean().default(false),
   comparison: comparisonSchema.nullable().default(null),
   safe_reason: z.string().nullable(),

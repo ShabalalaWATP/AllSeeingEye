@@ -15,7 +15,7 @@ describe('schedules', () => {
     expect(within(table).getByText('Intelligence summary · UA')).toBeInTheDocument();
     expect(within(table).getByRole('link', { name: 'Latest update' })).toHaveAttribute(
       'href',
-      `/reports/${schedule.last_report_id ?? ''}`,
+      `/reports/${schedule.last_report_id ?? ''}?version=1`,
     );
   });
 

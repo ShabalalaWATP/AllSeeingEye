@@ -18,6 +18,7 @@ from ase.domain.research_changes import ResearchChange
 from ase.domain.research_scope import MAX_RESEARCH_HOURS
 from ase.domain.schedules import DEFAULT_CADENCE, CoverageState, Schedule
 from ase.domain.subscription_recurrence import WindowPolicy
+from ase.domain.subscription_settings import settings_revision
 
 
 class ScheduleOccurrenceOut(BaseModel):
@@ -143,6 +144,7 @@ class ScheduleFromBriefIn(BaseModel):
 
 class ScheduleOut(BaseModel):
     id: UUID
+    settings_revision: str
     name: str
     template_id: str
     country_iso: str | None
@@ -175,6 +177,8 @@ class ScheduleOut(BaseModel):
     last_run_at: datetime | None
     last_report_id: UUID | None
     last_version_id: UUID | None
+    last_version_number: int | None = None
+    previous_version_number: int | None = None
     last_outcome: ReportStatus | None
     last_coverage: CoverageState | None
     last_error: str | None
@@ -191,9 +195,16 @@ class ScheduleOut(BaseModel):
     research_source_ids: list[str] | None
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> ScheduleOut:
+    def from_schedule(
+        cls,
+        schedule: Schedule,
+        *,
+        last_version_number: int | None = None,
+        previous_version_number: int | None = None,
+    ) -> ScheduleOut:
         return cls(
             id=schedule.id,
+            settings_revision=settings_revision(schedule),
             name=schedule.name,
             template_id=schedule.template_id,
             country_iso=schedule.country_iso,
@@ -238,6 +249,8 @@ class ScheduleOut(BaseModel):
             last_run_at=schedule.last_run_at,
             last_report_id=schedule.last_report_id,
             last_version_id=schedule.last_version_id,
+            last_version_number=last_version_number,
+            previous_version_number=previous_version_number,
             last_outcome=schedule.last_outcome,
             last_coverage=schedule.last_coverage,
             last_error=schedule.last_error,
