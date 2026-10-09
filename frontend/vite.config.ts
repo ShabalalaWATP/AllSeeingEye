@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { privacyPublication } from './scripts/privacy-plugin.js';
 
 // The dev server proxies /api to the FastAPI backend so cookies stay same-origin.
 // Point it elsewhere with ASE_DEV_API_TARGET in frontend/.env.local (never committed).
@@ -47,7 +48,7 @@ function maplibreWorker(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), maplibreWorker()],
+  plugins: [react(), tailwindcss(), maplibreWorker(), privacyPublication()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

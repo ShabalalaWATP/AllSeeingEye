@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
+import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 import { workspaceDestinations, workspaceHome } from '@/lib/workspaceNavigation';
 
 import { Glossary } from './Glossary';
@@ -118,6 +119,9 @@ export default function HelpPage() {
             Press Ctrl K, or Cmd K on a Mac, to find any page, tracker or map layer by name. Press ?
             for the keyboard shortcuts.
           </p>
+        </Section>
+        <Section title="Privacy and source information">
+          <PolicyLinks />
         </Section>
       </div>
     </section>

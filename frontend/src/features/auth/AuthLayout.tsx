@@ -7,6 +7,7 @@ import { MotionToggle } from '@/components/brand/MotionToggle';
 import { useMotionPause } from '@/components/brand/useMotionPause';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useSiteFacts } from '@/lib/useSiteFacts';
+import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 
 import './auth.css';
 
@@ -40,6 +41,9 @@ export function AuthLayout() {
               The All Seeing Eye<span>.</span>
             </p>
             <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
+            <div className="mt-5 hidden min-[900px]:block">
+              <PolicyLinks />
+            </div>
             {productPage ? (
               <Link className="auth-discover" to="/enterprise">
                 Discover what it can do
@@ -61,6 +65,9 @@ export function AuthLayout() {
           </nav>
           <div className="auth-form">
             <Outlet />
+          </div>
+          <div className="mt-6 min-[900px]:hidden">
+            <PolicyLinks />
           </div>
         </div>
       </main>

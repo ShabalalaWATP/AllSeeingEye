@@ -4,6 +4,7 @@
  */
 import { useEffect } from 'react';
 import { Link } from 'react-router';
+import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 
 import { AskChapter } from './chapters/AskChapter';
 import { AssessChapter } from './chapters/AssessChapter';
@@ -80,6 +81,7 @@ export function ProductStory() {
             <Link to="/login">Sign in</Link>
             <Link to="/request-account">Request access</Link>
           </nav>
+          <PolicyLinks />
         </footer>
       </div>
     </StoryMotionContext.Provider>

@@ -1,0 +1,110 @@
+{
+  "version": "2026-10-10-draft",
+  "operator": {
+    "controllerName": null,
+    "controllerContact": null,
+    "complaintsContact": null,
+    "complaintsProcedure": null,
+    "jurisdiction": null,
+    "hosting": null,
+    "emailProvider": null,
+    "aiProviders": null,
+    "otherRecipients": null,
+    "internationalTransfers": null,
+    "retentionCriteria": null,
+    "publicSourceAssessment": null,
+    "storageAssessment": null,
+    "automatedDecisions": null
+  },
+  "purposes": [
+    {
+      "name": "Accounts and access requests",
+      "data": "Email address, display name, account-request message, profile and avatar, team membership and preferences.",
+      "purpose": "Review access requests, provide an account and administer personal and shared workspaces.",
+      "lawfulBasis": null
+    },
+    {
+      "name": "Authentication and security",
+      "data": "Password hashes, authentication factors, recovery material, session records and security audit events.",
+      "purpose": "Authenticate users, protect sessions and investigate changes and misuse.",
+      "lawfulBasis": null
+    },
+    {
+      "name": "Enterprise enquiries",
+      "data": "Contact name, work email, organisation, optional role, deployment interest, expected user count, message and submission time.",
+      "purpose": "Respond to a request about an installation. The enquiry may also be sent to the operator's configured email recipient.",
+      "lawfulBasis": null
+    },
+    {
+      "name": "Research and public-source material",
+      "data": "Questions, submitted material, public observations and selected evidence that may identify people, plus saved reports, notes and team contributions.",
+      "purpose": "Support user-directed research, evidence review and retained assessments. Selected content may be sent to configured AI or research providers.",
+      "lawfulBasis": null
+    },
+    {
+      "name": "Notifications and web push",
+      "data": "Notification preferences, browser push endpoint and encryption keys, device label and delivery metadata.",
+      "purpose": "Send the notifications a user selects. Browser push is enabled through a user action and the browser permission prompt; the browser's push service participates in delivery.",
+      "lawfulBasis": null
+    }
+  ],
+  "retention": [
+    {
+      "name": "Accounts, requests, profiles and shared work",
+      "behaviour": "No universal automatic deletion period is established in the application. Supported record-level deletion and operator-assisted handling apply. Account deactivation revokes access; it does not erase the account or shared work."
+    },
+    {
+      "name": "Saved research and selected evidence",
+      "behaviour": "Saved reports and versions remain until supported deletion. Archiving a brief or subscription retains its history. Original assets have their own per-record expiry and deletion rules; receipt expiry does not delete saved evidence."
+    },
+    {
+      "name": "Transient private research inputs",
+      "behaviour": "The input receipt lifetime is 15 minutes, bounded further by the process lifetime. Material selected into a saved report follows the saved-record rules."
+    },
+    {
+      "name": "Sessions and authentication",
+      "behaviour": "Refresh-cookie lifetime is configured by the operator (the code default is 14 days). Session validity is also constrained by revocation, security changes and inactivity settings, so the browser cookie's expiry is not a promise of continued access."
+    },
+    {
+      "name": "Notification delivery receipts",
+      "behaviour": "The push worker prunes push delivery receipts older than seven days. Other notification outboxes and security or usage records do not share that rule."
+    },
+    {
+      "name": "Audit, usage, backups and external copies",
+      "behaviour": "An installation-specific retention decision is still required. Backups, email copies, exports and information already delivered to providers are separate from application deletion; the application cannot recall them."
+    }
+  ],
+  "requestProcedure": {
+    "contact": "alexorr@yahoo.co.uk",
+    "approvedOn": "2026-10-07",
+    "source": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/main/docs/PERSONAL_DATA_OPERATIONS.md",
+    "steps": [
+      "Contact the installation administrator privately with the account email, the information or action requested, and enough context to identify relevant records. Do not put personal data, credentials or identity documents in public GitHub or Jira issues.",
+      "The administrator verifies the requester and exact account, then agrees the supported records and actions. Additional verification should be arranged privately when needed.",
+      "Authorised personal report versions can be exported individually. Selected personal reports can be deleted. Standing work can be paused or archived and access can be deactivated through the supported controls.",
+      "Shared team work is preserved. The administrator resolves ownership and sole-manager responsibilities with the team before changing access.",
+      "There is no complete account-wide export or erasure action. The response must identify unsupported steps and retained information, including backups, security records and copies already sent elsewhere. Deactivation alone is not deletion."
+    ]
+  },
+  "rights": "Depending on the applicable law and processing, you may have rights to access, rectification, erasure, restriction, objection and portability, and to withdraw consent where processing relies on it. These rights have conditions and exceptions. The supported request procedure below does not limit your legal rights.",
+  "publicSources": "Public-source material can include names, public roles, images, statements, locations and other information about people. A source being public does not remove privacy obligations or establish permission for every reuse. The operator must assess the actual sources, sensitive information, purposes and how affected people are informed. This page alone does not establish that indirect-collection notice obligations have been met.",
+  "externalMedia": "Maps and selected camera media may connect directly to their tile, imagery or stream hosts, which receive connection information including your IP address. TradingView, YouTube and IPCamLive embeds stay unloaded until you choose to load them, unless you have explicitly remembered a provider choice. A remembered session choice ends on reload or sign-out; keeping it across visits requires the separate browser-choice checkbox. Withdraw remembered choices under Settings, External media, or clear this site's browser data. Withdrawal cannot recall a request already sent. YouTube uses its youtube-nocookie.com embed host; this does not establish that all provider storage or tracking is absent.",
+  "references": [
+    {
+      "label": "ICO: information a privacy notice should provide",
+      "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/the-right-to-be-informed/what-privacy-information-should-we-provide/"
+    },
+    {
+      "label": "ICO: information obtained from other sources",
+      "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/the-right-to-be-informed/when-should-we-provide-privacy-information/"
+    },
+    {
+      "label": "ICO: storage and access technologies",
+      "url": "https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/"
+    },
+    {
+      "label": "ICO: make a data protection complaint",
+      "url": "https://ico.org.uk/make-a-complaint/"
+    }
+  ]
+}
