@@ -291,6 +291,10 @@ export function SchedulesSection({
                   );
                   void refreshList();
                 }}
+                onBriefEdited={() => {
+                  setNotice('Subscription settings updated. Pinned brief and history preserved.');
+                  void refreshList();
+                }}
               />
             ))}
             {visibleSchedules.length === 0 && (

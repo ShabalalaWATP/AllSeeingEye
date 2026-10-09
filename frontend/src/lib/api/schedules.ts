@@ -10,6 +10,10 @@ import type { components } from './types.gen';
 import { apiCall, apiSend } from './client';
 
 export const scheduleSchema = z.object({
+  settings_revision: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .optional(),
   brief_id: z.uuid().nullable().optional(),
   brief_revision: z.number().int().positive().nullable().optional(),
   timezone: z.string().optional(),

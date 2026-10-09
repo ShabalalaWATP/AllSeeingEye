@@ -1200,6 +1200,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schedules/{schedule_id}/brief-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Brief Subscription Settings */
+        put: operations["edit_brief_subscription_settings_api_schedules__schedule_id__brief_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schedules/{schedule_id}/run-now": {
         parameters: {
             query?: never;
@@ -6589,6 +6606,27 @@ export interface components {
             max_output_tokens?: number | null;
             /** Max Collection Seconds */
             max_collection_seconds?: number | null;
+        };
+        /** BriefSubscriptionSettingsIn */
+        BriefSubscriptionSettingsIn: {
+            /** Expected Revision */
+            expected_revision: string;
+            /** Name */
+            name: string;
+            /** Timezone */
+            timezone: string;
+            /** Local Hour */
+            local_hour: number;
+            /** Local Minute */
+            local_minute: number;
+            /** Cadence */
+            cadence: string;
+            /** Weekday */
+            weekday: number;
+            /** Monthday */
+            monthday: number;
+            /** Anchor Month */
+            anchor_month: number;
         };
         /** CableOut */
         CableOut: {
@@ -16188,6 +16226,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Settings Revision */
+            settings_revision: string;
             /** Name */
             name: string;
             /** Template Id */
@@ -22078,6 +22118,50 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    edit_brief_subscription_settings_api_schedules__schedule_id__brief_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefSubscriptionSettingsIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

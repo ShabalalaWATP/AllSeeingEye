@@ -4898,6 +4898,75 @@
         }
       }
     },
+    "/api/schedules/{schedule_id}/brief-settings": {
+      "put": {
+        "tags": [
+          "schedules",
+          "schedules"
+        ],
+        "summary": "Edit Brief Subscription Settings",
+        "operationId": "edit_brief_subscription_settings_api_schedules__schedule_id__brief_settings_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schedule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Schedule Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BriefSubscriptionSettingsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/schedules/{schedule_id}/run-now": {
       "post": {
         "tags": [
@@ -26049,6 +26118,77 @@
         "type": "object",
         "title": "BriefLimits",
         "description": "Optional user ceilings; admission must also check the selected model profile."
+      },
+      "BriefSubscriptionSettingsIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Revision"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Timezone"
+          },
+          "local_hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Local Hour"
+          },
+          "local_minute": {
+            "type": "integer",
+            "maximum": 59.0,
+            "minimum": 0.0,
+            "title": "Local Minute"
+          },
+          "cadence": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Cadence"
+          },
+          "weekday": {
+            "type": "integer",
+            "maximum": 6.0,
+            "minimum": 0.0,
+            "title": "Weekday"
+          },
+          "monthday": {
+            "type": "integer",
+            "maximum": 31.0,
+            "minimum": 1.0,
+            "title": "Monthday"
+          },
+          "anchor_month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Anchor Month"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "name",
+          "timezone",
+          "local_hour",
+          "local_minute",
+          "cadence",
+          "weekday",
+          "monthday",
+          "anchor_month"
+        ],
+        "title": "BriefSubscriptionSettingsIn"
       },
       "CableOut": {
         "properties": {
@@ -52882,6 +53022,10 @@
             "format": "uuid",
             "title": "Id"
           },
+          "settings_revision": {
+            "type": "string",
+            "title": "Settings Revision"
+          },
           "name": {
             "type": "string",
             "title": "Name"
@@ -53259,6 +53403,7 @@
         "type": "object",
         "required": [
           "id",
+          "settings_revision",
           "name",
           "template_id",
           "country_iso",

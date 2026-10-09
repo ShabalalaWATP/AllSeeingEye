@@ -15,6 +15,7 @@ from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.routers.schedule_activation import router as activation_router
 from ase.api.routers.subscription_controls import router as edition_controls_router
+from ase.api.routers.subscription_settings import router as settings_router
 from ase.api.schemas_schedules import (
     ScheduleFromBriefIn,
     ScheduleIn,
@@ -43,6 +44,7 @@ from ase.domain.subscription_recurrence import LocalRecurrence
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 router.include_router(edition_controls_router)
 router.include_router(activation_router)
+router.include_router(settings_router)
 
 
 @router.post("/{schedule_id}/run-now", status_code=202)
