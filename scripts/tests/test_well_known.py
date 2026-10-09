@@ -28,7 +28,7 @@ class RobotsTests(unittest.TestCase):
         robots = fields(PUBLIC / "robots.txt")
         self.assertEqual(robots["user-agent"], ["*"])
         self.assertEqual(sorted(robots["disallow"]), ["/admin", "/api/"])
-        self.assertEqual(robots["allow"], ["/"])
+        self.assertEqual(robots["allow"], ["/enterprise", "/"])
 
 
 class SecurityTxtTests(unittest.TestCase):
