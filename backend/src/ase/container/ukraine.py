@@ -83,6 +83,7 @@ class UkraineWiring(ContainerCore):
 
     def ukraine(self) -> UkraineBoardService:
         # Board and digest use these same packaged datasets, including background work.
+        self.source_licences.require("reference:conflicts")
         for source in ("viina_control", "oryx_losses", "hrmmu_casualties"):
             self.source_licences.require(f"ukraine:{source}")
         return UkraineBoardService(

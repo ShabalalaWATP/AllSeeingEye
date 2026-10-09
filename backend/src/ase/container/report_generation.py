@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.geo.area_geography import PackagedAreaGeography
+from ase.application.conflict_licences import LicensedConflicts
 from ase.application.model_routing import ModelRouting
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository
 from ase.application.reports.area_context import AreaContextService
@@ -77,7 +78,12 @@ class ReportGenerationWiring:
         )
         return GenerateReportUseCase(
             producer=producer,
-            builder=ReportJobBuilder(container.countries, container.conflicts, r.aois, backgrounds),
+            builder=ReportJobBuilder(
+                container.countries,
+                LicensedConflicts(container.conflicts, container.source_licences),
+                r.aois,
+                backgrounds,
+            ),
             routing=ModelRouting(r.llm_profiles, r.llm_bindings),
             cipher=container.cipher,
             reports=r.reports,
