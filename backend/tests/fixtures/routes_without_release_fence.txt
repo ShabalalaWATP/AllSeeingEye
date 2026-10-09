@@ -3,6 +3,8 @@
 # A new authenticated route must do one or the other; add it here only when a
 # reviewer agrees nothing private is released after slow work. One "METHOD /path"
 # per line; test_session_fence_architecture.py keeps this list exact.
+# POST /api/enquiries is deliberately public and excluded from authenticated routes:
+# it accepts bounded input and returns a fixed receipt, never stored private data.
 # GET /api/reports/{report_id} and its /markdown export are listed because their
 # final session read happens uncached inside application/reports/document_release.py.
 DELETE /api/admin/sources/firms_viirs_noaa20/connection

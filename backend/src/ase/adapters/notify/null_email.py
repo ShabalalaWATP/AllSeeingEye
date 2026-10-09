@@ -17,6 +17,9 @@ class NullEmailSender:
     async def send_code(self, to_email: str, code: str) -> bool:
         return False
 
+    async def send_operator_notice(self, plain_text_body: str) -> bool:
+        return False
+
     async def send_link(self, to_email: str, purpose: TokenPurpose, link: str) -> bool:
         log.info("email_not_configured", purpose=purpose.value, recipient_domain=_domain(to_email))
         return False

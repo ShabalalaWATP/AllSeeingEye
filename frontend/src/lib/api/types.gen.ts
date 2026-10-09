@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/enquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Enquiry */
+        post: operations["submit_enquiry_api_enquiries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -8356,6 +8373,11 @@ export interface components {
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
         /**
+         * DeploymentInterest
+         * @enum {string}
+         */
+        DeploymentInterest: "own_cloud" | "on_premises" | "air_gapped" | "undecided";
+        /**
          * DestinationKind
          * @enum {string}
          */
@@ -8932,6 +8954,35 @@ export interface components {
             /** Destination */
             destination: string;
         };
+        /** EnquiryIn */
+        EnquiryIn: {
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Organisation */
+            organisation: string;
+            /**
+             * Role
+             * @default
+             */
+            role: string;
+            deployment_interest: components["schemas"]["DeploymentInterest"];
+            expected_users: components["schemas"]["ExpectedUsers"];
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
+        };
         /** EpssScoreOut */
         EpssScoreOut: {
             /** Probability */
@@ -9402,6 +9453,11 @@ export interface components {
          * @enum {string}
          */
         ExecutionRoute: "public_research" | "retained_area" | "private_document" | "private_media" | "fresh_web";
+        /**
+         * ExpectedUsers
+         * @enum {string}
+         */
+        ExpectedUsers: "1_10" | "11_50" | "51_250" | "250_plus";
         /** ExplainerBodyOut */
         ExplainerBodyOut: {
             world: components["schemas"]["ExplainerSectionOut"];
@@ -13403,6 +13459,8 @@ export interface components {
         PublicSiteOut: {
             /** Product Page Enabled */
             product_page_enabled: boolean;
+            /** Enterprise Enquiries Enabled */
+            enterprise_enquiries_enabled: boolean;
         };
         /** PushDeviceOut */
         PushDeviceOut: {
@@ -18706,6 +18764,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicSiteOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    submit_enquiry_api_enquiries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnquiryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
                 };
             };
             /** @description Unprocessable Content */

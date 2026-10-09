@@ -170,6 +170,7 @@ class PublicSiteOut(BaseModel):
     """Facts the signed-out pages need about this installation; nothing private."""
 
     product_page_enabled: bool
+    enterprise_enquiries_enabled: bool
 
 
 class ReadyOut(BaseModel):

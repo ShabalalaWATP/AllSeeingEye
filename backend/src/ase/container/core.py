@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     )
     from ase.application.ports.archive import Archiver
     from ase.application.ports.embeddings import EmbeddingGateway
+    from ase.application.ports.enterprise_enquiries import OperatorNoticeSender
     from ase.application.ports.feeds import EventBus
     from ase.application.ports.geo import CountryDirectory
     from ase.application.ports.llm import LlmGateway, LlmModelDiscovery, SecretCipher
@@ -69,6 +70,7 @@ class ContainerCore:
     conflicts: ConflictDirectory
     countries: CountryDirectory
     email_sender: EmailSender
+    operator_notices: OperatorNoticeSender
     embedding_gateway: EmbeddingGateway
     embedding_lock: asyncio.Lock
     search_slots: SearchSlots

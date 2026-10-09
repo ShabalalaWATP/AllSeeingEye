@@ -9,6 +9,7 @@ from uuid import UUID
 
 
 class AuditAction(StrEnum):
+    ENQUIRY_SUBMITTED = "enquiry.submitted"
     SOURCE_ACTIVATION_CHANGED = "source_activation_changed"
     FIRMS_DRAFT_SAVED = "firms.draft_saved"
     FIRMS_TEST_STARTED = "firms.test_started"

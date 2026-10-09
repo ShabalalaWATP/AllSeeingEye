@@ -30,6 +30,7 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import (
     economy_explainer_models as _economy_explainer_models,  # noqa: F401
 )
+from ase.adapters.persistence import enterprise_enquiries as _enterprise_enquiries  # noqa: F401
 from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
 from ase.adapters.persistence import (
     notification_digest_models as _notification_digest_models,  # noqa: F401

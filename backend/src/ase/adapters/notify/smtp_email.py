@@ -26,6 +26,7 @@ class SmtpEmailSender:
         username: str | None,
         password: str | None,
         timeout_seconds: int,
+        operator_email: str | None = None,
     ) -> None:
         self._host = host
         self._port = port
@@ -34,6 +35,7 @@ class SmtpEmailSender:
         self._username = username
         self._password = password
         self._timeout = timeout_seconds
+        self._operator_email = operator_email
 
     @property
     def available(self) -> bool:
@@ -59,6 +61,13 @@ class SmtpEmailSender:
             f"{action} by opening this link:\n\n{link}\n\n"
             "This link expires and can only be used once. "
             "If you did not request it, you can ignore this message.",
+        )
+
+    async def send_operator_notice(self, plain_text_body: str) -> bool:
+        if self._operator_email is None:
+            return False
+        return await self._send(
+            self._operator_email, "The All Seeing Eye: deployment enquiry", plain_text_body
         )
 
     async def _send(self, to_email: str, subject: str, body: str) -> bool:

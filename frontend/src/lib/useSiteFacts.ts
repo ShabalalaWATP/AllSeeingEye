@@ -10,7 +10,7 @@ import { fetchSiteFacts, type SiteFacts } from './api/site';
 
 export type SiteFactsState = { status: 'loading' } | { status: 'ready'; facts: SiteFacts };
 
-const OFF: SiteFacts = { product_page_enabled: false };
+const OFF: SiteFacts = { product_page_enabled: false, enterprise_enquiries_enabled: false };
 let pending: Promise<SiteFacts> | null = null;
 
 function load(): Promise<SiteFacts> {

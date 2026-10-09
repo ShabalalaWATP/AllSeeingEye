@@ -7,6 +7,24 @@ import { server } from '@/test/server';
 import { useSiteFacts } from './useSiteFacts';
 
 describe('useSiteFacts', () => {
+  it('exposes the explicit enquiry flag without revealing configuration', async () => {
+    server.use(
+      http.get('/api/site', () =>
+        HttpResponse.json({
+          product_page_enabled: true,
+          enterprise_enquiries_enabled: true,
+        }),
+      ),
+    );
+    const hook = renderHook(() => useSiteFacts());
+    await waitFor(() =>
+      expect(hook.result.current).toEqual({
+        status: 'ready',
+        facts: { product_page_enabled: true, enterprise_enquiries_enabled: true },
+      }),
+    );
+  });
+
   it('treats a failed request as off without remembering the failure', async () => {
     let calls = 0;
     server.use(
@@ -21,14 +39,14 @@ describe('useSiteFacts', () => {
     await waitFor(() =>
       expect(first.result.current).toEqual({
         status: 'ready',
-        facts: { product_page_enabled: false },
+        facts: { product_page_enabled: false, enterprise_enquiries_enabled: false },
       }),
     );
     const second = renderHook(() => useSiteFacts());
     await waitFor(() =>
       expect(second.result.current).toEqual({
         status: 'ready',
-        facts: { product_page_enabled: true },
+        facts: { product_page_enabled: true, enterprise_enquiries_enabled: false },
       }),
     );
     expect(calls).toBe(2);
