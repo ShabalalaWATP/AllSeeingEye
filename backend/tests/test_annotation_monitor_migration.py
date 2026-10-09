@@ -51,13 +51,41 @@ def prepared(tmp_path):
 
 
 def metadata_0031():
-    # Alert dispositions and fired ratios arrive later, in 0084 and 0085.
+    # Project the historical alert contract. Later feedback/report-job columns,
+    # their constraints and indexes must not leak into the 0030/0031 comparison.
     metadata = sa.MetaData()
     for table in Base.metadata.sorted_tables:
         table.to_metadata(metadata)
     alerts = metadata.tables["alerts"]
-    for name in ("disposition", "disposition_note", "baseline_mean", "baseline_ratio"):
-        alerts._columns.remove(alerts.c[name])
+    original = {
+        "id",
+        "indicator_id",
+        "schedule_id",
+        "fired_at",
+        "title",
+        "summary",
+        "count",
+        "threshold",
+        "event_ids",
+        "countries",
+        "acknowledged_at",
+        "acknowledged_by",
+        "report_id",
+        "team_id",
+        "created_by",
+        "annotation_monitor_id",
+        "annotation_transition_id",
+    }
+    for constraint in tuple(alerts.constraints):
+        if any(column.name not in original for column in constraint.columns):
+            alerts.constraints.remove(constraint)
+    for index in tuple(alerts.indexes):
+        if any(column.name not in original for column in index.columns):
+            alerts.indexes.remove(index)
+    for column in tuple(alerts.columns):
+        if column.name not in original:
+            alerts.foreign_keys.difference_update(column.foreign_keys)
+            alerts._columns.remove(column)
     return metadata
 
 

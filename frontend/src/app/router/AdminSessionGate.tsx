@@ -7,6 +7,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { verifySession } from '@/lib/api/auth';
 import { isApiError } from '@/lib/api/errors';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
+import { parseIdleMinutes } from '@/lib/sessionActivity';
 
 const CHECK_INTERVAL = 30_000;
 const CHECK_TIMEOUT = 15_000;
@@ -69,7 +70,11 @@ export default function AdminSessionGate() {
         setVerification({ userId, status: 'verified' });
       } catch (error) {
         if (!current()) return;
-        if (!isApiError(error) || error.status !== 401) {
+        if (isApiError(error) && error.code === 'session_idle_expired') {
+          void useAuthStore
+            .getState()
+            .expireIdleSession(parseIdleMinutes(error.fields.idle_minutes));
+        } else if (!isApiError(error) || error.status !== 401) {
           setVerification({ userId, status: 'error' });
         } else if (refreshed.current) {
           useAuthStore.getState().clearSession();

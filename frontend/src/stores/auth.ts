@@ -23,10 +23,12 @@ import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
 import type { TokenResponse, User } from '@/lib/api/schemas';
 import { clearBrowserPush } from '@/lib/browserPush';
 import { responseIdentity, sessionIdentity } from '@/lib/sessionIdentity';
+import { activityActions, initialActivityState, type ActivityState } from './authActivity';
+import { nextActivityAt, parseIdleMinutes } from '@/lib/sessionActivity';
 
 export type AuthStatus = 'unknown' | 'anonymous' | 'authenticated';
 
-export interface AuthState {
+export interface AuthState extends ActivityState {
   status: AuthStatus;
   user: User | null;
   accessToken: string | null;
@@ -34,6 +36,7 @@ export interface AuthState {
   sessionGeneration: number;
   pendingRefresh: Promise<string | null> | null;
   pendingLogout: Promise<void> | null;
+  sessionCsrf: string | null;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<PendingMfa | null>;
   logout: () => Promise<void>;
@@ -49,6 +52,8 @@ export const initialAuthState = {
   sessionGeneration: 0,
   pendingRefresh: null,
   pendingLogout: null,
+  sessionCsrf: null,
+  ...initialActivityState,
 };
 
 const REFRESH_LOCK = 'ase-refresh';
@@ -69,28 +74,46 @@ function withRefreshLock<T>(work: () => Promise<T>): Promise<T> {
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
   ...initialAuthState,
+  ...activityActions(set, get),
 
   setSession: (token) => {
     responseIdentity(token);
+    const activity = { data: token.activity, receivedAt: Date.now() };
     set({
+      ...initialActivityState,
       status: 'authenticated',
       user: token.user,
       accessToken: token.access_token,
       sessionGeneration: ++nextSessionGeneration,
       pendingRefresh: null,
+      activity,
+      activityRetryAt: nextActivityAt(activity),
+      activityError: null,
+      pendingActivity: null,
+      idleExpiredMinutes: null,
+      sessionCsrf: readCookie(CSRF_COOKIE),
     });
   },
 
   clearSession: () => {
-    void clearBrowserPush().catch(() => {
-      /* The revoked server session also prevents delivery. */
-    });
+    // A different tab may now own the shared browser subscription and cookies.
+    if (get().sessionCsrf === readCookie(CSRF_COOKIE)) {
+      void clearBrowserPush().catch(() => {
+        /* The revoked server session also prevents delivery. */
+      });
+    }
     set({
       status: 'anonymous',
       user: null,
       accessToken: null,
       sessionGeneration: ++nextSessionGeneration,
       pendingRefresh: null,
+      activity: null,
+      activityRetryAt: 0,
+      activityError: null,
+      pendingActivity: null,
+      sessionCsrf: null,
+      idleCheckRetryAt: 0,
     });
   },
 
@@ -120,14 +143,19 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             return null;
           // Rotation belongs to the same login, so concurrent requests keep their owner.
           set({ status: 'authenticated', user: token.user, accessToken: token.access_token });
+          get().confirmActivity(token.activity);
+          set({ sessionCsrf: readCookie(CSRF_COOKIE) });
         } else {
           get().setSession(token);
         }
         return token.access_token;
       })
       .catch((error: unknown) => {
-        if (current() && readCookie(CSRF_COOKIE) === csrf && rejectsSession(error))
-          get().clearSession();
+        if (current() && readCookie(CSRF_COOKIE) === csrf && rejectsSession(error)) {
+          if (isApiError(error) && error.code === 'session_idle_expired') {
+            void get().expireIdleSession(parseIdleMinutes(error.fields.idle_minutes));
+          } else get().clearSession();
+        }
         return null;
       })
       .finally(() => {
@@ -165,13 +193,23 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   logout: () => {
+    const owner = get();
+    const family =
+      owner.accessToken === null ? undefined : sessionIdentity(owner.accessToken)?.familyId;
+    const csrf = readCookie(CSRF_COOKIE);
     const pending = get().pendingLogout;
     if (pending !== null) {
       get().clearSession();
       return pending;
     }
     const attempt = Promise.resolve()
-      .then(() => authApi.logout())
+      .then(() =>
+        withRefreshLock(() =>
+          family !== undefined || readCookie(CSRF_COOKIE) === csrf
+            ? authApi.logout(family)
+            : Promise.resolve(),
+        ),
+      )
       .catch(() => {
         // The local session is cleared regardless of the server outcome.
       })
@@ -191,6 +229,9 @@ bindSession({
   refreshAccessToken: () => useAuthStore.getState().refresh(),
   onSessionLost: () => {
     useAuthStore.getState().clearSession();
+  },
+  onSessionIdle: (minutes) => {
+    void useAuthStore.getState().expireIdleSession(minutes);
   },
 });
 

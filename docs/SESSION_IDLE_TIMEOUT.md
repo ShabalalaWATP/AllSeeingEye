@@ -35,8 +35,9 @@ server returns the current deadline without mutation if another tab has kept the
 family active. A suspended tab or missed BroadcastChannel message cannot revoke
 that live family. Explicit **Sign out** remains unconditional. If expiry cannot be
 confirmed because the API is unavailable, the blocking warning reports the failure
-and retries no sooner than one minute later; protected server operations still
-enforce the idle deadline.
+and retries no sooner than one minute later. Verification requests time out after
+ten seconds; they do not delay an explicit sign-in or Sign out. Protected server
+operations still enforce the idle deadline.
 
 Conditional expiry never sends cookie mutations, including after revocation. This
 prevents a delayed response from clearing cookies from a later login in another

@@ -59,6 +59,6 @@ describe('research input API', () => {
     });
     await expect(
       uploadResearchInput(new File(['x'], 'x.txt'), new AbortController().signal),
-    ).rejects.toMatchObject({ code: 'access_changed' });
+    ).rejects.toMatchObject({ code: 'session_changed' });
   });
 });
