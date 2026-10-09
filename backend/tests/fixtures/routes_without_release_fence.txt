@@ -70,7 +70,6 @@ GET /api/relationship-reviews/assertions
 GET /api/relationship-reviews/{relationship_id}
 GET /api/relationship-reviews/{relationship_id}/revisions/{revision_id}
 GET /api/report-methodology
-GET /api/report-search
 GET /api/reports
 GET /api/reports/templates
 GET /api/reports/{report_id}
@@ -139,8 +138,6 @@ POST /api/me/sessions/revoke-others
 POST /api/me/team-invitations/{invitation_id}/accept
 POST /api/me/team-invitations/{invitation_id}/decline
 POST /api/relationship-reviews
-POST /api/report-search/index
-POST /api/report-search/query
 POST /api/reports/{report_id}/original-assets
 POST /api/reports/{report_id}/versions/{number}/source-assessment-snapshots
 POST /api/reports/{report_id}/versions/{number}/source-reviews

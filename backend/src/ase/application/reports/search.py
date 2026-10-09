@@ -20,6 +20,7 @@ from ase.application.ports.llm import (
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.ports.services import Clock, RateLimiter
+from ase.application.ports.session import SessionCheck
 from ase.application.reports.access import GetReportUseCase
 from ase.application.reports.search_slots import (
     EMBEDDING_CALLS_GLOBAL,
@@ -161,7 +162,7 @@ class ReportSearchService:
         )
         return EmbeddingResult(vectors, result.latency_ms, result.prompt_tokens)
 
-    async def index(self, actor: User) -> SearchStatus:
+    async def index(self, actor: User, *, before_save: SessionCheck | None = None) -> SearchStatus:
         # One shared lock spans the cache check and write, preventing duplicate paid calls
         # and keeping the global vector capacity check exact. Queries do not take it.
         if self._lock.locked():
@@ -204,6 +205,10 @@ class ReportSearchService:
                 # Finish usage accounting and end the read snapshot before revalidation.
                 await self._uow.commit()
                 access = await self._access.context(actor, for_update=True)
+                # HTTP callers bind this to the originally presented session. Account
+                # authority alone cannot detect family revocation during the model call.
+                if before_save is not None:
+                    await before_save()
                 for (report_id, number), vector in zip(selected, result.vectors, strict=True):
                     latest = await self._reports.get(report_id)
                     if latest is None or latest.latest_version != number:
@@ -213,6 +218,8 @@ class ReportSearchService:
                         IndexedReport(report_id, number, fingerprint, vector)
                     )
             await self._embeddings.prune_obsolete()
+            if before_save is not None:
+                await before_save()
             await self._uow.commit()
             return await self.status(actor)
 
