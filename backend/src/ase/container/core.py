@@ -53,6 +53,7 @@ if TYPE_CHECKING:
     from ase.domain.aviation import JamMap
     from ase.domain.grading import SourceProfile
     from ase.domain.reasoning import ReasoningEffortPolicy
+    from ase.domain.source_licences import SourceLicencePolicy
     from ase.domain.sources import SourceSpec
     from ase.infrastructure.settings import Settings
 
@@ -98,6 +99,7 @@ class ContainerCore:
     session_factory: async_sessionmaker[AsyncSession]
     settings: Settings
     source_admission: SourceAdmission
+    source_licences: SourceLicencePolicy
     source_profiles: Mapping[str, SourceProfile]
     store: InMemoryEventStore
     watch_areas: tuple[WatchedArea, ...]
