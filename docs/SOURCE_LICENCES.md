@@ -7,6 +7,8 @@ or approval to enable a source. Contentious interpretations require legal review
 KAN-194 changed no runtime configuration or provider permission. KAN-195 adds
 the opt-in runtime controls and the `map:os_maps` catalogue entry described below;
 provider permission is still a separate requirement.
+The KAN-184 YouTube embed-host inventory and its provider evidence were reconciled
+on 10 October 2026. Other policy rows retain their individual review dates.
 
 ## Coverage and evidence limits
 
@@ -3031,7 +3033,7 @@ Related evidence: [reference 1](https://www.wsdot.wa.gov/traffic/api/); [referen
 
 **YouTube camera embeds**: Authorised player use; separate owner/content restrictions.
 
-[Primary terms/evidence](https://www.youtube.com/static?template=terms). Status: `partial_review`. Checked: 2026-10-09. Attempted: 2026-10-09.
+[Primary terms/evidence](https://www.youtube.com/static?template=terms). Status: `partial_review`. Checked: 2026-10-10. Attempted: 2026-10-10.
 
 Commercial: `unknown`. Hosted/multi-user: `unknown`.
 
@@ -3041,9 +3043,11 @@ Attribution: Preserve player features, source/channel identification and owner n
 
 Redistribution: Use authorised player functionality within terms; independently clear recording, screenshots, proxying and exported footage.
 
-YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership.
+YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership. Official embedding guidance identifies www.youtube-nocookie.com as the privacy-enhanced player host replacing www.youtube.com. YouTube API terms and developer policies still apply; this host change establishes no additional owner or commercial permission.
 
 Risk: high. Action: request_permission, legal_review.
+
+Related evidence: [reference 1](https://support.google.com/youtube/answer/171780?expand=PrivacyEnhancedMode&hl=en-GB). These links are not separate verification dates.
 
 ### Policy camera-yukon
 
@@ -6157,7 +6161,7 @@ Risk: high. Action: attribute, legal_review.
 
 ## Camera host review queue
 
-All 120 configured media/frame hosts retain the [camera-owner-rights](#policy-camera-owner-rights) policy. This is an allowlist inventory, not evidence that every camera on a host is authorised. No live stream was fetched. Provider-policy evidence is a separate reference and does not clear every camera owner or delivery method. Confirm embedding, proxying, recording, export and commercial terms separately.
+All 121 configured media/frame/legacy-frame hosts retain the [camera-owner-rights](#policy-camera-owner-rights) policy. This is an allowlist inventory, not evidence that every camera on a host is authorised. No live stream was fetched. Provider-policy evidence is a separate reference and does not clear every camera owner or delivery method. Confirm embedding, proxying, recording, export and commercial terms separately. `legacyFrames` identifies recognised input URLs normalised to a current embed host; it does not authorise an additional iframe destination.
 
 | Host | Configured use | Owner rights | Provider-policy evidence |
 | --- | --- | --- | --- |
@@ -6279,7 +6283,8 @@ All 120 configured media/frame hosts retain the [camera-owner-rights](#policy-ca
 | `www.tripcheck.com` | media | unknown | [camera-oregon](#policy-camera-oregon) |
 | `www.vegagerdin.is` | media | unknown | [camera-iceland](#policy-camera-iceland) |
 | `www.westmorlandandfurness.gov.uk` | media | unknown | [camera-westmorland](#policy-camera-westmorland) |
-| `www.youtube.com` | frames | unknown | [camera-youtube](#policy-camera-youtube) |
+| `www.youtube-nocookie.com` | frames | unknown | [camera-youtube](#policy-camera-youtube) |
+| `www.youtube.com` | legacyFrames | unknown | [camera-youtube](#policy-camera-youtube) |
 | `wzmedia.dot.ca.gov` | media | unknown | [camera-caltrans](#policy-camera-caltrans) |
 
 ## Maintenance

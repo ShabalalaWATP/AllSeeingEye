@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "assessed_on": "2026-10-09",
+  "assessed_on": "2026-10-10",
   "policies": {
     "unknown-publisher": {
       "name": "Publisher rights not reviewed",
@@ -5150,11 +5150,13 @@
     "camera-youtube": {
       "name": "YouTube camera embeds",
       "terms_url": "https://www.youtube.com/static?template=terms",
-      "additional_terms_urls": [],
+      "additional_terms_urls": [
+        "https://support.google.com/youtube/answer/171780?expand=PrivacyEnhancedMode&hl=en-GB"
+      ],
       "licence": "Authorised player use; separate owner/content restrictions",
       "review_status": "partial_review",
-      "terms_checked_on": "2026-10-09",
-      "lookup_attempted_on": "2026-10-09",
+      "terms_checked_on": "2026-10-10",
+      "lookup_attempted_on": "2026-10-10",
       "commercial_use": "unknown",
       "hosted_multi_user_use": "unknown",
       "attribution": "Preserve player features, source/channel identification and owner notices.",
@@ -5164,7 +5166,7 @@
         "request_permission",
         "legal_review"
       ],
-      "notes": "YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership.",
+      "notes": "YouTube permits showing videos through its provided embeddable player. Extraction, downloading, redistribution and automated access outside authorised service functionality require applicable permission. Embeddability is not a universal recording/export licence or proof of uploader ownership. Official embedding guidance identifies www.youtube-nocookie.com as the privacy-enhanced player host replacing www.youtube.com. YouTube API terms and developer policies still apply; this host change establishes no additional owner or commercial permission.",
       "commercial_use_policy": "licence_required"
     },
     "camera-camsecure": {

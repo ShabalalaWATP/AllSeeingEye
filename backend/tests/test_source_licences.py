@@ -71,6 +71,30 @@ def test_every_configured_camera_host_has_an_explicit_review_policy() -> None:
         assert row["policy"] in policies
 
 
+@pytest.mark.parametrize(
+    ("host", "use"),
+    [("www.youtube-nocookie.com", "frames"), ("www.youtube.com", "legacyFrames")],
+)
+def test_youtube_embed_hosts_retain_owner_and_provider_permission_review(
+    host: str, use: str
+) -> None:
+    rows = {row["host"]: row for row in load("source_licences.json")["camera_hosts"]}
+    policies = load("source_licence_policies.json")["policies"]
+    row = rows[host]
+    assert row["uses"] == [use]
+    assert row["policy"] == "camera-owner-rights"
+    assert row["provider_policy"] == "camera-youtube"
+    for policy_id in (row["policy"], row["provider_policy"]):
+        policy = policies[policy_id]
+        assert policy["commercial_use"] == "unknown"
+        assert policy["hosted_multi_user_use"] == "unknown"
+        assert policy["commercial_use_policy"] == "licence_required"
+    assert (
+        "https://support.google.com/youtube/answer/171780?expand=PrivacyEnhancedMode&hl=en-GB"
+        in policies["camera-youtube"]["additional_terms_urls"]
+    )
+
+
 def test_generated_document_is_fresh() -> None:
     # Load the pure renderer without invoking its writing CLI entry point.
     renderer = runpy.run_path(str(ROOT / "scripts/render_source_licences.py"))
@@ -100,6 +124,7 @@ def test_bundled_infrastructure_retains_structured_fact_provenance(source_id: st
         "blocked_verified",
         "inconclusive_verified",
         "missing_camera_provider",
+        "unknown_camera_use",
         "missing_enrichment_provider",
         "unknown_allowed",
         "future_check",
@@ -123,6 +148,8 @@ def test_rejects_incomplete_or_misleading_metadata(mutation: str) -> None:
         policies["policies"]["mediazona"]["terms_checked_on"] = "2026-10-09"
     elif mutation == "missing_camera_provider":
         register["camera_hosts"][0]["provider_policy"] = "nonexistent"
+    elif mutation == "unknown_camera_use":
+        register["camera_hosts"][0]["uses"] = ["unreviewed"]
     elif mutation == "missing_enrichment_provider":
         register["sources"][0]["additional_policies"] = ["nonexistent"]
     elif mutation == "unknown_allowed":

@@ -114,7 +114,10 @@ REGISTER = record(
             record(
                 {
                     "host": {"type": "string", "pattern": r"^[a-z0-9.*-]+$"},
-                    "uses": {**array({"enum": ["media", "frames"]}), "minItems": 1},
+                    "uses": {
+                        **array({"enum": ["media", "frames", "legacyFrames"]}),
+                        "minItems": 1,
+                    },
                     "policy": TEXT,
                     "provider_policy": {"anyOf": [TEXT, {"type": "null"}]},
                 }

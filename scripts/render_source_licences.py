@@ -22,6 +22,8 @@ or approval to enable a source. Contentious interpretations require legal review
 KAN-194 changed no runtime configuration or provider permission. KAN-195 adds
 the opt-in runtime controls and the `map:os_maps` catalogue entry described below;
 provider permission is still a separate requirement.
+The KAN-184 YouTube embed-host inventory and its provider evidence were reconciled
+on 10 October 2026. Other policy rows retain their individual review dates.
 
 ## Coverage and evidence limits
 
@@ -163,7 +165,7 @@ def render() -> str:
             )
             out += [
                 (
-                    f"| <a id=\"source-{row['id']}\"></a>`{row['id']}` {link} | "
+                    f'| <a id="source-{row["id"]}"></a>`{row["id"]}` {link} | '
                     f"{terms}; {policy['review_status']}; {check} | "
                     f"{policy['commercial_use']} / {policy['hosted_multi_user_use']} | "
                     f"{policy_links}; deployment: {row['commercial_use']} | "
@@ -215,13 +217,16 @@ def render() -> str:
             ]
     out += [
         "\n## Camera host review queue\n\n",
-        f"All {len(metadata['camera_hosts'])} configured media/frame hosts retain the ",
+        f"All {len(metadata['camera_hosts'])} configured media/frame/legacy-frame hosts "
+        "retain the ",
         "[camera-owner-rights](#policy-camera-owner-rights) policy. "
         "This is an allowlist inventory, ",
         "not evidence that every camera on a host is authorised. No live stream was fetched. ",
         "Provider-policy evidence is a separate reference "
         "and does not clear every camera owner or delivery method. ",
-        "Confirm embedding, proxying, recording, export and commercial terms separately.\n\n",
+        "Confirm embedding, proxying, recording, export and commercial terms separately. ",
+        "`legacyFrames` identifies recognised input URLs normalised to a current embed host; ",
+        "it does not authorise an additional iframe destination.\n\n",
         "| Host | Configured use | Owner rights | Provider-policy evidence |\n"
         "| --- | --- | --- | --- |\n",
     ]
