@@ -1,9 +1,11 @@
 """SQL filtering and bounded deletion of private enquiry records."""
 
 from datetime import datetime
+from typing import Any, cast
 from uuid import UUID
 
 from sqlalchemy import delete, func, select, update
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.enterprise_enquiries import EnterpriseEnquiryRow as Row
@@ -75,5 +77,7 @@ class SqlAdminEnquiryRepository:
             .order_by(Row.created_at, Row.id)
             .limit(limit)
         )
-        removed = await self.session.scalars(delete(Row).where(Row.id.in_(ids)).returning(Row.id))
-        return len(removed.all())
+        removed = await self.session.execute(
+            delete(Row).where(Row.id.in_(ids)).execution_options(synchronize_session=False)
+        )
+        return cast(CursorResult[Any], removed).rowcount
