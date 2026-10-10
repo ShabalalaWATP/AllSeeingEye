@@ -62,6 +62,7 @@ class FileLengthTests(unittest.TestCase):
             "frontend/scripts/bundle.js",
             "frontend/vite.config.ts",
             "frontend/eslint.config.js",
+            "frontend/src/components/brand/EvilEye.tsx",
         ):
             with self.subTest(relative=relative):
                 self.write(relative, 401)
@@ -74,7 +75,7 @@ class FileLengthTests(unittest.TestCase):
         for relative in (
             "frontend/src/lib/api/types.gen.ts",
             "frontend/src/vite-env.d.ts",
-            "frontend/src/components/brand/EvilEye.tsx",
+            "frontend/src/components/brand/EvilEyeSurface.tsx",
             "frontend/node_modules/example/index.js",
             "frontend/scripts/node_modules/example/index.js",
             "scripts/.venv/example.py",

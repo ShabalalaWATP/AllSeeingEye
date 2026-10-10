@@ -299,3 +299,11 @@ Integration preserves both branches' chronological documentation and KAN-232's
 expanded file-length scan, updating only the existing vendored component path.
 Fresh published-head CI remains required. KAN-164/165/225 retain their licence,
 public-policy and live release-control decisions. No main merge or deployment.
+
+The rebuilt combined application also scores 90/97/100 under the same Caddy
+mobile conditions (FCP 2.038 s, LCP 3.388 s, blocking time 24 ms, no layout shift).
+Its bundle gates pass at 129,270 initial, 847,591 globe and 62,210 product gzip bytes.
+The first combined CI attempt found KAN-232's file-length fixture still naming
+the moved vendor file. The fixture now names `EvilEyeSurface.tsx` and explicitly
+proves that the new `EvilEye.tsx` wrapper remains subject to the 400-line limit.
+All five file-length regression tests pass locally; no threshold was relaxed.
