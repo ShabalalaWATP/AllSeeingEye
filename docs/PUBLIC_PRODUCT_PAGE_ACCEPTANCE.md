@@ -114,6 +114,28 @@ faded review timeline text. A passing source budget does not establish mobile
 performance acceptance; KAN-172 remains open for measured optimisation.
 
 These are local fixture results, not Caddy runtime validation, social-crawler
-preview confirmation, legal publication approval or a production release. Full
-trace capture is still needed to separate the shared entry and canvas startup
-costs before selecting a broader performance change.
+preview confirmation, legal publication approval or a production release.
+
+## Measured optimisation, 10 October 2026
+
+The original compressed assets and reports are retained separately in
+`output/playwright/baseline-dist`. A diagnostic run added Lighthouse's explicit
+CPU sampling category and saved its trace. Source-map attribution sampled about
+227 ms in eye initialisation, including 130 ms in OGL renderer construction and
+63 ms generating deterministic noise. Globe drawing accounted for about 5 ms.
+These sampled times are diagnostic observations, not simulated mobile timings.
+
+Each eye now shares the original generator's immutable 256 KiB CPU pixel buffer.
+Every eye retains its own WebGL context, texture, shader, motion and cleanup.
+Independent source review confirmed that OGL uploads the buffer without changing
+or detaching it. The new two-instance regression failed before the change; all
+nine graphics-lifetime cases then passed.
+
+After integrating the reviewed KAN-195 source controls and regenerating public
+attributions, a compressed default-mobile run scored 75/97/100. First contentful
+paint was 3.18 seconds, largest contentful paint 4.22 seconds and total blocking
+time 239 ms. Host benchmark indices differed from the original run, so the score
+is not an isolated causal comparison. It remains below the required 95.
+An earlier repeat accidentally served an uncompressed rebuild; that report is
+retained as fixture-error evidence and excluded from the comparison. Subsequent
+measurements run the existing deployment precompression step before scoring.

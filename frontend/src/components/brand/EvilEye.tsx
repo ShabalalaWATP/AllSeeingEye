@@ -24,6 +24,8 @@
  *   6. The captured fallback offers downscaled captures of this component (64,
  *      128, 192 and 512 px, WebP with PNG fallback) and an optional `fallbackSizes`
  *      prop, so small marks never request the 512 px capture.
+ *   7. Reuse the original deterministic noise pixels across instances. Each WebGL
+ *      context still owns its texture and disposes it independently.
  */
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef, useState } from 'react';
@@ -36,6 +38,11 @@ function captureSet(format: 'png' | 'webp'): string {
 }
 const PNG_CAPTURES = captureSet('png');
 const WEBP_CAPTURES = captureSet('webp');
+
+// OGL uploads these immutable pixels without changing them. Cache only the CPU
+// data, never a context-owned texture; generating the same 256 KiB repeatedly
+// otherwise blocks first paint when the public story mounts several eyes.
+let sharedNoise: Uint8Array | undefined;
 
 interface EvilEyeProps {
   eyeColor?: string;
@@ -133,7 +140,7 @@ export default function EvilEye({
       disposers.push(() => gl.canvas.removeEventListener('webglcontextlost', onLost));
       gl.clearColor(0, 0, 0, 0);
 
-      const noiseData = generateNoiseTexture(256);
+      const noiseData = (sharedNoise ??= generateNoiseTexture(256));
       const noiseTexture = new Texture(gl, {
         image: noiseData,
         width: 256,

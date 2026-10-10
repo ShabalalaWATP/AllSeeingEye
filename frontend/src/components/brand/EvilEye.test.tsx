@@ -8,6 +8,7 @@ const graphics = vi.hoisted(() => ({
   release: vi.fn(),
   frames: new Map<number, FrameRequestCallback>(),
   uniforms: [] as Record<string, { value: unknown }>[],
+  images: [] as Uint8Array[],
   next: 0,
 }));
 vi.mock('./evilEyeShader', () => ({
@@ -32,6 +33,9 @@ vi.mock('ogl', () => ({
   },
   Texture: class {
     texture = {};
+    constructor(_gl: unknown, props: { image: Uint8Array }) {
+      graphics.images.push(props.image);
+    }
   },
   Triangle: class {
     remove = graphics.release;
@@ -56,6 +60,7 @@ beforeEach(() => {
   graphics.release.mockReset();
   graphics.frames.clear();
   graphics.uniforms.length = 0;
+  graphics.images.length = 0;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
     const id = ++graphics.next;
     graphics.frames.set(id, callback);
@@ -75,6 +80,19 @@ function frame(time = 1000) {
 }
 
 describe('Evil Eye graphics lifetime', () => {
+  it('reuses identical noise pixels while keeping each eye graphics lifetime separate', () => {
+    const first = render(<EvilEye />);
+    const second = render(<EvilEye />);
+    expect(graphics.images).toHaveLength(2);
+    expect(graphics.images[0]).toBe(graphics.images[1]);
+    first.unmount();
+    expect(graphics.release).toHaveBeenCalledTimes(4);
+    expect(second.container.querySelector('canvas')).toBeInTheDocument();
+    expect(graphics.frames.size).toBe(1);
+    frame();
+    expect(graphics.render).toHaveBeenCalledTimes(1);
+  });
+
   it('opts into transparency only when requested and hides the capture after rendering', () => {
     const { container, rerender } = render(<EvilEye />);
     expect(graphics.uniforms.at(-1)?.uTransparent?.value).toBe(false);
