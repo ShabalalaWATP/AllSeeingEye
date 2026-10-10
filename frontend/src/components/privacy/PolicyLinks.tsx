@@ -22,6 +22,24 @@ export function PolicyLinks({ label = 'Privacy and source information' }: { labe
       >
         Source attributions
       </Link>
+      <Link
+        className="rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+        to="/accessibility"
+      >
+        Accessibility
+      </Link>
+      <Link
+        className="rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+        to="/terms"
+      >
+        Terms
+      </Link>
+      <Link
+        className="rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+        to="/business"
+      >
+        Business details
+      </Link>
     </nav>
   );
 }

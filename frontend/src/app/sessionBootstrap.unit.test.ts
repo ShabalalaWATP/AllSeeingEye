@@ -42,15 +42,20 @@ function fixture(path = '/enterprise') {
 }
 
 describe('session code loading', () => {
-  it.each(['/enterprise', '/privacy', '/privacy/requests', '/attributions'])(
-    'does not load account code on matched public route %s',
-    (path) => {
-      const f = fixture(path);
-      f.stop();
-      expect(f.load).not.toHaveBeenCalled();
-      expect(f.bootstrap).not.toHaveBeenCalled();
-    },
-  );
+  it.each([
+    '/enterprise',
+    '/privacy',
+    '/privacy/requests',
+    '/attributions',
+    '/accessibility',
+    '/terms',
+    '/business',
+  ])('does not load account code on matched public route %s', (path) => {
+    const f = fixture(path);
+    f.stop();
+    expect(f.load).not.toHaveBeenCalled();
+    expect(f.bootstrap).not.toHaveBeenCalled();
+  });
 
   it('loads once on private entry, then bootstraps once across navigation', async () => {
     const f = fixture();

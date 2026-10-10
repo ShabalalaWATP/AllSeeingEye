@@ -25,7 +25,7 @@ const requiredOperatorFields = [
   'automatedDecisions',
 ];
 
-export function publicationProblems(notice, approval, contentHash) {
+export function publicationProblems(notice, approval, contentHash, service = {}) {
   const problems = [];
   const check = (value, label) => {
     if (typeof value !== 'string' || value.trim().length < 3) problems.push(`Missing ${label}`);
@@ -33,6 +33,8 @@ export function publicationProblems(notice, approval, contentHash) {
       problems.push(`Unresolved placeholder in ${label}`);
   };
   for (const key of requiredOperatorFields) check(notice.operator?.[key], `operator.${key}`);
+  for (const key of ['terms', 'businessDisclosure', 'accessibilityContact'])
+    check(service?.[key], `service.${key}`);
   if (!Array.isArray(notice.purposes) || notice.purposes.length < 5)
     problems.push('Missing purposes and lawful bases');
   else
@@ -71,6 +73,7 @@ export function readPublicationState(directory = contentDir) {
   try {
     for (const name of [
       'privacy.json',
+      'service.json',
       'storage.json',
       'attributions.generated.json',
       'approval.json',
@@ -78,8 +81,9 @@ export function readPublicationState(directory = contentDir) {
       JSON.parse(readFileSync(join(directory, name), 'utf8'));
     const notice = JSON.parse(readFileSync(join(directory, 'privacy.json'), 'utf8'));
     const approval = JSON.parse(readFileSync(join(directory, 'approval.json'), 'utf8'));
+    const service = JSON.parse(readFileSync(join(directory, 'service.json'), 'utf8'));
     const hash = policyHash(directory);
-    const problems = publicationProblems(notice, approval, hash);
+    const problems = publicationProblems(notice, approval, hash, service);
     return { approved: problems.length === 0, hash, problems };
   } catch {
     return { approved: false, hash: null, problems: ['Invalid policy content or approval'] };

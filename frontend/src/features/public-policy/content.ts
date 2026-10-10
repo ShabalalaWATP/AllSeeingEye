@@ -1,6 +1,7 @@
 /** Reviewed text only. Null operator decisions remain visible and block publication. */
 import notice from './privacy.json';
 import declaredStorage from './storage.json';
+import service from './service.json';
 import publicationApproved from 'virtual:policy-approval';
 
 interface Purpose {
@@ -34,3 +35,8 @@ export interface StorageDeclaration {
 export const privacyNotice: PrivacyNotice = notice;
 export const storageDeclaration: readonly StorageDeclaration[] = declaredStorage;
 export const noticeApproved = publicationApproved;
+export const serviceDetails: {
+  terms: string | null;
+  businessDisclosure: string | null;
+  accessibilityContact: string | null;
+} = service;

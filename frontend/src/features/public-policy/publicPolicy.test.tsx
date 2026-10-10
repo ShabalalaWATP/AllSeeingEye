@@ -16,6 +16,9 @@ describe('public policy pages', () => {
     ['/privacy', 'Privacy and storage'],
     ['/attributions', 'Source attributions'],
     ['/privacy/requests', 'Personal-data requests'],
+    ['/accessibility', 'Accessibility'],
+    ['/terms', 'Terms'],
+    ['/business', 'Business details'],
   ])('renders %s without a session or a third-party request', async (path, title) => {
     const bootstrap = vi.spyOn(useAuthStore.getState(), 'bootstrap');
     const requests: string[] = [];
@@ -81,6 +84,19 @@ describe('public policy pages', () => {
       screen.getByText(/There is no complete account-wide export or erasure action/),
     ).toBeInTheDocument();
     expect(screen.getByText(/Shared team work is preserved/)).toBeInTheDocument();
+  });
+
+  it('keeps unapproved terms and business facts explicit', async () => {
+    const { router } = renderApp('/terms', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: 'Terms' });
+    expect(screen.getByLabelText('Draft notice')).toHaveTextContent('Publication is blocked');
+    expect(
+      screen.getByText(/No software licence or deployment offer is granted/),
+    ).toBeInTheDocument();
+    await act(() => router.navigate('/business'));
+    await screen.findByRole('heading', { level: 1, name: 'Business details' });
+    expect(screen.getByText('Controller identity')).toBeInTheDocument();
+    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(3);
   });
 
   it('keeps public links keyboard reachable and provides structural accessibility', async () => {

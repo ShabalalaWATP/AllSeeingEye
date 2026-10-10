@@ -33,6 +33,13 @@ def candidate():
     for purpose in notice["purposes"]:
         purpose["lawfulBasis"] = "Confirmed basis and assessment"
     files["privacy.json"] = json.dumps(notice)
+    files["service.json"] = json.dumps(
+        {
+            "terms": "Approved installation terms",
+            "businessDisclosure": "Confirmed business disclosures",
+            "accessibilityContact": "Confirmed accessibility contact",
+        }
+    )
     files["approval.json"] = json.dumps(
         {
             "approvedBy": "Operator",
@@ -44,6 +51,27 @@ def candidate():
 
 
 class PolicyValidationTests(unittest.TestCase):
+    def test_changed_service_wording_requires_fresh_approval(self):
+        files = candidate()
+        validate_publication(files)
+        service = json.loads(files["service.json"])
+        service["terms"] = "Changed installation terms"
+        files["service.json"] = json.dumps(service)
+        with self.assertRaisesRegex(PublicationError, "changed or unapproved"):
+            validate_publication(files)
+
+    def test_matching_privacy_approval_cannot_publish_incomplete_service_details(self):
+        for key in ("terms", "businessDisclosure", "accessibilityContact"):
+            files = candidate()
+            service = json.loads(files["service.json"])
+            service[key] = None
+            files["service.json"] = json.dumps(service)
+            approval = json.loads(files["approval.json"])
+            approval["contentSha256"] = policy_hash(files)
+            files["approval.json"] = json.dumps(approval)
+            with self.subTest(key=key), self.assertRaises(PublicationError):
+                validate_publication(files)
+
     def test_current_draft_is_blocked(self):
         files = {
             path.name: path.read_text(encoding="utf-8")

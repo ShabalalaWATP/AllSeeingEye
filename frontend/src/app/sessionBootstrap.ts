@@ -4,6 +4,9 @@ const PUBLIC_DOCUMENT_PATHS = new Set([
   '/privacy',
   '/privacy/requests',
   '/attributions',
+  '/accessibility',
+  '/terms',
+  '/business',
 ]);
 
 interface SessionRouter {

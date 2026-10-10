@@ -19,6 +19,11 @@ const approval = {
   approvedOn: '2026-10-10',
   contentSha256: 'a'.repeat(64),
 };
+const service = {
+  terms: 'Approved installation terms',
+  businessDisclosure: 'Confirmed business disclosures',
+  accessibilityContact: 'Confirmed accessibility contact',
+};
 const ready = () => ({
   ...draft,
   operator: Object.fromEntries(
@@ -42,7 +47,7 @@ test('the supplied draft cannot be published', () => {
 });
 
 test('requires complete details and an approval for the exact content', () => {
-  assert.deepEqual(publicationProblems(ready(), approval, 'a'.repeat(64)), []);
+  assert.deepEqual(publicationProblems(ready(), approval, 'a'.repeat(64), service), []);
   assert.ok(
     publicationProblems(ready(), approval, 'b'.repeat(64)).some((problem) =>
       problem.includes('changed'),
@@ -70,6 +75,7 @@ test('preview approval becomes false when approved content is edited', () => {
   const directory = mkdtempSync(join(tmpdir(), 'ase-policy-gate-'));
   try {
     writeFileSync(join(directory, 'privacy.json'), JSON.stringify(ready()));
+    writeFileSync(join(directory, 'service.json'), JSON.stringify(service));
     writeFileSync(join(directory, 'storage.json'), '[]');
     writeFileSync(join(directory, 'attributions.generated.json'), '{}');
     writeFileSync(
@@ -77,11 +83,30 @@ test('preview approval becomes false when approved content is edited', () => {
       JSON.stringify({ ...approval, contentSha256: policyHash(directory) }),
     );
     assert.equal(readPublicationState(directory).approved, true);
+    writeFileSync(
+      join(directory, 'service.json'),
+      JSON.stringify({ ...service, terms: 'Changed installation terms' }),
+    );
+    assert.equal(readPublicationState(directory).approved, false);
+    writeFileSync(join(directory, 'service.json'), JSON.stringify(service));
+    assert.equal(readPublicationState(directory).approved, true);
     writeFileSync(join(directory, 'PrivacyPage.tsx'), 'changed visible text');
     assert.equal(readPublicationState(directory).approved, false);
     writeFileSync(join(directory, 'approval.json'), '{invalid');
     assert.equal(readPublicationState(directory).approved, false);
   } finally {
     rmSync(directory, { recursive: true });
+  }
+});
+
+test('matching privacy approval cannot release incomplete service details', () => {
+  for (const key of Object.keys(service)) {
+    for (const value of [null, '', 'TBC', 'TODO: confirm']) {
+      const problems = publicationProblems(ready(), approval, 'a'.repeat(64), {
+        ...service,
+        [key]: value,
+      });
+      assert.ok(problems.some((problem) => problem.includes(`service.${key}`)));
+    }
   }
 });

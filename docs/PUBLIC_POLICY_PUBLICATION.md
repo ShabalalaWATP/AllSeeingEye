@@ -1,7 +1,8 @@
 # Public privacy, storage and attribution pages
 
 KAN-165 adds `/privacy`, `/privacy/requests` and `/attributions` outside the
-authenticated application. Storage is a section of `/privacy`. These pages contain
+authenticated application. KAN-172 adds `/accessibility`, `/terms` and `/business`
+to complete the public footer. Storage is a section of `/privacy`. These pages contain
 structured React text, local styles and links, with no provider media. Privacy reads
 only the same-origin public `/api/site` retention setting without credentials;
 failure is shown as unavailable, never as a confirmed default.
@@ -11,7 +12,9 @@ failure is shown as unavailable, never as a confirmed default.
 The controller identity and contacts, complaints process, jurisdictions, hosting,
 email and AI processors, other recipients, transfer arrangements, lawful bases,
 retention criteria, public-source assessment, storage assessment and automated
-decision description remain unconfirmed. No approval has been entered into
+decision description remain unconfirmed. Installation terms, business disclosures
+(including the applicable address and registration details) and an accessibility
+contact also require the operator's actual wording. No approval has been entered into
 `frontend/src/features/public-policy/approval.json`. Local previews and CI image
 builds remain possible; they do not grant publication or legal approval.
 
@@ -24,8 +27,10 @@ the unsupported account-wide export/erasure limits and preserves shared team wor
 ## Editing and approval
 
 The typed entry is `frontend/src/features/public-policy/content.ts`. Edit
-`privacy.json` for installation facts and wording, and `storage.json` for
-application-owned storage. Null decisions remain visible placeholders. Renderers,
+`privacy.json` for installation facts and wording, `service.json` for terms,
+business disclosures and accessibility contact, and `storage.json` for
+application-owned storage. Null decisions remain visible placeholders. The terms
+draft grants no software licence or deployment offer. Renderers,
 styles and generated credits live beside these inputs. Do not substitute an assumed
 lawful basis, invented retention period or a provider's marketing claim.
 
@@ -55,7 +60,9 @@ configuration, so it receives the same approval result.
 controller set. It parses the target Git revision's regular blobs without executing
 candidate code. `deploy_vps.py` calls it before image inspection, builds, backup or
 cutover, including check-only runs. Missing files, invalid dates, placeholders,
-missing lawful bases and a stale or absent approval stop deployment.
+missing lawful bases, incomplete service details and a stale or absent approval
+stop deployment. Both Node and Python checks require all three service fields,
+even when an approval hash matches the incomplete content.
 
 This controller change requires an operator-reviewed manual installation of the
 matching controller files. The repository does not install the host controller.
@@ -84,7 +91,7 @@ default choice stays in page memory. Withdrawal and storage-failure behaviour ar
 described in the notice. Direct map/stream requests are separately declared. A media
 gate does not establish that a consent banner is unnecessary.
 
-KAN-172 supplies deferred public bootstrap and noindex metadata for the three draft
+KAN-172 supplies deferred public bootstrap and noindex metadata for all six draft
 routes. Its device motion key moves to `components/brand/localMotionPause.ts`; the
 storage declaration remains `ase.brand-motion`. Integrate and test both changes
 together before treating the whole-App no-private-request boundary as verified.

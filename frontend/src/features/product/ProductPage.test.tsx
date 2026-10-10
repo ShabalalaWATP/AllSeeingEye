@@ -50,6 +50,13 @@ describe('public product page', () => {
       'href',
       '/request-account',
     );
+    for (const [name, href] of [
+      ['Accessibility', '/accessibility'],
+      ['Terms', '/terms'],
+      ['Business details', '/business'],
+    ] as const) {
+      expect(screen.getByRole('link', { name })).toHaveAttribute('href', href);
+    }
   });
 
   it('is not found when the installation has not enabled it', async () => {

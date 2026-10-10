@@ -37,6 +37,9 @@ it.each([
   ['/Privacy/', 'Privacy and storage'],
   ['/privacy/%72equests', 'Personal-data requests'],
   ['/Attributions', 'Source attributions'],
+  ['/Accessibility/', 'Accessibility'],
+  ['/%74erms', 'Terms'],
+  ['/Business', 'Business details'],
 ])('keeps the public policy route %s outside session bootstrap', async (path, title) => {
   window.history.replaceState(null, '', path);
   document.cookie = 'ase_csrf=synthetic-public-visit; path=/';

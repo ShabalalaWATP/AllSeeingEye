@@ -88,6 +88,9 @@ const HelpPage = lazy(() => import('@/app/help/HelpPage'));
 const PrivacyPage = lazy(() => import('@/features/public-policy/PrivacyPage'));
 const AttributionsPage = lazy(() => import('@/features/public-policy/AttributionsPage'));
 const PersonalDataPage = lazy(() => import('@/features/public-policy/PersonalDataPage'));
+const AccessibilityPage = lazy(() => import('@/features/public-policy/AccessibilityPage'));
+const TermsPage = lazy(() => import('@/features/public-policy/TermsPage'));
+const BusinessPage = lazy(() => import('@/features/public-policy/BusinessPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
 function devPage(load: () => Promise<{ default: ComponentType }>): ReactElement {
@@ -138,6 +141,9 @@ const pages: RouteObject[] = [
     { path: '/privacy', element: <PrivacyPage /> },
     { path: '/attributions', element: <AttributionsPage /> },
     { path: '/privacy/requests', element: <PersonalDataPage /> },
+    { path: '/accessibility', element: <AccessibilityPage /> },
+    { path: '/terms', element: <TermsPage /> },
+    { path: '/business', element: <BusinessPage /> },
   ].map((page) => ({
     ...page,
     element: (

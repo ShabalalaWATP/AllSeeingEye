@@ -27,6 +27,7 @@ REQUIRED_OPERATOR = (
 )
 REQUIRED_FILES = {
     "privacy.json",
+    "service.json",
     "storage.json",
     "attributions.generated.json",
     "approval.json",
@@ -60,6 +61,7 @@ def validate_publication(files: dict[str, str]) -> None:
         )
     try:
         notice = json.loads(files["privacy.json"])
+        service = json.loads(files["service.json"])
         approval = json.loads(files["approval.json"])
         operator = notice["operator"]
         purposes = notice["purposes"]
@@ -78,6 +80,13 @@ def validate_publication(files: dict[str, str]) -> None:
         if not all(valid(operator.get(key)) for key in REQUIRED_OPERATOR):
             raise PublicationError(
                 "Public policy publication blocked: operator details incomplete."
+            )
+        if not all(
+            valid(service.get(key))
+            for key in ("terms", "businessDisclosure", "accessibilityContact")
+        ):
+            raise PublicationError(
+                "Public policy publication blocked: service details incomplete."
             )
         if (
             not isinstance(purposes, list)
