@@ -49,17 +49,18 @@ were 17 Python/TypeScript files above 350, all below 400, and two CSS files abov
 350. The schedule mapping and CSS splits below remove three of these entries.
 Counts describe this snapshot, not an assertion about every later branch.
 
-The following 16 files retain a target exception for the stated responsibility.
+The combined KAN-216 inventory at `13872fc0` was checked on 10 October 2026.
+Thirteen files retain a target exception for the stated responsibility. The
+security transport and commercial-policy changes resolved three more entries,
+listed below. The checker reports no file above the hard maximum.
 Reassess the exception on the next substantive edit. Adding another independent
 responsibility requires a split; the named future boundaries are guidance, not
 permission to grow to 400. No exception suppresses checker output.
 
 | File | Lines | Reason to retain the current boundary; next split if it grows |
 | --- | ---: | --- |
-| `backend/src/ase/adapters/feeds/http.py` | 356 | One bounded request lifecycle connects address validation and pinning, redirect handling, pacing and validator publication. Error contracts, gzip decoding and host pacing already live separately. Keep the security-sensitive connection sequence together; extract address resolution/pinning as one tested boundary if extended. |
 | `backend/src/ase/adapters/store/memory.py` | 357 | One store owns the event map, secondary indexes, byte accounting, generation and eviction announcements. Insert/remove/update must change those together. Query readers and retention budgets are already separate. A future index extraction must own all corresponding mutations, not split methods across mixins. |
 | `backend/src/ase/application/report_jobs/service.py` | 370 | Admission and explicit job controls share the source guard, authorisation, unit of work and release ordering. Preparation, control predicates, listing and release helpers are already separate. A future command service must preserve one transaction owner rather than distribute commits among helpers. |
-| `backend/src/ase/application/reports/fresh_web_research.py` | 352 | A single collection attempt owns its result record through preflight, source revocation, cancellation and usage accounting. Query context and allocation validation are already separate. Extract the bounded usage-recording operation if that policy grows, retaining cancellation ownership at the call site. |
 | `backend/src/ase/application/reports/sections/runner.py` | 379 | One resumable run owns its completed topics, split-leaf count, rejection state and cumulative draft usage. Planning, contracts, prompts, assembly and synthesis are already collaborators. Keep checkpoint transitions and cancellation visible together; review a step-execution collaborator before adding another execution phase. This is the closest retained file to the ceiling. |
 | `backend/src/ase/application/research/source_allocator.py` | 356 | One deterministic allocation pass produces choices and explanatory receipts from the same ranked pool and reservation accounting. Policy constants and result types are separate. Split pure candidate ranking if scoring expands, keeping selection and its receipts in the same pass. |
 | `backend/tests/test_conflict_screening_model.py` | 360 | The canned screening batch and gateway fixture exercise the same model boundary: identity/quote validation, bounded input, cancellation and usage failures. Keeping the adversarial variants together makes the release conditions auditable. Split response-contract cases from async gateway behaviour if another model workflow is added. |
@@ -71,7 +72,6 @@ permission to grow to 400. No exception suppresses checker output.
 | `backend/tests/test_ukraine_figures.py` | 371 | Canned loss/civilian-impact data is validated from import to daily aggregation and provider-state projection. Assertions keep confirmed totals distinct from claims. Split provider acquisition tests if another provider is added, retaining aggregation cases with their shared source data. |
 | `backend/tests/test_ukraine_reference.py` | 353 | The seed/catalogue fixture covers resolution, image constraints, validation and serving of the same bounded reference package. Split acquisition from catalogue-serving tests when either contract grows independently. |
 | `frontend/src/lib/api/reports.ts` | 353 | This is the runtime validation boundary for a saved report, including its nested publication blocks, evidence and legacy optional fields. Other report contracts already have separate modules. Extract the publication-block schema if expanded, preserving the exported report schema and avoiding circular contract imports. |
-| `frontend/src/lib/map/MapLibreEngine.ts` | 353 | One mounted map owns style readiness, context loss, revision invalidation and capture cancellation. Overlay, sketch, appearance, initialisation and image-capture logic already have collaborators. Any further extraction must preserve the single revision/lifecycle owner. |
 
 ## Resolved entries and other large files
 
@@ -80,6 +80,9 @@ permission to grow to 400. No exception suppresses checker output.
 | `backend/src/ase/adapters/persistence/schedules.py` | 373 | Extract row/domain conversion into `schedule_mapping.py`. Leave repository transactions, worker authorisation and edition publication in the original module. Retain its existing internal conversion imports for current callers. |
 | `frontend/src/features/reports/reportReader.css` | 636 | Split by presentation responsibility and enforce the common 400-line ceiling on every CSS file. |
 | `frontend/src/components/assistant/eyeAssistant.css` | 361 | Split panel layout and saved chats from the composer, keeping the existing entry point and cascade order. |
+| `backend/src/ase/adapters/feeds/http.py` | 356 | KAN-235 separates connection handling and preserves original TLS identity across pinned IP connections. The combined file is 287 lines. |
+| `backend/src/ase/application/reports/fresh_web_research.py` | 352 | KAN-195 extracts commercial source admission into `web_research_admission.py`, retaining collection and cancellation ownership. The combined file is 343 lines. |
+| `frontend/src/lib/map/MapLibreEngine.ts` | 353 | KAN-195 extracts the bounded spin lifecycle into `MapSpin.ts`, preserving engine revision and capture ownership. The combined file is 339 lines. |
 | `.github/workflows/ci.yml` | 533 | Declarative pipeline configuration, outside the source-file limit. Job boundaries, dependencies and required gate names need their own review; no workflow change is part of KAN-232. |
 | `frontend/src/lib/api/types.gen.ts` | 33,153 | Generated client contract, excluded. Reconcile from the combined backend schema during integration. |
 | `frontend/pnpm-lock.yaml` | 5,328 | Dependency lockfile, excluded. Do not hand-split it. |
