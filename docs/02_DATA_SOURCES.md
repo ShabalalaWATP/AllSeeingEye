@@ -29,14 +29,22 @@ provider. Existing credentials and other access prerequisites still apply.
 The loader checks the primary provider and every additional enrichment provider.
 Any prohibition wins; a reviewed component never clears an unresolved component.
 Camera catalogue rights do not establish permission for each camera's imagery.
-Changing either setting requires a restart. Unknown acknowledgement IDs and
-incomplete or inconsistent packaged metadata stop startup.
+Changing either setting requires a server restart and reloading open browser
+sessions. Unknown acknowledgement IDs and incomplete or inconsistent packaged
+metadata stop startup.
 
 Administration shows the classification and refusal reason. The user catalogue
 says "Not available on this installation due to licence terms" rather than
 claiming that an unavailable source has no observations. EOX satellite imagery is
 forbidden in this mode, including map selection, saved-map previews and image
 exports. An image-export declaration cannot override the installation policy.
+Private document imports (`research_import`) and media/photo analysis
+(`research_media`) have separate permission requirements. Their source checks also
+apply when starting new work from saved inputs or earlier report evidence. The
+packaged conflict catalogue (`reference:conflicts`) is checked for tracker views,
+report context and subscription work. Queued jobs recheck the current policy
+before using frozen inputs after a restart.
+
 Saved evidence and map state are not silently rewritten by this mode. Existing
 reports and retained evidence still require a separate rights and retention review;
 turning this control on does not clear historical content for commercial reuse.
