@@ -4,6 +4,7 @@ These tests create the current schema through metadata, not Alembic migrations.
 """
 
 import asyncio
+from unittest.mock import Mock
 
 import pytest
 from sqlalchemy import text
@@ -11,6 +12,7 @@ from sqlalchemy import text
 from ase.adapters.feeds.firms import SPEC, FirmsConnector
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.application.admin.firms_credentials import AdminFirmsCredentials
+from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Unauthenticated
 from ase.domain.users import Role
 from feeds_helpers import make_event
@@ -121,38 +123,79 @@ async def test_later_test_generation_wins_while_earlier_probe_is_still_running(
 
 
 @pytest.mark.parametrize("method", ["get", "confirm"])
-async def test_real_logout_during_late_preparation_denies_release_and_rolls_back_activation(
+async def test_logout_waits_for_commit_then_denies_credential_disclosure(
     client, container, admin, probe, monkeypatch, method
 ):
     actor = await claims_for(client, container, admin)
     state = await ready(container, actor)
     refresh = client.cookies.get("ase_refresh")
     entered, release = asyncio.Event(), asyncio.Event()
+    logout_started, logout_done = asyncio.Event(), asyncio.Event()
+    committed = asyncio.Event()
     pids = {}
     original = AdminFirmsCredentials.finish
+    guard = AdminFirmsCredentials.guard
+    guards = 0
+    resume = Mock()
+    monkeypatch.setattr(container, "_resume_firms", resume)
 
     async def finish(service, claims):
         entered.set()
         await asyncio.wait_for(release.wait(), 10)
         await original(service, claims)
 
-    monkeypatch.setattr(AdminFirmsCredentials, "finish", finish)
-    args = (state.revision, state.test_generation, CONTEXT) if method == "confirm" else ()
-    work = asyncio.create_task(invoke(container, actor, method, *args, pids=pids, label="work"))
-    try:
-        await asyncio.wait_for(entered.wait(), 10)
+    async def guard_after_logout(service, claims):
+        nonlocal guards
+        guards += 1
+        if guards == 2:
+            # The mutation has committed and released its account lock. A real
+            # logout can now finish before the separate disclosure check.
+            committed.set()
+            await asyncio.wait_for(logout_done.wait(), 10)
+        await guard(service, claims)
+
+    async def logout():
         async with container.session_factory() as session:
             pids["logout"] = await session.scalar(text("SELECT pg_backend_pid()"))
-            await asyncio.wait_for(container.logout(session).execute(refresh, CONTEXT), 10)
-        assert len(set(pids.values())) == 2
+            logout_started.set()
+            await container.logout(session).execute(refresh, CONTEXT)
+
+    monkeypatch.setattr(AdminFirmsCredentials, "finish", finish)
+    monkeypatch.setattr(AdminFirmsCredentials, "guard", guard_after_logout)
+    args = (state.revision, state.test_generation, CONTEXT) if method == "confirm" else ()
+    work = asyncio.create_task(invoke(container, actor, method, *args, pids=pids, label="work"))
+    signing_out = None
+    try:
+        await asyncio.wait_for(entered.wait(), 10)
+        signing_out = asyncio.create_task(logout())
+        await asyncio.wait_for(logout_started.wait(), 10)
+        await observe_lock(container, pids["logout"])
+        async with container.session_factory() as session:
+            blockers = await session.scalar(
+                text("SELECT pg_blocking_pids(:pid)"), {"pid": pids["logout"]}
+            )
+        assert pids["work"] in blockers
+        assert len(set(pids.values())) == 2 and not signing_out.done()
         release.set()
+        await asyncio.wait_for(committed.wait(), 10)
+        await asyncio.wait_for(signing_out, 10)
+        logout_done.set()
         with pytest.raises(Unauthenticated):
             await asyncio.wait_for(work, 10)
+        resume.assert_not_called()
         async with container.session_factory() as session:
             row = await SqlFirmsCredentials(session).get()
-            assert row.active_encrypted is None and row.revision == state.revision
+            # Confirmation committed before logout. Disclosure is still refused;
+            # expiry-before-commit rollback is covered independently.
+            assert bool(row.active_encrypted) is (method == "confirm")
+            assert row.revision == state.revision + int(method == "confirm")
+            entries = await container.repositories(session).audit.list_before(None, 100)
+            assert sum(entry.action is AuditAction.LOGOUT for entry in entries) == 1
+            assert sum(entry.action is AuditAction.FIRMS_CONFIRMED for entry in entries) == int(
+                method == "confirm"
+            )
     finally:
-        await settle(release, work)
+        await settle(release, work, signing_out)
 
 
 async def test_real_admin_revocation_during_probe_prevents_test_proof(

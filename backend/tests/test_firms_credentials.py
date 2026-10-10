@@ -10,7 +10,9 @@ from sqlalchemy import select, update
 
 from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
 from ase.adapters.persistence.firms_credentials import FirmsCredentialRow, SqlFirmsCredentials
-from ase.adapters.persistence.models import UserRow
+from ase.adapters.persistence.models import AuditLogRow, UserRow
+from ase.application.admin.firms_credentials import AdminFirmsCredentials
+from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, RateLimited, Unauthenticated
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, bearer, login_token
 from team_helpers import CONTEXT
@@ -199,45 +201,75 @@ async def test_environment_and_encryption_policy(client, container, admin, probe
 
 
 @pytest.mark.parametrize("operation", ["get", "confirm"])
-async def test_actual_logout_during_repository_read_denies_later_release(
+async def test_completed_logout_before_admission_denies_release_and_activation(
     client, container, admin, probe, monkeypatch, operation
 ):
     actor = await claims_for(client, container, admin)
     state = await ready(container, actor)
     refresh_secret = client.cookies.get("ase_refresh")
     assert refresh_secret
-    original = SqlFirmsCredentials.get
+    original = AdminFirmsCredentials.guard
 
-    async def get_then_logout(repository):
-        row = await original(repository)
+    async def logout_then_guard(service, claims):
+        # Logout shares the account lock. It can complete before admission, but
+        # cannot complete inside a repository read which already owns that lock.
         async with container.session_factory() as session:
-            await container.logout(session).execute(refresh_secret, CONTEXT)
-        return row
+            await asyncio.wait_for(container.logout(session).execute(refresh_secret, CONTEXT), 10)
+        await original(service, claims)
 
-    monkeypatch.setattr(SqlFirmsCredentials, "get", get_then_logout)
+    monkeypatch.setattr(AdminFirmsCredentials, "guard", logout_then_guard)
     with pytest.raises(Unauthenticated):
         if operation == "get":
             await call(container, actor, "get")
         else:
             await call(container, actor, "confirm", state.revision, state.test_generation, CONTEXT)
     async with container.session_factory() as session:
-        assert (await session.get(FirmsCredentialRow, 1)).active_encrypted is None
+        row = await session.get(FirmsCredentialRow, 1)
+        assert row.active_encrypted is None and row.revision == state.revision
+        assert (
+            await session.scalar(
+                select(AuditLogRow.id).where(
+                    AuditLogRow.action == AuditAction.FIRMS_CONFIRMED.value
+                )
+            )
+            is None
+        )
 
 
-async def test_expiry_during_status_preparation_denies_metadata(
-    client, container, admin, probe, monkeypatch, clock
+@pytest.mark.parametrize("operation", ["get", "confirm"])
+@pytest.mark.parametrize("expiry", ["access", "idle"])
+async def test_expiry_during_preparation_denies_release_and_rolls_back_activation(
+    client, container, admin, probe, monkeypatch, clock, operation, expiry
 ):
+    if expiry == "idle":
+        container.settings.admin_session_idle_minutes = 5
     actor = await claims_for(client, container, admin)
-    original = SqlFirmsCredentials.get
+    state = await ready(container, actor)
+    original = AdminFirmsCredentials.finish
 
-    async def expired(repository):
-        row = await original(repository)
-        clock.advance(timedelta(minutes=16))
-        return row
+    async def expired(service, claims):
+        # Unlike logout, time can expire while a prepared mutation owns its locks.
+        clock.advance(timedelta(minutes=5 if expiry == "idle" else 16))
+        await original(service, claims)
 
-    monkeypatch.setattr(SqlFirmsCredentials, "get", expired)
+    monkeypatch.setattr(AdminFirmsCredentials, "finish", expired)
     with pytest.raises(Unauthenticated):
-        await call(container, actor, "get")
+        if operation == "get":
+            await call(container, actor, "get")
+        else:
+            await call(container, actor, "confirm", state.revision, state.test_generation, CONTEXT)
+    async with container.session_factory() as session:
+        row = await session.get(FirmsCredentialRow, 1)
+        assert row.active_encrypted is None and row.revision == state.revision
+        assert row.draft_encrypted is not None and row.tested_at == state.tested_at
+        assert (
+            await session.scalar(
+                select(AuditLogRow.id).where(
+                    AuditLogRow.action == AuditAction.FIRMS_CONFIRMED.value
+                )
+            )
+            is None
+        )
 
 
 async def test_probe_deadline_returns_fixed_failure_without_proof(
