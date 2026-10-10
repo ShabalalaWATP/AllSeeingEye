@@ -47,3 +47,26 @@ concurrency checks used synthetic in-memory or disposable SQLite databases.
 No production data, external provider or live deployment was touched. No migration
 is required. See [subscription operations](../SUBSCRIPTIONS_OPERATIONS.md) for the
 user and API behaviour.
+
+## CI controls regression follow-up
+
+PR #182 head `ef669a39` failed frontend shard 4 in
+[job 114079552560](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/38006567692/job/114079552560).
+The saved blob artifact, ID `11652635247`, contains one failed test and no
+unhandled errors across 220 files. The older `briefScheduleControls` test still
+required the pinned subscription's Edit button to be disabled, contradicting
+KAN-229's supported name and recurrence editing. The KAN-206 remount changes do
+not affect this assertion or its production path.
+
+The corrected regression expects editable settings and checks the explanation
+of their limited scope. Its MSW list response now reflects the paused state,
+so the test waits for Resume, verifies Paused, and rechecks the unchanged pinned
+Brief revision link after the refresh. Existing editing tests continue to verify
+the exact bounded request and retained paused state. No production behaviour,
+timeouts or coverage thresholds changed. The coordinator independently reviewed
+this test-only correction without findings; the touched test remains 46 lines.
+
+The corrected controls test and the two existing editing files passed together:
+three files, 11 tests in 16.86 seconds, with one worker. Strict ESLint, Prettier,
+application TypeScript and `git diff --check` passed. Coverage and the full suite
+were not rerun for this test-only repair; combined CI remains the final gate.
