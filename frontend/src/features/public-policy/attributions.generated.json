@@ -4290,6 +4290,24 @@
       ]
     },
     {
+      "id": "map:os_maps",
+      "name": "Ordnance Survey Maps API",
+      "family": "map_layer",
+      "sourceUrl": "https://www.ordnancesurvey.co.uk/products/os-maps-api",
+      "policies": [
+        {
+          "id": "os-maps",
+          "name": "Ordnance Survey Maps API",
+          "licence": "Operator plan and product terms unresolved",
+          "attribution": "Preserve OS and underlying data-owner attribution; confirm current plan requirements.",
+          "termsUrl": "https://www.ordnancesurvey.co.uk/products/os-maps-api",
+          "additionalTermsUrls": ["https://docs.os.uk/os-apis/core-concepts/licensing"],
+          "reviewStatus": "lookup_inconclusive",
+          "checkedOn": null
+        }
+      ]
+    },
+    {
       "id": "map:photon_places",
       "name": "Photon place search",
       "family": "map_layer",
