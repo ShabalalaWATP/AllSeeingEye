@@ -7,6 +7,7 @@ from uuid import uuid4
 from ase.application.auth.mfa import MfaUseCase
 from ase.application.auth.mfa_context import MfaContext
 from ase.domain.mfa import MfaChallenge, MfaPurpose
+from ase.domain.session_activity import SessionActivity
 from ase.domain.users import Role, User
 from helpers import FakeClock
 
@@ -55,6 +56,8 @@ def use_case(user: User, pending: MfaChallenge) -> MfaUseCase:
     limiter.hit.return_value = None
     limiter.peek.return_value = None
     email = Mock(available=True, send_code=AsyncMock(return_value=True))
+    refresh = AsyncMock()
+    refresh.activity.return_value = SessionActivity(NOW, NOW, NOW + timedelta(minutes=180), 180)
     return MfaUseCase(
         MfaContext(
             repo,
@@ -68,7 +71,7 @@ def use_case(user: User, pending: MfaChallenge) -> MfaUseCase:
             limiter,
             AsyncMock(),
             AsyncMock(),
-            AsyncMock(),
+            refresh,
             AsyncMock(),
             AsyncMock(),
         )
