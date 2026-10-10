@@ -7,8 +7,12 @@ import pytest
 import sqlalchemy as sa
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ase.adapters.persistence.base import Base
+from ase.adapters.persistence.warning_consumption import prune
+from ase.adapters.persistence.warning_consumption_models import WarningConsumptionRow
+from ase.domain.consumed_evidence import CONSUMED_RETENTION, MAGIC
 from notification_migration_helpers import (
     NOTIFICATION_TABLES,
     NOW,
@@ -24,6 +28,7 @@ from notification_migration_helpers import (
     migration_database as migration_database,  # noqa: PLC0414
 )
 from owned_postgres import owned_migration_test
+from test_notification_migration_guards_postgres import refuses_unchanged
 
 
 def assert_head(connection):
@@ -236,6 +241,29 @@ def write_notification_state(connection, original):
     insert_row(connection, "web_push_outbox", **(delivery | {"device_id": device_id}))
 
 
+async def expire_synthetic_legacy_consumption(database, original):
+    """Use the normal retention path only in this UUID-owned migration database."""
+    engine = create_async_engine(database.url)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    try:
+        async with factory() as session:
+            [marker] = list(await session.scalars(sa.select(WarningConsumptionRow)))
+            assert marker.indicator_id == original["rule"]
+            assert marker.data == MAGIC and marker.count == 0
+            assert marker.legacy_before == NOW and marker.expires_at is None
+            cutoff = NOW + CONSUMED_RETENTION
+            for now, expected in ((cutoff, 1), (cutoff + timedelta(microseconds=1), 0)):
+                await prune(session, now)
+                assert (
+                    await session.scalar(
+                        sa.select(sa.func.count()).select_from(WarningConsumptionRow)
+                    )
+                ) == expected
+                await session.commit()
+    finally:
+        await engine.dispose()
+
+
 @owned_migration_test
 async def test_legacy_upgrade_constraints_and_explicit_notification_rollback(migration_database):
     await migration_database.migrate("0066")
@@ -245,6 +273,10 @@ async def test_legacy_upgrade_constraints_and_explicit_notification_rollback(mig
     await migration_database.run(assert_unenrolled)
     await migration_database.run(assert_backfills, original)
     await migration_database.run(write_notification_state, original)
+    # Retained warning evidence must block the entire rollback without any partial DDL/DML.
+    await refuses_unchanged(migration_database, "0088", "consumed warning evidence", downgrade=True)
+    # The synthetic marker must outlive the inclusive horizon before notifications can roll back.
+    await expire_synthetic_legacy_consumption(migration_database, original)
     # Downgrade intentionally discards new opt-ins/outboxes; legacy records must survive.
     for target, removed in (
         ("0088", {"web_push_devices", "web_push_outbox"}),
