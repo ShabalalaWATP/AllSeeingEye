@@ -43,12 +43,21 @@ describe('public product metadata', () => {
     await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
     await act(() => router.navigate('/login'));
     await screen.findByRole('heading', { level: 1, name: 'Sign in' });
-    expect(meta('robots')).toBe('noindex, follow');
-    expect(meta('og:image', 'property')).toBeUndefined();
-    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    await waitFor(() => {
+      expect(meta('robots')).toBe('noindex, follow');
+      expect(meta('og:image', 'property')).toBeUndefined();
+      expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    });
     await act(() => router.navigate('/enterprise'));
     await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
-    expect(meta('robots')).toBe('index, follow');
+    await waitFor(() => {
+      expect(meta('robots')).toBe('index, follow');
+      expect(meta('og:image', 'property')).toBe(`${window.location.origin}/brand/eye-512.png`);
+      expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        `${window.location.origin}/enterprise`,
+      );
+    });
   });
 
   it('keeps a disabled product page noindex without canonical or social advertising', async () => {

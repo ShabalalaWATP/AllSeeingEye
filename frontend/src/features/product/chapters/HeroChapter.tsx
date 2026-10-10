@@ -1,8 +1,10 @@
 /**
  * Chapter 0: the Eye opens. The real React Bits Evil Eye brand mark fills the stage;
  * as the reader scrolls it grows and dissolves into the globe that follows. The
- * headline is ordinary text, painted before any WebGL, so it is the largest paint.
+ * headline is ordinary text and remains available independently of WebGL.
  */
+import { Link } from 'react-router';
+
 import EvilEye from '@/components/brand/EvilEye';
 
 import { CountUp } from '../motion/CountUp';
@@ -52,9 +54,9 @@ export function HeroChapter() {
           infrastructure, with the AI provider you choose.
         </p>
         <div className="hero-actions">
-          <a className="story-button story-button-primary" href="#contact">
+          <Link className="story-button story-button-primary" to="#contact">
             Talk to us
-          </a>
+          </Link>
           <a className="story-button" href="#observe">
             See how it works
           </a>
