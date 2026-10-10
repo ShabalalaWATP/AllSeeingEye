@@ -117,7 +117,9 @@ async def test_inherited_media_evidence_needs_its_own_permission(
         "research_focus": "document" if operation == "followup" else "general",
         "research_mode": "quick",
     }
-    first = version.evidence[0]
+    # The acknowledged document source must not mask a refusal of the media source.
+    evidence = tuple(replace(item, source_id="research_import") for item in version.evidence)
+    first = evidence[0]
     first = (
         replace(
             first,
@@ -128,7 +130,7 @@ async def test_inherited_media_evidence_needs_its_own_permission(
         if member
         else replace(first, source_id="research_media")
     )
-    version = replace(version, evidence=(first, *version.evidence[1:]))
+    version = replace(version, evidence=(first, *evidence[1:]))
     async with container.session_factory() as session:
         await container.repositories(session).reports.add(record, version)
         await session.commit()

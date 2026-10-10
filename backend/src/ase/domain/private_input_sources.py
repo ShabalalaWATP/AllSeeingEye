@@ -14,7 +14,6 @@ MEDIA_TYPES = MappingProxyType(
         ".webm": "video/webm",
     }
 )
-PRIVATE_SOURCE_IDS = frozenset({"research_import", "research_media"})
 
 
 def private_input_source(filename: str, media_type: str = "") -> str:
