@@ -25,16 +25,16 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
 | KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Desktop Lighthouse 99/97/100; mobile performance 60 misses target 95, optimisation in progress |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; full CI/native PostgreSQL pending |
-| KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected and focused style checks passed; CI pending |
+| KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
 | KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed at `8e818074`, 168 affected cases passed with 96.44% scoped coverage; CI pending |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
 | KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; CI passed, In Review |
-| KAN-219 | Executable alert template requirements and legacy recovery | PR #179; earlier geometry and migration fixtures repaired, final CI pending |
+| KAN-219 | Executable alert template requirements and legacy recovery | PR #179; geometry and migration fixtures repaired, CI passed, In Review |
 | KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; full CI/native PostgreSQL pending |
-| KAN-221 | Exact saved report/version links, including unavailable historical targets | PR #177; FK-valid SQLite/PostgreSQL follow-up passed, final CI pending |
-| KAN-222 | Unsaved Brief navigation protection | PR #168; remount follow-up integrated, final CI pending |
+| KAN-221 | Exact saved report/version links, including unavailable historical targets | PR #177; FK-valid SQLite/PostgreSQL follow-up passed, CI passed at `be35567b`, In Review |
+| KAN-222 | Unsaved Brief navigation protection | PR #168; remount follow-up integrated, CI passed, In Review |
 | KAN-223 | Unique indicator identifiers after removal/re-addition | PR #169 |
 | KAN-224 | Honest unsupported private-input choices in canonical Briefs | PR #172; remount follow-up integrated, CI passed, In Review |
 | KAN-225 | Concrete GitHub production approval proposal and no-op gate check | PR #163; live environment approval required |
@@ -75,7 +75,12 @@ frozen frontend installation and both TypeScript configurations passed, and all
 11 public-policy checks passed. The migration CLI's 204-module regression was
 separately reproduced and repaired by loading infrastructure adapters only for
 their selected commands; the unchanged budget passes at 196 modules, with 26
-focused CLI/migration tests. Final combined startup checking remains required.
+focused CLI/migration tests. The combined branch subsequently passed 46 cases
+covering that unchanged startup budget, the complete 96-owner/359-route contract,
+upload session checks, release-time expiry and transactional token redemption.
+The shared fixtures now model activity deadlines explicitly, preserving expiry,
+rollback and single-use assertions. Independent review of the branch-specific
+route inventories found no dropped contract checks.
 
 ## Review findings corrected during implementation
 

@@ -23,8 +23,8 @@ from router_order_reference import (
     routes,
 )
 
-# Reviewed additions to the 94-owner, 352-route public-site baseline. Keep this
-# inventory branch-specific: KAN-229 brief-settings is not present on this branch.
+# Reviewed additions to the 94-owner, 352-route public-site baseline.
+# Keep the explicit inventory aligned with the features on this branch.
 REVIEWED_ADDITIONS = {
     ("auth", "POST", "/api/auth/activity"),
     ("enquiries", "POST", "/api/enquiries"),
@@ -32,6 +32,7 @@ REVIEWED_ADDITIONS = {
     ("admin_enquiries", "GET", "/api/admin/enquiries/{enquiry_id}"),
     ("admin_enquiries", "PATCH", "/api/admin/enquiries/{enquiry_id}"),
     ("admin_enquiries", "DELETE", "/api/admin/enquiries/{enquiry_id}"),
+    ("schedules", "PUT", "/api/schedules/{schedule_id}/brief-settings"),
 }
 
 
