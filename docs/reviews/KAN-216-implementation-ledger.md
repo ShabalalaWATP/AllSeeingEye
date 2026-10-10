@@ -22,7 +22,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; full CI/native PostgreSQL pending |
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; full CI/native PostgreSQL pending |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Functional mobile browser checks passed; final shared performance work in progress |
-| KAN-169 | Administrator enquiry workspace, actions, focus and pagination | Browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
+| KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
 | KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Desktop Lighthouse 99/97/100; mobile performance 60 misses target 95, optimisation in progress |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; full CI/native PostgreSQL pending |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected and focused style checks passed; CI pending |
@@ -46,12 +46,28 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-231 | Bounded synthetic-data Chromium CI journeys | First browser run exposed fixture gaps and notification stacking; bounded repairs in progress |
 | KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; combined inventory reconciled to 13 reviewed target exceptions, no hard-limit failure |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
-| KAN-234 | Request/refresh binding to the originating login | PR #166; all 4,892 UI tests passed, MFA hook branch coverage missed its 95% floor; regression work in progress |
+| KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, 17 tests passed and 95.65% hook branch coverage; fresh CI pending |
 | KAN-235 | Original TLS identity across pinned feed connections; no shared cookies | PR #167 |
 | KAN-236 | Same-session fences throughout semantic search | PR #162 |
 
 PR numbers refer to `ShabalalaWATP/AllSeeingEye`. Per-ticket review files retain
 exact local commands, measurements, failures, repairs and scope limitations.
+
+## Combined verification
+
+At `c87b652f`, 168 selected backend cases passed across commercial policy,
+retained/private inputs, maps, subscription edits, exact edition links, enquiry
+administration and migration boundaries. Whole-source mypy passed for 1,637
+files; Ruff and formatting passed for 2,940 files, and all three import contracts
+passed. Combined API export and TypeScript generation left no contract diff.
+Public credits were regenerated for the added Ordnance Survey Maps policy, and
+both attribution tests passed. Both TypeScript configurations passed.
+
+Four additional real-adapter alert cases at `ce5a3387` verify current commercial
+permission before admission and before queued execution. Denial produces the
+expected safe error without model calls or a report; exact-source permission
+permits normal completion. Independent review of this positive/negative matrix
+passed. These focused results do not replace full combined CI.
 
 ## Review findings corrected during implementation
 

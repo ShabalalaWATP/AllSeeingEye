@@ -6117,7 +6117,13 @@ pagination focus, nullable subscription configuration and contact navigation
 defects. Native PostgreSQL exposed two invalid edition-link test fixtures; the
 repaired fixtures pass on both database engines without weakening foreign keys.
 Commercial-policy review identified additional private-input and conflict-data
-consumers whose repairs remain subject to independent re-review. The first
-combined backend group passed all 82 tests; complete CI and browser acceptance
-are still in progress. Production, licence and privacy decisions are not inferred
-from implementation approval.
+consumers; their repairs passed independent review. A later combined review found
+retained corroboration provenance gaps, which remain under repair. The expanded
+combined backend group passed all 168 selected tests. Four additional alert cases
+verify both commercial refusal and exact-source permission before admission and
+execution. Whole-source type, lint, formatting and architecture checks pass.
+Mobile enquiry browser checks found and corrected long-text overflow. The new
+browser CI journeys exposed notification stacking and focus timing defects;
+those repairs and public-page mobile performance work remain in progress.
+Production, licence and privacy decisions are not inferred from implementation
+approval.

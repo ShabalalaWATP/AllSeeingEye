@@ -1541,6 +1541,14 @@ review repairs, public/admin browser acceptance, the new browser CI lane and
 final whole-branch CI remain in progress. Local test groups overlap and must not
 be added together as an overall test count.
 
+The expanded commercial-policy integration group subsequently passed 168 selected
+backend cases, and four alert permission cases passed with both refusal and
+acknowledgement controls. Whole-source mypy, Ruff/format and import contracts pass;
+combined API generation has no contract diff. The public attribution catalogue is
+reconciled, and the source-size inventory has thirteen reviewed target exceptions
+with no hard-limit failures. The ledger retains outstanding retained-evidence
+review, browser CI repairs, mobile performance and final CI requirements.
+
 No `main` merge, live migration or production release has occurred. Controller
 facts and privacy approval, the software-licence/offer decision and live GitHub
 production approval settings remain explicit operator decisions. Those decisions
