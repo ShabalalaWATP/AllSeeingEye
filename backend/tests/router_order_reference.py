@@ -29,6 +29,7 @@ ORIGINAL = [
     "research_usage",
     "health",
     "site",
+    "enquiries",
     "navigation",
     "terrain",
     "radio",
