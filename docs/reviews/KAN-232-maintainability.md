@@ -95,3 +95,31 @@ uv run --frozen --offline pytest -o addopts=--strict-markers `
   --cov=ase.adapters.persistence.schedules `
   --cov=ase.adapters.persistence.schedule_mapping --cov-fail-under=90
 ```
+
+## Integrated migration startup follow-up
+
+PR #187 head `e6712cd8` failed
+[backend shard 1](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/38008108154/job/114082066036)
+because migration startup imported 204 project modules against its existing
+limit of fewer than 200. The other 1,554 tests passed, with 43 skipped. The
+no-container, no-application-factory and no-feed/LLM checks still passed.
+The exact failure reproduced locally: one failure and one pass in 9.82 seconds.
+
+The infrastructure CLI eagerly imported dataset adapters while registering
+unrelated commands. Those adapters now load only when their selected command
+runs. The shared contact default has the same value and was already loaded by
+the Ukraine CLI. No migration, metadata, CLI option or output changed. A fresh
+in-memory migration imports 196 project modules and none of the three deferred
+infrastructure importer modules. The original startup budget is unchanged,
+with explicit importer exclusions added to prevent regression.
+
+All five infrastructure commands have dispatch regressions for default and
+custom contacts, exact destination/layer arguments, returned counts and private
+upstream failure details. Existing adapter tests now patch the adapter boundary.
+The focused startup, dispatch, infrastructure and CLI/migration group passed
+26 tests in 27.59 seconds. Ruff, formatting, scoped mypy, scoped Bandit and
+`git diff --check` passed. Coverage and the whole backend suite were not rerun
+for this focused repair. Tests used temporary or in-memory SQLite, cleared
+shared database environment variables and contacted no external providers.
+The coordinator independently reviewed the exact CLI/import/test diff without
+findings. All touched source and test files remain below 350 lines.
