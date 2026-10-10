@@ -23,6 +23,9 @@ from router_order_reference import (
     routes,
 )
 
+# KAN-229 adds this reviewed endpoint to the 94-owner, 352-route baseline.
+REVIEWED_ADDITIONS = {("schedules", "PUT", "/api/schedules/{schedule_id}/brief-settings")}
+
 
 @pytest.fixture(scope="module")
 def pair() -> tuple[FastAPI, FastAPI]:
@@ -36,17 +39,20 @@ def test_all_owners_once_and_every_overlap_and_name_edge_preserved() -> None:
     families: dict[str, set[str]] = {}
     names: dict[str, set[str]] = {}
     count = 0
+    inventory: set[tuple[str, str, str]] = set()
     for owner in ORIGINAL:
         current = list(routes(application(getattr(aggregate, owner).router)))
         count += len(current)
         families[owner] = set()
         names[owner] = set()
         for route in current:
+            inventory.update((owner, method, route.path) for method in route.methods)
             first = route.path.removeprefix("/api/").split("/")[0]
             assert first and "{" not in first, "Review dynamic leading-path matching"
             families[owner].add(first)
             names[owner].add(route.name)
-    assert count == 352
+    assert inventory >= REVIEWED_ADDITIONS
+    assert count == 352 + len(REVIEWED_ADDITIONS)
     for before, after in combinations(ORIGINAL, 2):
         if families[before] & families[after] or names[before] & names[after]:
             assert actual.index(before) < actual.index(after), (before, after)
