@@ -220,3 +220,32 @@ same origin, with only `/api/site` requested from the API. There is no horizonta
 page overflow and the browser reported no errors or warnings. Final hero/contact
 screenshots were inspected. The private browser and loopback fixture server were
 closed after verification.
+
+## Exact texture optimisation follow-up
+
+The retained startup trace still attributes about 22 ms to noise generation.
+At an exact lattice point, its three neighbouring interpolation weights are zero.
+The generator now returns the first corner directly in that case, retaining the
+original calculation everywhere else. At texture size 256, five of the eight
+octaves use this shortcut for every pixel. Shader code, animation scheduling,
+graphics ownership and the resulting pixels are unchanged.
+
+Before editing the generator, SHA256 digests were recorded from its complete
+RGBA buffers at sizes 17, 256 and 257 on `2e00cd2e`. All three fingerprint tests
+passed before and after the change; the odd sizes exercise fractional paths.
+The affected noise and graphics group passed all 19 tests, and scoped lint and
+format checks passed. Independent review found no output or lifecycle change.
+
+A local Node 24.19.0 microbenchmark alternated the original and changed generators
+over 25 samples each, after six warm-ups. Median generation time for the 256-pixel
+texture fell from 8.293 ms to 6.005 ms. This is a warm, isolated CPU measurement,
+not a new browser score or evidence of meeting mobile performance 95. The last
+measured full-page mobile score remains 78; native graphics startup and public
+entry delivery still dominate the remaining gap. A proposed account-code import
+change was not made: its estimated 3.8 KiB gzip saving did not justify adding
+authentication lifecycle complexity for this measured bottleneck.
+
+Both TypeScript configurations and the production build passed. The unchanged
+gzip budgets also passed: initial 145,638 bytes, globe additions 829,249 bytes and
+product additions 44,439 bytes. These measurements describe the public delivery
+branch, not the independently built combined integration bundle.

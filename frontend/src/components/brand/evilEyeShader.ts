@@ -26,6 +26,8 @@ export function generateNoiseTexture(size = 256): Uint8Array {
     const ty = fy - iy;
     const w = freq | 0;
     const v00 = hash(((ix % w) + w) % w, ((iy % w) + w) % w, seed);
+    // At an exact lattice point, all other interpolation weights are zero.
+    if (tx === 0 && ty === 0) return v00;
     const v10 = hash((((ix + 1) % w) + w) % w, ((iy % w) + w) % w, seed);
     const v01 = hash(((ix % w) + w) % w, (((iy + 1) % w) + w) % w, seed);
     const v11 = hash((((ix + 1) % w) + w) % w, (((iy + 1) % w) + w) % w, seed);
