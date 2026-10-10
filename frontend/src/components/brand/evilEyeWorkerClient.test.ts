@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EyeOptions, EyeReply, EyeRequest } from './evilEyeProtocol';
 
-vi.mock('./evilEyeRenderer', () => ({ eyeNoise: () => new Uint8Array(4) }));
+vi.mock('./evilEyeNoise', () => ({ eyeNoise: () => new Uint8Array(4) }));
 import { createEyeWorker } from './evilEyeWorkerClient';
 
 class FakeWorker {

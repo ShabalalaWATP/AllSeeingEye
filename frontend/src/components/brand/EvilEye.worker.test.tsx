@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EyeReply, EyeRequest } from './evilEyeProtocol';
 
 vi.unmock('./EvilEye');
+vi.unmock('./EvilEyeSurface');
 const graphics = vi.hoisted(() => ({
   create: vi.fn(),
   render: vi.fn(),
@@ -15,6 +16,7 @@ vi.mock('./evilEyeRenderer', () => ({
   eyeNoise: () => graphics.noise,
   createEyeRenderer: graphics.create,
 }));
+vi.mock('./evilEyeNoise', () => ({ eyeNoise: () => graphics.noise }));
 import EvilEye from './EvilEye';
 
 class FakeWorker {

@@ -6,14 +6,14 @@
  * The client never imports the auth store (lib must not depend on stores); the
  * store binds itself through `bindSession`.
  */
-import type { ZodType } from 'zod';
+import { safeParse, type $ZodType as ZodType } from 'zod/v4/core';
 
 import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
-import { parseIdleMinutes } from '@/lib/sessionActivity';
+import { parseIdleMinutes } from '@/lib/idleMinutes';
 
 import { ApiError, sessionChangedError } from './errors';
 import { parseRetryAfter, unexpectedResponseError } from './errorResponses';
-import { errorEnvelopeSchema } from './schemas';
+import { errorEnvelopeSchema } from './errorEnvelope';
 
 export interface SessionBridge {
   getAccessToken(): string | null;
@@ -81,7 +81,7 @@ export function apiOptional<T>(
 
 async function readJson<T>(response: Response, schema: ZodType<T>): Promise<T> {
   const data: unknown = await response.json();
-  const parsed = schema.safeParse(data);
+  const parsed = safeParse(schema, data);
   if (!parsed.success) {
     throw new ApiError(
       response.status,

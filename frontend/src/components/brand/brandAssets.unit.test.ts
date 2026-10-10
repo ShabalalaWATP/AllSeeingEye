@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { files, read } from '@/test/themeContrast';
 
 // The 512-pixel capture is about 290 KB; only the Evil Eye's own large fallback may request it.
-const LARGE_CAPTURE_OWNER = 'components/brand/EvilEye.tsx';
+const LARGE_CAPTURE_OWNER = 'components/brand/EvilEyeSurface.tsx';
 
 describe('brand images', () => {
   it('ships the social image as the declared 512-pixel PNG capture', () => {

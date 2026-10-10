@@ -3,13 +3,11 @@
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 
 import type { EyeFrame, EyeOptions, EyeSize } from './evilEyeProtocol';
-import { generateNoiseTexture, hexToVec3, vertexShader, fragmentShader } from './evilEyeShader';
+import { hexToVec3, vertexShader, fragmentShader } from './evilEyeShader';
+import { eyeNoise } from './evilEyeNoise';
 
 // Only immutable CPU pixels are shared. Each surface owns and releases its GPU texture.
-let sharedNoise: Uint8Array | undefined;
-export function eyeNoise(): Uint8Array {
-  return (sharedNoise ??= generateNoiseTexture(256));
-}
+export { eyeNoise } from './evilEyeNoise';
 
 export function createEyeRenderer(
   canvas: HTMLCanvasElement | OffscreenCanvas,

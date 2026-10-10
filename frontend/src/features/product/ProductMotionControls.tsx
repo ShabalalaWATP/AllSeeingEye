@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-import EvilEye from '@/components/brand/EvilEye';
+import EvilEye from '@/components/brand/EvilEyeSurface';
 import { BRAND_GROUND } from '@/components/brand/tokens';
 
 import { useProductMotionPause } from './motion/useProductMotionPause';

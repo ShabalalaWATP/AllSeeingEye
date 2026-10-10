@@ -81,13 +81,14 @@ test('rejects a private layout pulled into the common entry', () => {
   }
 });
 
-test('counts the public eye worker and all its static dependencies in the product budget', () => {
+test('counts the public eye worker, lazy fallback and their static dependencies', () => {
   const root = build({
     'index.html': html('index-a1.js'),
     'assets/index-a1.js': 'export{}',
     'assets/GlobePage-g1.js': 'export{}',
     'assets/ProductPage-p1.js': 'export{}',
     'assets/evilEye.worker-w1.js': 'import"./eye-engine-e1.js";',
+    'assets/evilEyeRenderer-f1.js': 'import"./eye-engine-e1.js";',
     'assets/eye-engine-e1.js': 'import"./eye-noise-n1.js";export{}',
     'assets/eye-noise-n1.js': 'export{}',
   });
@@ -96,6 +97,7 @@ test('counts the public eye worker and all its static dependencies in the produc
     assert.deepEqual(result.product.chunks, [
       'assets/ProductPage-p1.js',
       'assets/evilEye.worker-w1.js',
+      'assets/evilEyeRenderer-f1.js',
       'assets/eye-engine-e1.js',
       'assets/eye-noise-n1.js',
     ]);

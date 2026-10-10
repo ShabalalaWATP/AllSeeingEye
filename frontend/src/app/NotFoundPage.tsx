@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Wordmark } from '@/components/brand/Wordmark';
 
-import { NOT_FOUND_TITLE } from './shell/pageTitles';
+import { NOT_FOUND_TITLE } from './shell/documentTitle';
 import { PublicRouteFocus } from './shell/PublicRouteFocus';
 
 export function NotFoundPage() {

@@ -16,7 +16,7 @@ SCAN_DIRS = (
 )
 SUFFIXES = {".py", ".ts", ".tsx"}
 GENERATED_SUFFIXES = (".gen.ts", ".d.ts")
-EXCLUDED = {ROOT / "frontend" / "src" / "components" / "brand" / "EvilEye.tsx"}
+EXCLUDED = {ROOT / "frontend" / "src" / "components" / "brand" / "EvilEyeSurface.tsx"}
 WARN_AT = 350
 FAIL_AT = 400
 

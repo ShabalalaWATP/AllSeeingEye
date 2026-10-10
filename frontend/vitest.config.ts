@@ -45,7 +45,7 @@ export default mergeConfig(
         reportsDirectory: './coverage',
         include: ['src/**/*.{ts,tsx}'],
         exclude: [
-          'src/components/brand/EvilEye.tsx',
+          'src/components/brand/EvilEyeSurface.tsx', // Existing vendored component, moved from EvilEye.tsx.
           'src/components/brand/evilEyeShader.ts', // Unchanged extracted third-party shader/noise.
           'src/lib/api/types.gen.ts',
           'src/main.tsx',

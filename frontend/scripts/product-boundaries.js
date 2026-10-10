@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 const PRIVATE_SOURCE =
-  /^(?:stores\/|features\/(?!product\/)|app\/(?:App\.|router\/|shell\/(?:AppShell|AdminShell|RequireAuth|RequireAdmin)\.)|lib\/map\/)/;
+  /^(?:stores\/|features\/(?!product\/)|app\/(?:App\.|router\/|shell\/(?:AppShell|AdminShell|RequireAuth|RequireAdmin|pageTitles|useRouteFocus)\.)|lib\/(?:map\/|(?:adminNavigation|workspaceNavigation)\.))/;
 const MAP_RUNTIME = /^(?:maplibre-gl|three|hls\.js|@(?:deck|luma|loaders|math)\.gl)(?:\/|$)/;
 
 function imports(source) {

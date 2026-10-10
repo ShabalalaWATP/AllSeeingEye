@@ -9,6 +9,7 @@ import EvilEye from './EvilEye';
 
 // Real component: jsdom has no WebGL, so each instance keeps its captured fallback.
 vi.unmock('./EvilEye');
+vi.unmock('./EvilEyeSurface');
 
 function fallback(container: HTMLElement) {
   const image = container.querySelector('picture img');

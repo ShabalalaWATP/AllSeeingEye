@@ -1,7 +1,8 @@
 /** Public account pages: a live brand plane beside a quiet, opaque form. */
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 
 import { PublicRouteFocus } from '@/app/shell/PublicRouteFocus';
+import { pageTitle } from '@/app/shell/pageTitles';
 import EvilEye from '@/components/brand/EvilEye';
 import { MotionToggle } from '@/components/brand/MotionToggle';
 import { useMotionPause } from '@/components/brand/useMotionPause';
@@ -12,6 +13,7 @@ import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 import './auth.css';
 
 export function AuthLayout() {
+  const { pathname } = useLocation();
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
   const { chosenPause } = useMotionPause();
@@ -67,7 +69,7 @@ export function AuthLayout() {
         </div>
       </section>
       <main className="auth-access" id="account-access">
-        <PublicRouteFocus />
+        <PublicRouteFocus title={pageTitle(pathname)} />
         <div className="auth-access-inner">
           <nav className="auth-navigation" aria-label="Account access">
             <NavLink to="/login">Sign in</NavLink>

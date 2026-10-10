@@ -1524,3 +1524,15 @@ still exceed target and remain reported. Current-main CI passes 4,637 frontend
 tests with 92.28% branch coverage. The completed browser trace contains no
 stream-flush task over 50 ms; separate task and interaction outliers remain
 explicit. See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md).
+
+### KAN-172 mobile performance target, 10 October 2026
+
+- Alex approved 90 as the mobile performance target; Jira acceptance now records it.
+- The complete normal-motion page scores 90/97/100 in three consecutive production
+  Caddy HTTPS runs, versus 87/97/100 for the clean prior build under identical
+  conditions. Desktop scores 100/97/100. The separate HTTP fixture scores 87.
+- Public startup dependencies are smaller, validation and runtime gates remain
+  intact, and asynchronous graphics fallback retains cleanup and recovery behaviour.
+- Focused tests, type/lint/bundle checks and native browser acceptance pass.
+- See `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` for conditions and exact evidence.
+  Published-head CI and authorised review/release remain required.

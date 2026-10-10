@@ -5,7 +5,7 @@
  */
 import { Link } from 'react-router';
 
-import EvilEye from '@/components/brand/EvilEye';
+import EvilEye from '@/components/brand/EvilEyeSurface';
 
 import { CountUp } from '../motion/CountUp';
 import { ScrollChapter } from '../motion/ScrollChapter';
