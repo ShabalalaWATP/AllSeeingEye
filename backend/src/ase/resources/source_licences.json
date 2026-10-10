@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "assessed_on": "2026-10-09",
+  "assessed_on": "2026-10-10",
   "source_revision": "13efceef48efbc6d5f2895e60c55076db5d40e3f",
   "enforcement": "commercial_mode_opt_in",
   "sources": [
@@ -11517,9 +11517,17 @@
       "provider_policy": "camera-westmorland"
     },
     {
-      "host": "www.youtube.com",
+      "host": "www.youtube-nocookie.com",
       "uses": [
         "frames"
+      ],
+      "policy": "camera-owner-rights",
+      "provider_policy": "camera-youtube"
+    },
+    {
+      "host": "www.youtube.com",
+      "uses": [
+        "legacyFrames"
       ],
       "policy": "camera-owner-rights",
       "provider_policy": "camera-youtube"
