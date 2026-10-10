@@ -285,3 +285,67 @@ bundle budgets pass. The public build contains 145,663 bytes of initial JavaScri
 gzip, 829,249 additional globe bytes and 44,436 additional product bytes. Full
 published-head CI remains required; this follow-up does not approve publication
 or waive the mobile performance target.
+
+## Public graphics worker, 10 October 2026
+
+The public header, hero and contact mark now opt into an OffscreenCanvas worker.
+The same extracted OGL engine, shader, noise pixels, uniforms and document-frame
+timestamps render the original eye. Other callers remain synchronous. Unsupported
+workers and startup failures use a fresh canvas for synchronous fallback. A lost
+context stops its surface and retains the original capture without a recovery loop.
+Startup and disposal have bounded watchdogs. Each worker accepts one frame or resize
+at a time; successive resize requests coalesce to the latest dimensions.
+
+Caddy preloads the existing 512-pixel WebP capture only on exact `/enterprise`
+variants, including an optional trailing slash and case variants. The hero requests
+high image priority. Runtime flags, publication approval, CSP, shader output and
+motion preferences are unchanged. No package or lockfile changed. The worker and
+its static dependencies count towards the existing 150 KiB product budget.
+
+All measurements below used Lighthouse 13.5.0 and Chrome 155.0.8059.39, cold page
+loads, normal motion and the complete story. The same precompressed HTTP loopback
+fixture and unchanged default mobile profile were used: 412 by 823, DPR 1.75,
+150 ms RTT, 1,638.4 Kbps and four-times CPU slowdown. No tests or builds ran during
+measurement. Scores are performance/accessibility/SEO.
+
+| Build | Scores | FCP | LCP | Blocking time | Layout shift |
+| --- | --- | --- | --- | --- | --- |
+| `21e9d1d9`, before worker | 77/97/100 | 2.30 s | 4.09 s | 301 ms | 0 |
+| Worker, before image preload | 84/97/100 | 2.28 s | 4.06 s | 24 ms | 0 |
+| Worker and image preload, final | 85/97/100 | 2.28 s | 3.93 s | 22 ms | 0 |
+
+The final mobile run started at 02:38:54 UTC, with host benchmark index 3,929.
+An earlier worker/preload run also scored 85. The default desktop run at 02:39:07
+scored 100/97/100, with FCP 0.51 seconds, LCP 0.79 seconds, zero blocking time and
+zero layout shift. **The mobile performance requirement of 95 remains unmet.**
+
+Retained traces locate the two approximately 153 ms graphics startup handlers on
+dedicated worker threads. The longest main-thread task is approximately 60 ms,
+mostly layout. Image discovery moves from approximately 88 ms to 8 ms in the
+unthrottled trace, with one download at initial High priority. These trace timings
+are distinct from Lighthouse's simulated mobile timings.
+
+A separate local HTTPS Caddy/HTTP2 check scored 86/97/100. It retained the security
+headers and used a per-process certificate exception for the disposable local CA;
+it is not compared to the HTTP baseline as a code improvement. A further experiment
+preloading the route's static dependencies and configuration did not improve that
+score and delayed first content on HTTP, so it was removed. No extra HTML shell,
+configuration preload, cache-policy change or dependency remains.
+
+Native Chrome verified normal motion, pause/resume, reduced motion, disposal on
+navigation, fresh-canvas startup fallback and terminal context loss. Final Caddy
+checks confirm the unchanged gated HTML/CSP, exact route preload scope and missing
+asset 404s. The final 390-pixel browser check has one hero download, two visible
+same-origin workers, only `/api/site` requested, no third-party resource, no overflow
+and zero console errors or warnings. Earlier 320-pixel and contact-focus checks
+also passed. Worker fault injection used synthetic local state only.
+
+The final affected brand/product group passes 138 cases across 26 files; 12 bundle
+and public-boundary tooling tests pass. Both TypeScript configurations, scoped
+ESLint/Prettier, the source-length gate, production build and real Caddy web-image
+smoke checks pass. New worker/engine module coverage in the focused run is 99.31%
+lines and 95.38% branches. Independent architecture and security reviews are clear.
+Final gzip totals are 145,648 initial bytes, 829,209 additional globe bytes and
+61,645 additional product bytes, all within unchanged budgets. Full published-head
+CI remains required. No merge, infrastructure change or deployment is authorised
+by this evidence.

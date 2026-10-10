@@ -81,6 +81,35 @@ test('rejects a private layout pulled into the common entry', () => {
   }
 });
 
+test('counts the public eye worker and all its static dependencies in the product budget', () => {
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+    'assets/ProductPage-p1.js': 'export{}',
+    'assets/evilEye.worker-w1.js': 'import"./eye-engine-e1.js";',
+    'assets/eye-engine-e1.js': 'import"./eye-noise-n1.js";export{}',
+    'assets/eye-noise-n1.js': 'export{}',
+  });
+  try {
+    const result = inspectBundle(root);
+    assert.deepEqual(result.product.chunks, [
+      'assets/ProductPage-p1.js',
+      'assets/evilEye.worker-w1.js',
+      'assets/eye-engine-e1.js',
+      'assets/eye-noise-n1.js',
+    ]);
+    assert.deepEqual(result.failures, []);
+    let noise = '';
+    for (let i = 0; noise.length < PRODUCT_ROUTE_GZIP_BUDGET * 2; i += 1)
+      noise += Math.imul(i, 2654435761).toString(36);
+    writeFileSync(path.join(root, 'assets/eye-noise-n1.js'), `export const data="${noise}";`);
+    assert.match(inspectBundle(root).failures.join('\n'), /Product route JavaScript.*over/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rejects product runtime imports, oversized payloads and a missing product route', () => {
   let noise = '';
   for (let i = 0; noise.length < PRODUCT_ROUTE_GZIP_BUDGET * 2; i += 1)
