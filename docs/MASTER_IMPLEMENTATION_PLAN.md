@@ -1583,3 +1583,11 @@ does not satisfy the outstanding full-page mobile target. At the 10 October
 01:48 UTC checkpoint, 20 delivery tickets are In Review; eight await final CI
 and four retain acceptance or operator decisions. Jira is authoritative after
 that checkpoint; no ticket has been marked Done.
+
+At 02:01 UTC, 27 tickets have passed current-head CI and moved to In Review.
+The public delivery's additional contact-focus repair passes its 16-case group,
+native Chrome verification, both TypeScript checks, build and bundle budgets.
+The combined metadata timing failure retains every assertion and now awaits
+the route effects. Fresh public/combined CI remains required. The latest mobile
+Lighthouse measurement is still 78/97/100; KAN-164, KAN-165, KAN-172 and KAN-225
+retain their recorded acceptance or operator requirements.

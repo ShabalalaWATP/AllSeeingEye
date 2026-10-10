@@ -6154,3 +6154,13 @@ the public production build and bundle budgets pass. Independent review is clear
 A local warm CPU benchmark improved from 8.293 ms to 6.005 ms median; this does
 not establish a new mobile Lighthouse score. The larger graphics-startup and
 public-entry performance gap remains explicit.
+
+A fresh Chrome check reproduced a separate in-page contact focus defect: native
+fragment navigation left focus on the body. Router-owned links now retain the
+existing heading focus and scrolling, with failing-before/passing-after tests
+and native browser verification. The affected 16-case frontend group passes;
+the metadata test also waits for settled route effects without dropping any
+assertions. The latest ordinary mobile Lighthouse run remains 78/97/100. At the
+02:01 UTC checkpoint, 27 delivery tickets have passing final CI and are In Review;
+the public/contact follow-up and combined branch still require fresh CI, while
+four acceptance/operator items remain open.

@@ -19,20 +19,20 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | --- | --- | --- |
 | KAN-164 | Neutral offer wording and a concrete software-licence/offer decision record | PR #175; Alex's licence and offer decision required |
 | KAN-165 | Public privacy, storage, attribution and data-request pages; fail-closed publication gate | Grouped PR #191; public policy browser checks passed; operator/legal approval required |
-| KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; full CI/native PostgreSQL pending |
-| KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks passed; full CI shards pending |
+| KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; native PostgreSQL and all 39 current-head CI checks passed at `9afda2de`, In Review |
+| KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks and all 39 CI checks passed at `17c8c4ea`, In Review |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; final functional mobile browser and contact-focus checks passed; CI pending |
-| KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
+| KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage; all 39 CI checks passed at `cfbd6a1e`, In Review |
 | KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Grouped PR #191; full-page mobile Lighthouse 78/97/100, desktop 99/97/100; mobile performance remains below the earlier placeholder-stage 95 criterion |
-| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; fresh CI pending |
+| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; all 39 CI checks passed at `696586fd`, In Review |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
-| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; 55 frontend cases and 24 capabilities/readiness follow-up cases passed; fresh CI pending at `8d876ae0` |
+| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; 55 frontend and 24 capabilities/readiness cases passed; all 39 CI checks passed at `8d876ae0`, In Review |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
 | KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; CI passed, In Review |
 | KAN-219 | Executable alert template requirements and legacy recovery | PR #179; geometry and migration fixtures repaired, CI passed, In Review |
-| KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; seven migration follow-up cases passed, including six native PostgreSQL cases; retained-data refusal and exact retention boundary preserved; fresh CI pending |
+| KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; seven migration follow-up cases passed, including six native PostgreSQL cases; retained-data refusal and exact retention boundary preserved; all 39 CI checks passed at `343eb0ef`, In Review |
 | KAN-221 | Exact saved report/version links, including unavailable historical targets | PR #177; FK-valid SQLite/PostgreSQL follow-up passed, CI passed at `be35567b`, In Review |
 | KAN-222 | Unsaved Brief navigation protection | PR #168; remount follow-up integrated, CI passed, In Review |
 | KAN-223 | Unique indicator identifiers after removal/re-addition | PR #169 |
@@ -41,10 +41,10 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-226 | Uncached security rebuild procedure | PR #170 |
 | KAN-227 | Vulnerable dependency and image refresh | PR #164; local rebuilt-image scan and CI passed |
 | KAN-228 | Explicit webhook retry semantics after uncertain acceptance | PR #174 |
-| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; final FK-valid race fixture passed eight checks on SQLite and in the PostgreSQL-configured group; fresh CI pending at `d1e58914` |
+| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; final FK-valid race fixture passed eight checks on SQLite and in the PostgreSQL-configured group; all 39 CI checks passed at `d1e58914`, In Review |
 | KAN-230 | CI security and acceptance documentation reconciled with executable gates | PR #173 |
-| KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four local journeys passed in 11.354 seconds and hosted CI in 9.9 seconds (64-second full job); final aggregate pending |
-| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import regression repaired and whole-tree frontend formatting reconciled; fresh CI pending |
+| KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four local journeys passed in 11.354 seconds and hosted CI in 9.9 seconds (64-second full job); all 40 CI checks passed at `6529781f`, In Review |
+| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import and formatting repairs verified; all 39 CI checks passed at `efe5fa46`, In Review |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
 | KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, CI passed at `dcc5b737`, In Review |
 | KAN-235 | Original TLS identity across pinned feed connections; no shared cookies | PR #167 |
@@ -222,3 +222,32 @@ Read-only integration review confirms disabled enquiry/product defaults,
 opt-in commercial mode, unset publication approval and the single migration
 chain through 0094. No additional integration blocker was found. Current-head
 combined CI remains required; source changes do not imply release approval.
+
+By 02:01 UTC, the nine delivery heads checked during this follow-up have passed
+every check: KAN-166,
+KAN-167, KAN-169, KAN-182, KAN-195, KAN-220, KAN-229 and KAN-232 each pass
+39 checks, and KAN-231 passes 40. Their current revisions are recorded in the
+table above. Jira now has 27 delivery tickets In Review, one awaiting final CI,
+and the same four acceptance/operator items open. None is Done.
+
+The subsequent public browser check reproduced native in-page contact links
+leaving keyboard focus on the body, despite direct contact loading working.
+Router links now preserve the existing heading-focus effect. Both failing
+navigation regressions pass, alongside the direct-load control and metadata,
+product and sign-in checks (16 cases). Native Chrome verifies both links,
+repeated activation, direct loading, metadata restoration and mobile geometry.
+The only combined frontend failure on `f80a2ded` was a metadata test reading
+before route effects settled. Its assertions now await the required state and
+add canonical/social restoration checks. No coverage floor was lowered.
+
+The fresh ordinary mobile Lighthouse measurement on the preceding `81b5c554`
+source remains 78/97/100, with FCP 2.28 seconds, LCP 4.09 seconds, blocking time
+304 ms and zero layout shift. The texture improvement therefore does not close
+the recorded performance gap. Full new-head public and combined CI is required
+after the contact repair; the failed earlier head is not acceptance evidence.
+
+The contact correction is published as `21e9d1d9` and integrated here. Its
+independent source review is clear, and the same 16 frontend cases pass on the
+combined branch in 6.64 seconds. The public worktree is clean; the private
+browser and loopback server are closed. Main remains `13efceef`, and the primary
+checkout's original contributor changes remain untouched.
