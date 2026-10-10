@@ -36,7 +36,7 @@ export function EnquiryCard({
       <h3 id={`enquiry-${item.id}`} className="break-words font-semibold">
         {item.organisation}
       </h3>
-      <dl className="grid min-w-0 gap-2 text-sm sm:grid-cols-2">
+      <dl className="grid min-w-0 grid-cols-1 gap-2 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-muted">Contact</dt>
           <dd className="break-words">
@@ -102,7 +102,7 @@ export function EnquiryCard({
           busyLabel="Deleting…"
           onConfirm={() => void change(item.id, 'delete')}
         >
-          <p>
+          <p className="break-words">
             This permanently erases the enquiry from {item.organisation}. It cannot be undone.
             Operator email copies and backups require separate handling.
           </p>
