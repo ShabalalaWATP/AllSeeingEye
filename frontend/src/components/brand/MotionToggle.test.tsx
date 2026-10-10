@@ -108,7 +108,7 @@ describe('rail animation control', () => {
     await act(async () => {
       await router.navigate('/login');
     });
-    const signIn = screen.getByRole('button', { name: 'Pause animation' });
+    const signIn = await screen.findByRole('button', { name: 'Pause animation' });
     expect(signIn).toHaveAttribute('aria-pressed', 'false');
     expect(within(screen.getByTestId('auth-backdrop')).getByTestId('evil-eye')).toHaveAttribute(
       'data-paused',
