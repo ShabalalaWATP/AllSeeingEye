@@ -159,7 +159,7 @@ def test_import_data_centres_writes_attributed_snapshot(
 
 
 def test_cli_commands_report_counts_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("ase.cli_infrastructure.import_ground_stations", lambda *a, **k: 30)
+    monkeypatch.setattr(importer, "import_ground_stations", lambda *a, **k: 30)
     result = CliRunner().invoke(
         app, ["import-ground-stations", "--destination", str(tmp_path / "g.json")]
     )
@@ -168,7 +168,7 @@ def test_cli_commands_report_counts_only(tmp_path: Path, monkeypatch: pytest.Mon
     def failing(*a: object, **k: object) -> int:
         raise httpx.ConnectError("overpass-host")
 
-    monkeypatch.setattr("ase.cli_infrastructure.import_data_centres", failing)
+    monkeypatch.setattr(importer, "import_data_centres", failing)
     result = CliRunner().invoke(
         app, ["import-data-centres", "--destination", str(tmp_path / "d.json")]
     )
