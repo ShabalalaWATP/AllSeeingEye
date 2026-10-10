@@ -6,6 +6,28 @@
     <meta name="color-scheme" content="dark" />
     <meta name="referrer" content="no-referrer" />
     <meta name="theme-color" content="#07070b" />
+    <!-- Discover the shared text fonts before a lazy route renders its first heading. -->
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-600-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <!-- Icons are captures of the React Bits Evil Eye component, not redrawn imitations. -->
     <link rel="icon" type="image/png" sizes="32x32" href="/brand/eye-32.png" />
     <link rel="icon" type="image/png" sizes="48x48" href="/brand/eye-48.png" />

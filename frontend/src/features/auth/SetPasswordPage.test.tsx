@@ -14,7 +14,7 @@ async function submitPassword(
   password: string,
   confirmation = password,
 ) {
-  await user.type(screen.getByLabelText('New password'), password);
+  await user.type(await screen.findByLabelText('New password'), password);
   await user.type(screen.getByLabelText('Confirm password'), confirmation);
   await user.click(screen.getByRole('button', { name: 'Set password' }));
 }
@@ -29,7 +29,7 @@ describe('SetPasswordPage', () => {
       }),
     );
     const { user } = renderApp(`/set-password?token=${GOOD_TOKEN}`, 'anonymous');
-    expect(screen.getByText(/Use 12 to 128 characters/)).toBeInTheDocument();
+    expect(await screen.findByText(/Use 12 to 128 characters/)).toBeInTheDocument();
     await submitPassword(user, STRONG);
     expect(await screen.findByRole('status')).toHaveTextContent('Your password has been set.');
     expect(body).toEqual({ token: GOOD_TOKEN, new_password: STRONG });
@@ -81,9 +81,9 @@ describe('SetPasswordPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Too many attempts.');
   });
 
-  it('handles a link without a token', () => {
+  it('handles a link without a token', async () => {
     renderApp('/set-password', 'anonymous');
-    expect(screen.getByRole('alert')).toHaveTextContent('This link is missing its token.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('This link is missing its token.');
   });
 
   it('redirects the activation and reset paths, keeping the query string', async () => {
@@ -92,7 +92,7 @@ describe('SetPasswordPage', () => {
       expect(activate.router.state.location.pathname).toBe('/set-password');
     });
     expect(activate.router.state.location.search).toBe(`?token=${GOOD_TOKEN}`);
-    expect(screen.getByRole('heading', { name: 'Set your password' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Set your password' })).toBeInTheDocument();
     activate.unmount();
 
     const reset = renderApp('/reset-password?token=abc', 'anonymous');

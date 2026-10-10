@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 
 import { useAuthStore } from '@/stores/auth';
+import { preloadSiteFacts } from '@/lib/useSiteFacts';
 
 import { routes } from './router/routes';
 
@@ -26,6 +27,8 @@ export function App() {
       const publicDocument = router.state.matches.some(({ route }) =>
         PUBLIC_DOCUMENT_PATHS.has(route.path ?? ''),
       );
+      if (router.state.matches.some(({ route }) => route.path === '/enterprise'))
+        preloadSiteFacts();
       if (started || publicDocument) return;
       started = true;
       void useAuthStore.getState().bootstrap();

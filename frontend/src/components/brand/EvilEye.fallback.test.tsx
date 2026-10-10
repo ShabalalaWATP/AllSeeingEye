@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderApp } from '@/test/render';
@@ -42,8 +42,9 @@ describe('Evil Eye captured fallback', () => {
     expect(fallback(container).image).toHaveAttribute('sizes', '64px');
   });
 
-  it('keeps the large capture for the sign-in brand plane', () => {
+  it('keeps the large capture for the sign-in brand plane', async () => {
     const { container } = renderApp('/login', 'anonymous');
+    await screen.findByLabelText('Email');
     const sizes = fallback(container).image.getAttribute('sizes') ?? '';
     expect(sizes).toMatch(/480px$/);
   });

@@ -7,7 +7,7 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
 async function fillAndSubmit(user: ReturnType<typeof renderApp>['user'], reason = '') {
-  await user.type(screen.getByLabelText('Email'), 'newcomer@example.com');
+  await user.type(await screen.findByLabelText('Email'), 'newcomer@example.com');
   await user.type(screen.getByLabelText('Display name'), 'Nia Newcomer');
   if (reason !== '') await user.type(screen.getByLabelText('Reason (optional)'), reason);
   await user.click(screen.getByRole('button', { name: 'Send request' }));

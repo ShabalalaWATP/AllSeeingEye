@@ -25,6 +25,11 @@ function load(): Promise<SiteFacts> {
   return pending;
 }
 
+/** Start the public configuration request alongside the lazy product chunk. */
+export function preloadSiteFacts(): void {
+  void load();
+}
+
 /** Tests only: forget a remembered answer between cases. */
 export function resetSiteFacts(): void {
   pending = null;

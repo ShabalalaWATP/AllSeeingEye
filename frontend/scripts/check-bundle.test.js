@@ -65,6 +65,22 @@ test('measures product static dependencies once and leaves later scenes out', ()
   }
 });
 
+test('rejects a private layout pulled into the common entry', () => {
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'import"./AuthLayout-a2.js";',
+    'assets/AuthLayout-a2.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+  });
+  try {
+    assert.deepEqual(inspectBundle(root).failures, [
+      'AuthLayout-a2.js loads before a private route needs it.',
+    ]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rejects product runtime imports, oversized payloads and a missing product route', () => {
   let noise = '';
   for (let i = 0; noise.length < PRODUCT_ROUTE_GZIP_BUDGET * 2; i += 1)

@@ -77,7 +77,7 @@ export function AuthLayout() {
             <Outlet />
           </div>
           <div className="mt-6 min-[900px]:hidden">
-            <PolicyLinks />
+            <PolicyLinks label="Footer privacy and source information" />
             {enquiryLink}
           </div>
         </div>

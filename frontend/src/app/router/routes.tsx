@@ -4,20 +4,38 @@
  * auth pages never load MapLibre.
  */
 import { lazy, Suspense, type ComponentType, type ReactElement } from 'react';
-import type { RouteObject } from 'react-router';
+import { Outlet, type RouteObject } from 'react-router';
 
-import { AdminShell } from '@/app/shell/AdminShell';
-import { AppShell } from '@/app/shell/AppShell';
-import { AuthLayout } from '@/features/auth/AuthLayout';
-import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
-import { LoginPage } from '@/features/auth/LoginPage';
-import { RequestAccountPage } from '@/features/auth/RequestAccountPage';
-import { SetPasswordPage } from '@/features/auth/SetPasswordPage';
-
-import AdminSessionGate from './AdminSessionGate';
 import { NotFoundPage } from '../NotFoundPage';
 import { RouteErrorPage, RouteErrorPanel } from '../RouteError';
-import { RedirectWithQuery, RequireAdmin, RequireAuth } from './guards';
+
+// Keep the route identities available immediately, without downloading private
+// layouts, controls or account forms for a visitor reading a public document.
+const AppShell = lazy(() => import('@/app/shell/AppShell').then((m) => ({ default: m.AppShell })));
+const AdminShell = lazy(() =>
+  import('@/app/shell/AdminShell').then((m) => ({ default: m.AdminShell })),
+);
+const AuthLayout = lazy(() =>
+  import('@/features/auth/AuthLayout').then((m) => ({ default: m.AuthLayout })),
+);
+const LoginPage = lazy(() =>
+  import('@/features/auth/LoginPage').then((m) => ({ default: m.LoginPage })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import('@/features/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
+);
+const RequestAccountPage = lazy(() =>
+  import('@/features/auth/RequestAccountPage').then((m) => ({ default: m.RequestAccountPage })),
+);
+const SetPasswordPage = lazy(() =>
+  import('@/features/auth/SetPasswordPage').then((m) => ({ default: m.SetPasswordPage })),
+);
+const AdminSessionGate = lazy(() => import('./AdminSessionGate'));
+const RequireAuth = lazy(() => import('./guards').then((m) => ({ default: m.RequireAuth })));
+const RequireAdmin = lazy(() => import('./guards').then((m) => ({ default: m.RequireAdmin })));
+const RedirectWithQuery = lazy(() =>
+  import('./guards').then((m) => ({ default: m.RedirectWithQuery })),
+);
 
 const GlobePage = lazy(() => import('@/features/globe/GlobePage'));
 const AdminOverviewPage = lazy(() => import('@/features/admin/AdminOverviewPage'));
@@ -67,8 +85,6 @@ const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 const HelpPage = lazy(() => import('@/app/help/HelpPage'));
-// The signed-out product story; its own chunk so neither it nor the app loads the other.
-const ProductPage = lazy(() => import('@/features/product/ProductPage'));
 const PrivacyPage = lazy(() => import('@/features/public-policy/PrivacyPage'));
 const AttributionsPage = lazy(() => import('@/features/public-policy/AttributionsPage'));
 const PersonalDataPage = lazy(() => import('@/features/public-policy/PersonalDataPage'));
@@ -142,11 +158,13 @@ const pages: RouteObject[] = [
   },
   {
     path: '/enterprise',
-    element: (
-      <Suspense fallback={<div className="min-h-dvh bg-ground" aria-busy="true" />}>
-        <ProductPage />
-      </Suspense>
-    ),
+    // Resolve the public route before rendering it. React.lazy's fallback retry
+    // throttle otherwise delays the first content after this chunk has arrived.
+    lazy: async () => {
+      const { default: Component } = await import('@/features/product/ProductPage');
+      return { Component };
+    },
+    hydrateFallbackElement: <div className="min-h-dvh bg-ground" aria-busy="true" />,
     errorElement: <RouteErrorPage />,
   },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },
@@ -238,4 +256,20 @@ const pages: RouteObject[] = [
 ];
 
 // The root boundary catches failures outside the layouts' own boundaries, such as a guard.
-export const routes: RouteObject[] = [{ errorElement: <RouteErrorPage />, children: pages }];
+export const routes: RouteObject[] = [
+  {
+    element: (
+      <Suspense
+        fallback={
+          <div role="status" className="min-h-dvh bg-ground p-6 text-muted">
+            Loading…
+          </div>
+        }
+      >
+        <Outlet />
+      </Suspense>
+    ),
+    errorElement: <RouteErrorPage />,
+    children: pages,
+  },
+];

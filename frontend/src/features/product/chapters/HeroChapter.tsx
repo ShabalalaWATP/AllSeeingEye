@@ -31,6 +31,7 @@ export function HeroChapter() {
       <div className="hero-grid" aria-hidden="true" />
       <div className="hero-eye" aria-hidden="true">
         <EvilEye
+          deferUntilVisible
           backgroundColor="#060606"
           scale={0.95}
           maxFps={still ? 1 : 30}

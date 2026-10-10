@@ -18,6 +18,8 @@ export const PRODUCT_ROUTE_GZIP_BUDGET = 150 * 1024;
 const PRODUCT_ROUTE = /^ProductPage-[\w-]+\.js$/;
 // Libraries reached only through lazy routes. Loading one up front costs every visitor.
 const LAZY_ONLY = /^(?:deck|maplibre|three|hls|GlobePage)-/;
+const PRIVATE_ROUTES =
+  /^(?:AppShell|AdminShell|AuthLayout|LoginPage|ForgotPasswordPage|RequestAccountPage|SetPasswordPage|AdminSessionGate|guards)-/;
 // Fixture pages mounted only by the development server.
 const DEV_ONLY = /(?:PreviewPage|BrandCapturePage)-/;
 const GLOBE_ROUTE = /^GlobePage-[\w-]+\.js$/;
@@ -84,6 +86,7 @@ export function inspectBundle(dist) {
   for (const chunk of chunks) {
     const name = path.posix.basename(chunk);
     if (LAZY_ONLY.test(name)) failures.push(`${name} loads on first paint but is lazy-only.`);
+    if (PRIVATE_ROUTES.test(name)) failures.push(`${name} loads before a private route needs it.`);
   }
   const gzipBytes = gzipTotal(dist, chunks);
   if (gzipBytes > INITIAL_JS_GZIP_BUDGET) {
