@@ -20,6 +20,7 @@ from ase.api.routers import research_inputs
 from ase.application.auth.session_freshness import SessionFreshness
 from ase.application.dto import AccessClaims
 from ase.domain.errors import Unauthenticated
+from ase.domain.session_activity import SessionActivity
 from research_input_helpers import Harness
 
 
@@ -36,8 +37,15 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
     async def session() -> AsyncIterator[None]:
         yield None
 
+    last_activity_at = harness.clock.now()
+    idle_expires_at = last_activity_at + timedelta(minutes=180)
+
     async def active_family(*args: Any, **kwargs: Any) -> bool:
-        return True
+        return harness.clock.now() < idle_expires_at
+
+    async def activity(*args: Any, **kwargs: Any) -> SessionActivity:
+        # Passive release checks observe the original deadline without extending it.
+        return SessionActivity(harness.clock.now(), last_activity_at, idle_expires_at, 180)
 
     application.dependency_overrides[get_access_claims] = lambda: AccessClaims(
         harness.actor.id,
@@ -54,7 +62,8 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
         import_research_input=lambda _: harness.service,
         session_factory=asynccontextmanager(session),
         repositories=lambda _: SimpleNamespace(
-            users=harness.identity, refresh_tokens=SimpleNamespace(family_is_active=active_family)
+            users=harness.identity,
+            refresh_tokens=SimpleNamespace(family_is_active=active_family, activity=activity),
         ),
         clock=harness.clock,
         session_freshness=SessionFreshness(
