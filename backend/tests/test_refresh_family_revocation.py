@@ -43,8 +43,8 @@ async def test_late_descendant_cannot_refresh_after_revocation(
         else:
             await repo.revoke_family(root.family_id, container.clock.now())
         await session.commit()
-    # A separate transaction inserts the descendant which the UPDATE did not see.
-    # The PostgreSQL test below recreates the real overlapping transactions.
+    # A separate transaction models a descendant absent from the UPDATE snapshot.
+    # The PostgreSQL test below covers account-lock ordering during real reuse.
     late_secret = container.generator.new_secret()
     late = replace(
         root,
@@ -102,7 +102,7 @@ async def test_revocation_marker_rollback_and_safe_retention(race_container: Con
 
 
 @pytest.mark.postgres
-async def test_postgres_refresh_interleaves_with_family_revocation(
+async def test_postgres_refresh_reuse_waits_then_revokes_committed_descendant(
     race_container: Container,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -177,7 +177,9 @@ async def test_postgres_refresh_interleaves_with_family_revocation(
         row = await container.repositories(session).refresh_tokens.get_by_hash(
             container.generator.hash(grandchild.refresh_secret),
         )
-        # Its insert really was outside the UPDATE snapshot, yet its family is dead.
-        assert row is not None and row.revoked_at is None
+        # Reuse now waits for the account lock, so its UPDATE sees the committed
+        # descendant. The separate late-insert cases still exercise the tombstone.
+        assert row is not None and row.revoked_at is not None
+        assert await session.get(RefreshFamilyRevocationRow, row.family_id) is not None
         with pytest.raises(InvalidRefreshToken):
             await container.refresh(session).execute(grandchild.refresh_secret, CONTEXT)

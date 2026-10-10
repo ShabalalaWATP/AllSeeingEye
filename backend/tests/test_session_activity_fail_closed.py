@@ -10,6 +10,7 @@ from ase.adapters.persistence.models import AuditLogRow, RefreshTokenRow
 from ase.adapters.persistence.session_activity import RefreshFamilyActivityRow
 from ase.adapters.persistence.token_families import RefreshFamilyRevocationRow
 from ase.adapters.persistence.tokens import SqlRefreshTokenRepository
+from ase.application.auth import activity as activity_module
 from ase.application.auth.sessions import SessionFactory
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRefreshToken, SessionIdleExpired, Unauthenticated
@@ -39,17 +40,28 @@ async def test_heartbeat_rejects_activity_disappearing_after_validation(
     claims = container.issuer.verify(signed_in.access.token)
     clock.advance(timedelta(minutes=5 if expired else 1))
     read = SqlRefreshTokenRepository.activity
-    reads = 0
+    validate = activity_module.validate_current_session
+    validation_finished = False
+    missing_reads = 0
+
+    async def finish_validation(*args):
+        nonlocal validation_finished
+        try:
+            return await validate(*args)
+        finally:
+            validation_finished = True
 
     async def disappearing_activity(repository, user_id, family_id, now):
-        nonlocal reads
-        reads += 1
-        # The expiry diagnosis may see a row which the subsequent recovery read cannot.
-        if expired and reads == 1:
+        nonlocal missing_reads
+        # Let real validation finish, including its deadline read. Only the
+        # heartbeat's subsequent live/expired recovery read loses the record.
+        if not validation_finished:
             return await read(repository, user_id, family_id, now)
+        missing_reads += 1
         return None
 
     touch = AsyncMock()
+    monkeypatch.setattr(activity_module, "validate_current_session", finish_validation)
     monkeypatch.setattr(SqlRefreshTokenRepository, "activity", disappearing_activity)
     monkeypatch.setattr(SqlRefreshTokenRepository, "touch_activity", touch)
     async with container.session_factory() as session:
@@ -61,7 +73,7 @@ async def test_heartbeat_rejects_activity_disappearing_after_validation(
             await container.session_activity(session).execute(claims, CONTEXT)
         if expired:
             assert rejected.value.fields == {"idle_minutes": "5"}
-        assert reads == (2 if expired else 1)
+        assert validation_finished and missing_reads == 1
         touch.assert_not_awaited()
         commit.assert_not_awaited()
         assert list(await session.scalars(select(AuditLogRow.id))) == audits

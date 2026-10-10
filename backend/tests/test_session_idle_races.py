@@ -7,6 +7,7 @@ import pytest
 
 from ase.adapters.persistence.tokens import SqlRefreshTokenRepository
 from ase.adapters.persistence.users import SqlUserRepository
+from ase.application.auth import activity as activity_module
 from ase.domain.errors import RateLimited, SessionIdleExpired
 from ase.domain.session_activity import SessionActivity
 from helpers import USER_EMAIL, USER_PASSWORD, create_user
@@ -81,13 +82,24 @@ async def test_heartbeat_storage_read_crossing_deadline_cannot_revive_family(
     claims = container.issuer.verify(initial.access.token)
     container.clock.advance(timedelta(minutes=5) - timedelta(microseconds=1))
     read = SqlRefreshTokenRepository.activity
+    validate = activity_module.validate_current_session
+    validated = False
+
+    async def finish_validation(*args):
+        nonlocal validated
+        result = await validate(*args)
+        validated = True
+        return result
 
     async def delayed_read(repository, user_id, family_id, now):
         result = await read(repository, user_id, family_id, now)
-        # The family was live at the database snapshot, but not when it returned.
-        container.clock.advance(timedelta(microseconds=1))
+        if validated:
+            # Cross the deadline in the heartbeat's own storage read, after the
+            # preceding shared validator has returned a genuinely live family.
+            container.clock.advance(timedelta(microseconds=1))
         return result
 
+    monkeypatch.setattr(activity_module, "validate_current_session", finish_validation)
     monkeypatch.setattr(SqlRefreshTokenRepository, "activity", delayed_read)
     async with container.session_factory() as session:
         with pytest.raises(SessionIdleExpired):
