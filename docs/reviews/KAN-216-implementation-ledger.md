@@ -23,7 +23,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks and all 39 CI checks passed at `17c8c4ea`, In Review |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; functional mobile/contact checks and all 39 checks passed at `21e9d1d9`; subsequent KAN-172 worker integration requires fresh CI |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage; all 39 CI checks passed at `cfbd6a1e`, In Review |
-| KAN-172 | Public route isolation, metadata, bundle budget and bounded graphics worker | Grouped PR #191; `4c9327a9` meets Alex's updated 90 target in three normal-motion Caddy mobile runs (90/97/100), desktop 100/97/100; fresh published-head CI pending |
+| KAN-172 | Public route isolation, metadata, bundle budget and bounded graphics worker | Grouped PR #191; `4c9327a9` meets Alex's updated 90 target in three normal-motion Caddy mobile runs (90/97/100), desktop 100/97/100; all 39 public and 40 combined checks pass at `4c9327a9` / `99bff8f9`, In Review pending authorised integration |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; all 39 CI checks passed at `696586fd`, In Review |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
@@ -38,7 +38,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-223 | Unique indicator identifiers after removal/re-addition | PR #169 |
 | KAN-224 | Honest unsupported private-input choices in canonical Briefs | PR #172; remount follow-up integrated, CI passed, In Review |
 | KAN-225 | Concrete GitHub production approval proposal and no-op gate check | PR #163; live environment approval required |
-| KAN-226 | Uncached security rebuild procedure | PR #170 |
+| KAN-226 | Uncached security rebuild procedure | PR #170; documentation deliverable and validation complete, Done under the non-code completion rule on 10 October; PR merge and production actions remain separate |
 | KAN-227 | Vulnerable dependency and image refresh | PR #164; local rebuilt-image scan and CI passed |
 | KAN-228 | Explicit webhook retry semantics after uncertain acceptance | PR #174 |
 | KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; final FK-valid race fixture passed eight checks on SQLite and in the PostgreSQL-configured group; all 39 CI checks passed at `d1e58914`, In Review |

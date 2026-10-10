@@ -1613,3 +1613,19 @@ controls still need the operator's decisions. No release approval is inferred.
 - Focused tests, type/lint/bundle checks and native browser acceptance pass.
 - See `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` for conditions and exact evidence.
   Published-head CI and authorised review/release remain required.
+
+### Review completion follow-up, 10 October 2026
+
+Alex requested completion of the remaining review tickets. KAN-230 now documents
+the executable 150 KiB product budget, agreed mobile target of 90 and the passing
+public/combined CI at `4c9327a9` / `99bff8f9`. Earlier 95-target measurements are
+explicitly historical. The refreshed guidance passes 21 coverage/sharding checks,
+12 bundle/import checks and validation of all 11 local file links.
+
+KAN-226 is Done under the documented non-code deliverable rule. Final acceptance
+review is checking the remaining ticket criteria individually. Known follow-ups
+include published browser evidence, administrator contrast verification, the
+remaining policy footer destinations and precise source-licence check provenance.
+Implementation closure still requires authorised integration. Production rollout
+also requires approved controller/publication content and the documented manual
+migration procedure; those requirements are not inferred from ticket status.

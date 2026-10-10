@@ -5,6 +5,9 @@ Reconciled on 9 October 2026 against source revision
 read-only GitHub protection queries and the Jira items linked below. The live
 `main` branch still pointed to that revision at the check. Workflow configuration,
 live enforcement and historical run results are described separately.
+Public-route budgets and delivery acceptance were updated on 10 October against
+the reviewed integration at `99bff8f9`; live protection observations retain their
+original date and are not represented as newly applied settings.
 
 ## Workflow and contract checks
 
@@ -27,8 +30,12 @@ three.js, hls.js or the globe page) before first paint, ships a development prev
 page, or exceeds the budgets in
 [`frontend/scripts/check-bundle.js`](../../frontend/scripts/check-bundle.js):
 240 KiB gzipped for initial JavaScript and 850 KiB for the globe route's additional
-static dependency closure, including its MapLibre worker. These are not a dedicated
-`/enterprise` route budget.
+static dependency closure, including its MapLibre worker. The dedicated
+`/enterprise` ceiling is 150 KiB gzip beyond the common entry. It counts the
+product's static dependencies, graphics worker and dynamically loaded fallback
+renderer, excluding chunks already counted in the initial load. Source import
+checks also prevent the public product page from pulling in private account, navigation or
+map dependencies. These executable budgets do not replace browser measurements.
 `repo-checks` asserts that the production Caddy policy admits every camera host the
 client allows and that only content-hashed assets are cached as immutable.
 
@@ -127,7 +134,29 @@ that a particular previous release lacked approval.
 
 ## Delivery acceptance reconciliation
 
-Jira was read again on 9 October 2026:
+### Current position, 10 October 2026
+
+Alex changed KAN-172's mobile performance target to **90**. The complete page
+with normal motion scores 90/97/100 in three consecutive local production Caddy
+HTTPS runs; desktop scores 100/97/100. Canonical and social metadata, public-route
+isolation and the dedicated 150 KiB product budget are implemented. The exact
+profile, matched baseline and limitations are recorded in
+[public product acceptance](../PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md).
+
+Published public head `4c9327a9` passed all 39 checks, and combined head
+`99bff8f9` passed all 40 checks, including native PostgreSQL, security and four
+Chromium journeys. The combined frontend suite passed 5,160 tests (one skipped)
+with 97.59% line and 92.35% branch coverage. See the
+[completed combined run](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/38055625391).
+Those results belong to those exact heads; subsequent changes require their own
+applicable validation. KAN-172 remains In Review pending authorised integration.
+Public enablement, controller/publication approval and release approval remain
+separate from these local production-build results.
+
+### Historical position, 9 October 2026
+
+The following records the earlier acceptance gap and is superseded by the current
+position above. Jira was read on 9 October 2026:
 
 - [KAN-215](https://alex-orr.atlassian.net/browse/KAN-215), the product-page title
   assertion fix, is **Done**. The merged
@@ -138,13 +167,13 @@ Jira was read again on 9 October 2026:
   Outstanding acceptance includes canonical/Open Graph metadata, its dedicated
   150 KB gzipped route budget and measured launch evidence, including mobile
   Lighthouse targets (performance 95, accessibility 95, SEO 90) and network checks.
-  The current initial/globe bundle gates do not satisfy that dedicated budget.
+  The initial/globe bundle gates at that revision did not satisfy that dedicated budget.
   The estimator remains intentionally hidden pending approved cost figures.
 
-Passing unit tests or the existing bundle checks does not close those measured
-acceptance criteria. Keep the remaining work on KAN-172 without reopening the
-completed page construction or prematurely closing its parent epic. This
-reconciliation records live statuses; it makes no Jira transitions.
+At that checkpoint, unit tests and the existing bundle checks did not close those
+measured acceptance criteria. The remaining work stayed on KAN-172 without
+reopening the completed page construction or closing its parent epic. The dated
+reconciliation made no Jira transitions.
 
 ## Scanner exceptions and dependency compatibility
 

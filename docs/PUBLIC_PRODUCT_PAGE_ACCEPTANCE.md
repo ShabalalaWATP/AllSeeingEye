@@ -56,8 +56,13 @@ Validation: 196 affected brand/product/session/API tests pass; a separate group 
 108 title/focus/auth/public-policy tests passes; 13 bundle/import-boundary tooling
 tests pass. Both TypeScript configurations, scoped ESLint/Prettier, source-length
 checks, production build and bundle gates pass. Independent architecture and
-security reviews found no actionable regressions. Full published-head CI remains
-required; these focused runs do not claim a new full-suite coverage percentage.
+security reviews found no actionable regressions. Subsequent published-head CI
+passed all 39 public checks at `4c9327a9` and all 40 combined checks at `99bff8f9`.
+The [combined run](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/38055625391)
+passed 5,160 frontend tests (one skipped), with 97.59% line and 92.35% branch
+coverage, plus all four Chromium journeys. These are results for those exact
+heads, separate from the focused groups above. Authorised merge and release
+remain outstanding.
 
 Native Chrome confirms the full story, no overflow at 320/390/1440 pixels, visible
 paused/reduced-motion hero, same-origin-only public requests, one public flags
@@ -144,6 +149,10 @@ Source checks on the KAN-172 working tree based on `c523a3ad`, using Node
 | Product route JavaScript gzip | 20,792 bytes, below 153,600. |
 
 ## Integrated browser baseline, 10 October 2026
+
+The measurement sequence from this section onwards is historical. It records the
+earlier 95 target and intermediate builds. The current target, final results and
+published-head CI evidence are in the opening section above.
 
 The production source at `793524d8` includes KAN-165 public documents, KAN-168
 enquiries and KAN-182 session handling. The combined DOM/style run passed 104 of
@@ -387,7 +396,9 @@ measurement. Scores are performance/accessibility/SEO.
 The final mobile run started at 02:38:54 UTC, with host benchmark index 3,929.
 An earlier worker/preload run also scored 85. The default desktop run at 02:39:07
 scored 100/97/100, with FCP 0.51 seconds, LCP 0.79 seconds, zero blocking time and
-zero layout shift. **The mobile performance requirement of 95 remains unmet.**
+zero layout shift. At this worker-only checkpoint, the earlier mobile target of
+95 had not been met. The opening section records the subsequently agreed 90 target
+and the final measurements that satisfy it.
 
 Retained traces locate the two approximately 153 ms graphics startup handlers on
 dedicated worker threads. The longest main-thread task is approximately 60 ms,

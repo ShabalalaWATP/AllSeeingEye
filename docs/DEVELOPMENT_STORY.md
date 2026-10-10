@@ -6194,3 +6194,15 @@ renderer and tooling checks pass; native browser checks preserve runtime gates,
 enquiry submission and worker fallback. Independent reviews are clear. Evidence
 and limitations are recorded in `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`; published
 CI and release approval remain separate requirements.
+
+### Review closure evidence, 10 October 2026
+
+The final acceptance pass checks live Jira criteria against the combined source
+and exact-head CI. KAN-230's CI guide now describes the dedicated product budget
+and supersedes the historical 95 target with Alex's approved 90 target and
+measured results. Public and combined CI passed all 39/40 checks at
+`4c9327a9` / `99bff8f9`; the acceptance record now links that evidence. The
+documentation refresh passes 21 coverage/sharding checks, 12 bundle/import checks
+and all 11 local file links. KAN-226's validated non-code deliverable is Done.
+Implementation tickets remain subject to authorised merge, with live publication
+and migration requirements recorded separately.
