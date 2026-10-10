@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
-import { plainUser, tokenFor } from '@/test/fixtures';
+import { USER_TOKEN, plainUser, tokenFor } from '@/test/fixtures';
 import { photoAssessment, photoId } from '@/test/photoGeolocationFixture';
 import { server } from '@/test/server';
 
@@ -38,7 +38,7 @@ describe('private photo geolocation contract', () => {
       new AbortController().signal,
     );
     expect(result.candidate_status).toBe('unverified');
-    expect(headers).toEqual(['Bearer user-access-token']);
+    expect(headers).toEqual([`Bearer ${USER_TOKEN}`]);
     expect(requests).toEqual([
       {
         consent_to_send_image: true,

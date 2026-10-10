@@ -7,6 +7,7 @@ import { useNow } from '@/lib/hooks/useNow';
 
 import { AlertDestination } from './AlertDestination';
 import { AlertExplanation } from './AlertExplanation';
+import { AlertReportProgress } from './AlertReportProgress';
 
 export function AlertItem({
   alert,
@@ -50,6 +51,7 @@ export function AlertItem({
         transitionId={alert.annotation_transition_id}
         reportId={alert.report_id}
       />
+      <AlertReportProgress alert={alert} />
       {alert.acknowledged_at === null ? (
         <div className="flex flex-wrap items-end gap-2 text-xs">
           <label htmlFor={dispositionId}>

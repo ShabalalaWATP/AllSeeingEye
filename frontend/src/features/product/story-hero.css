@@ -1,6 +1,14 @@
 /* Hero and Observe chapters. Colours come from product.css. */
 
 /* Hero: the Eye grows and dissolves as the reader scrolls on. */
+.story-hero {
+  /* The opening frame is visible before the scroll scheduler first measures it. */
+  --progress: 0;
+}
+.story-hero[data-mode='still'] > .story-stage {
+  /* This chapter fades out, so its readable still state is the opening frame. */
+  --progress: 0;
+}
 .story-hero .story-stage {
   min-height: 100svh;
   display: grid;

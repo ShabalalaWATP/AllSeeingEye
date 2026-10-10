@@ -1,6 +1,7 @@
-import { act, render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { expect, it, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { applySession } from '@/test/session';
 import type { Country } from '@/lib/api/geoSchemas';
 import { InfrastructureInspector } from './InfrastructureInspector';
 import { InfrastructurePanel } from './InfrastructurePanel';
@@ -24,10 +25,14 @@ const countries: Record<string, Country> = {
   },
 };
 
-it('keeps military source badges off by default and shows only country references', () => {
+beforeEach(() => applySession('user'));
+
+it('keeps military source badges off by default and shows only country references', async () => {
   const { result } = renderHook(() => useInfrastructure(countries));
   expect(result.current.militaryEnabled).toBe(false);
-  expect(result.current.militaryCountries).toHaveLength(2);
+  expect(result.current.militaryCountries).toEqual([]);
+  await waitFor(() => expect(result.current.militaryCountries).toHaveLength(2));
+  expect(result.current.militaryEnabled).toBe(false);
   expect(result.current.militaryCountries[0]).not.toHaveProperty('latitude');
   expect(
     buildInfrastructureLayers({ ...result.current, militaryEnabled: false }, vi.fn(), true),
@@ -68,6 +73,7 @@ it('opens official source details and removes the selection when closed or disab
   render(<Panel />);
   const toggle = screen.getByRole('switch', { name: 'Military source index' });
   expect(toggle).toHaveAttribute('aria-checked', 'false');
+  await waitFor(() => expect(toggle).toBeEnabled());
   await user.click(toggle);
   expect(toggle).toHaveAttribute('aria-checked', 'true');
   await user.click(screen.getByRole('button', { name: /Canada.*official source/ }));

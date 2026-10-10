@@ -16,6 +16,10 @@ from ase.application.reports.scope import (
     report_title,
     report_window,
 )
+from ase.application.reports.template_requirements import (
+    require_report_plan,
+    require_template_inputs,
+)
 from ase.application.reports.templates import Template, template_for
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import InvalidRequest
@@ -50,6 +54,11 @@ class ReportJobBuilder:
         report_id: UUID | None = None,
         plan: CollectionPlan | None = None,
     ) -> Job:
+        if request.alert_origin is not None:
+            raise InvalidRequest(
+                "Alert reports retain their original frozen evidence. "
+                "Use their durable report job to resume, or create a new standalone report."
+            )
         if request.research_since is not None and request.research_until is not None:
             try:
                 validate_research_interval(
@@ -67,13 +76,7 @@ class ReportJobBuilder:
         ]
         conflict, hazard = self.conflict(request), self.hazard(request)
         aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
-        if plan is not None and plan.aoi_id is not None and aoi is None:
-            raise InvalidRequest("The linked area is unavailable; repair the plan before use.")
-        if aoi is not None and aoi.research_area is not None:
-            raise InvalidRequest(
-                "Use this exact area in standalone area research or an area subscription; "
-                "collection-plan report templates cannot honour its polygon."
-            )
+        require_report_plan(plan, aoi)
         provider = self._backgrounds.get(template.id)
         background = await provider() if provider is not None else conflict_background(conflict)
         if plan is not None:
@@ -106,14 +109,12 @@ class ReportJobBuilder:
             template = template_for(request.template_id)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
-        if template.needs_country and len(request.country_isos) != 1:
-            raise InvalidRequest("This template needs exactly one country.")
-        if template.needs_question and not (request.question or "").strip() and not request.plan_id:
-            raise InvalidRequest("This template needs a question.")
-        if template.needs_conflict and self.conflict(request) is None:
-            raise InvalidRequest("This template needs a conflict from the tracker list.")
-        if template.needs_hazard and self.hazard(request) is None:
-            raise InvalidRequest("This template needs a hazard from the disaster tracker.")
+        require_template_inputs(
+            template,
+            request,
+            conflict_available=self.conflict(request) is not None,
+            hazard_available=self.hazard(request) is not None,
+        )
         return template
 
     def conflict(self, request: ReportRequest) -> Conflict | None:

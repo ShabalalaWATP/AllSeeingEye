@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import type { IndicatorRequest } from '@/lib/alertRules';
 import { clearReportWatchDraft, useReportWatchDraft } from '@/lib/alertRuleDraft';
 import type { ReportWatchSource } from '@/lib/alertRuleDraft';
-import { fetchPlans } from '@/lib/api/direction';
+import { fetchAois, fetchPlans } from '@/lib/api/direction';
 import { fetchCountries } from '@/lib/api/geo';
 import { fetchTemplates } from '@/lib/api/reports';
 import {
@@ -46,6 +46,7 @@ export default function WarningPage() {
   const draft = reportDraft ?? areaDraft;
   const workspaces = useWorkspaces();
   const plans = useScopedResource(fetchPlans);
+  const aois = useScopedResource(fetchAois);
   const indicators = useScopedResource(fetchIndicators);
   const templates = useResource(fetchTemplates);
   const countries = useResource(fetchCountries);
@@ -121,6 +122,7 @@ export default function WarningPage() {
   const shared = {
     workspaces,
     plans: plans.data,
+    aois: aois.data,
     templates: templates.data ?? [],
     countries: countries.data,
   };

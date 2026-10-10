@@ -18,6 +18,7 @@ from ase.domain.public_figures import (
     name_matcher,
     place_figure,
 )
+from ase.domain.source_licences import SourceLicencePolicy
 
 WINDOW = timedelta(hours=72)
 POOL = 3_000
@@ -44,7 +45,15 @@ class FigureBoard:
 
 
 class PublicFigureService:
-    def __init__(self, store: EventStore, clock: Clock, catalogue: PublicFigureCatalogue) -> None:
+    def __init__(
+        self,
+        store: EventStore,
+        clock: Clock,
+        catalogue: PublicFigureCatalogue,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
+        self._licences = licences or SourceLicencePolicy(())
         self._store = store
         self._clock = clock
         self._catalogue = catalogue
@@ -55,6 +64,7 @@ class PublicFigureService:
 
     async def board(self, *, admission_key: str) -> FigureBoard:
         """Match names off the event loop, under the same read admission as event queries."""
+        self._licences.require("reference:public_figures")
         now = self._clock.now()
         query = EventQuery(
             categories=CATEGORIES, since=now - WINDOW, limit=POOL, include_unknown_dates=True

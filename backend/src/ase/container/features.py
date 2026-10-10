@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
-from uuid import UUID
+from typing import TYPE_CHECKING, cast
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.mastodon_watch import watch_terms
-from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.indicator_baselines import SqlIndicatorBaselines
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
@@ -18,6 +16,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.adapters.research.selected_event_cache import USGS_SELECTED_POLICY, PublicEventCachePages
 from ase.application.account.directory_handles import HandleInvitationUseCase
+from ase.application.conflict_licences import LicensedConflicts
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
     CreatePlanUseCase,
@@ -26,9 +25,7 @@ from ase.application.direction.plans import (
     PlanEvidenceUseCase,
     UpdatePlanUseCase,
 )
-from ase.application.dto import RequestContext
 from ase.application.model_routing import ModelRouting
-from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES
 from ase.application.schedules.manage import (
     CreateScheduleUseCase,
@@ -40,10 +37,7 @@ from ase.application.schedules.runner import ScheduleRunner
 from ase.application.schedules.selected_index_acquisition import SelectedIndexAcquisition
 from ase.application.teams.invitations import TeamInvitationService
 from ase.application.teams.service import TeamService
-from ase.application.trackers.aviation import (
-    AviationService,
-    background,
-)
+from ase.application.trackers.aviation import AviationService, background
 from ase.application.trackers.boards import TrackerService
 from ase.application.trackers.modules import ModuleService, cyber_summary, maritime_summary
 from ase.application.trackers.social import SocialMonitor, SocialService
@@ -62,7 +56,6 @@ from ase.container.reporting import ReportWiring
 from ase.container.subscription_enqueue import SubscriptionAdmission
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
-from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
     from ase.container import Container
@@ -102,7 +95,9 @@ class FeatureWiring(ReportWiring):
         )
 
     def trackers(self) -> TrackerService:
-        return TrackerService(self.store, self.conflicts, self.clock)
+        return TrackerService(
+            self.store, LicensedConflicts(self.conflicts, self.source_licences), self.clock
+        )
 
     def modules(self) -> ModuleService:
         return ModuleService(self.store, self.clock)
@@ -192,6 +187,7 @@ class FeatureWiring(ReportWiring):
             self._auditor(r),
             r.uow,
             self.access_policy(session),
+            aois=r.aois,
         )
 
     def update_indicator(self, session: AsyncSession) -> UpdateIndicatorUseCase:
@@ -204,6 +200,7 @@ class FeatureWiring(ReportWiring):
             self._auditor(r),
             r.uow,
             self.access_policy(session),
+            aois=r.aois,
         )
 
     def delete_indicator(self, session: AsyncSession) -> DeleteIndicatorUseCase:
@@ -257,44 +254,22 @@ class FeatureWiring(ReportWiring):
             self.bus,
             self.notifier,
             self.clock,
-            reporter=self.alert_report,
             baselines=SqlIndicatorBaselines(self.session_factory, self.access_policy),
+            source_profiles=self.source_profiles,
         )
-
-    async def alert_report(self, indicator: Indicator, alert: Alert) -> UUID | None:
-        """The report an indicator asked for, produced as its owner; None when that cannot be."""
-        if indicator.report_template is None:
-            return None
-        async with self.session_factory() as session:
-            owner = await self.repositories(session).users.get_by_id(indicator.created_by)
-            if owner is None or not owner.is_active:
-                log.warning("alert_report_skipped", reason="owner unavailable")
-                return None
-            request = ReportRequest(
-                template_id=indicator.report_template,
-                country_iso=indicator.countries[0] if len(indicator.countries) == 1 else None,
-                window_hours=max(1, -(-indicator.window_minutes // 60)),
-                plan_id=indicator.plan_id,
-                team_id=indicator.team_id,
-                automation=True,
-            )
-            record, _version = await self.generate_report(session).execute(
-                owner, request, RequestContext()
-            )
-            return record.id
 
     def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:
         r = self.repositories(session)
         return CreateScheduleUseCase(
             r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
-            self.conflicts,
+            LicensedConflicts(self.conflicts, self.source_licences),
         )  # fmt: skip
 
     def update_schedule(self, session: AsyncSession) -> UpdateScheduleUseCase:
         r = self.repositories(session)
         return UpdateScheduleUseCase(
             r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
-            self.conflicts,
+            LicensedConflicts(self.conflicts, self.source_licences),
         )  # fmt: skip
 
     def delete_schedule(self, session: AsyncSession) -> DeleteScheduleUseCase:
@@ -348,6 +323,3 @@ class FeatureWiring(ReportWiring):
         async with self.session_factory() as session:
             await self.repositories(session).llm_usage.add(usage)
             await session.commit()
-
-    def public_infrastructure(self) -> dict[str, Any]:
-        return public_infrastructure()

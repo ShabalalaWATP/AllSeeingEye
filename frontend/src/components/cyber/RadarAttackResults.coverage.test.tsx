@@ -26,6 +26,7 @@ const snapshot: RadarAttackSnapshot = {
 };
 
 it.each([
+  ['disabled_by_licence', 'Not available on this installation due to licence terms'],
   ['disabled', 'disabled by the administrator'],
   ['not_configured', 'needs a server-side Radar Read token'],
   ['unavailable', 'attack trends are unavailable'],

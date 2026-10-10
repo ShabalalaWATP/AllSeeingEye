@@ -1,0 +1,90 @@
+[
+  {
+    "name": "ase_refresh",
+    "kind": "cookie",
+    "purpose": "Strictly necessary session renewal credential.",
+    "contents": "Opaque refresh secret; HttpOnly, so application JavaScript cannot read it. SameSite=Strict; path /api/auth. Secure is set according to installation configuration.",
+    "duration": "Configured refresh-token lifetime (code default 14 days), renewed during refresh and cleared on sign-out. Revocation can invalidate it earlier.",
+    "sources": ["backend/src/ase/api/cookies.py"]
+  },
+  {
+    "name": "ase_csrf",
+    "kind": "cookie",
+    "purpose": "Strictly necessary protection against cross-site request forgery.",
+    "contents": "Random token read by the app for protected requests. SameSite=Strict; path /. Secure is set according to installation configuration.",
+    "duration": "Same configured lifetime as the refresh cookie; cleared on sign-out.",
+    "sources": ["backend/src/ase/api/cookies.py"]
+  },
+  {
+    "name": "ase-globe-prefs",
+    "kind": "localStorage",
+    "purpose": "Remember globe display choices.",
+    "contents": "Base map and lite-mode preferences, not research records.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/stores/globe.ts"]
+  },
+  {
+    "name": "ase-shell-prefs",
+    "kind": "localStorage",
+    "purpose": "Remember the navigation layout.",
+    "contents": "Whether the left navigation rail is collapsed.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/stores/shell.ts"]
+  },
+  {
+    "name": "ase-preferences",
+    "kind": "localStorage",
+    "purpose": "Remember keyboard accessibility preferences.",
+    "contents": "Whether single-key shortcuts are enabled.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/stores/preferences.ts"]
+  },
+  {
+    "name": "ase.map.tool-favourites",
+    "kind": "localStorage",
+    "purpose": "Remember chosen map tools.",
+    "contents": "Up to four public tool identifiers.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/features/globe/mapToolPreferences.ts"]
+  },
+  {
+    "name": "ase.brand-motion",
+    "kind": "localStorage",
+    "purpose": "Remember the device's requested animation choice.",
+    "contents": "The word paused or running. Signed-in account motion settings are separately stored on the server.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/components/brand/localMotionPause.ts"]
+  },
+  {
+    "name": "ase.embed-consent.v1",
+    "kind": "localStorage",
+    "purpose": "Remember external-media choices across visits only after the separate explicit checkbox.",
+    "contents": "Schema version and selected provider identifiers. The default choice is held only in page memory.",
+    "duration": "Until withdrawn in Settings, External media, or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/stores/embedConsent.ts"]
+  },
+  {
+    "name": "ase-push-device",
+    "kind": "localStorage",
+    "purpose": "Associate this browser with the account that enabled push.",
+    "contents": "Account identifier and a hash of the push endpoint. The browser also holds a push subscription and permission; the server stores its endpoint and encryption keys.",
+    "duration": "Until push is disabled, replaced or site data is cleared. Browser permission and server device removal are separate controls.",
+    "sources": ["frontend/src/lib/browserPush.ts"]
+  },
+  {
+    "name": "ase.start-here.*",
+    "kind": "localStorage",
+    "purpose": "Remember the orientation card for each account.",
+    "contents": "Account identifier in the key and shown/dismissed choice.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/lib/startHere.ts"]
+  },
+  {
+    "name": "ase-notifications-seen:*",
+    "kind": "localStorage",
+    "purpose": "Keep the notification bell from resurfacing previously seen items.",
+    "contents": "Account identifier in the key and last-seen timestamp.",
+    "duration": "Until replaced or site data is cleared; no automatic expiry.",
+    "sources": ["frontend/src/app/shell/notificationSeen.ts"]
+  }
+]

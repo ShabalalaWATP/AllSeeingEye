@@ -63,7 +63,9 @@ async def draft_for_job(
                     job.background,
                     receipt.describe() if receipt else None,
                     original_context,
-                    REUSE_NOTICE if job.reused_evidence else None,
+                    REUSE_NOTICE
+                    if job.reused_evidence and job.request.alert_origin is None
+                    else None,
                     update_guidance(
                         job.subscription_baseline,
                         selected.items,

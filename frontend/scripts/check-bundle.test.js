@@ -3,11 +3,17 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { GLOBE_ROUTE_GZIP_BUDGET, INITIAL_JS_GZIP_BUDGET, inspectBundle } from './check-bundle.js';
+import {
+  GLOBE_ROUTE_GZIP_BUDGET,
+  INITIAL_JS_GZIP_BUDGET,
+  PRODUCT_ROUTE_GZIP_BUDGET,
+  inspectBundle,
+} from './check-bundle.js';
 
 function build(files) {
   const root = mkdtempSync(path.join(os.tmpdir(), 'ase-bundle-'));
   mkdirSync(path.join(root, 'assets'));
+  writeFileSync(path.join(root, 'assets/ProductPage-p1.js'), 'export{}');
   for (const [name, body] of Object.entries(files)) writeFileSync(path.join(root, name), body);
   return root;
 }
@@ -33,6 +39,97 @@ test('follows static imports from the entry and accepts a lean first paint', () 
       'assets/react-b2.js',
     ]);
     assert.deepEqual(result.failures, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('measures product static dependencies once and leaves later scenes out', () => {
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'import"./react-b2.js";',
+    'assets/react-b2.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+    'assets/ProductPage-p1.js':
+      'import"./react-b2.js";import"./story-s1.js";const scene=()=>import(`./later-l1.js`);',
+    'assets/story-s1.js': 'export{}',
+    'assets/later-l1.js': 'export{}',
+  });
+  try {
+    const result = inspectBundle(root);
+    assert.deepEqual(result.product.chunks, ['assets/ProductPage-p1.js', 'assets/story-s1.js']);
+    assert.ok(result.product.gzipBytes > 0);
+    assert.deepEqual(result.failures, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects a private layout pulled into the common entry', () => {
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'import"./AuthLayout-a2.js";',
+    'assets/AuthLayout-a2.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+  });
+  try {
+    assert.deepEqual(inspectBundle(root).failures, [
+      'AuthLayout-a2.js loads before a private route needs it.',
+    ]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('counts the public eye worker, lazy fallback and their static dependencies', () => {
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+    'assets/ProductPage-p1.js': 'export{}',
+    'assets/evilEye.worker-w1.js': 'import"./eye-engine-e1.js";',
+    'assets/evilEyeRenderer-f1.js': 'import"./eye-engine-e1.js";',
+    'assets/eye-engine-e1.js': 'import"./eye-noise-n1.js";export{}',
+    'assets/eye-noise-n1.js': 'export{}',
+  });
+  try {
+    const result = inspectBundle(root);
+    assert.deepEqual(result.product.chunks, [
+      'assets/ProductPage-p1.js',
+      'assets/evilEye.worker-w1.js',
+      'assets/evilEyeRenderer-f1.js',
+      'assets/eye-engine-e1.js',
+      'assets/eye-noise-n1.js',
+    ]);
+    assert.deepEqual(result.failures, []);
+    let noise = '';
+    for (let i = 0; noise.length < PRODUCT_ROUTE_GZIP_BUDGET * 2; i += 1)
+      noise += Math.imul(i, 2654435761).toString(36);
+    writeFileSync(path.join(root, 'assets/eye-noise-n1.js'), `export const data="${noise}";`);
+    assert.match(inspectBundle(root).failures.join('\n'), /Product route JavaScript.*over/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects product runtime imports, oversized payloads and a missing product route', () => {
+  let noise = '';
+  for (let i = 0; noise.length < PRODUCT_ROUTE_GZIP_BUDGET * 2; i += 1)
+    noise += Math.imul(i, 2654435761).toString(36);
+  const root = build({
+    'index.html': html('index-a1.js'),
+    'assets/index-a1.js': 'export{}',
+    'assets/GlobePage-g1.js': 'export{}',
+    'assets/ProductPage-p1.js': `import"./maplibre-m1.js";export const data="${noise}";`,
+    'assets/maplibre-m1.js': 'export{}',
+  });
+  try {
+    assert.match(inspectBundle(root).failures.join('\n'), /application runtime/);
+    assert.match(inspectBundle(root).failures.join('\n'), /Product route JavaScript.*over/);
+    rmSync(path.join(root, 'assets/ProductPage-p1.js'));
+    assert.deepEqual(inspectBundle(root).failures, [
+      'No ProductPage chunk was found for the product route budget.',
+    ]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

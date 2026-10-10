@@ -7,14 +7,23 @@ from ase.application.ports.navigation import PlaceSearchGateway
 from ase.application.ports.services import RateLimiter
 from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.navigation import NavigationPlace
+from ase.domain.source_licences import SourceLicencePolicy
 
 
 class PlaceSearch:
-    def __init__(self, gateway: PlaceSearchGateway, limiter: RateLimiter) -> None:
+    def __init__(
+        self,
+        gateway: PlaceSearchGateway,
+        limiter: RateLimiter,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
         self._gateway, self._limiter = gateway, limiter
+        self._licences = licences or SourceLicencePolicy(())
         self._busy = False
 
     async def search(self, actor_id: UUID, query: str) -> tuple[NavigationPlace, ...]:
+        self._licences.require("map:photon_places")
         query = query.strip()
         if not 3 <= len(query) <= 200 or any(ord(char) < 32 for char in query):
             raise InvalidRequest("Enter an address or place name between 3 and 200 characters.")

@@ -1,0 +1,77 @@
+{
+  "method": "WCAG relative luminance; two 18% rgb(42,42,54) grid lines composited over rgb(7,7,11). Full opaque mask is the conservative brightest intersection; mask fading only darkens this background. Foreground opacity 1, normal blending and no filters confirmed in browser.",
+  "rows": [
+    {
+      "target": [
+        ".tracking-\\[0\\.22em\\]"
+      ],
+      "foreground": [
+        255,
+        111,
+        55
+      ],
+      "worstBackground": [
+        18.465999999999998,
+        18.465999999999998,
+        25.086799999999997
+      ],
+      "ratio": 6.71,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "target": [
+        "h1"
+      ],
+      "foreground": [
+        233,
+        228,
+        220
+      ],
+      "worstBackground": [
+        18.465999999999998,
+        18.465999999999998,
+        25.086799999999997
+      ],
+      "ratio": 14.68,
+      "required": 3,
+      "pass": true
+    },
+    {
+      "target": [
+        ".leading-6"
+      ],
+      "foreground": [
+        154,
+        149,
+        163
+      ],
+      "worstBackground": [
+        18.465999999999998,
+        18.465999999999998,
+        25.086799999999997
+      ],
+      "ratio": 6.37,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "target": [
+        "label"
+      ],
+      "foreground": [
+        233,
+        228,
+        220
+      ],
+      "worstBackground": [
+        18.465999999999998,
+        18.465999999999998,
+        25.086799999999997
+      ],
+      "ratio": 14.68,
+      "required": 4.5,
+      "pass": true
+    }
+  ]
+}

@@ -67,11 +67,30 @@ def problems(base: str) -> list[str]:
         "no CSP on /",
     )
     expect(headers.get("Cache-Control") == "no-cache", "the shell is not revalidated")
+    expect(
+        not headers.get("Link"), "the ordinary shell preloads public product content"
+    )
     entry = re.search(rb'src="(/assets/index-[^"]+\.js)"', body)
     expect(entry is not None, "the shell names no entry script")
 
+    for product_path in ("/enterprise", "/enterprise/", "/ENTERPRISE"):
+        status, product_headers, product_body = fetch(base, product_path)
+        expect(status == 200, f"{product_path} answered {status}")
+        expect(product_body == body, f"{product_path} changed the gated SPA shell")
+        expect(
+            product_headers.get("Link")
+            == "</brand/eye-512.webp>; rel=preload; as=image; type=image/webp; fetchpriority=high",
+            f"{product_path} did not preload the existing hero capture",
+        )
+        expect(
+            product_headers.get("Content-Security-Policy")
+            == headers.get("Content-Security-Policy"),
+            f"{product_path} changed the shared security policy",
+        )
+
     status, headers, _ = fetch(base, "/research/saved")
     expect(status == 200, f"a client route answered {status}")
+    expect(not headers.get("Link"), "an application route preloads the product hero")
 
     if entry is not None:
         asset = entry.group(1).decode()

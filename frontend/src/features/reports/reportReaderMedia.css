@@ -1,0 +1,103 @@
+/* Tables ------------------------------------------------------------------ */
+
+.report-reader-table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--paper-rule);
+  border-radius: 0.35rem;
+  /* Keep a horizontal scrollbar reachable by keyboard on narrow screens. */
+  scrollbar-gutter: stable;
+}
+
+.report-reader-table-wrap:focus-visible {
+  outline: 2px solid var(--paper-accent);
+  outline-offset: 2px;
+}
+
+.report-reader-table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.report-reader-table th {
+  position: sticky;
+  top: 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--paper-ground-2);
+  color: var(--paper-ink-strong);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.report-reader-table td {
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid var(--paper-rule-soft);
+  vertical-align: top;
+}
+
+.report-reader-table tbody tr:nth-child(even) {
+  background: rgb(0 0 0 / 0.018);
+}
+
+.report-reader-table td:first-child {
+  white-space: nowrap;
+}
+
+.report-reader-caption {
+  margin-top: 0.55rem;
+  color: var(--paper-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+/* Figures and diagrams ----------------------------------------------------- */
+
+.report-reader-figure {
+  margin-top: 2rem;
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--color-white);
+  border: 1px solid var(--paper-rule);
+  border-radius: 0.4rem;
+}
+
+.report-reader-figure-label {
+  color: var(--paper-accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.report-reader-figure img,
+.report-reader-figure svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 42rem;
+  margin-top: 0.75rem;
+  object-fit: contain;
+}
+
+.report-reader-figure details {
+  margin-top: 0.6rem;
+  color: var(--paper-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.report-reader-figure summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.report-reader-figure summary:focus-visible {
+  outline: 2px solid var(--paper-accent);
+  outline-offset: 2px;
+}

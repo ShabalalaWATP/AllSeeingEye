@@ -1,6 +1,6 @@
 # Authentication and administrator API
 
-Status: current implementation, 6 September 2026. FastAPI schemas and the exported
+Status: current implementation, 10 October 2026. FastAPI schemas and the exported
 OpenAPI document are authoritative for field details. This document explains the
 security contract; [team management](TEAMS_API.md) and
 [scoped operational work](SCOPED_WORK_API.md) have separate contracts.
@@ -12,7 +12,7 @@ security contract; [team management](TEAMS_API.md) and
 - Protected routes take `Authorization: Bearer <access_token>`. Missing or invalid token: 401 `unauthenticated`. Wrong role: 403 `forbidden`.
 - Access token: JWT, HS256, claims `sub` (user id), `role`, `typ: "access"`, `iat`, `exp` (15 minutes by default), `jti`, `sid` (refresh family id) and `sv` (non-negative account security version). Held in memory by the SPA, never in persistent browser storage. Each protected request requires the current active account, matching security version and live family; role claims do not replace the current database role.
 - Refresh token: opaque 48-byte URL-safe random string delivered only as the cookie `ase_refresh` (`HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=14 days; Secure` when `ASE_COOKIE_SECURE=true`). Stored hashed (SHA-256) with a family id; rotated on every refresh; reuse of a rotated token revokes the whole family.
-- CSRF: cookie `ase_csrf` (random, `SameSite=Strict; Path=/`, readable by script) is set with the refresh cookie. `POST /api/auth/refresh` and `POST /api/auth/logout` require header `X-CSRF-Token` equal to the cookie (constant-time compare). Failure: 403 `csrf_failed`.
+- CSRF: cookie `ase_csrf` (random, `SameSite=Strict; Path=/`, readable by script) is set with the refresh cookie. `POST /api/auth/refresh`, `POST /api/auth/activity` and `POST /api/auth/logout` require header `X-CSRF-Token` equal to the cookie (constant-time compare). Failure: 403 `csrf_failed`.
 - Request bodies above 64 KB are refused with 413 `payload_too_large` (configurable with `ASE_MAX_REQUEST_BYTES`; Caddy enforces the same cap at the edge).
 - Rate limits: 429 `rate_limited` with a `Retry-After` header. Defaults: login 10 attempts per minute per IP and 5 failed attempts per minute per email (successful sign-ins do not count, and failures age out after the minute); request-account and forgot-password 3 per hour per IP; set-password 10 per hour per IP; authenticated password changes 5 per minute per account and per IP.
 - Failed login attempts are bounded by per-IP and per-email rate limits. They do not persistently lock the named account, so knowing an email address is not enough to deny its owner access.
@@ -25,7 +25,8 @@ security contract; [team management](TEAMS_API.md) and
 User            {id: uuid, email, display_name, role: "user" | "manager" | "admin", is_active: bool, created_at, last_login_at: datetime | null}
 AccountRequest  {id: uuid, email, display_name, reason: string | null, status: "pending" | "approved" | "rejected", created_at}
 AuditEntry      {id: int, at, actor_user_id: uuid | null, action, subject: string | null, ip: string | null, details: object}
-TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, user: User}
+TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, user: User, activity: SessionActivityOut}
+SessionActivityOut {server_now, last_activity_at, idle_expires_at: datetime, idle_minutes: int}
 ```
 
 ## Endpoints
@@ -34,7 +35,8 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 |---|---|---|---|---|
 | `POST /api/auth/login` | none | `{email, password}` | 200 `TokenResponse` and session cookies, or restricted `MfaPendingOut` without a session | 401 `invalid_credentials` (unknown email, wrong password, inactive or invalid credentials); 429 |
 | `POST /api/auth/refresh` | cookie + CSRF header | none | 200 `TokenResponse`; rotates cookies | 401 `invalid_refresh` (missing, expired, revoked or reused); 403 `csrf_failed` |
-| `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
+| `POST /api/auth/activity` | bearer + CSRF header | none | 200 `SessionActivityOut`; records explicit interaction only | 401 `session_idle_expired` or `unauthenticated`; 403 `csrf_failed`; 429 with `Retry-After` for the family minute limit |
+| `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies. Conditional idle checks can return 200 `SessionActivityOut` without mutation, as below. | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
 | `POST /api/auth/request-account` | none | `{email, display_name, reason?}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}` | 422; 429 |
 | `POST /api/auth/forgot-password` | none | `{email}` | 202 `{message, email_available}`; both fields are identical for known and unknown addresses. When email is unconfigured, the message directs the user to an administrator for a reset link. | 422; 429 |
 | `POST /api/auth/set-password` | none | `{token, new_password}` | 204 (token purpose may be `activation` or `reset`; single use) | 400 `invalid_token`; 422 `weak_password` with `fields.new_password` reason; 429 |
@@ -59,6 +61,40 @@ An omitted or null update role leaves it unchanged. Current team `manager`
 membership grants authority only within that team, not administrator access or
 access to another team's work. Any active account can create a team. See
 [team authority](TEAMS_API.md) for invitations, promotions and last-manager rules.
+
+## Idle session contract
+
+`ASE_SESSION_IDLE_MINUTES` defaults to 180. Optional
+`ASE_ADMIN_SESSION_IDLE_MINUTES` inherits it when unset; each accepts 5–1440.
+Sign-in and completed MFA initialise family activity using server time.
+Ordinary refresh preserves it. An exact `x-ase-activity: 1` header permits refresh
+to record explicit activity, subject to the same family-wide minute limit as
+`POST /api/auth/activity`. Earlier signalled refreshes still rotate without moving
+activity. The browser uses the explicit heartbeat and never marks automatic refresh.
+
+At the deadline, activity cannot revive the family. Refresh/activity return
+401 `session_idle_expired` with `fields.idle_minutes` containing the configured
+minutes as a string. Authentication checks and release fences also reject idle
+families; stream idle expiry emits `access.changed`, then `bye` with reason
+`session_idle_expired`. Polling or stream traffic does not extend the deadline.
+
+Logout accepts optional `X-ASE-Session-Family: <uuid>`. If the refresh cookie now
+belongs to another family, logout returns 204 without revoking that replacement
+or clearing its cookies. Countdown expiry also sends exact `X-ASE-Idle-Expired: 1`
+with that family binding. Under the account lock, a matching still-active family
+returns 200 `SessionActivityOut` without changing activity, tokens or cookies;
+an expired family is revoked and returns 204. Conditional responses never send
+`Set-Cookie`, preventing a late response from clearing a later login's cookies.
+The retained revoked cookie is rejected on refresh or replaced by sign-in.
+Missing family binding with the
+conditional header returns 204 without mutation. Explicit Sign out omits the
+conditional header. This prevents a suspended tab's stale deadline from revoking
+activity confirmed in another tab. The idle audit is recorded by the next refresh, heartbeat or logout
+transaction, while passive access checks remain read-only.
+
+The response's server clock and deadline are authoritative. The browser warning
+and BroadcastChannel messages are advisory, kept only in memory. No absolute
+session lifetime is added. See [operation and rollout](../SESSION_IDLE_TIMEOUT.md).
 
 ## Multi-factor authentication
 

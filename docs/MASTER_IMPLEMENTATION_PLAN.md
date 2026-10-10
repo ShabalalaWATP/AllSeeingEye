@@ -1524,3 +1524,125 @@ still exceed target and remain reported. Current-main CI passes 4,637 frontend
 tests with 92.28% branch coverage. The completed browser trace contains no
 stream-flush task over 50 ms; separate task and interaction outliers remain
 explicit. See [the acceptance record](reviews/2026-10-06-KAN-81-browser-acceptance.md).
+
+### 10 October 2026: KAN-216 review implementation
+
+The 9 October review covers 32 delivery tickets and parent KAN-216. Each ticket
+has an isolated implementation branch; the coordinator combines reviewed changes
+on `codex/KAN-216-review-integration`. The exact scope, draft PRs, completed checks
+and outstanding acceptance are maintained in the
+[implementation ledger](reviews/KAN-216-implementation-ledger.md).
+
+At integration revision `06d9b476`, all 82 selected cross-feature backend tests
+passed, covering schedule mapping and editing, frozen edition links, enquiry
+authorisation/retention, migrations and alert-template geometry. Whole-tree Ruff,
+formatting and the expanded source-size gate also passed. Commercial-policy
+review repairs, public/admin browser acceptance, the new browser CI lane and
+final whole-branch CI remain in progress. Local test groups overlap and must not
+be added together as an overall test count.
+
+The expanded commercial-policy integration group subsequently passed 168 selected
+backend cases, and four alert permission cases passed with both refusal and
+acknowledgement controls. Whole-source mypy, Ruff/format and import contracts pass;
+combined API generation has no contract diff. The public attribution catalogue is
+reconciled, and the source-size inventory has thirteen reviewed target exceptions
+with no hard-limit failures. Retained-evidence review and browser interaction
+repairs subsequently passed their focused checks and independent reviews. The
+ledger retains outstanding mobile performance and final CI requirements.
+
+All 32 reviewed implementations are now combined at `26ef4c4b`, including final
+public loading changes. The production build, four Chromium journeys (13.8
+seconds), 235 focused frontend cases, both TypeScript configurations, policy
+checks, generated contracts and unchanged bundle budgets pass. Eighteen tickets
+have passing current-head CI and are In Review. Ten still need final validation
+or CI repair; four retain operator or acceptance decisions. A backend auth
+coverage gap discovered by final KAN-182 CI is being repaired without lowering
+the security floor. The full animated mobile page scores 78/97/100 on Lighthouse;
+the earlier placeholder-stage 95-performance criterion is not marked satisfied.
+
+Final CI follow-ups are integrated at `b524a7b7`: the reported fixture, inventory,
+lazy-readiness and palette failures have reviewed repairs. Controlled PostgreSQL
+review exposed two session-authority races, now fixed by checking time after
+awaited reads and serialising refresh replay with guarded operations. All 138
+focused auth/FIRMS cases pass and four auth modules reach 100% branches. The
+combined branch also passes its 12-case and 11-case native concurrency groups
+and all 30 ordinary credential/deadline cases on PostgreSQL. Temporary databases,
+connections and the owned container are cleaned up. All 30 current delivery PR
+heads are ancestors of the integration. Fresh delivery-head and combined CI
+remain required.
+
+No `main` merge, live migration or production release has occurred. Controller
+facts and privacy approval, the software-licence/offer decision and live GitHub
+production approval settings remain explicit operator decisions. Those decisions
+do not block preparation, testing or review of the implementation.
+
+KAN-172's exact-lattice noise follow-up is integrated from `81b5c554`. It preserves
+complete original RGBA buffers, passes 19 affected tests and the existing type,
+build and bundle gates, with clear independent review. The isolated CPU speedup
+does not satisfy the outstanding full-page mobile target. At the 10 October
+01:48 UTC checkpoint, 20 delivery tickets are In Review; eight await final CI
+and four retain acceptance or operator decisions. Jira is authoritative after
+that checkpoint; no ticket has been marked Done.
+
+At 02:01 UTC, 27 tickets have passed current-head CI and moved to In Review.
+The public delivery's additional contact-focus repair passes its 16-case group,
+native Chrome verification, both TypeScript checks, build and bundle budgets.
+The combined metadata timing failure retains every assertion and now awaits
+the route effects. Fresh public/combined CI remains required. The latest mobile
+Lighthouse measurement is still 78/97/100; KAN-164, KAN-165, KAN-172 and KAN-225
+retain their recorded acceptance or operator requirements.
+
+At 02:25 UTC, public `21e9d1d9` and combined `f0f3051c` passed all 39/40 checks.
+Jira now records 28 In Review and four In Progress, with no Done transitions.
+The KAN-172 graphics worker/preload follow-up is subsequently integrated from
+`f9393e3e`: 138 affected UI/graphics cases and 12 tooling checks pass, with clear
+independent reviews and real Caddy/browser checks. Mobile performance improves
+from 77 to 85 and desktop reaches 100; mobile 95 remains unmet. The broader entry
+preload experiment was removed after no score improvement. New published-head CI
+is required; the licence, public controller details/approval and live release
+controls still need the operator's decisions. No release approval is inferred.
+
+### KAN-172 mobile performance target, 10 October 2026
+
+- Alex approved 90 as the mobile performance target; Jira acceptance now records it.
+- The complete normal-motion page scores 90/97/100 in three consecutive production
+  Caddy HTTPS runs, versus 87/97/100 for the clean prior build under identical
+  conditions. Desktop scores 100/97/100. The separate HTTP fixture scores 87.
+- Public startup dependencies are smaller, validation and runtime gates remain
+  intact, and asynchronous graphics fallback retains cleanup and recovery behaviour.
+- Focused tests, type/lint/bundle checks and native browser acceptance pass.
+- See `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` for conditions and exact evidence.
+  Published-head CI and authorised review/release remain required.
+
+### Review completion follow-up, 10 October 2026
+
+Alex requested completion of the remaining review tickets. KAN-230 now documents
+the executable 150 KiB product budget, agreed mobile target of 90 and the passing
+public/combined CI at `4c9327a9` / `99bff8f9`. Earlier 95-target measurements are
+explicitly historical. The refreshed guidance passes 21 coverage/sharding checks,
+12 bundle/import checks and validation of all 11 local file links.
+
+KAN-226 is Done under the documented non-code deliverable rule. Final acceptance
+review is checking the remaining ticket criteria individually. Known follow-ups
+include published browser evidence, administrator contrast verification, the
+remaining policy footer destinations and precise source-licence check provenance.
+Implementation closure still requires authorised integration. Production rollout
+also requires approved controller/publication content and the documented manual
+migration procedure; those requirements are not inferred from ticket status.
+
+### Review completion follow-up, 10 October 2026
+
+- [x] KAN-230 documentation refresh validated and moved to Done under non-code criteria.
+- [x] KAN-172 missing public footer routes and fail-closed service-publication checks implemented.
+- [x] KAN-194 six catalogue provenance links and honestly labelled check dates completed.
+- [x] Complete KAN-168 desktop/mobile form screenshots published; KAN-169's four contrast incompletes resolved.
+- [x] KAN-184 fresh sanitised consent request capture recorded, with no provider traffic forwarded.
+- [x] Final mobile build measured at 90/97/100; initial 89 and host variability retained in acceptance evidence.
+- [ ] Complete final aggregate published-head CI, obtain required release approval and integrate PR #192.
+- [ ] Verify main integration before moving the 27 eligible implementation tickets to Done.
+- [ ] Finish operator decisions and live acceptance for KAN-164, KAN-165 and KAN-225 separately.
+
+See [closure matrix](reviews/KAN-216-review-closure.md),
+[final browser evidence](reviews/KAN-216-final-browser-evidence.md), and
+[provenance review](reviews/KAN-194-provenance-closure.md). Existing policy, approval,
+coverage and security gates remain enforced; no production rollout was performed.

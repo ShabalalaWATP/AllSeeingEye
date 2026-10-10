@@ -1,11 +1,18 @@
 # Security
 
-The All Seeing Eye is a private, self-hosted hobby application. It is built on the assumption that every byte from the internet, every feed item and every LLM response is untrusted. The full design is in `docs/07_SECURITY_BY_DESIGN.md`; this page summarises what is implemented and how to report a problem.
+The All Seeing Eye is a self-hosted research application maintained as a personal
+project. Its public source repository does not imply an approved software licence
+or commercial support offer; those decisions are tracked in
+[ADR 0023](docs/adr/0023-software-licence-and-offer.md). It is built on the assumption
+that every byte from the internet, every feed item and every LLM response is
+untrusted. The full design is in `docs/07_SECURITY_BY_DESIGN.md`; this page
+summarises what is implemented and how to report a problem.
 
 ## Implemented in Phase 0
 
 - Passwords hashed with argon2id; a 12 to 128 character policy backed by a 10,000-entry common-password deny list that also catches common words with digits bolted on.
 - Short-lived JWT access tokens (15 minutes) held in memory by the SPA; opaque refresh tokens in an `HttpOnly`, `SameSite=Strict` cookie scoped to the auth routes, rotated on every use, with family revocation when a rotated token is replayed.
+- Refresh families expire after 180 minutes without explicit activity by default. Administrators may have a separate configured limit. Server-side checks enforce idle expiry for requests, release fences, streams and push delivery; passive polling and refresh rotation never count as activity. See [idle session operation](docs/SESSION_IDLE_TIMEOUT.md).
 - CSRF double-submit protection on the cookie-bearing endpoints, checked in constant time.
 - Per-IP and per-email rate limits on every unauthenticated endpoint. Invalid passwords and MFA codes never create a persistent account lock that another person can trigger.
 - No account enumeration: login failures, duplicate account requests and password reset requests for unknown addresses all answer exactly like the success path.

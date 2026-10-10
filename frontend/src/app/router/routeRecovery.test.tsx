@@ -64,6 +64,28 @@ describe('route recovery', () => {
     vi.mocked(reloadPage).mockClear();
   });
 
+  it.each([
+    [new Error(SECRET), 'This page could not load'],
+    [
+      new TypeError('Failed to fetch dynamically imported module: /assets/Gone-1a2b.js'),
+      'A newer version is available',
+    ],
+  ])('contains a public route module rejection: %s', async (error, title) => {
+    const replace = (list: RouteObject[]): RouteObject[] =>
+      list.map((route) => {
+        if (route.path === '/enterprise') return { ...route, lazy: () => Promise.reject(error) };
+        return route.children ? { ...route, children: replace(route.children) } : route;
+      });
+    applySession('anonymous');
+    const router = createMemoryRouter(replace(routes), { initialEntries: ['/enterprise'] });
+    render(<RouterProvider router={router} />);
+    const main = await recoveryIn(title);
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expectNoRawError();
+    await userEvent.setup().click(within(main).getByRole('button', { name: 'Reload' }));
+    expect(reloadPage).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the research shell mounted when a page throws while rendering', async () => {
     open('/broken', 'user', 'trackers', { path: 'broken', element: <Broken /> });
     const main = await recoveryIn('This page could not load');

@@ -15,12 +15,15 @@ from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
-from ase.application.ports.direction import PlanRepository
+from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.warning import IndicatorRepository
+from ase.application.reports.template_requirements import require_report_plan
+from ase.application.warning.report_templates import require_alert_template
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound
 from ase.domain.events import BoundingBox, Category
 from ase.domain.research_area import ResearchArea, validate_direct_area
+from ase.domain.research_scope import normalise_countries
 from ase.domain.users import User
 from ase.domain.warning import (
     MAX_COOLDOWN_MINUTES,
@@ -70,6 +73,21 @@ def _validate_area(data: IndicatorInput) -> None:
             )
 
 
+def _validate_report_countries(data: IndicatorInput, *, validate_limit: bool) -> None:
+    if data.report_template is not None:
+        try:
+            countries = tuple(c.strip().upper() for c in data.countries if c.strip())
+            if validate_limit:
+                normalise_countries(None, countries)
+            else:
+                # A legacy rule can stop without narrowing its saved geography.
+                # Validate each code while bypassing only the report's count limit.
+                for country in countries:
+                    normalise_countries(None, (country,))
+        except ValueError as exc:
+            raise InvalidRequest(str(exc), fields={"countries": str(exc)}) from exc
+
+
 def build_indicator(
     data: IndicatorInput,
     *,
@@ -79,11 +97,13 @@ def build_indicator(
     created: datetime,
     now: datetime,
     resumed_at: datetime | None = None,
+    validate_report: bool = True,
 ) -> Indicator:
     name = " ".join(data.name.split())
     if not name:
         raise InvalidRequest("An alert rule needs a name.", fields={"name": "Enter a name."})
     _validate_area(data)
+    _validate_report_countries(data, validate_limit=validate_report)
     if not 7 <= data.baseline_days <= 30:
         raise InvalidRequest("The baseline window must be between 7 and 30 days.")
     if data.baseline_ratio is not None and (
@@ -109,8 +129,8 @@ def build_indicator(
         raise InvalidRequest("The cooldown must be between 1 minute and 24 hours.")
     if not (0.0 <= data.severity_floor <= 1.0):
         raise InvalidRequest("The severity floor must be between 0 and 1.")
-    if data.report_template is not None and data.report_template not in templates:
-        raise InvalidRequest("Unknown report template.")
+    if validate_report:
+        require_alert_template(data.report_template, data.countries, data.plan_id, templates)
     return Indicator(
         id=indicator_id,
         name=name[:120],
@@ -153,6 +173,7 @@ class _IndicatorUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
         access: AccessPolicy,
+        aois: AoiRepository | None = None,
     ) -> None:
         self._indicators = indicators
         self._plans = plans
@@ -161,6 +182,7 @@ class _IndicatorUseCase:
         self._auditor = auditor
         self._uow = uow
         self._access = access
+        self._aois = aois
 
     async def _check_plan(self, data: IndicatorInput, owner: UUID, access: AccessContext) -> None:
         """A linked plan must exist, be visible and share the rule's exact owner or team."""
@@ -174,6 +196,19 @@ class _IndicatorUseCase:
         except (Forbidden, InvalidRequest, NotFound) as exc:
             # One message for missing, hidden and mismatched plans reveals nothing about them.
             raise InvalidRequest(PLAN_UNAVAILABLE, fields={"plan_id": PLAN_UNAVAILABLE}) from exc
+        if data.report_template is not None and plan is not None:
+            aoi = await self._aois.get(plan.aoi_id) if self._aois and plan.aoi_id else None
+            try:
+                if aoi is not None:
+                    access.require_same_scope(owner, data.team_id, aoi.created_by, aoi.team_id)
+                require_report_plan(plan, aoi)
+            except (Forbidden, InvalidRequest, NotFound) as exc:
+                message = (
+                    "The linked plan cannot produce this report. Choose a plan with a question "
+                    "and an available rectangle or country area, remove the link, "
+                    "or choose No report."
+                )
+                raise InvalidRequest(message, fields={"plan_id": message}) from exc
 
     async def _existing(self, actor: User, indicator_id: UUID) -> Indicator:
         access = await self._access.context(actor, for_update=True)

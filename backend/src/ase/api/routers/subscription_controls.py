@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_subscription_editions import SubscriptionBaselineOut, SubscriptionEditionOut
 from ase.api.session_fence import FenceDep, SessionFence
+from ase.api.subscription_projection import edition_outputs
 from ase.container import Container
 from ase.container.subscription_baseline_control import accept_baseline
 from ase.container.subscription_edition_controls import EditionControl, control_edition
@@ -35,9 +36,11 @@ async def _control(
         action,
         check_session=lambda: fence.confirm(session=session),
     )
+    result = (await edition_outputs(container, session, user, [current]))[0]
+    await fence.confirm(session=session)
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return SubscriptionEditionOut.from_edition(current)
+    return result
 
 
 @router.post("/{schedule_id}/editions/{edition_id}/pause")

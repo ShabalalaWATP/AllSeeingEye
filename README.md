@@ -16,6 +16,11 @@ sample observations. Screenshots are not a statement of live source coverage.*
 [Set up the app](docs/SETUP.md) · [Using the app](docs/04_FEATURES_AND_VIEWS.md) ·
 [Documentation](docs/README.md)
 
+The project-wide software licence and organisational support offer are awaiting
+the maintainer's decision in [ADR 0023](docs/adr/0023-software-licence-and-offer.md).
+Public source access does not establish deployment or redistribution permission.
+Bundled components and source data retain their separate terms.
+
 ## What you can do
 
 - **Explore the live picture.** Switch between globe and map, filter observations,

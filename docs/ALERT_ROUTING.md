@@ -4,6 +4,101 @@ Open **Warning**, save an indicator, then select **Notifications** beside that
 rule. In-app storage and streaming always remain enabled. Email and a registered
 webhook are independent optional channels. No migration enables either one.
 
+## Repeated evidence and capacity
+
+A firing consumes every counted matching identity, independently of the 20 items
+shown as citations. Reopening the database or waiting through the cooldown does
+not make those identities new again. Unseen late arrivals with older publication
+times still count while inside the rule's window. Relative rules continue to use
+the complete hourly count for their baseline comparison and displayed ratio;
+another firing also requires the rule's threshold of previously unconsumed items.
+
+Consumption survives rule edits and is retained through each item's inclusive
+seven-day eligibility boundary, so widening a window does not replay old evidence.
+Deleting a rule removes its consumed state. This stores compact source/ID hashes
+and expiry instants, never raw events. The limits are 350,000 identities per rule
+and 1,000,000 across the installation, approximately 8 MiB per rule and 23 MiB of
+identity payload globally, plus small row metadata. The per-rule limit accommodates
+one complete default live store, including its 150,000-item disaster category.
+
+If a whole firing cannot fit, it creates no alert, report or notification and
+consumes nothing. The operational log records `indicator_evidence_deferred` with
+the rule ID and `rule_consumed_evidence_capacity` or
+`global_consumed_evidence_capacity`. Narrow broad rules or wait for eligible state
+to expire. Still-eligible identities are never evicted to admit another firing.
+Malformed state instead records `invalid_consumed_evidence` and requires restoring
+valid saved state; clearing it would replay evidence.
+
+Apply migration 0094 before starting these workers. Older alerts retained only
+their citation sample, so their complete consumption cannot be reconstructed.
+The migration records each rule's latest legacy firing as an explicit recovery
+boundary. Activity published at or before that boundary is deferred while eligible,
+with `legacy_consumption_unavailable` in the operational log. This necessarily
+includes ambiguous older late arrivals during the one-time upgrade recovery.
+Activity after the boundary remains usable. A deliberate pause/resume establishes
+a fresh publication boundary; otherwise the ambiguity expires with the window.
+Downgrade refuses to discard retained consumption. Older application versions do
+not honour the state, so stop warning evaluation before rolling application code
+back. Restore the matching database and application versions together.
+
+## Automatic reports
+
+When a rule has a report template, its alert and report request are stored in the
+same transaction. Evaluation continues without waiting for model calls. A separate
+admission worker checks up to eight requests every minute and submits them to the
+existing durable report queue. It uses the rule owner's current personal or team
+permissions and the usual report allowance and capacity controls. Full capacity
+defers admission for five minutes; requests still waiting after 24 hours expire.
+The report interval stays anchored to the alert's firing time while it waits.
+Its exact minute window, country set, category, keyword, severity and rectangle
+predicates are retained with the rule revision. The rectangle takes precedence
+over countries, as in alert matching. Reports use the alert's at most 20 cited
+events frozen at firing, including original text and source provenance. The full
+match count stays separate from this bounded sample; larger populations receive
+an explicit evidence-sample finding. Changes or eviction in the live store cannot
+replace the frozen evidence. Automatic reports support at most eight valid ISO
+country codes; exact-shape rules continue to support alerts only.
+
+The alert shows pending, queued, running, paused, failed or completed progress,
+including a link to the report job when one exists. The warning list refreshes
+while visible. Configuration or admission failures remain visible on the alert.
+Pausing, editing or removing the rule, or removing its owner's workspace access,
+prevents further report work and publication. Calls already released to a provider
+cannot be recalled. Interrupted paid work retains its reservations and requires
+explicit resume through the report progress page; restarting the server does not
+automatically replay it. Discarding job progress leaves the alert's report request
+terminal and cannot cause a fresh automatic submission.
+
+Migration 0090 adds nullable intent and job-link fields to alerts. Historical alerts
+do not enqueue reports after upgrade. Apply the migration before starting the new
+application workers. Preserve the additive schema on application rollback; downgrade
+refuses to remove retained alert report history. Migration 0091 adds the bounded
+evidence snapshot. Old pending requests without a snapshot become failed with
+`evidence_unavailable`; old queued jobs without their exact origin cannot execute
+or resume. There is no attempt to reconstruct a historical firing from current
+live events. Both migrations preserve existing alerts and completed reports.
+
+Alert reports can resume through their durable job while its rule remains current.
+Manual regeneration is explicitly rejected because it would recollect evidence.
+Create a standalone report for a fresh assessment. Before rolling application code
+back to a version without frozen alert snapshots, stop admission and drain or cancel
+pending alert work. Retaining the schema alone cannot make an older worker honour
+these exact scope constraints.
+
+The report selector offers products whose required inputs the rule can retain.
+Country briefs need exactly one country. Ask the Eye and area briefs need a linked
+collection plan with a question; its authorised question is retained in the queued
+job. Conflict and disaster products require tracker inputs that alert rules do not
+store, so use those products as standalone reports. A linked report plan must have
+an available area in the same workspace and cannot use an exact polygon.
+
+Saving or resuming a rule rejects missing report prerequisites with a field-specific
+repair message. An old incompatible selection stays visible while editing: choose
+a compatible product, repair its inputs, or select No report. It can also be paused
+without replacing the saved selection. Existing failures remain in alert history;
+repairing a rule applies to later firings. A configured model and current workspace
+access are still checked at report admission and execution.
+
 Personal rule owners and administrators can manage personal routes. Team routes
 require a current manager of the active team or an administrator. Merely reading
 a team rule, or creating it as a regular team member, does not authorise external
@@ -56,13 +151,25 @@ so it fires again only on new evidence rather than on every cooldown.
 
 An alert and its unique per-channel destination intents commit together. Delivery
 occurs afterwards. Each worker processes at most 25 intents per tick and waits
-30 seconds between ticks. Each intent has at most three attempts. Known rejection
-retries after five minutes times the attempt number; unavailable SMTP waits
-15 minutes. Webhook answers 408, 502, 503 and 504 count as known rejections and
-retry on the same schedule. A lost response, any other server error or an
-interrupted claim is conservatively `uncertain` and never automatically retried. A claim older than two minutes is
-recovered as uncertain. Idempotency-Key carries the alert ID for receivers that
-support it; exactly-once delivery is not promised.
+30 seconds between ticks. Each intent has at most three attempts. Retryable
+outcomes wait five minutes after the first attempt and ten after the second;
+unavailable SMTP waits 15 minutes.
+
+Webhooks use a bounded at-least-once retry policy for HTTP 3xx/4xx responses
+(including 408 and 429) and gateway responses 502, 503 and 504. These responses
+do not prove non-acceptance: a receiver may apply the alert before its gateway
+returns an error. Retrying can therefore deliver the same alert more than once.
+Every attempt carries the alert ID as `Idempotency-Key`; receivers must implement
+their own deduplication for the key to prevent repeated effects. Neither eventual
+delivery nor exactly-once processing is guaranteed. A final `failed` state means
+the attempts were exhausted without confirmed transport acceptance, even if the
+receiver applied one or more requests. The internal `transport_rejected` reason
+labels a retryable transport outcome, not proof that the receiver did nothing.
+
+A lost response, any other server error or an interrupted claim is conservatively
+`uncertain` and never automatically retried. A claim older than two minutes is
+recovered as uncertain. These terminal cases retain the existing cautious policy;
+they do not make the responses selected for retry safe from duplication.
 
 Immediately before network I/O the worker rechecks the rule's existence, enabled
 state and original personal/team scope; the rule owner's active account and

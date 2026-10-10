@@ -30,6 +30,7 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import (
     economy_explainer_models as _economy_explainer_models,  # noqa: F401
 )
+from ase.adapters.persistence import enterprise_enquiries as _enterprise_enquiries  # noqa: F401
 from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
 from ase.adapters.persistence import (
     notification_digest_models as _notification_digest_models,  # noqa: F401
@@ -45,6 +46,7 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import research_brief_models as _research_brief_models  # noqa: F401
 from ase.adapters.persistence import research_usage_models as _research_usage_models  # noqa: F401
 from ase.adapters.persistence import selected_index_models as _selected_index_models  # noqa: F401
+from ase.adapters.persistence import session_activity as _session_activity  # noqa: F401
 from ase.adapters.persistence import source_review_models as _source_review_models  # noqa: F401
 from ase.adapters.persistence import (
     subscription_edition_models as _subscription_edition_models,  # noqa: F401
@@ -52,6 +54,9 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import team_board_models as _team_board_models  # noqa: F401
 from ase.adapters.persistence import (
     team_invitation_models as _team_invitation_models,  # noqa: F401
+)
+from ase.adapters.persistence import (
+    warning_consumption_models as _warning_consumption_models,  # noqa: F401
 )
 from ase.adapters.persistence import web_push_models as _web_push_models  # noqa: F401
 from ase.adapters.persistence.base import Base, UTCDateTime

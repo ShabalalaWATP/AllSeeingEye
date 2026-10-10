@@ -2,36 +2,34 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ScalarResult, delete, func, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence import alert_feedback
 from ase.adapters.persistence.access import visibility_predicate
-from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
+from ase.adapters.persistence.alert_reports import report_outcomes
 from ase.adapters.persistence.models import (
     ActivitySampleRow,
     AlertRow,
-    CollectionPlanRow,
     IndicatorRow,
-    ReportRow,
 )
+from ase.adapters.persistence.warning_consumption_models import WarningConsumptionRow
 from ase.adapters.persistence.warning_mapping import (
     _alert_from_row,
-    _alert_row,
     _fill_indicator,
     _indicator_from_row,
 )
-from ase.application.access import AccessContext, AccessPolicy
+from ase.adapters.persistence.warning_store import SqlWarningStore
 from ase.domain.access import Visibility
 from ase.domain.alert_feedback import AlertDisposition
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.errors import NotFound
 from ase.domain.indicator_baseline import matching_semantics
 from ase.domain.warning import Alert, Indicator
+
+__all__ = ["SqlAlertRepository", "SqlIndicatorRepository", "SqlWarningStore"]
 
 
 class SqlIndicatorRepository:
@@ -103,6 +101,10 @@ class SqlIndicatorRepository:
         return True
 
     async def delete(self, indicator_id: UUID) -> None:
+        # SQLite deployments may not enforce foreign-key cascades.
+        await self._session.execute(
+            delete(WarningConsumptionRow).where(WarningConsumptionRow.indicator_id == indicator_id)
+        )
         await self._session.execute(delete(IndicatorRow).where(IndicatorRow.id == indicator_id))
         await self._session.flush()
 
@@ -113,7 +115,11 @@ class SqlAlertRepository:
 
     async def get(self, alert_id: UUID) -> Alert | None:
         row = await self._session.get(AlertRow, alert_id, populate_existing=True)
-        return None if row is None else _alert_from_row(row)
+        return (
+            None
+            if row is None
+            else (await report_outcomes(self._session, [_alert_from_row(row)]))[0]
+        )
 
     async def list_recent(self, since: datetime, limit: int, visibility: Visibility) -> list[Alert]:
         rows = await self._session.scalars(
@@ -125,7 +131,7 @@ class SqlAlertRepository:
             .order_by(AlertRow.fired_at.desc())
             .limit(limit)
         )
-        return [_alert_from_row(row) for row in rows]
+        return await report_outcomes(self._session, [_alert_from_row(row) for row in rows])
 
     async def save(self, alert: Alert) -> None:
         row = await self._session.get(AlertRow, alert.id)
@@ -145,150 +151,3 @@ class SqlAlertRepository:
         return await alert_feedback.counts(
             self._session, indicator.id, indicator.created_by, indicator.team_id, since, until
         )
-
-
-class SqlWarningStore:
-    """Opens its own session per call, so the evaluator never shares one with a request."""
-
-    def __init__(
-        self,
-        session_factory: Callable[[], AsyncSession],
-        policy_factory: Callable[[AsyncSession], AccessPolicy],
-        *,
-        installation_copy: bool = False,
-    ) -> None:
-        self._session_factory = session_factory
-        self._policy_factory = policy_factory
-        self._installation_copy = installation_copy
-
-    async def _authorise(
-        self, session: AsyncSession, row: IndicatorRow, *, for_update: bool = False
-    ) -> AccessContext | None:
-        origin = (row.created_by, row.team_id)
-        try:
-            access = await self._policy_factory(session).background(
-                row.created_by, row.team_id, for_update=for_update
-            )
-            current = await session.get(IndicatorRow, row.id, populate_existing=True)
-            if current is None:
-                return None
-            if not row.enabled or (row.created_by, row.team_id) != origin:
-                return None
-            if row.plan_id is not None:
-                plan = await session.get(CollectionPlanRow, row.plan_id, populate_existing=True)
-                if plan is None:
-                    return None
-                access.require_same_scope(
-                    row.created_by, row.team_id, plan.created_by, plan.team_id
-                )
-            return access
-        except (Forbidden, InvalidRequest, NotFound, Unauthenticated):
-            return None
-
-    async def can_run(self, indicator: Indicator) -> bool:
-        async with self._session_factory() as session:
-            row = await session.get(IndicatorRow, indicator.id)
-            if row is None or await self._authorise(session, row) is None:
-                return False
-            return _indicator_from_row(row) == indicator
-
-    async def enabled_indicators(self) -> list[Indicator]:
-        async with self._session_factory() as session:
-            rows = await session.scalars(select(IndicatorRow).where(IndicatorRow.enabled.is_(True)))
-            return [_indicator_from_row(row) for row in rows]
-
-    async def latest_alert(self, indicator_id: UUID) -> Alert | None:
-        async with self._session_factory() as session:
-            row = await session.scalar(
-                select(AlertRow)
-                .where(AlertRow.indicator_id == indicator_id)
-                .order_by(AlertRow.fired_at.desc())
-                .limit(1)
-            )
-            return None if row is None else _alert_from_row(row)
-
-    async def alerted_event_ids(self, indicator_id: UUID, since: datetime) -> frozenset[str]:
-        # Both predicates run in SQL; only the cited ids column is loaded, with no limit,
-        # so an older alert inside the window can never be dropped and re-fire.
-        async with self._session_factory() as session:
-            cited: ScalarResult[list[Any]] = await session.scalars(
-                select(AlertRow.event_ids).where(
-                    AlertRow.indicator_id == indicator_id, AlertRow.fired_at >= since
-                )
-            )
-            return frozenset(str(item) for ids in cited for item in ids or ())
-
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
-        if (
-            alert.report_id is not None
-            or alert.indicator_id is None
-            or alert.schedule_id is not None
-        ):
-            return False  # Reports are linked only through the separately authorised path.
-        async with self._session_factory() as session:
-            row = await session.get(IndicatorRow, alert.indicator_id)
-            if row is None or await self._authorise(session, row, for_update=True) is None:
-                return False
-            if (alert.created_by, alert.team_id) != (row.created_by, row.team_id):
-                return False
-            if _indicator_from_row(row) != indicator:
-                return False
-            latest = await session.scalar(
-                select(AlertRow)
-                .where(AlertRow.indicator_id == row.id)
-                .order_by(AlertRow.fired_at.desc())
-                .limit(1)
-            )
-            if latest is not None and alert.fired_at - latest.fired_at < indicator.cooldown:
-                return False
-            session.add(_alert_row(alert))
-            await session.flush()
-            await enqueue_alert_notifications(
-                session, alert, installation_copy=self._installation_copy
-            )
-            await session.commit()
-            return True
-
-    async def attach_report(self, alert_id: UUID, report_id: UUID) -> bool:
-        async with self._session_factory() as session:
-            row = await session.get(AlertRow, alert_id)
-            indicator = (
-                None
-                if row is None or row.indicator_id is None
-                else await session.get(IndicatorRow, row.indicator_id)
-            )
-            if row is None or indicator is None:
-                return False
-            access = await self._authorise(session, indicator, for_update=True)
-            row = await session.get(AlertRow, alert_id, populate_existing=True)
-            if row is None:
-                return False
-            if access is None or (row.created_by, row.team_id) != (
-                indicator.created_by,
-                indicator.team_id,
-            ):
-                return False
-            report = await session.get(ReportRow, report_id, populate_existing=True)
-            if report is None:
-                return False
-            try:
-                access.require_same_scope(
-                    row.created_by, row.team_id, report.created_by, report.team_id
-                )
-            except (Forbidden, InvalidRequest, NotFound):
-                return False
-            row.report_id = report_id
-            await session.commit()
-            return True
-
-    async def prune(self, before: datetime) -> int:
-        async with self._session_factory() as session:
-            stale = select(func.count()).select_from(AlertRow).where(AlertRow.fired_at < before)
-            count = int(await session.scalar(stale) or 0)
-            if count:
-                await session.execute(delete(AlertRow).where(AlertRow.fired_at < before))
-            # Counts use acknowledgement days, not the raw alert's firing time.
-            cutoff = before.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-            await alert_feedback.prune(session, cutoff)
-            await session.commit()
-            return count

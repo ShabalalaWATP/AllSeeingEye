@@ -16,6 +16,7 @@ from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.research_capabilities import ProviderCapabilities
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import (
@@ -85,7 +86,11 @@ class RetainedAreaFeedProvider:
     def _disabled_result(self) -> ResearchBatch:
         return self._receipt(
             CollectionStatus.UNAVAILABLE,
-            "Retained area feeds are disabled by the administrator. No results were admitted.",
+            source_denial_reason(
+                self._admission,
+                self.id,
+                "Retained area feeds are disabled by the administrator. No results were admitted.",
+            ),
         )
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:

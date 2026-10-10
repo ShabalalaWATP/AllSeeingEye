@@ -20,9 +20,10 @@ from ase.domain.warning import Alert, Indicator
 log = structlog.get_logger(__name__)
 
 TIMEOUT_SECONDS = 10.0
-# Gateway, overload and request-timeout answers mean the receiver did not accept the alert.
-# Every attempt carries the alert id as its Idempotency-Key, so a retry cannot duplicate it.
-RETRYABLE_SERVER_STATUSES = frozenset({502, 503, 504})
+# The outbox deliberately retries these responses even if the receiver already accepted.
+# This bounded at-least-once policy can duplicate delivery. Idempotency-Key only helps
+# receivers that implement deduplication; it cannot establish their acceptance state.
+RETRIED_GATEWAY_STATUSES = frozenset({502, 503, 504})
 
 
 def alert_payload(alert: Alert, indicator: Indicator) -> dict[str, object]:
@@ -113,9 +114,9 @@ class WebhookNotifier:
             return DeliveryOutcome.UNCERTAIN if attempted else DeliveryOutcome.RETRYABLE
         if not 200 <= status < 300:
             log.warning("alert_webhook_rejected", status=status)
-            if status >= 500 and status not in RETRYABLE_SERVER_STATUSES:
+            if status >= 500 and status not in RETRIED_GATEWAY_STATUSES:
                 return DeliveryOutcome.UNCERTAIN
-            return DeliveryOutcome.RETRYABLE  # Includes 408 and the other 4xx refusals.
+            return DeliveryOutcome.RETRYABLE  # Includes 3xx/4xx, without proving non-acceptance.
         return DeliveryOutcome.SENT
 
 

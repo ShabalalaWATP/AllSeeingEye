@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from ase.application.dto import AuthSession, RequestContext
 from ase.application.ports import AccessTokenIssuer, Clock, RefreshTokenRepository, TokenGenerator
+from ase.domain.errors import Unauthenticated
 from ase.domain.tokens import RefreshToken
 from ase.domain.users import User
 
@@ -50,10 +51,16 @@ class SessionFactory:
             user_agent=context.user_agent,
             mfa_verified=mfa_verified,
         )
+        if family_id is None:
+            await self._refresh_tokens.start_family(user.id, token.family_id, now)
+        activity = await self._refresh_tokens.activity(user.id, token.family_id, now)
+        if activity is None or activity.expired:
+            raise Unauthenticated()
         await self._refresh_tokens.add(token)
         return AuthSession(
             access=self._issuer.issue(user, token.family_id),
             refresh_secret=secret,
             csrf_token=self._generator.new_secret(),
             user=user,
+            activity=activity,
         )

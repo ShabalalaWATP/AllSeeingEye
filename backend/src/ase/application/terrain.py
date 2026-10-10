@@ -7,15 +7,24 @@ from ase.application.ports.services import RateLimiter
 from ase.application.ports.terrain import TerrainGateway
 from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.events import Point
+from ase.domain.source_licences import SourceLicencePolicy
 from ase.domain.terrain import MAX_TERRAIN_POSITIONS, MAX_TERRAIN_TILES, terrain_pixel
 
 
 class TerrainSampler:
-    def __init__(self, gateway: TerrainGateway, limiter: RateLimiter) -> None:
+    def __init__(
+        self,
+        gateway: TerrainGateway,
+        limiter: RateLimiter,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
         self._gateway, self._limiter = gateway, limiter
+        self._licences = licences or SourceLicencePolicy(())
         self._active = 0
 
     async def sample(self, actor_id: UUID, positions: tuple[Point, ...]) -> tuple[float, ...]:
+        self._licences.require("map:terrain_elevation")
         if not 1 <= len(positions) <= MAX_TERRAIN_POSITIONS:
             raise InvalidRequest("Choose between 1 and 1,000 terrain samples.")
         try:

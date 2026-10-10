@@ -21,7 +21,14 @@ const loadConnectionStatus = async () => {
 const loadSystemUsage = async () => summariseUsage(await previewAiUsage({ system: true }));
 
 const SEGMENTS: readonly {
-  key: 'healthy' | 'failing' | 'blockedUpstream' | 'idle' | 'switchedOff' | 'blockedByOperator';
+  key:
+    | 'healthy'
+    | 'failing'
+    | 'blockedUpstream'
+    | 'idle'
+    | 'switchedOff'
+    | 'blockedByOperator'
+    | 'blockedByLicence';
   label: string;
   bar: string;
   tone: StatusTone;
@@ -32,6 +39,7 @@ const SEGMENTS: readonly {
   { key: 'idle', label: 'Waiting', bar: 'bg-cyan', tone: 'info' },
   { key: 'switchedOff', label: 'Switched off', bar: 'bg-muted', tone: 'neutral' },
   { key: 'blockedByOperator', label: 'Blocked by operator', bar: 'bg-amber', tone: 'warning' },
+  { key: 'blockedByLicence', label: 'Licence unavailable', bar: 'bg-amber', tone: 'warning' },
 ];
 
 export function SourcesCard({ className = '' }: { className?: string }) {
@@ -46,6 +54,7 @@ export function SourcesCard({ className = '' }: { className?: string }) {
     >
       {(sources) => {
         const summary = summariseSources(sources);
+        const statusCount = SEGMENTS.reduce((count, segment) => count + summary[segment.key], 0);
         if (summary.total === 0)
           return <p className="text-sm text-muted">No collection sources are registered.</p>;
         return (
@@ -70,7 +79,7 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                   <span
                     key={segment.key}
                     className={`${segment.bar} h-full border-r border-surface last:border-r-0`}
-                    style={{ width: `${(summary[segment.key] / summary.scheduled) * 100}%` }}
+                    style={{ width: `${(summary[segment.key] / statusCount) * 100}%` }}
                   />
                 ),
               )}
@@ -98,10 +107,15 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                 </h3>
                 <ul className="mt-2 space-y-2">
                   {summary.attention.slice(0, 3).map((source) => {
-                    const detail = source.health.blocked_reason ?? source.health.last_error;
+                    const licenceBlocked = source.licence?.available === false;
+                    const detail = licenceBlocked
+                      ? source.licence?.reason
+                      : (source.health.blocked_reason ?? source.health.last_error);
                     return (
                       <li key={source.id} className="flex min-w-0 flex-wrap items-center gap-2">
-                        {source.environment_disabled === true ? (
+                        {licenceBlocked ? (
+                          <StatusPill tone="warning">Licence unavailable</StatusPill>
+                        ) : source.environment_disabled === true ? (
                           <StatusPill tone="warning">Blocked</StatusPill>
                         ) : source.health.blocked_reason ? (
                           <StatusPill tone="warning">Blocked upstream</StatusPill>

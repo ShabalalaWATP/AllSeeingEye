@@ -20,7 +20,15 @@ const radarAttackCountrySchema = z.object({
   share_percent: z.number().min(0).max(100),
 });
 const radarAttackSchema = z.object({
-  status: z.enum(['ready', 'partial', 'stale', 'unavailable', 'not_configured', 'disabled']),
+  status: z.enum([
+    'ready',
+    'partial',
+    'stale',
+    'unavailable',
+    'not_configured',
+    'disabled',
+    'disabled_by_licence',
+  ]),
   fetched_at: z.iso.datetime({ offset: true }).nullable(),
   layers: z
     .array(

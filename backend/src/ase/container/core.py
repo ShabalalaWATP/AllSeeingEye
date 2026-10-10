@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     )
     from ase.application.ports.archive import Archiver
     from ase.application.ports.embeddings import EmbeddingGateway
+    from ase.application.ports.enterprise_enquiries import OperatorNoticeSender
     from ase.application.ports.feeds import EventBus
     from ase.application.ports.geo import CountryDirectory
     from ase.application.ports.llm import LlmGateway, LlmModelDiscovery, SecretCipher
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
     from ase.domain.aviation import JamMap
     from ase.domain.grading import SourceProfile
     from ase.domain.reasoning import ReasoningEffortPolicy
+    from ase.domain.source_licences import SourceLicencePolicy
     from ase.domain.sources import SourceSpec
     from ase.infrastructure.settings import Settings
 
@@ -69,6 +71,7 @@ class ContainerCore:
     conflicts: ConflictDirectory
     countries: CountryDirectory
     email_sender: EmailSender
+    operator_notices: OperatorNoticeSender
     embedding_gateway: EmbeddingGateway
     embedding_lock: asyncio.Lock
     search_slots: SearchSlots
@@ -98,6 +101,7 @@ class ContainerCore:
     session_factory: async_sessionmaker[AsyncSession]
     settings: Settings
     source_admission: SourceAdmission
+    source_licences: SourceLicencePolicy
     source_profiles: Mapping[str, SourceProfile]
     store: InMemoryEventStore
     watch_areas: tuple[WatchedArea, ...]

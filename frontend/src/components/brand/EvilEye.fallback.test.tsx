@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderApp } from '@/test/render';
@@ -9,6 +9,7 @@ import EvilEye from './EvilEye';
 
 // Real component: jsdom has no WebGL, so each instance keeps its captured fallback.
 vi.unmock('./EvilEye');
+vi.unmock('./EvilEyeSurface');
 
 function fallback(container: HTMLElement) {
   const image = container.querySelector('picture img');
@@ -42,8 +43,9 @@ describe('Evil Eye captured fallback', () => {
     expect(fallback(container).image).toHaveAttribute('sizes', '64px');
   });
 
-  it('keeps the large capture for the sign-in brand plane', () => {
+  it('keeps the large capture for the sign-in brand plane', async () => {
     const { container } = renderApp('/login', 'anonymous');
+    await screen.findByLabelText('Email');
     const sizes = fallback(container).image.getAttribute('sizes') ?? '';
     expect(sizes).toMatch(/480px$/);
   });

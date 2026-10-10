@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/enquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Enquiry */
+        post: operations["submit_enquiry_api_enquiries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -83,6 +100,23 @@ export interface paths {
         put?: never;
         /** Refresh */
         post: operations["refresh_api_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activity */
+        post: operations["activity_api_auth_activity_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1200,6 +1234,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schedules/{schedule_id}/brief-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Brief Subscription Settings */
+        put: operations["edit_brief_subscription_settings_api_schedules__schedule_id__brief_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schedules/{schedule_id}/run-now": {
         parameters: {
             query?: never;
@@ -2066,6 +2117,42 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Enquiries */
+        get: operations["list_enquiries_api_admin_enquiries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/enquiries/{enquiry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Enquiry */
+        get: operations["get_enquiry_api_admin_enquiries__enquiry_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Enquiry */
+        delete: operations["delete_enquiry_api_admin_enquiries__enquiry_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Enquiry */
+        patch: operations["update_enquiry_api_admin_enquiries__enquiry_id__patch"];
         trace?: never;
     };
     "/api/admin/runtime": {
@@ -5563,6 +5650,12 @@ export interface components {
             baseline_ratio?: number | null;
             /** Report Id */
             report_id: string | null;
+            /** Report Job Id */
+            report_job_id?: string | null;
+            /** Report Status */
+            report_status?: ("pending" | "queued" | "running" | "paused" | "failed" | "completed" | "needs_review" | "cancelled" | "discarded") | null;
+            /** Report Error */
+            report_error?: string | null;
             /** Created By */
             created_by: string | null;
             /** Team Id */
@@ -6590,6 +6683,27 @@ export interface components {
             /** Max Collection Seconds */
             max_collection_seconds?: number | null;
         };
+        /** BriefSubscriptionSettingsIn */
+        BriefSubscriptionSettingsIn: {
+            /** Expected Revision */
+            expected_revision: string;
+            /** Name */
+            name: string;
+            /** Timezone */
+            timezone: string;
+            /** Local Hour */
+            local_hour: number;
+            /** Local Minute */
+            local_minute: number;
+            /** Cadence */
+            cadence: string;
+            /** Weekday */
+            weekday: number;
+            /** Monthday */
+            monthday: number;
+            /** Anchor Month */
+            anchor_month: number;
+        };
         /** CableOut */
         CableOut: {
             /** Id */
@@ -6675,7 +6789,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "available" | "stale" | "unavailable" | "not_loaded";
+            status: "available" | "stale" | "unavailable" | "not_loaded" | "licence_blocked";
             /** Count */
             count: number;
             /** Fetched At */
@@ -6694,6 +6808,12 @@ export interface components {
             os_layers: string[];
             /** Ai Research */
             ai_research: boolean;
+            /** Commercial Use */
+            commercial_use: boolean;
+            /** Source Licences */
+            source_licences: {
+                [key: string]: components["schemas"]["SourceLicenceOut"];
+            };
         };
         /** CapabilityPrerequisite */
         CapabilityPrerequisite: {
@@ -7701,7 +7821,7 @@ export interface components {
          * ConnectionState
          * @enum {string}
          */
-        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment" | "blocked_upstream" | "available";
+        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment" | "disabled_by_licence" | "blocked_upstream" | "available";
         /**
          * ContentCapability
          * @enum {string}
@@ -8350,6 +8470,11 @@ export interface components {
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
         /**
+         * DeploymentInterest
+         * @enum {string}
+         */
+        DeploymentInterest: "own_cloud" | "on_premises" | "air_gapped" | "undecided";
+        /**
          * DestinationKind
          * @enum {string}
          */
@@ -8926,6 +9051,82 @@ export interface components {
             /** Destination */
             destination: string;
         };
+        /** EnquiriesOut */
+        EnquiriesOut: {
+            /** Items */
+            items: components["schemas"]["EnquiryOut"][];
+            /** Total */
+            total: number;
+        };
+        /** EnquiryIn */
+        EnquiryIn: {
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Organisation */
+            organisation: string;
+            /**
+             * Role
+             * @default
+             */
+            role: string;
+            deployment_interest: components["schemas"]["DeploymentInterest"];
+            expected_users: components["schemas"]["ExpectedUsers"];
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
+        };
+        /** EnquiryOut */
+        EnquiryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Organisation */
+            organisation: string;
+            /** Role */
+            role: string;
+            deployment_interest: components["schemas"]["DeploymentInterest"];
+            expected_users: components["schemas"]["ExpectedUsers"];
+            /** Message */
+            message: string;
+            status: components["schemas"]["EnquiryStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * EnquiryStatus
+         * @enum {string}
+         */
+        EnquiryStatus: "new" | "contacted" | "closed";
+        /** EnquiryStatusIn */
+        EnquiryStatusIn: {
+            status: components["schemas"]["EnquiryStatus"];
+        };
         /** EpssScoreOut */
         EpssScoreOut: {
             /** Probability */
@@ -9396,6 +9597,11 @@ export interface components {
          * @enum {string}
          */
         ExecutionRoute: "public_research" | "retained_area" | "private_document" | "private_media" | "fresh_web";
+        /**
+         * ExpectedUsers
+         * @enum {string}
+         */
+        ExpectedUsers: "1_10" | "11_50" | "51_250" | "250_plus";
         /** ExplainerBodyOut */
         ExplainerBodyOut: {
             world: components["schemas"]["ExplainerSectionOut"];
@@ -13397,6 +13603,10 @@ export interface components {
         PublicSiteOut: {
             /** Product Page Enabled */
             product_page_enabled: boolean;
+            /** Enterprise Enquiries Enabled */
+            enterprise_enquiries_enabled: boolean;
+            /** Enterprise Enquiry Retention Days */
+            enterprise_enquiry_retention_days: number;
         };
         /** PushDeviceOut */
         PushDeviceOut: {
@@ -13679,7 +13889,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "ready" | "partial" | "stale" | "unavailable" | "not_configured" | "disabled";
+            status: "ready" | "partial" | "stale" | "unavailable" | "not_configured" | "disabled" | "disabled_by_licence";
             /** Fetched At */
             fetched_at: string | null;
             /** Layers */
@@ -16188,6 +16398,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Settings Revision */
+            settings_revision: string;
             /** Name */
             name: string;
             /** Template Id */
@@ -16259,6 +16471,10 @@ export interface components {
             last_report_id: string | null;
             /** Last Version Id */
             last_version_id: string | null;
+            /** Last Version Number */
+            last_version_number?: number | null;
+            /** Previous Version Number */
+            previous_version_number?: number | null;
             last_outcome: components["schemas"]["ReportStatus"] | null;
             last_coverage: components["schemas"]["CoverageState"] | null;
             /** Last Error */
@@ -16400,6 +16616,26 @@ export interface components {
              * @default 0
              */
             offset: number;
+        };
+        /** SessionActivityOut */
+        SessionActivityOut: {
+            /**
+             * Server Now
+             * Format: date-time
+             */
+            server_now: string;
+            /**
+             * Last Activity At
+             * Format: date-time
+             */
+            last_activity_at: string;
+            /**
+             * Idle Expires At
+             * Format: date-time
+             */
+            idle_expires_at: string;
+            /** Idle Minutes */
+            idle_minutes: number;
         };
         /** SetPasswordIn */
         SetPasswordIn: {
@@ -16762,8 +16998,29 @@ export interface components {
          * @enum {string}
          */
         SourceKind: "api" | "rss" | "geojson" | "websocket";
+        /** SourceLicenceOut */
+        SourceLicenceOut: {
+            /**
+             * Commercial Use
+             * @enum {string}
+             */
+            commercial_use: "allowed" | "forbidden" | "licence_required";
+            /** Attribution Required */
+            attribution_required: boolean;
+            /** Licence Ref */
+            licence_ref: string;
+            /** Available */
+            available: boolean;
+            /** Acknowledged */
+            acknowledged: boolean;
+            /** Reason */
+            reason: string;
+        };
         /** SourceOut */
         SourceOut: {
+            licence?: components["schemas"]["SourceLicenceOut"] | null;
+            /** Collection Mode */
+            collection_mode?: ("scheduled" | "on_demand") | null;
             /**
              * Enabled
              * @default true
@@ -17298,6 +17555,8 @@ export interface components {
             report_id: string | null;
             /** Version Id */
             version_id: string | null;
+            /** Version Number */
+            version_number?: number | null;
             /** Covered By Edition Id */
             covered_by_edition_id: string | null;
             /** Accepted As Baseline */
@@ -18175,6 +18434,7 @@ export interface components {
             /** Expires In */
             expires_in: number;
             user: components["schemas"]["UserOut"];
+            activity: components["schemas"]["SessionActivityOut"];
         };
         /** TotpConfirmIn */
         TotpConfirmIn: {
@@ -18722,6 +18982,48 @@ export interface operations {
             };
         };
     };
+    submit_enquiry_api_enquiries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnquiryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     login_api_auth_login_post: {
         parameters: {
             query?: never;
@@ -18802,7 +19104,7 @@ export interface operations {
             };
         };
     };
-    logout_api_auth_logout_post: {
+    activity_api_auth_activity_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -18811,6 +19113,56 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionActivityOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    logout_api_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-ase-session-family"?: string | null;
+                "x-ase-idle-expired"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionActivityOut"];
+                };
+            };
             /** @description Successful Response */
             204: {
                 headers: {
@@ -22102,6 +22454,50 @@ export interface operations {
             };
         };
     };
+    edit_brief_subscription_settings_api_schedules__schedule_id__brief_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefSubscriptionSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     run_subscription_now_api_schedules__schedule_id__run_now_post: {
         parameters: {
             query?: never;
@@ -24571,6 +24967,170 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_enquiries_api_admin_enquiries_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["EnquiryStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnquiriesOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_enquiry_api_admin_enquiries__enquiry_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enquiry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnquiryOut"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_enquiry_api_admin_enquiries__enquiry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enquiry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_enquiry_api_admin_enquiries__enquiry_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enquiry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnquiryStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnquiryOut"];
+                };
             };
             /** @description Unprocessable Content */
             422: {

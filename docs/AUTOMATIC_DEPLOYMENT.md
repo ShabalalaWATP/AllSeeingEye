@@ -20,7 +20,7 @@ flowchart LR
 
 1. Confirm the tested revision is still the head of `main`.
 2. Connect through a dedicated restricted deployment key with a pinned host key.
-3. Take the deployment lock and check the checkout, release compatibility, backup key and free disk space.
+3. Take the deployment lock and check the checkout, release compatibility, public-policy approval, backup key and free disk space.
 4. Build images from the tested commit and probe them as their runtime users. Running services remain online during the build.
 5. Create and authenticate a database backup, then verify the bundle.
 6. Recheck the revision, fast-forward the checkout and replace application services. Preserve the database, persistent volumes and environment file.
@@ -34,11 +34,22 @@ Changes to Compose configuration, Alembic configuration, migrations, the migrati
 
 The deployment controller scripts also require operator installation. Their installed contents must match the target commit before the controller accepts that change. A repository update cannot replace the installed controller by itself.
 
+The public-policy helper is part of that protected controller set. It validates the
+exact target revision's privacy notice and approval hash before touching the running
+release. Draft or changed wording blocks publication, including preflight checks.
+See [public-policy publication](PUBLIC_POLICY_PUBLICATION.md) for missing operator
+decisions and the manual installation boundary. Local and CI image builds remain
+possible while approval is pending; they are not release permission.
+
 Ordinary application, frontend, dependency and Caddy changes can use the automatic path once CI passes. Infrastructure and migration changes should include a specific verification and recovery plan.
 
 ## Access and configuration
 
 The workflow uses a GitHub `production` environment, the `VPS_DEPLOY_KEY`, `VPS_HOST` and `VPS_PORT` secrets and a `VPS_KNOWN_HOSTS` variable. Keep the environment's branch rules and any required approvals aligned with your release policy.
+
+The [release approval proposal and verification procedure](RELEASE_APPROVAL.md)
+specifies the required reviewer and a harmless gate check. Preparing or merging
+that procedure does not apply environment settings or authorise a release.
 
 The host-side key is restricted to the controller's `check` and `deploy` commands with a full commit SHA. It does not provide an interactive shell, file transfer or forwarding. The installed controller should be administrator-owned and protected from modification by the deployment account.
 

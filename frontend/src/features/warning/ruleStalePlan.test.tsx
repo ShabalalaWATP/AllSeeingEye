@@ -57,6 +57,9 @@ it('treats a plan list that failed to load as unknown and keeps the saved link',
   expect(select).toHaveDisplayValue('Linked plan (list not loaded)');
   expect(form.queryByText(/The linked plan is no longer available/)).not.toBeInTheDocument();
   await user.click(form.getByRole('button', { name: 'Save changes' }));
+  expect(bodies).toHaveLength(0);
+  await user.selectOptions(form.getByRole('combobox', { name: 'Report when it fires' }), '');
+  await user.click(form.getByRole('button', { name: 'Save changes' }));
   await waitFor(() => expect(bodies).toHaveLength(1));
   expect(bodies[0]?.plan_id).toBe(stalePlan);
 });

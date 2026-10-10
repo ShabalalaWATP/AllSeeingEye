@@ -11,6 +11,7 @@ from ase.application.ports.services import Clock
 from ase.domain.cameras import Camera, CameraCatalogue, CameraProviderStatus
 from ase.domain.errors import RateLimited, Unauthenticated
 from ase.domain.events import BoundingBox, Point
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 from ase.domain.users import User
 
 MAX_CAMERAS_PER_PROVIDER = 5000
@@ -48,8 +49,15 @@ def _provider_status(
 
 
 class CameraCatalogueService:
-    def __init__(self, sources: tuple[CameraSource, ...], clock: Clock) -> None:
+    def __init__(
+        self,
+        sources: tuple[CameraSource, ...],
+        clock: Clock,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
         self._sources = tuple(_CachedSource(source) for source in sources)
+        self._licences = licences or SourceLicencePolicy(())
         self._clock = clock
         self._limit = asyncio.Semaphore(4)
         self._frame_lock = asyncio.Lock()
@@ -85,6 +93,9 @@ class CameraCatalogueService:
         statuses: list[CameraProviderStatus] = []
         groups = []
         for cached in self._sources:
+            if not self._licences.allowed(f"camera:{cached.source.id}"):
+                statuses.append(self._blocked(cached))
+                continue
             available = _available_cameras(cached, now)
             status = _provider_status(cached, available)
             statuses.append(
@@ -125,6 +136,7 @@ class CameraCatalogueService:
         for cached in self._sources:
             if cached.source.id != provider:
                 continue
+            self._licences.require(f"camera:{provider}")
             reader = getattr(cached.source, "frame", None)
             if reader is None:
                 return None
@@ -180,7 +192,7 @@ class CameraCatalogueService:
         keys = [key for key in ("tfl", "hongkong", "fintraffic") if key in self.provider_ids]
         results = await asyncio.gather(*(self.catalogue(actor, key) for key in keys))
         # A result may have observed another provider before its refresh completed.
-        providers = self.snapshot(actor, limit=1).providers if results else ()
+        providers = self.snapshot(actor, limit=1).providers
         return CameraCatalogue(
             tuple(c for result in results for c in result.cameras),
             providers,
@@ -202,6 +214,9 @@ class CameraCatalogueService:
         statuses = []
         cameras: list[Camera] = []
         for cached in self._sources:
+            if not self._licences.allowed(f"camera:{cached.source.id}"):
+                statuses.append(self._blocked(cached))
+                continue
             available = _available_cameras(cached, now)
             status = _provider_status(cached, available)
             statuses.append(
@@ -220,11 +235,24 @@ class CameraCatalogueService:
                 cameras.extend(available)
         return CameraCatalogue(tuple(cameras), tuple(statuses), now)
 
+    @staticmethod
+    def _blocked(cached: _CachedSource) -> CameraProviderStatus:
+        return CameraProviderStatus(
+            cached.source.id,
+            cached.source.name,
+            "licence_blocked",
+            0,
+            None,
+            LICENCE_UNAVAILABLE,
+        )
+
     async def _refresh(self, cached: _CachedSource) -> None:
         async with cached.lock:
             await self._refresh_locked(cached)
 
     async def _refresh_locked(self, cached: _CachedSource) -> None:
+        if not self._licences.allowed(f"camera:{cached.source.id}"):
+            return
         now = self._clock.now()
         if cached.retry_at is not None and now < cached.retry_at:
             return

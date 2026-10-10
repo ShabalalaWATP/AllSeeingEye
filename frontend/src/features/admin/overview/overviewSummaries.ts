@@ -41,6 +41,7 @@ export interface SourceSummary {
   idle: number;
   switchedOff: number;
   blockedByOperator: number;
+  blockedByLicence: number;
   blockedUpstream: number;
   attention: Source[];
 }
@@ -54,17 +55,20 @@ export function summariseSources(sources: readonly Source[]): SourceSummary {
     .sort((a, b) => b.health.consecutive_failures - a.health.consecutive_failures);
   const blocked = scheduled.filter((item) => scheduledSourceStatus(item) === 'blockedByOperator');
   const switchedOff = scheduled.filter((item) => scheduledSourceStatus(item) === 'switchedOff');
+  const licence = sources.filter((item) => scheduledSourceStatus(item) === 'blockedByLicence');
   return {
     total: sources.length,
     scheduled: scheduled.length,
-    onDemand: sources.length - scheduled.length,
+    onDemand: sources.filter((item) => isOnDemandSource(item) && item.licence?.available !== false)
+      .length,
     healthy: scheduled.filter((item) => scheduledSourceStatus(item) === 'healthy').length,
     failing: failing.length,
     idle: scheduled.filter((item) => scheduledSourceStatus(item) === 'idle').length,
     switchedOff: switchedOff.length,
     blockedByOperator: blocked.length,
+    blockedByLicence: licence.length,
     blockedUpstream: upstream.length,
-    attention: [...failing, ...upstream, ...blocked],
+    attention: [...failing, ...upstream, ...licence, ...blocked],
   };
 }
 

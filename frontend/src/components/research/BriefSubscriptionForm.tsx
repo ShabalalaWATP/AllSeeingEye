@@ -8,32 +8,10 @@ import { useFieldErrors } from '@/lib/api/fieldErrors';
 import type { BriefSubscriptionSettings } from '@/lib/api/briefSubscriptions';
 import type { ResearchBrief } from '@/lib/api/researchBriefSchema';
 
-export type BriefCadence =
-  'daily' | 'weekdays' | 'weekly' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
-const cadenceOptions = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekdays', label: 'Weekdays' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Every 3 months' },
-  { value: 'semiannual', label: 'Every 6 months' },
-  { value: 'annual', label: 'Annual' },
-];
-const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
+import { SubscriptionRecurrenceFields } from './SubscriptionRecurrenceFields';
+import type { BriefCadence } from './SubscriptionRecurrenceFields';
+export type { BriefCadence } from './SubscriptionRecurrenceFields';
+
 /** Form fields for the API paths a brief subscription request can reject. */
 const SUBSCRIPTION_FIELDS = {
   name: 'Subscription name',
@@ -45,9 +23,6 @@ const SUBSCRIPTION_FIELDS = {
   anchor_month: 'Starting month',
   collection_policy: 'Future collection window',
 } as const;
-
-const calendar = (cadence: BriefCadence) =>
-  ['monthly', 'quarterly', 'semiannual', 'annual'].includes(cadence);
 
 export function BriefSubscriptionForm({
   brief,
@@ -159,65 +134,22 @@ export function BriefSubscriptionForm({
         value={name}
         onChange={(event) => setName(event.target.value)}
       />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <SelectField
-          label="Cadence"
-          {...errors.field('cadence')}
-          value={cadence}
-          onChange={(event) => setCadence(event.target.value as BriefCadence)}
-          options={cadenceOptions}
-        />
-        <TextField
-          label="IANA timezone"
-          {...errors.field('timezone')}
-          value={timezone}
-          required
-          maxLength={100}
-          onChange={(event) => setTimezone(event.target.value)}
-        />
-        <TextField
-          label="Local time"
-          {...errors.field('time')}
-          type="time"
-          step={60}
-          required
-          value={`${hour}:${minute}`}
-          onChange={(event) => {
-            const [nextHour = '', nextMinute = ''] = event.target.value.split(':');
+      <SubscriptionRecurrenceFields
+        value={{ cadence, timezone, time: `${hour}:${minute}`, weekday, monthday, anchorMonth }}
+        change={(patch) => {
+          if (patch.cadence !== undefined) setCadence(patch.cadence);
+          if (patch.timezone !== undefined) setTimezone(patch.timezone);
+          if (patch.time !== undefined) {
+            const [nextHour = '', nextMinute = ''] = patch.time.split(':');
             setHour(nextHour);
             setMinute(nextMinute);
-          }}
-        />
-      </div>
-      {cadence === 'weekly' && (
-        <SelectField
-          label="Weekday"
-          {...errors.field('weekday')}
-          value={weekday}
-          onChange={(event) => setWeekday(event.target.value)}
-          options={weekdays.map((label, index) => ({ value: String(index), label }))}
-        />
-      )}
-      {calendar(cadence) && (
-        <TextField
-          label="Day of month"
-          {...errors.field('monthday')}
-          type="number"
-          min={1}
-          max={31}
-          value={monthday}
-          onChange={(event) => setMonthday(event.target.value)}
-        />
-      )}
-      {['quarterly', 'semiannual', 'annual'].includes(cadence) && (
-        <SelectField
-          label="Starting month"
-          {...errors.field('anchor_month')}
-          value={anchorMonth}
-          onChange={(event) => setAnchorMonth(event.target.value)}
-          options={months.map((label, index) => ({ value: String(index + 1), label }))}
-        />
-      )}
+          }
+          if (patch.weekday !== undefined) setWeekday(patch.weekday);
+          if (patch.monthday !== undefined) setMonthday(patch.monthday);
+          if (patch.anchorMonth !== undefined) setAnchorMonth(patch.anchorMonth);
+        }}
+        errors={errors}
+      />
       <SelectField
         label="Future collection window"
         {...errors.field('collection_policy')}

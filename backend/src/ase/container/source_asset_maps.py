@@ -200,6 +200,18 @@ def map_layer_assets() -> list[SourceAsset]:
             "Tiles are requested by the browser as you pan and zoom.",
         ),
         asset(
+            "map:os_maps",
+            "Ordnance Survey Maps API",
+            "map_layer",
+            "request_service",
+            "Ordnance Survey",
+            "Road, Outdoor and Light raster base map layers served through the API.",
+            "The operator's OS Data Hub plan and product-specific terms apply.",
+            "https://www.ordnancesurvey.co.uk/products/os-maps-api",
+            "Great Britain, with coverage dependent on layer and plan.",
+            "Requested on demand with the operator's OS Maps key.",
+        ),
+        asset(
             "map:eox_s2cloudless",
             "Sentinel-2 cloudless imagery",
             "map_layer",

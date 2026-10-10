@@ -20,6 +20,7 @@ from ase.adapters.archive.wayback import WaybackArchiver
 from ase.adapters.feeds.acled_http import AcledHttpClient
 from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.pinned_transport import OriginPinnedTransport
 from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
@@ -36,6 +37,8 @@ from tracker_helpers import conflict_events
 
 def _context_of(client: httpx.AsyncClient) -> ssl.SSLContext:
     transport = client._transport
+    if isinstance(transport, OriginPinnedTransport):
+        transport = transport.inner
     assert isinstance(transport, httpx.AsyncHTTPTransport)
     context = transport._pool._ssl_context
     assert context is not None

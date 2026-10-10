@@ -6100,3 +6100,133 @@ process each hour. Upload reservations are capped at one per uploader with a sha
 cap of four. Source track records filter reviews and verdicts to the relevant reports
 and versions in SQL before their row limits. Orphaned citation verdicts were already
 removed on report deletion by KAN-199, with SQLite tests.
+
+### KAN-216 codebase review implementation, 10 October 2026
+
+The review included Claude's latest merged KAN-215 session and was reconciled
+against current Jira work before implementation. Isolated ticket branches now
+cover request/session security, alert publication and evidence, Brief editing,
+idle expiry, public enquiries/privacy, source licensing, external embed consent,
+CI reliability and maintainability. A separate integration branch preserves the
+primary checkout's uncommitted contributor changes. The
+[implementation ledger](reviews/KAN-216-implementation-ledger.md) records every
+ticket and its precise acceptance state.
+
+Independent review found and corrected transaction rollback, stale-tab expiry,
+pagination focus, nullable subscription configuration and contact navigation
+defects. Native PostgreSQL exposed two invalid edition-link test fixtures; the
+repaired fixtures pass on both database engines without weakening foreign keys.
+Commercial-policy review identified additional private-input and conflict-data
+consumers; their repairs passed independent review. A later combined review found
+retained corroboration provenance gaps, repaired with a shared source collector
+and independently reviewed against failed-before/passed-after regressions. The expanded
+combined backend group passed all 168 selected tests. Four additional alert cases
+verify both commercial refusal and exact-source permission before admission and
+execution. Whole-source type, lint, formatting and architecture checks pass.
+Mobile enquiry browser checks found and corrected long-text overflow. The new
+browser CI journeys exposed notification stacking and focus timing defects;
+those repairs now pass all four Chromium journeys and nineteen focused cases.
+Final integration at `26ef4c4b` also passes 235 focused frontend cases, both
+TypeScript configurations, all four production Chromium journeys (13.8 seconds),
+policy checks and bundle budgets. API and attribution regeneration leave no diff.
+The public page now scores 78/97/100 on default mobile Lighthouse and 99/97/100 on
+desktop; the earlier placeholder-stage mobile 95 criterion remains unmet. Final
+combined CI is outstanding, including a newly exposed backend auth coverage gap
+being repaired with behavioural regressions and unchanged security thresholds.
+
+The last CI repair pass preserved real database and source-policy invariants
+while correcting stale fixtures and lazy-control assumptions. Its concurrency
+review also found and fixed two real session-authority gaps: deadlines could
+cross during an awaited read, and refresh replay bypassed the account lock used
+by guarded credential operations. Deterministic regressions preceded both fixes.
+The final affected auth/FIRMS group passes 138 cases with 100% line and branch
+coverage across four auth modules; independent review is clear. The combined
+branch passes both native concurrency groups and all 30 ordinary credential and
+deadline cases on PostgreSQL. The isolated database resources are cleaned up;
+final hosted CI is still pending.
+Production, licence and privacy decisions are not inferred from implementation
+approval.
+
+The KAN-172 trace follow-up skips zero-weight noise interpolation at exact
+lattice points. Pre-change full-buffer fingerprints remain identical at sizes
+17, 256 and 257; all 19 affected graphics/noise tests, both TypeScript checks,
+the public production build and bundle budgets pass. Independent review is clear.
+A local warm CPU benchmark improved from 8.293 ms to 6.005 ms median; this does
+not establish a new mobile Lighthouse score. The larger graphics-startup and
+public-entry performance gap remains explicit.
+
+A fresh Chrome check reproduced a separate in-page contact focus defect: native
+fragment navigation left focus on the body. Router-owned links now retain the
+existing heading focus and scrolling, with failing-before/passing-after tests
+and native browser verification. The affected 16-case frontend group passes;
+the metadata test also waits for settled route effects without dropping any
+assertions. The latest ordinary mobile Lighthouse run remains 78/97/100. At the
+02:01 UTC checkpoint, 27 delivery tickets have passing final CI and are In Review;
+the public/contact follow-up and combined branch still require fresh CI, while
+four acceptance/operator items remain open.
+
+The contact repair then passed all 39 public checks, and combined `f0f3051c`
+passed all 40 checks at 02:25 UTC. The same-protocol public graphics follow-up
+uses the unchanged renderer in bounded workers and discovers the hero capture
+earlier. It reduces mobile blocking time from 301 ms to 22 ms and improves the
+score from 77 to 85, with desktop 100. Native fault-injection checks cover worker
+startup failure, context loss, pause and disposal. All 138 affected cases, 12
+tooling cases, build/budgets and Caddy/browser checks pass, with clear independent
+reviews. The mobile 95 target remains open. A broader preload-shell experiment
+did not improve the score and was removed. The follow-up is integrated from
+`f9393e3e` and requires new full CI. Licence, public-policy and live release-control
+decisions remain with the operator; nothing was merged to main or deployed.
+
+### KAN-172 mobile score 90, 10 October 2026
+
+Alex requested a 90 mobile performance target. The public page now avoids loading
+account bootstrap, the full validation entry and private navigation metadata at
+startup. Public eye workers load the existing synchronous renderer only when
+fallback needs it. Four small shared modules use one chunk to reduce repeated
+security-header transfers. Existing WebP icons reduce manifest payload, and the
+hero remains visible in its opening, paused and reduced-motion states.
+
+Three consecutive production Caddy HTTPS mobile runs score 90/97/100, with unchanged
+Lighthouse settings, full story and normal motion; the matched old build scores
+87/97/100. Desktop scores 100/97/100. The separate HTTP fixture scores 87, so server
+conditions are reported explicitly. Focused functional, title/focus, validation,
+renderer and tooling checks pass; native browser checks preserve runtime gates,
+enquiry submission and worker fallback. Independent reviews are clear. Evidence
+and limitations are recorded in `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`; published
+CI and release approval remain separate requirements.
+
+### Review closure evidence, 10 October 2026
+
+The final acceptance pass checks live Jira criteria against the combined source
+and exact-head CI. KAN-230's CI guide now describes the dedicated product budget
+and supersedes the historical 95 target with Alex's approved 90 target and
+measured results. Public and combined CI passed all 39/40 checks at
+`4c9327a9` / `99bff8f9`; the acceptance record now links that evidence. The
+documentation refresh passes 21 coverage/sharding checks, 12 bundle/import checks
+and all 11 local file links. KAN-226's validated non-code deliverable is Done.
+Implementation tickets remain subject to authorised merge, with live publication
+and migration requirements recorded separately.
+
+## 10 October 2026: complete the remaining review evidence
+
+KAN-172's footer now exposes accessible public Accessibility, Terms and Business
+pages. Actual operator wording remains unconfirmed; service details participate
+in both publication validators and the exact-content approval hash. Thirty DOM
+cases, nineteen bootstrap cases, five Node publication cases and ten Python
+publication cases pass. TypeScript, whole frontend lint, production build,
+formatting and unchanged bundle/source-size gates pass. Independent frontend
+review found no blocker; its stale-service-approval regression suggestion is tested.
+
+KAN-194 now supplies immutable provenance for six previously unlinked catalogue
+rows, with dates labelled as catalogue checks rather than verified provider terms.
+Its 51 backend and two attribution tests, generation freshness and independent
+security review pass. The 157 attempted terms reviews and all permissions remain
+unchanged. Final contact screenshots, native contrast resolution and a sanitised
+17-observation embed-consent capture are published in the final browser record.
+
+The final mobile build scores 90/97/100 in a controlled comparison. The initial
+89 result and differing CPU benchmark are retained explicitly, with no code change
+between measurements. The closure matrix identifies two non-code Done tickets,
+27 implementation tickets awaiting authorised integration and three operator/live
+items. Main has not been merged and production has not changed. Final aggregate
+CI and release approval remain separate requirements.

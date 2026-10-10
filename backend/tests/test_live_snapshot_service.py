@@ -210,7 +210,7 @@ def test_container_builds_nothing_when_disabled(monkeypatch: pytest.MonkeyPatch)
 
 FEED_WORKERS = ("scheduler", "aviation_monitor", "evaluator", "translation_queue")
 OTHER_WORKERS = ("conflict_screening", "social_monitor", "schedule_runner", "report_job_worker")
-Lifecycle = tuple[FastAPI, list[str], "RecordingStorage"]
+Lifecycle = tuple[FastAPI, list[str], "RecordingStorage", AsyncMock]
 
 
 @pytest.fixture
@@ -225,7 +225,8 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
             stop=AsyncMock(side_effect=lambda: order.append(f"{name}.stop")),
         )
 
-    monkeypatch.setattr("ase.app_lifecycle.expire_original_assets", AsyncMock())
+    expiry = AsyncMock()
+    monkeypatch.setattr("ase.app_lifecycle.expire_original_assets", expiry)
     for name in ("alert_dispatcher", "notification_dispatcher", "digest_worker"):
         monkeypatch.setattr(f"ase.app_lifecycle.{name}", lambda _: SimpleNamespace(run=AsyncMock()))
     monkeypatch.setattr("ase.app_lifecycle.run_web_push", AsyncMock())
@@ -236,27 +237,30 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
     monkeypatch.setattr("ase.app_lifecycle.build_live_snapshot", lambda _: service(store, storage))
     app = FastAPI()
     app.state.container = SimpleNamespace(
-        settings=SimpleNamespace(feeds_enabled=True),
+        settings=SimpleNamespace(feeds_enabled=True, enterprise_enquiry_retention_days=90),
         dispose=AsyncMock(side_effect=lambda: order.append("dispose")),
         session_factory=Mock(),
         clock=Mock(),
         store=store,
         **{name: worker(name) for name in (*FEED_WORKERS, *OTHER_WORKERS)},
     )
-    return app, order, storage
+    return app, order, storage, expiry
 
 
 async def test_lifecycle_loads_before_feeds_and_saves_after_they_stop(lifecycle: Lifecycle) -> None:
-    app, order, storage = lifecycle
+    app, order, storage, expiry = lifecycle
     async with lifespan(app):
         assert order.index("read") < order.index("scheduler.start")
         assert "write" not in order
     assert order.index("scheduler.stop") < order.index("write") < order.index("dispose")
     assert [event.id for event in storage.saved[0][0]] == [make_event("restored").id]
+    expiry.assert_called_once_with(
+        app.state.container.session_factory, app.state.container.clock, 90
+    )
 
 
 async def test_partial_startup_still_saves_a_completed_load(lifecycle: Lifecycle) -> None:
-    app, order, _ = lifecycle
+    app, order, _, _ = lifecycle
     app.state.container.evaluator.start.side_effect = RuntimeError("startup failed")
     with pytest.raises(RuntimeError, match="startup failed"):
         async with lifespan(app):

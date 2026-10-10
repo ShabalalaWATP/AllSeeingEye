@@ -22,6 +22,7 @@ const edition: SubscriptionEdition = {
   job_id: null,
   report_id: null,
   version_id: null,
+  version_number: null,
   accepted_as_baseline: false,
   comparison: null,
   safe_reason: 'research_usage_limit',

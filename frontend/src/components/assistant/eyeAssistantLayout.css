@@ -1,0 +1,105 @@
+.eye-assistant {
+  --eye-accent: var(--color-cyan);
+  color: var(--color-text);
+}
+.eye-assistant button:focus-visible,
+.eye-assistant a:focus-visible,
+.eye-assistant select:focus-visible,
+.eye-assistant textarea:focus-visible {
+  outline: 2px solid var(--eye-accent);
+  outline-offset: 3px;
+}
+.eye-assistant button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.eye-assistant-panel {
+  position: fixed;
+  z-index: 43;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 32px);
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: eye-panel-arrive 150ms ease-out;
+  font-size: 13px;
+}
+.eye-assistant-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 64px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+.eye-assistant-heading img {
+  width: 42px;
+  height: 30px;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at center, black 35%, transparent 72%);
+}
+.eye-assistant-heading h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.eye-assistant-heading p {
+  margin-top: 2px;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.eye-window-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.eye-size-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--color-text);
+}
+.eye-icon-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--color-muted);
+  font-size: 24px;
+}
+.eye-icon-action:hover,
+.eye-size-action:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+.eye-assistant-tools {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 4px 16px;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.eye-assistant-tools button {
+  min-height: 32px;
+}
+.eye-assistant-tools button:hover {
+  color: var(--eye-accent);
+}
+.eye-assistant-tools > span {
+  margin-left: auto;
+  color: var(--color-muted);
+}

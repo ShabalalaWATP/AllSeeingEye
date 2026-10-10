@@ -137,12 +137,13 @@ async def test_token_claim_is_rolled_back_and_rejects_expiry(
     async with container.session_factory() as session:
         repos = container.repositories(session)
         if kind == "refresh":
+            family_id = uuid4()
             await repos.refresh_tokens.add(
                 RefreshToken(
                     id=token_id,
                     user_id=user.id,
                     token_hash=container.generator.hash("fixture-refresh"),
-                    family_id=uuid4(),
+                    family_id=family_id,
                     parent_id=None,
                     issued_at=now,
                     expires_at=now + timedelta(minutes=1),
@@ -151,6 +152,9 @@ async def test_token_claim_is_rolled_back_and_rejects_expiry(
                     user_agent=None,
                 )
             )
+            # A token without the persistent activity record must fail closed.
+            assert not await repos.refresh_tokens.consume(token_id, now)
+            await repos.refresh_tokens.start_family(user.id, family_id, now)
         else:
             await repos.password_tokens.add(
                 PasswordToken(

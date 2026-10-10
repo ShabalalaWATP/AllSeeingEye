@@ -54,7 +54,9 @@ class AdminWiring(ContainerCore):
 
     def _resume_firms(self) -> None:
         for sensor in FIRMS_SENSORS:
-            self.scheduler.resume(f"firms_viirs_{sensor.suffix}")
+            source_id = f"firms_viirs_{sensor.suffix}"
+            if self.source_licences.allowed(source_id):
+                self.scheduler.resume(source_id)
 
     def admin_firms_credentials(self, session: AsyncSession) -> AdminFirmsCredentials:
         r = self.repositories(session)
@@ -72,6 +74,7 @@ class AdminWiring(ContainerCore):
             area=self.settings.firms_area,
             environment_managed=bool(self.settings.firms_map_key),
             environment_disabled="firms_viirs_noaa20" in self.settings.disabled_feed_ids,
+            licences=self.source_licences,
         )
 
     def list_requests(self, session: AsyncSession) -> ListRequestsUseCase:
@@ -94,6 +97,7 @@ class AdminWiring(ContainerCore):
             r.uow,
             tuple(self.settings.disabled_feed_ids),
             withdraw=self.scheduler.withdraw,
+            licences=self.source_licences,
         )
 
     def approve_request(self, session: AsyncSession) -> ApproveRequestUseCase:

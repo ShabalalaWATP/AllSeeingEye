@@ -15,18 +15,9 @@ from ase.adapters.research_media.models import (
 )
 from ase.adapters.research_media.tools import trusted_tool
 from ase.adapters.research_media.video import extract_video
+from ase.domain.private_input_sources import MEDIA_TYPES
 
-__all__ = ["MediaExtractionResult", "MediaTools", "extract_media"]
-
-MEDIA_TYPES = {
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".webp": "image/webp",
-    ".mp4": "video/mp4",
-    ".mov": "video/quicktime",
-    ".webm": "video/webm",
-}
+__all__ = ["MEDIA_TYPES", "MediaExtractionResult", "MediaTools", "extract_media"]
 
 
 def extract_media(data: bytes, filename: str, tools: MediaTools) -> MediaExtractionResult:

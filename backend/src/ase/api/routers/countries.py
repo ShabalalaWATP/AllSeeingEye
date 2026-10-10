@@ -16,6 +16,7 @@ router = APIRouter(prefix="/countries", tags=["geo"])
 async def list_countries(
     user: CurrentUser, container: ContainerDep, request: Request, fence: FenceDep
 ) -> Response:
+    container.source_licences.require("map:natural_earth_countries")
     snapshot = container.countries
     result = catalogue_responses.get(
         "/api/countries",

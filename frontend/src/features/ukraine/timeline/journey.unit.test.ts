@@ -62,7 +62,10 @@ describe('buildJourney', () => {
   });
 
   it('breaks ties on identical dates by id so the order never wobbles', () => {
-    const same = { ...reference, events: [event('z', 'invasion', '2022-02-24'), reference.events[1]!] };
+    const same = {
+      ...reference,
+      events: [event('z', 'invasion', '2022-02-24'), reference.events[1]!],
+    };
     expect(buildJourney(same).stops.map((stop) => stop.event.id)).toEqual(['a', 'z']);
   });
 

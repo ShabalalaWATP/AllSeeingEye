@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { LeaveGuard } from '@/components/ui/LeaveGuard';
 import { createBrief, reviseBrief } from '@/lib/api/researchBriefs';
 import type { BriefDraft, ResearchBrief } from '@/lib/api/researchBriefSchema';
 import { briefCanRun, draftFromBrief } from '@/lib/researchBriefDraft';
@@ -45,8 +46,10 @@ export function BriefEditor({
 }) {
   const [draft, setDraft] = useState(() => structuredClone(initial.draft));
   const currentDraft = useRef(draft);
+  const released = useRef(false);
   useEffect(() => {
     currentDraft.current = draft;
+    released.current = false;
   }, [draft]);
   const [saved, setSaved] = useState(initial.copy ? null : initial.brief);
   const [baseline, setBaseline] = useState(() => structuredClone(initial.draft));
@@ -93,6 +96,8 @@ export function BriefEditor({
       setBaseline(structuredClone(canonical));
       setNotice(`Saved revision ${result.identity.revision}.`);
       setStep('run');
+      // onSaved navigates before React commits the clean canonical draft.
+      released.current = true;
       onSaved(result);
     } catch (caught) {
       if (!pending.signal.aborted) {
@@ -124,6 +129,12 @@ export function BriefEditor({
       className="min-w-0 space-y-5 border-t border-line pt-5"
       aria-label="Research Brief editor"
     >
+      <LeaveGuard
+        dirty={dirty}
+        unrestorable={dirty}
+        released={released}
+        message="Your unsaved Research Brief changes will be lost. Leave this brief?"
+      />
       <header>
         <h2 className="text-xl font-semibold">
           {initial.copy ? 'Use this brief' : saved ? 'Edit Research Brief' : 'New Research Brief'}
@@ -269,7 +280,11 @@ export function BriefEditor({
           Save brief
         </Button>
         {step === 'run' && (
-          <Button onClick={() => void run()} disabled={!saved || dirty || !!runReason || busy}>
+          <Button
+            onClick={() => void run()}
+            disabled={!saved || dirty || !!runReason || busy}
+            aria-describedby={runReason ? 'brief-run-unavailable' : undefined}
+          >
             {execution.error ? 'Retry research run' : 'Run once'}
           </Button>
         )}
@@ -292,7 +307,7 @@ export function BriefEditor({
         </p>
       )}
       {runReason && (
-        <p className="text-xs text-muted">
+        <p id="brief-run-unavailable" className="text-xs text-muted">
           Run unavailable: {runReason}{' '}
           <Link to="/research" className="underline">
             Open Research

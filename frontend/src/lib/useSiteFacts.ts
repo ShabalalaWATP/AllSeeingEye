@@ -10,7 +10,11 @@ import { fetchSiteFacts, type SiteFacts } from './api/site';
 
 export type SiteFactsState = { status: 'loading' } | { status: 'ready'; facts: SiteFacts };
 
-const OFF: SiteFacts = { product_page_enabled: false };
+const OFF: SiteFacts = {
+  product_page_enabled: false,
+  enterprise_enquiries_enabled: false,
+  enterprise_enquiry_retention_days: 365,
+};
 let pending: Promise<SiteFacts> | null = null;
 
 function load(): Promise<SiteFacts> {
@@ -19,6 +23,11 @@ function load(): Promise<SiteFacts> {
     return OFF;
   });
   return pending;
+}
+
+/** Start the public configuration request alongside the lazy product chunk. */
+export function preloadSiteFacts(): void {
+  void load();
 }
 
 /** Tests only: forget a remembered answer between cases. */

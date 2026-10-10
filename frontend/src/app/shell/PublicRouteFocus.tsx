@@ -1,16 +1,15 @@
 import { useRef } from 'react';
 
-import { useRouteFocus } from './useRouteFocus';
+import { usePageFocus } from './usePageFocus';
 
 /**
  * Pages outside the signed-in shells get the same titles, announcements and focus moves.
  * Render it inside the page's main landmark; it finds that landmark itself so a layout
- * needs no extra wiring. `title` names a page the route title map cannot, such as the
- * not-found page.
+ * needs no extra wiring. Public callers name themselves without the private route map.
  */
-export function PublicRouteFocus({ title }: { title?: string }) {
+export function PublicRouteFocus({ title }: { title: string }) {
   const mainRef = useRef<HTMLElement | null>(null);
-  const announcerRef = useRouteFocus(mainRef, title);
+  const announcerRef = usePageFocus(mainRef, title);
   return (
     <p
       ref={(node) => {

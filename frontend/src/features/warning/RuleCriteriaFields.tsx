@@ -10,6 +10,7 @@ import {
 } from '@/lib/alertRules';
 import type { FieldErrorState } from '@/lib/api/fieldErrors';
 import type { ReportTemplate } from '@/lib/api/reports';
+import { reportTemplateProblem } from './reportTemplates';
 
 export type RuleFieldKey =
   | 'team_id'
@@ -33,13 +34,25 @@ export function RuleCriteriaFields({
   change,
   errors,
   templates,
+  planProblem,
 }: {
   fields: RuleFields;
   change: (patch: Partial<RuleFields>) => void;
   errors: FieldErrorState<RuleFieldKey>;
   templates: readonly ReportTemplate[];
+  planProblem: string | undefined;
 }) {
   const shape = fields.locationMode === 'shape';
+  const available = templates.filter(
+    (template) => !reportTemplateProblem(template, fields, planProblem),
+  );
+  const problem = fields.template
+    ? reportTemplateProblem(
+        templates.find((template) => template.id === fields.template),
+        fields,
+        planProblem,
+      )
+    : undefined;
   const windows = WINDOWS.some((option) => option.value === fields.window)
     ? WINDOWS
     : [
@@ -128,15 +141,20 @@ export function RuleCriteriaFields({
         <SelectField
           label="Report when it fires"
           {...errors.field('report_template')}
-          hint="Generated as you, scoped like the alert rule."
+          error={errors.message('report_template') ?? problem}
+          hint={
+            !fields.template && planProblem
+              ? planProblem
+              : 'Generated as you, scoped like the alert rule. Country briefs need one country; question reports need a collection plan.'
+          }
           value={shape ? '' : fields.template}
           disabled={shape}
           onChange={(event) => change({ template: event.target.value })}
           options={[
             { value: '', label: 'No report' },
-            ...templates.map((item) => ({ value: item.id, label: item.title })),
-            ...(fields.template && !templates.some((item) => item.id === fields.template)
-              ? [{ value: fields.template, label: `${fields.template} (saved)` }]
+            ...available.map((item) => ({ value: item.id, label: item.title })),
+            ...(fields.template && !available.some((item) => item.id === fields.template)
+              ? [{ value: fields.template, label: `${fields.template} (saved, unavailable)` }]
               : []),
           ]}
         />

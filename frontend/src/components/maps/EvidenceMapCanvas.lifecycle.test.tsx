@@ -9,6 +9,7 @@ import { report } from '@/test/fixtures';
 import EvidenceMapCanvas from './EvidenceMapCanvas';
 import { evidenceMapLayers } from './evidenceMapLayers';
 import { initialMapState } from './savedMapState';
+import { useCapabilitiesStore } from '@/stores/capabilities';
 
 vi.mock('@/lib/map/MapLibreEngine', () => ({ createMapLibreEngine: vi.fn() }));
 vi.mock('./evidenceMapLayers', () => ({ evidenceMapLayers: vi.fn(() => []) }));
@@ -61,11 +62,37 @@ const fire = (name: MapEngineEvent, value: unknown = {}) => act(() => events.get
 const layers = () => vi.mocked(evidenceMapLayers).mock.lastCall![0];
 
 beforeEach(() => {
+  useCapabilitiesStore.setState({ loaded: true, commercialUse: false });
   mockWebGl2(true);
   events.clear();
   stopped.length = 0;
   map.getCamera.mockReturnValue(null);
   vi.mocked(createMapLibreEngine).mockReturnValue(map);
+});
+
+it('keeps a denied saved basemap unchanged and does not mount or offer image capture', () => {
+  useCapabilitiesStore.setState({ commercialUse: true, sourceLicences: {} });
+  vi.mocked(createMapLibreEngine).mockClear();
+  const onCaptureReady = vi.fn();
+  const saved = { ...props(), basemap: 'satellite' as const };
+  render(<EvidenceMapCanvas {...saved} captureEnabled onCaptureReady={onCaptureReady} />);
+  expect(screen.getByRole('status')).toHaveTextContent('licence terms');
+  expect(createMapLibreEngine).not.toHaveBeenCalled();
+  expect(onCaptureReady).not.toHaveBeenCalled();
+  expect(saved.basemap).toBe('satellite');
+});
+
+it('applies the current scene when policy arrives after the evidence', () => {
+  useCapabilitiesStore.setState({ loaded: false, loading: true, commercialUse: null });
+  const saved = props();
+  const { rerender } = render(<EvidenceMapCanvas {...saved} sourceGeometry={collection} />);
+  expect(createMapLibreEngine).not.toHaveBeenCalled();
+  rerender(<EvidenceMapCanvas {...saved} basemap="light" sourceGeometry={collection} />);
+  act(() => useCapabilitiesStore.setState({ loaded: true, loading: false, commercialUse: false }));
+  expect(map.mount).toHaveBeenCalledOnce();
+  expect(map.setBaseLayer).toHaveBeenLastCalledWith('light');
+  expect(map.setLayers).toHaveBeenCalled();
+  expect(layers().sourceGeometry).toBe(collection);
 });
 
 it('exposes a capture function only for export and releases callbacks and renderer on unmount', async () => {

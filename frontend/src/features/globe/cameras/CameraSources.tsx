@@ -184,7 +184,7 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
         />
       </label>
       <p className="text-muted">
-        {providers.length} supported sources, all on unless switched off below.
+        {providers.length} supported sources. Sources permitted by this installation start on.
       </p>
       {!providers.length && !cameras.loading && (
         <p role="status" className="rounded border border-line p-3 text-muted">
@@ -201,7 +201,9 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                 .includes(term),
           );
           if (!rows.length) return null;
-          const selected = rows.filter((p) => cameras.providers[p.id]).length;
+          const selected = rows.filter(
+            (p) => p.status !== 'licence_blocked' && cameras.providers[p.id],
+          ).length;
           return (
             <details
               key={name}
@@ -246,23 +248,31 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                     type="button"
                     role="switch"
                     aria-label={provider.name}
-                    aria-checked={cameras.providers[provider.id] ?? false}
+                    aria-checked={
+                      provider.status !== 'licence_blocked' &&
+                      (cameras.providers[provider.id] ?? false)
+                    }
+                    disabled={provider.status === 'licence_blocked'}
                     onClick={() => cameras.toggleProvider(provider.id)}
                     className="flex min-h-11 w-full items-center gap-3 text-left font-medium focus-visible:outline-2 focus-visible:outline-cyan"
                   >
                     <span className="flex-1">{provider.name}</span>
                     <span
                       aria-hidden="true"
-                      className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${cameras.providers[provider.id] ? 'bg-cyan/70' : 'bg-white/15'}`}
+                      className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${provider.status !== 'licence_blocked' && cameras.providers[provider.id] ? 'bg-cyan/70' : 'bg-white/15'}`}
                     >
                       <span
-                        className={`h-4 w-4 rounded-full bg-white transition-transform ${cameras.providers[provider.id] ? 'translate-x-4' : ''}`}
+                        className={`h-4 w-4 rounded-full bg-white transition-transform ${provider.status !== 'licence_blocked' && cameras.providers[provider.id] ? 'translate-x-4' : ''}`}
                       />
                     </span>
                   </button>
                   <p className="text-muted">
                     {provider.count} cameras ·{' '}
-                    {provider.status === 'not_loaded' ? 'Not loaded' : provider.status}
+                    {provider.status === 'not_loaded'
+                      ? 'Not loaded'
+                      : provider.status === 'licence_blocked'
+                        ? 'Licence restriction'
+                        : provider.status}
                   </p>
                   {provider.message && <p className="text-muted">{provider.message}</p>}
                 </div>

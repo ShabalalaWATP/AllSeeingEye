@@ -61,7 +61,7 @@ export const cameraCatalogueSchema: z.ZodType<CameraCatalogue> = z.object({
       z.object({
         id: z.string().min(1).max(100),
         name: z.string(),
-        status: z.enum(['available', 'stale', 'unavailable', 'not_loaded']),
+        status: z.enum(['available', 'stale', 'unavailable', 'not_loaded', 'licence_blocked']),
         count: z.number().int().nonnegative(),
         fetched_at: z.string().nullable(),
         message: z.string().nullable(),
@@ -87,7 +87,7 @@ export function isCameraStreamUrl(value: string | null | undefined, iframe = fal
       !url.password &&
       !url.port &&
       url.hostname !== 's3-eu-west-1.amazonaws.com' &&
-      (iframe ? hosts.frames : hosts.media).includes(url.hostname)
+      (iframe ? [...hosts.frames, ...hosts.legacyFrames] : hosts.media).includes(url.hostname)
     );
   } catch {
     return false;

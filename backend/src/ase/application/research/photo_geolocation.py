@@ -34,6 +34,7 @@ from ase.application.research.photo_sun import sun_checks
 from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.llm import LlmMessage, LlmRequest, LlmRole
 from ase.domain.photo_geolocation import PhotoAssessment, PhotoProvenance, SunShadowCheck
+from ase.domain.source_licences import SourceLicencePolicy
 from ase.domain.users import User
 
 
@@ -59,11 +60,14 @@ class PhotoGeolocation:
         admission: asyncio.Semaphore,
         record_usage: UsageRecorder,
         ai_usage: AiUsageAccounting | None = None,
+        *,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self._access, self._routing, self._store = access, routing, store
         self._clock = clock
         self._vision = PhotoVision(gateway, cipher, clock, record_usage, ai_usage)
         self._limiter, self._uow, self._admission = limiter, uow, admission
+        self._licences = licences or SourceLicencePolicy(())
 
     def _require_capacity(self, actor: User, ids: tuple[UUID, ...]) -> None:
         for key, limit in (
@@ -101,6 +105,7 @@ class PhotoGeolocation:
             current.require_create(team_id)
             await check_session()
             originals = read_photos(self._store, current.actor, ids)
+            self._licences.require("research_media")
             original = originals[0]
             routing = await self._routing.snapshot(team_id=team_id, personal_owner_id=actor.id)
             profile = routing.required(LlmRole.ASSESSMENT)

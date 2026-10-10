@@ -10,15 +10,24 @@ from ase.application.dto import AccessClaims
 from ase.application.ports.map_image import MapImageOptions, MapImageRenderer
 from ase.application.research.map_views import SavedMapViews
 from ase.domain.errors import Conflict, RateLimited, Unauthenticated
+from ase.domain.map_licences import require_basemap
 from ase.domain.map_views import MapView, MapViewRevision
 from ase.domain.report_documents import ReportFile
+from ase.domain.source_licences import SourceLicencePolicy
 
 _MAP_IMAGE_SLOTS = threading.BoundedSemaphore(2)
 
 
 class ExportMapImage:
-    def __init__(self, views: SavedMapViews, renderer: MapImageRenderer) -> None:
+    def __init__(
+        self,
+        views: SavedMapViews,
+        renderer: MapImageRenderer,
+        *,
+        licences: SourceLicencePolicy | None = None,
+    ) -> None:
         self.views, self.renderer = views, renderer
+        self._licences = licences or SourceLicencePolicy(())
         self.task: asyncio.Task[bytes] | None = None
 
     @contextmanager
@@ -37,7 +46,9 @@ class ExportMapImage:
     async def resolve(
         self, claims: AccessClaims, view_id: UUID, revision_id: UUID
     ) -> tuple[MapView, MapViewRevision]:
-        return await self.views.get(claims, view_id, revision_id)
+        selected = await self.views.get(claims, view_id, revision_id)
+        require_basemap(self._licences, selected[1].state.basemap)
+        return selected
 
     async def execute(
         self,
@@ -46,6 +57,7 @@ class ExportMapImage:
         options: MapImageOptions,
     ) -> ReportFile:
         view, revision = selected
+        require_basemap(self._licences, revision.state.basemap)
         received_at = self.views.clock.now()
         self.task = asyncio.create_task(
             asyncio.to_thread(self.renderer.render, view, revision, options, received_at)

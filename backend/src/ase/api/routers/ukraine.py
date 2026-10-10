@@ -43,6 +43,8 @@ async def ukraine_control(
     fence: FenceDep,
 ) -> ControlOut:
     """The packaged snapshot changes only when the operator re-imports it."""
+    container.source_licences.require("ukraine:viina_control")
+    container.source_licences.require("ukraine:oblast_outlines")
     payload = ControlOut.build(container.ukraine_control, container.ukraine_outlines)
     await fence.confirm()
     response.headers["Cache-Control"] = "private, max-age=3600"
@@ -85,6 +87,7 @@ async def ukraine_digest(
     fence: FenceDep,
 ) -> UkraineDigestOut:
     """The fortnightly model digest and the few before it; a reader never forces new spend."""
+    container.ukraine()  # Apply the same dataset policy to previously generated digests.
     view = await container.ukraine_digest.view()
     await fence.confirm()
     response.headers["Cache-Control"] = "private, no-store"
@@ -101,6 +104,7 @@ async def refresh_ukraine_digest(
 ) -> UkraineDigestOut:
     """Administrators may ask for a digest before the fortnight is up; audited and limited."""
     await fence.confirm(admin_only=True)
+    container.ukraine()  # A refresh may return a retained digest without generating one.
     view = await container.ukraine_digest.refresh(admin, context.ip)
     response.headers["Cache-Control"] = "no-store"
     return UkraineDigestOut.from_view(view)
@@ -114,6 +118,7 @@ async def ukraine_reference(
     fence: FenceDep,
 ) -> UkraineReferenceOut:
     """Curated notes on equipment, forces and the timeline; absent until imported."""
+    container.source_licences.require("ukraine:reference_catalogue")
     catalogue = container.ukraine_reference
     if catalogue is None:
         raise NotFound()

@@ -56,7 +56,7 @@ export function CatalogueSummary({
         <h2 className="text-xs font-medium tracking-wide text-muted uppercase">By state</h2>
         <ul
           aria-label="Totals by state"
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8"
         >
           {GROUPS.map((group) => (
             <Tile

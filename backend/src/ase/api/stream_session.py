@@ -22,6 +22,7 @@ from ase.application.dto import AccessClaims
 from ase.application.ports.feeds import BusMessage, Subscription
 from ase.application.ports.session import SESSION_CHANGED
 from ase.container import Container
+from ase.domain.errors import SessionIdleExpired
 
 AccessReader = Callable[[], Awaitable[AccessContext | None]]
 MessageEncoder = Callable[[BusMessage], Awaitable[str | None]]
@@ -90,13 +91,10 @@ class LiveStream:
                 if self._shutdown_event.is_set():
                     return
                 replayed = bool(self._pending)
-                if replayed:
-                    message: BusMessage | None = self._pending.popleft()
-                else:
-                    try:
-                        message = await self._receive(subscription)
-                    except StopAsyncIteration:
-                        return
+                try:
+                    message = await self._next_message(subscription)
+                except StopAsyncIteration:
+                    return
                 if self._expired():
                     break
                 status = await self._recheck()
@@ -109,8 +107,16 @@ class LiveStream:
                 if frame is not None:
                     yield frame
             yield self._bye(cursor, "token_expired")
+        except SessionIdleExpired:
+            yield cursor.frame("access.changed", "{}", self._clock.now())
+            yield self._bye(cursor, "session_idle_expired")
         finally:
             subscription.close()
+
+    async def _next_message(self, subscription: Subscription) -> BusMessage | None:
+        if self._pending:
+            return self._pending.popleft()
+        return await self._receive(subscription)
 
     def _expired(self) -> bool:
         return self._clock.now() >= self._deadline
@@ -124,7 +130,14 @@ class LiveStream:
         try:
             finished, _ = await asyncio.wait(
                 (message, stopping),
-                timeout=max(0, min(remaining, self._ping_seconds)),
+                timeout=max(
+                    0,
+                    min(
+                        remaining,
+                        self._ping_seconds,
+                        self._container.session_freshness.max_age.total_seconds(),
+                    ),
+                ),
                 return_when=asyncio.FIRST_COMPLETED,
             )
             if stopping in finished:

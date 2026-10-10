@@ -168,7 +168,9 @@ class AlertRow(Base):
 
     __tablename__ = "alerts"
     __table_args__ = (
+        UniqueConstraint("report_job_id", name="uq_alert_report_job"),
         UniqueConstraint("annotation_transition_id", name="uq_alerts_annotation_transition_id"),
+        Index("ix_alert_report_pending", "report_status", "report_next_attempt_at"),
         CheckConstraint(
             "(indicator_id IS NOT NULL AND schedule_id IS NULL "
             "AND annotation_monitor_id IS NULL AND annotation_transition_id IS NULL) OR "
@@ -202,6 +204,18 @@ class AlertRow(Base):
     baseline_mean: Mapped[float | None] = mapped_column(Float, nullable=True)
     baseline_ratio: Mapped[float | None] = mapped_column(Float, nullable=True)
     report_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    report_job_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("report_jobs.id", name="fk_alert_report_job", ondelete="SET NULL"),
+        nullable=True,
+    )
+    report_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    report_error: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    report_rule_revision: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    report_next_attempt_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    report_snapshot: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True, deferred=True
+    )
 
 
 class ScheduleRow(Base):

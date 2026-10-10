@@ -8,11 +8,13 @@ import { ApiError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
 import { useAuthStore } from '@/stores/auth';
 import { setCsrfCookie, setVisibility } from '@/test/env';
-import { CSRF_VALUE, adminUser, plainUser, tokenFor } from '@/test/fixtures';
+import { ADMIN_TOKEN, CSRF_VALUE, adminUser, plainUser, tokenFor } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { server } from '@/test/server';
 
 import AdminSessionGate from './AdminSessionGate';
+
+const rotatedToken = tokenFor(adminUser, { revision: 'rotated' }).access_token;
 
 vi.mock('@/lib/api/auth', async (original) => ({
   ...(await original<typeof import('@/lib/api/auth')>()),
@@ -48,13 +50,27 @@ afterEach(() => {
 });
 
 describe('fresh administrator session gate', () => {
+  it('ends an explicitly idle session without trying a token refresh', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    const refresh = vi.fn(() => HttpResponse.json(tokenFor(adminUser)));
+    server.use(http.post('/api/auth/refresh', refresh));
+    vi.mocked(verifySession).mockRejectedValueOnce(
+      new ApiError(401, 'session_idle_expired', 'Idle session.'),
+    );
+    mount();
+    await waitFor(() => expect(useAuthStore.getState().status).toBe('anonymous'));
+    expect(refresh).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().idleExpiredMinutes).toBe(180);
+    await useAuthStore.getState().pendingLogout;
+  });
+
   it('hides protected content until the captured session is verified', async () => {
     const request = deferred();
     vi.mocked(verifySession).mockReturnValueOnce(request.promise);
     mount();
     expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument();
     expect(screen.getByText('Verifying administrator access')).toBeVisible();
-    expect(verifySession).toHaveBeenCalledWith('admin-access-token', expect.any(AbortSignal));
+    expect(verifySession).toHaveBeenCalledWith(ADMIN_TOKEN, expect.any(AbortSignal));
     await act(async () => {
       await Promise.resolve();
       request.resolve(adminUser);
@@ -101,7 +117,7 @@ describe('fresh administrator session gate', () => {
     server.use(
       http.post('/api/auth/refresh', () => {
         refreshes += 1;
-        return HttpResponse.json({ ...tokenFor(adminUser), access_token: 'rotated' });
+        return HttpResponse.json({ ...tokenFor(adminUser), access_token: rotatedToken });
       }),
     );
     vi.mocked(verifySession)
@@ -110,7 +126,7 @@ describe('fresh administrator session gate', () => {
     mount();
     expect(await screen.findByLabelText('Private draft')).toBeVisible();
     expect(refreshes).toBe(1);
-    expect(verifySession).toHaveBeenLastCalledWith('rotated', expect.any(AbortSignal));
+    expect(verifySession).toHaveBeenLastCalledWith(rotatedToken, expect.any(AbortSignal));
     expect(useAuthStore.getState().status).toBe('authenticated');
   });
 
@@ -129,7 +145,7 @@ describe('fresh administrator session gate', () => {
     server.use(
       http.post('/api/auth/refresh', () => {
         refreshes += 1;
-        return HttpResponse.json({ ...tokenFor(adminUser), access_token: 'rotated' });
+        return HttpResponse.json({ ...tokenFor(adminUser), access_token: rotatedToken });
       }),
     );
     vi.mocked(verifySession).mockRejectedValue(new ApiError(401, 'unauthenticated', 'Expired'));
@@ -164,7 +180,7 @@ describe('fresh administrator session gate', () => {
       const firstSignal = vi.mocked(verifySession).mock.calls[0]![1];
       const newAdmin = { ...adminUser, id: 'different-admin' };
       act(() => {
-        useAuthStore.getState().setSession({ ...tokenFor(newAdmin), access_token: 'new-token' });
+        useAuthStore.getState().setSession(tokenFor(newAdmin));
       });
       expect(firstSignal.aborted).toBe(true);
       await act(async () => {
@@ -172,7 +188,7 @@ describe('fresh administrator session gate', () => {
         if (outcome === 'success') older.resolve(plainUser);
         else older.reject(new ApiError(401, 'unauthenticated', 'Expired'));
       });
-      expect(useAuthStore.getState().accessToken).toBe('new-token');
+      expect(useAuthStore.getState().accessToken).toBe(tokenFor(newAdmin).access_token);
       expect(useAuthStore.getState().user?.id).toBe(newAdmin.id);
       expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument();
       await act(async () => {
@@ -191,9 +207,9 @@ describe('fresh administrator session gate', () => {
       target: { value: 'Unsaved' },
     });
     act(() => {
-      useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: 'rotated' });
+      useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: rotatedToken });
     });
-    expect(verifySession).toHaveBeenLastCalledWith('rotated', expect.any(AbortSignal));
+    expect(verifySession).toHaveBeenLastCalledWith(rotatedToken, expect.any(AbortSignal));
     expect(screen.getByLabelText('Private draft')).toHaveValue('Unsaved');
     await act(async () => {
       await Promise.resolve();
@@ -209,7 +225,7 @@ describe('fresh administrator session gate', () => {
     mount();
     await screen.findByLabelText('Private draft');
     act(() => {
-      useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: 'rotated' });
+      useAuthStore.getState().setSession({ ...tokenFor(adminUser), access_token: rotatedToken });
     });
     await waitFor(() => expect(screen.queryByLabelText('Private draft')).not.toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();

@@ -8,7 +8,9 @@ import { renderApp } from '@/test/render';
 describe('route guards', () => {
   it('waits for the bootstrap, then sends anonymous visitors to login with the intended path', async () => {
     const { router } = renderApp('/admin/users');
-    expect(screen.getByRole('status')).toHaveTextContent('Checking your session');
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent('Checking your session'),
+    );
 
     await useAuthStore.getState().bootstrap();
 
@@ -26,7 +28,7 @@ describe('route guards', () => {
       expect(router.state.location.pathname).toBe('/login');
     });
 
-    await user.type(screen.getByLabelText('Email'), adminUser.email);
+    await user.type(await screen.findByLabelText('Email'), adminUser.email);
     await user.type(screen.getByLabelText('Password'), ADMIN_PASSWORD);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 

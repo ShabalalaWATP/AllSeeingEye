@@ -184,8 +184,8 @@ export function useBellAlertActions(
             text: `Alerts from ${name ?? 'this rule'} no longer appear in your bell. The rule still runs and other people still see them.`,
             undoRule: { id: ruleId, name: name ?? 'this rule' },
           });
-          onItemsRemoved();
           await refresh();
+          onItemsRemoved();
         } catch (error) {
           setNotice({ alertId: alert.id, tone: 'error', text: describeError(error) });
         }

@@ -3,7 +3,9 @@ import { afterEach, expect, it, vi } from 'vitest';
 import * as api from '@/lib/api/infrastructure';
 import type { Infrastructure } from '@/lib/api/infrastructure';
 import { useAuthStore } from '@/stores/auth';
-import { plainUser } from '@/test/fixtures';
+import { applySession } from '@/test/session';
+import { mapSourceAllowed } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useInfrastructure } from './useInfrastructure';
 
@@ -46,7 +48,7 @@ const data: Infrastructure = {
 afterEach(() => vi.restoreAllMocks());
 
 it('aborts on logout and ignores a late result even when the transport resolves anyway', async () => {
-  useAuthStore.setState({ status: 'authenticated', user: plainUser });
+  applySession('user');
   let finish!: (value: Infrastructure) => void;
   const fetch = vi.spyOn(api, 'fetchInfrastructure').mockImplementation(
     () =>
@@ -55,6 +57,7 @@ it('aborts on logout and ignores a late result even when the transport resolves 
       }),
   );
   const { result } = renderHook(() => useInfrastructure());
+  await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear)).toBe(true));
   act(() => result.current.toggleNuclear());
   const signal = fetch.mock.calls[0]?.[0];
   act(() => useAuthStore.getState().clearSession());
@@ -69,12 +72,13 @@ it('aborts on logout and ignores a late result even when the transport resolves 
 });
 
 it('hides previous data and choices immediately on access changes until a fresh response', async () => {
-  useAuthStore.setState({ status: 'authenticated', user: plainUser });
+  applySession('user');
   const fetch = vi
     .spyOn(api, 'fetchInfrastructure')
     .mockResolvedValueOnce(data)
     .mockImplementation(() => new Promise(() => undefined));
   const { result } = renderHook(() => useInfrastructure());
+  await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear)).toBe(true));
   act(() => result.current.toggleNuclear());
   await waitFor(() => expect(result.current.data).toEqual(data));
   act(() => result.current.select({ kind: 'nuclear', item: plant }));

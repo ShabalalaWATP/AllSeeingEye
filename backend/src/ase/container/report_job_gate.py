@@ -16,6 +16,7 @@ from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ParentReference, require_parent
 from ase.application.reports.templates import template_for
+from ase.container.alert_reports import require_alert_origin
 from ase.container.report_job_cache import attempt_cache
 from ase.container.report_job_sources import ReportJobSourceDisabled, check_sources
 from ase.domain.errors import InvalidRequest
@@ -46,6 +47,7 @@ async def check_job(
             raise InvalidRequest("The subscription is inactive; its job cannot resume.")
     access = container.access_policy(session)
     owner = (await access.background(stored.owner_id, stored.team_id)).actor
+    await require_alert_origin(session, stored)
     frozen = stored.payload["input"]
     template = template_for(frozen["template_id"])
     repos = container.repositories(session)
@@ -66,6 +68,8 @@ async def check_job(
         else restore_job(frozen, owner, routing.required(template.role))
     )
     await check_links(container, session, stored, job)
+    if job.request.conflict_id is not None:
+        container.source_licences.require("reference:conflicts")
     baseline = await _subscription_baseline(container, session, stored, owner, job.request)
     await check_sources(container, stored, baseline)
     if baseline is not None:

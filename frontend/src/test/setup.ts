@@ -19,6 +19,7 @@ import { server } from './server';
 
 // jsdom has no WebGL, so the vendored Evil Eye is replaced by a stub that
 // exposes the props the wrappers pass to it.
+vi.mock('../components/brand/EvilEyeSurface', () => import('../components/brand/EvilEye'));
 vi.mock('../components/brand/EvilEye', async () => {
   const React = await import('react');
   interface StubProps {

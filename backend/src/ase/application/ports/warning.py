@@ -8,6 +8,8 @@ from uuid import UUID
 
 from ase.domain.access import Visibility
 from ase.domain.alert_feedback import AlertDisposition
+from ase.domain.alert_reports import AlertReportSnapshot
+from ase.domain.consumed_evidence import ConsumedEvidence, Identity
 from ase.domain.indicator_baseline import IndicatorBaseline
 from ase.domain.warning import Alert, Indicator
 
@@ -41,11 +43,19 @@ class WarningStore(Protocol):
     async def enabled_indicators(self) -> list[Indicator]: ...
     async def can_run(self, indicator: Indicator) -> bool: ...
     async def latest_alert(self, indicator_id: UUID) -> Alert | None: ...
+    async def consumed_evidence(self, indicator: Indicator, now: datetime) -> ConsumedEvidence: ...
     async def alerted_event_ids(self, indicator_id: UUID, since: datetime) -> frozenset[str]:
         """Event ids cited by the indicator's alerts fired at or after `since`."""
         ...
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool: ...
+    async def add_alert(
+        self,
+        alert: Alert,
+        indicator: Indicator,
+        *,
+        report_snapshot: AlertReportSnapshot | None = None,
+        consumed: tuple[Identity, ...] | None = None,
+    ) -> bool: ...
     async def attach_report(self, alert_id: UUID, report_id: UUID) -> bool: ...
     async def prune(self, before: datetime) -> int: ...
 

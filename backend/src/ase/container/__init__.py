@@ -69,6 +69,7 @@ from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
+from ase.container.enterprise_enquiries import EnquiryWiring
 from ase.container.evaluations import EvaluationWiring
 from ase.container.features import FeatureWiring
 from ase.container.feed_services import build_feed_connectors, build_research_service
@@ -88,14 +89,17 @@ from ase.container.source_inventory import SourceInventoryWiring
 from ase.container.team_board import TeamBoardWiring
 from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
+from ase.domain.session_activity import SessionIdlePolicy
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Environment, Settings
+from ase.infrastructure.source_licences import load_source_licences
 
 log = structlog.get_logger(__name__)
 
 
 class Container(
+    EnquiryWiring,
     ResearchUsageWiring,
     MapWiring,
     PrivateRecordWiring,
@@ -130,9 +134,16 @@ class Container(
         connectors: Sequence[FeedConnector] | None = None,
     ) -> None:
         self.settings = settings
+        self.source_licences = load_source_licences(
+            commercial_use=settings.commercial_use,
+            acknowledgements=settings.acknowledged_source_licences,
+        )
         self.clock: Clock = clock or SystemClock()
         self.limiter: RateLimiter = limiter or InMemorySlidingWindowLimiter(self.clock)
         self.email_sender: EmailSender = email_sender or build_email_sender(settings)
+        self.operator_notices = build_email_sender(settings)
+        if settings.enterprise_enquiries_enabled and not self.operator_notices.available:
+            raise ValueError("Enterprise enquiries require a configured email transport")
         self._initialise_database()
         self._initialise_authentication()
         self._initialise_live_store()
@@ -222,7 +233,7 @@ class Container(
             build_acled_tokens(settings, self.session_factory, self.cipher, self.clock),
         )
         self.source_admission = SqlSourceAdmission(
-            self.session_factory, tuple(settings.disabled_feed_ids)
+            self.session_factory, tuple(settings.disabled_feed_ids), licences=self.source_licences
         )
         self.initialise_economy()
         self._initialise_map_catalogues()
@@ -239,6 +250,7 @@ class Container(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,
             grader=self.grader, fetch_concurrency=settings.feed_fetch_concurrency,
             admission=self.source_admission,
+            licences=self.source_licences,
         )  # fmt: skip
 
     def _initialise_operational_services(self) -> None:
@@ -278,7 +290,12 @@ class Container(
         await dispose_resources(self)
 
     def repositories(self, session: AsyncSession) -> Repositories:
-        return build_repositories(session)
+        return build_repositories(
+            session,
+            SessionIdlePolicy(
+                self.settings.session_idle_minutes, self.settings.admin_session_idle_minutes
+            ),
+        )
 
     def _auditor(self, repos: Repositories) -> Auditor:
         return Auditor(repos.audit, self.clock)

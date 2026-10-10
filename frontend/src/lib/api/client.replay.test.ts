@@ -18,7 +18,12 @@ describe('explicit request replay policy', () => {
     let token = 'expired';
     const refresh = vi.fn(() => Promise.resolve((token = 'fresh')));
     const lost = vi.fn();
-    bindSession({ getAccessToken: () => token, refreshAccessToken: refresh, onSessionLost: lost });
+    bindSession({
+      getSessionGeneration: () => 0,
+      getAccessToken: () => token,
+      refreshAccessToken: refresh,
+      onSessionLost: lost,
+    });
     server.use(
       http.post('/api/costly', ({ request }) => {
         seen.push(request.headers.get('Authorization'));
@@ -55,6 +60,7 @@ describe('explicit request replay policy', () => {
     );
     const lost = vi.fn();
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'expired',
       refreshAccessToken: refresh,
       onSessionLost: lost,
@@ -84,6 +90,7 @@ describe('explicit request replay policy', () => {
   it('leaves the session decision to the refresher when refresh fails with replay disabled', async () => {
     const lost = vi.fn();
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'expired',
       refreshAccessToken: () => Promise.resolve(null),
       onSessionLost: lost,
@@ -105,6 +112,7 @@ describe('explicit request replay policy', () => {
   it('preserves default POST refresh and replay behaviour', async () => {
     const refresh = vi.fn(() => Promise.resolve('fresh'));
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'expired',
       refreshAccessToken: refresh,
       onSessionLost: vi.fn(),

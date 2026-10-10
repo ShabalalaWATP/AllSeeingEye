@@ -30,6 +30,7 @@ it('accepts older section responses without gaps and preserves new gap text', ()
 it('never replays a discard automatically after session refresh', async () => {
   const discard = vi.fn(() => apiError(401, 'unauthenticated', 'Session expired.'));
   bindSession({
+    getSessionGeneration: () => 0,
     getAccessToken: () => 'stale',
     refreshAccessToken: () => Promise.resolve('fresh'),
     onSessionLost: vi.fn(),
@@ -45,6 +46,7 @@ it('requires explicit retry after refresh and sends the same idempotency key and
   let token = 'stale';
   const requests: ReportJobCreate[] = [];
   bindSession({
+    getSessionGeneration: () => 0,
     getAccessToken: () => token,
     refreshAccessToken: () => {
       token = 'fresh';

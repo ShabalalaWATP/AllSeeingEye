@@ -9,7 +9,7 @@ import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import type { IndicatorRequest, RuleFields } from '@/lib/alertRules';
 import { MAX_DESCRIPTION, ruleProblems, ruleRequest, ruleSummary } from '@/lib/alertRules';
 import type { ReportWatchDraft } from '@/lib/alertRuleDraft';
-import type { CollectionPlan } from '@/lib/api/direction';
+import type { AreaOfInterest, CollectionPlan } from '@/lib/api/direction';
 import { ApiError } from '@/lib/api/errors';
 import { useFieldErrors } from '@/lib/api/fieldErrors';
 import type { Country } from '@/lib/api/geoSchemas';
@@ -29,6 +29,7 @@ import { RuleCriteriaFields } from './RuleCriteriaFields';
 import type { RuleFieldKey } from './RuleCriteriaFields';
 import { AreaDraftNotice, ReportDraftNotice } from './RuleDraftNotice';
 import { RuleSummary } from './RuleSummary';
+import { reportPlanProblem, reportTemplateProblem } from './reportTemplates';
 
 /** Form fields for the API paths an alert rule request can reject. */
 const RULE_FIELDS = {
@@ -58,6 +59,7 @@ interface IndicatorFormProps {
   templates: readonly ReportTemplate[];
   /** The caller's plans, or null while they are loading or unavailable. */
   plans: readonly CollectionPlan[] | null;
+  aois: readonly AreaOfInterest[] | null;
   workspaces: Workspaces;
   /** The country catalogue, or null while it is loading or unavailable. */
   countries: readonly Country[] | null;
@@ -129,6 +131,22 @@ export function IndicatorForm(props: IndicatorFormProps) {
     (team === undefined || (!team.is_active && user?.role !== 'admin'));
   const known = countries === null ? null : new Set(countries.map((country) => country.iso2));
   const problems: Record<string, string> = ruleProblems(fields, { knownCountries: known });
+  const planProblem = unknownPlan
+    ? 'The linked plan is not loaded. Choose No report or reload to check its report inputs.'
+    : reportPlanProblem(
+        fields.planId,
+        matchingPlans.find((plan) => plan.id === fields.planId),
+        props.aois,
+      );
+  const reportProblem =
+    fields.template &&
+    reportTemplateProblem(
+      templates.find((template) => template.id === fields.template),
+      fields,
+      planProblem,
+    );
+  if (reportProblem && (fields.enabled || fields.template !== editing?.report_template))
+    problems.report_template = reportProblem;
   if (fields.locationMode === 'area' && area.error) problems.bbox = area.error;
   if (invalidPlan)
     problems.plan_id =
@@ -262,6 +280,7 @@ export function IndicatorForm(props: IndicatorFormProps) {
             errors.message(key) ?? (key === 'categories' ? retained(key) : undefined),
         }}
         templates={templates}
+        planProblem={planProblem}
       />
       <RuleSummary
         rows={ruleSummary(fields, {

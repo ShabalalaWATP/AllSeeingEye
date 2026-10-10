@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.adapters.persistence.warning_mapping import _alert_row
-from ase.application.warning.evaluator import IndicatorEvaluator
 from ase.application.warning.indicators import IndicatorInput
 from ase.domain.warning import Alert, Firing, Indicator, alert_from, evaluate
 from assistant_helpers import event
@@ -81,18 +80,3 @@ async def test_alerted_ids_are_filtered_by_rule_and_window_in_sql(container, use
     assert await store.alerted_event_ids(rule.id, now - rule.window) == frozenset({"x", "y"})
     assert await store.alerted_event_ids(other.id, now - other.window) == frozenset({"z"})
     assert await store.alerted_event_ids(uuid4(), now - rule.window) == frozenset()
-
-
-class NoAlertedReads:
-    async def alerted_event_ids(self, indicator_id, since):
-        raise AssertionError("No alerted ids are needed for this rule state")
-
-
-async def test_alerted_ids_are_not_loaded_when_they_cannot_matter() -> None:
-    evaluator = IndicatorEvaluator(None, NoAlertedReads(), None, None, None)  # type: ignore[arg-type]
-    rule = indicator(window_minutes=360, cooldown_minutes=60)
-    assert await evaluator._alerted(rule, NOW, None) == frozenset()
-    assert await evaluator._alerted(rule, NOW, NOW - timedelta(minutes=30)) == frozenset()
-    assert await evaluator._alerted(rule, NOW, NOW - timedelta(hours=7)) == frozenset()
-    ratio = replace(rule, baseline_ratio=2.0)
-    assert await evaluator._alerted(ratio, NOW, NOW - timedelta(hours=2)) == frozenset()

@@ -23,6 +23,7 @@ from ase.application.ports.llm import SecretCipher
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, InvalidRequest, RateLimited, Unauthenticated
 from ase.domain.firms_credentials import FirmsCredential
+from ase.domain.source_licences import SourceLicencePolicy
 
 TTL = timedelta(minutes=15)
 
@@ -68,8 +69,10 @@ class AdminFirmsCredentials:
         area: str,
         environment_managed: bool,
         environment_disabled: bool,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self.users, self.refresh, self.repository = users, refresh, repository
+        self.licences = licences or SourceLicencePolicy(())
         self.cipher, self.probe, self.clock = cipher, probe, clock
         self.limiter, self.auditor, self.uow, self.resume = limiter, auditor, uow, resume
         self.area, self.environment_managed, self.environment_disabled = (
@@ -171,6 +174,7 @@ class AdminFirmsCredentials:
         self, claims: AccessClaims, expected: int, context: RequestContext
     ) -> FirmsTestResult:
         row = await self.editable(claims, expected)
+        self.licences.require("firms_viirs_noaa20")
         if self.environment_disabled:
             raise InvalidRequest("FIRMS is disabled by the operator environment.")
         if not row.draft_valid(self.clock.now(), self.area) or not self.cipher.available:
@@ -220,6 +224,7 @@ class AdminFirmsCredentials:
         self, claims: AccessClaims, expected: int, generation: int, context: RequestContext
     ) -> FirmsConnectionStatus:
         row = await self.editable(claims, expected)
+        self.licences.require("firms_viirs_noaa20")
         if self.environment_disabled:
             raise InvalidRequest("FIRMS is disabled by the operator environment.")
         if not self.status(row, claims).test_ok or row.test_generation != generation:

@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 
+import { sessionActivitySchema } from '@/lib/sessionActivity';
+
 export const roleSchema = z.enum(['user', 'manager', 'admin']);
 export type Role = z.infer<typeof roleSchema>;
 
@@ -46,21 +48,11 @@ export const tokenResponseSchema = z.object({
   token_type: z.literal('bearer'),
   expires_in: z.number().int(),
   user: userSchema,
+  activity: sessionActivitySchema,
 });
 export type TokenResponse = z.infer<typeof tokenResponseSchema>;
 
-export const errorEnvelopeSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    request_id: z
-      .string()
-      .regex(/^[A-Za-z0-9-]{8,64}$/)
-      .optional(),
-    fields: z.record(z.string(), z.string()).optional(),
-  }),
-});
-export type ErrorEnvelope = z.infer<typeof errorEnvelopeSchema>;
+export { errorEnvelopeSchema, type ErrorEnvelope } from './errorEnvelope';
 
 export const messageResponseSchema = z.object({ message: z.string() });
 

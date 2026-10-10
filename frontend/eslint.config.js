@@ -8,13 +8,13 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  // EvilEye.tsx is vendored third-party code kept verbatim; types.gen.ts is generated.
+  // EvilEyeSurface.tsx retains the vendored renderer component; types.gen.ts is generated.
   globalIgnores([
     'dist/**',
     'coverage/**',
     'node_modules/**',
     'src/lib/api/types.gen.ts',
-    'src/components/brand/EvilEye.tsx',
+    'src/components/brand/EvilEyeSurface.tsx',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

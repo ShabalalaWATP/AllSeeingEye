@@ -8,6 +8,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.users import SqlUserRepository
 from ase.container.repositories import build_repositories
 from ase.domain.errors import InvalidRequest, NotFound, Unauthenticated
+from ase.domain.session_activity import SessionIdlePolicy
 from test_team_board_concurrency import CONTEXT, _seed, _services
 
 
@@ -41,7 +42,7 @@ async def test_waiting_board_writer_rechecks_authority(tmp_path, monkeypatch, ac
     try:
         await asyncio.wait_for(reached.wait(), 5)
         async with factory() as session:
-            repos = build_repositories(session)
+            repos = build_repositories(session, SessionIdlePolicy())
             await repos.users.lock_administration()
             current = await repos.users.lock_by_id(member.id)
             teams = SqlTeamRepository(session)

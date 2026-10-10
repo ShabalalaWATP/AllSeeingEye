@@ -16,6 +16,7 @@ from ase.api.session_fence import SessionFence
 from ase.application.auth.session_freshness import SessionFreshness
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import Unauthenticated
+from ase.domain.session_activity import SessionActivity
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
@@ -92,15 +93,24 @@ async def test_original_token_expiry_is_checked_after_fresh_session_closes(
 
     context.__aexit__.side_effect = close
     check = AsyncMock(return_value=user)
+    checked_at = clock.now()
+    idle_deadline = checked_at + timedelta(hours=1)
+    activity = AsyncMock(
+        return_value=SessionActivity(checked_at, checked_at, idle_deadline, idle_minutes=60)
+    )
     monkeypatch.setattr("ase.api.session_fence.validate_current_session", check)
     fake = SimpleNamespace(
         session_factory=lambda: context,
         clock=clock,
-        repositories=lambda _: SimpleNamespace(users=object(), refresh_tokens=object()),
+        repositories=lambda _: SimpleNamespace(
+            users=object(), refresh_tokens=SimpleNamespace(activity=activity)
+        ),
         session_freshness=SessionFreshness(
             clock, InMemorySessionSignals(clock), timedelta(seconds=15)
         ),
     )
-    with pytest.raises(Unauthenticated):
+    with pytest.raises(Unauthenticated, match="The session has ended"):
         await SessionFence(fake, claims).confirm()
     assert context.__aexit__.await_count == check.await_count == 1
+    activity.assert_awaited_once_with(claims.user_id, claims.family_id, checked_at)
+    assert claims.expires_at <= clock.now() < idle_deadline

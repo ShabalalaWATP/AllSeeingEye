@@ -14,6 +14,7 @@ from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.ports.feeds import EventQuery
 from ase.application.warning.evaluator import IndicatorEvaluator
+from ase.domain.consumed_evidence import ConsumedEvidence
 from ase.domain.events import Event
 from ase.domain.warning import ALERT_RETENTION, Alert, Indicator
 from helpers import FakeClock
@@ -38,7 +39,12 @@ class RecordingWarnings:
         self.considered.append(indicator_id)
         return None
 
-    async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
+    async def consumed_evidence(self, indicator, now):
+        return ConsumedEvidence()
+
+    async def add_alert(
+        self, alert: Alert, indicator: Indicator, *, report_snapshot=None, consumed=None
+    ) -> bool:
         assert alert.indicator_id == indicator.id
         self.alerts.append(alert)
         return True

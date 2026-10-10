@@ -16,6 +16,7 @@ describe('abortable raw API requests', () => {
     const file = new File(['raw content'], 'a.txt');
     const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(success());
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'token',
       refreshAccessToken: () => Promise.resolve(null),
       onSessionLost: vi.fn(),
@@ -36,6 +37,7 @@ describe('abortable raw API requests', () => {
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(success());
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'old',
       refreshAccessToken: () => Promise.resolve('new'),
       onSessionLost: vi.fn(),
@@ -66,6 +68,7 @@ describe('abortable raw API requests', () => {
     const controller = new AbortController();
     const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(new Response(null, { status: 401 }));
     bindSession({
+      getSessionGeneration: () => 0,
       getAccessToken: () => 'old',
       refreshAccessToken: () => {
         controller.abort();

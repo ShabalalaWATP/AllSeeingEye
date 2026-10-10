@@ -45,11 +45,19 @@ class Settings(BaseSettings):
     # How long a release fence or stream may trust a recent session check when no
     # committed change was signalled in this process (see ADR 0021).
     session_recheck_seconds: int = Field(default=15, ge=1, le=60)
+    session_idle_minutes: int = Field(default=180, ge=5, le=1440)
+    admin_session_idle_minutes: int | None = Field(default=None, ge=5, le=1440)
     refresh_token_days: int = Field(default=14, ge=1, le=90)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     # The signed-out product page at /enterprise. Off so other installations do not show it.
     public_product_page_enabled: bool = False
+    enterprise_enquiries_enabled: bool = False
+    enterprise_enquiry_notify_email: EmailStr | None = Field(default=None, max_length=254)
+    enterprise_enquiry_retention_days: int = Field(default=365, ge=30, le=3650)
+    commercial_use: bool = False
+    # Exact catalogue IDs only; each entry acknowledges actual permission for this deployment.
+    source_licence_acknowledgements: str = Field(default="", max_length=65_536)
     log_level: str = "INFO"
     smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
     smtp_port: int = Field(default=587, ge=1, le=65535)
@@ -161,6 +169,14 @@ class Settings(BaseSettings):
         return self
 
     @model_validator(mode="after")
+    def _validate_enterprise_enquiries(self) -> Self:
+        if self.enterprise_enquiries_enabled and not (
+            self.enterprise_enquiry_notify_email and self.smtp_host and self.smtp_from_email
+        ):
+            raise ValueError("Enterprise enquiries require a notify address and configured SMTP")
+        return self
+
+    @model_validator(mode="after")
     def _finalise(self) -> Self:
         if bool(self.smtp_host) != bool(self.smtp_from_email):
             raise ValueError("Configure ASE_SMTP_HOST and ASE_SMTP_FROM_EMAIL together")
@@ -222,6 +238,14 @@ class Settings(BaseSettings):
     @property
     def disabled_feed_ids(self) -> list[str]:
         return [item.strip() for item in self.feeds_disabled.split(",") if item.strip()]
+
+    @property
+    def acknowledged_source_licences(self) -> frozenset[str]:
+        return frozenset(
+            value.strip()
+            for value in self.source_licence_acknowledgements.split(",")
+            if value.strip()
+        )
 
     @property
     def encryption_key_value(self) -> str | None:

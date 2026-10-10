@@ -1,0 +1,121 @@
+[
+  {
+    "name": "Initial placeholders: no consent, no provider requests",
+    "phase": "before-consent",
+    "providerAttemptsTotal": 0,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Explicit chart load admits one intercepted TradingView frame",
+    "phase": "explicit-load-tradingview",
+    "providerAttemptsTotal": 1,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Explicit camera load uses YouTube nocookie only",
+    "phase": "explicit-load-youtube",
+    "providerAttemptsTotal": 2,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Explicit IPCamLive load admits its intercepted frame",
+    "phase": "explicit-load-ipcamlive",
+    "providerAttemptsTotal": 3,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Withdrawal removes all open provider frames",
+    "phase": "withdraw-one-widget-grants",
+    "providerAttemptsTotal": 3,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Reload after withdrawal admits no provider",
+    "phase": "reload-after-withdrawal",
+    "providerAttemptsTotal": 3,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Memory remembering writes no browser preference",
+    "phase": "remember-youtube-in-memory",
+    "providerAttemptsTotal": 4,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "New camera waits for Play despite remembered provider",
+    "phase": "select-new-camera-with-memory-choice",
+    "providerAttemptsTotal": 4,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Play admits the selected camera",
+    "phase": "play-new-camera",
+    "providerAttemptsTotal": 5,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Stop releases the camera frame",
+    "phase": "stop-new-camera",
+    "providerAttemptsTotal": 5,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Reload resets memory-only consent",
+    "phase": "reload-memory-choice",
+    "providerAttemptsTotal": 5,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Both explicit checkboxes plus Load save the browser choice",
+    "phase": "explicit-browser-choice",
+    "providerAttemptsTotal": 6,
+    "storageKeyPresent": true,
+    "passed": true
+  },
+  {
+    "name": "Explicitly saved chart preference survives reload",
+    "phase": "reload-saved-browser-choice",
+    "providerAttemptsTotal": 7,
+    "storageKeyPresent": true,
+    "passed": true
+  },
+  {
+    "name": "Privacy settings withdrawal removes the frame and saved key",
+    "phase": "settings-withdraw-saved-choice",
+    "providerAttemptsTotal": 7,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Reload after saved-choice withdrawal blocks all providers",
+    "phase": "reload-after-saved-withdrawal",
+    "providerAttemptsTotal": 7,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "360px keyboard Load admits one camera without overflow",
+    "phase": "mobile-keyboard-load",
+    "providerAttemptsTotal": 8,
+    "storageKeyPresent": false,
+    "passed": true
+  },
+  {
+    "name": "Keyboard withdrawal removes camera and returns focus to Load",
+    "phase": "mobile-keyboard-withdraw",
+    "providerAttemptsTotal": 8,
+    "storageKeyPresent": false,
+    "passed": true
+  }
+]

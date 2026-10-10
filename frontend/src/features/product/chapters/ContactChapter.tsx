@@ -1,20 +1,21 @@
 /**
- * Chapter 10: Talk to us. The closing scene. Until the enterprise enquiry form ships
- * (KAN-166, KAN-168), organisations use the existing, administrator-reviewed account
- * request route.
+ * Chapter 10: Talk to us. Enquiries are independent of account provisioning and
+ * appear only when this installation accepts them.
  */
 import { Link } from 'react-router';
 
-import { BrandMark } from '@/components/brand/BrandMark';
+import { ProductBrandMark } from '../ProductMotionControls';
+import { EnterpriseEnquiryForm } from '../enquiry/EnterpriseEnquiryForm';
+import '../enquiry/enquiry.css';
 
 import { Reveal } from '../motion/Reveal';
 
-export function ContactChapter() {
+export function ContactChapter({ enquiriesEnabled = false }: { enquiriesEnabled?: boolean }) {
   return (
     <section id="contact" aria-label="Talk to us" className="story-chapter story-contact">
       <div className="contact-glow" aria-hidden="true" />
       <Reveal className="contact-inner">
-        <BrandMark size={56} decorative />
+        <ProductBrandMark size={56} />
         <p className="story-eyebrow">10 · Talk to us</p>
         <h2 className="story-title">Bring The All Seeing Eye inside your organisation.</h2>
         <p className="story-lead">
@@ -30,6 +31,7 @@ export function ContactChapter() {
             Sign in
           </Link>
         </div>
+        {enquiriesEnabled ? <EnterpriseEnquiryForm /> : null}
       </Reveal>
     </section>
   );

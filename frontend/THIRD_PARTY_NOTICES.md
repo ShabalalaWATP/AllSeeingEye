@@ -6,16 +6,16 @@ packages installed from npm (whose licences travel with the packages in
 
 ## React Bits: Evil Eye
 
-| Item                | Detail                                                                              |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| Component           | `EvilEye` (registry item `EvilEye-TS-TW`, TypeScript + Tailwind variant)            |
-| Source page         | https://reactbits.dev/backgrounds/evil-eye                                          |
-| Registry file       | https://reactbits.dev/r/EvilEye-TS-TW.json (`files[0].path`: `EvilEye/EvilEye.tsx`) |
-| Copied to           | `frontend/src/components/brand/EvilEye.tsx`                                         |
-| Retrieved           | 4 September 2026                                                                    |
-| Declared dependency | `ogl@^1.0.11` (installed as `ogl` 1.0.11)                                           |
-| Licence             | MIT + Commons Clause License Condition v1.0, Copyright (c) 2026 David Haz           |
-| Licence source      | https://raw.githubusercontent.com/DavidHDev/react-bits/main/LICENSE.md              |
+| Item                | Detail                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Component           | `EvilEye` (registry item `EvilEye-TS-TW`, TypeScript + Tailwind variant)                       |
+| Source page         | https://reactbits.dev/backgrounds/evil-eye                                                     |
+| Registry file       | https://reactbits.dev/r/EvilEye-TS-TW.json (`files[0].path`: `EvilEye/EvilEye.tsx`)            |
+| Copied to           | `frontend/src/components/brand/EvilEyeSurface.tsx` (the original `EvilEye.tsx` entry wraps it) |
+| Retrieved           | 4 September 2026                                                                               |
+| Declared dependency | `ogl@^1.0.11` (installed as `ogl` 1.0.11)                                                      |
+| Licence             | MIT + Commons Clause License Condition v1.0, Copyright (c) 2026 David Haz                      |
+| Licence source      | https://raw.githubusercontent.com/DavidHDev/react-bits/main/LICENSE.md                         |
 
 The Commons Clause permits using the component inside this application. It does not
 permit selling, sublicensing or redistributing the component itself, alone or in a
@@ -36,8 +36,11 @@ are unchanged.
    when `paused` returns to false, and the effect cleanup clears the resume ref.
 3. A `ResizeObserver` updates the canvas when the container changes size after
    responsive layout. The effect disconnects the observer during cleanup and
-   retains the original window-resize fallback. The vendor file remains together
-   at 352 lines to preserve its source structure; its shader is unchanged.
+   retains the original window-resize fallback; its shader is unchanged.
+4. The DOM owner now lives in `EvilEyeSurface.tsx`. Existing app callers keep the
+   synchronous `EvilEye.tsx` entry. Public worker callers load the same main-thread
+   engine only when needed for fallback, retaining the capture during loading or
+   failure. The deterministic noise cache is shared through `evilEyeNoise.ts`.
 
 ### Licence text
 

@@ -2,9 +2,9 @@ import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { LlmProfile } from '@/lib/api/llm';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
+import { accessTokenFor } from './accessTokens';
+import type { SessionActivity } from '@/lib/sessionActivity';
 
-export const ADMIN_TOKEN = 'admin-access-token';
-export const USER_TOKEN = 'user-access-token';
 export const CSRF_VALUE = 'csrf-test-value';
 export const ADMIN_PASSWORD = 'correct-horse-battery-staple';
 export const USER_PASSWORD = 'another-long-passphrase';
@@ -35,12 +35,28 @@ export const plainUser: User = {
   last_login_at: null,
 };
 
-export function tokenFor(user: User): TokenResponse {
+export const ADMIN_TOKEN = accessTokenFor(adminUser.id);
+export const USER_TOKEN = accessTokenFor(plainUser.id);
+
+export function sessionActivity(now = Date.now(), idleMinutes = 180): SessionActivity {
   return {
-    access_token: user.role === 'admin' ? ADMIN_TOKEN : USER_TOKEN,
+    server_now: new Date(now).toISOString(),
+    last_activity_at: new Date(now).toISOString(),
+    idle_expires_at: new Date(now + idleMinutes * 60_000).toISOString(),
+    idle_minutes: idleMinutes,
+  };
+}
+
+export function tokenFor(
+  user: User,
+  options: { familyId?: string; revision?: string } = {},
+): TokenResponse {
+  return {
+    access_token: accessTokenFor(user.id, options.familyId, options.revision),
     token_type: 'bearer',
     expires_in: 900,
     user,
+    activity: sessionActivity(),
   };
 }
 

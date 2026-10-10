@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 from deploy_build import build_images
+from privacy_publication import PublicationError, require_publication
 
 ROOT = Path("/home/ase/ase")
 STATE = Path("/home/ase/deployments")
@@ -26,7 +27,12 @@ KEY = Path("/home/ase/.config/all-seeing-eye/backup-auth.key")
 SITE = "https://allseeingeyeosint.com"
 CURL = ("curl", "--silent", "--show-error", "--max-time", "15")
 SERVICES = ("api", "parser", "web")
-CONTROLLERS = ("deploy_vps.py", "deploy_ssh.py", "deploy_build.py")
+CONTROLLERS = (
+    "deploy_vps.py",
+    "deploy_ssh.py",
+    "deploy_build.py",
+    "privacy_publication.py",
+)
 MANUAL_PATHS = (
     "docker-compose.yml",
     "compose.yml",
@@ -270,6 +276,7 @@ def deploy(sha: str, *, check_only: bool = False) -> None:
     require_clean()
     previous = git("rev-parse", "HEAD")
     require_compatible(previous, sha)
+    require_publication(sha, git)
     if not KEY.is_file() or shutil.disk_usage(ROOT).free < 6 * 1024**3:
         raise DeploymentError("Backup key missing or fewer than 6 GiB free on the VPS.")
     old = current_images()
@@ -330,7 +337,7 @@ def main(sha: str, *, check_only: bool = False) -> int:
             signal.signal(sig, interrupted)
         try:
             deploy(sha, check_only=check_only)
-        except (DeploymentError, OSError) as exc:
+        except (DeploymentError, PublicationError, OSError) as exc:
             print(f"Deployment stopped: {exc}", file=sys.stderr)
             return 1
     return 0

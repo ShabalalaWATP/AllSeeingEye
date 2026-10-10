@@ -12,7 +12,9 @@ import { mockMatchMedia, setVisibility } from '@/test/env';
 describe('LoginPage', () => {
   it('signs in and lands on the globe', async () => {
     const { user, router } = renderApp('/login', 'anonymous');
-    expect(screen.getByTestId('auth-backdrop')).toContainElement(screen.getByTestId('evil-eye'));
+    expect(await screen.findByTestId('auth-backdrop')).toContainElement(
+      screen.getByTestId('evil-eye'),
+    );
     expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-pupil-follow', '1');
 
     await user.type(screen.getByLabelText('Email'), plainUser.email);
@@ -27,7 +29,7 @@ describe('LoginPage', () => {
 
   it('lands an administrator in the dedicated administration area', async () => {
     const { user, router } = renderApp('/login', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), adminUser.email);
+    await user.type(await screen.findByLabelText('Email'), adminUser.email);
     await user.type(screen.getByLabelText('Password'), ADMIN_PASSWORD);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(

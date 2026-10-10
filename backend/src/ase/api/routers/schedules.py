@@ -15,6 +15,7 @@ from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.errors import InvalidQuery
 from ase.api.routers.schedule_activation import router as activation_router
 from ase.api.routers.subscription_controls import router as edition_controls_router
+from ase.api.routers.subscription_settings import router as settings_router
 from ase.api.schemas_schedules import (
     ScheduleFromBriefIn,
     ScheduleIn,
@@ -31,6 +32,7 @@ from ase.api.schemas_subscription_editions import (
     SubscriptionEventsOut,
 )
 from ase.api.session_fence import FenceDep
+from ase.api.subscription_projection import edition_outputs, schedule_outputs
 from ase.application.schedules.brief_link import standing_request_from_brief
 from ase.application.schedules.definition import ScheduleInput
 from ase.container.subscription_enqueue import SubscriptionAdmission
@@ -42,6 +44,7 @@ from ase.domain.subscription_recurrence import LocalRecurrence
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 router.include_router(edition_controls_router)
 router.include_router(activation_router)
+router.include_router(settings_router)
 
 
 @router.post("/{schedule_id}/run-now", status_code=202)
@@ -50,6 +53,7 @@ async def run_subscription_now(
     body: RunNowIn,
     user: CurrentUser,
     container: ContainerDep,
+    session: SessionDep,
     fence: FenceDep,
     context: ContextDep,
     response: Response,
@@ -62,10 +66,11 @@ async def run_subscription_now(
         context,
         SubscriptionAdmission.session_check(lambda guarded: fence.confirm(session=guarded)),
     )
-    await fence.confirm()
+    result = (await edition_outputs(container, session, user, [edition]))[0]
+    await fence.confirm(session=session)
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return SubscriptionEditionOut.from_edition(edition)
+    return result
 
 
 @router.post("/preview")
@@ -132,10 +137,7 @@ async def list_subscription_editions(
         [edition.id for edition in editions]
     )
     result = SubscriptionEditionsOut(
-        items=[
-            SubscriptionEditionOut.from_edition(edition, comparisons.get(edition.id))
-            for edition in editions
-        ],
+        items=await edition_outputs(container, session, user, editions, comparisons),
         limit=limit,
         offset=offset,
     )
@@ -184,10 +186,11 @@ async def list_schedules(
     response: Response,
 ) -> SchedulesOut:
     items = await container.list_schedules(session).execute(user)
+    result = SchedulesOut(items=await schedule_outputs(container, session, user, items))
     await fence.confirm(session=session)
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return SchedulesOut(items=[ScheduleOut.from_schedule(item) for item in items])
+    return result
 
 
 @router.post("", status_code=201)
@@ -301,9 +304,11 @@ async def update_schedule(
         context,
         check_session=lambda: fence.confirm(session=session),
     )
+    result = (await schedule_outputs(container, session, user, [updated]))[0]
+    await fence.confirm(session=session)
     fence.assert_live()
     response.headers["Cache-Control"] = "private, no-store"
-    return ScheduleOut.from_schedule(updated)
+    return result
 
 
 @router.delete("/{schedule_id}", status_code=204, response_class=Response)
