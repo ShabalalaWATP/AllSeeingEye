@@ -9,11 +9,20 @@ from httpx import AsyncClient
 from ase.application.research_readiness import ResearchReadiness
 from ase.container import Container
 from ase.domain.llm import LlmConnectionBinding, LlmProfile, LlmRole
+from ase.domain.map_licences import MAP_SOURCE_IDS
 from ase.domain.teams import Team
 from ase.domain.users import User
+from ase.infrastructure.settings import Settings
 from feeds_helpers import NOW
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from test_model_routing import profile
+
+
+@pytest.fixture(params=[False, True])
+def settings(settings: Settings, request: pytest.FixtureRequest) -> Settings:
+    return settings.model_copy(
+        update={"commercial_use": request.param, "source_licence_acknowledgements": ""}
+    )
 
 
 class Profiles:
@@ -137,16 +146,47 @@ async def _seed_global(container: Container, admin: User) -> LlmProfile:
 
 
 async def test_capabilities_expose_only_the_research_boolean(
-    client: AsyncClient, container: Container, admin: User, user: User
+    client: AsyncClient, container: Container, admin: User, user: User, settings: Settings
 ) -> None:
     assert (await client.get("/api/capabilities")).status_code == 401
     headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
     before = await client.get("/api/capabilities", headers=headers)
-    assert before.json() == {"os_maps": False, "os_layers": [], "ai_research": False}
+    assert before.status_code == 200
+    licences = before.json()["source_licences"]
+    assert set(licences) == set(MAP_SOURCE_IDS) | {
+        f"camera:{source.id}" for source in container.cameras.sources
+    }
+    for source_id, licence in licences.items():
+        assert set(licence) == {
+            "commercial_use",
+            "attribution_required",
+            "licence_ref",
+            "available",
+            "acknowledged",
+            "reason",
+        }
+        assert licence["commercial_use"] in {"allowed", "forbidden", "licence_required"}
+        assert type(licence["attribution_required"]) is bool
+        assert licence["licence_ref"] == f"docs/SOURCE_LICENCES.md#source-{source_id}"
+        assert licence["acknowledged"] is False
+        assert licence["available"] is (
+            not settings.commercial_use or licence["commercial_use"] == "allowed"
+        )
+        assert isinstance(licence["reason"], str) and licence["reason"]
+    assert licences["map:eox_s2cloudless"]["commercial_use"] == "forbidden"
+    expected = {
+        "os_maps": False,
+        "os_layers": [],
+        "ai_research": False,
+        "commercial_use": settings.commercial_use,
+        "source_licences": licences,
+    }
+    assert before.json() == expected
 
     value = await _seed_global(container, admin)
     ready = await client.get("/api/capabilities", headers=headers)
-    assert ready.json() == {"os_maps": False, "os_layers": [], "ai_research": True}
+    assert ready.status_code == 200
+    assert ready.json() == {**expected, "ai_research": True}
     for secret in (
         value.name,
         value.model,
@@ -167,4 +207,5 @@ async def test_capabilities_expose_only_the_research_boolean(
         await repos.llm_profiles.save(stored)
         await session.commit()
     inactive = await client.get("/api/capabilities", headers=headers)
-    assert inactive.json()["ai_research"] is False
+    assert inactive.status_code == 200
+    assert inactive.json() == expected
