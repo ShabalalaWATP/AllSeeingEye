@@ -6164,3 +6164,15 @@ assertions. The latest ordinary mobile Lighthouse run remains 78/97/100. At the
 02:01 UTC checkpoint, 27 delivery tickets have passing final CI and are In Review;
 the public/contact follow-up and combined branch still require fresh CI, while
 four acceptance/operator items remain open.
+
+The contact repair then passed all 39 public checks, and combined `f0f3051c`
+passed all 40 checks at 02:25 UTC. The same-protocol public graphics follow-up
+uses the unchanged renderer in bounded workers and discovers the hero capture
+earlier. It reduces mobile blocking time from 301 ms to 22 ms and improves the
+score from 77 to 85, with desktop 100. Native fault-injection checks cover worker
+startup failure, context loss, pause and disposal. All 138 affected cases, 12
+tooling cases, build/budgets and Caddy/browser checks pass, with clear independent
+reviews. The mobile 95 target remains open. A broader preload-shell experiment
+did not improve the score and was removed. The follow-up is integrated from
+`f9393e3e` and requires new full CI. Licence, public-policy and live release-control
+decisions remain with the operator; nothing was merged to main or deployed.

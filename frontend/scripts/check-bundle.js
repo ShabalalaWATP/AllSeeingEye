@@ -16,6 +16,9 @@ export const GLOBE_ROUTE_GZIP_BUDGET = 850 * 1024;
 // shared route dependencies. This is a separate ceiling, not extra initial allowance.
 export const PRODUCT_ROUTE_GZIP_BUDGET = 150 * 1024;
 const PRODUCT_ROUTE = /^ProductPage-[\w-]+\.js$/;
+// Public eyes start this worker on viewport entry. Worker URLs are not static
+// imports, so explicitly include its complete emitted closure in the same budget.
+const PRODUCT_WORKER = /^evilEye\.worker-[\w-]+\.js$/;
 // Libraries reached only through lazy routes. Loading one up front costs every visitor.
 const LAZY_ONLY = /^(?:deck|maplibre|three|hls|GlobePage)-/;
 const PRIVATE_ROUTES =
@@ -99,7 +102,9 @@ export function inspectBundle(dist) {
   const productEntries = assets.filter((name) => PRODUCT_ROUTE.test(name));
   const productChunks = staticClosure(
     dist,
-    productEntries.map((name) => `assets/${name}`),
+    [...productEntries, ...assets.filter((name) => PRODUCT_WORKER.test(name))].map(
+      (name) => `assets/${name}`,
+    ),
   ).filter((chunk) => !chunks.includes(chunk));
   const product = { chunks: productChunks, gzipBytes: gzipTotal(dist, productChunks) };
   if (productEntries.length === 0)

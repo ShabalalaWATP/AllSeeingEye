@@ -1591,3 +1591,13 @@ The combined metadata timing failure retains every assertion and now awaits
 the route effects. Fresh public/combined CI remains required. The latest mobile
 Lighthouse measurement is still 78/97/100; KAN-164, KAN-165, KAN-172 and KAN-225
 retain their recorded acceptance or operator requirements.
+
+At 02:25 UTC, public `21e9d1d9` and combined `f0f3051c` passed all 39/40 checks.
+Jira now records 28 In Review and four In Progress, with no Done transitions.
+The KAN-172 graphics worker/preload follow-up is subsequently integrated from
+`f9393e3e`: 138 affected UI/graphics cases and 12 tooling checks pass, with clear
+independent reviews and real Caddy/browser checks. Mobile performance improves
+from 77 to 85 and desktop reaches 100; mobile 95 remains unmet. The broader entry
+preload experiment was removed after no score improvement. New published-head CI
+is required; the licence, public controller details/approval and live release
+controls still need the operator's decisions. No release approval is inferred.

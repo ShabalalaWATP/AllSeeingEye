@@ -64,6 +64,10 @@
 			not path /assets/* /brand/* /robots.txt /site.webmanifest /push-worker.js /.well-known/*
 		}
 		header @app_page X-Robots-Tag "noindex, follow"
+		# Discover the hero capture before the lazy route executes. This public brand
+		# asset does not reveal product content or bypass the live configuration gate.
+		@product_entry path_regexp (?i)^/enterprise/?$
+		header @product_entry Link "</brand/eye-512.webp>; rel=preload; as=image; type=image/webp; fetchpriority=high"
 		header {
 			X-Content-Type-Options nosniff
 			Referrer-Policy no-referrer

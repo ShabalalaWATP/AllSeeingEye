@@ -34,6 +34,7 @@ export function HeroChapter() {
       <div className="hero-eye" aria-hidden="true">
         <EvilEye
           deferUntilVisible
+          workerRendering
           backgroundColor="#060606"
           scale={0.95}
           maxFps={still ? 1 : 30}
@@ -41,6 +42,7 @@ export function HeroChapter() {
           pupilFollow={still ? 0 : 1}
           paused={idle}
           fallbackSizes="(max-width: 600px) 320px, 512px"
+          fallbackPriority="high"
         />
       </div>
       <div className="hero-copy">

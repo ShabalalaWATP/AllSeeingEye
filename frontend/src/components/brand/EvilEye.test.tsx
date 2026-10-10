@@ -25,8 +25,9 @@ vi.mock('ogl', () => ({
       deleteTexture: graphics.release,
       getExtension: () => ({ loseContext: graphics.release }),
     };
-    constructor() {
+    constructor(options: { canvas: HTMLCanvasElement }) {
       if (graphics.initialiseFails) throw new Error('No graphics context');
+      this.gl.canvas = options.canvas;
     }
     setSize = vi.fn();
     render = graphics.render;
@@ -99,6 +100,15 @@ function observeVisibility() {
 }
 
 describe('Evil Eye graphics lifetime', () => {
+  it('prioritises the hero capture only when its caller requests it', () => {
+    const { container, rerender } = render(<EvilEye paused />);
+    expect(container.querySelector('img')).not.toHaveAttribute('fetchpriority');
+    rerender(<EvilEye paused fallbackPriority="high" />);
+    expect(container.querySelector('img')).toHaveAttribute('fetchpriority', 'high');
+    expect(container.querySelector('img')).toBeVisible();
+    expect(container.querySelector('source')).toHaveAttribute('type', 'image/webp');
+  });
+
   it('keeps its capture without graphics until first viewport entry when requested', () => {
     const visibility = observeVisibility();
     const { container, unmount } = render(<EvilEye deferUntilVisible />);

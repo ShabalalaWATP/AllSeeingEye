@@ -27,10 +27,12 @@
  *   7. Reuse the original deterministic noise pixels across instances. Each WebGL
  *      context still owns its texture and disposes it independently.
  *   8. Optionally initialise only when visible, retaining the original capture until then.
+ *   9. Public eyes can render the same engine in a worker; DOM timing and input stay here.
  */
-import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef, useState } from 'react';
-import { generateNoiseTexture, hexToVec3, vertexShader, fragmentShader } from './evilEyeShader';
+import type { EyeOptions, EyeSurface } from './evilEyeProtocol';
+import { createEyeRenderer } from './evilEyeRenderer';
+import { createEyeWorker } from './evilEyeWorkerClient';
 
 // Added for The All Seeing Eye: real captures of this component at several widths.
 const CAPTURE_WIDTHS = [64, 128, 192, 512] as const;
@@ -39,11 +41,6 @@ function captureSet(format: 'png' | 'webp'): string {
 }
 const PNG_CAPTURES = captureSet('png');
 const WEBP_CAPTURES = captureSet('webp');
-
-// OGL uploads these immutable pixels without changing them. Cache only the CPU
-// data, never a context-owned texture; generating the same 256 KiB repeatedly
-// otherwise blocks first paint when the public story mounts several eyes.
-let sharedNoise: Uint8Array | undefined;
 
 interface EvilEyeProps {
   eyeColor?: string;
@@ -65,8 +62,12 @@ interface EvilEyeProps {
   transparent?: boolean;
   /** Added for The All Seeing Eye: the `sizes` hint for the captured fallback image. */
   fallbackSizes?: string;
+  /** Prioritise a visible hero capture without changing other brand instances. */
+  fallbackPriority?: 'high';
   /** Keep the capture until first viewport entry, without constructing an off-screen context. */
   deferUntilVisible?: boolean;
+  /** Public eyes use an offscreen worker when supported, with a synchronous fallback. */
+  workerRendering?: boolean;
 }
 
 export default function EvilEye({
@@ -85,7 +86,9 @@ export default function EvilEye({
   paused = false,
   transparent = false,
   fallbackSizes,
+  fallbackPriority,
   deferUntilVisible = false,
+  workerRendering = false,
 }: EvilEyeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
@@ -131,65 +134,72 @@ export default function EvilEye({
     };
     const initialise = () => {
       try {
-        const renderer = new Renderer({ alpha: true, premultipliedAlpha: false, dpr: 1 });
-        const gl = renderer.gl;
-        disposers.push(() => {
-          gl.getExtension('WEBGL_lose_context')?.loseContext();
-        });
-        const onLost = (event: Event) => {
-          event.preventDefault();
-          // Keep the captured original eye instead of competing with the map for recovery.
-          fail();
+        const options: EyeOptions = {
+          eyeColor, intensity, pupilSize, irisWidth, glowIntensity, scale, noiseScale,
+          pupilFollow, flameSpeed, backgroundColor, lightMode, transparent,
         };
-        gl.canvas.addEventListener('webglcontextlost', onLost);
-        disposers.push(() => gl.canvas.removeEventListener('webglcontextlost', onLost));
-        gl.clearColor(0, 0, 0, 0);
-
-        const noiseData = (sharedNoise ??= generateNoiseTexture(256));
-        const noiseTexture = new Texture(gl, {
-          image: noiseData,
-          width: 256,
-          height: 256,
-          generateMipmaps: false,
-          flipY: false,
+        const size = () => ({ width: container.offsetWidth, height: container.offsetHeight });
+        let canvas = document.createElement('canvas');
+        let surface: EyeSurface | null = null;
+        const rendered = () => {
+          if (!stopped && fallback) fallback.hidden = true;
+        };
+        const synchronous = () => {
+          if (stopped) return;
+          surface?.dispose();
+          // A transferred canvas cannot acquire a main-thread context, even if
+          // the worker failed before rendering. Always use a fresh DOM canvas.
+          canvas.remove();
+          canvas = document.createElement('canvas');
+          try {
+            const renderer = createEyeRenderer(canvas, options, size(), fail);
+            surface = {
+              resize: renderer.resize,
+              render(frame) {
+                renderer.render(frame);
+                rendered();
+                return true;
+              },
+              dispose: renderer.dispose,
+            };
+            container.appendChild(canvas);
+          } catch {
+            fail();
+          }
+        };
+        disposers.push(() => {
+          surface?.dispose();
+          canvas.remove();
         });
-        disposers.push(() => gl.deleteTexture(noiseTexture.texture));
-        noiseTexture.minFilter = gl.LINEAR;
-        noiseTexture.magFilter = gl.LINEAR;
-        noiseTexture.wrapS = gl.REPEAT;
-        noiseTexture.wrapT = gl.REPEAT;
+        if (workerRendering) {
+          surface = createEyeWorker(canvas, options, size(), rendered, synchronous, fail);
+        }
+        if (surface) container.appendChild(canvas);
+        else synchronous();
+        if (stopped) return dispose;
 
         const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-
         function onMouseMove(e: MouseEvent) {
           const rect = container.getBoundingClientRect();
           mouse.tx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
           mouse.ty = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
         }
-
         function onMouseLeave() {
           mouse.tx = 0;
           mouse.ty = 0;
         }
-
         container.addEventListener('mousemove', onMouseMove);
         container.addEventListener('mouseleave', onMouseLeave);
         disposers.push(() => {
           container.removeEventListener('mousemove', onMouseMove);
           container.removeEventListener('mouseleave', onMouseLeave);
         });
-
-        let program: Program;
-
         function resize() {
-          renderer.setSize(container.offsetWidth, container.offsetHeight);
-          if (program) {
-            program.uniforms.uResolution.value = [
-              gl.canvas.width,
-              gl.canvas.height,
-              gl.canvas.width / gl.canvas.height,
-            ];
-          }
+          // OffscreenCanvas dimensions belong to the worker, but its placeholder's
+          // CSS dimensions remain the DOM owner's responsibility (OGL dpr stays 1).
+          canvas.style.width = `${container.offsetWidth}px`;
+          canvas.style.height = `${container.offsetHeight}px`;
+          surface?.resize(size());
         }
         window.addEventListener('resize', resize);
         disposers.push(() => window.removeEventListener('resize', resize));
@@ -198,38 +208,6 @@ export default function EvilEye({
         disposers.push(() => resizeObserver?.disconnect());
         resizeObserver?.observe(container);
         resize();
-
-        const geometry = new Triangle(gl);
-        disposers.push(() => geometry.remove());
-        program = new Program(gl, {
-          vertex: vertexShader,
-          fragment: fragmentShader,
-          uniforms: {
-            uTime: { value: 0 },
-            uResolution: {
-              value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height],
-            },
-            uNoiseTexture: { value: noiseTexture },
-            uPupilSize: { value: pupilSize },
-            uIrisWidth: { value: irisWidth },
-            uGlowIntensity: { value: glowIntensity },
-            uIntensity: { value: intensity },
-            uScale: { value: scale },
-            uNoiseScale: { value: noiseScale },
-            uMouse: { value: [0, 0] },
-            uPupilFollow: { value: pupilFollow },
-            uFlameSpeed: { value: flameSpeed },
-            uEyeColor: { value: hexToVec3(eyeColor) },
-            uBgColor: { value: hexToVec3(backgroundColor) },
-            uLightMode: { value: lightMode },
-            uTransparent: { value: transparent },
-          },
-        });
-
-        disposers.push(() => program.remove());
-        const mesh = new Mesh(gl, { geometry, program });
-        container.appendChild(gl.canvas);
-        disposers.push(() => gl.canvas.remove());
 
         // Added for The All Seeing Eye: the loop stops while paused and skips frames
         // above maxFps. Zero means "no frame scheduled".
@@ -245,16 +223,16 @@ export default function EvilEye({
           animationFrameId = requestAnimationFrame(update);
           const cap = maxFpsRef.current;
           if (cap !== undefined && cap > 0 && time - lastFrameTime < 1000 / cap) return;
-          lastFrameTime = time;
-          mouse.x += (mouse.tx - mouse.x) * 0.05;
-          mouse.y += (mouse.ty - mouse.y) * 0.05;
-          program.uniforms.uMouse.value = [mouse.x, mouse.y];
-          program.uniforms.uTime.value = time * 0.001;
+          const x = mouse.x + (mouse.tx - mouse.x) * 0.05;
+          const y = mouse.y + (mouse.ty - mouse.y) * 0.05;
           try {
-            renderer.render({ scene: mesh });
-            // Hide the captured matte once a real frame exists, especially when
-            // the live canvas is transparent. Restore it only on graphics failure.
-            if (fallback && !fallback.hidden) fallback.hidden = true;
+            // Advance interpolation only for accepted frames. A worker has at most
+            // one frame in flight, so a slow context cannot accumulate stale input.
+            if (surface?.render({ time, mouse: [x, y] })) {
+              mouse.x = x;
+              mouse.y = y;
+              lastFrameTime = time;
+            }
           } catch {
             fail();
           }
@@ -300,6 +278,7 @@ export default function EvilEye({
     lightMode,
     transparent,
     deferUntilVisible,
+    workerRendering,
   ]);
 
   return (
@@ -311,6 +290,7 @@ export default function EvilEye({
           src="/brand/eye-512.png"
           srcSet={PNG_CAPTURES}
           sizes={fallbackSizes}
+          fetchPriority={fallbackPriority}
           decoding="async"
           alt=""
           aria-hidden="true"

@@ -21,9 +21,9 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-165 | Public privacy, storage, attribution and data-request pages; fail-closed publication gate | Grouped PR #191; public policy browser checks passed; operator/legal approval required |
 | KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; native PostgreSQL and all 39 current-head CI checks passed at `9afda2de`, In Review |
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks and all 39 CI checks passed at `17c8c4ea`, In Review |
-| KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; final functional mobile browser and contact-focus checks passed; CI pending |
+| KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; functional mobile/contact checks and all 39 checks passed at `21e9d1d9`; subsequent KAN-172 worker integration requires fresh CI |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage; all 39 CI checks passed at `cfbd6a1e`, In Review |
-| KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Grouped PR #191; full-page mobile Lighthouse 78/97/100, desktop 99/97/100; mobile performance remains below the earlier placeholder-stage 95 criterion |
+| KAN-172 | Public route isolation, metadata, bundle budget and bounded graphics worker | Grouped PR #191; worker/preload `f9393e3e` scores mobile 85/97/100 and desktop 100/97/100; mobile performance remains below the 95 criterion |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; all 39 CI checks passed at `696586fd`, In Review |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
@@ -251,3 +251,28 @@ independent source review is clear, and the same 16 frontend cases pass on the
 combined branch in 6.64 seconds. The public worktree is clean; the private
 browser and loopback server are closed. Main remains `13efceef`, and the primary
 checkout's original contributor changes remain untouched.
+
+## Verified green candidate and subsequent graphics improvement
+
+At 02:25 UTC on 10 October, public `21e9d1d9` passed all 39 checks and combined
+`f0f3051c` passed all 40. Combined CI run `38015718322` passed 11,880 SQLite cases
+(163 skipped), 2,931 parallel PostgreSQL cases (one skipped), 385 serial PostgreSQL
+cases (one skipped), 5,098 frontend cases (one skipped) and all four browser
+journeys. Backend coverage was 94%; frontend lines were 97.58% and branches 92.34%.
+All required coverage/security gates passed. Jira has 28 delivery items In Review
+and four In Progress; none is Done.
+
+The subsequent KAN-172 worker and hero preload are integrated from `f9393e3e`.
+The original graphics engine now runs in bounded same-origin workers for public
+eyes, with synchronous fallback and terminal context-loss cleanup. No shader,
+motion preference, publication gate, CSP or budget was weakened. The final public
+brand/product group passes 138 cases, with 12 tooling cases and actual Caddy/browser
+checks. Independent architecture and security reviews are clear. Default mobile
+scores 85/97/100 with blocking time 22 ms, versus 301 ms before the worker; desktop
+scores 100/97/100. The full evidence is in `PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`.
+
+The mobile 95 requirement remains unmet. A broader public-entry preload experiment
+did not improve the score and was removed. KAN-164/165/225 still require the recorded
+licence, controller/publication and live production-control decisions. Fresh
+public and combined CI is required for the graphics follow-up; the earlier green
+run is evidence for its exact prior head only. No main merge or deployment occurred.
