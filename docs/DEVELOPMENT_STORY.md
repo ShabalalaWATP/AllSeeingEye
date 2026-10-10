@@ -6176,3 +6176,21 @@ reviews. The mobile 95 target remains open. A broader preload-shell experiment
 did not improve the score and was removed. The follow-up is integrated from
 `f9393e3e` and requires new full CI. Licence, public-policy and live release-control
 decisions remain with the operator; nothing was merged to main or deployed.
+
+### KAN-172 mobile score 90, 10 October 2026
+
+Alex requested a 90 mobile performance target. The public page now avoids loading
+account bootstrap, the full validation entry and private navigation metadata at
+startup. Public eye workers load the existing synchronous renderer only when
+fallback needs it. Four small shared modules use one chunk to reduce repeated
+security-header transfers. Existing WebP icons reduce manifest payload, and the
+hero remains visible in its opening, paused and reduced-motion states.
+
+Three consecutive production Caddy HTTPS mobile runs score 90/97/100, with unchanged
+Lighthouse settings, full story and normal motion; the matched old build scores
+87/97/100. Desktop scores 100/97/100. The separate HTTP fixture scores 87, so server
+conditions are reported explicitly. Focused functional, title/focus, validation,
+renderer and tooling checks pass; native browser checks preserve runtime gates,
+enquiry submission and worker fallback. Independent reviews are clear. Evidence
+and limitations are recorded in `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`; published
+CI and release approval remain separate requirements.

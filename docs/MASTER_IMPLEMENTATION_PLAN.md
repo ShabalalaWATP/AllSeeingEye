@@ -1601,3 +1601,15 @@ from 77 to 85 and desktop reaches 100; mobile 95 remains unmet. The broader entr
 preload experiment was removed after no score improvement. New published-head CI
 is required; the licence, public controller details/approval and live release
 controls still need the operator's decisions. No release approval is inferred.
+
+### KAN-172 mobile performance target, 10 October 2026
+
+- Alex approved 90 as the mobile performance target; Jira acceptance now records it.
+- The complete normal-motion page scores 90/97/100 in three consecutive production
+  Caddy HTTPS runs, versus 87/97/100 for the clean prior build under identical
+  conditions. Desktop scores 100/97/100. The separate HTTP fixture scores 87.
+- Public startup dependencies are smaller, validation and runtime gates remain
+  intact, and asynchronous graphics fallback retains cleanup and recovery behaviour.
+- Focused tests, type/lint/bundle checks and native browser acceptance pass.
+- See `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` for conditions and exact evidence.
+  Published-head CI and authorised review/release remain required.

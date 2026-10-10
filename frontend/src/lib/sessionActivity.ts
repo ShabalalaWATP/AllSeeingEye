@@ -59,10 +59,7 @@ export function idleDuration(minutes: number): string {
     : `${String(minutes)} minutes`;
 }
 
-export function parseIdleMinutes(value: unknown): number | undefined {
-  const minutes = typeof value === 'string' || typeof value === 'number' ? Number(value) : NaN;
-  return Number.isInteger(minutes) && minutes >= 5 && minutes <= 1440 ? minutes : undefined;
-}
+export { parseIdleMinutes } from './idleMinutes';
 
 /** Ignore synthetic events. Visibility changes and timers only check the deadline. */
 export function isGenuineActivity(event: Pick<Event, 'isTrusted' | 'type'>): boolean {

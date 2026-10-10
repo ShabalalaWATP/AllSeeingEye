@@ -52,18 +52,7 @@ export const tokenResponseSchema = z.object({
 });
 export type TokenResponse = z.infer<typeof tokenResponseSchema>;
 
-export const errorEnvelopeSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    request_id: z
-      .string()
-      .regex(/^[A-Za-z0-9-]{8,64}$/)
-      .optional(),
-    fields: z.record(z.string(), z.string()).optional(),
-  }),
-});
-export type ErrorEnvelope = z.infer<typeof errorEnvelopeSchema>;
+export { errorEnvelopeSchema, type ErrorEnvelope } from './errorEnvelope';
 
 export const messageResponseSchema = z.object({ message: z.string() });
 

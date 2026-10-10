@@ -17,7 +17,7 @@ The existing exclusions remain narrow:
 - Generated `*.gen.ts` and declaration-only `*.d.ts` files are outside this
   executable-source check. Regenerate the former; keep handwritten declarations
   small and review them normally.
-- `frontend/src/components/brand/EvilEye.tsx` is the preserved third-party brand
+- `frontend/src/components/brand/EvilEyeSurface.tsx` is the preserved third-party brand
   component. Do not split or redraw it as a line-count exercise.
 - Dependency environments and bytecode caches are not repository source.
 - JSON catalogues, generated OpenAPI, lockfiles, documentation and declarative

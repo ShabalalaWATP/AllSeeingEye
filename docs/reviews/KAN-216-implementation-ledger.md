@@ -23,7 +23,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks and all 39 CI checks passed at `17c8c4ea`, In Review |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; functional mobile/contact checks and all 39 checks passed at `21e9d1d9`; subsequent KAN-172 worker integration requires fresh CI |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage; all 39 CI checks passed at `cfbd6a1e`, In Review |
-| KAN-172 | Public route isolation, metadata, bundle budget and bounded graphics worker | Grouped PR #191; worker/preload `f9393e3e` scores mobile 85/97/100 and desktop 100/97/100; mobile performance remains below the 95 criterion |
+| KAN-172 | Public route isolation, metadata, bundle budget and bounded graphics worker | Grouped PR #191; `4c9327a9` meets Alex's updated 90 target in three normal-motion Caddy mobile runs (90/97/100), desktop 100/97/100; fresh published-head CI pending |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; all 39 CI checks passed at `696586fd`, In Review |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
@@ -276,3 +276,26 @@ did not improve the score and was removed. KAN-164/165/225 still require the rec
 licence, controller/publication and live production-control decisions. Fresh
 public and combined CI is required for the graphics follow-up; the earlier green
 run is evidence for its exact prior head only. No main merge or deployment occurred.
+
+## KAN-172 mobile target met, 10 October 2026
+
+Alex explicitly requested 90 mobile performance. Public commit `4c9327a9` now meets
+that target in three consecutive normal-motion runs: 90/97/100, with LCP
+3.313/3.388/3.316 seconds and no layout shift. The clean prior `f9393e3e` build
+scores 87/97/100 under the identical production Caddy HTTPS/HTTP2 setup with full
+CSP and existing precompression. Desktop scores 100/97/100. The separate HTTP
+fixture scores 87; transport changes are not counted as code gains.
+
+The public dependency chain no longer pulls account bootstrap, broad validation
+or private navigation metadata into startup. Public workers fetch the same
+synchronous eye engine only for fallback; the shared constants chunk reduces
+repeated headers without modifying CSP. Existing images and complete content stay
+in place. Initial JavaScript is 129,212 bytes gzip; globe and product budgets pass.
+Focused suites pass 196 and 108 cases respectively, with 13 tooling checks, type,
+lint, format, build and native-browser evidence. Architecture and security reviews
+are clear. See `PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` for exact conditions and limits.
+
+Integration preserves both branches' chronological documentation and KAN-232's
+expanded file-length scan, updating only the existing vendored component path.
+Fresh published-head CI remains required. KAN-164/165/225 retain their licence,
+public-policy and live release-control decisions. No main merge or deployment.

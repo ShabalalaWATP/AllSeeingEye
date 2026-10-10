@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod/mini';
 
 import type { EnterpriseEnquiryInput } from '@/lib/api/enterpriseEnquiries';
 
@@ -46,20 +46,16 @@ export const FIELD_MESSAGES: Record<keyof EnterpriseEnquiryInput, string> = {
   website: 'Please reload the page and try again.',
 };
 
-const schema: z.ZodType<EnterpriseEnquiryInput> = z.object({
-  name: z.string().trim().min(1).max(100),
+const schema: z.ZodMiniType<EnterpriseEnquiryInput> = z.object({
+  name: z.string().check(z.trim(), z.minLength(1), z.maxLength(100)),
   // A permissive format check leaves final address validation to the API.
-  email: z
-    .string()
-    .trim()
-    .max(254)
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
-  organisation: z.string().trim().min(1).max(150),
-  role: z.string().trim().max(100),
+  email: z.string().check(z.trim(), z.maxLength(254), z.regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
+  organisation: z.string().check(z.trim(), z.minLength(1), z.maxLength(150)),
+  role: z.string().check(z.trim(), z.maxLength(100)),
   deployment_interest: z.enum(['own_cloud', 'on_premises', 'air_gapped', 'undecided']),
   expected_users: z.enum(['1_10', '11_50', '51_250', '250_plus']),
-  message: z.string().trim().max(2000),
-  website: z.string().max(200),
+  message: z.string().check(z.trim(), z.maxLength(2000)),
+  website: z.string().check(z.maxLength(200)),
 });
 
 export function validateEnquiry(draft: EnquiryDraft) {

@@ -12,9 +12,8 @@ import {
   workspaceDestinations,
 } from '@/lib/workspaceNavigation';
 
-export const APP_TITLE = 'The All Seeing Eye';
-/** Unknown addresses have no route of their own, so the not-found page names itself. */
-export const NOT_FOUND_TITLE = 'Page not found';
+import { APP_TITLE, withAppTitle } from './documentTitle';
+export { APP_TITLE, NOT_FOUND_TITLE, withAppTitle } from './documentTitle';
 
 /** Account pages reached before signing in. */
 const PUBLIC_PAGES: ReadonlyMap<string, string> = new Map([
@@ -59,11 +58,6 @@ export function pageTitle(pathname: string): string {
   if (tracker !== undefined) return tracker.label;
   const active = activeWorkspacePath(path);
   return workspaceDestinations().find((page) => page.to === active)?.label ?? APP_TITLE;
-}
-
-/** "Watches · The All Seeing Eye", or just the application name for the application itself. */
-export function withAppTitle(title: string): string {
-  return title === APP_TITLE ? APP_TITLE : `${title} · ${APP_TITLE}`;
 }
 
 /** The document title for `pathname`, or just the application name when the page is unknown. */

@@ -1,10 +1,10 @@
-import { z } from 'zod';
+import * as z from 'zod/mini';
 
 import { apiCall } from './client';
 import type { components } from './types.gen';
 
 export type EnterpriseEnquiryInput = components['schemas']['EnquiryIn'];
-const confirmation: z.ZodType<components['schemas']['MessageOut']> = z.object({
+const confirmation: z.ZodMiniType<components['schemas']['MessageOut']> = z.object({
   message: z.string(),
 });
 

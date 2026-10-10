@@ -81,6 +81,13 @@ export default defineConfig({
         codeSplitting: {
           // Keep dependency recursion enabled to avoid circular runtime initialisation.
           groups: [
+            // These dependency-free constants already share the public route.
+            // One small chunk avoids four requests and repeated response headers.
+            {
+              name: 'public-constants',
+              test: /src[\\/](?:lib[\\/](?:mapLayerDirectory|categories|safeStorage)|components[\\/]brand[\\/]tokens)\.ts$/,
+              priority: 1,
+            },
             // Vite's preload helper is shared by every lazy route. Without its own
             // higher-priority group, recursion captures it into the first vendor group
             // that uses dynamic imports, and the entry then loads all of deck.gl.

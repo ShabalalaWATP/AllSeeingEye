@@ -1,5 +1,5 @@
 import type { EyeOptions, EyeReply, EyeRequest, EyeSize, EyeSurface } from './evilEyeProtocol';
-import { eyeNoise } from './evilEyeRenderer';
+import { eyeNoise } from './evilEyeNoise';
 
 // This is failure detection, not an animation delay. Rendering starts as soon as ready arrives.
 const STARTUP_TIMEOUT_MS = 5_000;

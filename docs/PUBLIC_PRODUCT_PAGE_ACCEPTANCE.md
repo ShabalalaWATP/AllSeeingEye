@@ -4,6 +4,76 @@ KAN-172 covers the opt-in `/enterprise` route. The existing chapters remain in
 place. The cost estimator remains hidden pending approved figures. This record
 separates implemented controls from browser and deployment evidence.
 
+## Current mobile target and result, 10 October 2026
+
+Alex explicitly requested a mobile performance target of 90. Jira KAN-172 now
+records that target, with accessibility at least 95 and SEO at least 90. The
+earlier 95-performance figures below remain historical evidence.
+
+The final build scores **90/97/100 in three consecutive mobile runs** and
+**100/97/100 on desktop**. Tests use the complete `/enterprise` story with normal
+motion and both runtime flags enabled. Lighthouse 13.5.0, Chrome 155.0.8059.39,
+the default mobile profile (412 by 823, DPR 1.75, 150 ms RTT, 1,638.4 Kbps,
+four-times CPU slowdown) and fresh browser profiles are unchanged. No builds,
+tests or other browser checks ran during measurement.
+
+The production comparison uses Caddy 2.11.4, HTTPS/HTTP2, the repository's full
+CSP and the existing Brotli/gzip precompression script. A synthetic local API
+returns public flags and accepts fixture enquiries without storing or forwarding
+their contents. The disposable local certificate uses a process-only exception.
+The old and new builds use the same server configuration, compression and URL.
+
+| Build/run | Performance/accessibility/SEO | FCP | LCP | Blocking time | Layout shift |
+| --- | --- | --- | --- | --- | --- |
+| Clean `f9393e3e` baseline | 87/97/100 | 2.112 s | 3.837 s | 9 ms | 0 |
+| Final mobile 1 | 90/97/100 | 2.038 s | 3.313 s | 18 ms | 0 |
+| Final mobile 2 | 90/97/100 | 2.038 s | 3.388 s | 24 ms | 0 |
+| Final mobile 3 | 90/97/100 | 2.041 s | 3.316 s | 16 ms | 0 |
+| Final desktop | 100/97/100 | 0.452 s | 0.652 s | 0 ms | 0.00002 |
+
+The separate HTTP/gzip fixture previously used for the 85 baseline now scores
+87/97/100 (FCP 2.290 s, LCP 3.680 s, blocking time 16 ms, no layout shift).
+Its transport differs from production Caddy, so 85 to 90 is not presented as a
+like-for-like code comparison. A score of 90 also does not imply a sub-2.5-second
+mobile LCP; that remains a possible future improvement.
+
+Changes remove account bootstrap, broad validation and private navigation metadata
+from the public startup dependency chain. Public schemas use the existing Zod Mini
+package entry with unchanged validation, and the shared API client accepts both
+Zod variants through their common core. Supported public eye workers no longer
+download the synchronous graphics engine; fallback loads it on demand with
+cleanup and failure guards. Four dependency-free shared modules form one chunk,
+saving repeated response headers without changing CSP. The manifest uses existing
+WebP captures with PNG fallback. The hero's opening and still states remain visible.
+
+Final gzip JavaScript totals are 129,212 initial bytes, 847,574 additional globe
+bytes and 62,200 additional product bytes. All existing budgets are unchanged;
+the product budget includes the worker and dynamically loaded fallback engine.
+The moved vendored component retains its existing tool exclusions; the new
+compatibility wrappers remain checked. No dependency, lockfile or licence changed.
+
+Validation: 196 affected brand/product/session/API tests pass; a separate group of
+108 title/focus/auth/public-policy tests passes; 13 bundle/import-boundary tooling
+tests pass. Both TypeScript configurations, scoped ESLint/Prettier, source-length
+checks, production build and bundle gates pass. Independent architecture and
+security reviews found no actionable regressions. Full published-head CI remains
+required; these focused runs do not claim a new full-suite coverage percentage.
+
+Native Chrome confirms the full story, no overflow at 320/390/1440 pixels, visible
+paused/reduced-motion hero, same-origin-only public requests, one public flags
+request without account bootstrap, contact navigation and synthetic enquiry
+submission. Disabled/unavailable flags fail closed, disabled enquiries hide the
+form, worker startup failure loads a fresh main-thread canvas, and sign-in retains
+its title and form. The normal page reported no console errors or warnings before
+deliberate fault injection. Configuration and security headers are unchanged.
+
+Raw reports, traces, build logs and browser evidence are retained under the
+isolated acceptance worktree's ignored `output/playwright/`, with final report
+names `lighthouse-mobile-90-final-{1,2,3}.json`,
+`lighthouse-desktop-90-final.json` and `lighthouse-mobile-90-http-final.json`.
+API/style/font-preload and off-screen containment experiments did not improve the
+result and were removed. This evidence authorises no merge or production deployment.
+
 ## Implemented controls
 
 - `/api/site` gates the page. Disabled or unavailable configuration renders the

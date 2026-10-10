@@ -29,11 +29,15 @@ test('follows aliased, relative, re-exported and lazy product dependencies', () 
     assert.deepEqual(inspectProductImports(root).failures, []);
     writeFileSync(path.join(root, 'src/stores/auth.ts'), 'export{}');
     writeFileSync(path.join(root, 'src/app/shell/AppShell.tsx'), 'export{}');
+    writeFileSync(path.join(root, 'src/app/shell/pageTitles.ts'), 'export{}');
+    writeFileSync(path.join(root, 'src/lib/workspaceNavigation.ts'), 'export{}');
     for (const code of [
       'export * from "../stores/auth";',
       'const lazy=()=>import("@/app/shell/AppShell");',
       'const lazy=()=>import(`@/stores/auth`);',
       'import type { State } from "@/stores/auth";',
+      'export * from "@/app/shell/pageTitles";',
+      'export * from "@/lib/workspaceNavigation";',
       'import "maplibre-gl";',
       'import "@deck.gl/core";',
     ]) {

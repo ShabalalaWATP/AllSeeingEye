@@ -20,7 +20,7 @@ SCAN_DIRS = (
 )
 SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".css"}
 GENERATED_SUFFIXES = (".gen.ts", ".d.ts")
-EXCLUDED = {ROOT / "frontend" / "src" / "components" / "brand" / "EvilEye.tsx"}
+EXCLUDED = {ROOT / "frontend" / "src" / "components" / "brand" / "EvilEyeSurface.tsx"}
 EXCLUDED_DIRS = {"node_modules", ".venv", "__pycache__"}
 WARN_AT = 350
 FAIL_AT = 400

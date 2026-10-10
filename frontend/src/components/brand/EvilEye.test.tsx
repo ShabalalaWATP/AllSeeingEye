@@ -2,6 +2,7 @@ import { act, fireEvent, render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.unmock('./EvilEye');
+vi.unmock('./EvilEyeSurface');
 const graphics = vi.hoisted(() => ({
   initialiseFails: false,
   render: vi.fn(),
