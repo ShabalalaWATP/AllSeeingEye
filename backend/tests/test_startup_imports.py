@@ -30,6 +30,11 @@ def test_migration_cli_does_not_import_application_wiring(tmp_path):
     assert not any(
         name.startswith(("ase.adapters.feeds.", "ase.adapters.llm.")) for name in modules
     )
+    assert not {
+        "ase.adapters.geo.infrastructure_import",
+        "ase.adapters.geo.infrastructure_notes",
+        "ase.adapters.geo.sites_import",
+    }.intersection(modules)
     assert len(modules) < 200
 
 
