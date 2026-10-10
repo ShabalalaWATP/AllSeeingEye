@@ -30,7 +30,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed at `8e818074`, 168 affected cases passed with 96.44% scoped coverage; CI pending |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
-| KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; final CI pending |
+| KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; CI passed, In Review |
 | KAN-219 | Executable alert template requirements and legacy recovery | PR #179; earlier geometry and migration fixtures repaired, final CI pending |
 | KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; full CI/native PostgreSQL pending |
 | KAN-221 | Exact saved report/version links, including unavailable historical targets | PR #177; FK-valid SQLite/PostgreSQL follow-up passed, final CI pending |
@@ -43,8 +43,8 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-228 | Explicit webhook retry semantics after uncertain acceptance | PR #174 |
 | KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; obsolete disabled-edit test repaired with 11 focused cases; fresh CI pending |
 | KAN-230 | CI security and acceptance documentation reconciled with executable gates | PR #173 |
-| KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four journeys passed in 11.354 seconds, notification repairs reviewed with 19 passing cases; representative CI pending |
-| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; combined inventory reconciled to 13 reviewed target exceptions, no hard-limit failure |
+| KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four local journeys passed in 11.354 seconds and hosted CI in 9.9 seconds (64-second full job); final aggregate pending |
+| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import regression repaired, fresh CI pending |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
 | KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, 17 tests passed and 95.65% hook branch coverage; fresh CI pending |
 | KAN-235 | Original TLS identity across pinned feed connections; no shared cookies | PR #167 |
@@ -68,6 +68,14 @@ permission before admission and before queued execution. Denial produces the
 expected safe error without model calls or a report; exact-source permission
 permits normal completion. Independent review of this positive/negative matrix
 passed. These focused results do not replace full combined CI.
+
+After the retained-source repair and browser-lane merge, 53 affected backend
+cases passed together. Whole-source mypy passed for 1,638 files, Ruff passed,
+frozen frontend installation and both TypeScript configurations passed, and all
+11 public-policy checks passed. The migration CLI's 204-module regression was
+separately reproduced and repaired by loading infrastructure adapters only for
+their selected commands; the unchanged budget passes at 196 modules, with 26
+focused CLI/migration tests. Final combined startup checking remains required.
 
 ## Review findings corrected during implementation
 

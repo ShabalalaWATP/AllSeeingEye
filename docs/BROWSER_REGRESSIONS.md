@@ -94,8 +94,13 @@ The dependency audit reported no advisories. Coverage was not remeasured locally
 the existing required coverage gates remain unchanged.
 
 The workflow writes elapsed browser seconds to its job summary and preserves the
-JSON reporter's per-test durations. Representative PR validation remains a
-delivery criterion until that run completes; local success alone does not meet it.
+JSON reporter's per-test durations. Representative validation passed on
+[PR #190's browser job](https://github.com/ShabalalaWATP/AllSeeingEye/actions/runs/38008488527/job/114082737780)
+at `7c913b7be333d42bd4f87cc26bfedf54030f022c` on 10 October 2026. All four tests
+passed in 9.9 seconds without retries or skips. The complete hosted job took
+64 seconds, from 00:23:01 to 00:24:05 UTC, including dependency/browser installation
+and the production build. The remaining workflow gates and final combined branch
+still require their own results; this is one observed run, not a runtime guarantee.
 
 [KAN-81's completed manual browser acceptance](reviews/2026-10-06-KAN-81-browser-acceptance.md)
 remains historical evidence. This lane does not reopen that work, replace its
