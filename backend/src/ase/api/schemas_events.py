@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, Field
 
+from ase.api.schemas_source_licences import SourceLicenceOut
 from ase.application.feeds.health import SourceHealth, SourceStatus
 from ase.application.ports.feeds import StoreStats
 from ase.domain.events import Category, Event, GeoConfidence, JsonScalar, Reliability
@@ -146,6 +147,8 @@ class SourceHealthOut(BaseModel):
 
 
 class SourceOut(BaseModel):
+    licence: SourceLicenceOut | None = None
+    collection_mode: Literal["scheduled", "on_demand"] | None = None
     enabled: bool = True
     test_available: bool = True
     environment_disabled: bool = False

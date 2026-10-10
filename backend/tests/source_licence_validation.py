@@ -42,6 +42,7 @@ POLICY = record(
         "terms_checked_on": {"anyOf": [DATE, {"type": "null"}]},
         "lookup_attempted_on": {"anyOf": [DATE, {"type": "null"}]},
         "commercial_use": RIGHTS,
+        "commercial_use_policy": {"enum": ["allowed", "forbidden", "licence_required"]},
         "hosted_multi_user_use": RIGHTS,
         "attribution": TEXT,
         "redistribution": TEXT,
@@ -69,6 +70,9 @@ SOURCE = record(
         "family": TEXT,
         "policy": TEXT,
         "additional_policies": array(TEXT),
+        "commercial_use": {"enum": ["allowed", "forbidden", "licence_required"]},
+        "attribution_required": {"type": "boolean"},
+        "licence_ref": TEXT,
         "source_url": {"anyOf": [URL, {"type": "null"}]},
         "source_url_kind": {
             "enum": ["publisher_or_provider", "catalogue_provenance_only", "per_item_provenance"]
@@ -95,7 +99,7 @@ REGISTER = record(
         "schema_version": {"const": 1},
         "assessed_on": DATE,
         "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "enforcement": {"const": "inventory_only"},
+        "enforcement": {"const": "commercial_mode_opt_in"},
         "sources": {**array(SOURCE), "minItems": 1},
         "supplementary_sources": array(
             record(

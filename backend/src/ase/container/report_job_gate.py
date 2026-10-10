@@ -68,6 +68,8 @@ async def check_job(
         else restore_job(frozen, owner, routing.required(template.role))
     )
     await check_links(container, session, stored, job)
+    if job.request.conflict_id is not None:
+        container.source_licences.require("reference:conflicts")
     baseline = await _subscription_baseline(container, session, stored, owner, job.request)
     await check_sources(container, stored, baseline)
     if baseline is not None:

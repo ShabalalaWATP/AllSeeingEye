@@ -1,4 +1,5 @@
 import type { RadarAttackSnapshot } from '@/lib/api/cyber';
+import { LICENCE_UNAVAILABLE } from '@/lib/api/sourceLicences';
 
 const LABELS = {
   layer3: 'Network layer (L3/4)',
@@ -20,6 +21,9 @@ export function RadarAttackResults({
   data: RadarAttackSnapshot;
   compact?: boolean;
 }) {
+  if (data.status === 'disabled_by_licence') {
+    return <p className="text-xs leading-5 text-muted">{LICENCE_UNAVAILABLE}</p>;
+  }
   if (data.status === 'not_configured' || data.status === 'disabled') {
     return (
       <p className="text-xs leading-5 text-muted">

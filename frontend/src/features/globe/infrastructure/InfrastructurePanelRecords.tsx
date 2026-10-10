@@ -1,17 +1,22 @@
 import { MapControlIcon } from '../MapControlIcon';
 import type { InfrastructureSelection } from './useInfrastructure';
+import { sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 import {
   infrastructureRecordDescription,
   type InfrastructureChoice,
 } from './infrastructurePanelModel';
 
 export function InfrastructureLayerSwitch({ choice }: { choice: InfrastructureChoice }) {
+  const policy = useMapSourcePolicy();
+  const reason = sourceUnavailable(policy, INFRASTRUCTURE_SOURCES[choice.kind]);
   return (
     <button
       type="button"
       role="switch"
       aria-label={choice.label}
-      aria-checked={choice.enabled}
+      aria-checked={!reason && choice.enabled}
+      disabled={Boolean(reason)}
       onClick={choice.toggle}
       className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line px-3 py-3 text-left text-sm transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-cyan"
     >
@@ -21,8 +26,10 @@ export function InfrastructureLayerSwitch({ choice }: { choice: InfrastructureCh
       <span className="min-w-0 flex-1">
         <span className="block font-medium">{choice.label}</span>
         <span className="mt-1 block text-2xs leading-relaxed text-muted">
-          {choice.description}
-          {choice.count !== undefined ? ` / ${choice.count.toLocaleString('en-GB')} loaded` : ''}
+          {reason ?? choice.description}
+          {!reason && choice.count !== undefined
+            ? ` / ${choice.count.toLocaleString('en-GB')} loaded`
+            : ''}
         </span>
       </span>
       <span

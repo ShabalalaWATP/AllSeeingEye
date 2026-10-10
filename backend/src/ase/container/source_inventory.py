@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import TYPE_CHECKING, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +29,7 @@ from ase.container.source_requirements import (
 )
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmRole
+from ase.domain.source_licences import LICENCE_UNAVAILABLE
 from ase.domain.sources import SourceSpec
 from ase.domain.users import User
 
@@ -133,12 +135,24 @@ class SourceInventoryWiring(ContainerCore):
             tuple(settings.disabled_feed_ids),
             resolve,
             collecting=bool(settings.feeds_enabled),
+            licence_policy=self.source_licences,
         )
 
     def source_assets(self, user: User) -> list[SourceAsset]:
         """Camera, map, Ukraine and reference data, from cached metadata only."""
         # passes the container to build_source_assets, which reads feature catalogues.
-        return build_source_assets(cast("Container", self), user)
+        assets = build_source_assets(cast("Container", self), user)
+        return [
+            asset
+            if self.source_licences.allowed(asset.id)
+            else replace(
+                asset,
+                state=ConnectionState.DISABLED_BY_LICENCE,
+                detail=LICENCE_UNAVAILABLE,
+                records=None,
+            )
+            for asset in assets
+        ]
 
     async def platform_connections(
         self, session: AsyncSession, user: User

@@ -4,6 +4,7 @@ import { createEngine } from './globeEngineFactory';
 import { useGlobeEngine } from './useGlobeEngine';
 import { hasWebGl2 } from './webgl';
 import { selectDailyImagery, useDailyImageryStore } from './imagery/dailyImageryStore';
+import { sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 /** Create one guarded engine while leaving the controls usable without WebGL. */
 export function useDashboardEngine(options: {
@@ -11,6 +12,7 @@ export function useDashboardEngine(options: {
   baseLayer: BaseLayer;
   lite: boolean;
 }) {
+  const policy = useMapSourcePolicy();
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
   const imageryOn = useDailyImageryStore((state) => state.enabled);
@@ -24,7 +26,8 @@ export function useDashboardEngine(options: {
   );
   const engine = useGlobeEngine(containerRef, {
     ...options,
-    enabled: supported,
+    enabled: supported && sourceUnavailable(policy, 'map:openfreemap') === null,
+    deferred: supported && !policy.loaded,
     createEngine,
     dailyImagery,
     onImageryError,

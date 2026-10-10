@@ -2,7 +2,27 @@ import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { server } from '@/test/server';
 import { cyberActors, cyberBriefing, cyberSnapshot } from '@/test/fixtures.cyber';
-import { ensureCyberBriefing, fetchCyberActors, fetchCyberSnapshot, parseCyberDays } from './cyber';
+import {
+  ensureCyberBriefing,
+  fetchCyberActors,
+  fetchCyberSnapshot,
+  fetchRadarAttackTrends,
+  parseCyberDays,
+} from './cyber';
+
+it.each(['disabled', 'disabled_by_licence'] as const)(
+  'preserves the public Radar refusal reason %s',
+  async (status) => {
+    const snapshot = {
+      status,
+      fetched_at: null,
+      layers: [],
+      source_url: 'https://radar.cloudflare.com/security/application-layer',
+    };
+    server.use(http.get('/api/cyber/radar-attacks', () => HttpResponse.json(snapshot)));
+    await expect(fetchRadarAttackTrends()).resolves.toEqual(snapshot);
+  },
+);
 
 it.each([2, 5, 7, 14] as const)(
   'accepts and requests the %s-day reporting window',

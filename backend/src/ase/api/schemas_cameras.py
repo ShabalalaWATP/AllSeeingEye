@@ -29,7 +29,7 @@ class CameraProviderOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: CameraProviderId
     name: str
-    status: Literal["available", "stale", "unavailable", "not_loaded"]
+    status: Literal["available", "stale", "unavailable", "not_loaded", "licence_blocked"]
     count: int
     fetched_at: datetime | None
     message: str | None

@@ -8,6 +8,7 @@ from ase.application.reports.challenge_expansion_partial import KEY, decode_part
 from ase.application.reports.production_checkpoint import collection_from_dict
 from ase.container.report_job_cache import attempt_cache, snapshot_key
 from ase.domain.errors import InvalidRequest
+from ase.domain.evidence_sources import evidence_source_ids
 from ase.domain.report_jobs import ReportJob
 from ase.domain.report_records import ReportVersion
 from ase.domain.research_records import ResearchReceipt
@@ -31,21 +32,21 @@ def _web_sources(receipt: ResearchReceipt | None) -> set[str]:
 
 def _sources(payload: dict[str, Any]) -> frozenset[str]:
     frozen = payload["input"]
-    identifiers = {item.source_id for item in evidence_from_json(frozen["evidence"])}
+    identifiers = evidence_source_ids(evidence_from_json(frozen["evidence"]))
     collection = payload.get("collection")
     if collection is not None:
         snapshot = collection_from_dict(collection)
-        identifiers.update(item.source_id for item in snapshot.selection.items)
+        identifiers.update(evidence_source_ids(snapshot.selection.items))
         identifiers.update(_web_sources(snapshot.receipt))
     expansion = payload.get("challenge_expansion_packet")
     if expansion is not None:
         packet = packet_from_dict(expansion)
-        identifiers.update(item.source_id for item in packet.added)
+        identifiers.update(evidence_source_ids(packet.added))
         identifiers.update(_web_sources(packet.receipt))
     if payload.get(KEY) is not None:
         plan = plan_from_dict(payload.get("challenge_expansion_plan"))
         partial = decode_partial(payload[KEY], plan.fingerprint)
-        identifiers.update(item.source_id for row in partial for item in row.evidence)
+        identifiers.update(evidence_source_ids(item for row in partial for item in row.evidence))
     return frozenset(identifiers)
 
 
@@ -75,7 +76,7 @@ async def check_sources(
         identifiers = cache.source_ids
     current = set(identifiers)
     if baseline is not None:
-        current.update(item.source_id for item in baseline.evidence)
+        current.update(evidence_source_ids(baseline.evidence))
     # The cache stores parsed provenance only. Current source switches and the
     # freshly authorised baseline are consulted on every checkpoint and heartbeat.
     if current and not all(

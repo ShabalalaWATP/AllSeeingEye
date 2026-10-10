@@ -7,6 +7,7 @@ from uuid import UUID
 from ase.application.ports import RateLimiter
 from ase.application.ports.lei_candidates import LeiCandidate, LeiCandidateLookup
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.errors import InvalidRequest, RateLimited
 
 
@@ -18,7 +19,13 @@ class FindLeiCandidates:
 
     async def require_enabled(self) -> None:
         if not await self.admission.enabled("research-gleif-profile"):
-            raise InvalidRequest("GLEIF research is disabled by the administrator.")
+            raise InvalidRequest(
+                source_denial_reason(
+                    self.admission,
+                    "research-gleif-profile",
+                    "GLEIF research is disabled by the administrator.",
+                )
+            )
 
     async def search(
         self, user_id: UUID, name: str, country: str | None

@@ -78,7 +78,13 @@ describe('SetupChecklistCard', () => {
     server.use(
       http.get('/api/capabilities', () => {
         checks += 1;
-        return HttpResponse.json({ os_maps: true, os_layers: ['Road_3857'], ai_research: true });
+        return HttpResponse.json({
+          commercial_use: false,
+          source_licences: {},
+          os_maps: true,
+          os_layers: ['Road_3857'],
+          ai_research: true,
+        });
       }),
       http.get('/api/navigation/capabilities', () => {
         checks += 1;

@@ -54,6 +54,8 @@ type Navigation =
 
 export interface GlobeEngineOptions {
   enabled: boolean;
+  /** Retain the latest navigation while an initial admission check is unresolved. */
+  deferred?: boolean;
   mode: ViewMode;
   baseLayer?: BaseLayer;
   lite?: boolean;
@@ -74,6 +76,7 @@ export function useGlobeEngine(
   containerRef: RefObject<HTMLDivElement | null>,
   {
     enabled,
+    deferred = false,
     mode,
     baseLayer = 'dark',
     lite = false,
@@ -111,7 +114,7 @@ export function useGlobeEngine(
   useEffect(() => {
     const container = containerRef.current;
     if (!enabled || container === null) {
-      pendingNavigation.current = null;
+      if (!deferred) pendingNavigation.current = null;
       return;
     }
     let active = true;
@@ -166,7 +169,7 @@ export function useGlobeEngine(
       appliedProjection.current = null;
       pendingNavigation.current = null;
     };
-  }, [containerRef, factory, enabled, revision, onRenderStatus, restoreReloadCamera]);
+  }, [containerRef, factory, enabled, deferred, revision, onRenderStatus, restoreReloadCamera]);
 
   useEffect(() => {
     const engine = engineRef.current;
@@ -178,15 +181,16 @@ export function useGlobeEngine(
     }
     const pending = pendingNavigation.current;
     // A child can request navigation before this parent's older mount effect runs.
-    // Its first generation-aware commit must apply or discard it, never leave it dormant.
+    // Admission can defer the initial mount; retain only the latest intent until resolved.
     if (pending?.generation !== navigationGeneration) return;
+    if (!engine && deferred) return;
     pendingNavigation.current = null;
     if (!engine) return;
     const { intent } = pending;
     if (intent.kind === 'focus') engine.flyTo(intent.target);
     else if (intent.projection === undefined || intent.projection === projection)
       engine.restoreCamera(intent.camera);
-  }, [mode, enabled, factory, containerRef, revision, navigationGeneration]);
+  }, [mode, enabled, deferred, factory, containerRef, revision, navigationGeneration]);
 
   useEffect(() => {
     engineRef.current?.setBaseLayer(baseLayer);

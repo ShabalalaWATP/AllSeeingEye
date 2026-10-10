@@ -28,6 +28,7 @@ export const CONNECTION_STATES = [
   'not_configured',
   'disabled_by_admin',
   'disabled_by_environment',
+  'disabled_by_licence',
   'blocked_upstream',
   'available',
 ] as const;

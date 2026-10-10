@@ -17,6 +17,8 @@ import {
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
+import { mapSourceAllowed, sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 
 export type InfrastructureSelection =
   | { kind: 'cable'; item: Cable }
@@ -30,6 +32,8 @@ export type InfrastructureSelection =
 const EMPTY_COUNTRIES: Record<string, Country> = {};
 
 export function useInfrastructure(countries: Record<string, Country> = EMPTY_COUNTRIES) {
+  const policy = useMapSourcePolicy();
+  const militaryReason = sourceUnavailable(policy, INFRASTRUCTURE_SOURCES.military_country);
   const authority = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
   );
@@ -46,7 +50,10 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
   const [energyEnabled, setEnergyEnabled] = useState(false);
   const [semiconductorEnabled, setSemiconductorEnabled] = useState(false);
   const [militaryEnabled, setMilitaryEnabled] = useState(false);
-  const militaryCountries = useMemo(() => militaryCountryReferences(countries), [countries]);
+  const militaryCountries = useMemo(
+    () => (militaryReason ? [] : militaryCountryReferences(countries)),
+    [countries, militaryReason],
+  );
   const [data, setData] = useState<Infrastructure | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +63,12 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
     value: InfrastructureSelection;
   } | null>(null);
   const enabled =
-    cablesEnabled ||
-    stationsEnabled ||
-    nuclearEnabled ||
-    dataCentresEnabled ||
-    energyEnabled ||
-    semiconductorEnabled;
+    (cablesEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable)) ||
+    (stationsEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.station)) ||
+    (nuclearEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear)) ||
+    (dataCentresEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.data_centre)) ||
+    (energyEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.energy_site)) ||
+    (semiconductorEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site));
   useEffect(() => {
     if (!enabled || anonymous) return;
     const signal = request();
@@ -90,14 +97,15 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
   }, [enabled, revision, scope, anonymous, request]);
   const close = useCallback(() => setSelection(null), []);
   const enableTechnology = useCallback(() => {
-    setCablesEnabled(true);
-    setStationsEnabled(true);
-    setDataCentresEnabled(true);
-    setSemiconductorEnabled(true);
+    setCablesEnabled(mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable));
+    setStationsEnabled(mapSourceAllowed(INFRASTRUCTURE_SOURCES.station));
+    setDataCentresEnabled(mapSourceAllowed(INFRASTRUCTURE_SOURCES.data_centre));
+    setSemiconductorEnabled(mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site));
     setLoading(true);
   }, []);
   const selected =
     selection?.scope === scope &&
+    mapSourceAllowed(INFRASTRUCTURE_SOURCES[selection.value.kind]) &&
     ((selection.value.kind === 'cable' && cablesEnabled) ||
       (selection.value.kind === 'station' && stationsEnabled) ||
       (selection.value.kind === 'nuclear' && nuclearEnabled) ||
@@ -111,13 +119,14 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
     data: dataScope === scope ? data : null,
     loading: !anonymous && enabled && (loading || dataScope !== scope),
     error: dataScope === scope ? error : null,
-    cablesEnabled,
-    stationsEnabled,
-    nuclearEnabled,
-    dataCentresEnabled,
-    energyEnabled,
-    semiconductorEnabled,
-    militaryEnabled,
+    cablesEnabled: cablesEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable),
+    stationsEnabled: stationsEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.station),
+    nuclearEnabled: nuclearEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear),
+    dataCentresEnabled: dataCentresEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.data_centre),
+    energyEnabled: energyEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.energy_site),
+    semiconductorEnabled:
+      semiconductorEnabled && mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site),
+    militaryEnabled: militaryEnabled && !militaryReason,
     militaryCountries,
     selected,
     close,
@@ -127,36 +136,43 @@ export function useInfrastructure(countries: Record<string, Country> = EMPTY_COU
       [scope],
     ),
     toggleCables: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setCablesEnabled(!cablesEnabled);
     },
     toggleStations: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.station)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setStationsEnabled(!stationsEnabled);
     },
     toggleNuclear: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setNuclearEnabled(!nuclearEnabled);
     },
     toggleDataCentres: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.data_centre)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setDataCentresEnabled(!dataCentresEnabled);
     },
     toggleEnergy: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.energy_site)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setEnergyEnabled(!energyEnabled);
     },
     toggleSemiconductor: () => {
+      if (!mapSourceAllowed(INFRASTRUCTURE_SOURCES.semiconductor_site)) return;
       setSelection(null);
       if (!enabled) setLoading(true);
       setSemiconductorEnabled(!semiconductorEnabled);
     },
     toggleMilitary: () => {
+      if (militaryReason) return;
       setSelection(null);
       setMilitaryEnabled(!militaryEnabled);
     },
