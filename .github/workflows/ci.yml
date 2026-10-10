@@ -58,7 +58,7 @@ jobs:
       # Each xdist worker has a private in-memory SQLite database; pytest-cov combines
       # the workers' data into the shard's coverage file.
       - run: uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 8 --workers auto
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: sqlite-coverage-${{ matrix.shard }}
           path: backend/.coverage.*
@@ -107,7 +107,7 @@ jobs:
           printf 'manifest-sha256=%s\n' "${digest%% *}" >> "$GITHUB_OUTPUT"
       - name: Retain native planning evidence, including failed collections
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: postgres-native-plan
           path: ${{ runner.temp }}/postgres-native-plan
@@ -149,7 +149,7 @@ jobs:
           enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --frozen
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: postgres-native-plan
           path: ${{ runner.temp }}/postgres-native-plan
@@ -267,20 +267,20 @@ jobs:
           uv run python ../scripts/run_test_shard.py ${{ matrix.shard }} 4 --postgres-mode serial --native-plan "$NATIVE_PLAN" --native-plan-sha256 "$NATIVE_PLAN_SHA256"
       - name: Retain PostgreSQL capacity samples
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: postgres-capacity-${{ matrix.shard }}
           path: backend/postgres-capacity-*.log
           if-no-files-found: warn
       - name: Retain PostgreSQL phase reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: postgres-phases-${{ matrix.shard }}
           path: backend/.test-phases.postgres-${{ matrix.shard }}-*.controller.jsonl
           include-hidden-files: true
           if-no-files-found: warn
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: postgres-coverage-${{ matrix.shard }}
           path: |
@@ -303,7 +303,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
       - run: uv python install 3.13
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: sqlite-coverage-*
           path: backend
@@ -336,7 +336,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
       - run: uv python install 3.13
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: postgres-coverage-*
           path: backend
@@ -352,7 +352,7 @@ jobs:
 
       - run: uv run coverage json -o coverage-postgres.json
         working-directory: backend
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: postgres-coverage-report
           path: backend/coverage-postgres.json
@@ -391,7 +391,7 @@ jobs:
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: 11
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: pnpm
@@ -419,7 +419,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       # The application requires Python >=3.13; Python 3.7 compatibility is inapplicable.
       - run: semgrep scan --config p/default --config p/security-audit --exclude-rule python.lang.compatibility.python37.python37-compatibility-importlib2 --no-rewrite-rule-ids --error --sarif --output semgrep.sarif backend/src frontend/src
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         id: sarif
         if: ${{ !cancelled() && hashFiles('semgrep.sarif') != '' }}
         with:
@@ -442,7 +442,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: semgrep-sarif
       # On pull requests, attribute results to the head commit as CodeQL does. GitHub
