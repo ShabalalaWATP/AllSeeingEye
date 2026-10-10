@@ -49,9 +49,9 @@ export function ProductHeader() {
         <Link className="story-link" to="/login">
           Sign in
         </Link>
-        <a className="story-button story-button-primary story-button-small" href="#contact">
+        <Link className="story-button story-button-primary story-button-small" to="#contact">
           Talk to us
-        </a>
+        </Link>
       </div>
       <div ref={barRef} className="story-progress" aria-hidden="true" />
     </header>

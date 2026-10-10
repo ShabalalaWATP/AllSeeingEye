@@ -249,3 +249,39 @@ Both TypeScript configurations and the production build passed. The unchanged
 gzip budgets also passed: initial 145,638 bytes, globe additions 829,249 bytes and
 product additions 44,439 bytes. These measurements describe the public delivery
 branch, not the independently built combined integration bundle.
+
+## Contact focus and final browser follow-up
+
+A fresh default-mobile Lighthouse run on `81b5c554` at 01:54 UTC on 10 October
+again scored 78/97/100: FCP 2.28 seconds, LCP 4.09 seconds, blocking time 304 ms
+and zero layout shift. It used Lighthouse 13.5.0, Chrome 155.0.8059.39, the normal
+motion preference and the unchanged mobile profile (412 by 823, 150 ms RTT,
+1,638.4 Kbps and four-times CPU slowdown). The host benchmark index was 3,987.5.
+The complete precompressed page was served from an isolated loopback fixture.
+This result does not meet the mobile 95 criterion or isolate the texture change's
+effect from host variation.
+
+An additional real-browser check reproduced a contact-focus defect: direct
+`#contact` visits focused the heading, but native in-page contact anchors left
+focus on the body after fragment navigation. The header and hero contact links
+now use the existing router, allowing its contact effect to own scrolling and
+focus. Both navigation regressions failed before the repair, while the direct
+route control passed. The repaired contact, metadata, product and sign-in group
+passes all 16 cases. The metadata lifecycle test now waits for the required route
+effects instead of treating a visible heading as proof that metadata has settled;
+all previous assertions remain, with additional canonical and social restoration
+checks.
+
+Chrome 155 at 390 by 844 verifies heading focus from both contact links, repeated
+activation after focusing the Name field, and direct lazy contact loading. The
+heading sits below the sticky header, there is no horizontal overflow, sign-in
+restores noindex and removes product metadata, and returning restores the product
+canonical tag. Resource requests remain on the loopback origin and the console
+contains no errors or warnings. The private browser and fixture server were
+closed after verification.
+
+Both TypeScript configurations, scoped lint/format, production build and unchanged
+bundle budgets pass. The public build contains 145,663 bytes of initial JavaScript
+gzip, 829,249 additional globe bytes and 44,436 additional product bytes. Full
+published-head CI remains required; this follow-up does not approve publication
+or waive the mobile performance target.
