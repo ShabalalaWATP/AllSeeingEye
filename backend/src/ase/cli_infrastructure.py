@@ -5,13 +5,7 @@ from typing import Annotated
 
 import typer
 
-from ase.adapters.geo.infrastructure_import import (
-    DEFAULT_CONTACT,
-    import_data_centres,
-    import_ground_stations,
-)
-from ase.adapters.geo.infrastructure_notes import import_infrastructure_notes
-from ase.adapters.geo.sites_import import import_sites
+from ase.adapters.geo.bounded_download import DEFAULT_CONTACT
 
 RESOURCES = Path(__file__).parent / "resources"
 Contact = Annotated[
@@ -25,6 +19,10 @@ def import_stations(
     contact: Contact = DEFAULT_CONTACT,
 ) -> None:
     """Merge Wikidata ground stations behind the curated list in the snapshot."""
+    from ase.adapters.geo.infrastructure_import import (  # noqa: PLC0415 - selected command only
+        import_ground_stations,
+    )
+
     try:
         count = import_ground_stations(str(destination), contact=contact)
     except Exception as exc:
@@ -39,6 +37,10 @@ def import_centres(
     contact: Contact = DEFAULT_CONTACT,
 ) -> None:
     """Query OpenStreetMap for named data centres and write an attributed snapshot."""
+    from ase.adapters.geo.infrastructure_import import (  # noqa: PLC0415 - selected command only
+        import_data_centres,
+    )
+
     try:
         count = import_data_centres(str(destination), contact=contact)
     except Exception as exc:
@@ -49,6 +51,10 @@ def import_centres(
 
 
 def _import_layer(layer: str, destination: Path, contact: str) -> None:
+    from ase.adapters.geo.sites_import import (  # noqa: PLC0415 - selected command only
+        import_sites,
+    )
+
     try:
         count = import_sites(layer, str(destination), contact=contact)
     except Exception as exc:
@@ -83,6 +89,10 @@ def import_notes(
     contact: Contact = DEFAULT_CONTACT,
 ) -> None:
     """Add operator, owner, description and links to cables, nuclear plants and stations."""
+    from ase.adapters.geo.infrastructure_notes import (  # noqa: PLC0415 - selected command only
+        import_infrastructure_notes,
+    )
+
     try:
         counts = import_infrastructure_notes(str(resources), contact=contact)
     except Exception as exc:
