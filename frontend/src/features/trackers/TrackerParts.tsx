@@ -19,11 +19,7 @@ export function ActivityCells({ activity }: { activity: Activity }) {
       {activity.last_24h} / 24 h · {activity.last_7d} / 7 d ·{' '}
       <span
         className={
-          trend === 'rising'
-            ? 'text-critical'
-            : trend === 'falling'
-              ? 'text-good'
-              : 'text-muted'
+          trend === 'rising' ? 'text-critical' : trend === 'falling' ? 'text-good' : 'text-muted'
         }
       >
         {trend}

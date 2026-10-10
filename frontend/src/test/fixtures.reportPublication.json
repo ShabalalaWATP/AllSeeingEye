@@ -69,10 +69,7 @@
         {
           "text": "[1, 2]",
           "direction": "ltr",
-          "citation_numbers": [
-            1,
-            2
-          ]
+          "citation_numbers": [1, 2]
         }
       ],
       "items": [],
@@ -124,9 +121,7 @@
         {
           "text": "[3]",
           "direction": "ltr",
-          "citation_numbers": [
-            3
-          ]
+          "citation_numbers": [3]
         }
       ],
       "items": [],
@@ -200,9 +195,7 @@
             {
               "text": "[1]",
               "direction": "ltr",
-              "citation_numbers": [
-                1
-              ]
+              "citation_numbers": [1]
             }
           ]
         },
@@ -222,9 +215,7 @@
             {
               "text": "[2]",
               "direction": "ltr",
-              "citation_numbers": [
-                2
-              ]
+              "citation_numbers": [2]
             }
           ]
         }
@@ -259,9 +250,7 @@
         {
           "text": "[1]",
           "direction": "ltr",
-          "citation_numbers": [
-            1
-          ]
+          "citation_numbers": [1]
         }
       ],
       "items": [],
@@ -277,11 +266,7 @@
       "ordered": false,
       "table": {
         "title": "Source chronology",
-        "columns": [
-          "Date",
-          "Source",
-          "Reported item"
-        ],
+        "columns": ["Date", "Source", "Reported item"],
         "rows": [
           [
             {
@@ -308,9 +293,7 @@
                 {
                   "text": "[1]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    1
-                  ]
+                  "citation_numbers": [1]
                 }
               ]
             }
@@ -340,9 +323,7 @@
                 {
                   "text": "[2]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    2
-                  ]
+                  "citation_numbers": [2]
                 }
               ]
             }
@@ -372,9 +353,7 @@
                 {
                   "text": "[3]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    3
-                  ]
+                  "citation_numbers": [3]
                 }
               ]
             }
@@ -414,9 +393,7 @@
             {
               "text": "[3]",
               "direction": "ltr",
-              "citation_numbers": [
-                3
-              ]
+              "citation_numbers": [3]
             }
           ]
         }
@@ -442,9 +419,7 @@
         {
           "text": "[1]",
           "direction": "ltr",
-          "citation_numbers": [
-            1
-          ]
+          "citation_numbers": [1]
         }
       ],
       "items": [],
@@ -723,11 +698,7 @@
       "ordered": false,
       "table": {
         "title": "Recorded source grades",
-        "columns": [
-          "Source item",
-          "Source reliability",
-          "Information credibility"
-        ],
+        "columns": ["Source item", "Source reliability", "Information credibility"],
         "rows": [
           [
             {
@@ -746,9 +717,7 @@
                 {
                   "text": "[1]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    1
-                  ]
+                  "citation_numbers": [1]
                 }
               ]
             },
@@ -778,9 +747,7 @@
                 {
                   "text": "[2]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    2
-                  ]
+                  "citation_numbers": [2]
                 }
               ]
             },
@@ -810,9 +777,7 @@
                 {
                   "text": "[3]",
                   "direction": "ltr",
-                  "citation_numbers": [
-                    3
-                  ]
+                  "citation_numbers": [3]
                 }
               ]
             },
@@ -856,9 +821,7 @@
         {
           "text": "[1]",
           "direction": "ltr",
-          "citation_numbers": [
-            1
-          ]
+          "citation_numbers": [1]
         }
       ],
       "items": [],
@@ -883,9 +846,7 @@
         {
           "text": "[2]",
           "direction": "ltr",
-          "citation_numbers": [
-            2
-          ]
+          "citation_numbers": [2]
         }
       ],
       "items": [],
@@ -910,9 +871,7 @@
         {
           "text": "[3]",
           "direction": "ltr",
-          "citation_numbers": [
-            3
-          ]
+          "citation_numbers": [3]
         }
       ],
       "items": [],

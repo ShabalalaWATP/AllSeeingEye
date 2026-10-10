@@ -50,8 +50,8 @@ export function MapImagePreview({
         approximate positions.
         {includeAnnotations &&
           ' Teal outlines show local overlays, white outlines show the research area and measurement lines show the saved sketch.'}{' '}
-        Unsupported geometries are omitted. Flat maps omit polar geometry beyond +/-85.05112878 degrees.
-        Country-only and unknown locations are not plotted.
+        Unsupported geometries are omitted. Flat maps omit polar geometry beyond +/-85.05112878
+        degrees. Country-only and unknown locations are not plotted.
       </p>
       <MapGeometryOmissions omissions={prepared.omissions} />
       <div
