@@ -36,9 +36,7 @@ export function RfGroundwaveEngineering({ analysis }: { analysis: GroundwaveAnal
     <section aria-label="HF groundwave engineering" className="space-y-3 text-xs">
       <div className="rf-result-summary space-y-3">
         <p className="rf-result-kicker font-mono uppercase tracking-wider text-muted">{status}</p>
-        <p
-          className={`mt-1 font-mono text-xl ${summary.noPassing ? 'text-amber' : 'text-cyan'}`}
-        >
+        <p className={`mt-1 font-mono text-xl ${summary.noPassing ? 'text-amber' : 'text-cyan'}`}>
           {summary.radiusKm === null ? 'Below threshold' : `${km(summary.radiusKm)} km`}
         </p>
         <p className="mt-2 text-muted">
