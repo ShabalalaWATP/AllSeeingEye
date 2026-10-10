@@ -1550,6 +1550,16 @@ with no hard-limit failures. Retained-evidence review and browser interaction
 repairs subsequently passed their focused checks and independent reviews. The
 ledger retains outstanding mobile performance and final CI requirements.
 
+All 32 reviewed implementations are now combined at `26ef4c4b`, including final
+public loading changes. The production build, four Chromium journeys (13.8
+seconds), 235 focused frontend cases, both TypeScript configurations, policy
+checks, generated contracts and unchanged bundle budgets pass. Eighteen tickets
+have passing current-head CI and are In Review. Ten still need final validation
+or CI repair; four retain operator or acceptance decisions. A backend auth
+coverage gap discovered by final KAN-182 CI is being repaired without lowering
+the security floor. The full animated mobile page scores 78/97/100 on Lighthouse;
+the earlier placeholder-stage 95-performance criterion is not marked satisfied.
+
 No `main` merge, live migration or production release has occurred. Controller
 facts and privacy approval, the software-licence/offer decision and live GitHub
 production approval settings remain explicit operator decisions. Those decisions

@@ -18,16 +18,16 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | Ticket | Implementation | Review artefact / remaining acceptance |
 | --- | --- | --- |
 | KAN-164 | Neutral offer wording and a concrete software-licence/offer decision record | PR #175; Alex's licence and offer decision required |
-| KAN-165 | Public privacy, storage, attribution and data-request pages; fail-closed publication gate | Public policy browser checks passed; operator/legal approval required |
+| KAN-165 | Public privacy, storage, attribution and data-request pages; fail-closed publication gate | Grouped PR #191; public policy browser checks passed; operator/legal approval required |
 | KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; full CI/native PostgreSQL pending |
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; full CI/native PostgreSQL pending |
-| KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Functional mobile browser checks passed; final shared performance work in progress |
+| KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; final functional mobile browser and contact-focus checks passed; CI pending |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
-| KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Public loading improvements reviewed; full-page mobile performance remains below the earlier placeholder-stage 95 criterion; final evidence in progress |
-| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; full CI/native PostgreSQL pending |
+| KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Grouped PR #191; full-page mobile Lighthouse 78/97/100, desktop 99/97/100; mobile performance remains below the earlier placeholder-stage 95 criterion |
+| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final CI identified uncovered backend auth refusal branches; regression repair in progress with the 95% security floor unchanged |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
-| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed at `8e818074`, 168 affected cases passed with 96.44% scoped coverage; CI pending |
+| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; final readiness/contrast repair at `dc5e0565` passed 55 frontend cases; CI pending |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
 | KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; CI passed, In Review |
@@ -91,11 +91,22 @@ Map-policy integration reproduced 12 outdated readiness/contrast failures; all
 assertions retained. The only additional production change in that follow-up is
 the existing accessible border token on the basemap selector.
 
-At integrated revision `ed34be2b`, the production build and all four isolated
-Chromium journeys passed (11.4 seconds). This includes the combined commercial,
-enquiry, session, subscription and notification changes. The pinned browser was
-installed into this worktree through the repository's own installer. Final public
-loading optimisations and final combined hosted CI remain separate follow-ups.
+At integrated revision `26ef4c4b`, all 32 ticket implementations and their reviewed
+follow-ups are present. The production build and all four isolated Chromium
+journeys passed (13.8 seconds), covering the combined commercial, enquiry,
+session, subscription and notification changes. The pinned browser was installed
+into this worktree through the repository's own installer. The final route,
+public-page, administrator, graphics and auth group passed 235 tests in 37 files.
+Both TypeScript configurations and all 11 policy checks passed. API and attribution
+regeneration left no diff. The expanded size check passed with 13 documented
+target exceptions and no hard-limit failure.
+
+Final gzip bundle measurements passed their unchanged budgets: initial loading
+145,738 of 245,760 bytes, globe additions 829,227 of 870,400 bytes, and public
+product additions 44,427 of 153,600 bytes. Final combined hosted CI remains pending.
+At this checkpoint, 18 delivery tickets have passing current-head CI and are In
+Review. Ten require final validation or CI repair, and four retain acceptance or
+operator decisions. No delivery ticket has been marked Done.
 
 ## Review findings corrected during implementation
 
@@ -133,7 +144,7 @@ loading optimisations and final combined hosted CI remain separate follow-ups.
 ## Approval and release boundaries
 
 No production release, live migration or merge to `main` is authorised by this
-implementation request. Migration revisions0090 through0094 form one chain;
+implementation request. Migration revisions 0090 through 0094 form one chain;
 operator rollout and data-preserving rollback limitations require the documented
 manual migration process.
 
@@ -144,6 +155,13 @@ The licence/offer decision and live GitHub production-environment configuration
 also require Alex's explicit decision. The publication gate remains closed;
 feature flags default to disabled. Provider permission drafts have not been sent,
 and commercial permission has not been assumed.
+
+The completed animated public page measures 78 performance, 97 accessibility and
+100 SEO on default mobile Lighthouse, and 99/97/100 on desktop. The mobile baseline
+was 60/97/100; host benchmark variation is recorded in the acceptance evidence.
+KAN-172's earlier 95-performance criterion specified placeholder chapters. The
+full-page result remains below that figure and has not been waived or presented
+as passing. Further renderer work or an explicit acceptance decision is outstanding.
 
 The 6 October KAN-81 acceptance remains historical evidence. This review adds a
 continuous browser lane and does not retroactively change its recorded outcome.

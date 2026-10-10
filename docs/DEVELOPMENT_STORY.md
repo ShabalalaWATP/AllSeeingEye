@@ -6126,6 +6126,12 @@ execution. Whole-source type, lint, formatting and architecture checks pass.
 Mobile enquiry browser checks found and corrected long-text overflow. The new
 browser CI journeys exposed notification stacking and focus timing defects;
 those repairs now pass all four Chromium journeys and nineteen focused cases.
-Public-page mobile performance and final combined CI remain in progress.
+Final integration at `26ef4c4b` also passes 235 focused frontend cases, both
+TypeScript configurations, all four production Chromium journeys (13.8 seconds),
+policy checks and bundle budgets. API and attribution regeneration leave no diff.
+The public page now scores 78/97/100 on default mobile Lighthouse and 99/97/100 on
+desktop; the earlier placeholder-stage mobile 95 criterion remains unmet. Final
+combined CI is outstanding, including a newly exposed backend auth coverage gap
+being repaired with behavioural regressions and unchanged security thresholds.
 Production, licence and privacy decisions are not inferred from implementation
 approval.
