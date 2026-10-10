@@ -173,7 +173,7 @@ export function MapFilters({
             <select
               aria-label="Evidence basemap"
               value={state.basemap}
-              className="mt-1 block w-full rounded border border-line bg-surface p-2"
+              className="mt-1 block w-full rounded border border-control-border bg-surface p-2"
               onChange={(event) => {
                 const basemap = event.target.value as MapState['basemap'];
                 if (!basemapUnavailable(policy, basemap)) onChange({ ...state, basemap });
