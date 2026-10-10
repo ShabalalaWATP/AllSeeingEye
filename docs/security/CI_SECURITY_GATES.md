@@ -14,6 +14,12 @@ dependency audits; Bandit; Gitleaks; Semgrep; and container vulnerability scans.
 GitHub CodeQL uses default setup and must not also be configured in a competing
 advanced workflow. Semgrep publishes SARIF to GitHub code scanning.
 
+The frontend also requires the bounded Chromium regression lane described in
+[browser regressions](../BROWSER_REGRESSIONS.md). It uses synthetic API responses,
+rejects external requests, retains failure traces and reports elapsed runtime.
+Its result participates in the existing frontend aggregate; coverage and security
+thresholds remain unchanged. Historical KAN-81 acceptance remains separate.
+
 Contract and delivery checks fail when the committed `openapi.json` or
 `types.gen.ts` differs from what the backend and `pnpm gen:api` produce. They also
 fail when the production build loads a lazy-only library (deck.gl, MapLibre,
