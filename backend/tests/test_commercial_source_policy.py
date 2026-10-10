@@ -73,6 +73,20 @@ def test_startup_rejects_missing_additional_policy() -> None:
         parse_source_licences(register, evidence)
 
 
+@pytest.mark.parametrize("corruption", ["duplicate_id", "wrong_reference", "repeated_policy"])
+def test_startup_rejects_ambiguous_or_untraceable_metadata(corruption: str) -> None:
+    register, evidence = documents()
+    row = register["sources"][0]
+    if corruption == "duplicate_id":
+        register["sources"].append(dict(row))
+    elif corruption == "wrong_reference":
+        row["licence_ref"] = "docs/SOURCE_LICENCES.md#source-another-source"
+    else:
+        row["additional_policies"].append(row["policy"])
+    with pytest.raises(ValueError):
+        parse_source_licences(register, evidence)
+
+
 def test_additional_component_prohibition_cannot_be_reduced_to_acknowledgement() -> None:
     register, evidence = documents()
     row = next(row for row in register["sources"] if row["id"] == "map:nuclear_facilities")

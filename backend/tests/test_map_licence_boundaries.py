@@ -13,9 +13,31 @@ from ase.application.place_search import PlaceSearch
 from ase.application.terrain import TerrainSampler
 from ase.domain.errors import Forbidden
 from ase.domain.events import Point
-from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
+from ase.domain.map_licences import require_basemap
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicence, SourceLicencePolicy
 from test_camera_catalogue_states import source
 from test_copernicus_footprints import QUERY
+
+
+def test_saved_os_map_requires_permission_for_both_underlying_providers():
+    base = SourceLicence("map:openfreemap", "allowed", True, "base")
+    tiles = SourceLicence("map:os_maps", "licence_required", True, "tiles")
+    policy = SourceLicencePolicy((base, tiles), commercial_use=True)
+    require_basemap(policy, "dark")
+    with pytest.raises(Forbidden, match="licence terms"):
+        require_basemap(policy, "os_road")
+
+    acknowledgements = frozenset({"map:os_maps"})
+    permitted = SourceLicencePolicy(
+        (base, tiles), commercial_use=True, acknowledgements=acknowledgements
+    )
+    require_basemap(permitted, "os_road")
+    forbidden_base = SourceLicence("map:openfreemap", "forbidden", True, "base")
+    refused = SourceLicencePolicy(
+        (forbidden_base, tiles), commercial_use=True, acknowledgements=acknowledgements
+    )
+    with pytest.raises(Forbidden, match="licence terms"):
+        require_basemap(refused, "os_road")
 
 
 async def test_blocked_camera_preserves_status_without_fetching_or_releasing_cache(user, clock):

@@ -41,9 +41,10 @@ Unverified and partly reviewed sources remain unavailable without that explicit
 acknowledgement. Forbidden sources, including EOX imagery, cannot be opened by
 acknowledgement, an API key or administrator activation.
 
-Restart after changing these settings. Startup validates packaged metadata and
-reports refused source IDs without logging credentials. Check Administration,
-Sources and the user Source catalogue for effective availability, then verify
+Restart the server and reload open browser sessions after changing these settings.
+Startup validates packaged metadata and reports refused source IDs without logging
+credentials. Check Administration > Sources and the user Source catalogue for
+effective availability, then verify
 the permitted map styles and workflows. Enabling the technical control does not
 approve a commercial offer, buy a licence or authorise a production release.
 
