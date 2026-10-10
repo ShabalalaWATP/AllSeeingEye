@@ -6118,12 +6118,14 @@ defects. Native PostgreSQL exposed two invalid edition-link test fixtures; the
 repaired fixtures pass on both database engines without weakening foreign keys.
 Commercial-policy review identified additional private-input and conflict-data
 consumers; their repairs passed independent review. A later combined review found
-retained corroboration provenance gaps, which remain under repair. The expanded
+retained corroboration provenance gaps, repaired with a shared source collector
+and independently reviewed against failed-before/passed-after regressions. The expanded
 combined backend group passed all 168 selected tests. Four additional alert cases
 verify both commercial refusal and exact-source permission before admission and
 execution. Whole-source type, lint, formatting and architecture checks pass.
 Mobile enquiry browser checks found and corrected long-text overflow. The new
 browser CI journeys exposed notification stacking and focus timing defects;
-those repairs and public-page mobile performance work remain in progress.
+those repairs now pass all four Chromium journeys and nineteen focused cases.
+Public-page mobile performance and final combined CI remain in progress.
 Production, licence and privacy decisions are not inferred from implementation
 approval.

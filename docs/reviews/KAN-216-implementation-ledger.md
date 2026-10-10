@@ -27,7 +27,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; full CI/native PostgreSQL pending |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected and focused style checks passed; CI pending |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
-| KAN-195 | Commercial-use admission and capability controls | PR #188; private-input/conflict repairs reviewed; retained public corroboration repair in progress |
+| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed at `8e818074`, 168 affected cases passed with 96.44% scoped coverage; CI pending |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
 | KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; final CI pending |
@@ -41,9 +41,9 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-226 | Uncached security rebuild procedure | PR #170 |
 | KAN-227 | Vulnerable dependency and image refresh | PR #164; local rebuilt-image scan and CI passed |
 | KAN-228 | Explicit webhook retry semantics after uncertain acceptance | PR #174 |
-| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed, final CI pending |
+| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; obsolete disabled-edit test repaired with 11 focused cases; fresh CI pending |
 | KAN-230 | CI security and acceptance documentation reconciled with executable gates | PR #173 |
-| KAN-231 | Bounded synthetic-data Chromium CI journeys | First browser run exposed fixture gaps and notification stacking; bounded repairs in progress |
+| KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four journeys passed in 11.354 seconds, notification repairs reviewed with 19 passing cases; representative CI pending |
 | KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; combined inventory reconciled to 13 reviewed target exceptions, no hard-limit failure |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
 | KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, 17 tests passed and 95.65% hook branch coverage; fresh CI pending |
@@ -90,13 +90,17 @@ passed. These focused results do not replace full combined CI.
 - Commercial-policy review found private-upload and conflict-reference consumers
   bypassing their declared policies. Their repairs passed independent review.
   Combined review then found retained public corroboration and direct reuse
-  gaps; that additional repair remains in progress.
+  gaps. A shared source collector now enforces every retained primary and folded
+  source before fresh work; red/green tests and independent review passed.
 - Mobile browser checks found long enquiry contacts overflowing implicit grid
   tracks and long organisation names overflowing deletion dialogs. Explicit
   mobile tracks and text wrapping pass the same geometry checks after repair.
 - Session changes made the cyber-filter API test depend on browser cookies; its
   previous Node-only classification was corrected, with all ten focused tests
   passing and the fix propagated to dependent branches.
+- Chromium found the notification menu behind report content and a focus race
+  when acknowledged or muted rows disappeared. Header stacking and commit-bound
+  focus restoration now pass actual browser clicks and a delayed-refresh test.
 
 ## Approval and release boundaries
 
