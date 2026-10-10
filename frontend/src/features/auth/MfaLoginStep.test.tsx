@@ -20,7 +20,7 @@ const pending = {
 async function begin(overrides = {}) {
   server.use(http.post('/api/auth/login', () => HttpResponse.json({ ...pending, ...overrides })));
   const rendered = renderApp('/login', 'anonymous');
-  await rendered.user.type(screen.getByLabelText('Email'), plainUser.email);
+  await rendered.user.type(await screen.findByLabelText('Email'), plainUser.email);
   await rendered.user.type(screen.getByLabelText('Password'), USER_PASSWORD);
   expect(screen.queryByText('Use an authenticator code')).not.toBeInTheDocument();
   await rendered.user.click(screen.getByRole('button', { name: 'Sign in' }));

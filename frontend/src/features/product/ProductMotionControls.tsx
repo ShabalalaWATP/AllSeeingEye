@@ -12,6 +12,7 @@ export function ProductBrandMark({ size = 26 }: { size?: number }) {
   return (
     <div aria-hidden="true" className="shrink-0" style={{ width: size * 1.4, height: size }}>
       <EvilEye
+        deferUntilVisible
         transparent
         scale={0.6}
         pupilFollow={0}

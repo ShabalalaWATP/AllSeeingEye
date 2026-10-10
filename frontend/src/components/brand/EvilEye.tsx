@@ -26,6 +26,7 @@
  *      prop, so small marks never request the 512 px capture.
  *   7. Reuse the original deterministic noise pixels across instances. Each WebGL
  *      context still owns its texture and disposes it independently.
+ *   8. Optionally initialise only when visible, retaining the original capture until then.
  */
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef, useState } from 'react';
@@ -64,6 +65,8 @@ interface EvilEyeProps {
   transparent?: boolean;
   /** Added for The All Seeing Eye: the `sizes` hint for the captured fallback image. */
   fallbackSizes?: string;
+  /** Keep the capture until first viewport entry, without constructing an off-screen context. */
+  deferUntilVisible?: boolean;
 }
 
 export default function EvilEye({
@@ -82,6 +85,7 @@ export default function EvilEye({
   paused = false,
   transparent = false,
   fallbackSizes,
+  deferUntilVisible = false,
 }: EvilEyeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
@@ -125,149 +129,162 @@ export default function EvilEye({
       dispose();
       setUnavailable(true);
     };
-    try {
-      const renderer = new Renderer({ alpha: true, premultipliedAlpha: false, dpr: 1 });
-      const gl = renderer.gl;
-      disposers.push(() => {
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
-      });
-      const onLost = (event: Event) => {
-        event.preventDefault();
-        // Keep the captured original eye instead of competing with the map for recovery.
-        fail();
-      };
-      gl.canvas.addEventListener('webglcontextlost', onLost);
-      disposers.push(() => gl.canvas.removeEventListener('webglcontextlost', onLost));
-      gl.clearColor(0, 0, 0, 0);
-
-      const noiseData = (sharedNoise ??= generateNoiseTexture(256));
-      const noiseTexture = new Texture(gl, {
-        image: noiseData,
-        width: 256,
-        height: 256,
-        generateMipmaps: false,
-        flipY: false,
-      });
-      disposers.push(() => gl.deleteTexture(noiseTexture.texture));
-      noiseTexture.minFilter = gl.LINEAR;
-      noiseTexture.magFilter = gl.LINEAR;
-      noiseTexture.wrapS = gl.REPEAT;
-      noiseTexture.wrapT = gl.REPEAT;
-
-      const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-
-      function onMouseMove(e: MouseEvent) {
-        const rect = container.getBoundingClientRect();
-        mouse.tx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.ty = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      }
-
-      function onMouseLeave() {
-        mouse.tx = 0;
-        mouse.ty = 0;
-      }
-
-      container.addEventListener('mousemove', onMouseMove);
-      container.addEventListener('mouseleave', onMouseLeave);
-      disposers.push(() => {
-        container.removeEventListener('mousemove', onMouseMove);
-        container.removeEventListener('mouseleave', onMouseLeave);
-      });
-
-      let program: Program;
-
-      function resize() {
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
-        if (program) {
-          program.uniforms.uResolution.value = [
-            gl.canvas.width,
-            gl.canvas.height,
-            gl.canvas.width / gl.canvas.height,
-          ];
-        }
-      }
-      window.addEventListener('resize', resize);
-      disposers.push(() => window.removeEventListener('resize', resize));
-      const resizeObserver =
-        typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize);
-      disposers.push(() => resizeObserver?.disconnect());
-      resizeObserver?.observe(container);
-      resize();
-
-      const geometry = new Triangle(gl);
-      disposers.push(() => geometry.remove());
-      program = new Program(gl, {
-        vertex: vertexShader,
-        fragment: fragmentShader,
-        uniforms: {
-          uTime: { value: 0 },
-          uResolution: {
-            value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height],
-          },
-          uNoiseTexture: { value: noiseTexture },
-          uPupilSize: { value: pupilSize },
-          uIrisWidth: { value: irisWidth },
-          uGlowIntensity: { value: glowIntensity },
-          uIntensity: { value: intensity },
-          uScale: { value: scale },
-          uNoiseScale: { value: noiseScale },
-          uMouse: { value: [0, 0] },
-          uPupilFollow: { value: pupilFollow },
-          uFlameSpeed: { value: flameSpeed },
-          uEyeColor: { value: hexToVec3(eyeColor) },
-          uBgColor: { value: hexToVec3(backgroundColor) },
-          uLightMode: { value: lightMode },
-          uTransparent: { value: transparent },
-        },
-      });
-
-      disposers.push(() => program.remove());
-      const mesh = new Mesh(gl, { geometry, program });
-      container.appendChild(gl.canvas);
-      disposers.push(() => gl.canvas.remove());
-
-      // Added for The All Seeing Eye: the loop stops while paused and skips frames
-      // above maxFps. Zero means "no frame scheduled".
-      let animationFrameId = 0;
-      disposers.push(() => cancelAnimationFrame(animationFrameId));
-      let lastFrameTime = -Infinity;
-
-      function update(time: number) {
-        if (stopped || pausedRef.current) {
-          animationFrameId = 0;
-          return;
-        }
-        animationFrameId = requestAnimationFrame(update);
-        const cap = maxFpsRef.current;
-        if (cap !== undefined && cap > 0 && time - lastFrameTime < 1000 / cap) return;
-        lastFrameTime = time;
-        mouse.x += (mouse.tx - mouse.x) * 0.05;
-        mouse.y += (mouse.ty - mouse.y) * 0.05;
-        program.uniforms.uMouse.value = [mouse.x, mouse.y];
-        program.uniforms.uTime.value = time * 0.001;
-        try {
-          renderer.render({ scene: mesh });
-          // Hide the captured matte once a real frame exists, especially when
-          // the live canvas is transparent. Restore it only on graphics failure.
-          if (fallback && !fallback.hidden) fallback.hidden = true;
-        } catch {
+    const initialise = () => {
+      try {
+        const renderer = new Renderer({ alpha: true, premultipliedAlpha: false, dpr: 1 });
+        const gl = renderer.gl;
+        disposers.push(() => {
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+        });
+        const onLost = (event: Event) => {
+          event.preventDefault();
+          // Keep the captured original eye instead of competing with the map for recovery.
           fail();
-        }
-      }
+        };
+        gl.canvas.addEventListener('webglcontextlost', onLost);
+        disposers.push(() => gl.canvas.removeEventListener('webglcontextlost', onLost));
+        gl.clearColor(0, 0, 0, 0);
 
-      function start() {
-        if (!stopped && animationFrameId === 0 && !pausedRef.current) {
+        const noiseData = (sharedNoise ??= generateNoiseTexture(256));
+        const noiseTexture = new Texture(gl, {
+          image: noiseData,
+          width: 256,
+          height: 256,
+          generateMipmaps: false,
+          flipY: false,
+        });
+        disposers.push(() => gl.deleteTexture(noiseTexture.texture));
+        noiseTexture.minFilter = gl.LINEAR;
+        noiseTexture.magFilter = gl.LINEAR;
+        noiseTexture.wrapS = gl.REPEAT;
+        noiseTexture.wrapT = gl.REPEAT;
+
+        const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+
+        function onMouseMove(e: MouseEvent) {
+          const rect = container.getBoundingClientRect();
+          mouse.tx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.ty = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+        }
+
+        function onMouseLeave() {
+          mouse.tx = 0;
+          mouse.ty = 0;
+        }
+
+        container.addEventListener('mousemove', onMouseMove);
+        container.addEventListener('mouseleave', onMouseLeave);
+        disposers.push(() => {
+          container.removeEventListener('mousemove', onMouseMove);
+          container.removeEventListener('mouseleave', onMouseLeave);
+        });
+
+        let program: Program;
+
+        function resize() {
+          renderer.setSize(container.offsetWidth, container.offsetHeight);
+          if (program) {
+            program.uniforms.uResolution.value = [
+              gl.canvas.width,
+              gl.canvas.height,
+              gl.canvas.width / gl.canvas.height,
+            ];
+          }
+        }
+        window.addEventListener('resize', resize);
+        disposers.push(() => window.removeEventListener('resize', resize));
+        const resizeObserver =
+          typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize);
+        disposers.push(() => resizeObserver?.disconnect());
+        resizeObserver?.observe(container);
+        resize();
+
+        const geometry = new Triangle(gl);
+        disposers.push(() => geometry.remove());
+        program = new Program(gl, {
+          vertex: vertexShader,
+          fragment: fragmentShader,
+          uniforms: {
+            uTime: { value: 0 },
+            uResolution: {
+              value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height],
+            },
+            uNoiseTexture: { value: noiseTexture },
+            uPupilSize: { value: pupilSize },
+            uIrisWidth: { value: irisWidth },
+            uGlowIntensity: { value: glowIntensity },
+            uIntensity: { value: intensity },
+            uScale: { value: scale },
+            uNoiseScale: { value: noiseScale },
+            uMouse: { value: [0, 0] },
+            uPupilFollow: { value: pupilFollow },
+            uFlameSpeed: { value: flameSpeed },
+            uEyeColor: { value: hexToVec3(eyeColor) },
+            uBgColor: { value: hexToVec3(backgroundColor) },
+            uLightMode: { value: lightMode },
+            uTransparent: { value: transparent },
+          },
+        });
+
+        disposers.push(() => program.remove());
+        const mesh = new Mesh(gl, { geometry, program });
+        container.appendChild(gl.canvas);
+        disposers.push(() => gl.canvas.remove());
+
+        // Added for The All Seeing Eye: the loop stops while paused and skips frames
+        // above maxFps. Zero means "no frame scheduled".
+        let animationFrameId = 0;
+        disposers.push(() => cancelAnimationFrame(animationFrameId));
+        let lastFrameTime = -Infinity;
+
+        function update(time: number) {
+          if (stopped || pausedRef.current) {
+            animationFrameId = 0;
+            return;
+          }
           animationFrameId = requestAnimationFrame(update);
+          const cap = maxFpsRef.current;
+          if (cap !== undefined && cap > 0 && time - lastFrameTime < 1000 / cap) return;
+          lastFrameTime = time;
+          mouse.x += (mouse.tx - mouse.x) * 0.05;
+          mouse.y += (mouse.ty - mouse.y) * 0.05;
+          program.uniforms.uMouse.value = [mouse.x, mouse.y];
+          program.uniforms.uTime.value = time * 0.001;
+          try {
+            renderer.render({ scene: mesh });
+            // Hide the captured matte once a real frame exists, especially when
+            // the live canvas is transparent. Restore it only on graphics failure.
+            if (fallback && !fallback.hidden) fallback.hidden = true;
+          } catch {
+            fail();
+          }
         }
-      }
-      resumeRef.current = start;
-      start();
 
-      return dispose;
-    } catch {
-      fail();
-      return dispose;
-    }
+        function start() {
+          if (!stopped && animationFrameId === 0 && !pausedRef.current) {
+            animationFrameId = requestAnimationFrame(update);
+          }
+        }
+        resumeRef.current = start;
+        start();
+
+        return dispose;
+      } catch {
+        fail();
+        return dispose;
+      }
+    };
+    if (!deferUntilVisible || typeof IntersectionObserver !== 'function') return initialise();
+    let initialised = false;
+    const observer = new IntersectionObserver((entries) => {
+      if (stopped || initialised || !entries.some((entry) => entry.isIntersecting)) return;
+      initialised = true;
+      observer.disconnect();
+      initialise();
+    });
+    disposers.push(() => observer.disconnect());
+    observer.observe(container);
+    return dispose;
   }, [
     unavailable,
     eyeColor,
@@ -282,6 +299,7 @@ export default function EvilEye({
     backgroundColor,
     lightMode,
     transparent,
+    deferUntilVisible,
   ]);
 
   return (

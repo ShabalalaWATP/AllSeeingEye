@@ -139,3 +139,32 @@ is not an isolated causal comparison. It remains below the required 95.
 An earlier repeat accidentally served an uncompressed rebuild; that report is
 retained as fixture-error evidence and excluded from the comparison. Subsequent
 measurements run the existing deployment precompression step before scoring.
+
+The next candidate keeps route identities and guards intact while loading private
+layouts and account forms only when their routes render. A static bundle guard
+rejects those private chunks in the common entry. The enabled product starts its
+existing, cached public configuration request alongside the lazy route download.
+The existing local Inter and JetBrains Mono fonts are preloaded from the same
+origin; Vite rewrites their paths to the same assets used by the stylesheet.
+Initial JavaScript is now 145,596 bytes gzip and the product closure 44,424 bytes.
+The existing budget limits are unchanged.
+
+Public product eyes retain their captured frame until their first actual viewport
+intersection, then construct their original renderer. Below-fold eyes therefore
+avoid creating an unused WebGL context during startup. The original animation,
+shader, pause controls and graphics cleanup remain intact. An unavailable
+IntersectionObserver uses the original immediate initialisation path. Tests cover
+first visibility, repeated notifications and disposal before a queued notification.
+All 87 cases across the product and graphics files pass; the application type
+check, production build and all three bundle budgets pass.
+The broader auth compatibility run exposed asynchronous test assumptions and a
+duplicate responsive navigation landmark; the repaired affected group passed all
+19 cases. Independent source review found no guard, bootstrap, error-boundary or
+graphics-lifetime regression in this candidate.
+
+An intermediate measurement, before viewport initialisation and Mono font
+preloading, scored 78/97/100: first contentful paint 2.59 seconds, largest
+contentful paint 4.18 seconds and total blocking time 224 ms. Its largest contentful
+paint candidate was the hero's monospace eyebrow after a late font request. The
+latest candidate still requires a clean-host measurement. No score in this record
+establishes the required mobile performance acceptance yet.

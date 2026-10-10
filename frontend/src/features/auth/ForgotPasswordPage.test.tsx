@@ -21,7 +21,7 @@ describe('ForgotPasswordPage', () => {
       ),
     );
     const { user } = renderApp('/forgot-password', 'anonymous');
-    await user.type(screen.getByLabelText('Email'), 'someone@example.com');
+    await user.type(await screen.findByLabelText('Email'), 'someone@example.com');
     await user.click(screen.getByRole('button', { name: 'Send reset link' }));
     expect(await screen.findByRole('heading', { name: 'Contact an administrator' })).toBeVisible();
     expect(screen.getByRole('status')).toHaveTextContent('Email password recovery is unavailable');
