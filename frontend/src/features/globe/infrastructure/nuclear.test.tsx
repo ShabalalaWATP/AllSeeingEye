@@ -1,6 +1,9 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { expect, it, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { applySession } from '@/test/session';
+import { mapSourceAllowed } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 import { server } from '@/test/server';
 import { infrastructureSchema, type Infrastructure } from '@/lib/api/infrastructure';
 import { useInfrastructure } from './useInfrastructure';
@@ -50,10 +53,13 @@ const data: Infrastructure = {
   nuclear_snapshot_date: '2026-09-09',
 };
 
+beforeEach(() => applySession('user'));
+
 it('loads nuclear independently, selects and clears its highlight with details or toggle', async () => {
   server.use(http.get('/api/map-infrastructure', () => HttpResponse.json(data)));
   const { result } = renderHook(() => useInfrastructure());
   expect(result.current.nuclearEnabled).toBe(false);
+  await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.nuclear)).toBe(true));
   act(() => result.current.toggleNuclear());
   await waitFor(() => expect(result.current.data).toEqual(data));
   expect(result.current.cablesEnabled).toBe(false);
@@ -94,6 +100,9 @@ it('shows historical capacity, source, country and licence with accurate loaded 
     );
   }
   render(<Harness />);
+  await waitFor(() =>
+    expect(screen.getByRole('switch', { name: 'Nuclear power facilities' })).toBeEnabled(),
+  );
   fireEvent.click(screen.getByRole('switch', { name: 'Nuclear power facilities' }));
   fireEvent.click(await screen.findByRole('button', { name: /Historical plant/ }));
   expect(screen.getByText(/1 historical nuclear facilities/)).toBeInTheDocument();

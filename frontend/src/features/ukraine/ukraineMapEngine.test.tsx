@@ -50,7 +50,8 @@ describe('UkraineMap with a renderer', () => {
       />,
     );
     expect(screen.getByRole('region', { name: 'Reported control map' })).toBeInTheDocument();
-    expect(engine.setProjection).toHaveBeenCalledWith('mercator');
+    expect(engine.mount).not.toHaveBeenCalled();
+    await waitFor(() => expect(engine.setProjection).toHaveBeenCalledWith('mercator'));
     expect(engine.setBaseLayer).toHaveBeenCalledWith('dark');
     expect(engine.mount).toHaveBeenCalledTimes(1);
     expect(engine.fitBounds).toHaveBeenCalledTimes(1);

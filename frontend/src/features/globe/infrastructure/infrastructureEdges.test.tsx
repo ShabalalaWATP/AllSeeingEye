@@ -1,6 +1,9 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { applySession } from '@/test/session';
+import { mapSourceAllowed } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 import { PathLayer, IconLayer } from '@deck.gl/layers';
 import * as api from '@/lib/api/infrastructure';
 import type { Cable, GroundStation, Infrastructure } from '@/lib/api/infrastructure';
@@ -53,6 +56,7 @@ const data: Infrastructure = {
   nuclear_dataset_version: '1.3.0',
   nuclear_snapshot_date: '2026-09-09',
 };
+beforeEach(() => applySession('user'));
 afterEach(() => vi.restoreAllMocks());
 
 it.each(['resolve', 'reject'] as const)(
@@ -66,6 +70,7 @@ it.each(['resolve', 'reject'] as const)(
     });
     const request = vi.spyOn(api, 'fetchInfrastructure').mockReturnValue(pending);
     const { result, unmount } = renderHook(() => useInfrastructure());
+    await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable)).toBe(true));
     act(() => result.current.toggleCables());
     expect(result.current.loading).toBe(true);
     act(() => result.current.toggleCables());
@@ -82,11 +87,12 @@ it.each(['resolve', 'reject'] as const)(
   },
 );
 
-it('aborts an outstanding request on unmount', () => {
+it('aborts an outstanding request on unmount', async () => {
   const request = vi
     .spyOn(api, 'fetchInfrastructure')
     .mockReturnValue(new Promise(() => undefined));
   const { result, unmount } = renderHook(() => useInfrastructure());
+  await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.station)).toBe(true));
   act(() => result.current.toggleStations());
   unmount();
   expect(request.mock.calls[0]?.[0].aborted).toBe(true);
@@ -128,6 +134,10 @@ it('blocks map and list selection during measurement and focuses valid locations
     },
     { initialProps: { picking: true } },
   );
+  await waitFor(() => {
+    expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable)).toBe(true);
+    expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.station)).toBe(true);
+  });
   act(() => {
     result.current.state.toggleCables();
     result.current.state.toggleStations();
@@ -165,6 +175,9 @@ it('renders retry, bounded search results and lets country searches find ground 
   }
   const user = userEvent.setup();
   render(<Panel />);
+  await waitFor(() =>
+    expect(screen.getByRole('switch', { name: 'Undersea cables' })).toBeEnabled(),
+  );
   await user.click(screen.getByRole('switch', { name: 'Undersea cables' }));
   await user.click(await screen.findByRole('button', { name: 'Retry infrastructure' }));
   await screen.findByText(/Showing the first 50 of 51/);
