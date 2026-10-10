@@ -23,7 +23,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; full CI/native PostgreSQL pending |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Functional mobile browser checks passed; final shared performance work in progress |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
-| KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Desktop Lighthouse 99/97/100; mobile performance 60 misses target 95, optimisation in progress |
+| KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Public loading improvements reviewed; full-page mobile performance remains below the earlier placeholder-stage 95 criterion; final evidence in progress |
 | KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; full CI/native PostgreSQL pending |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
@@ -46,7 +46,7 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four local journeys passed in 11.354 seconds and hosted CI in 9.9 seconds (64-second full job); final aggregate pending |
 | KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import regression repaired, fresh CI pending |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
-| KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, 17 tests passed and 95.65% hook branch coverage; fresh CI pending |
+| KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, CI passed at `dcc5b737`, In Review |
 | KAN-235 | Original TLS identity across pinned feed connections; no shared cookies | PR #167 |
 | KAN-236 | Same-session fences throughout semantic search | PR #162 |
 
@@ -81,6 +81,21 @@ upload session checks, release-time expiry and transactional token redemption.
 The shared fixtures now model activity deadlines explicitly, preserving expiry,
 rollback and single-use assertions. Independent review of the branch-specific
 route inventories found no dropped contract checks.
+
+Queued cookie-only logout now has explicit stable-cookie and replaced-cookie
+controls. All 77 auth-store tests passed with 97.14% branch coverage against the
+unchanged 95% floor. Enquiry retention passed 17 SQLite and 17 native PostgreSQL
+cases, and 12 lifecycle cases verify the configured retention reaches housekeeping.
+Map-policy integration reproduced 12 outdated readiness/contrast failures; all
+55 affected cases now pass, with the original loading/denied/cancellation
+assertions retained. The only additional production change in that follow-up is
+the existing accessible border token on the basemap selector.
+
+At integrated revision `ed34be2b`, the production build and all four isolated
+Chromium journeys passed (11.4 seconds). This includes the combined commercial,
+enquiry, session, subscription and notification changes. The pinned browser was
+installed into this worktree through the repository's own installer. Final public
+loading optimisations and final combined hosted CI remain separate follow-ups.
 
 ## Review findings corrected during implementation
 
