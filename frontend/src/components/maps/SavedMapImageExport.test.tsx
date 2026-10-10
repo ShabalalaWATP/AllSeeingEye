@@ -10,6 +10,7 @@ import { fetchReport } from '@/lib/api/reports';
 import { fetchMapImagePackage, mapPngBase64 } from '@/lib/api/mapImageExport';
 import { saveBinaryFile } from '@/lib/downloadBinary';
 import { SavedMapImageExport } from './SavedMapImageExport';
+import { useCapabilitiesStore } from '@/stores/capabilities';
 const mocks = vi.hoisted(() => ({ capture: vi.fn(), props: vi.fn(), available: true }));
 vi.mock('@/lib/api/mapViews', async (original) => ({
   ...(await original<object>()),
@@ -36,6 +37,7 @@ vi.mock('./EvidenceMapCanvas', () => ({
   },
 }));
 beforeEach(() => {
+  useCapabilitiesStore.setState({ loaded: true, commercialUse: false, osMaps: true });
   vi.clearAllMocks();
   mocks.available = true;
   applySession('user');
@@ -44,6 +46,15 @@ beforeEach(() => {
   mocks.capture.mockResolvedValue(new Blob(['png'], { type: 'image/png' }));
   vi.mocked(mapPngBase64).mockResolvedValue('cG5n');
   vi.mocked(fetchMapImagePackage).mockResolvedValue(new Blob(['zip']));
+});
+
+it('denies preview before requesting the saved map, report or tiles', () => {
+  useCapabilitiesStore.setState({ commercialUse: true, sourceLicences: {} });
+  render(<SavedMapImageExport saved={saved} />);
+  expect(screen.getByRole('button', { name: 'Open saved image preview' })).toBeDisabled();
+  expect(screen.getByRole('status')).toHaveTextContent('licence terms');
+  expect(fetchMapView).not.toHaveBeenCalled();
+  expect(mocks.props).not.toHaveBeenCalled();
 });
 async function open() {
   const user = userEvent.setup();

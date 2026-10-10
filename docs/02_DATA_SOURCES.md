@@ -10,6 +10,43 @@ installation's current catalogue, grade basis, requirements and connection state
 health and enable or disable sources under **Administration > Sources**. Use these
 screens for current availability rather than a fixed source count in this document.
 
+## Commercial source mode
+
+`ASE_COMMERCIAL_USE` defaults to `false`. When enabled, the installation applies
+the packaged [source licence register](SOURCE_LICENCES.md) to source admission,
+on-demand services and map imagery. This setting is a technical control, not approval for a
+commercial launch or a grant of provider rights.
+
+Each source has a commercial classification, attribution requirement and register
+reference. A forbidden source cannot be enabled through administrator controls,
+credentials or acknowledgements. Sources with unknown, partly reviewed or
+permission-required terms require an exact-source entry in
+`ASE_SOURCE_LICENCE_ACKNOWLEDGEMENTS`, a comma-separated list. Add an entry only
+after obtaining permission covering the actual deployment, audience, retention,
+AI use and exports. One acknowledgement does not cover other sources from the same
+provider. Existing credentials and other access prerequisites still apply.
+
+The loader checks the primary provider and every additional enrichment provider.
+Any prohibition wins; a reviewed component never clears an unresolved component.
+Camera catalogue rights do not establish permission for each camera's imagery.
+Changing either setting requires a restart. Unknown acknowledgement IDs and
+incomplete or inconsistent packaged metadata stop startup.
+
+Administration shows the classification and refusal reason. The user catalogue
+says "Not available on this installation due to licence terms" rather than
+claiming that an unavailable source has no observations. EOX satellite imagery is
+forbidden in this mode, including map selection, saved-map previews and image
+exports. An image-export declaration cannot override the installation policy.
+Saved evidence and map state are not silently rewritten by this mode. Existing
+reports and retained evidence still require a separate rights and retention review;
+turning this control on does not clear historical content for commercial reuse.
+
+A separate commercial licence may change what a provider permits. Keep the
+agreement in controlled records and review the packaged classification and exact
+product before changing a forbidden entry. An acknowledgement alone cannot make
+that change. See [permission drafts](source-audit/KAN-194-permission-requests.md)
+and [replacement candidates](source-audit/KAN-194-replacements.md).
+
 ## What is collected
 
 ### Scheduled feeds

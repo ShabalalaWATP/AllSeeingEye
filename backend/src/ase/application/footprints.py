@@ -5,6 +5,7 @@ from ase.application.ports import Clock, RateLimiter
 from ase.application.ports.footprints import FootprintProvider
 from ase.application.ports.session import SessionCheck
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.errors import RateLimited, Unauthenticated
 from ase.domain.footprints import FootprintCollection, FootprintQuery
 from ase.domain.users import User
@@ -28,7 +29,11 @@ class FootprintSearchUseCase:
             (),
             "unavailable",
             False,
-            "This catalogue source is disabled by the administrator; no results were admitted.",
+            source_denial_reason(
+                self.admission,
+                self.source_id,
+                "This catalogue source is disabled by the administrator; no results were admitted.",
+            ),
             self.clock.now(),
         )
 

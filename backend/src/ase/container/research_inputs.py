@@ -60,6 +60,7 @@ class ResearchInputWiring(ContainerCore):
             self.clock,
             self.limiter,
             self.repositories(session).uow,
+            licences=self.source_licences,
         )
 
     def photo_geolocation(self, session: AsyncSession) -> PhotoGeolocation:
@@ -83,4 +84,5 @@ class ResearchInputWiring(ContainerCore):
             self.photo_admission,
             record_usage,
             self.ai_usage_accounting,
+            licences=self.source_licences,
         )

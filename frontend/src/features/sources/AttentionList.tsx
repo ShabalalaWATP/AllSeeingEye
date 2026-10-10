@@ -8,7 +8,7 @@ import {
 
 const LIMIT = 15;
 
-/** Only actionable entries: upstream refusals, paused feeds and missing required settings. */
+/** Entries needing operator review: licence/upstream refusals, paused feeds or missing settings. */
 export function AttentionList({ entries }: { entries: readonly CatalogueEntry[] }) {
   const items = attentionEntries(entries);
   if (!items.length) return null;
@@ -19,9 +19,9 @@ export function AttentionList({ entries }: { entries: readonly CatalogueEntry[] 
     >
       <h2 className="text-sm font-semibold">Needs attention</h2>
       <p className="mt-1 text-xs leading-5 text-muted">
-        Items an operator can act on: an upstream that refuses this server or account, a feed paused
-        after repeated failures, or a required key or setup step. Optional settings, on-demand tools
-        and short retries are not listed.
+        Items needing operator review: a licence restriction, an upstream that refuses this server
+        or account, a feed paused after repeated failures, or a required key or setup step. Optional
+        settings, on-demand tools and short retries are not listed.
       </p>
       <ul className="mt-3 divide-y divide-line/60">
         {items.slice(0, LIMIT).map((entry) => (

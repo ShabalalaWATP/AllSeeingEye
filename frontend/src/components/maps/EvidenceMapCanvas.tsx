@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { createMapLibreEngine } from '@/lib/map/MapLibreEngine';
+import { basemapUnavailable, mapSourceAllowed, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 import type { MapBounds, MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
 import { areaClickPoint } from '@/lib/map/areaGeometry';
 import type { MapState } from '@/lib/api/mapViews';
@@ -58,6 +59,8 @@ export default function EvidenceMapCanvas({
   measurementMode?: boolean;
   onMeasurementPoint?: (point: Position) => void;
 }) {
+  const policy = useMapSourcePolicy();
+  const policyReason = basemapUnavailable(policy, basemap);
   const container = useRef<HTMLDivElement>(null);
   const engine = useRef<MapEngine | null>(null);
   const [objectDetails, setObjectDetails] = useState<
@@ -65,7 +68,7 @@ export default function EvidenceMapCanvas({
   >(null);
   const closeObject = useCallback(() => setObjectDetails(null), []);
   const [mapError, setMapError] = useState(false);
-  const initial = useRef({ camera, projection, basemap });
+  const initialScene = useEffectEvent(() => ({ camera, projection, basemap }));
   const supportsPoint = legacyDisplay ? hasLegacyEvidencePoint : hasEvidencePoint;
   const captureReady = useEffectEvent((capture: ((signal: AbortSignal) => Promise<Blob>) | null) =>
     onCaptureReady?.(capture),
@@ -104,13 +107,15 @@ export default function EvidenceMapCanvas({
   });
   const supported = useMemo(() => hasWebGl2(), []);
   useEffect(() => {
-    if (!container.current || !supported) return;
+    if (!container.current || !supported || policyReason) return;
+    const initial = initialScene();
     const map = createMapLibreEngine({
       captureEnabled,
       authHeader: () => useAuthStore.getState().accessToken,
+      sourceAllowed: mapSourceAllowed,
     });
-    map.setProjection(initial.current.projection);
-    map.setBaseLayer(initial.current.basemap);
+    map.setProjection(initial.projection);
+    map.setBaseLayer(initial.basemap);
     map.mount(container.current);
     map.setLite(true);
     const stopErrors = map.on('error', () => setMapError(true));
@@ -118,7 +123,7 @@ export default function EvidenceMapCanvas({
     if (captureEnabled) captureReady((signal) => map.captureImage(signal));
     viewportReady(() => map.getViewportBounds());
     const stopArea = map.on('click', areaClicked);
-    const saved = initial.current.camera;
+    const saved = initial.camera;
     map.restoreCamera({
       center: [saved.longitude, saved.latitude],
       zoom: saved.zoom,
@@ -139,13 +144,13 @@ export default function EvidenceMapCanvas({
       map.destroy();
       engine.current = null;
     };
-  }, [supported, captureEnabled]);
+  }, [supported, captureEnabled, policyReason]);
   useEffect(() => {
     engine.current?.setProjection(projection);
-  }, [projection]);
+  }, [projection, policyReason]);
   useEffect(() => {
     engine.current?.setBaseLayer(basemap);
-  }, [basemap]);
+  }, [basemap, policyReason]);
   useEffect(() => {
     engine.current?.setLayers(
       evidenceMapLayers({
@@ -184,10 +189,18 @@ export default function EvidenceMapCanvas({
     supportsPoint,
     legacyDisplay,
     captureEnabled,
+    policyReason,
   ]);
   useEffect(() => {
     if (focusRequest) focusSelection();
-  }, [focusRequest]);
+  }, [focusRequest, policyReason]);
+  if (policyReason)
+    return (
+      <p role="status" className="p-4 text-sm text-muted">
+        {policyReason}. The saved map revision is unchanged; its evidence remains available in the
+        list.
+      </p>
+    );
   if (!supported)
     return (
       <p role="status" className="p-4 text-sm text-muted">

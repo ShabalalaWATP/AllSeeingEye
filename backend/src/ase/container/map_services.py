@@ -1,11 +1,15 @@
 """Composition of map catalogues, routing, imagery and terrain services."""
 
-from typing import TYPE_CHECKING
+from functools import cached_property
+from typing import Any
+
+import structlog
 
 from ase.adapters.feeds.adsb_viewport import AircraftInterestQueue
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
+from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
 from ase.adapters.routing.groundwave import NtiaGroundwaveSolver
 from ase.adapters.routing.photon import PhotonPlaceSearchGateway
@@ -15,28 +19,41 @@ from ase.application.cameras import CameraCatalogueService
 from ase.application.feeds.map_interests import MapCollectionInterests
 from ase.application.footprints import FootprintSearchUseCase
 from ase.application.groundwave import GroundwaveStudy
+from ase.application.map_assets import available_infrastructure
 from ase.application.navigation import RoutePlanner
 from ase.application.place_search import PlaceSearch
 from ase.application.terrain import TerrainSampler
 from ase.container.core import ContainerCore
-
-if TYPE_CHECKING:
-    pass
+from ase.domain.map_licences import MAP_SOURCE_IDS
 
 
 class MapWiring(ContainerCore):
+    @cached_property
+    def _map_infrastructure(self) -> dict[str, Any]:
+        return available_infrastructure(public_infrastructure(), self.source_licences)
+
+    def public_infrastructure(self) -> dict[str, Any]:
+        return self._map_infrastructure
+
     def _initialise_map_catalogues(self) -> None:
+        self.source_licences.validate_ids(MAP_SOURCE_IDS)
         self.groundwave_study = GroundwaveStudy(NtiaGroundwaveSolver(), self.limiter)
         self.aircraft_interests = AircraftInterestQueue(self.clock)
         self.map_interests = MapCollectionInterests(self.aircraft_interests, self.limiter)
         self.routing_http = FeedHttpClient(self.http.user_agent, max_bytes=2 * 1024 * 1024)
-        self.route_planner = RoutePlanner(ValhallaRoutingGateway(self.routing_http), self.limiter)
-        self.place_search = PlaceSearch(PhotonPlaceSearchGateway(self.routing_http), self.limiter)
+        self.route_planner = RoutePlanner(
+            ValhallaRoutingGateway(self.routing_http), self.limiter, licences=self.source_licences
+        )
+        self.place_search = PlaceSearch(
+            PhotonPlaceSearchGateway(self.routing_http), self.limiter, licences=self.source_licences
+        )
         self.terrain_http = FeedHttpClient(
             self.http.user_agent, max_bytes=TERRAIN_TILE_BYTES, timeout_seconds=10
         )
         self.terrain_gateway = TerrariumGateway(self.terrain_http)
-        self.terrain_sampler = TerrainSampler(self.terrain_gateway, self.limiter)
+        self.terrain_sampler = TerrainSampler(
+            self.terrain_gateway, self.limiter, licences=self.source_licences
+        )
         self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=16 * 1024 * 1024)
         self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(
@@ -50,7 +67,13 @@ class MapWiring(ContainerCore):
                 ),
             ),
             self.clock,
+            licences=self.source_licences,
         )
+        ids = (*MAP_SOURCE_IDS, *(f"camera:{source.id}" for source in self.cameras.sources))
+        self.source_licences.validate_ids(ids)
+        for source_id in ids:
+            if not self.source_licences.allowed(source_id):
+                structlog.get_logger().warning("source.licence_unavailable", source_id=source_id)
         self.footprints = FootprintSearchUseCase(
             CopernicusFootprintProvider(self.http, self.clock),
             self.limiter,

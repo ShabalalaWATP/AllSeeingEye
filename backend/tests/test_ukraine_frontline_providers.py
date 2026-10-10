@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from ase.adapters.feeds.ukraine_frontline import (
     DEEPSTATE_COOLDOWN,
     FAILURE_RETRY,
@@ -12,6 +14,7 @@ from ase.adapters.feeds.ukraine_frontline import (
     parse_deepstate,
     parse_ocha,
 )
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 from ase.domain.ukraine.frontline import FrontlineStatus
 from feeds_helpers import FakeClock, FakeHttp
 
@@ -49,6 +52,24 @@ OCHA = {
         {"geometry": {"type": "LineString", "coordinates": [[True, 48.0], [37.2, 48.3]]}},
     ]
 }
+
+
+@pytest.mark.parametrize("deepstate", [True, False])
+async def test_licence_veto_prevents_frontline_and_spotted_requests(deepstate: bool) -> None:
+    http = FakeHttp()
+    providers = FrontlineProviders(
+        http,  # type: ignore[arg-type]
+        FakeClock(NOW),
+        deepstate=deepstate,
+        ocha=not deepstate,
+        spotted=True,
+        licences=SourceLicencePolicy((), commercial_use=True),
+    )
+    state = await providers.snapshot()
+    spotted = await providers.spotted()
+    assert state.status is spotted.status is FrontlineStatus.DISABLED
+    assert state.reason == spotted.reason == LICENCE_UNAVAILABLE
+    assert http.requests == []
 
 
 def test_ocha_accepts_positions_with_altitude_and_skips_short_or_non_numeric_ones() -> None:

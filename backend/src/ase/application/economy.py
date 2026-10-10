@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from ase.application.ports.economy import EconomyGateway
 from ase.application.ports.services import Clock
 from ase.application.ports.source_controls import SourceAdmission
+from ase.application.source_admission import source_denial_reason
 from ase.domain.economy import EconomySeries, EconomySnapshot
 from ase.domain.economy_catalogue import empty_fx, empty_regions
 
@@ -68,13 +69,29 @@ class EconomyService:
             regions=snapshot.regions
             if enabled["research-world-bank"]
             else tuple(
-                replace(region, series=tuple(_disabled(item) for item in region.series))
+                replace(
+                    region,
+                    series=tuple(
+                        self._disabled(item, "research-world-bank") for item in region.series
+                    ),
+                )
                 for region in empty_regions()
             ),
             fx=snapshot.fx
             if enabled["economic-ecb"]
             else tuple(
-                _disabled(item) if item.id in {"GBP", "USD", "CNY"} else item for item in empty_fx()
+                self._disabled(item, "economic-ecb") if item.id in {"GBP", "USD", "CNY"} else item
+                for item in empty_fx()
+            ),
+        )
+
+    def _disabled(self, series: EconomySeries, source_id: str) -> EconomySeries:
+        return replace(
+            series,
+            note=source_denial_reason(
+                self._admission,
+                source_id,
+                "This source is disabled by the administrator. No data is shown.",
             ),
         )
 
@@ -129,7 +146,3 @@ class EconomyService:
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
-
-
-def _disabled(series: EconomySeries) -> EconomySeries:
-    return replace(series, note="This source is disabled by the administrator. No data is shown.")

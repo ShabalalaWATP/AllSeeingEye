@@ -1,6 +1,7 @@
 import { SelectField, TextField } from '@/components/ui/Field';
 import { BASE_LAYER_OPTIONS } from '@/lib/map/baseLayers';
 import type { MapState } from '@/lib/api/mapViews';
+import { basemapUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 export function MapFilters({
   state,
@@ -13,6 +14,7 @@ export function MapFilters({
   days: string[];
   sources: [string, string][];
 }) {
+  const policy = useMapSourcePolicy();
   const day = state.published_until?.slice(0, 10) ?? '';
   const sinceOnly = !!state.published_since && !state.published_until;
   const dates = [...new Set([...days, ...(day ? [day] : [])])].sort();
@@ -166,17 +168,35 @@ export function MapFilters({
               </label>
             ))}
           </fieldset>
-          <SelectField
-            label="Evidence basemap"
-            value={state.basemap}
-            onChange={(event) =>
-              onChange({ ...state, basemap: event.target.value as MapState['basemap'] })
-            }
-            options={BASE_LAYER_OPTIONS.map((option) => ({
-              value: option.id,
-              label: `${option.label} (${option.coverage})`,
-            }))}
-          />
+          <label className="block text-sm">
+            Evidence basemap
+            <select
+              aria-label="Evidence basemap"
+              value={state.basemap}
+              className="mt-1 block w-full rounded border border-line bg-surface p-2"
+              onChange={(event) => {
+                const basemap = event.target.value as MapState['basemap'];
+                if (!basemapUnavailable(policy, basemap)) onChange({ ...state, basemap });
+              }}
+            >
+              {BASE_LAYER_OPTIONS.map((option) => (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  disabled={Boolean(basemapUnavailable(policy, option.id))}
+                >
+                  {option.label} ({option.coverage})
+                  {basemapUnavailable(policy, option.id) ? ' · Unavailable' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          {basemapUnavailable(policy, state.basemap) && (
+            <p role="status" className="text-xs text-muted">
+              {basemapUnavailable(policy, state.basemap)}. Choose another style to create a new
+              revision.
+            </p>
+          )}
         </div>
       </details>
     </div>

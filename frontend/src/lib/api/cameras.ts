@@ -61,7 +61,7 @@ export const cameraCatalogueSchema: z.ZodType<CameraCatalogue> = z.object({
       z.object({
         id: z.string().min(1).max(100),
         name: z.string(),
-        status: z.enum(['available', 'stale', 'unavailable', 'not_loaded']),
+        status: z.enum(['available', 'stale', 'unavailable', 'not_loaded', 'licence_blocked']),
         count: z.number().int().nonnegative(),
         fetched_at: z.string().nullable(),
         message: z.string().nullable(),

@@ -17,6 +17,8 @@ function capabilities(aiResearch: boolean | undefined) {
     http.get('/api/capabilities', () => {
       requests += 1;
       return HttpResponse.json({
+        commercial_use: false,
+        source_licences: {},
         os_maps: false,
         os_layers: [],
         ...(aiResearch === undefined ? {} : { ai_research: aiResearch }),

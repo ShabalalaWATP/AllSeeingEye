@@ -2,7 +2,7 @@
 
 from contextlib import AbstractAsyncContextManager
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 
@@ -23,3 +23,17 @@ class SourceAdmission(Protocol):
 
     async def enabled(self, source_id: str) -> bool: ...
     async def enabled_many(self, source_ids: tuple[str, ...]) -> dict[str, bool]: ...
+
+
+@runtime_checkable
+class LicenceAwareSourceAdmission(Protocol):
+    def licence_denial(self, source_id: str) -> str | None:
+        """Fixed public reason for an immutable licence veto, or None."""
+        ...
+
+
+@runtime_checkable
+class SourceControlAdmission(Protocol):
+    async def controls_enabled_many(self, source_ids: tuple[str, ...]) -> dict[str, bool]:
+        """Operator switches only, for logical controls rather than fetched source IDs."""
+        ...

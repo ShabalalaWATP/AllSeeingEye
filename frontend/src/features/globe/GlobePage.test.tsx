@@ -205,6 +205,8 @@ describe('GlobePage', () => {
       http.get('/api/capabilities', () =>
         HttpResponse.json({
           os_maps: true,
+          commercial_use: false,
+          source_licences: {},
           os_layers: ['Light_3857', 'Outdoor_3857', 'Road_3857'],
         }),
       ),

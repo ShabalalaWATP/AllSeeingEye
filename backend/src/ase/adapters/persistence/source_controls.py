@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from ase.adapters.persistence.source_control_changes import source_control_version
 from ase.adapters.persistence.source_control_models import SourceControlRow
 from ase.domain.source_controls import source_control_keys
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 
 OVERRIDE_TTL_SECONDS = 30.0
 
@@ -62,10 +63,12 @@ class SqlSourceAdmission:
         sessions: async_sessionmaker[AsyncSession],
         disabled: tuple[str, ...] = (),
         *,
+        licences: SourceLicencePolicy | None = None,
         ttl_seconds: float = OVERRIDE_TTL_SECONDS,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self._sessions = sessions
+        self._licences = licences or SourceLicencePolicy(())
         self._disabled = frozenset(disabled)
         self._release_lock = asyncio.Lock()
         self._load_lock = asyncio.Lock()
@@ -84,15 +87,27 @@ class SqlSourceAdmission:
             yield
 
     async def enabled(self, source_id: str) -> bool:
+        if not self._licences.allowed(source_id):
+            return False
         blocked = self._disabled | await self._administrator_disabled()
         return not any(key in blocked for key in source_control_keys(source_id))
 
     async def enabled_many(self, source_ids: tuple[str, ...]) -> dict[str, bool]:
+        controls = await self.controls_enabled_many(source_ids)
+        return {
+            source_id: self._licences.allowed(source_id) and controls[source_id]
+            for source_id in source_ids
+        }
+
+    async def controls_enabled_many(self, source_ids: tuple[str, ...]) -> dict[str, bool]:
         blocked = self._disabled | await self._administrator_disabled()
         return {
             source_id: not any(key in blocked for key in source_control_keys(source_id))
             for source_id in source_ids
         }
+
+    def licence_denial(self, source_id: str) -> str | None:
+        return None if self._licences.allowed(source_id) else LICENCE_UNAVAILABLE
 
     def _cached(self) -> frozenset[str] | None:
         cached = self._overrides

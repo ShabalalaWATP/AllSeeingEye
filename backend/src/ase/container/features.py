@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.mastodon_watch import watch_terms
-from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.indicator_baselines import SqlIndicatorBaselines
 from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
@@ -17,6 +16,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.adapters.research.selected_event_cache import USGS_SELECTED_POLICY, PublicEventCachePages
 from ase.application.account.directory_handles import HandleInvitationUseCase
+from ase.application.conflict_licences import LicensedConflicts
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
     CreatePlanUseCase,
@@ -37,10 +37,7 @@ from ase.application.schedules.runner import ScheduleRunner
 from ase.application.schedules.selected_index_acquisition import SelectedIndexAcquisition
 from ase.application.teams.invitations import TeamInvitationService
 from ase.application.teams.service import TeamService
-from ase.application.trackers.aviation import (
-    AviationService,
-    background,
-)
+from ase.application.trackers.aviation import AviationService, background
 from ase.application.trackers.boards import TrackerService
 from ase.application.trackers.modules import ModuleService, cyber_summary, maritime_summary
 from ase.application.trackers.social import SocialMonitor, SocialService
@@ -98,7 +95,9 @@ class FeatureWiring(ReportWiring):
         )
 
     def trackers(self) -> TrackerService:
-        return TrackerService(self.store, self.conflicts, self.clock)
+        return TrackerService(
+            self.store, LicensedConflicts(self.conflicts, self.source_licences), self.clock
+        )
 
     def modules(self) -> ModuleService:
         return ModuleService(self.store, self.clock)
@@ -263,14 +262,14 @@ class FeatureWiring(ReportWiring):
         r = self.repositories(session)
         return CreateScheduleUseCase(
             r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
-            self.conflicts,
+            LicensedConflicts(self.conflicts, self.source_licences),
         )  # fmt: skip
 
     def update_schedule(self, session: AsyncSession) -> UpdateScheduleUseCase:
         r = self.repositories(session)
         return UpdateScheduleUseCase(
             r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
-            self.conflicts,
+            LicensedConflicts(self.conflicts, self.source_licences),
         )  # fmt: skip
 
     def delete_schedule(self, session: AsyncSession) -> DeleteScheduleUseCase:
@@ -324,6 +323,3 @@ class FeatureWiring(ReportWiring):
         async with self.session_factory() as session:
             await self.repositories(session).llm_usage.add(usage)
             await session.commit()
-
-    def public_infrastructure(self) -> dict[str, Any]:
-        return public_infrastructure()

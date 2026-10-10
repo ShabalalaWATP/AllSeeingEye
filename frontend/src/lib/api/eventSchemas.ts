@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import type { components } from './types.gen';
 import { sourceDateSchema, textTransformationSchema } from './sourceProvenance';
+import { sourceLicenceSchema } from './sourceLicences';
 
 export const categorySchema = z.enum([
   'news',
@@ -91,6 +92,8 @@ export const sourceHealthSchema = z.object({
 export type SourceHealth = z.infer<typeof sourceHealthSchema>;
 
 export const sourceSchema = z.object({
+  licence: sourceLicenceSchema.nullable().optional(),
+  collection_mode: z.enum(['scheduled', 'on_demand']).nullable().optional(),
   enabled: z.boolean().optional(),
   test_available: z.boolean().optional(),
   environment_disabled: z.boolean().optional(),

@@ -26,6 +26,7 @@ from ase.application.ports.source_controls import SourceAdmission
 from ase.application.worker_progress import register_worker, run_cycle, worker_heartbeats
 from ase.domain.errors import NotFound
 from ase.domain.source_controls import source_control_keys
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 
 SleepFn = Callable[[float], Awaitable[None]]
 __all__ = ["FeedScheduler", "PollOutcome"]
@@ -53,6 +54,7 @@ class FeedScheduler:
         processing_timeout: timedelta = timedelta(seconds=60),
         fetch_concurrency: int = 16,
         first_poll_spread: timedelta = timedelta(seconds=60),
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self.poller = FeedPoller(
             pipeline,
@@ -67,6 +69,8 @@ class FeedScheduler:
             fetch_concurrency=fetch_concurrency,
         )
         self._clock = clock
+        self._licences = licences or SourceLicencePolicy(())
+        self._health = health
         self._store = store
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._prune_interval = prune_interval
@@ -96,6 +100,9 @@ class FeedScheduler:
         self._worker_context = copy_context()
         self._stopping.clear()
         for source_id, connector in self._connectors.items():
+            if not self._licences.allowed(source_id):
+                self._health.licence_disabled(source_id, LICENCE_UNAVAILABLE)
+                continue
             self._tasks[source_id] = asyncio.create_task(self._run_connector(connector))
         self._prune_task = asyncio.create_task(self._prune_loop())
 
@@ -120,6 +127,7 @@ class FeedScheduler:
         connector = self._connectors.get(source_id)
         if connector is None:
             raise NotFound()
+        self._licences.require(source_id)
         self.poller.reset(source_id)
         task = self._tasks.get(source_id)
         if isinstance(connector, DiagnosticFeedConnector):

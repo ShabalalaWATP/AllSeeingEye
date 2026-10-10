@@ -16,6 +16,7 @@ from ase.application.feeds.health import HealthRegistry, SourceHealth, SourceSta
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.source_controls import source_control_keys
+from ase.domain.source_licences import LICENCE_UNAVAILABLE, SourceLicencePolicy
 from ase.domain.sources import SourceSpec
 
 
@@ -30,6 +31,7 @@ class ConnectionState(StrEnum):
     NOT_CONFIGURED = "not_configured"
     DISABLED_BY_ADMIN = "disabled_by_admin"
     DISABLED_BY_ENVIRONMENT = "disabled_by_environment"
+    DISABLED_BY_LICENCE = "disabled_by_licence"
     BLOCKED_UPSTREAM = "blocked_upstream"
     AVAILABLE = "available"
 
@@ -113,6 +115,7 @@ class SourceInventory:
         resolve_requirement: RequirementResolver | None = None,
         *,
         collecting: bool = True,
+        licence_policy: SourceLicencePolicy | None = None,
     ) -> None:
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._research = {spec.id: spec for spec in research_specs}
@@ -126,6 +129,7 @@ class SourceInventory:
         self._disabled = frozenset(disabled)
         self._resolve = resolve_requirement
         self._collecting = collecting
+        self._licence_policy = licence_policy
 
     async def list(self) -> list[InventoryEntry]:
         enabled = await self._admission.enabled_many(tuple(self._specs))
@@ -150,6 +154,10 @@ class SourceInventory:
         )
         if state in _WAITING and not self._collecting:
             state, detail = ConnectionState.DISABLED_BY_ENVIRONMENT, FEEDS_OFF
+        if self._licence_policy and not self._licence_policy.allowed(spec.id):
+            state, detail = ConnectionState.DISABLED_BY_LICENCE, LICENCE_UNAVAILABLE
+            enabled = active = False
+            health = None
         return InventoryEntry(
             spec,
             "scheduled" if scheduled else "on_demand",

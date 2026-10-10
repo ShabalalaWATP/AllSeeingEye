@@ -18,6 +18,8 @@ from ase.application.ports.research_inputs import (
 )
 from ase.domain.errors import InvalidRequest, RateLimited, Unauthenticated
 from ase.domain.input_declarations import InputPassageDeclaration, apply_declarations
+from ase.domain.private_input_sources import private_input_source
+from ase.domain.source_licences import SourceLicencePolicy
 from ase.domain.users import User
 
 # One six-photo set plus a replacement/retry round, still shared with other private uploads.
@@ -34,9 +36,12 @@ class ImportResearchInput:
         clock: Clock,
         limiter: RateLimiter,
         uow: UnitOfWork,
+        *,
+        licences: SourceLicencePolicy | None = None,
     ) -> None:
         self._access, self._runner, self._store = access, runner, store
         self._clock, self._limiter, self._uow = clock, limiter, uow
+        self._licences = licences or SourceLicencePolicy(())
 
     async def reserve(self, actor: User, filename: str) -> InputReservation:
         """Admission precedes HTTP body reads, so slow uploads also occupy bounded slots."""
@@ -56,6 +61,7 @@ class ImportResearchInput:
             or any(char in filename for char in "/\\:")
         ):
             raise InvalidRequest("Use a plain filename of at most 120 characters.")
+        self._licences.require(private_input_source(filename))
         return self._store.reserve(current.actor, filename)
 
     def release(self, reservation: InputReservation) -> None:
@@ -164,6 +170,7 @@ class ImportResearchInput:
             try:
                 # Streaming can take time. Recheck immediately before parser work.
                 await self._access.context(actor)
+                self._licences.require(private_input_source(reservation.filename))
             finally:
                 await self._uow.rollback()
             extraction = await self._runner.extract(data, reservation.filename, self._clock.now())

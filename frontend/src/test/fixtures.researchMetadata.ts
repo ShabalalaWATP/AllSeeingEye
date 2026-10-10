@@ -187,6 +187,8 @@ export const citationChecks: components['schemas']['ReportCitationChecksOut'] = 
 
 /** Default server capabilities: AI research is ready, so no set-up notice appears. */
 export const serverCapabilities: components['schemas']['CapabilitiesOut'] = {
+  commercial_use: false,
+  source_licences: {},
   os_maps: false,
   os_layers: [],
   ai_research: true,

@@ -10,6 +10,7 @@ import {
   matchesCameraSearch,
   type CameraMediaKind,
 } from './cameraMediaFilters';
+import { mapSourceAllowed, sourceUnavailable, useMapSourcePolicy } from '@/lib/map/sourcePolicy';
 
 interface CachedCatalogue {
   revision: number;
@@ -36,6 +37,7 @@ function boundCache(cache: Map<string, CachedCatalogue>, providers: Record<strin
 }
 
 export function useCameras() {
+  const policy = useMapSourcePolicy();
   const [enabled, setEnabled] = useState(false);
   const [catalogue, setCatalogue] = useState<CameraCatalogue | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,12 +54,18 @@ export function useCameras() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const cache = useRef(new Map<string, CachedCatalogue>());
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !policy.loaded || policy.error) return;
     const controller = new AbortController();
     let current = true;
-    const ids = Object.keys(providers).filter((id) => providers[id]);
+    const ids = Object.keys(providers).filter(
+      (id) => providers[id] && mapSourceAllowed(`camera:${id}`),
+    );
     const missing = ids.filter((id) => cache.current.get(id)?.revision !== revision);
-    const requests = missing;
+    const requests: (string | undefined)[] = missing.length
+      ? missing
+      : cache.current.size
+        ? []
+        : [undefined];
     let next = 0;
     let failed = false;
     let limited = false;
@@ -75,7 +83,8 @@ export function useCameras() {
           previous?.providers.map((provider) => [provider.id, provider]) ?? [],
         );
         for (const result of success) {
-          for (const camera of result.cameras) cameras.set(camera.id, camera);
+          for (const camera of result.cameras)
+            if (mapSourceAllowed(`camera:${camera.provider}`)) cameras.set(camera.id, camera);
           for (const provider of result.providers) {
             if (provider.status !== 'not_loaded' || !statuses.has(provider.id))
               statuses.set(provider.id, provider);
@@ -103,12 +112,14 @@ export function useCameras() {
         try {
           const value = await fetchCameras(controller.signal, provider);
           if (controller.signal.aborted) return;
-          for (const id of provider ? [provider] : ids)
+          for (const id of provider ? [provider] : ['__catalogue'])
             cache.current.set(id, {
               revision,
               value: {
                 ...value,
-                cameras: value.cameras.filter((camera) => camera.provider === id),
+                cameras: value.cameras.filter(
+                  (camera) => camera.provider === id && mapSourceAllowed(`camera:${id}`),
+                ),
               },
             });
           limited = boundCache(cache.current, providers) || limited;
@@ -129,7 +140,7 @@ export function useCameras() {
         .filter((id) => !(id in providers));
       if (discovered.length) {
         setProviders((old) => ({
-          ...Object.fromEntries(discovered.map((id) => [id, true])),
+          ...Object.fromEntries(discovered.map((id) => [id, mapSourceAllowed(`camera:${id}`)])),
           ...old,
         }));
         return;
@@ -148,7 +159,15 @@ export function useCameras() {
       clearTimeout(publishTimer);
       controller.abort();
     };
-  }, [enabled, revision, providers]);
+  }, [
+    enabled,
+    revision,
+    providers,
+    policy.loaded,
+    policy.error,
+    policy.sourceLicences,
+    policy.commercialUse,
+  ]);
   const toggleEnabled = useCallback((value: boolean) => {
     setEnabled(value);
     setLoading(value);
@@ -170,11 +189,12 @@ export function useCameras() {
       ? (catalogue?.cameras ?? []).filter(
           (camera) =>
             providers[camera.provider] &&
+            sourceUnavailable(policy, `camera:${camera.provider}`) === null &&
             matchesCameraSearch(camera, term, providerNames.get(camera.provider) ?? '') &&
             matchesCameraMedia(camera, mediaKind),
         )
       : [];
-  }, [catalogue, enabled, providers, term, mediaKind, providerNames]);
+  }, [catalogue, enabled, providers, term, mediaKind, providerNames, policy]);
   const selected = useMemo(
     () =>
       selectedId === null ? null : (visible.find((camera) => camera.id === selectedId) ?? null),
@@ -184,6 +204,7 @@ export function useCameras() {
   const close = useCallback(() => setSelectedId(null), []);
   const toggleProvider = useCallback(
     (provider: CameraProvider) => {
+      if (!mapSourceAllowed(`camera:${provider}`)) return;
       if (
         providers[provider] &&
         catalogue?.cameras.some(
@@ -197,7 +218,10 @@ export function useCameras() {
     [catalogue, providers, selectedId],
   );
   const setProviderGroup = useCallback((ids: readonly string[], value: boolean) => {
-    setProviders((old) => ({ ...old, ...Object.fromEntries(ids.map((id) => [id, value])) }));
+    setProviders((old) => ({
+      ...old,
+      ...Object.fromEntries(ids.map((id) => [id, value && mapSourceAllowed(`camera:${id}`)])),
+    }));
     if (!value) setSelectedId(null);
     setLoading(true);
   }, []);
@@ -220,8 +244,8 @@ export function useCameras() {
     enabled,
     setEnabled: toggleEnabled,
     catalogue,
-    loading,
-    error,
+    loading: loading && !policy.error,
+    error: policy.error ?? error,
     providers,
     toggleProvider,
     setProviderGroup,

@@ -26917,7 +26917,8 @@
               "available",
               "stale",
               "unavailable",
-              "not_loaded"
+              "not_loaded",
+              "licence_blocked"
             ],
             "title": "Status"
           },
@@ -26976,13 +26977,26 @@
           "ai_research": {
             "type": "boolean",
             "title": "Ai Research"
+          },
+          "commercial_use": {
+            "type": "boolean",
+            "title": "Commercial Use"
+          },
+          "source_licences": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SourceLicenceOut"
+            },
+            "type": "object",
+            "title": "Source Licences"
           }
         },
         "type": "object",
         "required": [
           "os_maps",
           "os_layers",
-          "ai_research"
+          "ai_research",
+          "commercial_use",
+          "source_licences"
         ],
         "title": "CapabilitiesOut",
         "description": "What this deployment can offer the browser beyond the always-on features."
@@ -29762,6 +29776,7 @@
           "not_configured",
           "disabled_by_admin",
           "disabled_by_environment",
+          "disabled_by_licence",
           "blocked_upstream",
           "available"
         ],
@@ -46683,7 +46698,8 @@
               "stale",
               "unavailable",
               "not_configured",
-              "disabled"
+              "disabled",
+              "disabled_by_licence"
             ],
             "title": "Status"
           },
@@ -55557,8 +55573,76 @@
         ],
         "title": "SourceKind"
       },
+      "SourceLicenceOut": {
+        "properties": {
+          "commercial_use": {
+            "type": "string",
+            "enum": [
+              "allowed",
+              "forbidden",
+              "licence_required"
+            ],
+            "title": "Commercial Use"
+          },
+          "attribution_required": {
+            "type": "boolean",
+            "title": "Attribution Required"
+          },
+          "licence_ref": {
+            "type": "string",
+            "title": "Licence Ref"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "acknowledged": {
+            "type": "boolean",
+            "title": "Acknowledged"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "commercial_use",
+          "attribution_required",
+          "licence_ref",
+          "available",
+          "acknowledged",
+          "reason"
+        ],
+        "title": "SourceLicenceOut"
+      },
       "SourceOut": {
         "properties": {
+          "licence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceLicenceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "collection_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "scheduled",
+                  "on_demand"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection Mode"
+          },
           "enabled": {
             "type": "boolean",
             "title": "Enabled",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from ase.api.schemas_source_licences import SourceLicenceOut
 from ase.domain.countries import Country
 
 
@@ -38,3 +39,5 @@ class CapabilitiesOut(BaseModel):
     os_layers: list[str]
     # Only whether research can reach a model; never a provider, endpoint, model or key.
     ai_research: bool
+    commercial_use: bool
+    source_licences: dict[str, SourceLicenceOut]

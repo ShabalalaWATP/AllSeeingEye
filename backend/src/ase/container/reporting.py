@@ -175,7 +175,9 @@ class ReportWiring(
         )
 
     def export_map_image(self, session: AsyncSession) -> ExportMapImage:
-        return ExportMapImage(self.saved_map_views(session), SavedMapImageRenderer())
+        return ExportMapImage(
+            self.saved_map_views(session), SavedMapImageRenderer(), licences=self.source_licences
+        )
 
     def saved_map_views(self, session: AsyncSession) -> SavedMapViews:
         r = self.repositories(session)
