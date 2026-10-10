@@ -20,6 +20,16 @@ from ase.domain.errors import RateLimited
 router = APIRouter(prefix="/cyber", tags=["cyber"])
 
 
+def _disabled_radar(container: ContainerDep) -> RadarAttackSnapshot:
+    return RadarAttackSnapshot(
+        "disabled"
+        if container.source_licences.allowed(RADAR_ATTACK_SPEC.id)
+        else "disabled_by_licence",
+        None,
+        (),
+    )
+
+
 @router.get("/radar-attacks")
 async def radar_attack_trends(
     user: CurrentUser,
@@ -31,14 +41,10 @@ async def radar_attack_trends(
     if retry is not None:
         raise RateLimited(retry)
     enabled = await container.source_admission.enabled(RADAR_ATTACK_SPEC.id)
-    snapshot = (
-        await container.radar_attack_trends.read()
-        if enabled
-        else RadarAttackSnapshot("disabled", None, ())
-    )
+    snapshot = await container.radar_attack_trends.read() if enabled else _disabled_radar(container)
     async with container.source_admission.guard():
         if not await container.source_admission.enabled(RADAR_ATTACK_SPEC.id):
-            snapshot = RadarAttackSnapshot("disabled", None, ())
+            snapshot = _disabled_radar(container)
         await fence.confirm()
         fence.assert_live()
         response.headers["Cache-Control"] = "private, no-store"

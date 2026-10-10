@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from ase.api.deps import ContainerDep, CurrentUser
 from ase.application.feeds.health import SourceStatus
+from ase.application.source_admission import source_denial_reason
 
 router = APIRouter()
 
@@ -127,14 +128,13 @@ async def conflict_sources(user: CurrentUser, container: ContainerDep) -> Confli
             "not_configured"
         )
         entry = health.get(source_id)
-        if source_id in specs:
+        if not enabled.get(source_id, True):
+            detail += " " + source_denial_reason(
+                container.source_admission, source_id, "Collection is disabled by an administrator."
+            )
+        elif source_id in specs:
             status = "waiting"
-            if not enabled.get(source_id, True):
-                status, detail = (
-                    "not_configured",
-                    detail + " Collection is disabled by an administrator.",
-                )
-            elif entry is not None:
+            if entry is not None:
                 if entry.status is SourceStatus.HEALTHY:
                     status = "healthy"
                 elif entry.status in (SourceStatus.DEGRADED, SourceStatus.DISABLED):

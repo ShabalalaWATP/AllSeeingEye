@@ -13685,7 +13685,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "ready" | "partial" | "stale" | "unavailable" | "not_configured" | "disabled";
+            status: "ready" | "partial" | "stale" | "unavailable" | "not_configured" | "disabled" | "disabled_by_licence";
             /** Fetched At */
             fetched_at: string | null;
             /** Layers */

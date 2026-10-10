@@ -31,7 +31,9 @@ SPEC = SourceSpec(
 )
 
 Layer = Literal["layer3", "layer7"]
-Status = Literal["ready", "partial", "stale", "unavailable", "not_configured", "disabled"]
+Status = Literal[
+    "ready", "partial", "stale", "unavailable", "not_configured", "disabled", "disabled_by_licence"
+]
 _ISO = re.compile(r"[A-Z]{2}")
 _CACHE = timedelta(minutes=30)
 _RETRY = timedelta(minutes=5)

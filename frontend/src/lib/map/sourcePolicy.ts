@@ -2,8 +2,9 @@
 import { useEffect } from 'react';
 import { useCapabilitiesStore, type CapabilitiesState } from '@/stores/capabilities';
 import { isOsLayer, type BaseLayer } from './baseLayers';
+import { LICENCE_UNAVAILABLE } from '@/lib/api/sourceLicences';
 
-export const LICENCE_UNAVAILABLE = 'Not available on this installation due to licence terms';
+export { LICENCE_UNAVAILABLE } from '@/lib/api/sourceLicences';
 
 export function sourceUnavailable(policy: CapabilitiesState, id: string): string | null {
   if (policy.error) return policy.error;

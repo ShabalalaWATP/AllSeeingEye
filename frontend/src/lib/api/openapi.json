@@ -45919,7 +45919,8 @@
               "stale",
               "unavailable",
               "not_configured",
-              "disabled"
+              "disabled",
+              "disabled_by_licence"
             ],
             "title": "Status"
           },

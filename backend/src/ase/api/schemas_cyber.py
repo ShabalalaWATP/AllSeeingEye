@@ -146,7 +146,15 @@ class RadarAttackLayerOut(_FromAttributes):
 
 
 class RadarAttackSnapshotOut(_FromAttributes):
-    status: Literal["ready", "partial", "stale", "unavailable", "not_configured", "disabled"]
+    status: Literal[
+        "ready",
+        "partial",
+        "stale",
+        "unavailable",
+        "not_configured",
+        "disabled",
+        "disabled_by_licence",
+    ]
     fetched_at: datetime | None
     layers: list[RadarAttackLayerOut]
     source_url: str
