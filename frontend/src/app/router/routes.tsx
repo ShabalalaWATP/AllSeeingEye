@@ -84,8 +84,6 @@ const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const WatchesPage = lazy(() => import('@/features/watches/WatchesPage'));
 const HelpPage = lazy(() => import('@/app/help/HelpPage'));
-// The signed-out product story; its own chunk so neither it nor the app loads the other.
-const ProductPage = lazy(() => import('@/features/product/ProductPage'));
 const PrivacyPage = lazy(() => import('@/features/public-policy/PrivacyPage'));
 const AttributionsPage = lazy(() => import('@/features/public-policy/AttributionsPage'));
 const PersonalDataPage = lazy(() => import('@/features/public-policy/PersonalDataPage'));
@@ -159,11 +157,13 @@ const pages: RouteObject[] = [
   },
   {
     path: '/enterprise',
-    element: (
-      <Suspense fallback={<div className="min-h-dvh bg-ground" aria-busy="true" />}>
-        <ProductPage />
-      </Suspense>
-    ),
+    // Resolve the public route before rendering it. React.lazy's fallback retry
+    // throttle otherwise delays the first content after this chunk has arrived.
+    lazy: async () => {
+      const { default: Component } = await import('@/features/product/ProductPage');
+      return { Component };
+    },
+    hydrateFallbackElement: <div className="min-h-dvh bg-ground" aria-busy="true" />,
     errorElement: <RouteErrorPage />,
   },
   { path: '/activate', element: <RedirectWithQuery to="/set-password" /> },

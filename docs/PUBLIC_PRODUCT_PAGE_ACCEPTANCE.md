@@ -166,5 +166,30 @@ An intermediate measurement, before viewport initialisation and Mono font
 preloading, scored 78/97/100: first contentful paint 2.59 seconds, largest
 contentful paint 4.18 seconds and total blocking time 224 ms. Its largest contentful
 paint candidate was the hero's monospace eyebrow after a late font request. The
-latest candidate still requires a clean-host measurement. No score in this record
-establishes the required mobile performance acceptance yet.
+viewport/font candidate also scored 78/97/100, with first contentful paint at
+2.28 seconds, largest contentful paint at 4.08 seconds and total blocking time
+290 ms. No score in this record establishes mobile performance of 95.
+
+The retained CPU trace also exposed React's Suspense fallback retry throttle:
+297 ms and 277 ms timers map to `scheduleTimeout(completeRootWhenReady)` in the
+installed React implementation. The product now uses the existing data router's
+route-level lazy loader, retaining its path, loading shell, error boundary and
+runtime configuration gate. The focused group passed 48 cases, including pending
+and disabled configuration, direct route aliases, contact navigation and safe
+recovery from rejected route modules. All 11 policy checks passed; the publication
+command still intentionally blocks the incomplete, unapproved legal draft.
+
+The route-loader candidate scored 78/97/100. Observed LCP render delay fell from
+591 ms to 298 ms; simulated mobile metrics remained about 2.3 seconds FCP,
+4.1 seconds LCP and 300 ms blocking time. A new diagnostic profile attributes
+214 ms of sampled startup work to the eye's viewport callback: 161 ms constructing
+OGL renderers, 24 ms compiling shaders and 22 ms generating the shared noise.
+React scheduler work totalled 49 ms and globe drawing about 5 ms. The first layout
+cost about 50 ms. These diagnostic samples are not simulated mobile timings.
+
+The original KAN-172 performance criterion referred to placeholder chapters. This
+record measures the complete delivered story and enquiry form with ordinary motion
+and every scene present. It does not substitute a stripped page or claim that the
+full page meets the earlier 95 threshold. Further substantial gains would require
+separate work on native graphics startup or public-entry delivery; the metadata,
+import boundary and route-budget checks do not establish that performance result.
