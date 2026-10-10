@@ -13,7 +13,8 @@ from ase.application.reports.subscription_baseline import load_subscription_base
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import Event
 from ase.domain.evidence import EvidenceItem
-from ase.domain.private_input_sources import PRIVATE_SOURCE_IDS, private_input_source
+from ase.domain.evidence_sources import evidence_source_ids
+from ase.domain.private_input_sources import private_input_source
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import KeyJudgement
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchFocus
@@ -119,9 +120,8 @@ class ReportResearchInputs:
                 else "research_media"
             )
         sources = {event.source_id for event in events}
-        sources.update(item.source_id for item in evidence)
-        sources.update(member.source_id for item in evidence for member in item.corroboration)
-        for source_id in sorted(sources & PRIVATE_SOURCE_IDS):
+        sources.update(evidence_source_ids(evidence))
+        for source_id in sorted(sources):
             self._licences.require(source_id)
 
     def require_prepared(self, job: "Job") -> None:

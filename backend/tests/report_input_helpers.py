@@ -77,7 +77,7 @@ def stored_input(container: Container, owner: User) -> StoredResearchInput:
     events = tuple(
         make_event(
             f"private-extract-{index}",
-            source_id="research-input-fixture",
+            source_id="research_import",
             title=f"Private document {passages[index]}",
             summary="Private extracted source material.",
             published_at=now,

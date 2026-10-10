@@ -45,6 +45,12 @@ packaged conflict catalogue (`reference:conflicts`) is checked for tracker views
 report context and subscription work. Queued jobs recheck the current policy
 before using frozen inputs after a restart.
 
+Fresh report follow-ups, regeneration and scheduled comparisons check every retained
+source, including public sources folded into another item as corroboration. The
+same checks cover frozen inputs, collected selections and partial challenge results.
+Cached provenance does not cache permission: each admission checks current source
+availability again.
+
 Saved evidence and map state are not silently rewritten by this mode. Existing
 reports and retained evidence still require a separate rights and retention review;
 turning this control on does not clear historical content for commercial reuse.
