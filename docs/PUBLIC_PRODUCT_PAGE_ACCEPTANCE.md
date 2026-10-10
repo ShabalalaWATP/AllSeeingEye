@@ -73,14 +73,47 @@ Source checks on the KAN-172 working tree based on `c523a3ad`, using Node
 | Globe route JavaScript gzip | 810,692 bytes, below 870,400. |
 | Product route JavaScript gzip | 20,792 bytes, below 153,600. |
 
-DOM tests are prepared for metadata restoration, flag gating, signed-in public
-motion and deferred bootstrap. At this source milestone, Vitest and browser
-runtime testing remain reserved for KAN-206. No Lighthouse score, browser network
-result or successful production deployment is claimed.
+## Integrated browser baseline, 10 October 2026
 
-Final launch measurement must use the integrated KAN-165 public documents and
-KAN-168 enquiry form, a production build and a local fixture API. Record the
-revision, browser/Lighthouse versions, mobile profile, scores, measured product
-closure, viewport sizes, keyboard/reduced-motion checks and all requested network
-origins. Targets from KAN-172 are performance at least 95, accessibility at least
-95 and SEO at least 90. These are acceptance targets, not current measurements.
+The production source at `793524d8` includes KAN-165 public documents, KAN-168
+enquiries and KAN-182 session handling. The combined DOM/style run passed 104 of
+106 cases. The policy heading and duplicate landmark failures were repaired;
+all 14 cases in the affected files then passed. Product metadata restoration,
+flag combinations, signed-in public motion, route aliases, deferred bootstrap and
+enquiry behaviour passed. The rebuilt product closure remained 23,306 bytes gzip;
+initial JavaScript was 209,151 bytes and the globe closure 810,682 bytes.
+
+Playwright CLI 0.1.22 and Chrome 155 used a private browser context and compressed
+build served at `http://127.0.0.1:5188`, with a same-origin fixture API. The fixture
+never forwarded or saved synthetic enquiries. Checks covered desktop 1440 by
+1000, phone 390 by 844 and narrow phone 320 by 740 viewports. Product and policy
+pages had no horizontal page overflow. Contact navigation, keyboard order,
+announced validation, throttling/success focus, draft disposal, reduced motion,
+canonical/social metadata and app noindex restoration behaved as expected.
+Observed page resources used only the fixture origin. Public visits requested
+`/api/site`; there was no third-party page resource. Policy pages retained their
+draft noindex state. Local screenshots and reports are in `output/playwright/`.
+
+Lighthouse 13.5.0 used Headless Chrome 155.0.0.0. The mobile run used its unchanged
+default profile: 412 by 823 at device scale 1.75, simulated 150 ms RTT, 1,638.4 Kbps
+throughput and four-times CPU slowdown. The desktop run used `--preset=desktop`.
+Neither measurement forced reduced motion or disabled a scene.
+
+| Profile | Performance | Accessibility | SEO | Result |
+| --- | --- | --- | --- | --- |
+| Mobile | 60 | 97 | 100 | Performance below the required 95. |
+| Desktop | 99 | 97 | 100 | Above the 95/95/90 targets. |
+
+Mobile first contentful paint was 3.2 seconds, largest contentful paint 4.4 seconds
+and total blocking time 750 ms. The report attributed 1.44 seconds of script
+execution to the common entry, whose static imports include private shells,
+assistant UI, account controls and the eye renderer. Its longest observed main
+thread task was 385.6 ms. The common stylesheet transferred 21.3 KB and the three
+loaded fonts 91.9 KB. The remaining accessibility audit concerns the existing
+faded review timeline text. A passing source budget does not establish mobile
+performance acceptance; KAN-172 remains open for measured optimisation.
+
+These are local fixture results, not Caddy runtime validation, social-crawler
+preview confirmation, legal publication approval or a production release. Full
+trace capture is still needed to separate the shared entry and canvas startup
+costs before selecting a broader performance change.

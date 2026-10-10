@@ -61,17 +61,29 @@ After policy/session integration and the contact-navigation fix, using Node
 build, formatting and file-length checks passed. The product import guard
 traversed 74 source files; all 23 Node tooling/policy tests and all 20 Python
 publication/crawler-policy tests passed. The product closure is 23,306 bytes gzip
-against its 153,600-byte ceiling, initial JavaScript 209,134 bytes against 245,760
-and the additional globe closure 810,693 bytes against 870,400. The integrated
+against its 153,600-byte ceiling, initial JavaScript 209,151 bytes against 245,760
+and the additional globe closure 810,682 bytes against 870,400. The integrated
 KAN-184 preview-heading repair also passed focused ESLint.
 
-Prepared Vitest/MSW cases cover success, client and server validation, throttling,
-admission being disabled, the honeypot, duplicate requests, abort, no public auth
-retry, draft disposal, accessibility and all four flag combinations. Runtime tests
-and browser checks are queued behind the shared frontend reservation. No browser
-score, screenshot, live submission or production release is claimed here.
+The combined product, policy, public bootstrap, enquiry and style run passed 104
+of 106 cases. Its two failures exposed a policy-page heading outside `PageHeader`
+and duplicate header/footer navigation landmark names. Both were repaired in
+`793524d8`; all 14 checks in the affected files then passed. Enquiry cases passed
+for success, client/server validation, throttling, disabled admission, honeypot,
+duplicate requests, abort, no public auth retry, draft disposal, accessibility and
+all four flag combinations.
 
-The final combined KAN-165/168/172 acceptance run must measure phone-width reflow,
-keyboard and focus behaviour, enabled-only sign-in links, network origins, the
-production route budget and the Lighthouse targets recorded in
-[public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md).
+Local Chrome 155 browser checks used the compressed production build and a
+loopback fixture that never stored or forwarded submitted bodies. The enquiry
+form fit 390-pixel and 320-pixel viewports without horizontal page overflow.
+The mobile sign-in link focused and scrolled to the contact heading. Empty
+submission focused the announced errors; keyboard navigation skipped the
+honeypot. Synthetic 429 and 202 responses produced the expected feedback, with
+memory-only retention on throttling, no success echo and no browser storage.
+Reload discarded the draft. Reduced motion, metadata restoration and same-origin
+requests were also checked. Screenshots remain local in `output/playwright/`.
+
+KAN-172 performance acceptance remains open: mobile Lighthouse scored 60 against
+the target of 95; desktop scored 99. Both scored 97 for accessibility and 100 for
+SEO. See [public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md) for the
+profile and limitations. No live enquiry or production release was performed.
