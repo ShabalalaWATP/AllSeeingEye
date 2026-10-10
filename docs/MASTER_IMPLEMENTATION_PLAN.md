@@ -1560,6 +1560,17 @@ coverage gap discovered by final KAN-182 CI is being repaired without lowering
 the security floor. The full animated mobile page scores 78/97/100 on Lighthouse;
 the earlier placeholder-stage 95-performance criterion is not marked satisfied.
 
+Final CI follow-ups are integrated at `b524a7b7`: the reported fixture, inventory,
+lazy-readiness and palette failures have reviewed repairs. Controlled PostgreSQL
+review exposed two session-authority races, now fixed by checking time after
+awaited reads and serialising refresh replay with guarded operations. All 138
+focused auth/FIRMS cases pass and four auth modules reach 100% branches. The
+combined branch also passes its 12-case and 11-case native concurrency groups
+and all 30 ordinary credential/deadline cases on PostgreSQL. Temporary databases,
+connections and the owned container are cleaned up. All 30 current delivery PR
+heads are ancestors of the integration. Fresh delivery-head and combined CI
+remain required.
+
 No `main` merge, live migration or production release has occurred. Controller
 facts and privacy approval, the software-licence/offer decision and live GitHub
 production approval settings remain explicit operator decisions. Those decisions

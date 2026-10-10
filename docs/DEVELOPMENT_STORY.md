@@ -6133,5 +6133,16 @@ The public page now scores 78/97/100 on default mobile Lighthouse and 99/97/100 
 desktop; the earlier placeholder-stage mobile 95 criterion remains unmet. Final
 combined CI is outstanding, including a newly exposed backend auth coverage gap
 being repaired with behavioural regressions and unchanged security thresholds.
+
+The last CI repair pass preserved real database and source-policy invariants
+while correcting stale fixtures and lazy-control assumptions. Its concurrency
+review also found and fixed two real session-authority gaps: deadlines could
+cross during an awaited read, and refresh replay bypassed the account lock used
+by guarded credential operations. Deterministic regressions preceded both fixes.
+The final affected auth/FIRMS group passes 138 cases with 100% line and branch
+coverage across four auth modules; independent review is clear. The combined
+branch passes both native concurrency groups and all 30 ordinary credential and
+deadline cases on PostgreSQL. The isolated database resources are cleaned up;
+final hosted CI is still pending.
 Production, licence and privacy decisions are not inferred from implementation
 approval.

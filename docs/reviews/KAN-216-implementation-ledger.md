@@ -24,15 +24,15 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; final functional mobile browser and contact-focus checks passed; CI pending |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
 | KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Grouped PR #191; full-page mobile Lighthouse 78/97/100, desktop 99/97/100; mobile performance remains below the earlier placeholder-stage 95 criterion |
-| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final CI identified uncovered backend auth refusal branches and dependent PostgreSQL logout/concurrency failures; repairs in progress with original assertions and the 95% security floor unchanged |
+| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final deadline/read and refresh-replay races repaired, 138 focused cases passed and four auth modules reached 100% branches; fresh CI pending |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
-| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; final readiness/contrast repair at `dc5e0565` passed 55 frontend cases; CI pending |
+| KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; 55 frontend cases and 24 capabilities/readiness follow-up cases passed; fresh CI pending at `8d876ae0` |
 | KAN-206 | Brief remount synchronisation and valid globe fixtures | PR #181; CI passed, In Review |
 | KAN-217 | Durable bounded alert-report queue | PR #171; historical migration fixtures repaired, CI passed, In Review |
 | KAN-218 | Frozen exact rule scope and triggering evidence | PR #176; CI passed, In Review |
 | KAN-219 | Executable alert template requirements and legacy recovery | PR #179; geometry and migration fixtures repaired, CI passed, In Review |
-| KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; full CI/native PostgreSQL pending |
+| KAN-220 | Complete consumed-evidence persistence, atomic caps and restart safety | PR #186; seven migration follow-up cases passed, including six native PostgreSQL cases; retained-data refusal and exact retention boundary preserved; fresh CI pending |
 | KAN-221 | Exact saved report/version links, including unavailable historical targets | PR #177; FK-valid SQLite/PostgreSQL follow-up passed, CI passed at `be35567b`, In Review |
 | KAN-222 | Unsaved Brief navigation protection | PR #168; remount follow-up integrated, CI passed, In Review |
 | KAN-223 | Unique indicator identifiers after removal/re-addition | PR #169 |
@@ -41,10 +41,10 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-226 | Uncached security rebuild procedure | PR #170 |
 | KAN-227 | Vulnerable dependency and image refresh | PR #164; local rebuilt-image scan and CI passed |
 | KAN-228 | Explicit webhook retry semantics after uncertain acceptance | PR #174 |
-| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; obsolete disabled-edit test repaired with 11 focused cases; fresh CI pending |
+| KAN-229 | Safe name/recurrence edits preserving pinned scope and history | PR #182; 64 backend and 34 UI cases passed; final FK-valid race fixture passed eight checks on SQLite and in the PostgreSQL-configured group; fresh CI pending at `d1e58914` |
 | KAN-230 | CI security and acceptance documentation reconciled with executable gates | PR #173 |
 | KAN-231 | Bounded synthetic-data Chromium CI journeys | PR #190; four local journeys passed in 11.354 seconds and hosted CI in 9.9 seconds (64-second full job); final aggregate pending |
-| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import regression repaired, fresh CI pending |
+| KAN-232 | Responsibility splits, extended size gate and reviewed exceptions | PR #187; 13 reviewed target exceptions, no hard-limit failure; startup import regression repaired and whole-tree frontend formatting reconciled; fresh CI pending |
 | KAN-233 | Authentication before saved-map bodies and bounded admission | PR #165 |
 | KAN-234 | Request/refresh binding to the originating login | PR #166; MFA refresh regression repaired the coverage gap, CI passed at `dcc5b737`, In Review |
 | KAN-235 | Original TLS identity across pinned feed connections; no shared cookies | PR #167 |
@@ -113,6 +113,36 @@ product additions 44,427 of 153,600 bytes. Final combined hosted CI remains pend
 At this checkpoint, 18 delivery tickets have passing current-head CI and are In
 Review. Ten require final validation or CI repair, and four retain acceptance or
 operator decisions. No delivery ticket has been marked Done.
+
+Final CI follow-ups are integrated at `b524a7b7`. The capability contract now has
+24 passing focused cases in both commercial modes, preserving exact public
+fields and private-configuration nondisclosure. The Brief race fixture creates
+its second revision through the authorised API, with eight checks passing on
+SQLite and in the PostgreSQL-configured group. The notification rollback fixture
+proves retained-data refusal and real pruning at the seven-day boundary before
+continuing its original rollback assertions; seven cases passed, including six
+native PostgreSQL cases. No database constraint or migration guard was weakened.
+
+The combined embed/source inventory now includes all 121 camera hosts and keeps
+the 581 source records unchanged. Unknown provider rights remain unknown. Its
+43 backend and six Node checks passed. Three lazy-control tests now await their
+actual controls, and the public-policy stylesheet names its unchanged colours.
+The relevant frontend groups passed 38 and 19 tests; all 11 policy tooling checks
+passed after integration. Publication approval remains false.
+
+Controlled concurrency review also identified two real authority gaps. The
+shared validator now checks access and idle deadlines after its final awaited
+read. Refresh replay takes the existing account lock before revoking the family.
+The complete affected auth/FIRMS group passed 138 cases with one separately
+verified native-only skip; four auth modules reached 100% lines and branches.
+Independent review, static checks and native concurrency groups passed. The
+combined branch additionally passed all 12 PostgreSQL FIRMS/replay cases in
+65.38 seconds, all 11 refresh/revocation/idle cases in 52.96 seconds, and all
+30 ordinary credential/deadline cases in 155.36 seconds. The three groups ran
+sequentially with isolated database settings. No temporary databases or client
+connections remained, and the exact owned container was removed after checking
+its identity. All 30 current delivery PR heads are ancestors of the integration.
+Final hosted CI remains pending.
 
 ## Review findings corrected during implementation
 
