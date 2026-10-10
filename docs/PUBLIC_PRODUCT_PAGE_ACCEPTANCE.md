@@ -193,3 +193,30 @@ and every scene present. It does not substitute a stripped page or claim that th
 full page meets the earlier 95 threshold. Further substantial gains would require
 separate work on native graphics startup or public-entry delivery; the metadata,
 import boundary and route-budget checks do not establish that performance result.
+
+## Final integrated verification
+
+The final build at `2d48753c` includes the reviewed KAN-182 session fixtures,
+KAN-167 retention repair, KAN-169 route/lifecycle fixtures and KAN-195 map-policy
+follow-up. TypeScript, production build and all bundle checks pass: initial
+JavaScript 145,644 bytes gzip, product closure 44,422 bytes and globe closure
+829,167 bytes. The product import boundary traverses 75 source files. No package
+or lockfile change was needed for these optimisations.
+
+The default desktop profile scores 99/97/100, with FCP 0.6 seconds, LCP 0.8 seconds,
+blocking time 30 ms and zero layout shift. The most recent ordinary mobile result
+for the same public source remains 78/97/100. The final intervening map-control
+change does not modify the public page; it was included in the final build and
+desktop/browser checks, not presented as a new mobile measurement.
+
+A fresh Chrome 155 browser context verified the final build at 390 and 320 pixels
+with the default motion preference. Header and hero eyes render while visible;
+the contact eye starts only when its chapter enters view. A direct contact visit
+and the sign-in enquiry link focus the contact heading, scroll it below the sticky
+header and render its eye while the unseen hero remains uninitialised. Returning
+to sign-in removes product metadata and restores noindex. Disabled flags render
+not-found without a form or canonical tag. Public resource requests stay on the
+same origin, with only `/api/site` requested from the API. There is no horizontal
+page overflow and the browser reported no errors or warnings. Final hero/contact
+screenshots were inspected. The private browser and loopback fixture server were
+closed after verification.

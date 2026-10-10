@@ -83,7 +83,12 @@ memory-only retention on throttling, no success echo and no browser storage.
 Reload discarded the draft. Reduced motion, metadata restoration and same-origin
 requests were also checked. Screenshots remain local in `output/playwright/`.
 
-KAN-172 performance acceptance remains open: mobile Lighthouse scored 60 against
-the target of 95; desktop scored 99. Both scored 97 for accessibility and 100 for
-SEO. See [public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md) for the
-profile and limitations. No live enquiry or production release was performed.
+The final public startup changes preserve the form and pass 48 focused route,
+configuration, metadata, policy and navigation checks. Real-browser checks again
+confirmed direct/contact-link focus, narrow layouts, disabled flags and same-origin
+requests. KAN-172 full-page performance remains below the earlier placeholder-stage
+95 criterion: mobile Lighthouse scored 78 after optimisation, desktop 99. Both
+scored 97 for accessibility and 100 for SEO. See
+[public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md) for the profiles,
+retained baseline and limitations. No live enquiry or production release was
+performed. Legal publication approval remains absent and its gate still blocks.
