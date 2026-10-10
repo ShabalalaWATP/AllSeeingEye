@@ -20,7 +20,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
-    "gen:api": "openapi-typescript src/lib/api/openapi.json -o src/lib/api/types.gen.ts"
+    "gen:api": "openapi-typescript src/lib/api/openapi.json -o src/lib/api/types.gen.ts",
+    "test:browser": "node scripts/browser.js test",
+    "test:browser:install": "node scripts/browser.js install chromium"
   },
   "dependencies": {
     "@deck.gl/core": "9.4.0",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
+    "@playwright/test": "1.64.0",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

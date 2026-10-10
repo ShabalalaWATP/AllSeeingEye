@@ -54,6 +54,8 @@ function DesktopAccountControls() {
 /**
  * The narrow shell passes `onOpenNavigation` and gets a compact bar: navigation, title,
  * bell and an account menu, so nothing needs to scroll sideways at 320 CSS pixels.
+ * The backdrop filter creates a stacking context; lift it above positioned page content
+ * so its notification and account popovers remain visible and clickable.
  */
 export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) | undefined }) {
   const { pathname } = useLocation();
@@ -61,7 +63,7 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
   const narrow = onOpenNavigation !== undefined;
 
   return (
-    <header className="relative flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/85 px-2 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-ember/50 after:via-cyan/30 after:to-transparent sm:px-4">
+    <header className="relative z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/85 px-2 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-ember/50 after:via-cyan/30 after:to-transparent sm:px-4">
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         {onOpenNavigation !== undefined && (
           <Button

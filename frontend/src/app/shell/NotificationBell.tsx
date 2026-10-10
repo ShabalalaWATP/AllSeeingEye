@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
@@ -62,15 +62,20 @@ function BellControl({ userId }: { userId: string }) {
   const panel = useRef<HTMLDivElement>(null);
   const alertsHeading = useRef<HTMLHeadingElement>(null);
   const [settingsChosen, setSettings] = useState(false);
+  const [focusRequest, setFocusRequest] = useState(0);
   const { open, unread, close, windowDays } = state;
   // When an acknowledged or muted item leaves the list, keep focus inside the bell.
   const keepFocus = useCallback(() => {
-    setTimeout(() => {
-      const active = document.activeElement;
-      if (active !== null && active !== document.body && panel.current?.contains(active)) return;
-      (alertsHeading.current ?? panel.current)?.focus();
-    }, 0);
+    setFocusRequest((request) => request + 1);
   }, []);
+  useLayoutEffect(() => {
+    if (focusRequest === 0) return;
+    // Inspect focus after React removes the row. A zero-delay timer can run before
+    // that commit and mistake the disappearing button for retained focus.
+    const active = document.activeElement;
+    if (active !== null && active !== document.body && panel.current?.contains(active)) return;
+    (alertsHeading.current ?? panel.current)?.focus();
+  }, [focusRequest]);
   const actions = useBellAlertActions(state, keepFocus);
   // The confirmation is a modal outside the popover; it must not dismiss the bell.
   useDismiss(open && actions.acknowledgeShown.target === null, close, wrapper, button);
