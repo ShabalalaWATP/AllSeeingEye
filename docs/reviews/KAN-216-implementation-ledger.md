@@ -20,11 +20,11 @@ CI, native PostgreSQL, browser acceptance or deployment has completed.
 | KAN-164 | Neutral offer wording and a concrete software-licence/offer decision record | PR #175; Alex's licence and offer decision required |
 | KAN-165 | Public privacy, storage, attribution and data-request pages; fail-closed publication gate | Grouped PR #191; public policy browser checks passed; operator/legal approval required |
 | KAN-166 | Bounded opt-in enquiry admission, atomic duplicates, operator-only email | PR #184; full CI/native PostgreSQL pending |
-| KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; full CI/native PostgreSQL pending |
+| KAN-167 | Administrator enquiry API, session fences, bounded retention and erasure | PR #185; focused SQLite/native PostgreSQL retention checks passed; full CI shards pending |
 | KAN-168 | Public enquiry form, enabled-only sign-in links, contact focus | Grouped PR #191; final functional mobile browser and contact-focus checks passed; CI pending |
 | KAN-169 | Administrator enquiry workspace, actions, focus and pagination | PR #189; browser reflow/focus repairs verified; 17 acceptance tests passed with 94.64% scoped branch coverage |
 | KAN-172 | Public route isolation, search metadata, robots policy and bundle budget | Grouped PR #191; full-page mobile Lighthouse 78/97/100, desktop 99/97/100; mobile performance remains below the earlier placeholder-stage 95 criterion |
-| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final CI identified uncovered backend auth refusal branches; regression repair in progress with the 95% security floor unchanged |
+| KAN-182 | Server-owned idle expiry, genuine activity, warning and stale-tab protection | PR #183; final CI identified uncovered backend auth refusal branches and dependent PostgreSQL logout/concurrency failures; repairs in progress with original assertions and the 95% security floor unchanged |
 | KAN-184 | Explicit per-provider external embed consent, local preferences | PR #178; preview heading regression corrected, CI passed at `5eedf1d8`, In Review |
 | KAN-194 | Source licence evidence, attribution catalogue and permission-request drafts | PR #180; provider permissions are not inferred or sent |
 | KAN-195 | Commercial-use admission and capability controls | PR #188; retained-source repair independently reviewed, 168 affected cases passed with 96.44% scoped coverage; final readiness/contrast repair at `dc5e0565` passed 55 frontend cases; CI pending |
@@ -100,6 +100,12 @@ public-page, administrator, graphics and auth group passed 235 tests in 37 files
 Both TypeScript configurations and all 11 policy checks passed. API and attribution
 regeneration left no diff. The expanded size check passed with 13 documented
 target exceptions and no hard-limit failure.
+
+Whole frontend lint also passed. Whole-tree formatting exposed 11 files already
+outside the current formatter's style at the reviewed baseline. A separate
+KAN-232 formatting commit reconciles them; independent review found no code
+semantics changed, and all three JSON values were compared with their original
+parsed data. Whole-tree formatting now passes.
 
 Final gzip bundle measurements passed their unchanged budgets: initial loading
 145,738 of 245,760 bytes, globe additions 829,227 of 870,400 bytes, and public
