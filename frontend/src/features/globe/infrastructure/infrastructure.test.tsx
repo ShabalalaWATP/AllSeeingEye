@@ -1,7 +1,10 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { expect, it, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { applySession } from '@/test/session';
+import { mapSourceAllowed } from '@/lib/map/sourcePolicy';
+import { INFRASTRUCTURE_SOURCES } from './infrastructurePolicy';
 import { server } from '@/test/server';
 import { infrastructureSchema, type Infrastructure } from '@/lib/api/infrastructure';
 import { useInfrastructure } from './useInfrastructure';
@@ -77,6 +80,8 @@ const data: Infrastructure = {
 const cableFixture = data.cables[0]!;
 const stationFixture = data.ground_stations[0]!;
 
+beforeEach(() => applySession('user'));
+
 it('rejects unsafe links, out-of-range positions and oversized route data', () => {
   expect(infrastructureSchema.safeParse(data).success).toBe(true);
   for (const source_url of [
@@ -112,6 +117,8 @@ it('loads lazily, retries failures, and clears selection when closing or disabli
     }),
   );
   const { result } = renderHook(() => useInfrastructure());
+  expect(calls).toBe(0);
+  await waitFor(() => expect(mapSourceAllowed(INFRASTRUCTURE_SOURCES.cable)).toBe(true));
   expect(calls).toBe(0);
   act(() => result.current.toggleCables());
   await waitFor(() => expect(result.current.error).toContain('could not be loaded'));
@@ -193,6 +200,9 @@ it('supports panel searching, source attribution and an accessible inspector clo
   }
   const user = userEvent.setup();
   render(<Panel />);
+  await waitFor(() =>
+    expect(screen.getByRole('switch', { name: 'Satellite ground stations' })).toBeEnabled(),
+  );
   await user.click(screen.getByRole('switch', { name: 'Satellite ground stations' }));
   await screen.findByText(/Snapshot: 2026/);
   expect(screen.getByRole('link', { name: 'Cable data licence' })).toHaveAttribute(
