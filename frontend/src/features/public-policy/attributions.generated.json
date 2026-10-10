@@ -4190,7 +4190,7 @@
       "id": "map:military_source_index",
       "name": "Military infrastructure source register",
       "family": "map_layer",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/frontend/src/features/globe/infrastructure/military_infrastructure_sources.json",
       "policies": [
         {
           "id": "mixed-evidence",
@@ -5779,7 +5779,7 @@
       "id": "reference:conflicts",
       "name": "Conflict and tension areas",
       "family": "reference_dataset",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/backend/src/ase/resources/conflicts.json",
       "policies": [
         {
           "id": "mixed-evidence",
@@ -5887,7 +5887,7 @@
       "id": "research-asset-register",
       "name": "Packaged infrastructure registers",
       "family": "on_demand_or_reference",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/backend/src/ase/adapters/research/asset_register.py",
       "policies": [
         {
           "id": "mixed-evidence",
@@ -6492,7 +6492,7 @@
       "id": "research-retained-area-feeds",
       "name": "Retained public feeds",
       "family": "on_demand_or_reference",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/backend/src/ase/adapters/research/retained_area.py",
       "policies": [
         {
           "id": "mixed-evidence",
@@ -6873,7 +6873,7 @@
       "id": "research_import",
       "name": "Private document import",
       "family": "on_demand_or_reference",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/backend/src/ase/container/research_sources.py#L34",
       "policies": [
         {
           "id": "mixed-evidence",
@@ -6891,7 +6891,7 @@
       "id": "research_media",
       "name": "Private image and video import",
       "family": "on_demand_or_reference",
-      "sourceUrl": null,
+      "sourceUrl": "https://github.com/ShabalalaWATP/AllSeeingEye/blob/99bff8f974c3712d99e6c0424c8685e42bb354fd/backend/src/ase/container/research_sources.py#L49",
       "policies": [
         {
           "id": "mixed-evidence",

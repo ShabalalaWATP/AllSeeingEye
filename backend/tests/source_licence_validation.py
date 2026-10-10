@@ -73,7 +73,7 @@ SOURCE = record(
         "commercial_use": {"enum": ["allowed", "forbidden", "licence_required"]},
         "attribution_required": {"type": "boolean"},
         "licence_ref": TEXT,
-        "source_url": {"anyOf": [URL, {"type": "null"}]},
+        "source_url": URL,
         "source_url_kind": {
             "enum": ["publisher_or_provider", "catalogue_provenance_only", "per_item_provenance"]
         },

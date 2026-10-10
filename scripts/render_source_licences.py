@@ -24,6 +24,8 @@ the opt-in runtime controls and the `map:os_maps` catalogue entry described belo
 provider permission is still a separate requirement.
 The KAN-184 YouTube embed-host inventory and its provider evidence were reconciled
 on 10 October 2026. Other policy rows retain their individual review dates.
+The six mixed/private source catalogue links were checked at revision
+`99bff8f974c3712d99e6c0424c8685e42bb354fd` on 10 October 2026.
 
 ## Coverage and evidence limits
 
@@ -60,6 +62,8 @@ verified grant. `not_reviewed` has no terms-check or attempted-lookup date.
 All dates use UTC. The code inventory date is separate from all of these.
 `per_item_required` is a mixed/user-supplied content boundary with no blanket
 provider grant. Each item's original rights and owner must be assessed separately.
+Its row shows the catalogue check date and an immutable catalogue provenance link;
+neither verifies provider terms or rights in any individual item.
 For unchecked rows the missing primary terms link and date are outstanding work,
 not a fabricated verification. Review the linked provider and exact product.
 
@@ -145,7 +149,7 @@ def render() -> str:
                 continue
             policy = policies[row["policy"]]
             name = cell(row["name"])
-            link = f"[{name}]({row['source_url']})" if row["source_url"] else name + " (per-item)"
+            link = f"[{name}]({row['source_url']})"
             if row["source_url_kind"] == "catalogue_provenance_only":
                 link += " (catalogue provenance only)"
             check = policy["terms_checked_on"] or (
@@ -153,6 +157,8 @@ def render() -> str:
                 if policy["lookup_attempted_on"]
                 else "not checked"
             )
+            if policy["review_status"] == "per_item_required":
+                check = f"catalogue checked {row['code_checked_on']} (provider terms not verified)"
             evidence_label = "terms/evidence" if policy["terms_checked_on"] else "attempted page"
             terms = (
                 f"[{evidence_label}]({policy['terms_url']})"
