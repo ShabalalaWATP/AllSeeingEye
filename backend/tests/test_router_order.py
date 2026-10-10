@@ -23,9 +23,16 @@ from router_order_reference import (
     routes,
 )
 
-# Reviewed addition to the 94-owner, 352-route public-site baseline. Keep this
-# inventory branch-specific: enquiry and Brief settings routes are not present here.
-REVIEWED_ADDITIONS = {("auth", "POST", "/api/auth/activity")}
+# Reviewed additions to the 94-owner, 352-route public-site baseline. Keep this
+# inventory branch-specific: KAN-229 brief-settings is not present on this branch.
+REVIEWED_ADDITIONS = {
+    ("auth", "POST", "/api/auth/activity"),
+    ("enquiries", "POST", "/api/enquiries"),
+    ("admin_enquiries", "GET", "/api/admin/enquiries"),
+    ("admin_enquiries", "GET", "/api/admin/enquiries/{enquiry_id}"),
+    ("admin_enquiries", "PATCH", "/api/admin/enquiries/{enquiry_id}"),
+    ("admin_enquiries", "DELETE", "/api/admin/enquiries/{enquiry_id}"),
+}
 
 
 @pytest.fixture(scope="module")
@@ -35,7 +42,7 @@ def pair() -> tuple[FastAPI, FastAPI]:
 
 def test_all_owners_once_and_every_overlap_and_name_edge_preserved() -> None:
     actual = registered_owners()
-    assert len(actual) == len(set(actual)) == len(ORIGINAL) == 94
+    assert len(actual) == len(set(actual)) == len(ORIGINAL) == 96
     assert set(actual) == set(ORIGINAL)
     families: dict[str, set[str]] = {}
     names: dict[str, set[str]] = {}
