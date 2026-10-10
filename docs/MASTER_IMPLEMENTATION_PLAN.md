@@ -1629,3 +1629,20 @@ remaining policy footer destinations and precise source-licence check provenance
 Implementation closure still requires authorised integration. Production rollout
 also requires approved controller/publication content and the documented manual
 migration procedure; those requirements are not inferred from ticket status.
+
+### Review completion follow-up, 10 October 2026
+
+- [x] KAN-230 documentation refresh validated and moved to Done under non-code criteria.
+- [x] KAN-172 missing public footer routes and fail-closed service-publication checks implemented.
+- [x] KAN-194 six catalogue provenance links and honestly labelled check dates completed.
+- [x] Complete KAN-168 desktop/mobile form screenshots published; KAN-169's four contrast incompletes resolved.
+- [x] KAN-184 fresh sanitised consent request capture recorded, with no provider traffic forwarded.
+- [x] Final mobile build measured at 90/97/100; initial 89 and host variability retained in acceptance evidence.
+- [ ] Complete final aggregate published-head CI, obtain required release approval and integrate PR #192.
+- [ ] Verify main integration before moving the 27 eligible implementation tickets to Done.
+- [ ] Finish operator decisions and live acceptance for KAN-164, KAN-165 and KAN-225 separately.
+
+See [closure matrix](reviews/KAN-216-review-closure.md),
+[final browser evidence](reviews/KAN-216-final-browser-evidence.md), and
+[provenance review](reviews/KAN-194-provenance-closure.md). Existing policy, approval,
+coverage and security gates remain enforced; no production rollout was performed.

@@ -6206,3 +6206,27 @@ documentation refresh passes 21 coverage/sharding checks, 12 bundle/import check
 and all 11 local file links. KAN-226's validated non-code deliverable is Done.
 Implementation tickets remain subject to authorised merge, with live publication
 and migration requirements recorded separately.
+
+## 10 October 2026: complete the remaining review evidence
+
+KAN-172's footer now exposes accessible public Accessibility, Terms and Business
+pages. Actual operator wording remains unconfirmed; service details participate
+in both publication validators and the exact-content approval hash. Thirty DOM
+cases, nineteen bootstrap cases, five Node publication cases and ten Python
+publication cases pass. TypeScript, whole frontend lint, production build,
+formatting and unchanged bundle/source-size gates pass. Independent frontend
+review found no blocker; its stale-service-approval regression suggestion is tested.
+
+KAN-194 now supplies immutable provenance for six previously unlinked catalogue
+rows, with dates labelled as catalogue checks rather than verified provider terms.
+Its 51 backend and two attribution tests, generation freshness and independent
+security review pass. The 157 attempted terms reviews and all permissions remain
+unchanged. Final contact screenshots, native contrast resolution and a sanitised
+17-observation embed-consent capture are published in the final browser record.
+
+The final mobile build scores 90/97/100 in a controlled comparison. The initial
+89 result and differing CPU benchmark are retained explicitly, with no code change
+between measurements. The closure matrix identifies two non-code Done tickets,
+27 implementation tickets awaiting authorised integration and three operator/live
+items. Main has not been merged and production has not changed. Final aggregate
+CI and release approval remain separate requirements.

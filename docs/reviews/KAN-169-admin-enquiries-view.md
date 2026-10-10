@@ -73,8 +73,11 @@ email and message strings and a final-page singleton.
   appeared in that menu.
 - Expanded message markup remains literal text. Phone and desktop screenshots were
   inspected. Axe reported no WCAG 2 A/AA, 2.1 AA or 2.2 AA violations in either
-  view. Phone checks had no incomplete results; desktop colour contrast requires
-  manual review because axe marked it incomplete. These checks do not constitute
+  view. Phone checks had no incomplete results; desktop colour contrast required
+  manual review because axe marked it incomplete. The
+  [final browser evidence](KAN-216-final-browser-evidence.md) now resolves all four
+  desktop nodes using captured browser colours and a conservative gradient bound.
+  These checks do not constitute
   a complete WCAG conformance assessment.
 - Two initially unhandled synthetic Users-page research-usage requests were
   aborted by the harness and then given a local fixture. No off-origin request

@@ -81,14 +81,17 @@ submission focused the announced errors; keyboard navigation skipped the
 honeypot. Synthetic 429 and 202 responses produced the expected feedback, with
 memory-only retention on throttling, no success echo and no browser storage.
 Reload discarded the draft. Reduced motion, metadata restoration and same-origin
-requests were also checked. Screenshots remain local in `output/playwright/`.
+requests were also checked. Those initial screenshots remain local in
+`output/playwright/`. The [final browser evidence](reviews/KAN-216-final-browser-evidence.md)
+now publishes complete desktop/390-pixel contact captures and synthetic success.
 
 The final public startup changes preserve the form and pass 48 focused route,
 configuration, metadata, policy and navigation checks. Real-browser checks again
 confirmed direct/contact-link focus, narrow layouts, disabled flags and same-origin
-requests. KAN-172 full-page performance remains below the earlier placeholder-stage
-95 criterion: mobile Lighthouse scored 78 after optimisation, desktop 99. Both
+requests. At that historical checkpoint, KAN-172 full-page performance was below
+the earlier placeholder-stage 95 criterion: mobile Lighthouse scored 78 after optimisation, desktop 99. Both
 scored 97 for accessibility and 100 for SEO. See
-[public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md) for the profiles,
-retained baseline and limitations. No live enquiry or production release was
+[public product acceptance](PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md) for the later
+agreed 90 target and passing measurements, profiles, baseline and limitations.
+No live enquiry or production release was
 performed. Legal publication approval remains absent and its gate still blocks.

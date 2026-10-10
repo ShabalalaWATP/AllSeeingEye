@@ -6,6 +6,31 @@ separates implemented controls from browser and deployment evidence.
 
 ## Current mobile target and result, 10 October 2026
 
+Final review follow-up at `ca810947`: the footer now links Accessibility, Terms
+and Business details. Public rendering, draft metadata and publication gates are
+covered by 30 focused DOM cases, 19 bootstrap cases, five Node publication cases
+and ten Python publication cases. The final build, both TypeScript configurations,
+whole frontend lint, formatting and unchanged bundle gates pass. Gzip totals are
+129,439 initial bytes, 847,544 additional globe bytes and 62,248 product bytes.
+The six catalogue provenance updates are integrated in that same build.
+
+A matched follow-up measured the previous `4c9327a9` build at **90/97/100**
+(FCP 2.061 s, LCP 3.336 s, blocking 17 ms) and the final build at **90/97/100**
+(FCP 2.038 s, LCP 3.388 s, blocking 19 ms); both had zero layout shift. The same
+Caddy/CSP/compression configuration served each serially at `https://localhost:8443`.
+Profiles and throttling match the earlier runs below. The first final-build run
+scored **89/97/100**, with 133 ms blocking and CPU benchmark index 2,785.5.
+The matched pair's indices were 4,043.5 and 3,899.5. This indicates host variability;
+it is not evidence that every device or run will score 90. No source change was
+made between those final-build measurements. The controlled comparison retains
+traces and the original lower result, not only the passing result.
+[Measurement summary and report hashes](reviews/assets/KAN-216-final/mobile-performance.json)
+and [final browser evidence](reviews/KAN-216-final-browser-evidence.md) preserve
+the conditions and limitations. Final published-head CI is recorded on PR #192.
+
+The following paragraphs retain the earlier performance implementation and its
+three-run acceptance record at `4c9327a9`, before the footer follow-up.
+
 Alex explicitly requested a mobile performance target of 90. Jira KAN-172 now
 records that target, with accessibility at least 95 and SEO at least 90. The
 earlier 95-performance figures below remain historical evidence.

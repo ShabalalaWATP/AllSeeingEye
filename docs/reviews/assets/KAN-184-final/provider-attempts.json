@@ -1,0 +1,82 @@
+[
+  {
+    "phase": "explicit-load-tradingview",
+    "origin": "https://www.tradingview-widget.com",
+    "path": "/embed-widget/advanced-chart/",
+    "method": "GET",
+    "type": "document",
+    "provider": "TradingView",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "explicit-load-youtube",
+    "origin": "https://www.youtube-nocookie.com",
+    "path": "/embed/UemFRPrl1hk",
+    "method": "GET",
+    "type": "document",
+    "provider": "YouTube",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "explicit-load-ipcamlive",
+    "origin": "https://ipcamlive.com",
+    "path": "/player/player.php",
+    "method": "GET",
+    "type": "document",
+    "provider": "IPCamLive",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "remember-youtube-in-memory",
+    "origin": "https://www.youtube-nocookie.com",
+    "path": "/embed/UemFRPrl1hk",
+    "method": "GET",
+    "type": "document",
+    "provider": "YouTube",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "play-new-camera",
+    "origin": "https://www.youtube-nocookie.com",
+    "path": "/embed/UemFRPrl1hk",
+    "method": "GET",
+    "type": "document",
+    "provider": "YouTube",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "explicit-browser-choice",
+    "origin": "https://www.tradingview-widget.com",
+    "path": "/embed-widget/advanced-chart/",
+    "method": "GET",
+    "type": "document",
+    "provider": "TradingView",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "reload-saved-browser-choice",
+    "origin": "https://www.tradingview-widget.com",
+    "path": "/embed-widget/advanced-chart/",
+    "method": "GET",
+    "type": "document",
+    "provider": "TradingView",
+    "decision": "local-fulfil",
+    "transmitted": false
+  },
+  {
+    "phase": "mobile-keyboard-load",
+    "origin": "https://www.youtube-nocookie.com",
+    "path": "/embed/UemFRPrl1hk",
+    "method": "GET",
+    "type": "document",
+    "provider": "YouTube",
+    "decision": "local-fulfil",
+    "transmitted": false
+  }
+]
