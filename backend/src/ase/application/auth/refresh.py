@@ -53,7 +53,10 @@ class RefreshUseCase:
             raise InvalidRefreshToken()
         now = self._clock.now()
         if token.revoked_at is not None:
-            await self._reject_reuse(token, now, context)
+            # Reuse invalidates authority too. Serialise it with guarded mutations
+            # and disclosure, just like normal refresh, logout and heartbeat.
+            await self._users.lock_by_id(token.user_id)
+            await self._reject_reuse(token, self._clock.now(), context)
         if not token.is_valid(now):
             raise InvalidRefreshToken()
         user = await self._users.lock_by_id(token.user_id)
