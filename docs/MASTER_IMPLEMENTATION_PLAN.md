@@ -1575,3 +1575,11 @@ No `main` merge, live migration or production release has occurred. Controller
 facts and privacy approval, the software-licence/offer decision and live GitHub
 production approval settings remain explicit operator decisions. Those decisions
 do not block preparation, testing or review of the implementation.
+
+KAN-172's exact-lattice noise follow-up is integrated from `81b5c554`. It preserves
+complete original RGBA buffers, passes 19 affected tests and the existing type,
+build and bundle gates, with clear independent review. The isolated CPU speedup
+does not satisfy the outstanding full-page mobile target. At the 10 October
+01:48 UTC checkpoint, 20 delivery tickets are In Review; eight await final CI
+and four retain acceptance or operator decisions. Jira is authoritative after
+that checkpoint; no ticket has been marked Done.

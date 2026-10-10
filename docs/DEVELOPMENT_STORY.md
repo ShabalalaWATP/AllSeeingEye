@@ -6146,3 +6146,11 @@ deadline cases on PostgreSQL. The isolated database resources are cleaned up;
 final hosted CI is still pending.
 Production, licence and privacy decisions are not inferred from implementation
 approval.
+
+The KAN-172 trace follow-up skips zero-weight noise interpolation at exact
+lattice points. Pre-change full-buffer fingerprints remain identical at sizes
+17, 256 and 257; all 19 affected graphics/noise tests, both TypeScript checks,
+the public production build and bundle budgets pass. Independent review is clear.
+A local warm CPU benchmark improved from 8.293 ms to 6.005 ms median; this does
+not establish a new mobile Lighthouse score. The larger graphics-startup and
+public-entry performance gap remains explicit.

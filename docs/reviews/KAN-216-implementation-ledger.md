@@ -201,3 +201,24 @@ as passing. Further renderer work or an explicit acceptance decision is outstand
 
 The 6 October KAN-81 acceptance remains historical evidence. This review adds a
 continuous browser lane and does not retroactively change its recorded outcome.
+
+## 10 October final validation follow-up
+
+At 01:48 UTC, KAN-195 and KAN-229 each have all 39 current-head checks passing
+and have moved to In Review. The delivery count is now 20 In Review, eight
+awaiting final CI and four with outstanding acceptance or operator decisions.
+
+The KAN-172 performance trace justified a small exact-output optimisation at
+`81b5c554`: skip neighbouring noise hashes whose interpolation weights are zero.
+The original complete RGBA fingerprints at sizes 17, 256 and 257 were recorded
+before editing and remain identical. All 19 affected graphics/noise tests,
+scoped lint/format checks, both TypeScript configurations, the public production
+build and unchanged bundle budgets pass. Independent review found no output or
+lifecycle change. A warm, isolated Node benchmark improved from 8.293 ms to
+6.005 ms median. It is not a new Lighthouse measurement; the last measured
+full-page mobile score remains 78 and the 95 target remains outstanding.
+
+Read-only integration review confirms disabled enquiry/product defaults,
+opt-in commercial mode, unset publication approval and the single migration
+chain through 0094. No additional integration blocker was found. Current-head
+combined CI remains required; source changes do not imply release approval.
