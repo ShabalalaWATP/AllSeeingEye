@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import JSON, null, select, update
+from sqlalchemy import JSON, null, select, text, update
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
@@ -120,14 +120,32 @@ async def test_retained_edition_and_frozen_brief_are_unchanged_by_edit(client, c
 async def test_archive_or_pinned_identity_change_between_read_and_write_cannot_be_overwritten(
     client, container, user
 ):
-    row, _, _ = await subscription(client)
+    if container.engine.dialect.name == "sqlite":
+        async with container.engine.connect() as connection:
+            await connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+            assert await connection.scalar(text("PRAGMA foreign_keys")) == 1
+            await connection.commit()
+    row, headers, draft = await subscription(client)
+    revised = await client.post(
+        f"/api/research/briefs/{row['brief_id']}/revisions",
+        headers=headers,
+        json={**draft, "base_revision": 1, "title": "Concurrent pinned revision"},
+    )
+    assert revised.status_code == 201, revised.text
+    assert revised.json()["brief"]["identity"]["revision"] == 2
     async with container.session_factory() as session:
         store = SqlSubscriptionSettings(session)
         old = await store.get(UUID(row["id"]))
+        assert (old.brief_id, old.brief_revision) == (UUID(row["brief_id"]), 1)
         await session.execute(
             update(ScheduleRow).where(ScheduleRow.id == old.id).values(brief_revision=2)
         )
         assert await store.update(old, replace(old, name="Must not save")) is None
+        assert (
+            await session.execute(
+                select(ScheduleRow.brief_revision, ScheduleRow.name).where(ScheduleRow.id == old.id)
+            )
+        ).one() == (2, old.name)
         await session.rollback()
         await session.execute(
             update(ScheduleRow)
