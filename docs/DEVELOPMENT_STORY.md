@@ -6195,6 +6195,22 @@ enquiry submission and worker fallback. Independent reviews are clear. Evidence
 and limitations are recorded in `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`; published
 CI and release approval remain separate requirements.
 
+## 11 October 2026: verify the production approval gate
+
+The approved aggregate merged as `e1eabc93` on 10 October and passed main CI.
+Twenty-seven implementation tickets then moved to Done; the 30 original delivery
+PRs closed as superseded, with their review provenance preserved.
+
+Alex separately approved KAN-225's live configuration and two harmless checks.
+Production now requires `ShabalalaWATP` approval, disallows administrator bypass
+and retains main-only deployment. Self-review remains allowed for the approved
+single-maintainer workflow. Each no-op job waited without running a step; approval
+released one to success, while rejection prevented every step of the other.
+Independent review confirmed the effective settings and both outcomes. The
+[acceptance record](reviews/2026-10-11-KAN-225-live-gate.md) retains the evidence
+and the limits of approval through a maintainer account. No VPS deployment was
+triggered. Licence/offer and privacy/publication decisions remain separate.
+
 ### Review closure evidence, 10 October 2026
 
 The final acceptance pass checks live Jira criteria against the combined source
