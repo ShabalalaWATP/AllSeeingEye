@@ -34,7 +34,9 @@ cannot supply the missing rights.
 
 Alex chose to keep the eye. The [permission request](REACT_BITS_PERMISSION_REQUEST.md)
 asks for a suitable additional grant, covering source, adaptations, captured
-artwork and downstream commercial redistribution. It is prepared but not sent.
+artwork and downstream commercial redistribution. At Alex's explicit request,
+it was sent to David Haz's published contact address on 11 October 2026.
+Gmail confirmed submission; no permission has been received.
 A reply must be checked against that exact scope before adoption; do not infer
 permission from silence, a payment offer or a general statement about app use.
 

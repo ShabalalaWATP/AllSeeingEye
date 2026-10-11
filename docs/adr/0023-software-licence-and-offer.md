@@ -12,8 +12,10 @@ candidate below is AGPL-3.0-only. Alex also chose to keep the React Bits eye and
 prepare a request for compatible permission, rather than replace the branding.
 The [adoption proposal](../licenses/AGPL_ADOPTION_PROPOSAL.md) records the
 component/artwork licensing issue and the required distribution/source-delivery
-work. The [permission request](../licenses/REACT_BITS_PERMISSION_REQUEST.md) is
-prepared, not sent. No root licence has been adopted.
+work. The [permission request](../licenses/REACT_BITS_PERMISSION_REQUEST.md) was
+sent to David Haz's published contact address on 11 October 2026 following Alex's
+explicit instruction. Gmail confirmed submission; permission remains pending.
+No root licence has been adopted.
 
 Legal/trading identity, public business address, contact, initial customer
 countries and installation providers were answered "not decided". Offer details

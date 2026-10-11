@@ -1,9 +1,12 @@
-# Draft permission request: React Bits Evil Eye
+# Sent permission request: React Bits Evil Eye
 
-Status: prepared at Alex's request on 11 October 2026; **not sent**.
-Intended recipient: David Haz / the React Bits maintainers. Verify the designated
-licensing contact before sending. This draft neither asserts permission nor
-commits Alex to a fee or contract.
+Status: **sent on 11 October 2026**, following Alex's explicit instruction.
+Recipient: David Haz at `contact@davidhaz.com`, the public contact listed on his
+[official GitHub profile](https://github.com/DavidHDev), verified before sending.
+Gmail confirmed the message in Sent with the recipient and subject below.
+This records submission, not delivery acknowledgement or permission received.
+The request neither asserts permission nor commits Alex to a fee or contract.
+KAN-164 remains open pending a compatible grant and the other adoption decisions.
 
 Subject: Permission to include Evil Eye in an AGPL-3.0-only application
 
