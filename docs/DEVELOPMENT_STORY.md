@@ -6255,3 +6255,13 @@ need assessment.
 The approval manifest stays unset and publication remains blocked.
 Focused security review found no actionable issue. Final check results and the PR
 are recorded in the KAN-165 handoff; this entry does not claim a live release.
+
+Alex subsequently authorised preparation of the remaining assessments. The initial
+private DPIA/LIA, processing register and retention schedule distinguish existing
+code from prepared release controls and proposed manual duties. The public draft
+now includes complaints handling, recipient descriptions, quarterly necessity
+reviews, purpose-specific bases and personal-installation use/accessibility terms.
+Sensitive-data and indirect-notice decisions remain purpose-specific; no blanket
+exemption or completed high-risk review is asserted. Jurisdiction and transfer
+safeguards stay unset pending facts, and complete-wording approval stays unset.
+The private assessment is Git-ignored, not published in the repository or Jira.

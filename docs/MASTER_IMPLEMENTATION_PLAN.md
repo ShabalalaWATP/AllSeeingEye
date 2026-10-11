@@ -16,7 +16,8 @@ for the remaining factual and processing decisions.
 - [x] Confirm the notice covers Alex's current personal installation.
 - [x] Confirm Alex Orr and `alexorr@yahoo.co.uk` as public operator/privacy/complaints details.
 - [x] Verify current hosting (Hetzner, Helsinki), email (Resend) and AI (OpenAI Luna/Sol) from the running installation, and populate the draft.
-- [ ] Complete remaining operator, recipient, transfer, retention and processing assessments.
+- [x] Prepare the initial private DPIA/LIA, processing/recipient register and retention schedule under Alex's authority; draft the remaining supported notice and service wording.
+- [ ] Confirm operator country/use context and account-specific processor/transfer facts; resolve sensitive-source and high-risk use decisions.
 - [ ] Review and approve the complete wording and exact content hash.
 - [ ] Complete review/CI and obtain separate release approval for the continuation.
 

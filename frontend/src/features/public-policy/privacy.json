@@ -5,48 +5,48 @@
     "controllerName": "Alex Orr",
     "controllerContact": "alexorr@yahoo.co.uk",
     "complaintsContact": "alexorr@yahoo.co.uk",
-    "complaintsProcedure": null,
+    "complaintsProcedure": "Send privacy concerns to alexorr@yahoo.co.uk with the information or activity concerned and the outcome you seek. Please avoid sending identity documents, passwords or sensitive research by ordinary email. Alex Orr will acknowledge a data protection complaint within 30 days, make appropriate enquiries, keep you informed and explain the outcome and any corrective steps without undue delay. Any identity or authority check will be proportionate and arranged privately. A request to exercise your data rights is handled separately under the applicable deadline, normally one calendar month, with any lawful extension explained. You can also complain to the Information Commissioner's Office at ico.org.uk/make-a-complaint/; this procedure does not restrict that right.",
     "jurisdiction": null,
     "hosting": "This installation runs on a Hetzner Cloud server in Helsinki, Finland, in the European Union.",
     "emailProvider": "Resend delivers this installation's application emails over encrypted SMTP. Delivery involves recipient email addresses and message content, including account and security messages and any enquiry notifications sent by the installation.",
     "aiProviders": "This installation uses the OpenAI API. GPT-5.6 Luna is the default connection; GPT-5.6 Sol is also configured for user-specific use. The applicable connection receives the selected questions and research material needed for an AI task, which can include extracted text or sanitised images submitted for analysis. These inputs may contain personal data. The configured connections cover research direction, assessment, critical review and translation.",
-    "otherRecipients": null,
+    "otherRecipients": "Public-source publishers and research services receive the requests and search terms needed for the selected research, along with the server's connection information. A private research plan can still generate public-provider queries; do not include confidential personal details in those queries. Internet Archive capture is enabled and can submit cited public URLs for preservation after report generation. Browser map, imagery and camera hosts receive connection information when used; selected external embeds can also receive browser information. Browser push is configured and uses the browser vendor's delivery service after the user enables it. No installation-wide alert webhook is configured. User-configured destinations and exported copies require their own recipient review. Privacy and accessibility emails to the contact above are also handled by Yahoo and the sender's email provider. Authorised shared-workspace members can see material shared with that workspace.",
     "internationalTransfers": null,
-    "retentionCriteria": null,
-    "publicSourceAssessment": null,
-    "storageAssessment": null,
-    "automatedDecisions": null
+    "retentionCriteria": "Records are kept only while needed for their stated purpose, a specific security investigation, a rights request or a documented legal requirement. The operator reviews continued need at least quarterly and when an account closes, a research purpose ends or a deletion request arrives. Unneeded personal reports are removed through supported controls; shared records require an ownership and continuing-need review. Account deactivation does not erase identity, audit or usage records, and several categories have no automated deletion mechanism. Requests affecting those categories need separate handling with any retained material and reason explained. Runtime logs rotate by size, rather than after a fixed number of days. Scheduled backups and release-recovery copies are separate from live deletion; old copies and restored records require operator review. Provider-held messages, AI inputs and recipients' exports follow separate policies and cannot be recalled by deleting an application record.",
+    "publicSourceAssessment": "Research should use the minimum personal information needed to understand the event, organisation or public activity in question. Public sources can identify public figures and private people through names, statements, images, company roles, alleged offences or location information. Public availability alone does not establish a lawful basis, accuracy or permission to combine or republish that information. Processing special-category or criminal-offence information requires a separately documented applicable condition and safeguards, including when such information arrives incidentally. Existing material must be reviewed before continued retention, use or disclosure; processing without an established condition must be restricted or ended, with removal handled lawfully. This notice supplies no blanket permission. The permitted scope excludes stalking, harassment, identifying vulnerable people or compiling private-person dossiers. Where information is obtained indirectly, the operator must assess how to notify affected people within the applicable period, normally no later than one month and earlier when first contacting them or disclosing the information. No general disproportionate-effort exemption is claimed. Contact the operator to question inclusion, accuracy or continued use.",
+    "storageAssessment": "The authentication and CSRF cookies support the signed-in service and its security. The declared preference keys remember navigation, appearance and controls; they are not used by this application for advertising profiles. Review the inventory below for each key's contents and duration. Preferences can be changed through their controls and removed by clearing this site's browser data. Browser push requires an explicit enable action and browser permission, and can be disabled through notification settings and the browser. External-media controls explain the selected provider before loading; retaining a provider choice across visits requires a separate choice. Forgetting a provider removes the application's remembered choice, but cannot remove cookies or information already held by that provider. These statements do not establish that external providers perform no tracking.",
+    "automatedDecisions": "The application uses AI to plan, summarise, assess, challenge, translate and screen research material. It can also filter events and generate alerts automatically. Outputs can be inaccurate, omit context or infer information about people. Users must examine the cited evidence, uncertainty and alternatives before relying on an output. This personal installation's permitted use excludes solely automated decisions with legal or similarly significant effects on a person, including decisions about employment, eligibility or access to services. Any proposed use for such decisions, individual profiling or systematic tracking requires a separate assessment before it begins. This use restriction is not a claim that the software technically prevents every misuse."
   },
   "purposes": [
     {
       "name": "Accounts and access requests",
       "data": "Email address, display name, account-request message, profile and avatar, team membership and preferences.",
       "purpose": "Review access requests, provide an account and administer personal and shared workspaces.",
-      "lawfulBasis": null
+      "lawfulBasis": "Legitimate interests in reviewing access requests and operating a controlled personal research workspace. Only information needed to identify the requester, administer access and support the workspace should be used. Providing an email address and authentication details is necessary for an account; an optional profile or request message is not a licence to collect unrelated information. You can object through the contact above."
     },
     {
       "name": "Authentication and security",
       "data": "Password hashes, authentication factors, recovery material, session records and security audit events.",
       "purpose": "Authenticate users, protect sessions and investigate changes and misuse.",
-      "lawfulBasis": null
+      "lawfulBasis": "Legitimate interests in securing accounts and research, preventing unauthorised access and investigating misuse. Authentication factors, session controls and proportionate security records are necessary for that purpose; their use is limited to security and administration. You can object, subject to any overriding grounds that apply to keeping the service secure."
     },
     {
       "name": "Enterprise enquiries",
       "data": "Contact name, work email, organisation, optional role, deployment interest, expected user count, message and submission time.",
       "purpose": "Respond to a request about an installation. The enquiry may also be sent to the operator's configured email recipient.",
-      "lawfulBasis": null
+      "lawfulBasis": "The current personal installation has no configured deployment-enquiry recipient. The proposed basis for any separately enabled, non-marketing enquiry handling is legitimate interests in answering a request initiated by the sender. It does not authorise marketing or a commercial launch. Enquiry collection must remain disabled until its notice, recipient and retention settings have been checked."
     },
     {
       "name": "Research and public-source material",
       "data": "Questions, submitted material, public observations and selected evidence that may identify people, plus saved reports, notes and team contributions.",
       "purpose": "Support user-directed research, evidence review and retained assessments. Selected content may be sent to configured AI or research providers.",
-      "lawfulBasis": null
+      "lawfulBasis": "The proposed basis for necessary and proportionate ordinary personal data in bounded research is legitimate interests in understanding public events and evaluating sources. This requires a purpose-specific necessity and balancing assessment, minimisation, access controls and consideration of the affected person's expectations and possible harm. It does not cover every source or proposed use. Special-category or criminal-offence data requires an additional applicable condition; high-risk or intrusive processing must not begin on the strength of this general statement. You can object and request correction or removal."
     },
     {
       "name": "Notifications and web push",
       "data": "Notification preferences, browser push endpoint and encryption keys, device label and delivery metadata.",
       "purpose": "Send the notifications a user selects. Browser push is enabled through a user action and the browser permission prompt; the browser's push service participates in delivery.",
-      "lawfulBasis": null
+      "lawfulBasis": "Consent for optional browser push and optional notification delivery: enable the relevant channel and choose the notifications you want. Withdraw through notification or device settings; withdrawal does not affect processing before withdrawal. Browser permission alone does not authorise unrelated processing. Necessary account and security messages use the security purpose above, rather than optional-notification consent."
     }
   ],
   "retention": [
@@ -60,7 +60,7 @@
     },
     {
       "name": "Transient private research inputs",
-      "behaviour": "The input receipt lifetime is 15 minutes, bounded further by the process lifetime. Material selected into a saved report follows the saved-record rules."
+      "behaviour": "Input receipts cease to permit access after 15 minutes, or earlier when the process ends. Expired in-memory material is removed on a later store operation or process exit; this is not a promise of physical erasure at exactly 15 minutes. Material selected into a saved report follows the saved-record rules."
     },
     {
       "name": "Sessions and authentication",

@@ -15,20 +15,23 @@ Alex Orr and `alexorr@yahoo.co.uk` for privacy enquiries and complaints on
 Hetzner Cloud hosting in Helsinki, Resend email delivery and OpenAI connections
 (GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use). Those factual fields
 are populated, with evidence in the [operator review pack](PUBLIC_POLICY_REVIEW.md).
-The complaints process, operator/user jurisdictions, other recipients,
-provider processing locations beyond the application host, transfer arrangements, lawful bases,
-retention criteria, public-source assessment, storage assessment and automated
-decision description remain unconfirmed. Installation terms, business disclosures
-(including the applicable address and registration details) and an accessibility
-contact also require the operator's actual wording. No approval has been entered into
+Alex subsequently authorised preparation of the remaining assessments. The draft
+now includes a complaints process, recipient descriptions, manual retention
+criteria, proposed purpose-specific bases, public-source and storage assessments,
+use restrictions, personal-installation terms and accessibility feedback wording.
+Operator jurisdiction and verified international-transfer safeguards remain unset.
+The private assessment retains source-specific sensitive-data, indirect-notice and
+residual-risk questions for review. No final approval has been entered into
 `frontend/src/features/public-policy/approval.json`. Local previews and CI image
 builds remain possible; they do not grant publication or legal approval.
 
 The administrator contact for the separate operator-assisted request procedure
 was approved under KAN-23 on 7 October 2026. It is reused from
 [personal-data operations](PERSONAL_DATA_OPERATIONS.md). The separate 11 October
-contact confirmation extends its use to privacy enquiries and complaints, but
-does not approve the complete notice or complaints procedure. The page retains
+contact confirmation extends its use to privacy enquiries and complaints.
+The subsequent authority to prepare assessments permits drafting the complaints
+procedure and accessibility contact; it does not record approval of unseen final
+wording. The page retains
 the unsupported account-wide export/erasure limits and preserves shared team work.
 
 ## Editing and approval

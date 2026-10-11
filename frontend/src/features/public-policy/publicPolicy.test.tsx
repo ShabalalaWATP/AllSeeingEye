@@ -63,7 +63,7 @@ describe('public policy pages', () => {
     for (const declaration of storageDeclaration)
       expect(screen.getByText(declaration.name)).toBeInTheDocument();
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
-    expect(screen.getAllByText(/Not yet confirmed by the operator/).length).toBeGreaterThan(5);
+    expect(screen.getAllByText(/Not yet confirmed by the operator/).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Your right to object' })).toBeInTheDocument();
     expect(screen.getByText(/not a complete approved retention policy/)).toBeInTheDocument();
   });
@@ -88,12 +88,12 @@ describe('public policy pages', () => {
     expect(screen.getByText(/Shared team work is preserved/)).toBeInTheDocument();
   });
 
-  it('keeps unapproved terms and business facts explicit', async () => {
+  it('shows proposed personal-installation terms while keeping outstanding facts and approval explicit', async () => {
     const { router } = renderApp('/terms', 'anonymous');
     await screen.findByRole('heading', { level: 1, name: 'Terms' });
     expect(screen.getByLabelText('Draft notice')).toHaveTextContent('Publication is blocked');
     expect(
-      screen.getByText(/No software licence or deployment offer is granted/),
+      screen.getByText(/These access rules do not grant a software redistribution licence/),
     ).toBeInTheDocument();
     await act(() => router.navigate('/business'));
     await screen.findByRole('heading', { level: 1, name: 'Business details' });

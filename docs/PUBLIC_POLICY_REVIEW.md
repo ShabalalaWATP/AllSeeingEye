@@ -6,9 +6,11 @@ installation.
 Alex confirmed on 11 October 2026 that this notice covers the current personal
 installation, with Alex Orr as the public operator and `alexorr@yahoo.co.uk` as
 the privacy-enquiry and complaints contact. The host, email service and configured
-AI connections have since been verified. Remaining processing decisions are
-unresolved. Keep unconfirmed content fields and the approval record unset
-until the actual facts and wording are confirmed.
+AI connections have since been verified. Alex then authorised preparation of the
+remaining assessments and wording. Proposed operating commitments and purpose
+assessments now appear in the draft. Jurisdiction and international-transfer
+safeguards remain unset while factual questions are answered; the approval record
+also remains unset until the complete wording is reviewed.
 
 ## What is already established
 
@@ -23,7 +25,9 @@ until the actual facts and wording are confirmed.
 - The contact remains approved for the existing
   [operator-assisted procedure](PERSONAL_DATA_OPERATIONS.md). Alex separately
   confirmed the operator name and wider privacy/complaints contact on 11 October
-  2026. The complaints procedure and accessibility contact remain unconfirmed.
+  2026. The subsequent draft proposes a complaints procedure and reuse of the
+  same address for accessibility feedback under Alex's authority to prepare the
+  remaining wording.
 - Application behaviour and operator retention policy are separate. The existing
   notice describes limited deletion, shared-team records, exports, backups and
   provider copies without promising complete account erasure.
@@ -31,10 +35,10 @@ until the actual facts and wording are confirmed.
 ## Confirmed scope: current personal installation
 
 The draft applies to Alex's current personal installation, with the operator and
-privacy/complaints contact confirmed above. Confirm its users, providers and
-processing. The scope choice does not establish that only Alex has access or that
-optional features are disabled. Record those facts separately. Other installations
-need their own notice.
+privacy/complaints contact confirmed above. A later aggregate database check found
+one account. This does not establish the operator's country, the precise purposes
+of use or a domestic-purpose exemption. Those facts are being clarified. Other
+installations need their own notice.
 No decision about a future commercial service or paid-support offer is inferred.
 
 ## Verified installation providers, 11 October 2026
@@ -60,6 +64,48 @@ The configured OpenAI and Resend endpoints do not establish their processing
 countries, contractual transfer arrangements, account-level retention or training
 settings. Those matters remain part of the separate transfer/retention review.
 
+Further allowlisted runtime checks found feeds, conflict screening, Internet
+Archive capture and browser-push configuration enabled, and no installation-wide
+alert webhook or enquiry-email recipient. The running release predates the new
+enquiry settings and public policy controls. Do not describe prepared controls as
+already deployed or missing old-release settings as verified false flags.
+Log rotation is five 20 MB files per container, with no age guarantee. Current
+cron entries invoke the scheduled-backup helper daily and for a weekly drill;
+they do not specify off-site copying, heartbeat reporting or a keep override.
+No restore test was performed in this assessment.
+
+## Prepared assessments and proposed commitments
+
+The detailed initial DPIA, legitimate interests assessment, processing/recipient
+register and retention schedule are retained in a Git-ignored local review pack
+for Alex, consistent with KAN-185's restricted-draft requirement. They have not
+been uploaded to this public repository or Jira. This public summary records the
+decisions that affect the notice:
+
+- A private complaints route, acknowledgement within 30 days, investigation,
+  updates and an outcome without undue delay; rights requests keep their separate
+  applicable deadline and the route to the ICO remains available.
+- A quarterly manual review of necessity, plus review when an account closes,
+  research ends or a rights request arrives. This is a proposed operating duty,
+  not an implemented deletion job. Unsupported account-wide erasure, audit,
+  notification and external-copy handling remain explicit.
+- Proposed legitimate interests for access administration, security and narrowly
+  assessed ordinary public-event research. Optional delivery uses consent.
+  Enquiry wording is conditional on separate enablement and review.
+- No blanket permission for special-category or criminal-offence data, no blanket
+  indirect-notice exemption and no claim that the site notice informs everyone.
+  Unassessed sensitive, tracking and consequential uses retain high risks and are
+  outside the proposed permitted scope.
+- Personal-installation access rules and accessibility feedback wording. These
+  grant no software licence or commercial offer and do not finish KAN-188's
+  acceptance workflow or KAN-193's full accessibility assessment.
+
+The risk assessment distinguishes existing code, controls prepared for release
+and manual commitments. It identifies residual risks from inaccurate AI claims,
+combining records, sensitive information, location exposure, external disclosure,
+persistent copies and incomplete deletion. It does not certify all current
+processing or authorise a new source or use.
+
 ## Remaining facts and assessments, without credentials
 
 The fields below are in
@@ -73,19 +119,20 @@ are not evidence that a provider is used.
 | `jurisdiction` | Operator location, intended user countries, and any applicable representative or DPO details. |
 | `hosting`, `emailProvider`, `aiProviders`, `otherRecipients` | Provider identities and the hosting location are verified above. Complete the processing-location and recipient assessment for email, AI, push services, external media and research providers. |
 | `internationalTransfers` | Which information leaves the relevant jurisdiction, the assessed transfer arrangement, and how to obtain details of safeguards where needed. |
-| `complaintsProcedure` | The contact is confirmed above. Confirm how complaints are handled, including the actual acknowledgement, investigation and response process. |
-| `retentionCriteria` | Periods or criteria for accounts/requests, saved work, audit/usage records, enquiries, email copies, exports and backups; who performs deletion and reviews exceptions. |
-| `publicSourceAssessment` | Actual source categories, personal-data categories and purposes; sensitive-data handling, how affected people are informed, and any assessed exceptions. |
-| `storageAssessment` | Assessment of the declared cookies, preference storage, optional push and external media, including how choices can be withdrawn. |
-| `automatedDecisions` | Actual use of AI outputs or profiling, any decisions affecting people, human review and applicable safeguards. |
+| `complaintsProcedure` | Proposed procedure is filled. Review the operator's practical handling commitments in the complete wording. |
+| `retentionCriteria` | Proposed manual criteria are filled. Unsupported deletion and external copies remain explicit; no unimplemented fixed erasure deadline is promised. |
+| `publicSourceAssessment` | Proposed boundaries are filled. Complete source/purpose-specific sensitive-data and indirect-notice decisions before allowing those uses. |
+| `storageAssessment` | Technical purposes and withdrawal are described. Do not infer a blanket PECR exception or a complete third-party tracking audit. |
+| `automatedDecisions` | Proposed use restrictions are filled; confirm the actual use context and review changes before consequential or intrusive uses. |
 
 ## Processing decisions to review
 
-Each of the five purpose rows requires its own `lawfulBasis`. A browser permission
-prompt, publicly available source, paid-support plan or passing test does not
-select that basis. Record the chosen basis and supporting assessment, including
-the interests pursued if legitimate interests is chosen. KAN-185 and KAN-187
-cover the related impact/interests assessments and processing/retention records.
+Each of the five purpose rows now has proposed `lawfulBasis` wording supported by
+the initial assessment. A browser permission prompt, public source or passing
+test does not prove that every use meets the basis. In particular, the research
+row requires a purpose-specific necessity and balancing decision and any additional
+sensitive-data condition. KAN-185 and KAN-187 retain their review and factual
+acceptance requirements; this continuation does not mark them complete.
 
 | Purpose | Review question |
 | --- | --- |
@@ -100,12 +147,12 @@ route visible without asserting that every purpose uses legitimate interests.
 
 ## Related publication inputs
 
-[`service.json`](../frontend/src/features/public-policy/service.json) also needs
-`terms`, `businessDisclosure` and `accessibilityContact`. These are shared release
-prerequisites for the public routes; the existing gate requires all three.
-KAN-164/188 cover offer/terms/business decisions and KAN-193 covers accessibility.
-Do not treat the React Bits permission request as a grant or enter hypothetical
-business details merely to pass this gate.
+[`service.json`](../frontend/src/features/public-policy/service.json) contains
+proposed personal-installation terms, operator disclosures and accessibility
+contact wording. They do not invent a company, registration or address and offer
+no paid service. KAN-164/188 cover the separate offer/licensing/acceptance scope
+and KAN-193 covers full accessibility work. The React Bits request remains a
+request, not a grant. The complete content still requires final review.
 
 ## Review and publication sequence
 
