@@ -4,6 +4,28 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-165 notice finalisation, 11 October 2026
+
+The framework is on main through PR #192. PR #198 completes the installation
+wording and fixes approved-state text and publication validation. See the
+[operator decision record](PUBLIC_POLICY_REVIEW.md).
+
+- [x] Correct notice rendering, add the separate right to object and align both validators.
+- [x] Confirm personal scope, operator/contact and the running hosting, email and AI providers.
+- [x] Prepare a restricted initial DPIA/LIA, register and retention schedule.
+- [x] Adopt the UK privacy framework and supported personal-use policies under Alex's explicit delegation.
+- [x] Complete transfer disclosures from verified hosting and current provider terms, preserving audit limits.
+- [x] Record delegated exact-content approval; both publication checks and independent reviews pass.
+- [x] Pass full frontend lint, both TypeScript checks, build/bundle limits and built-page review.
+
+Exact published-head CI and authorised integration are recorded on
+[PR #198](https://github.com/ShabalalaWATP/AllSeeingEye/pull/198) and KAN-165.
+The production release boundary remains separate from implementation closure.
+
+KAN-185 and KAN-187 retain their separate assessment/account-evidence criteria.
+The notice does not certify all processing, and production requires the reviewed
+manual controller/migration rollout. No wider compliance ticket is closed here.
+
 ### Approved operator procedures, 7 October 2026
 
 Main `33990205` passed its checks and automatic deployment after PR #134.

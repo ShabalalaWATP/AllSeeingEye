@@ -16,7 +16,7 @@ export default function BusinessPage() {
             [
               ['controllerName', 'Controller identity'],
               ['controllerContact', 'Operator contact'],
-              ['jurisdiction', 'Applicable jurisdictions and representatives'],
+              ['jurisdiction', 'Privacy framework and applicable law'],
             ] as const
           ).map(([key, label]) => (
             <div key={key}>

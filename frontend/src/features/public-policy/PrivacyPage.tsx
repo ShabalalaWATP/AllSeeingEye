@@ -9,7 +9,7 @@ const operatorLabels: Record<string, string> = {
   controllerContact: 'Controller contact',
   complaintsContact: 'Data protection complaints contact',
   complaintsProcedure: 'Complaints handling procedure',
-  jurisdiction: 'Applicable jurisdictions and representatives',
+  jurisdiction: 'Privacy framework and applicable law',
   hosting: 'Hosting provider and location',
   emailProvider: 'Email provider',
   aiProviders: 'Configured AI providers',
@@ -35,9 +35,12 @@ export default function PrivacyPage() {
         </aside>
       )}
       <p>
-        Notice version: {privacyNotice.version}. This page describes the application and identifies
-        decisions the installation operator must confirm.
+        Notice version: {privacyNotice.version}.{' '}
+        {noticeApproved
+          ? 'This notice describes how this installation handles information.'
+          : 'This page describes the application and identifies decisions the installation operator must confirm.'}
       </p>
+      <p>{privacyNotice.scope}</p>
       <nav aria-label="On this page">
         <ul>
           <li>
@@ -54,6 +57,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <a href="#rights">Rights, requests and complaints</a>
+          </li>
+          <li>
+            <a href="#object">Your right to object</a>
           </li>
         </ul>
       </nav>
@@ -94,7 +100,9 @@ export default function PrivacyPage() {
       </PolicySection>
       <PolicySection id="retention" title="Retention">
         <p>
-          The table describes implemented behaviour. It is not a complete approved retention policy.
+          {noticeApproved
+            ? 'The table describes application behaviour. Installation-specific retention periods and criteria are set out under Controller and installation.'
+            : 'The table describes implemented behaviour. It is not a complete approved retention policy.'}
         </p>
         <div className="policy-table">
           <table>
@@ -168,12 +176,21 @@ export default function PrivacyPage() {
           approved administrator contact and the supported actions.
         </p>
         <p>
-          The operator must confirm the separate data protection complaints contact and handling
-          procedure shown above before publication. You can also{' '}
+          {noticeApproved
+            ? 'For data protection complaints, use the contact and handling procedure shown under Controller and installation.'
+            : 'The operator must confirm the separate data protection complaints contact and handling procedure shown above before publication.'}{' '}
+          You can also{' '}
           <a href="https://ico.org.uk/make-a-complaint/" rel="noreferrer">
             raise a concern with the Information Commissioner’s Office
           </a>
           . The appropriate regulator depends on your circumstances and applicable law.
+        </p>
+      </PolicySection>
+      <PolicySection id="object" title="Your right to object">
+        <p>{privacyNotice.objection}</p>
+        <p>
+          <Link to="/privacy/requests">Make a personal-data request or objection</Link> using the
+          request-handling contact.
         </p>
       </PolicySection>
       <PolicySection id="references" title="Reference information">

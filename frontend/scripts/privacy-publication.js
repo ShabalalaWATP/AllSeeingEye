@@ -29,7 +29,11 @@ export function publicationProblems(notice, approval, contentHash, service = {})
   const problems = [];
   const check = (value, label) => {
     if (typeof value !== 'string' || value.trim().length < 3) problems.push(`Missing ${label}`);
-    else if (/\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation)\b/i.test(value))
+    else if (
+      /\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation|not (?:yet )?(?:decided|confirmed|approved)|to be confirmed)\b/i.test(
+        value,
+      )
+    )
       problems.push(`Unresolved placeholder in ${label}`);
   };
   for (const key of requiredOperatorFields) check(notice.operator?.[key], `operator.${key}`);

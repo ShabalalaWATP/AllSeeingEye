@@ -1,4 +1,6 @@
-import { privacyNotice } from './content';
+import { Link } from 'react-router';
+
+import { noticeApproved, privacyNotice } from './content';
 import { PolicyLayout, PolicySection } from './PolicyLayout';
 
 export default function PersonalDataPage() {
@@ -15,8 +17,15 @@ export default function PersonalDataPage() {
           a copy, correction or removal of personal data.
         </p>
         <p>
-          This is the approved request-handling contact. The draft privacy notice separately
-          identifies controller and complaints details still awaiting confirmation.
+          This is the approved request-handling contact.{' '}
+          {noticeApproved ? (
+            <>
+              The controller and complaints details are in{' '}
+              <Link to="/privacy">Privacy and storage</Link>.
+            </>
+          ) : (
+            'The draft privacy notice identifies the controller, privacy and complaints contacts, and any remaining details awaiting confirmation.'
+          )}
         </p>
       </PolicySection>
       <PolicySection id="procedure" title="What happens next">

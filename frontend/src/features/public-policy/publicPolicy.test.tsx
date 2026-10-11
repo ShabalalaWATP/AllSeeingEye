@@ -10,6 +10,18 @@ import { useAuthStore } from '@/stores/auth';
 import { storageDeclaration } from './content';
 
 vi.mock('virtual:policy-approval', () => ({ default: false }));
+// Exercise incomplete installations independently of the approved shipped notice.
+vi.mock('./privacy.json', async (original) => {
+  const { default: notice } = await original<{
+    default: { operator: Record<string, string | null> };
+  }>();
+  return {
+    default: {
+      ...notice,
+      operator: { ...notice.operator, jurisdiction: null, internationalTransfers: null },
+    },
+  };
+});
 
 describe('public policy pages', () => {
   it.each([
@@ -63,7 +75,9 @@ describe('public policy pages', () => {
     for (const declaration of storageDeclaration)
       expect(screen.getByText(declaration.name)).toBeInTheDocument();
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
-    expect(screen.getAllByText(/Not yet confirmed by the operator/).length).toBeGreaterThan(5);
+    expect(screen.getAllByText(/Not yet confirmed by the operator/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Your right to object' })).toBeInTheDocument();
+    expect(screen.getByText(/not a complete approved retention policy/)).toBeInTheDocument();
   });
 
   it.each([HttpResponse.json({ enterprise_enquiry_retention_days: 99999 }), HttpResponse.error()])(
@@ -86,17 +100,19 @@ describe('public policy pages', () => {
     expect(screen.getByText(/Shared team work is preserved/)).toBeInTheDocument();
   });
 
-  it('keeps unapproved terms and business facts explicit', async () => {
+  it('shows proposed personal-installation terms while keeping outstanding facts and approval explicit', async () => {
     const { router } = renderApp('/terms', 'anonymous');
     await screen.findByRole('heading', { level: 1, name: 'Terms' });
     expect(screen.getByLabelText('Draft notice')).toHaveTextContent('Publication is blocked');
     expect(
-      screen.getByText(/No software licence or deployment offer is granted/),
+      screen.getByText(/These access rules do not grant a software redistribution licence/),
     ).toBeInTheDocument();
     await act(() => router.navigate('/business'));
     await screen.findByRole('heading', { level: 1, name: 'Business details' });
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
-    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(3);
+    expect(screen.getByText('Alex Orr')).toBeInTheDocument();
+    expect(screen.getByText('alexorr@yahoo.co.uk')).toBeInTheDocument();
+    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(1);
   });
 
   it('keeps public links keyboard reachable and provides structural accessibility', async () => {

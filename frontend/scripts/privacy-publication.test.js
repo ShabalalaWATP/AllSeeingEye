@@ -110,3 +110,18 @@ test('matching privacy approval cannot release incomplete service details', () =
     }
   }
 });
+
+test('operator undecided wording cannot be released even with a matching approval', () => {
+  for (const value of ['Not decided', 'Not yet confirmed', 'Not yet approved', 'To be confirmed']) {
+    const notice = ready();
+    notice.operator.hosting = value;
+    assert.ok(publicationProblems(notice, approval, 'a'.repeat(64), service).length > 0);
+    const purposeNotice = ready();
+    purposeNotice.purposes[0].lawfulBasis = value;
+    assert.ok(publicationProblems(purposeNotice, approval, 'a'.repeat(64), service).length > 0);
+    assert.ok(
+      publicationProblems(ready(), approval, 'a'.repeat(64), { ...service, terms: value }).length >
+        0,
+    );
+  }
+});

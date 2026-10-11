@@ -7,30 +7,51 @@ structured React text, local styles and links, with no provider media. Privacy r
 only the same-origin public `/api/site` retention setting without credentials;
 failure is shown as unavailable, never as a confirmed default.
 
-## Current status: draft, publication blocked
+## Current status: wording finalised under delegated approval
 
-The controller identity and contacts, complaints process, jurisdictions, hosting,
-email and AI processors, other recipients, transfer arrangements, lawful bases,
-retention criteria, public-source assessment, storage assessment and automated
-decision description remain unconfirmed. Installation terms, business disclosures
-(including the applicable address and registration details) and an accessibility
-contact also require the operator's actual wording. No approval has been entered into
-`frontend/src/features/public-policy/approval.json`. Local previews and CI image
-builds remain possible; they do not grant publication or legal approval.
+Alex confirmed the current personal installation, the public operator name
+Alex Orr and `alexorr@yahoo.co.uk` for privacy enquiries and complaints on
+11 October 2026. Read-only checks verified Hetzner Cloud hosting in Helsinki,
+Resend email delivery and OpenAI API connections (GPT-5.6 Luna globally and
+GPT-5.6 Sol for user-specific use).
 
-The administrator contact for the separate operator-assisted request procedure
-was approved under KAN-23 on 7 October 2026. It is reused from
-[personal-data operations](PERSONAL_DATA_OPERATIONS.md). That decision does not
-establish the controller's identity or approve the wider notice. The page retains
-the unsupported account-wide export/erasure limits and preserves shared team work.
+Alex subsequently instructed: "You provide those, you have my permission, finish
+this ticket." This delegates completion and adoption of the remaining notice
+wording and operating commitments to Codex. It is recorded as delegated approval,
+not a claim that Alex personally reviewed an exact hash. The
+[operator decision record](PUBLIC_POLICY_REVIEW.md) distinguishes verified facts,
+adopted policy and the remaining operational compliance work.
+
+The notice adopts a UK privacy framework without inventing residence, a company,
+an address or a representative. It states the verified host location, Resend's
+published US storage and the standard OpenAI/Resend transfer terms, with links to
+the safeguards and a contact route. It does not certify account-specific contracts,
+transfer-risk assessments, regional processing or zero retention. The adopted
+complaints, retention, research boundaries and personal-installation terms retain
+all supported-action and external-copy limitations.
+
+The exact-content manifest attributes finalisation to Alex's delegation. Its hash
+must match the complete policy inputs. Approval of this notice does not close
+KAN-185/187, clear high-risk processing, adopt the pending software licence or
+authorise an unreviewed production migration. The controller upgrade and rollout
+remain distinct release work.
+
+The administrator contact for the operator-assisted request procedure was
+approved under KAN-23 on 7 October 2026. The 11 October confirmation extends its
+use to privacy enquiries and complaints, and the delegated finalisation adopts
+its use for accessibility feedback. Account-wide export/erasure limits and shared
+team ownership requirements remain explicit.
 
 ## Editing and approval
+
+Use the [operator review pack](PUBLIC_POLICY_REVIEW.md) to collect the actual
+installation facts and processing decisions before completing the notice.
 
 The typed entry is `frontend/src/features/public-policy/content.ts`. Edit
 `privacy.json` for installation facts and wording, `service.json` for terms,
 business disclosures and accessibility contact, and `storage.json` for
-application-owned storage. Null decisions remain visible placeholders. The terms
-draft grants no software licence or deployment offer. Renderers,
+application-owned storage. Null decisions remain visible placeholders. The installation terms
+grant no software licence or deployment offer. Renderers,
 styles and generated credits live beside these inputs. Do not substitute an assumed
 lawful basis, invented retention period or a provider's marketing claim.
 
@@ -40,9 +61,11 @@ lawful basis, invented retention period or a provider's marketing claim.
    A checkbox or successful software test cannot determine legal compliance.
 3. Run `pnpm check:policy`, the UI tests and normal frontend checks. Regenerate
    credits with `pnpm gen:attributions` after changing the source register.
-4. Run `pnpm check:publication`. Its expected failure lists unresolved decisions and
-   prints the content SHA256 without reading application secrets.
-5. Only after actual approval, record the approver, calendar date and exact content
+4. Run `pnpm check:publication`. Incomplete or stale content fails with the
+   unresolved decisions and content SHA256; a matching approved manifest passes.
+   The check does not read application secrets.
+5. Review the version label and complete rendered notice. Only after actual approval, including an explicit delegation to finalise
+   the stated scope, record the approver, calendar date and exact content
    hash in `approval.json`. Do not invent an approval as a build fix.
 6. Re-run the publication check and review the built pages. Changed policy text,
    renderers, styles or attribution content invalidate the approval.
@@ -61,15 +84,19 @@ controller set. It parses the target Git revision's regular blobs without execut
 candidate code. `deploy_vps.py` calls it before image inspection, builds, backup or
 cutover, including check-only runs. Missing files, invalid dates, placeholders,
 missing lawful bases, incomplete service details and a stale or absent approval
-stop deployment. Both Node and Python checks require all three service fields,
+stop deployment. Both checks parse every required JSON input and reject explicit
+unresolved wording, including "not decided", "not yet confirmed" and "not yet
+approved", even if a matching hash is supplied. These checks catch known draft
+markers; they do not establish that arbitrary prose is complete or accurate.
+Both Node and Python checks require all three service fields,
 even when an approval hash matches the incomplete content.
 
 This controller change requires an operator-reviewed manual installation of the
 matching controller files. The repository does not install the host controller.
 An old controller rejects the changed `deploy_vps.py` under its existing upgrade
 rule; it must not be bypassed. Manual releases must honour the same approval
-boundary. Ordinary Docker/SBOM builds remain available for review. No live controller
-installation, deployment or legal approval occurred.
+boundary. Ordinary Docker/SBOM builds remain available for review. This continuation records notice approval only. No live controller installation
+or production deployment is implied by that record.
 
 ## Source and storage maintenance
 
@@ -91,7 +118,7 @@ default choice stays in page memory. Withdrawal and storage-failure behaviour ar
 described in the notice. Direct map/stream requests are separately declared. A media
 gate does not establish that a consent banner is unnecessary.
 
-KAN-172 supplies deferred public bootstrap and noindex metadata for all six draft
+KAN-172 supplies deferred public bootstrap and noindex metadata for all six policy
 routes. Its device motion key moves to `components/brand/localMotionPause.ts`; the
 storage declaration remains `ase.brand-motion`. Integrate and test both changes
 together before treating the whole-App no-private-request boundary as verified.

@@ -6230,3 +6230,61 @@ between measurements. The closure matrix identifies two non-code Done tickets,
 27 implementation tickets awaiting authorised integration and three operator/live
 items. Main has not been merged and production has not changed. Final aggregate
 CI and release approval remain separate requirements.
+
+## 11 October 2026: continue KAN-165 publication readiness
+
+A fresh review of integrated main found that approved policy pages retained draft
+instructions, explicit undecided phrases escaped the publication check, and Python
+preflight parsed fewer required JSON inputs than the frontend. The continuation
+corrects those three defects and makes the right to object a separate section in
+the structured notice. The two validators still require exact-content approval.
+
+The operator review pack groups the outstanding installation facts and processing
+decisions without inventing providers, lawful bases or business details. Alex
+initially answered that these were undecided, then confirmed that
+the notice covers the current personal installation, and the draft now states that
+scope. Alex then confirmed Alex Orr and `alexorr@yahoo.co.uk` as the public operator
+and privacy/complaints contact. A subsequent read-only inspection of the running
+installation verified Hetzner Cloud in Helsinki, Resend SMTP and OpenAI's
+GPT-5.6 Luna global connection plus GPT-5.6 Sol for user-specific use. These three
+provider fields are now filled; the review pack records the evidence and limits.
+No credentials, personal records or research content were selected, and no model
+calls or production changes were made. Provider processing locations outside the
+application host, contractual safeguards and remaining processing decisions still
+need assessment.
+The approval manifest stays unset and publication remains blocked.
+Focused security review found no actionable issue. Final check results and the PR
+are recorded in the KAN-165 handoff; this entry does not claim a live release.
+
+Alex subsequently authorised preparation of the remaining assessments. The initial
+private DPIA/LIA, processing register and retention schedule distinguish existing
+code from prepared release controls and proposed manual duties. The public draft
+now includes complaints handling, recipient descriptions, quarterly necessity
+reviews, purpose-specific bases and personal-installation use/accessibility terms.
+Sensitive-data and indirect-notice decisions remain purpose-specific; no blanket
+exemption or completed high-risk review is asserted. Jurisdiction and transfer
+safeguards stay unset pending facts, and complete-wording approval stays unset.
+The private assessment is Git-ignored, not published in the repository or Jira.
+
+
+## 11 October 2026: finalise KAN-165 under delegated authority
+
+Alex explicitly delegated the remaining notice decisions and asked for the ticket
+to be finished. The final wording adopts a UK privacy framework without inventing
+residence, explains Finland hosting and international provider processing, links
+the standard OpenAI/Resend safeguards and retains the limits of account verification.
+The prepared operating commitments and personal-installation terms are adopted;
+high-risk uses and wider KAN-185/187 work are not certified or closed. The exact
+approval records delegated finalisation rather than claiming Alex read a hash.
+Incomplete-installation tests now use explicit fixtures instead of depending on
+missing real fields. No publication validator or deployment protection is relaxed.
+Final checks, integration and deployment evidence are recorded separately.
+
+Local finalisation checks passed: 18 DOM policy cases, 13 Node policy checks,
+12 Python publication cases, full frontend lint, both TypeScript configurations,
+production build and all bundle budgets. Both real publication checks accept the
+recorded content. Built privacy, business, terms and accessibility pages show the
+final wording without draft banners; unavailable API retention stays explicit.
+Independent quality/security review found no remaining actionable issue. Four
+local guide links, file length and whitespace checks passed. No new coverage
+measurement was made for this content follow-up; CI retains the 90% suite gates.
