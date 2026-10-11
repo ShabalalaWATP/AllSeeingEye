@@ -64,6 +64,8 @@ describe('public policy pages', () => {
       expect(screen.getByText(declaration.name)).toBeInTheDocument();
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
     expect(screen.getAllByText(/Not yet confirmed by the operator/).length).toBeGreaterThan(5);
+    expect(screen.getByRole('heading', { name: 'Your right to object' })).toBeInTheDocument();
+    expect(screen.getByText(/not a complete approved retention policy/)).toBeInTheDocument();
   });
 
   it.each([HttpResponse.json({ enterprise_enquiry_retention_days: 99999 }), HttpResponse.error()])(

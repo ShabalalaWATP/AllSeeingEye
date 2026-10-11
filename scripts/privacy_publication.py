@@ -60,9 +60,18 @@ def validate_publication(files: dict[str, str]) -> None:
             "Public policy publication blocked: required content missing."
         )
     try:
-        notice = json.loads(files["privacy.json"])
-        service = json.loads(files["service.json"])
-        approval = json.loads(files["approval.json"])
+
+        def reject_constant(_value: str) -> None:
+            # Match JSON.parse: Python otherwise accepts NaN and infinities.
+            raise ValueError("Non-standard JSON constant")
+
+        content = {
+            name: json.loads(files[name], parse_constant=reject_constant)
+            for name in REQUIRED_FILES
+        }
+        notice = content["privacy.json"]
+        service = content["service.json"]
+        approval = content["approval.json"]
         operator = notice["operator"]
         purposes = notice["purposes"]
 
@@ -71,7 +80,8 @@ def validate_publication(files: dict[str, str]) -> None:
                 isinstance(value, str)
                 and len(value.strip()) >= 3
                 and not re.search(
-                    r"\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation)\b",
+                    r"\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation|"
+                    r"not (?:yet )?(?:decided|confirmed|approved)|to be confirmed)\b",
                     value,
                     re.IGNORECASE,
                 )

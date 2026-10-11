@@ -4,6 +4,22 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-165 continuation, 11 October 2026
+
+The public policy framework is on main through PR #192. The current continuation
+corrects contradictory approved-state text, adds a distinct right-to-object
+section, rejects explicit undecided wording and aligns required-JSON validation
+between preview and deployment. See the [operator review pack](PUBLIC_POLICY_REVIEW.md)
+for the remaining factual and processing decisions.
+
+- [x] Implement the focused notice and publication-check corrections.
+- [ ] Confirm which installation the notice describes and complete its actual facts.
+- [ ] Review and approve the complete wording and exact content hash.
+- [ ] Complete review/CI and obtain separate release approval for the continuation.
+
+The actual approval remains unset. A prepared notice or software test does not
+complete the operator decisions; KAN-165 remains In Progress.
+
 ### Approved operator procedures, 7 October 2026
 
 Main `33990205` passed its checks and automatic deployment after PR #134.

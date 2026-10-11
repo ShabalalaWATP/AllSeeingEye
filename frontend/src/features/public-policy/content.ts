@@ -18,6 +18,7 @@ export interface PrivacyNotice {
   retention: { name: string; behaviour: string }[];
   requestProcedure: { contact: string; approvedOn: string; source: string; steps: string[] };
   rights: string;
+  objection: string;
   publicSources: string;
   externalMedia: string;
   references: { label: string; url: string }[];

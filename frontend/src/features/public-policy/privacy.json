@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-10-draft",
+  "version": "2026-10-11-draft",
   "operator": {
     "controllerName": null,
     "controllerContact": null,
@@ -71,7 +71,7 @@
     },
     {
       "name": "Audit, usage, backups and external copies",
-      "behaviour": "An installation-specific retention decision is still required. Backups, email copies, exports and information already delivered to providers are separate from application deletion; the application cannot recall them."
+      "behaviour": "Retention periods and criteria are installation-specific and are described under Controller and installation. Backups, email copies, exports and information already delivered to providers are separate from application deletion; the application cannot recall them."
     }
   ],
   "requestProcedure": {
@@ -87,6 +87,7 @@
     ]
   },
   "rights": "Depending on the applicable law and processing, you may have rights to access, rectification, erasure, restriction, objection and portability, and to withdraw consent where processing relies on it. These rights have conditions and exceptions. The supported request procedure below does not limit your legal rights.",
+  "objection": "Where processing relies on legitimate interests or a public task, you may object for reasons relating to your situation. You can always object to use of your personal data for direct marketing. Use the personal-data request procedure to identify the processing concerned; other objections are assessed under the applicable law.",
   "publicSources": "Public-source material can include names, public roles, images, statements, locations and other information about people. A source being public does not remove privacy obligations or establish permission for every reuse. The operator must assess the actual sources, sensitive information, purposes and how affected people are informed. This page alone does not establish that indirect-collection notice obligations have been met.",
   "externalMedia": "Maps and selected camera media may connect directly to their tile, imagery or stream hosts, which receive connection information including your IP address. TradingView, YouTube and IPCamLive embeds stay unloaded until you choose to load them, unless you have explicitly remembered a provider choice. A remembered session choice ends on reload or sign-out; keeping it across visits requires the separate browser-choice checkbox. Withdraw remembered choices under Settings, External media, or clear this site's browser data. Withdrawal cannot recall a request already sent. YouTube uses its youtube-nocookie.com embed host; this does not establish that all provider storage or tracking is absent.",
   "references": [

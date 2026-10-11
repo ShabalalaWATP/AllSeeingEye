@@ -51,6 +51,52 @@ def candidate():
 
 
 class PolicyValidationTests(unittest.TestCase):
+    def test_malformed_required_json_is_blocked_even_with_matching_approval(self):
+        for name in ("storage.json", "attributions.generated.json"):
+            for value in (
+                "{private invalid content",
+                "[NaN]",
+                "[Infinity]",
+                "[-Infinity]",
+            ):
+                files = candidate()
+                files[name] = value
+                approval = json.loads(files["approval.json"])
+                approval["contentSha256"] = policy_hash(files)
+                files["approval.json"] = json.dumps(approval)
+                with self.subTest(name=name, value=value):
+                    with self.assertRaises(PublicationError) as caught:
+                        validate_publication(files)
+                    self.assertNotIn("private", str(caught.exception))
+
+    def test_undecided_wording_cannot_be_released_with_matching_approval(self):
+        for value in (
+            "Not decided",
+            "Not yet confirmed",
+            "Not yet approved",
+            "To be confirmed",
+        ):
+            for field in ("operator", "lawfulBasis", "service"):
+                files = candidate()
+                notice = json.loads(files["privacy.json"])
+                service = json.loads(files["service.json"])
+                if field == "operator":
+                    notice["operator"]["hosting"] = value
+                elif field == "lawfulBasis":
+                    notice["purposes"][0]["lawfulBasis"] = value
+                else:
+                    service["terms"] = value
+                files["privacy.json"] = json.dumps(notice)
+                files["service.json"] = json.dumps(service)
+                approval = json.loads(files["approval.json"])
+                approval["contentSha256"] = policy_hash(files)
+                files["approval.json"] = json.dumps(approval)
+                with (
+                    self.subTest(value=value, field=field),
+                    self.assertRaises(PublicationError),
+                ):
+                    validate_publication(files)
+
     def test_changed_service_wording_requires_fresh_approval(self):
         files = candidate()
         validate_publication(files)

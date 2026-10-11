@@ -6230,3 +6230,18 @@ between measurements. The closure matrix identifies two non-code Done tickets,
 27 implementation tickets awaiting authorised integration and three operator/live
 items. Main has not been merged and production has not changed. Final aggregate
 CI and release approval remain separate requirements.
+
+## 11 October 2026: continue KAN-165 publication readiness
+
+A fresh review of integrated main found that approved policy pages retained draft
+instructions, explicit undecided phrases escaped the publication check, and Python
+preflight parsed fewer required JSON inputs than the frontend. The continuation
+corrects those three defects and makes the right to object a separate section in
+the structured notice. The two validators still require exact-content approval.
+
+The operator review pack groups the outstanding installation facts and processing
+decisions without inventing providers, lawful bases or business details. Alex's
+previous answer remains that these are undecided; the intended installation is
+being clarified. The approval manifest stays unset and publication remains blocked.
+Focused security review found no actionable issue. Final check results and the PR
+are recorded in the KAN-165 handoff; this entry does not claim a live release.

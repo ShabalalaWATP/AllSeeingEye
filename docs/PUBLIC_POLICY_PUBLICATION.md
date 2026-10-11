@@ -26,6 +26,9 @@ the unsupported account-wide export/erasure limits and preserves shared team wor
 
 ## Editing and approval
 
+Use the [operator review pack](PUBLIC_POLICY_REVIEW.md) to collect the actual
+installation facts and processing decisions before completing the notice.
+
 The typed entry is `frontend/src/features/public-policy/content.ts`. Edit
 `privacy.json` for installation facts and wording, `service.json` for terms,
 business disclosures and accessibility contact, and `storage.json` for
@@ -42,7 +45,8 @@ lawful basis, invented retention period or a provider's marketing claim.
    credits with `pnpm gen:attributions` after changing the source register.
 4. Run `pnpm check:publication`. Its expected failure lists unresolved decisions and
    prints the content SHA256 without reading application secrets.
-5. Only after actual approval, record the approver, calendar date and exact content
+5. Review the version label and complete rendered notice. Only after actual
+   approval, record the approver, calendar date and exact content
    hash in `approval.json`. Do not invent an approval as a build fix.
 6. Re-run the publication check and review the built pages. Changed policy text,
    renderers, styles or attribution content invalidate the approval.
@@ -61,7 +65,11 @@ controller set. It parses the target Git revision's regular blobs without execut
 candidate code. `deploy_vps.py` calls it before image inspection, builds, backup or
 cutover, including check-only runs. Missing files, invalid dates, placeholders,
 missing lawful bases, incomplete service details and a stale or absent approval
-stop deployment. Both Node and Python checks require all three service fields,
+stop deployment. Both checks parse every required JSON input and reject explicit
+unresolved wording, including "not decided", "not yet confirmed" and "not yet
+approved", even if a matching hash is supplied. These checks catch known draft
+markers; they do not establish that arbitrary prose is complete or accurate.
+Both Node and Python checks require all three service fields,
 even when an approval hash matches the incomplete content.
 
 This controller change requires an operator-reviewed manual installation of the
