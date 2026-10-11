@@ -15,7 +15,8 @@ for the remaining factual and processing decisions.
 - [x] Implement the focused notice and publication-check corrections.
 - [x] Confirm the notice covers Alex's current personal installation.
 - [x] Confirm Alex Orr and `alexorr@yahoo.co.uk` as public operator/privacy/complaints details.
-- [ ] Complete that installation's actual operator/provider and processing facts.
+- [x] Verify current hosting (Hetzner, Helsinki), email (Resend) and AI (OpenAI Luna/Sol) from the running installation, and populate the draft.
+- [ ] Complete remaining operator, recipient, transfer, retention and processing assessments.
 - [ ] Review and approve the complete wording and exact content hash.
 - [ ] Complete review/CI and obtain separate release approval for the continuation.
 

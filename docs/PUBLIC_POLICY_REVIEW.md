@@ -1,11 +1,13 @@
 # KAN-165 operator review pack
 
 Prepared 11 October 2026. This is a review aid for the existing public pages,
-not an approved notice or a record of the installation's actual providers.
+not an approved notice. The provider facts below were checked against the running
+installation.
 Alex confirmed on 11 October 2026 that this notice covers the current personal
 installation, with Alex Orr as the public operator and `alexorr@yahoo.co.uk` as
-the privacy-enquiry and complaints contact. Provider and processing decisions
-remain unresolved. Keep unconfirmed content fields and the approval record unset
+the privacy-enquiry and complaints contact. The host, email service and configured
+AI connections have since been verified. Remaining processing decisions are
+unresolved. Keep unconfirmed content fields and the approval record unset
 until the actual facts and wording are confirmed.
 
 ## What is already established
@@ -35,7 +37,30 @@ optional features are disabled. Record those facts separately. Other installatio
 need their own notice.
 No decision about a future commercial service or paid-support offer is inferred.
 
-## Facts to supply, without credentials
+## Verified installation providers, 11 October 2026
+
+Read-only checks at approximately 20:03 UTC established these facts for the running
+installation at `allseeingeyeosint.com`, whose checkout was `13efceef48efbc6d5f2895e60c55076db5d40e3f`:
+
+| Notice field | Verified fact | Evidence |
+| --- | --- | --- |
+| `hosting` | Hetzner Cloud, Helsinki, Finland (EU). | The host's Hetzner metadata returned `eu-central` and `hel1-dc2`. Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies `hel1-dc2` as Helsinki. |
+| `emailProvider` | Resend, using encrypted SMTP. | The running API settings identify `smtp.resend.com` and TLS. Earlier KAN-22 evidence records actual delivery, not just a configured default. |
+| `aiProviders` | OpenAI API, GPT-5.6 Luna as the global connection and GPT-5.6 Sol for user-specific use. | A database transaction set to read-only selected provider/model/endpoint and scope types. Both enabled profiles use `api.openai.com`; bindings select `gpt-5.6-luna` globally and `gpt-5.6-sol` for a user. Aggregate usage records also establish prior calls. |
+
+The inspection did not select credentials, encrypted keys, user identities,
+prompts or research content, and made no model calls or production changes.
+Only provider identity and necessary configuration facts are recorded here;
+host access details remain private. These facts populate the draft without
+approving its wording. Recheck them when routing or deployment changes.
+
+The models are selected by the applicable scope; both do not receive every task.
+See [AI connections and inputs](AI.md) for routing and submitted-material behaviour.
+The configured OpenAI and Resend endpoints do not establish their processing
+countries, contractual transfer arrangements, account-level retention or training
+settings. Those matters remain part of the separate transfer/retention review.
+
+## Remaining facts and assessments, without credentials
 
 The fields below are in
 [`privacy.json`](../frontend/src/features/public-policy/privacy.json).
@@ -46,7 +71,7 @@ are not evidence that a provider is used.
 | Fields | Information needed for the wording |
 | --- | --- |
 | `jurisdiction` | Operator location, intended user countries, and any applicable representative or DPO details. |
-| `hosting`, `emailProvider`, `aiProviders`, `otherRecipients` | Actual service/provider names, processing locations, information sent to each, and relevant recipients such as push services, external media and research providers. |
+| `hosting`, `emailProvider`, `aiProviders`, `otherRecipients` | Provider identities and the hosting location are verified above. Complete the processing-location and recipient assessment for email, AI, push services, external media and research providers. |
 | `internationalTransfers` | Which information leaves the relevant jurisdiction, the assessed transfer arrangement, and how to obtain details of safeguards where needed. |
 | `complaintsProcedure` | The contact is confirmed above. Confirm how complaints are handled, including the actual acknowledgement, investigation and response process. |
 | `retentionCriteria` | Periods or criteria for accounts/requests, saved work, audit/usage records, enquiries, email copies, exports and backups; who performs deletion and reviews exceptions. |

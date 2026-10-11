@@ -6244,8 +6244,14 @@ decisions without inventing providers, lawful bases or business details. Alex
 initially answered that these were undecided, then confirmed that
 the notice covers the current personal installation, and the draft now states that
 scope. Alex then confirmed Alex Orr and `alexorr@yahoo.co.uk` as the public operator
-and privacy/complaints contact. Actual users, providers and processing decisions
-still need confirmation.
+and privacy/complaints contact. A subsequent read-only inspection of the running
+installation verified Hetzner Cloud in Helsinki, Resend SMTP and OpenAI's
+GPT-5.6 Luna global connection plus GPT-5.6 Sol for user-specific use. These three
+provider fields are now filled; the review pack records the evidence and limits.
+No credentials, personal records or research content were selected, and no model
+calls or production changes were made. Provider processing locations outside the
+application host, contractual safeguards and remaining processing decisions still
+need assessment.
 The approval manifest stays unset and publication remains blocked.
 Focused security review found no actionable issue. Final check results and the PR
 are recorded in the KAN-165 handoff; this entry does not claim a live release.

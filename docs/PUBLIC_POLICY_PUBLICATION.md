@@ -11,8 +11,12 @@ failure is shown as unavailable, never as a confirmed default.
 
 Alex confirmed the current personal installation, the public operator name
 Alex Orr and `alexorr@yahoo.co.uk` for privacy enquiries and complaints on
-11 October 2026. The complaints process, jurisdictions, hosting,
-email and AI processors, other recipients, transfer arrangements, lawful bases,
+11 October 2026. Read-only checks of the running installation also verified
+Hetzner Cloud hosting in Helsinki, Resend email delivery and OpenAI connections
+(GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use). Those factual fields
+are populated, with evidence in the [operator review pack](PUBLIC_POLICY_REVIEW.md).
+The complaints process, operator/user jurisdictions, other recipients,
+provider processing locations beyond the application host, transfer arrangements, lawful bases,
 retention criteria, public-source assessment, storage assessment and automated
 decision description remain unconfirmed. Installation terms, business disclosures
 (including the applicable address and registration details) and an accessibility
