@@ -2,9 +2,10 @@
 
 Prepared 11 October 2026. This is a review aid for the existing public pages,
 not an approved notice or a record of the installation's actual providers.
-Alex previously answered that the operator/business/provider decisions were
-not decided. The intended installation is now being clarified. Keep the
-content fields and approval record unset until those decisions are confirmed.
+Alex confirmed on 11 October 2026 that this notice covers the current personal
+installation. The earlier operator/business/provider decisions remain unresolved.
+Keep unconfirmed content fields and the approval record unset until the actual
+facts and wording are confirmed.
 
 ## What is already established
 
@@ -23,13 +24,13 @@ content fields and approval record unset until those decisions are confirmed.
   notice describes limited deletion, shared-team records, exports, backups and
   provider copies without promising complete account erasure.
 
-## First decision: whose installation is covered
+## Confirmed scope: current personal installation
 
-Choose the current personal installation, a future public/commercial service,
-or a reusable template. A template still needs completion and approval by each
-operator before publication. A personal installation does not, by itself,
-establish a legal exemption. Record the service's actual operator, audience and
-processing, rather than copying the repository owner's name into every notice.
+The draft applies to Alex's current personal installation. Confirm its actual
+operator identity, public contacts, users, providers and processing. The scope
+choice does not establish that only Alex has access or that optional features are
+disabled. Record those facts separately. Other installations need their own notice.
+No decision about a future commercial service or paid-support offer is inferred.
 
 ## Facts to supply, without credentials
 

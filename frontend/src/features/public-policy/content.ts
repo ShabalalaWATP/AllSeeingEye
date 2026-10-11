@@ -13,6 +13,7 @@ interface Purpose {
 
 export interface PrivacyNotice {
   version: string;
+  scope: string;
   operator: Record<string, string | null>;
   purposes: Purpose[];
   retention: { name: string; behaviour: string }[];

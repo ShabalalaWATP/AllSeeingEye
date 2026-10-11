@@ -40,6 +40,7 @@ export default function PrivacyPage() {
           ? 'This notice describes how this installation handles information.'
           : 'This page describes the application and identifies decisions the installation operator must confirm.'}
       </p>
+      <p>{privacyNotice.scope}</p>
       <nav aria-label="On this page">
         <ul>
           <li>

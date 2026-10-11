@@ -13,7 +13,8 @@ between preview and deployment. See the [operator review pack](PUBLIC_POLICY_REV
 for the remaining factual and processing decisions.
 
 - [x] Implement the focused notice and publication-check corrections.
-- [ ] Confirm which installation the notice describes and complete its actual facts.
+- [x] Confirm the notice covers Alex's current personal installation.
+- [ ] Complete that installation's actual operator/provider and processing facts.
 - [ ] Review and approve the complete wording and exact content hash.
 - [ ] Complete review/CI and obtain separate release approval for the continuation.
 
