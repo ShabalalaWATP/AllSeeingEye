@@ -98,7 +98,9 @@ describe('public policy pages', () => {
     await act(() => router.navigate('/business'));
     await screen.findByRole('heading', { level: 1, name: 'Business details' });
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
-    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(3);
+    expect(screen.getByText('Alex Orr')).toBeInTheDocument();
+    expect(screen.getByText('alexorr@yahoo.co.uk')).toBeInTheDocument();
+    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(1);
   });
 
   it('keeps public links keyboard reachable and provides structural accessibility', async () => {

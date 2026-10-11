@@ -9,7 +9,9 @@ failure is shown as unavailable, never as a confirmed default.
 
 ## Current status: draft, publication blocked
 
-The controller identity and contacts, complaints process, jurisdictions, hosting,
+Alex confirmed the current personal installation, the public operator name
+Alex Orr and `alexorr@yahoo.co.uk` for privacy enquiries and complaints on
+11 October 2026. The complaints process, jurisdictions, hosting,
 email and AI processors, other recipients, transfer arrangements, lawful bases,
 retention criteria, public-source assessment, storage assessment and automated
 decision description remain unconfirmed. Installation terms, business disclosures
@@ -20,8 +22,9 @@ builds remain possible; they do not grant publication or legal approval.
 
 The administrator contact for the separate operator-assisted request procedure
 was approved under KAN-23 on 7 October 2026. It is reused from
-[personal-data operations](PERSONAL_DATA_OPERATIONS.md). That decision does not
-establish the controller's identity or approve the wider notice. The page retains
+[personal-data operations](PERSONAL_DATA_OPERATIONS.md). The separate 11 October
+contact confirmation extends its use to privacy enquiries and complaints, but
+does not approve the complete notice or complaints procedure. The page retains
 the unsupported account-wide export/erasure limits and preserves shared team work.
 
 ## Editing and approval

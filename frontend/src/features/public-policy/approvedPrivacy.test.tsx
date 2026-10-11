@@ -53,7 +53,7 @@ describe('approved privacy notice', () => {
   it('links the approved notice from the request procedure without stale draft wording', async () => {
     renderApp('/privacy/requests', 'anonymous');
     await screen.findByRole('heading', { name: 'Personal-data requests' });
-    expect(screen.queryByText(/draft privacy notice separately/)).toBeNull();
+    expect(screen.queryByText(/draft privacy notice/)).toBeNull();
     expect(screen.getByText(/controller and complaints details are in/)).toBeInTheDocument();
     expect(
       screen.getByText(/There is no complete account-wide export or erasure action/),

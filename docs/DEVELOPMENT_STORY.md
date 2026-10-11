@@ -6240,10 +6240,12 @@ corrects those three defects and makes the right to object a separate section in
 the structured notice. The two validators still require exact-content approval.
 
 The operator review pack groups the outstanding installation facts and processing
-decisions without inventing providers, lawful bases or business details. Alex's
-previous answer remains that these are undecided. Alex subsequently confirmed that
+decisions without inventing providers, lawful bases or business details. Alex
+initially answered that these were undecided, then confirmed that
 the notice covers the current personal installation, and the draft now states that
-scope. Its actual users, operator contacts and provider facts still need confirmation.
+scope. Alex then confirmed Alex Orr and `alexorr@yahoo.co.uk` as the public operator
+and privacy/complaints contact. Actual users, providers and processing decisions
+still need confirmation.
 The approval manifest stays unset and publication remains blocked.
 Focused security review found no actionable issue. Final check results and the PR
 are recorded in the KAN-165 handoff; this entry does not claim a live release.

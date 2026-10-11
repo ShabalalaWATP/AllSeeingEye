@@ -3,9 +3,10 @@
 Prepared 11 October 2026. This is a review aid for the existing public pages,
 not an approved notice or a record of the installation's actual providers.
 Alex confirmed on 11 October 2026 that this notice covers the current personal
-installation. The earlier operator/business/provider decisions remain unresolved.
-Keep unconfirmed content fields and the approval record unset until the actual
-facts and wording are confirmed.
+installation, with Alex Orr as the public operator and `alexorr@yahoo.co.uk` as
+the privacy-enquiry and complaints contact. Provider and processing decisions
+remain unresolved. Keep unconfirmed content fields and the approval record unset
+until the actual facts and wording are confirmed.
 
 ## What is already established
 
@@ -17,19 +18,21 @@ facts and wording are confirmed.
   per-account patterns. Browser push and external media are separately explained.
 - The source page contains generated catalogue credits, including additional
   policies. This is not an inventory of an installation's enabled sources.
-- The personal-data request contact is approved only for the existing
-  [operator-assisted procedure](PERSONAL_DATA_OPERATIONS.md). That approval does
-  not identify the controller, complaints handler or accessibility contact.
+- The contact remains approved for the existing
+  [operator-assisted procedure](PERSONAL_DATA_OPERATIONS.md). Alex separately
+  confirmed the operator name and wider privacy/complaints contact on 11 October
+  2026. The complaints procedure and accessibility contact remain unconfirmed.
 - Application behaviour and operator retention policy are separate. The existing
   notice describes limited deletion, shared-team records, exports, backups and
   provider copies without promising complete account erasure.
 
 ## Confirmed scope: current personal installation
 
-The draft applies to Alex's current personal installation. Confirm its actual
-operator identity, public contacts, users, providers and processing. The scope
-choice does not establish that only Alex has access or that optional features are
-disabled. Record those facts separately. Other installations need their own notice.
+The draft applies to Alex's current personal installation, with the operator and
+privacy/complaints contact confirmed above. Confirm its users, providers and
+processing. The scope choice does not establish that only Alex has access or that
+optional features are disabled. Record those facts separately. Other installations
+need their own notice.
 No decision about a future commercial service or paid-support offer is inferred.
 
 ## Facts to supply, without credentials
@@ -42,11 +45,10 @@ are not evidence that a provider is used.
 
 | Fields | Information needed for the wording |
 | --- | --- |
-| `controllerName`, `controllerContact` | Person or entity deciding the purposes and means of processing; public contact route and applicable contact details. |
 | `jurisdiction` | Operator location, intended user countries, and any applicable representative or DPO details. |
 | `hosting`, `emailProvider`, `aiProviders`, `otherRecipients` | Actual service/provider names, processing locations, information sent to each, and relevant recipients such as push services, external media and research providers. |
 | `internationalTransfers` | Which information leaves the relevant jurisdiction, the assessed transfer arrangement, and how to obtain details of safeguards where needed. |
-| `complaintsContact`, `complaintsProcedure` | Who receives a complaint, how to submit it privately, who handles it, and the actual acknowledgement, investigation and response process. |
+| `complaintsProcedure` | The contact is confirmed above. Confirm how complaints are handled, including the actual acknowledgement, investigation and response process. |
 | `retentionCriteria` | Periods or criteria for accounts/requests, saved work, audit/usage records, enquiries, email copies, exports and backups; who performs deletion and reviews exceptions. |
 | `publicSourceAssessment` | Actual source categories, personal-data categories and purposes; sensitive-data handling, how affected people are informed, and any assessed exceptions. |
 | `storageAssessment` | Assessment of the declared cookies, preference storage, optional push and external media, including how choices can be withdrawn. |

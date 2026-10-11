@@ -24,7 +24,7 @@ export default function PersonalDataPage() {
               <Link to="/privacy">Privacy and storage</Link>.
             </>
           ) : (
-            'The draft privacy notice separately identifies controller and complaints details still awaiting confirmation.'
+            'The draft privacy notice identifies the controller, privacy and complaints contacts, and any remaining details awaiting confirmation.'
           )}
         </p>
       </PolicySection>
