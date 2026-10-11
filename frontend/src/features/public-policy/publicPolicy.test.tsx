@@ -10,6 +10,18 @@ import { useAuthStore } from '@/stores/auth';
 import { storageDeclaration } from './content';
 
 vi.mock('virtual:policy-approval', () => ({ default: false }));
+// Exercise incomplete installations independently of the approved shipped notice.
+vi.mock('./privacy.json', async (original) => {
+  const { default: notice } = await original<{
+    default: { operator: Record<string, string | null> };
+  }>();
+  return {
+    default: {
+      ...notice,
+      operator: { ...notice.operator, jurisdiction: null, internationalTransfers: null },
+    },
+  };
+});
 
 describe('public policy pages', () => {
   it.each([

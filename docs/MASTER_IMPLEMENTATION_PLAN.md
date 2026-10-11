@@ -4,25 +4,27 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
-### KAN-165 continuation, 11 October 2026
+### KAN-165 notice finalisation, 11 October 2026
 
-The public policy framework is on main through PR #192. The current continuation
-corrects contradictory approved-state text, adds a distinct right-to-object
-section, rejects explicit undecided wording and aligns required-JSON validation
-between preview and deployment. See the [operator review pack](PUBLIC_POLICY_REVIEW.md)
-for the remaining factual and processing decisions.
+The framework is on main through PR #192. PR #198 completes the installation
+wording and fixes approved-state text and publication validation. See the
+[operator decision record](PUBLIC_POLICY_REVIEW.md).
 
-- [x] Implement the focused notice and publication-check corrections.
-- [x] Confirm the notice covers Alex's current personal installation.
-- [x] Confirm Alex Orr and `alexorr@yahoo.co.uk` as public operator/privacy/complaints details.
-- [x] Verify current hosting (Hetzner, Helsinki), email (Resend) and AI (OpenAI Luna/Sol) from the running installation, and populate the draft.
-- [x] Prepare the initial private DPIA/LIA, processing/recipient register and retention schedule under Alex's authority; draft the remaining supported notice and service wording.
-- [ ] Confirm operator country/use context and account-specific processor/transfer facts; resolve sensitive-source and high-risk use decisions.
-- [ ] Review and approve the complete wording and exact content hash.
-- [ ] Complete review/CI and obtain separate release approval for the continuation.
+- [x] Correct notice rendering, add the separate right to object and align both validators.
+- [x] Confirm personal scope, operator/contact and the running hosting, email and AI providers.
+- [x] Prepare a restricted initial DPIA/LIA, register and retention schedule.
+- [x] Adopt the UK privacy framework and supported personal-use policies under Alex's explicit delegation.
+- [x] Complete transfer disclosures from verified hosting and current provider terms, preserving audit limits.
+- [x] Record delegated exact-content approval; both publication checks and independent reviews pass.
+- [x] Pass full frontend lint, both TypeScript checks, build/bundle limits and built-page review.
 
-The actual approval remains unset. A prepared notice or software test does not
-complete the operator decisions; KAN-165 remains In Progress.
+Exact published-head CI and authorised integration are recorded on
+[PR #198](https://github.com/ShabalalaWATP/AllSeeingEye/pull/198) and KAN-165.
+The production release boundary remains separate from implementation closure.
+
+KAN-185 and KAN-187 retain their separate assessment/account-evidence criteria.
+The notice does not certify all processing, and production requires the reviewed
+manual controller/migration rollout. No wider compliance ticket is closed here.
 
 ### Approved operator procedures, 7 October 2026
 

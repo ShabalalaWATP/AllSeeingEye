@@ -6265,3 +6265,26 @@ Sensitive-data and indirect-notice decisions remain purpose-specific; no blanket
 exemption or completed high-risk review is asserted. Jurisdiction and transfer
 safeguards stay unset pending facts, and complete-wording approval stays unset.
 The private assessment is Git-ignored, not published in the repository or Jira.
+
+
+## 11 October 2026: finalise KAN-165 under delegated authority
+
+Alex explicitly delegated the remaining notice decisions and asked for the ticket
+to be finished. The final wording adopts a UK privacy framework without inventing
+residence, explains Finland hosting and international provider processing, links
+the standard OpenAI/Resend safeguards and retains the limits of account verification.
+The prepared operating commitments and personal-installation terms are adopted;
+high-risk uses and wider KAN-185/187 work are not certified or closed. The exact
+approval records delegated finalisation rather than claiming Alex read a hash.
+Incomplete-installation tests now use explicit fixtures instead of depending on
+missing real fields. No publication validator or deployment protection is relaxed.
+Final checks, integration and deployment evidence are recorded separately.
+
+Local finalisation checks passed: 18 DOM policy cases, 13 Node policy checks,
+12 Python publication cases, full frontend lint, both TypeScript configurations,
+production build and all bundle budgets. Both real publication checks accept the
+recorded content. Built privacy, business, terms and accessibility pages show the
+final wording without draft banners; unavailable API retention stays explicit.
+Independent quality/security review found no remaining actionable issue. Four
+local guide links, file length and whitespace checks passed. No new coverage
+measurement was made for this content follow-up; CI retains the 90% suite gates.

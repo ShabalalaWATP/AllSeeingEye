@@ -9,7 +9,7 @@ const operatorLabels: Record<string, string> = {
   controllerContact: 'Controller contact',
   complaintsContact: 'Data protection complaints contact',
   complaintsProcedure: 'Complaints handling procedure',
-  jurisdiction: 'Applicable jurisdictions and representatives',
+  jurisdiction: 'Privacy framework and applicable law',
   hosting: 'Hosting provider and location',
   emailProvider: 'Email provider',
   aiProviders: 'Configured AI providers',
