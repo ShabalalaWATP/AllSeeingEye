@@ -4,6 +4,17 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-187 country and provider confirmation, 14 October 2026
+
+- [x] Record Finland and the operator-confirmed Hetzner DPA / standard OpenAI and
+  Resend terms without opt-ins or custom settings.
+- [x] Correct the public notice, Finnish complaints action and restricted assessment;
+  retain the existing personal-installation scope and refresh exact-content approval.
+- [ ] Complete KAN-185's source-specific conditions, risk decisions and assessment
+  sign-off; complete KAN-187's detailed register, transfer review and retention gaps.
+- Integration and live release are separate from this factual correction. See
+  [the decision record](PUBLIC_POLICY_REVIEW.md) and the Jira handoff for validation.
+
 ### KAN-165 notice finalisation, 11 October 2026
 
 The framework is on main through PR #192. PR #198 completes the installation

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderApp } from '@/test/render';
@@ -48,6 +48,22 @@ describe('approved privacy notice', () => {
     expect(screen.getByRole('region', { name: 'Your right to object' })).toHaveTextContent(
       /legitimate interests or a public task/,
     );
+  });
+
+  it('directs complaints to the Finnish authority from the rights section', async () => {
+    renderApp('/privacy', 'anonymous');
+    const rights = await screen.findByRole('region', { name: 'Rights, requests and complaints' });
+    const authorityLink = within(rights).getByRole('link', {
+      name: "raise a concern with Finland's Office of the Data Protection Ombudsman",
+    });
+    expect(authorityLink).toHaveAttribute('href', 'https://tietosuoja.fi/en/home');
+    expect(rights).toHaveTextContent(/appropriate regulator depends on your circumstances/);
+    expect(
+      screen.getByRole('link', { name: 'Finland: Office of the Data Protection Ombudsman' }),
+    ).toHaveAttribute('href', authorityLink.getAttribute('href'));
+    expect(
+      screen.queryByRole('link', { name: /Information Commissioner/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('links the approved notice from the request procedure without stale draft wording', async () => {

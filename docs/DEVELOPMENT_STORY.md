@@ -6288,3 +6288,22 @@ final wording without draft banners; unavailable API retention stays explicit.
 Independent quality/security review found no remaining actionable issue. Four
 local guide links, file length and whitespace checks passed. No new coverage
 measurement was made for this content follow-up; CI retains the 90% suite gates.
+
+## 14 October 2026: KAN-187 confirmed Finnish operation and provider terms
+
+Alex confirmed operation from Finland, a recorded Hetzner DPA, and standard
+OpenAI/Resend terms without opt-ins or custom settings. The public notice and
+restricted assessment now use Finnish/EU context and EU transfer provisions;
+the rendered complaints action points to Finland's Data Protection Ombudsman.
+A regression checks that action and its consistency with the authority reference.
+The exact-content approval is refreshed under the existing notice delegation.
+Provider confirmation is recorded as operator evidence, not an independent audit.
+The personal-installation scope stays in place, with no blanket household or
+research exemption. The private assessment stays Git-ignored. KAN-185/187 retain
+their wider assessment and retention work; this change makes no live-release claim.
+
+Validation passed: 19 policy UI tests, 13 Node checks, 12 Python publication tests,
+both type checks, targeted lint, formatting, build, bundle budgets and local guide
+links. Browser review confirmed the actual built Finnish notice and complaints
+action without a draft banner. Independent review reported no remaining blocker.
+Coverage was not remeasured; publication/deployment protections remain unchanged.

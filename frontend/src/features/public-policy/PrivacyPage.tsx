@@ -180,8 +180,8 @@ export default function PrivacyPage() {
             ? 'For data protection complaints, use the contact and handling procedure shown under Controller and installation.'
             : 'The operator must confirm the separate data protection complaints contact and handling procedure shown above before publication.'}{' '}
           You can also{' '}
-          <a href="https://ico.org.uk/make-a-complaint/" rel="noreferrer">
-            raise a concern with the Information Commissioner’s Office
+          <a href="https://tietosuoja.fi/en/home" rel="noreferrer">
+            raise a concern with Finland's Office of the Data Protection Ombudsman
           </a>
           . The appropriate regulator depends on your circumstances and applicable law.
         </p>
