@@ -10,8 +10,13 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   Resend terms without opt-ins or custom settings.
 - [x] Correct the public notice, Finnish complaints action and restricted assessment;
   retain the existing personal-installation scope and refresh exact-content approval.
-- [ ] Complete KAN-185's source-specific conditions, risk decisions and assessment
-  sign-off; complete KAN-187's detailed register, transfer review and retention gaps.
+- [x] Prepare KAN-187's activity/recipient/transfer register, source-backed retention
+  schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
+- [ ] Complete KAN-185's source-specific conditions, recipient assessments, risk
+  decisions and assessment sign-off.
+- [x] Verify KAN-237's refreshed packages, image gate, repeat cache and media/runtime checks.
+- [ ] Complete current-head CI and authorised integration; KAN-244 separately tracks
+  the full image inventory of unfixed advisories.
 - Integration and live release are separate from this factual correction. See
   [the decision record](PUBLIC_POLICY_REVIEW.md) and the Jira handoff for validation.
 

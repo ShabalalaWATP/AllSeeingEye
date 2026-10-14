@@ -44,6 +44,8 @@ explain what is and is not represented.
 ## Configure and operate
 
 - [AI connections](AI_CONNECTIONS_OPERATIONS.md): providers, models, credentials, tests and assignments.
+- [AI regions and residency](AI_DATA_RESIDENCY.md): regional configuration, routing limits and provider evidence.
+- [Processing and retention records](compliance/README.md): activities, processors, transfers and deletion gaps.
 - [AI usage and cost controls](AI_COST_CONTROLS.md): research tiers, call and token policies, and estimated spend.
 - [Administration](ADMINISTRATION.md): the `/admin` workspace and its areas.
 - [Personal-data requests](PERSONAL_DATA_OPERATIONS.md): the operator-assisted route, administrator contact, shared-work safeguards and export/deletion limits.

@@ -31,6 +31,9 @@ failed run still reports its own reason. `/api/capabilities` returns only a yes/
 The workspace supports up to five text-model connections, including drafts.
 Embedding-only connections are managed separately in advanced settings.
 
+For regional endpoints, provider approval and separate embedding/web-search routes,
+follow the [AI region and residency guide](AI_DATA_RESIDENCY.md).
+
 Testing and applying are separate actions. Closing after a test leaves a saved draft
 in its slot; it does not apply the audience. A successful test proves only that the
 selected configuration answered the small test request. It does not validate model
