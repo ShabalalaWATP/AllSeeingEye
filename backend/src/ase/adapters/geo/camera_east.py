@@ -63,7 +63,7 @@ def _image_link(node: Any) -> str | None:
 def parse_estonia(payload: bytes) -> tuple[Camera, ...]:
     """DATEX II predefined locations: one point, an Estonian name and a current image link."""
     try:
-        root = fromstring(payload)
+        root = fromstring(payload, forbid_dtd=True)
     except Exception as exc:
         raise ValueError("Invalid Estonian camera catalogue") from exc
     rows: list[dict[str, Any]] = []

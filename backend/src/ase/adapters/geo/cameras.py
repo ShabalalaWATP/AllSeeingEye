@@ -128,7 +128,7 @@ def parse_tfl(payload: bytes) -> tuple[Camera, ...]:
 
 def parse_hongkong(payload: bytes) -> tuple[Camera, ...]:
     cameras = []
-    for item in fromstring(payload).findall("image")[:5000]:
+    for item in fromstring(payload, forbid_dtd=True).findall("image")[:5000]:
         camera = _camera(
             "hongkong",
             item.findtext("key"),

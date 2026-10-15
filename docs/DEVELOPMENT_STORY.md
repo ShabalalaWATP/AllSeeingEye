@@ -6339,3 +6339,27 @@ three deployment-build unit cases passed with one POSIX-only case skipped locall
 Both actual-content publication validators retain the approved hash. Full prior-head
 application, PostgreSQL and security CI passed apart from the image gate; updated-head
 CI remains required. No new coverage measurement or production deployment is claimed.
+
+## 16 October 2026: KAN-244 native parser boundaries
+
+The October inventory was preserved and deduplicated to 55 advisories across
+15 Debian source packages. Exact-image inspection separates absent components,
+excluded prerequisites and unresolved native paths. Python bundles Expat 2.8.5
+and lxml bundles libxml2 2.14.6; the older system packages cannot automatically
+be attributed to those Python calls. Sixteen native-path/version questions remain
+explicitly unresolved. No residual-risk acceptance or scanner suppression was made.
+
+Media intake now gates decoder opening before FFprobe and each FFmpeg input,
+then validates the selected video codec before sampling. Common audio tracks remain
+supported. Ten XML boundaries reject DTDs, including attribute-only declarations,
+while retaining existing sanitised errors. Resource and isolation controls remain.
+
+Validation passed: 185 focused tests; lint, formatting, strict typing, three import
+contracts and Bandit. Independent review found no concrete bypass or regression.
+On both immutable Linux images, synthetic H264/AAC, HEVC/AAC, VP8/Vorbis, VP9/Opus
+and AV1/Opus clips produced three samples. CFHD and H264-plus-CFHD clips were admitted
+by the original image and rejected by the candidate. No hostile bitstreams were used.
+The rebuilt image's fresh Trivy 0.69.3 database (15 October, 19:09 UTC) still reports
+227 package matches / 55 CVEs, with zero fixable HIGH/CRITICAL findings. The existing
+fixable gate passed. Full current-head CI and release approval remain required;
+there is no live-deployment claim or new full-suite coverage measurement yet.
