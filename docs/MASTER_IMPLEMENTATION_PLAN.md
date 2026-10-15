@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-239 audit, usage and delivery retention, 16 October 2026
+
+- [x] Define purpose-based defaults, category/global holds and quarterly ownership.
+- [x] Implement counts-only preview, explicit bounded apply and disabled-by-default
+  scheduling independent of feeds. Preserve current-month accounting and receipt keys.
+- [x] Verify strict boundaries, rollback, backlog, opt-out, duplicate publication,
+  late completion, retryable delivery and monthly-budget invariants on SQLite.
+- [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
+  independent code-quality and security reviews found no actionable defect.
+- [ ] Complete full CI and authorised integration after KAN-242 and KAN-238.
+- [ ] Obtain installation policy/rollout approval before any production purge.
+
+See [the operational retention procedure](OPERATIONAL_RETENTION.md).
+
 ### KAN-238 authentication retention, 16 October 2026
 
 - [x] Define terminal-record windows and a conservative scoped housekeeping hold.

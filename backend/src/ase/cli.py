@@ -22,6 +22,7 @@ from ase.cli_infrastructure import (
     import_semiconductor,
     import_stations,
 )
+from ase.cli_operational_retention import operational_retention
 from ase.cli_public_figures import import_figures
 from ase.cli_reference import import_reference_notes
 from ase.cli_ukraine import (
@@ -40,6 +41,7 @@ from ase.infrastructure.settings import Environment, Settings
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
 app.command("rotate-encryption-key")(rotate_key)
 app.command("auth-retention")(auth_retention)
+app.command("operational-retention")(operational_retention)
 app.command("import-designations")(import_designations)
 app.command("import-aiddata")(import_aiddata)
 app.command("import-public-figures")(import_figures)

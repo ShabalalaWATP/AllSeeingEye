@@ -238,7 +238,10 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
     app = FastAPI()
     app.state.container = SimpleNamespace(
         settings=SimpleNamespace(
-            feeds_enabled=True, enterprise_enquiry_retention_days=90, auth_retention_enabled=False
+            feeds_enabled=True,
+            enterprise_enquiry_retention_days=90,
+            auth_retention_enabled=False,
+            operational_retention_enabled=False,
         ),
         dispose=AsyncMock(side_effect=lambda: order.append("dispose")),
         session_factory=Mock(),

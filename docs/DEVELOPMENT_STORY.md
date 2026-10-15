@@ -6404,3 +6404,38 @@ the snapshot lifecycle test double. The retention command now imports its wiring
 only when invoked; the migration CLI stays lightweight. The fixture declares the
 disabled default. All 28 startup, snapshot and retention-command checks pass after
 the repair; the existing architecture assertions remain unchanged.
+
+### 16 October 2026: KAN-239 operational retention
+
+Added optional independent maintenance for audit events, per-call AI usage and
+terminal subscription/digest metadata. Proposed operational windows are 365, 400
+and 90 days, with a strict cutoff, at most 100 changes per category per transaction,
+counts-only preview, explicit CLI apply, category holds and a scoped global pause.
+Automatic operation defaults off. Current UTC-month usage, held categories,
+retryable deliveries, opt-outs, duplicate-prevention receipts, digest timezone/day
+and original windows remain intact. Receipt minimisation is not anonymisation.
+
+The investigator traced every recipient-reference consumer before removing that
+field from terminal email records. Historical cancellation does not always stamp
+activity time, so the guide accurately defines delivery inactivity rather than time
+since cancellation. SQLite reusable integer IDs are not used for specific holds.
+No schema, dependency, public API or raw/private-event persistence expansion occurs.
+
+Verification: 49 focused SQLite cases passed with 100% branch-inclusive coverage of
+the four new implementation modules, using a 95% scoped floor without changing
+project thresholds. PostgreSQL passed the initial 48 cases, including strict cutoffs,
+category/global holds, 205-row backlogs, rollback and two independent connections
+draining distinct batches. Independent security review passed 27 contract/control
+cases and real CLI secret-sanitisation probes; code-quality review passed 21 cases
+including the race. Both reported no actionable defect.
+The subsequent PostgreSQL delivery/digest/monthly-budget regression run passed
+29 cases, including the added uncertain checkpoint/reservation preservation test.
+
+The first local run exposed test counts that omitted a fixture's recent audit event;
+the corrected assertions preserve it explicitly. Wider startup testing caught the
+existing migration import budget at 200 modules; lazy policy construction restored
+the unchanged limit and both startup checks passed. Ruff, formatting, strict mypy
+over 1646 source files, three import contracts, focused Bandit, file length and
+whitespace checks pass. Broad CI and authorised integration remain required.
+The new operational guide and T05/T07/T09 schedule retain quarterly ownership,
+hold evidence, parent-record limitations and separate production rollout approval.
