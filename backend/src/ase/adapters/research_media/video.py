@@ -16,6 +16,17 @@ from ase.adapters.research_media.models import (
 )
 from ase.adapters.research_media.tools import run_tool
 
+VIDEO_CODECS = frozenset({"h264", "hevc", "vp8", "vp9", "av1"})
+# FFprobe opens decoders for all tracks before selecting the displayed video stream.
+# Keep ordinary audio-bearing clips usable without admitting legacy media decoders.
+# This gates decoder opening, not libavformat's independent packet parsers.
+INPUT_DECODERS = (
+    "h264,hevc,vp8,vp9,av1,libdav1d,libaom-av1,"
+    "aac,aac_fixed,mp3,mp3float,opus,libopus,vorbis,libvorbis,"
+    "pcm_u8,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,"
+    "pcm_f32le,pcm_f32be,pcm_f64le,pcm_f64be"
+)
+
 
 def extract_video(
     data: bytes,
@@ -42,7 +53,15 @@ def extract_video(
     path = workspace / "input-media.bin"
     path.write_bytes(data)
     # Force the demuxer and disable MOV external references. Network/playlist protocols cannot open.
-    input_args = ["-protocol_whitelist", "file,pipe", *format_args, "-i", str(path)]
+    input_args = [
+        "-protocol_whitelist",
+        "file,pipe",
+        "-codec_whitelist",
+        INPUT_DECODERS,
+        *format_args,
+        "-i",
+        str(path),
+    ]
     raw = run_tool(
         [
             ffprobe,
@@ -73,11 +92,13 @@ def extract_video(
             or not 0 < duration <= MAX_VIDEO_SECONDS
         ):
             raise ValueError
-        codec = str(stream.get("codec_name") or "unknown")[:80]
+        codec = stream.get("codec_name")
     except (ValueError, TypeError, KeyError, IndexError):
         raise ImportRejected(
             "Video dimensions, duration or metadata exceed supported limits."
         ) from None
+    if not isinstance(codec, str) or codec not in VIDEO_CODECS:
+        raise ImportRejected("Unsupported video codec. Use H.264, HEVC, VP8, VP9 or AV1.")
     metadata = (
         ("width", str(width)),
         ("height", str(height)),

@@ -6,9 +6,11 @@ from pathlib import Path
 
 import pytest
 
+from ase.adapters.research_imports.models import ImportRejected
 from ase.adapters.research_media import MediaTools, extract_media
 from ase.adapters.research_media.tools import run_tool
 from media_helpers import synthetic_image
+from media_runtime_helpers import generate_video
 
 
 def _runtime(name: str) -> str | None:
@@ -76,3 +78,35 @@ def test_real_ffmpeg_extracts_three_samples_from_generated_video(
     assert [frame.seconds for frame in result.frames] == [0, 1, 2]
     assert dict(result.metadata)["codec"] == codec
     assert all(frame.png.startswith(b"\x89PNG") for frame in result.frames)
+
+
+@pytest.mark.parametrize(
+    "extension,encoder,codec,audio",
+    [(".mp4", "libx264", "h264", "aac"), (".webm", "libvpx-vp9", "vp9", "libopus")],
+)
+def test_audio_bearing_video_preserves_three_samples(
+    tmp_path: Path, extension: str, encoder: str, codec: str, audio: str
+) -> None:
+    ffmpeg, ffprobe = _runtime("ffmpeg"), _runtime("ffprobe")
+    if not ffmpeg or not ffprobe:
+        pytest.skip("Optional trusted local FFmpeg/ffprobe runtime unavailable")
+    target = tmp_path / ("synthetic" + extension)
+    data = generate_video(ffmpeg, target, encoder, audio=audio)
+    result = extract_media(data, target.name, MediaTools(ffmpeg=ffmpeg, ffprobe=ffprobe))
+    assert len(result.frames) == 3
+    assert dict(result.metadata)["codec"] == codec
+
+
+@pytest.mark.parametrize("secondary", [False, True])
+def test_unreviewed_decoder_is_rejected_even_in_an_unselected_track(
+    tmp_path: Path, secondary: bool
+) -> None:
+    ffmpeg, ffprobe = _runtime("ffmpeg"), _runtime("ffprobe")
+    if not ffmpeg or not ffprobe:
+        pytest.skip("Optional trusted local FFmpeg/ffprobe runtime unavailable")
+    target = tmp_path / "synthetic.mov"
+    data = generate_video(
+        ffmpeg, target, "libx264" if secondary else "cfhd", secondary="cfhd" if secondary else None
+    )
+    with pytest.raises(ImportRejected):
+        extract_media(data, target.name, MediaTools(ffmpeg=ffmpeg, ffprobe=ffprobe))

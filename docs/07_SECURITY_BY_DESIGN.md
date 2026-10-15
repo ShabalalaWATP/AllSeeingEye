@@ -82,6 +82,14 @@ The Compose parser has no network access and does not receive application secret
 Native parsing uses an isolated subprocess and refuses extraction when required
 limits cannot be installed.
 
+Video inputs use MOV/MP4 or Matroska/WebM containers and an explicit decoder
+allowlist. The selected video must be H.264, HEVC, VP8, VP9 or AV1. Common audio
+tracks can accompany those clips, but audio is not analysed. Unsupported tracks
+can cause the whole upload to be rejected, including tracks not selected for
+sampling. This restricts decoder opening; it does not remove native packet-parser
+risk. XML feed, camera and document intake rejects DTDs before their declarations
+are processed. See [the parser policy](security/MEDIA_PARSER_POLICY.md).
+
 External text and AI output are treated as data. The interface renders structured
 text and validated links. Report validation checks structure, citations and
 assessment rules; it cannot prove the truth of source claims or eliminate all

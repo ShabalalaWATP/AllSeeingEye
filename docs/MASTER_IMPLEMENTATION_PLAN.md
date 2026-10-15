@@ -4,6 +4,21 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-244 native image triage, 16 October 2026
+
+- [x] Preserve the original image/scan identity and deduplicate 227 package matches
+  to 55 advisories across 15 Debian source packages.
+- [x] Inspect actual native components and distinguish Python's bundled libraries.
+- [x] Constrain decoder opening and reject internal XML DTDs at shared boundaries.
+- [x] Pass 185 focused tests, Linux synthetic controls, lint, formatting, typing,
+  architectural contracts and Bandit; independent review found no concrete issue.
+- [ ] Complete current-head CI, release approval and authorised integration.
+- [ ] Review 16 unresolved native paths by 23 October or before release; do not
+  equate completed triage or application mitigations with patched system packages.
+
+See [the parser policy](security/MEDIA_PARSER_POLICY.md) and the per-advisory
+evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
+
 ### KAN-187 country and provider confirmation, 14 October 2026
 
 - [x] Record Finland and the operator-confirmed Hetzner DPA / standard OpenAI and
