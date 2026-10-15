@@ -6288,3 +6288,54 @@ final wording without draft banners; unavailable API retention stays explicit.
 Independent quality/security review found no remaining actionable issue. Four
 local guide links, file length and whitespace checks passed. No new coverage
 measurement was made for this content follow-up; CI retains the 90% suite gates.
+
+## 14 October 2026: KAN-187 confirmed Finnish operation and provider terms
+
+Alex confirmed operation from Finland, a recorded Hetzner DPA, and standard
+OpenAI/Resend terms without opt-ins or custom settings. The public notice and
+restricted assessment now use Finnish/EU context and EU transfer provisions;
+the rendered complaints action points to Finland's Data Protection Ombudsman.
+A regression checks that action and its consistency with the authority reference.
+The exact-content approval is refreshed under the existing notice delegation.
+Provider confirmation is recorded as operator evidence, not an independent audit.
+The personal-installation scope stays in place, with no blanket household or
+research exemption. The private assessment stays Git-ignored. KAN-185/187 retain
+their wider assessment and retention work; this change makes no live-release claim.
+
+Validation passed: 19 policy UI tests, 13 Node checks, 12 Python publication tests,
+both type checks, targeted lint, formatting, build, bundle budgets and local guide
+links. Browser review confirmed the actual built Finnish notice and complaints
+action without a draft banner. Independent review reported no remaining blocker.
+Coverage was not remeasured; publication/deployment protections remain unchanged.
+
+
+## 14 October 2026: KAN-187 registers and KAN-237 image prerequisite
+
+The processing register now maps twelve activity groups to people, data, purposes,
+recipients, safeguards and retention. Separate provider/transfer and retention
+records preserve the distinction between operator-confirmed facts, dated live
+observations, code defaults and unresolved assessments. Regional AI guidance covers
+OpenAI eligibility, personal/team overrides, embeddings, global-only fresh web,
+Bedrock profile destinations and credential/retention limitations. KAN-238 through
+KAN-243 track identified deletion and recovery gaps; the register does not claim
+those fixes are delivered. KAN-185 retains source-specific assessment decisions.
+
+PR #199's API image gate exposed three fixable curl/librsvg advisories in the cached
+Debian package layer. KAN-237 adds a stable Dockerfile refresh argument shared by CI,
+Compose and releases, preserving ordinary caching and the existing scan gate.
+The rebuilt image contains Debian's patched versions and passes the fresh fixable
+HIGH/CRITICAL scan. Non-root offline imports, OCR and MP4/WebM extraction pass;
+a repeat build reused the cache in 1.93 seconds locally. The first build hit a DNS
+failure downloading Pillow; one retry completed. A temporary smoke harness was
+corrected to use required absolute executable paths. No application check was
+weakened. KAN-244 tracks the separate unfixed inventory (227 package/CVE matches,
+55 distinct CVEs), without claiming production exploitability or a clean full scan.
+
+Independent retention review identified persistent notification credentials/settings,
+now included in the schedule and KAN-240. Provider/regional and package-fix reviews
+found no remaining concrete blocker. Validation: 85 local document links, formatting,
+file-length and whitespace checks; eight Node and twelve Python publication cases;
+three deployment-build unit cases passed with one POSIX-only case skipped locally.
+Both actual-content publication validators retain the approved hash. Full prior-head
+application, PostgreSQL and security CI passed apart from the image gate; updated-head
+CI remains required. No new coverage measurement or production deployment is claimed.

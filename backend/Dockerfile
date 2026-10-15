@@ -11,6 +11,8 @@ WORKDIR /app
 
 # Local media analysis uses system decoders inside a bounded worker process.
 # Apply Debian security updates to packages inherited from the pinned base too.
+# Bump deliberately for security refreshes; keep stable to preserve repeat caching.
+ARG ASE_DEBIAN_SECURITY_REFRESH=2026-10-14
 RUN apt-get update \
     && apt-get upgrade --yes --no-install-recommends \
     && apt-get install --yes --no-install-recommends ffmpeg tesseract-ocr tesseract-ocr-eng \

@@ -22,9 +22,13 @@ not a claim that Alex personally reviewed an exact hash. The
 [operator decision record](PUBLIC_POLICY_REVIEW.md) distinguishes verified facts,
 adopted policy and the remaining operational compliance work.
 
-The notice adopts a UK privacy framework without inventing residence, a company,
-an address or a representative. It states the verified host location, Resend's
-published US storage and the standard OpenAI/Resend transfer terms, with links to
+On 14 October Alex confirmed Finnish operation, a recorded Hetzner DPA, and
+standard OpenAI/Resend terms with no opt-ins or custom settings. KAN-187 updates
+the notice to EU GDPR and Finnish law, Finland's Data Protection Ombudsman and
+EU transfer terms. The prior notice delegation covers this factual correction;
+the confirmation does not constitute an independent account or legal audit.
+The notice states the verified host location, Resend's published US storage and
+the standard OpenAI/Resend transfer terms, with links to
 the safeguards and a contact route. It does not certify account-specific contracts,
 transfer-risk assessments, regional processing or zero retention. The adopted
 complaints, retention, research boundaries and personal-installation terms retain
@@ -124,6 +128,11 @@ storage declaration remains `ase.brand-motion`. Integrate and test both changes
 together before treating the whole-App no-private-request boundary as verified.
 
 ## Primary guidance checked
+
+The 14 October country correction uses EU GDPR, Finland's Data Protection Act,
+the EDPB authority directory and Traficom's device-storage guidance, linked in the
+[decision record](PUBLIC_POLICY_REVIEW.md). The earlier UK references below are
+historical preparation evidence, not the default Finnish legal test.
 
 On 10 October 2026, implementation referred to the ICO's
 [notice information](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/the-right-to-be-informed/what-privacy-information-should-we-provide/),

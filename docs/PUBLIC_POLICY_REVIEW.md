@@ -1,6 +1,6 @@
-# KAN-165 operator decision and evidence record
+# KAN-165 / KAN-187 operator decision and evidence record
 
-Finalised 11 October 2026 for the current personal installation. This records
+Finalised 11 October 2026, updated 14 October for confirmed Finnish operation. This records
 notice wording and evidence, not a certification of every processing activity.
 
 ## Authority and scope
@@ -12,6 +12,13 @@ finish this ticket." Codex used that explicit delegation to finalise the two
 remaining sections and adopt the prepared operating commitments. The approval
 manifest says **Alex Orr (finalisation delegated to Codex)**. It does not claim
 Alex personally inspected the final hash or that a lawyer approved the notice.
+
+On 14 October Alex confirmed Finland as the operating country, a recorded Hetzner
+DPA, and standard OpenAI/Resend terms with no opt-ins or custom settings. These
+are operator-confirmed facts, not an independent account audit. The correction
+uses the existing delegation to finalise the notice. The country answer does not
+independently confirm every historical use; the previously selected personal
+installation and bounded-research scope remain the stated scope.
 
 The approved scope covers privacy, storage, requests, source credits and the
 personal-installation service disclosures. It creates no commercial offer, company,
@@ -27,7 +34,7 @@ installation at `allseeingeyeosint.com`, checkout
 
 | Fact | Evidence and limit |
 | --- | --- |
-| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. This is not evidence of an accepted Article 28 agreement. |
+| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. Alex separately confirmed the recorded DPA on 14 October. |
 | Resend application email | Running settings use `smtp.resend.com` and encrypted SMTP; KAN-22 also records a delivery check. |
 | OpenAI API | Read-only allowlisted database projections identified enabled `api.openai.com` connections: GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use. Aggregate records establish prior calls; both models do not receive every task. |
 | One account | Aggregate count only, without selecting identity. This does not establish residence, all past uses or a domestic-purpose exemption. |
@@ -42,14 +49,18 @@ provider routing or use changes.
 
 ## Adopted policy decisions
 
-- Use UK GDPR, the Data Protection Act 2018 and PECR as the operating framework,
-  while preserving other mandatory law and competent regulators. This is a policy
-  commitment, not a statement of Alex's residence. Requests go directly to Alex.
+- Use EU GDPR and Finland's Data Protection Act (1050/2018) for the confirmed
+  Finnish operation. This supersedes the earlier UK framework as the primary
+  description. Other mandatory law and competent regulators remain available.
+  A personal installation is not automatically a household or research exemption.
 - Apply legitimate interests to proportionate access administration, security and
   bounded ordinary public-event research; use consent for optional notifications.
   Research still requires a purpose-specific necessity and balancing decision.
 - Acknowledge complaints within 30 days, investigate, provide updates and explain
-  the outcome without undue delay. Rights requests keep their separate deadlines.
+  the outcome without undue delay. This is a voluntary operating commitment,
+  not a Finnish statutory acknowledgement deadline. Rights requests keep their
+  separate deadlines. Name Finland's Data Protection Ombudsman and preserve
+  GDPR Article 77's other competent-authority routes without an internal-process prerequisite.
 - Review necessity manually at least quarterly and when research ends, an account
   closes or a rights request arrives. This does not implement an erasure job.
 - Exclude stalking, harassment, private-person dossiers and solely automated
@@ -60,30 +71,34 @@ provider routing or use changes.
 - Retain explicit limits for account-wide erasure/export, shared work, logs,
   backups and provider copies. Do not promise an unenforced universal deadline.
 - Describe storage and withdrawal accurately without claiming every key is exempt
-  from PECR, that providers do no tracking or that every page meets WCAG.
+  under Finnish device-storage rules, that providers do no tracking or that every
+  page meets WCAG. Do not carry UK-specific preference exceptions into Finland.
 
 ## Transfers: public terms and evidence limits
 
-The [ICO adequacy guidance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/adequacy-regulations/is-the-restricted-transfer-covered-by-adequacy-regulations/)
-covers Finland within the EEA for UK-regulated transfers. That transfer mechanism
-is separate from the host's processor-contract obligations.
+Finland hosting is within the EEA. It does not require a UK-to-EEA adequacy route
+for the Finnish operation and does not constrain every onward recipient to Europe.
+Alex's confirmation of a recorded Hetzner DPA resolves the earlier request for
+operator confirmation; no signed contract was retrieved or published.
 
 [OpenAI's DPA](https://openai.com/policies/data-processing-addendum/), effective
 1 January 2026, is incorporated into its Services Agreement and describes
-acceptance including service use. Section 4.2 incorporates SCCs with the UK
-Addendum for applicable UK data. The notice reports these standard provisions;
-it does not assert a custom agreement, regional endpoint or zero retention.
+acceptance including service use. For EEA customers it names OpenAI Ireland;
+section 4.1 covers onward transfers using EU SCCs or adequacy. Section 4.2's UK
+Addendum applies separately to UK data. The notice does not assert regional
+processing or zero retention.
 
 [Resend's GDPR information](https://resend.com/security/gdpr) states that its DPA
 is in force for every account and that customer content and logs are stored in
-the US. Its [DPA](https://resend.com/legal/dpa) provides SCCs and the UK Addendum.
+the US. Its [DPA](https://resend.com/legal/dpa) provides EU SCCs, with a UK Addendum
+where UK transfer rules apply.
 Sending-region selection is not an EU storage guarantee. The notice links public
 copies and offers a contact route for the safeguards relevant to a request.
 
-The Hetzner account DPA page required sign-in during this continuation. A focused
-connected-mail search found no relevant account records. No agreement was accepted,
-no account setting changed and no signed-contract copy retrieved. Provider
-contracts and settings have not been independently audited. Yahoo, push, map,
+The Hetzner account DPA page required sign-in on 11 October. Alex subsequently
+confirmed its recorded status and standard OpenAI/Resend terms without opt-ins or
+custom settings on 14 October. No new agreement was accepted or account setting
+changed. Contracts and settings have not been independently audited. Yahoo, push, map,
 media, archive and search recipients have separate arrangements; the OpenAI and
 Resend DPAs must not be represented as covering them.
 
@@ -96,17 +111,26 @@ visibility. No private assessment was uploaded to public Jira or GitHub.
 KAN-185 retains source-specific Article 9/10/14 decisions, referenced mitigations,
 residual-risk disposition and its own sign-off before live publication. The
 notice's approved restrictions do not establish those assessments or legal review.
-KAN-187 retains processor-account evidence, any required transfer-risk assessments
-and unsupported retention/deletion work. Approval here does not mark either done.
+KAN-187 now has Alex's provider-status confirmation. It retains any required
+transfer-risk assessments, the detailed register and unsupported retention/deletion
+work. Approval here does not mark either ticket done.
 Unassessed high-risk processing is outside the adopted permitted use.
+
+The restricted assessment now uses Finnish/EU scope for Article 9/10 conditions,
+Article 14 decisions and prior-consultation questions. UK Schedule 1 is no longer
+the default domestic-law test. The [Finnish Act](https://data.finlex.fi/fi/lainsaadanto/2018/1050)
+and [EDPB authority directory](https://www.edpb.europa.eu/about-edpb/our-members_en)
+support this correction. [Traficom's guidance](https://www.kyberturvallisuuskeskus.fi/en/our-activities/regulation-and-supervision/cookies)
+informs the separate storage assessment. Finnish authority pages were unavailable
+to the research tool; the authority identity/link was checked through EDPB.
 
 ## Exact approved content
 
-Manifest date: **11 October 2026**. Approver: **Alex Orr (finalisation delegated
+Manifest date: **14 October 2026**. Approver: **Alex Orr (finalisation delegated
 to Codex)**. Content SHA256:
-`acada091def277ae7958ba255378a8c62cf5313a5636079446ec8a4e39e21f70`.
-Both the Node and Python checks accepted these actual inputs. The manifest covers
-all six policy routes, their structured text, styles, storage and source credits.
+`c9cf45fa6e208b9aa55a106aa6dc9e1ab39d4e72bd38a584349b8750ea7860ff`.
+Both actual-content publication checks accepted the matching hash. The manifest
+covers all six policy routes, their structured text, styles, storage and source credits.
 
 ## Validation and release
 
@@ -118,3 +142,12 @@ Any change to policy text, renderers, styles or source credits requires a new ha
 and approval. Ordinary builds and a successful policy check are not live release
 evidence. Production still requires its reviewed controller/migration rollout and
 GitHub environment gate.
+
+14 October local validation passed: 19 policy UI cases, 13 Node policy checks,
+12 Python publication cases, both TypeScript configurations, targeted ESLint,
+formatting, production build and all three bundle budgets. Five local guide links,
+touched source lengths and whitespace checks passed. The built privacy page was
+checked in the browser: version 2026-10-14, Finnish details and complaint links,
+no draft banner, and explicit unavailable retention when no API is served.
+Independent review found and resolved the old hard-coded ICO action, then reported
+no remaining blocker. No new coverage measurement or production change was made.

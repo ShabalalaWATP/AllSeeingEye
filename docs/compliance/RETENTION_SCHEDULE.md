@@ -1,0 +1,114 @@
+# Retention and deletion schedule
+
+Reviewed **14 October 2026** against `14a65442`; owner **Alex Orr**. The
+[record index](README.md) distinguishes defaults from the dated live observation.
+Periods below are source defaults/constants unless stated otherwise. A token's
+expiry, read exclusion, content scrubbing and physical row deletion are different
+events. Housekeeping needs a running installation and can lag during outages or
+batch backlogs. No universal statutory deletion period is asserted.
+
+The approved notice requires necessity review **at least quarterly**, plus review
+on account closure, purpose completion and rights requests. Next scheduled duty:
+**14 January 2027**. This is a manual commitment, not an automatic deletion job or
+reminder. Record category, purpose, continuing reason/hold, access restriction,
+action and next review date privately. Use supported controls; do not improvise
+cross-table production SQL or claim complete erasure where tooling is absent.
+
+## Authentication and operational records
+
+| ID / records                                | Current rule and actual trigger                                                                                                                                                                                                       | Limitation / follow-up                                                                                                                                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T01: accounts, profiles and team membership | Retained until supported changes/removal. Deactivation revokes access, sessions and matching push registrations but retains identity/profile/history.                                                                                 | Review quarterly and on closure, with shared ownership/last-manager safeguards. No full account purge: [KAN-240](https://alex-orr.atlassian.net/browse/KAN-240).                                                    |
+| T02: access requests                        | Pending/approved/rejected requests retain name, email, reason and decision metadata. Capacity bounds the pending queue.                                                                                                               | No age purge, including decided requests. Review after decision and quarterly; policy and cleanup [KAN-238](https://alex-orr.atlassian.net/browse/KAN-238).                                                         |
+| T03: sessions and password links            | Access 15 minutes; idle session 180 minutes; refresh 14 days; activation 7 days; reset 30 minutes. Revocation opportunistically prunes expired token families whose revocation marker is at least 91 days old.                        | Expired never-revoked families and used/expired links have no general sweep. Expiry prevents use, not storage: KAN-238. Refresh 14 days was also observed on 11 October; later idle tracking was not verified live. |
+| T04: MFA                                    | Challenge 10 minutes, emailed code 5 minutes, pending TOTP enrolment 10 minutes. Successful consumption clears embedded challenge material; factor removal clears TOTP fields; recovery codes are deleted on use/replacement/removal. | Abandoned/expired challenges and pending enrolments have no scheduled purge. KAN-238.                                                                                                                               |
+| T05: audit                                  | Append/read, with actor, IP, subject and event-specific details. Report deletion can itself retain title/template in audit.                                                                                                           | No automatic age purge or redaction schedule. Quarterly security/rights necessity and specific holds need review: [KAN-239](https://alex-orr.atlassian.net/browse/KAN-239).                                         |
+| T06: research allowance counters            | Latest UTC day/week buckets per user; each next increment removes older buckets of that period.                                                                                                                                       | Bounded state; dormant accounts can retain their last two buckets. [KAN-241](https://alex-orr.atlassian.net/browse/KAN-241).                                                                                        |
+| T07: AI allowance and usage                 | Finished reservations: 90 days after period end. Unheld counters/monthly totals: 400 days after period end. Admission triggers normally hourly maintenance, up to 500 rows/category; a full batch can retry after 60 seconds.         | Held reservations are protected. No admission means no sweep. Separate per-call `llm_usage` has no purge. KAN-241 for dormant maintenance; KAN-239 for the per-call ledger.                                         |
+
+Evidence: [user deactivation](../../backend/src/ase/application/admin/users.py),
+[request decisions](../../backend/src/ase/application/admin/requests.py),
+[settings](../../backend/src/ase/infrastructure/settings.py),
+[link lifetimes](../../backend/src/ase/domain/tokens.py),
+[family pruning](../../backend/src/ase/adapters/persistence/token_families.py),
+[MFA](../../backend/src/ase/application/auth/mfa.py),
+[audit](../../backend/src/ase/adapters/persistence/audit.py),
+[research counters](../../backend/src/ase/adapters/persistence/research_usage.py),
+[AI maintenance](../../backend/src/ase/application/ai_usage.py) and
+[per-call usage](../../backend/src/ase/adapters/persistence/llm.py).
+
+## Notifications and retained research
+
+| ID / records                                      | Current rule and actual trigger                                                                                                                                                                                         | Limitation / follow-up                                                                                                                                                                                                           |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T08: alerts and consumed-evidence digests         | Alerts older than 30 days are pruned by the evaluator, normally every 60 seconds. Consumed digests follow the seven-day eligibility horizon, preserving its inclusive cutoff; pruning also runs on consumption.         | Evaluator starts with enabled feeds. Disabled feeds can suspend cleanup; corrupt consumed state fails closed. KAN-241.                                                                                                           |
+| T09: delivery history                             | Alert email/webhook rows cascade on alert deletion with enforced foreign keys. Subscription/digest workers update state without age purge.                                                                              | PostgreSQL cascade does not establish SQLite parity; [KAN-242](https://alex-orr.atlassian.net/browse/KAN-242) tracks the source-identified SQLite gap pending reproduction. KAN-239 covers terminal subscription/digest history. |
+| T10: push registration and receipts               | Device removal/security invalidation deletes credentials and associated receipts. Configured push worker prunes receipts older than seven days, normally every 30 seconds.                                              | Unconfigured push waits without pruning. KAN-241; browser vendor copies remain separate.                                                                                                                                         |
+| T11: reports, frozen evidence and job checkpoints | Authorised report deletion removes linked versions/evidence/claims/ledgers/originals/maps/library/embeddings. Inactive job checkpoints have a separate explicit discard after reservation checks; final reports remain. | No age purge. Checkpoints can independently hold selected private evidence. Review purpose completion/quarterly; KAN-240 provides dependency-aware removal. Audit/backups remain separate.                                       |
+| T12: briefs and subscriptions                     | Archive disables a schedule but retains revisions, editions, comparisons and lineage. Referenced reports remain deletion-blocked even after archive. Brief revisions persist separately.                                | Archive is not erasure. Review continuing/shared need; KAN-240 covers the retained graph without bypassing ownership or dependency checks.                                                                                       |
+| T13: selected subscription metadata               | Current USGS metadata policy: 400 days, enforced with owner limits when a page is persisted.                                                                                                                            | Paused/archived/inaccessible owners may never trigger cleanup; reads do not independently exclude expired rows. Concrete dormant-expiry gap: KAN-241. This is public metadata, not raw/private evidence.                         |
+
+Persistent notification choices and credentials (**T20**) have a separate lifecycle:
+explicit private Atom-feed revocation deletes its token-hash row; security-version
+invalidation only prevents use. Email opt-out cancels intents and changes preferences,
+but retains preference rows. Webhook removal disables the destination and detaches
+routes while retaining the encrypted URL. There is no general age purge for these
+records. KAN-240 includes them in the account/saved-work removal inventory; review
+unused destinations and preferences quarterly and on account closure.
+
+Evidence: [feed-token revoke](../../backend/src/ase/adapters/persistence/notification_feed.py),
+[private-feed access](../../backend/src/ase/application/account/private_feed.py),
+[destination removal](../../backend/src/ase/adapters/persistence/alert_routing.py) and
+[preferences](../../backend/src/ase/adapters/persistence/notification_preferences.py).
+
+Evidence: [alert prune](../../backend/src/ase/adapters/persistence/warning_store.py),
+[evaluator startup](../../backend/src/ase/app_lifecycle.py),
+[outbox foreign key](../../backend/src/ase/adapters/persistence/alert_routing_models.py),
+[SQLite sessions](../../backend/src/ase/adapters/persistence/session.py),
+[push worker](../../backend/src/ase/container/web_push.py),
+[report deletion](../../backend/src/ase/adapters/persistence/reports.py),
+[job discard](../../backend/src/ase/application/report_jobs/controls.py),
+[report dependencies](../../backend/src/ase/adapters/persistence/report_links.py),
+[schedule archive](../../backend/src/ase/adapters/persistence/schedules.py) and
+[selected-index expiry](../../backend/src/ase/adapters/persistence/selected_index_eviction.py).
+
+## Inputs, enquiries and copies
+
+| ID / records                                                 | Current rule and actual trigger                                                                                                                                                                                                                                                                                       | Limitation / follow-up                                                                                                                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T14: private input receipts                                  | 15-minute process-local access. Expired slots are physically removed on reserve/pending/read; explicit discard removes derived descendants; process exit clears memory.                                                                                                                                               | No independent timer. Selected material frozen into jobs/reports follows T11, not the receipt clock. Dormant memory cleanup: KAN-241.                                                                           |
+| T15: originals and fetched passages                          | Explicit assets: selected 1-90 days, default 30. Expiry/deletion scrubs bytes and identifying fields; lifecycle rows are removed 30 days after transition. Fetched passages have separate policy, default one day, maximum 30, and are physically deleted on expiry. Minute housekeeping runs independently of feeds. | Saved report extracts and recovery copies remain separate. Selected asset periods do not remove those copies; necessity/removal follows T11/T18.                                                                |
+| T16: enterprise enquiries                                    | Default 365 days from submission, configurable 30-3650. Reads exclude older records; minute sweep deletes up to 100 even when new submissions are disabled. Authorised manual deletion exists. Exact cutoff is retained; status changes do not reset age.                                                             | Outage/backlog can delay physical deletion. Mailbox/backup copies are separate. Delivered under KAN-167; runtime period should be verified on the deployed release before asserting its effective value.        |
+| T17: public live data and snapshot                           | Bounded category age/count budgets; normal 60-second feed pruning. Examples: aviation/satellite positions 10 minutes, vessels 15 minutes, conflict/cyber up to 30 days. Snapshot defaults: 300-second replacement, 128 MiB cap, final shutdown save, retention reapplied on restore.                                  | Snapshot is disposable public cache and excluded from backup. An offline/disabled installation can retain an old file; these windows are not disk-erasure deadlines. KAN-243 covers offline-file review.        |
+| T18: backups, releases and logs                              | Scheduled helper keeps newest 30 archives, minimum three, after successful verification; operator scheduling is required. Release pruning separately defaults to five releases, minimum two, dry-run until `--apply`. Compose logs rotate at five files of `20m` per container.                                       | Counts/sizes are not ages. Manual and remote copies are outside scheduled pruning. No automatic replay of later erasure/deactivation on restore. [KAN-243](https://alex-orr.atlassian.net/browse/KAN-243).      |
+| T19: mailbox, provider, archive, browser and exported copies | Review correspondence on resolution and quarterly. Browser storage follows the [inventory](../../frontend/src/features/public-policy/storage.json) and user controls. Provider copies follow their terms; recipient downloads/public archives remain separately controlled.                                           | No universal application purge. KAN-243 records external-copy review and request handling; KAN-185 reviews recipient arrangements. Deleting a local record cannot recall a delivered message or public archive. |
+
+Evidence: [receipt store](../../backend/src/ase/adapters/research_inputs/memory.py),
+[asset cleanup](../../backend/src/ase/adapters/persistence/original_assets.py),
+[asset/housekeeping loop](../../backend/src/ase/container/original_asset_expiry.py),
+[passage policy](../../backend/src/ase/application/research/original_policy.py),
+[enquiry deletion](../../backend/src/ase/adapters/persistence/admin_enquiries.py),
+[live budgets](../../backend/src/ase/application/feeds/budgets.py),
+[snapshot](../../backend/src/ase/application/feeds/live_snapshot.py),
+[scheduled archives](../../scripts/scheduled_backup.py),
+[release pruning](../../scripts/prune_deployments.py) and
+[log rotation](../../docker-compose.yml).
+
+## Review and recovery procedure
+
+The 11 October observation recorded a daily backup and weekly archive verification
+drill using default count retention and no off-site override. It does not establish
+today's schedule, a fixed maximum age, or successful full recovery.
+
+At each review, inventory live records and separately retained copies, record
+necessity/holds and use [supported deletion controls](../PERSONAL_DATA_OPERATIONS.md).
+Restrict unresolved material and record why it remains plus the next action/date.
+Before restoring service from older data, reconcile subsequent deactivations,
+deletions, objections, opt-outs and access changes. Inspect remote destinations,
+manual exports and mailbox copies separately. KAN-243 must make this reconciliation
+repeatable and evidenced; this text does not claim that drill has happened.
+
+The six follow-ups above were created after duplicate review. They preserve the
+distinction between a recorded schedule and implemented deletion. Their completion
+requires tests and an authorised rollout before the installation can claim the
+new behaviour; KAN-187 completion alone does not close them.

@@ -195,7 +195,14 @@ which can still be running the old build.
 
 The same cache issue applies to `backend/Dockerfile` (`apt-get update` and
 `apt-get upgrade`) and the final stage of `frontend/Dockerfile` (`apk upgrade`).
-Ordinary source changes can leave these earlier layers cached. The parser uses
+Ordinary source changes can leave these earlier layers cached. The backend's
+`ASE_DEBIAN_SECURITY_REFRESH` build argument is a deliberate cache revision:
+bump its checked-in default when incorporating Debian security updates so CI,
+Compose and release builds refresh the shared package layer. Keep it stable
+between refreshes to preserve repeat-build caching. It is not a scheduled updater
+or a claim that the running deployment has been rebuilt. KAN-237 introduced the
+14 October 2026 revision after the cached curl/librsvg packages failed CI.
+The parser uses
 the backend Dockerfile under its own Compose service/image tag, so include it in
 an authorised application-image refresh:
 
