@@ -4,6 +4,17 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-238 authentication retention, 16 October 2026
+
+- [x] Define terminal-record windows and a conservative scoped housekeeping hold.
+- [x] Implement bounded preview/apply and opt-in independent scheduling; preserve
+  active families, replay detection, confirmed factors and pending account requests.
+- [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
+- [ ] Complete independent review, broad regression/CI and authorised integration.
+- [ ] Operator review and explicit enablement remain separate from code delivery.
+
+See [the retention procedure](AUTH_RETENTION.md).
+
 ### KAN-244 native image triage, 16 October 2026
 
 - [x] Preserve the original image/scan identity and deduplicate 227 package matches

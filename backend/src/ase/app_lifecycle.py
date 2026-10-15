@@ -15,11 +15,13 @@ from ase.container import Container
 from ase.container.alert_reports import alert_report_runner
 from ase.container.alert_routing import alert_dispatcher
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
+from ase.container.auth_retention import run_auth_retention
 from ase.container.live_snapshot import build_live_snapshot
 from ase.container.notifications import digest_worker, notification_dispatcher
 from ase.container.original_asset_expiry import expire_original_assets
 from ase.container.runtime_health import RuntimeHealth
 from ase.container.web_push import run_web_push
+from ase.domain.auth_retention import AuthRetentionPolicy
 from ase.infrastructure.shutdown import ShutdownPhases
 from ase.infrastructure.startup import record_startup_phase
 
@@ -41,6 +43,24 @@ async def _start(
 async def _cancel(task: asyncio.Task[None]) -> None:
     task.cancel()
     await asyncio.gather(task, return_exceptions=True)
+
+
+def _start_auth_retention(
+    cleanup: AsyncExitStack, container: Container, phases: ShutdownPhases
+) -> None:
+    if not container.settings.auth_retention_enabled:
+        return
+    task = asyncio.create_task(
+        run_auth_retention(
+            container.session_factory,
+            container.clock,
+            AuthRetentionPolicy(
+                decision_days=container.settings.account_request_retention_days,
+                paused=container.settings.auth_retention_paused,
+            ),
+        )
+    )
+    cleanup.push_async_callback(phases.run, "auth_retention", lambda: _cancel(task))
 
 
 @asynccontextmanager
@@ -78,6 +98,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             housekeeping = await cleanup.enter_async_context(AsyncExitStack())
             reporting = await cleanup.enter_async_context(AsyncExitStack())
             admission = await cleanup.enter_async_context(AsyncExitStack())
+            _start_auth_retention(housekeeping, container, phases)
             await _start(admission, container.schedule_runner, phases, "schedule_runner")
             await _start(
                 admission, alert_report_runner(container), phases, "alert_report_admission"

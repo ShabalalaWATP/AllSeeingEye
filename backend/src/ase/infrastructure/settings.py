@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     session_idle_minutes: int = Field(default=180, ge=5, le=1440)
     admin_session_idle_minutes: int | None = Field(default=None, ge=5, le=1440)
     refresh_token_days: int = Field(default=14, ge=1, le=90)
+    auth_retention_enabled: bool = False
+    auth_retention_paused: bool = False
+    account_request_retention_days: int = Field(default=90, ge=30, le=3650)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     # The signed-out product page at /enterprise. Off so other installations do not show it.

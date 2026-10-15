@@ -6363,3 +6363,38 @@ The rebuilt image's fresh Trivy 0.69.3 database (15 October, 19:09 UTC) still re
 227 package matches / 55 CVEs, with zero fixable HIGH/CRITICAL findings. The existing
 fixable gate passed. Full current-head CI and release approval remain required;
 there is no live-deployment claim or new full-suite coverage measurement yet.
+
+## 16 October 2026: KAN-238 bounded authentication housekeeping
+
+Authentication retention now has one explicit maintenance policy: a counts-only
+CLI preview, an apply operation, and a disabled-by-default minute worker independent
+of feeds and logins. It erases terminal links/challenges and decided requests,
+clears only pending TOTP fields, and retains all refresh ancestors until the entire
+family has passed its 91-day post-expiry window. Push receipts drain before devices,
+tokens and terminal family metadata. Each category changes at most 100 rows per
+transaction, with account locks and fresh predicates after the administration guard.
+The old unbounded logout-triggered family deletion is removed; revocation remains
+immediate. A scoped global pause applies to the new worker and CLI.
+
+The independent security review found and reproduced a new CLI settings-validation
+traceback that could include secrets. Settings construction now shares the sanitised
+error boundary, verified through an actual subprocess with a synthetic credential.
+The review found no remaining concrete security/correctness blocker. Its mixed-family
+backlog case is now permanent: 205 receipts and 250 tokens drain in bounded stages,
+while newer families and another owner's records remain unchanged.
+
+Verification: 54 focused SQLite tests passed with 99.24% branch-inclusive coverage
+of the four new implementation modules (95% local scope floor, no project threshold
+change). PostgreSQL passed 39 retention cases and five concurrency/revocation cases.
+A wider authentication/lifecycle run passed 106 cases; its one test-harness failure
+used a module invocation that did not execute Typer, and the corrected subprocess
+regression passed in the final focused run. Initial PostgreSQL race setup needed its
+private temporary parent directory created; all five then passed. An initial coverage
+invocation imported overlapping module sources and failed in NumPy; using source-path
+collection with a scoped report resolved it. Ruff, formatting, strict mypy over 1642
+source files, three import contracts, focused Bandit, file length and whitespace pass.
+
+The procedure and T02-T04 schedule distinguish code availability, physical erasure,
+scoped holds and operator rollout. Full current-head CI and authorised integration
+remain. No live database purge, enabling of the worker, or production retention claim
+was made. Public policy wording and statutory deadlines were not invented.
