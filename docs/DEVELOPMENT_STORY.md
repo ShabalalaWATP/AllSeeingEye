@@ -6339,3 +6339,27 @@ three deployment-build unit cases passed with one POSIX-only case skipped locall
 Both actual-content publication validators retain the approved hash. Full prior-head
 application, PostgreSQL and security CI passed apart from the image gate; updated-head
 CI remains required. No new coverage measurement or production deployment is claimed.
+
+## 16 October 2026: KAN-242 SQLite alert-outbox retention parity
+
+The production SQLite session construction reproduced orphaned delivery metadata
+after alert expiry; PostgreSQL's cascade already removed it. A parent-existence
+delete now runs inside the existing guarded prune transaction, including when zero
+alerts expire. It repairs historical orphans without changing live retry state,
+terminal idempotency records, age cutoffs, returned counts or global FK settings.
+
+Validation covers 56 distinct SQLite cases across focused runs, including normal
+FK-off and explicit FK-on construction, all delivery states, exact cutoff, rollback,
+retry and terminal deduplication. PostgreSQL passed 48 cases with eight intentionally
+SQLite-specific cases skipped. A deterministic two-connection test on each backend
+pauses preparation, commits pruning, then checks refreshed denial and no resurrection.
+Ruff, formatting, strict mypy, three import contracts, focused Bandit, file length and
+whitespace checks passed. Independent review found no concrete defect; its concurrency
+test suggestion was implemented. A baseline test helper initially omitted a required
+enqueue keyword; it was corrected before the passing validation.
+
+Routing and retention documentation now distinguish explicit SQLite cleanup from
+PostgreSQL cascade. The assigned-ticket delivery queue records eleven individual
+items and their order. Full current-head CI and authorised integration remain; no
+production database, migration or deletion was performed and full-suite coverage
+was not remeasured locally.

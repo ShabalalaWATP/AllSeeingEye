@@ -4,6 +4,14 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### Codex assigned queue, 16 October 2026
+
+The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested
+individual tickets and dependency order. KAN-244 is in review as PR 204. KAN-242
+reproduces and repairs SQLite alert-outbox orphan retention without changing global
+foreign-key semantics. Relevant local checks, review, CI and authorised integration
+remain tracked separately from implementation and production deletion.
+
 ### KAN-187 country and provider confirmation, 14 October 2026
 
 - [x] Record Finland and the operator-confirmed Hetzner DPA / standard OpenAI and

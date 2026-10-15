@@ -182,7 +182,10 @@ failure cannot remove the alert or prevent subsequent channel processing.
 Inspect `alert_notification_outbox` for `pending`, `sending`, `sent`, `unavailable`,
 `cancelled`, `failed` or `uncertain`. `sent` records transport acceptance only.
 Do not reset uncertain rows without independent receiver evidence. There is no
-manual resend UI. Alert retention cascades removal of its outbox records.
+manual resend UI. Alert retention removes its outbox records in the same transaction.
+PostgreSQL enforces the cascade; an explicit parent-existence sweep provides SQLite
+parity and removes older orphans. Rows for surviving alerts retain their retry and
+idempotency state. This cleanup still depends on the evaluator running.
 
 Migration 0072 adds destinations, routes and outbox tables without enrolling
 existing users. Its downgrade removes those new settings and delivery history;
