@@ -8,7 +8,6 @@ from typing import Annotated
 import typer
 
 from ase.adapters.persistence.session import create_engine, create_session_factory
-from ase.container.auth_retention import maintain_authentication
 from ase.domain.auth_retention import AuthRetentionPolicy
 from ase.infrastructure.settings import Settings
 
@@ -35,6 +34,9 @@ def auth_retention(
 
 
 async def _run(settings: Settings, *, dry_run: bool) -> dict[str, int]:
+    # Keep migration and other CLI startup paths independent of application wiring.
+    from ase.container.auth_retention import maintain_authentication  # noqa: PLC0415
+
     engine = create_engine(settings.database_url)
     try:
         return await maintain_authentication(

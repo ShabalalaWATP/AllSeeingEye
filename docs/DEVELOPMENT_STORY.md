@@ -6398,3 +6398,9 @@ The procedure and T02-T04 schedule distinguish code availability, physical erasu
 scoped holds and operator rollout. Full current-head CI and authorised integration
 remain. No live database purge, enabling of the worker, or production retention claim
 was made. Public policy wording and statutory deadlines were not invented.
+
+Full CI subsequently caught migration CLI eager wiring and a missing setting in
+the snapshot lifecycle test double. The retention command now imports its wiring
+only when invoked; the migration CLI stays lightweight. The fixture declares the
+disabled default. All 28 startup, snapshot and retention-command checks pass after
+the repair; the existing architecture assertions remain unchanged.

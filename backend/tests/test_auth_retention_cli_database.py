@@ -28,7 +28,8 @@ async def test_cli_closes_database_after_transaction_failure(settings, monkeypat
     monkeypatch.setattr("ase.cli_auth_retention.create_engine", Mock(return_value=engine))
     monkeypatch.setattr("ase.cli_auth_retention.create_session_factory", Mock())
     monkeypatch.setattr(
-        "ase.cli_auth_retention.maintain_authentication", AsyncMock(side_effect=RuntimeError())
+        "ase.container.auth_retention.maintain_authentication",
+        AsyncMock(side_effect=RuntimeError()),
     )
     with pytest.raises(RuntimeError):
         await _run(settings, dry_run=False)
