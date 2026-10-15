@@ -7,7 +7,7 @@ guide, not automatic closure or release approval.
 
 | Order | Ticket | Outcome | Current evidence |
 | --- | --- | --- | --- |
-| 1 | [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244) | Native image advisory triage and bounded parser mitigations | [PR 204](https://github.com/ShabalalaWATP/AllSeeingEye/pull/204), in review; unresolved native paths remain explicit |
+| 1 | [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244) | Native image advisory triage and bounded parser mitigations | [PR 204](https://github.com/ShabalalaWATP/AllSeeingEye/pull/204), merged as `9d5a0166`, Jira Done; unresolved native paths remain explicit |
 | 2 | [KAN-242](https://alex-orr.atlassian.net/browse/KAN-242) | SQLite alert/outbox deletion parity | Current implementation, disposable SQLite/PostgreSQL verification |
 | 3 | [KAN-238](https://alex-orr.atlassian.net/browse/KAN-238) | Expired authentication and decided-request cleanup | To do |
 | 4 | [KAN-239](https://alex-orr.atlassian.net/browse/KAN-239) | Audit, model usage and terminal-delivery retention | To do |

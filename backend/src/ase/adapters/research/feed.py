@@ -77,7 +77,7 @@ class ResearchFeedParser(RssConnector):
     """Reuse the shared RSS mapping, excluding undated items instead of inventing dates."""
 
     def parse(self, text: str, query: ResearchQuery, *, local_match: bool) -> tuple[Event, ...]:
-        root = fromstring(text.lstrip("\ufeff").encode("utf-8"))
+        root = fromstring(text.lstrip("\ufeff").encode("utf-8"), forbid_dtd=True)
         if root.tag.rsplit("}", 1)[-1].lower() not in {"rss", "rdf", "feed"}:
             raise ValueError("Response is not an RSS or Atom feed")
         terms = search_terms(query)

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
+from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
 from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
@@ -53,8 +54,8 @@ class VolcanoReportConnector(HttpFeed):
     async def fetch(self) -> list[Event]:
         text = await self._http.get_text(self.spec.url)
         try:
-            root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
-        except ParseError as exc:
+            root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"), forbid_dtd=True)
+        except (ParseError, DefusedXmlException) as exc:
             raise FeedFetchError("Volcano report feed is not well-formed XML") from exc
         now = self._clock.now()
         return [event for item in root.iter("item") if (event := self._to_event(item, now))]

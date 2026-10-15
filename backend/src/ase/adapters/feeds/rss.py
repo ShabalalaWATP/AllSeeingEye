@@ -11,6 +11,7 @@ from itertools import islice
 # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
+from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
 from ase.adapters.feeds.feed_entities import numeric_entities
@@ -206,8 +207,8 @@ class RssConnector:
         if _looks_like_html(body):
             raise FeedFetchError(f"{self.spec.id}: returned an HTML page, not an RSS or Atom feed")
         try:
-            root: Element = safe_fromstring(body.encode("utf-8"))
-        except ParseError as exc:
+            root: Element = safe_fromstring(body.encode("utf-8"), forbid_dtd=True)
+        except (ParseError, DefusedXmlException) as exc:
             raise FeedFetchError(f"{self.spec.id}: feed is not well-formed XML") from exc
         if _local(root.tag) not in {"rss", "RDF", "feed"}:
             raise FeedFetchError(f"{self.spec.id}: response is not an RSS or Atom feed")

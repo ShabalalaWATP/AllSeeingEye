@@ -150,7 +150,7 @@ def parse_australia(payload: bytes) -> tuple[Camera, ...]:
 
 def parse_newzealand(payload: bytes) -> tuple[Camera, ...]:
     rows: list[dict[str, Any]] = []
-    for item in fromstring(payload).iter("camera"):
+    for item in fromstring(payload, forbid_dtd=True).iter("camera"):
         if len(rows) >= 5000:
             break
         if item.findtext("offline") == "true" or item.findtext("underMaintenance") == "true":

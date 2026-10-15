@@ -50,7 +50,7 @@ def _child(node: Any, name: str) -> Any:
 
 def _placemarks(payload: bytes) -> list[Any]:
     try:
-        root = fromstring(payload)
+        root = fromstring(payload, forbid_dtd=True)
     except Exception as exc:
         raise ValueError("Invalid camera KML") from exc
     return [node for node in root.iter() if _local(node.tag) == "Placemark"][:5000]

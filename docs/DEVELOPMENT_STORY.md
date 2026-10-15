@@ -6340,6 +6340,30 @@ Both actual-content publication validators retain the approved hash. Full prior-
 application, PostgreSQL and security CI passed apart from the image gate; updated-head
 CI remains required. No new coverage measurement or production deployment is claimed.
 
+## 16 October 2026: KAN-244 native parser boundaries
+
+The October inventory was preserved and deduplicated to 55 advisories across
+15 Debian source packages. Exact-image inspection separates absent components,
+excluded prerequisites and unresolved native paths. Python bundles Expat 2.8.5
+and lxml bundles libxml2 2.14.6; the older system packages cannot automatically
+be attributed to those Python calls. Sixteen native-path/version questions remain
+explicitly unresolved. No residual-risk acceptance or scanner suppression was made.
+
+Media intake now gates decoder opening before FFprobe and each FFmpeg input,
+then validates the selected video codec before sampling. Common audio tracks remain
+supported. Ten XML boundaries reject DTDs, including attribute-only declarations,
+while retaining existing sanitised errors. Resource and isolation controls remain.
+
+Validation passed: 185 focused tests; lint, formatting, strict typing, three import
+contracts and Bandit. Independent review found no concrete bypass or regression.
+On both immutable Linux images, synthetic H264/AAC, HEVC/AAC, VP8/Vorbis, VP9/Opus
+and AV1/Opus clips produced three samples. CFHD and H264-plus-CFHD clips were admitted
+by the original image and rejected by the candidate. No hostile bitstreams were used.
+The rebuilt image's fresh Trivy 0.69.3 database (15 October, 19:09 UTC) still reports
+227 package matches / 55 CVEs, with zero fixable HIGH/CRITICAL findings. The existing
+fixable gate passed. Full current-head CI and release approval remain required;
+there is no live-deployment claim or new full-suite coverage measurement yet.
+
 ## 16 October 2026: KAN-242 SQLite alert-outbox retention parity
 
 The production SQLite session construction reproduced orphaned delivery metadata
@@ -6363,3 +6387,9 @@ PostgreSQL cascade. The assigned-ticket delivery queue records eleven individual
 items and their order. Full current-head CI and authorised integration remain; no
 production database, migration or deletion was performed and full-suite coverage
 was not remeasured locally.
+
+KAN-244 subsequently passed all 40 PR checks (backend coverage 94% in the rounded
+CI report). Alex approved the exact reviewed commit, and PR 204 merged as
+`9d5a0166`; the resulting tree matches the tested candidate. Jira is Done for the
+triage/mitigation scope. KAN-242 incorporated that main revision, preserving both
+documentation records. Main CI and live deployment verification remain separate.

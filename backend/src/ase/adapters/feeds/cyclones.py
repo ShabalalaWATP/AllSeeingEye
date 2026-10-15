@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta
 # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
+from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
 from ase.adapters.feeds.base import HttpFeed, empty_when_unchanged
@@ -86,8 +87,8 @@ def severity_from_knots(knots: float | None) -> float:
 
 def _parse_xml(text: str, name: str) -> Element:
     try:
-        root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
-    except ParseError as exc:
+        root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"), forbid_dtd=True)
+    except (ParseError, DefusedXmlException) as exc:
         raise FeedFetchError(f"{name} feed is not well-formed XML") from exc
     return root
 
