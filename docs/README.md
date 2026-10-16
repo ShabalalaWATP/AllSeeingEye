@@ -155,6 +155,8 @@ The dated reviews below record the scope and findings at the time:
 GitHub handoffs. [Parallel development](PARALLEL_DEVELOPMENT.md) defines checkout
 and runtime isolation. The [Codex backlog register](delivery/CODEX_BACKLOG_2026_09_30.md)
 records the current grouped delivery scope and outstanding operational acceptance.
+The [16 October assigned queue](delivery/CODEX_QUEUE_2026_10_16.md) tracks the
+subsequent native-image, retention, assessment and disclosure tickets.
 
 [CLAUDE.md](../CLAUDE.md) records contributor rules. These documents track how the
 app is built; they do not replace checking the current code and tests.

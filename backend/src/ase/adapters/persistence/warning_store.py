@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence import alert_feedback, warning_consumption
 from ase.adapters.persistence.alert_notification_enqueue import enqueue_alert_notifications
+from ase.adapters.persistence.alert_routing_models import AlertNotificationRow
 from ase.adapters.persistence.models import (
     AlertRow,
     CollectionPlanRow,
@@ -213,6 +214,17 @@ class SqlWarningStore:
             count = int(await session.scalar(stale) or 0)
             if count:
                 await session.execute(delete(AlertRow).where(AlertRow.fired_at < before))
+            # SQLite does not enforce the cascade. Also repair older orphans when
+            # no alerts expire, keeping every live alert's delivery/idempotency state.
+            await session.execute(
+                delete(AlertNotificationRow)
+                .where(
+                    ~select(AlertRow.id)
+                    .where(AlertRow.id == AlertNotificationRow.alert_id)
+                    .exists()
+                )
+                .execution_options(synchronize_session=False)
+            )
             # Counts use acknowledgement days, not the raw alert's firing time.
             cutoff = before.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
             await alert_feedback.prune(session, cutoff)

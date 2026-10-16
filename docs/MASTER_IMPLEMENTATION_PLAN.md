@@ -10,10 +10,19 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] Implement bounded preview/apply and opt-in independent scheduling; preserve
   active families, replay detection, confirmed factors and pending account requests.
 - [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
-- [ ] Complete independent review, broad regression/CI and authorised integration.
+- [x] Complete independent review and broad regression/CI on the initial candidate.
+- [ ] Validate integration with KAN-242 and obtain release approval.
 - [ ] Operator review and explicit enablement remain separate from code delivery.
 
 See [the retention procedure](AUTH_RETENTION.md).
+
+### Codex assigned queue, 16 October 2026
+
+The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested
+individual tickets and dependency order. KAN-244 is Done after authorised PR 204 integration at `9d5a0166`. KAN-242 is Done after authorised PR 205 integration at `e1f36dcb`. It
+repairs SQLite alert-outbox orphan retention without changing global
+foreign-key semantics. Relevant local checks, review, CI and authorised integration
+remain tracked separately from implementation and production deletion.
 
 ### KAN-244 native image triage, 16 October 2026
 
@@ -23,7 +32,8 @@ See [the retention procedure](AUTH_RETENTION.md).
 - [x] Constrain decoder opening and reject internal XML DTDs at shared boundaries.
 - [x] Pass 185 focused tests, Linux synthetic controls, lint, formatting, typing,
   architectural contracts and Bandit; independent review found no concrete issue.
-- [ ] Complete current-head CI, release approval and authorised integration.
+- [x] Complete all 40 PR checks, explicit release approval and integration as `9d5a0166`.
+  Main CI and live deployment verification remain separate.
 - [ ] Review 16 unresolved native paths by 23 October or before release; do not
   equate completed triage or application mitigations with patched system packages.
 
