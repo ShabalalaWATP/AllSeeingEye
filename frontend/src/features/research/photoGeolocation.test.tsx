@@ -91,6 +91,7 @@ describe('photo geolocation workspace', () => {
       },
       expect.any(AbortSignal),
     );
+    expect(screen.getByText('AI-assisted assessment')).toBeVisible();
     expect(screen.getByText('Candidate position, not a verified pin')).toBeVisible();
     expect(screen.getByText(/uncertainty radius 1 km/)).toBeVisible();
     fireEvent.click(screen.getByText('Analysis record'));
@@ -168,6 +169,7 @@ describe('photo geolocation workspace', () => {
     render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
     await begin();
     expect(await screen.findByText('No location identified')).toBeVisible();
+    expect(screen.getByText('AI-assisted assessment')).toBeVisible();
     expect(screen.getByText('How to verify')).toBeVisible();
     expect(screen.queryByText('Candidate position, not a verified pin')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create saved report' })).toBeEnabled();

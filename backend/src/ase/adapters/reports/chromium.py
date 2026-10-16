@@ -7,6 +7,7 @@ import subprocess  # nosec B404
 import sys
 import tempfile
 from contextlib import suppress
+from dataclasses import asdict
 from pathlib import Path
 
 from ase.adapters.reports.chromium_pdf_child import MAX_PAGES, MAX_PDF_BYTES
@@ -85,6 +86,13 @@ class ChromiumPdfWorker:
                             "The isolated renderer resource boundary is unavailable."
                         )
                     (directory / "input.html").write_bytes(html)
+                    (directory / "disclosure.json").write_text(
+                        json.dumps(
+                            asdict(document.ai_disclosure) if document.ai_disclosure else None,
+                            ensure_ascii=False,
+                        ),
+                        encoding="utf-8",
+                    )
                     request = {
                         "command": self.policy.command(directory),
                         "cgroup": str(job.path),

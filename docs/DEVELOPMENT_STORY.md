@@ -6405,6 +6405,116 @@ only when invoked; the migration CLI stays lightweight. The fixture declares the
 disabled default. All 28 startup, snapshot and retention-command checks pass after
 the repair; the existing architecture assertions remain unchanged.
 
+## 16 October 2026: KAN-242 SQLite alert-outbox retention parity
+
+The production SQLite session construction reproduced orphaned delivery metadata
+after alert expiry; PostgreSQL's cascade already removed it. A parent-existence
+delete now runs inside the existing guarded prune transaction, including when zero
+alerts expire. It repairs historical orphans without changing live retry state,
+terminal idempotency records, age cutoffs, returned counts or global FK settings.
+
+Validation covers 56 distinct SQLite cases across focused runs, including normal
+FK-off and explicit FK-on construction, all delivery states, exact cutoff, rollback,
+retry and terminal deduplication. PostgreSQL passed 48 cases with eight intentionally
+SQLite-specific cases skipped. A deterministic two-connection test on each backend
+pauses preparation, commits pruning, then checks refreshed denial and no resurrection.
+Ruff, formatting, strict mypy, three import contracts, focused Bandit, file length and
+whitespace checks passed. Independent review found no concrete defect; its concurrency
+test suggestion was implemented. A baseline test helper initially omitted a required
+enqueue keyword; it was corrected before the passing validation.
+
+Routing and retention documentation now distinguish explicit SQLite cleanup from
+PostgreSQL cascade. The assigned-ticket delivery queue records eleven individual
+items and their order. Full current-head CI and authorised integration remain; no
+production database, migration or deletion was performed and full-suite coverage
+was not remeasured locally.
+
+KAN-244 subsequently passed all 40 PR checks (backend coverage 94% in the rounded
+CI report). Alex approved the exact reviewed commit, and PR 204 merged as
+`9d5a0166`; the resulting tree matches the tested candidate. Jira is Done for the
+triage/mitigation scope. KAN-242 incorporated that main revision, preserving both
+documentation records. Main CI and live deployment verification remain separate.
+
+KAN-242 integration: Alex approved PR 205 at `6919008f` after all 40 checks passed.
+It merged as `e1f36dcb`; Jira is Done. KAN-238 preserves both changes during
+integration. The separately blocked manual production rollout was not approved.
+
+## 16 October 2026: KAN-191 AI output disclosure
+
+PDF and Word exports identify AI assistance beside the title and in page footers,
+with portable metadata derived only from the selected frozen version. Missing
+provider provenance stays unknown, and an OpenAI-compatible connector is not
+misrepresented as a verified OpenAI host. Full model details remain in metadata;
+long footer names are explicitly shortened. The canonical blocks, saved Markdown,
+report body and source evidence remain unchanged.
+
+The optional Chromium renderer receives bounded UTF-8 disclosure through a read-only
+file and writes PDF metadata inside its existing isolated child. Normal PDF output
+retains supported-glyph fallback and serial font subsetting. Word custom properties
+use typed OOXML. Evidence GeoJSON flags recorded AI visual-hypothesis titles and
+leaves other fields unclassified; live GeoJSON/KML describe source observations.
+
+Shared UI labels cover reports, briefings, the Eye assistant, matching recorded AI
+translations, photo results and economy explanations. Setup readiness, uncertainty,
+review status, raw figures and operator/source transformations keep their distinct
+meanings. ADR 0024 records the approach, legal limits and future C2PA considerations.
+
+The explicit no-evidence path is labelled as an application-written gap notice,
+without claiming that its configured model was called. Resumed or failed generated
+reports retain AI disclosure. Independent review also caught photo-hypothesis
+metadata, unsupported model glyphs and Unicode transport expansion; all have
+regression coverage and both final reviewers found no remaining blocker.
+
+Validation: 67 focused backend cases passed with 100% branch-inclusive coverage
+across four new modules. A wider 64-case export/access/font/startup run found one
+old assertion that excluded the model from every format. Updating it to distinguish
+unchanged canonical Markdown from PDF/Word disclosure passed all nine tests in that
+file; the other 63 cases had passed. Frontend: 94 cases passed across 12 files,
+strict type checks, targeted ESLint/formatting, build and bundle budgets passed.
+Backend Ruff/formatting, strict mypy (1,642 files), three import contracts and new
+module Bandit checks passed. File-length and whitespace checks passed. Normal,
+maximum-length, non-Latin and gap-notice PDF pages passed visual inspection.
+Chromium child isolation/metadata are tested with a fake browser process, not a
+live isolated Chromium render. Full current-head CI and release approval remain.
+
+Published CI flagged the standard-library XML import used only to construct Word
+properties. A rule-specific import annotation documents this false positive; no
+XML parser is called and no untrusted XML is consumed. Input XML protections and
+the global security gate are unchanged.
+
+## 16 October 2026: KAN-192 installation-specific security contact
+
+The web image now generates its public security contact from the configured HTTPS
+origin, contact URI and optional operator policy. Empty contact disables publication
+with 404. A small standard-library Go binary uses the existing image build toolchain;
+no dependency or lockfile changes were needed. It writes atomically to a private
+non-root tmpfs directory, with no writes to the read-only application image.
+
+Caddy retains the shared security headers and explicit UTF-8 plain-text response,
+without entering the SPA fallback. The reviewed expiry stays fixed. CI warns at
+30 days and the reference live monitor fails missing/near-expiry publication.
+Expired images disable publication at startup while allowing the app to start;
+continuous uptime still requires the existing live renewal monitor. Deployment
+instructions now require explicit contact configuration before release.
+
+Validation: eight Go test functions and their table cases passed at 90.7% statement
+coverage, with go vet and formatting checks. Repository tests: 178 run, six existing
+platform/dependency skips, no failures. The complete web image built, and actual
+non-root/read-only containers passed enabled 200, disabled 404, custom operator
+policy read-back, security headers and full existing static asset/SPA smoke checks.
+Invalid enabled HTTP configuration stopped startup with a sanitised error. Workflow
+syntax validation and entrypoint ShellCheck passed; full workflow ShellCheck also
+reported existing unused-variable/indirect-function warnings in unchanged scripts.
+Ruff, file length and whitespace checks passed. Independent correctness/security
+review found no remaining blocker after canonical URL, monitor and guide fixes.
+
+Local HTTP checks used loopback-only ephemeral ports and synthetic settings. An
+initial test harness omitted the existing NET_BIND_SERVICE capability and used the
+wrong host matcher; correcting the harness to match Compose resolved both. Slow
+Windows localhost resolution was avoided with explicit loopback and Host headers.
+No production configuration, reporting message or deployment was performed. Full
+current-head CI and exact-head release approval remain required.
+
 ### 16 October 2026: KAN-239 operational retention
 
 Added optional independent maintenance for audit events, per-call AI usage and
@@ -6440,6 +6550,19 @@ whitespace checks pass. Broad CI and authorised integration remain required.
 The new operational guide and T05/T07/T09 schedule retain quarterly ownership,
 hold evidence, parent-record limitations and separate production rollout approval.
 
+Integration with the approved authentication, AI-disclosure and security-contact
+changes preserves both retention workers and both configuration groups. Independent
+review confirmed that no application change was lost. Added a regression covering
+both workers enabled together, distinct task ownership and cancellation before
+disposal, as well as the existing operational-only case.
+
+Combined retention, outbox, lifecycle, startup and export checks initially passed
+171 cases; 19 could not create temporary paths because their private parent directory
+was missing. Creating that directory repaired the harness and all 19 passed.
+All 18 operational-control cases then passed, including both worker configurations.
+Ruff, formatting, strict mypy over 1,650 source files and all three import contracts
+pass. Full CI against the resulting main and release approval remain required.
+
 ### 16 October 2026: KAN-241 dormant workload expiry
 
 Reproduced expired selected metadata returned for idle, paused, archived and
@@ -6473,3 +6596,10 @@ Ruff, formatting, strict mypy over 1650 source files and three architecture
 contracts pass. The guide and T06/T07/T08/T10/T13/T14 retention entries distinguish
 access expiry, batch backlogs, correction scans, operational holds and live rollout.
 Full CI and authorised serial integration remain; no production purge is claimed.
+
+The refreshed integration retains the merged alert-outbox repair and the reviewed
+auth, operational-retention, AI-disclosure and security-contact changes. Independent
+review verified unchanged implementation files and lifecycle ownership. All 113
+combined dormant, lifecycle, startup, operational-control and outbox cases pass,
+including both optional retention workers enabled together. Ruff, formatting,
+strict mypy over 1,654 source files and all three import contracts pass.
