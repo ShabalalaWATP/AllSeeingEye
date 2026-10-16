@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { useId } from 'react';
 import { Link } from 'react-router';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
@@ -49,6 +50,7 @@ export function EventRow({ event }: { event: LiveEvent }) {
       ) : (
         <span className="text-text">{text}</span>
       )}
+      <AiTranslationDisclosure item={event} />
       <Link
         to={eventResearchHref(event)}
         aria-label={english === null ? 'Research this report' : `Research this report: ${english}`}

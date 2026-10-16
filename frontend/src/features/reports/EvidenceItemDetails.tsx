@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import type { ReactNode } from 'react';
 
 import { EvidenceObservationDetails } from '@/components/maps/EvidenceObservationDetails';
@@ -107,7 +108,12 @@ export function EvidenceItemDetails({
         </span>
       </summary>
       <div className="flex min-w-0 flex-col gap-5 pb-6 pl-4 pr-1 sm:pl-12">
-        {item.title_en && <Prose title="Translation (unverified)" text={item.title_en} />}
+        {item.title_en && (
+          <div>
+            <Prose title="Translation (unverified)" text={item.title_en} />
+            <AiTranslationDisclosure item={item} className="mt-1 block text-xs text-muted" />
+          </div>
+        )}
         {item.summary && <Prose title="Original source snippet" text={item.summary} />}
         {assessment && (
           <Group title="Automated assessment">

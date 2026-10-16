@@ -83,6 +83,15 @@
 			Strict-Transport-Security "max-age={$ASE_HSTS_MAX_AGE:0}; includeSubDomains"
 		}
 		root * /srv
+		# Generated once from validated installation settings, outside the read-only
+		# web root. An absent file returns 404 and cannot reach the SPA fallback.
+		@security_contact path /.well-known/security.txt
+		header @security_contact Content-Type "text/plain; charset=utf-8"
+		route @security_contact {
+			root * /tmp/ase-security-contact
+			rewrite * /security.txt
+			file_server
+		}
 		# Client routes fall back to the SPA shell. A missing /assets file answers 404
 		# instead, so a stale tab never receives index.html as a script or stylesheet.
 		# /.well-known serves only the files the image ships (security.txt); any other

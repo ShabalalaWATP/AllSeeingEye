@@ -65,6 +65,9 @@ export function livePictureCollection(events: readonly LiveEvent[]) {
   return {
     type: 'FeatureCollection' as const,
     metadata: {
+      application_ai_generated_fields: [],
+      source_authorship: 'unknown',
+      ai_scope: 'Source observations; no application-generated assessment text is exported.',
       sample: 'Already loaded map events after current filters; not complete provider coverage.',
       precision: 'Non-exact coordinates are representative locations, not exact observations.',
       limit: MAX_LIVE_EXPORT_EVENTS,

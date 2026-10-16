@@ -1,3 +1,4 @@
+import { ReportAiDisclosure } from '@/components/research/ReportAiDisclosure';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ForecastPanel } from '@/components/reports/ForecastPanel';
@@ -181,6 +182,10 @@ export default function ReportPage() {
             <ReportContentsRail contents={contents} />
             <article className="report-reader-paper report-reader-enter min-w-0 overflow-hidden rounded-card">
               <div className="report-reader-content">
+                <ReportAiDisclosure
+                  version={version}
+                  className="mb-5 text-xs leading-5 text-[color:var(--paper-ink-soft)]"
+                />
                 {version.publication ? (
                   <ReportPublicationView
                     publication={version.publication}

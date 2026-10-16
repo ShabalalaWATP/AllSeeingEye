@@ -42,3 +42,9 @@ This is a personal project without a dedicated security team. Acknowledgement
 and follow-up are best effort, normally within one week; this is not a service
 level agreement. If there is no reply, follow up in the same private email thread
 or GitHub report.
+
+Operators can publish their installation's reporting channel at
+`/.well-known/security.txt`. See [public contact configuration](docs/SECURITY_CONTACT.md)
+for contact, policy, HTTPS origin and expiry settings. Publication is disabled
+until a contact is configured; the software project's policy must not be assumed
+to describe an unrelated operator's practices.

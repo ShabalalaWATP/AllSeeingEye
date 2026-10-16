@@ -2,6 +2,25 @@ import { expect, it } from 'vitest';
 import { liveEvent } from '@/test/fixtures';
 import { exportLivePicture, livePictureCollection } from './livePictureExport';
 
+it('reads authorship scope back from GeoJSON and KML without labelling sources as AI', () => {
+  const event = liveEvent({ source_id: 'usgs_earthquakes', title: 'Original source title' });
+  const geo: unknown = JSON.parse(exportLivePicture([event], 'geojson'));
+  expect(geo).toMatchObject({
+    metadata: { application_ai_generated_fields: [], source_authorship: 'unknown' },
+    features: [{ properties: { title: event.title } }],
+  });
+  const kml = new DOMParser().parseFromString(exportLivePicture([event], 'kml'), 'application/xml');
+  expect(kml.querySelector('parsererror')).toBeNull();
+  const metadata: unknown = JSON.parse(
+    kml.querySelector('Data[name="metadata"] value')?.textContent ?? '{}',
+  );
+  expect(metadata).toMatchObject({
+    application_ai_generated_fields: [],
+    source_authorship: 'unknown',
+  });
+  expect(kml.querySelector('Placemark name')?.textContent).toBe(event.title);
+});
+
 it('exports reviewed metadata only and records all excluded source identifiers', () => {
   const allowed = liveEvent({
     source_id: 'usgs_earthquakes',

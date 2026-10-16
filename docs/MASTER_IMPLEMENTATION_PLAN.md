@@ -45,16 +45,57 @@ maintenance automatically; no production purge or successful rollout is claimed.
 
 See [the operational retention procedure](OPERATIONAL_RETENTION.md).
 
+### KAN-192 configured security contact, 16 October 2026
+
+- [x] Replace the fixed production contact file with startup generation from public
+  installation settings, explicit disablement and validated canonical/contact URLs.
+- [x] Retain Caddy security headers, plain UTF-8 output and no SPA fallback.
+- [x] Keep reviewed expiry fixed; warn in CI and fail reference live monitoring on
+  missing/expired publication. Document startup-only expiry enforcement.
+- [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
+  web image checks, custom policy read-back and independent correctness/security review.
+- [ ] Pass current-head CI and obtain authorised integration. Production operators
+  must explicitly configure publication first.
+
+See [security contact configuration](SECURITY_CONTACT.md).
+
+### KAN-191 AI output disclosure, 16 October 2026
+
+- [x] Add presentation-only disclosure from selected saved model provenance, without
+  current-profile lookups, endpoint disclosure or canonical research-text changes.
+- [x] Add visible PDF/Word statements and machine-readable properties, including
+  isolated Chromium metadata handling and explicit unknown provider provenance.
+- [x] Distinguish known AI visual-hypothesis fields from other evidence and live
+  source observations in GeoJSON/KML metadata.
+- [x] Apply shared UI labels to assessments, briefings, assistant responses, recorded
+  AI translations, photo hypotheses and economy explanations.
+- [x] Complete focused backend/frontend checks, export read-back and PDF visual
+  inspection, build, static checks and independent correctness/security reviews.
+- [ ] Pass current-head CI and obtain authorised integration. No complete Article
+  50 compliance claim is made.
+
+See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
+
 ### KAN-238 authentication retention, 16 October 2026
 
 - [x] Define terminal-record windows and a conservative scoped housekeeping hold.
 - [x] Implement bounded preview/apply and opt-in independent scheduling; preserve
   active families, replay detection, confirmed factors and pending account requests.
 - [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
-- [ ] Complete independent review, broad regression/CI and authorised integration.
+- [x] Complete independent review and broad regression/CI on the initial candidate.
+- [x] Validate integration with KAN-242 and obtain release approval; PR 206 merged
+  as `7e594e38`, Jira Done. Production enablement remains separate.
 - [ ] Operator review and explicit enablement remain separate from code delivery.
 
 See [the retention procedure](AUTH_RETENTION.md).
+
+### Codex assigned queue, 16 October 2026
+
+The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested
+individual tickets and dependency order. KAN-244 is Done after authorised PR 204 integration at `9d5a0166`. KAN-242 is Done after authorised PR 205 integration at `e1f36dcb`. It
+repairs SQLite alert-outbox orphan retention without changing global
+foreign-key semantics. Relevant local checks, review, CI and authorised integration
+remain tracked separately from implementation and production deletion.
 
 ### KAN-244 native image triage, 16 October 2026
 
@@ -64,7 +105,8 @@ See [the retention procedure](AUTH_RETENTION.md).
 - [x] Constrain decoder opening and reject internal XML DTDs at shared boundaries.
 - [x] Pass 185 focused tests, Linux synthetic controls, lint, formatting, typing,
   architectural contracts and Bandit; independent review found no concrete issue.
-- [ ] Complete current-head CI, release approval and authorised integration.
+- [x] Complete all 40 PR checks, explicit release approval and integration as `9d5a0166`.
+  Main CI and live deployment verification remain separate.
 - [ ] Review 16 unresolved native paths by 23 October or before release; do not
   equate completed triage or application mitigations with patched system packages.
 

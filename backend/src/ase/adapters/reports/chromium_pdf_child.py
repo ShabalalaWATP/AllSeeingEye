@@ -9,6 +9,9 @@ from pathlib import Path
 from pypdf import PdfReader
 from pypdf.generic import ArrayObject, BooleanObject, DictionaryObject
 
+from ase.adapters.reports.pdf_ai_metadata import mark_pdf
+from ase.domain.ai_disclosure import AiDisclosure
+
 MAX_PDF_BYTES = 16 * 1024 * 1024
 MAX_PAGES = 128
 
@@ -42,6 +45,18 @@ def _require_structure_entries(structure: DictionaryObject) -> None:
 
 def main() -> int:
     try:
+        with Path("disclosure.json").open("rb") as disclosure_file:
+            raw_disclosure = disclosure_file.read(16_385)
+        if len(raw_disclosure) > 16_384:
+            raise ValueError("Oversized AI disclosure")
+        value = json.loads(raw_disclosure)
+        if value is not None and (
+            not isinstance(value, dict)
+            or set(value)
+            not in ({"model", "provider"}, {"model", "provider", "assessment_generated"})
+        ):
+            raise ValueError("Invalid AI disclosure")
+        disclosure = AiDisclosure(**value) if value is not None else None
         browser = sys.argv[1]
         command = [
             browser,
@@ -91,6 +106,9 @@ def main() -> int:
         ):
             raise ValueError("Missing tagged PDF structure")
         _require_structure_entries(structure)
+        data = mark_pdf(data, disclosure)
+        if len(data) > MAX_PDF_BYTES:
+            raise ValueError("Marked PDF exceeds output limit")
         # Structural admission only, not PDF/UA or screen-reader acceptance.
         sys.stdout.buffer.write(json.dumps({"pages": pages, "bytes": len(data)}).encode() + b"\n")
         sys.stdout.buffer.write(data)
