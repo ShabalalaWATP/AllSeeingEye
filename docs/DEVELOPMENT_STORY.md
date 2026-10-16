@@ -6481,3 +6481,43 @@ Published CI flagged the standard-library XML import used only to construct Word
 properties. A rule-specific import annotation documents this false positive; no
 XML parser is called and no untrusted XML is consumed. Input XML protections and
 the global security gate are unchanged.
+
+## 16 October 2026: KAN-192 installation-specific security contact
+
+The web image now generates its public security contact from the configured HTTPS
+origin, contact URI and optional operator policy. Empty contact disables publication
+with 404. A small standard-library Go binary uses the existing image build toolchain;
+no dependency or lockfile changes were needed. It writes atomically to a private
+non-root tmpfs directory, with no writes to the read-only application image.
+
+Caddy retains the shared security headers and explicit UTF-8 plain-text response,
+without entering the SPA fallback. The reviewed expiry stays fixed. CI warns at
+30 days and the reference live monitor fails missing/near-expiry publication.
+Expired images disable publication at startup while allowing the app to start;
+continuous uptime still requires the existing live renewal monitor. Deployment
+instructions now require explicit contact configuration before release.
+
+Validation: eight Go test functions and their table cases passed at 90.7% statement
+coverage, with go vet and formatting checks. Repository tests: 178 run, six existing
+platform/dependency skips, no failures. The complete web image built, and actual
+non-root/read-only containers passed enabled 200, disabled 404, custom operator
+policy read-back, security headers and full existing static asset/SPA smoke checks.
+Invalid enabled HTTP configuration stopped startup with a sanitised error. Workflow
+syntax validation and entrypoint ShellCheck passed; full workflow ShellCheck also
+reported existing unused-variable/indirect-function warnings in unchanged scripts.
+Ruff, file length and whitespace checks passed. Independent correctness/security
+review found no remaining blocker after canonical URL, monitor and guide fixes.
+
+Local HTTP checks used loopback-only ephemeral ports and synthetic settings. An
+initial test harness omitted the existing NET_BIND_SERVICE capability and used the
+wrong host matcher; correcting the harness to match Compose resolved both. Slow
+Windows localhost resolution was avoided with explicit loopback and Host headers.
+No production configuration, reporting message or deployment was performed. Full
+current-head CI and exact-head release approval remain required.
+
+The approved KAN-192 integration exposed a timing-sensitive public-route test in
+CI: the attribution heading appeared before the passive effect installed robots
+metadata. The assertion now waits for the same exact required value. All 17
+focused public-route and metadata tests pass; independent review confirmed no
+product change, timeout increase or weakened assertion. The feature approval is
+retained, while refreshed required CI must pass before merge.

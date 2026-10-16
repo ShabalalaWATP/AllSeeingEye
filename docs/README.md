@@ -130,6 +130,8 @@ and [diagram maintenance instructions](diagrams/README.md).
 
 [Security and privacy](07_SECURITY_BY_DESIGN.md) is the current design guide and
 [CI and security gates](security/CI_SECURITY_GATES.md) lists the automated checks.
+[Public security contact](SECURITY_CONTACT.md) covers installation-specific
+`security.txt` publication, disablement and expiry review.
 The [media and XML parser policy](security/MEDIA_PARSER_POLICY.md) defines supported
 formats, decoder restrictions, DTD rejection and the remaining native-library limits.
 The dated reviews below record the scope and findings at the time:

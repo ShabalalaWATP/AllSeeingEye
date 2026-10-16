@@ -9,6 +9,9 @@ WORKDIR /build
 COPY infra/caddy-build/go.mod infra/caddy-build/go.sum ./
 RUN go mod download && go mod verify
 COPY infra/caddy-build/main.go ./
+COPY infra/caddy-build/security-contact ./security-contact
+RUN go test ./security-contact && go build -mod=readonly -trimpath -buildvcs=false \
+    -ldflags='-s -w' -o /out/ase-security-contact ./security-contact
 # Match the official binary's module/build selection and retain its version metadata.
 RUN go build -mod=readonly -trimpath -buildvcs=false \
     -tags=nobadger,nomysql,nopgx -ldflags='-s -w' -o /out/caddy .
@@ -32,9 +35,13 @@ RUN apk upgrade --no-cache \
     && addgroup -S -g 10001 aseweb \
     && adduser -S -D -H -u 10001 -G aseweb aseweb
 COPY --from=caddy-build /out/caddy /usr/bin/caddy
+COPY --from=caddy-build /out/ase-security-contact /usr/bin/ase-security-contact
+COPY --chmod=755 infra/web-entrypoint.sh /usr/bin/ase-web-entrypoint
 # COPY replaces the upstream inode, including the capability needed on low ports.
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 COPY infra/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv
 RUN chown -R 10001:10001 /data /config
 USER 10001:10001
+ENTRYPOINT ["/usr/bin/ase-web-entrypoint"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
