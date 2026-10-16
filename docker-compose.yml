@@ -107,6 +107,9 @@ services:
       ASE_SITE_ADDRESS: ${ASE_SITE_ADDRESS:-localhost}
       ASE_TLS: ${ASE_TLS:-internal}
       ASE_HSTS_MAX_AGE: ${ASE_HSTS_MAX_AGE:-0}
+      ASE_PUBLIC_BASE_URL: ${ASE_PUBLIC_BASE_URL:-https://localhost}
+      ASE_SECURITY_CONTACT: ${ASE_SECURITY_CONTACT:-}
+      ASE_SECURITY_POLICY: ${ASE_SECURITY_POLICY:-}
     networks:
       proxy:
         ipv4_address: ${ASE_PROXY_WEB_IP:-172.30.250.2}

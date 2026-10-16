@@ -54,7 +54,9 @@ def test_structured_exports_share_professional_content_and_hide_operational_deta
             "https://example.org/report",
         ):
             assert value in text, value
-        for operational in ("Model:", "Attempts:", "Validator findings", "Content hash:"):
+        assert "AI-assisted assessment" in text
+        assert f"Model: {version.model}" in text
+        for operational in ("Attempts:", "Validator findings", "Content hash:"):
             assert operational not in text
     assert word.tables and word.tables[0].cell(0, 0).text == "Date"
     assert [p.style.name for p in word.paragraphs[:2]] == ["ASE Eyebrow", "Title"]
