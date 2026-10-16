@@ -194,7 +194,9 @@ def test_reject_unsafe_paths(journal, path_kind):
         FileRecoveryJournal(path, key, excluded=excluded)
 
 
-@pytest.mark.parametrize("field,value", [("restriction", "unknown"), ("target", str(uuid4()))])
+@pytest.mark.parametrize(
+    "field,value", [("restriction", "unknown"), ("target", "11111111-1111-4111-8111-111111111111")]
+)
 def test_restriction_is_typed_without_arbitrary_personal_details(field, value):
     values = {
         "owner": uuid4(),

@@ -6544,3 +6544,9 @@ device/stream aliases and comparing canonical paths fixed it. The reviewer then
 passed 66 filesystem/journal/CLI cases with four POSIX-only skips and reported no
 remaining blocker. Ruff, strict typing, import contracts, configured Bandit and
 file-length checks passed. Published-head CI and authorised integration remain.
+
+Published CI found a random UUID in a parameterised test name, so parallel workers
+collected different test identifiers. Replacing that collection-time value with a
+fixed synthetic UUID preserved the validation case. The seven affected recovery
+and private-removal CLI suites then passed 91 cases with four POSIX-only skips on
+four local workers. No product code or coverage threshold changed.
