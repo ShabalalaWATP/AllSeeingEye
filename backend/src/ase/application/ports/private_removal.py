@@ -18,6 +18,8 @@ class PrivateRemovalRepository(Protocol):
 
     async def remove(self, request: RemovalRequest, now: datetime) -> dict[str, int]: ...
 
+    async def check_review_revision(self, owner_id: UUID, expected_revision: int) -> None: ...
+
     async def review(
         self,
         owner_id: UUID,

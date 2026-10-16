@@ -6509,3 +6509,38 @@ configured Bandit and file-length/whitespace checks passed. Independent reviewer
 passed 10 reference cases, 18 CLI cases and a 47-case safety/race selection.
 Global CI coverage gates remain unchanged. Full current-head CI and authorised
 serial integration after KAN-238/239/241 remain required.
+
+## KAN-243: preserve decisions across recovery, 16 October 2026
+
+Added an independently encrypted, bounded external journal for operator private
+reviews/removals, manually recorded objections and explicit external-copy policy
+reviews. Durable intent precedes database mutation, with completion after commit.
+Uncertain outcomes retain their intent and block later journalled writes until an
+operator records evidence against the current journal head. Review permission,
+completed removal and recorded-only instructions remain distinct. No command
+claims comprehensive history, automatic replay or permission to activate services.
+
+The manual recovery procedure keeps restored services offline, reapplies current
+restrictions and holds before removals, checks present authority/ownership and
+records target-specific evidence outside the affected archives. It names review
+ownership, quarterly/request-resolution cadence and actual selected copy policies
+without inventing statutory deadlines or claiming provider/recipient erasure.
+Windows ACL provisioning and latest independent journal copies remain explicit
+operator prerequisites. No production data, copies, configuration or keys changed.
+
+A real disposable SQLite backup/restore drill passed: later account removal and
+objection were reapplied through normal guards, restricted passwords failed and
+shared/held/permission-only work survived. The focused suite passed 102 cases with
+four POSIX-only skips on Windows and 95.51% branch-inclusive coverage across seven
+journal/operator modules. PostgreSQL passed 35 removal/journal command cases.
+The wider run passed 95 cases and found one startup import-budget regression;
+lazy recovery command loading fixed it without changing the budget, then all 31
+startup/CLI regression cases passed. Global coverage gates remain unchanged.
+
+Independent quality review caught a stale-review intent being recorded before
+revision validation; validation now precedes append under the account lock.
+Security review reproduced a Windows extended-path exclusion bypass; rejecting
+device/stream aliases and comparing canonical paths fixed it. The reviewer then
+passed 66 filesystem/journal/CLI cases with four POSIX-only skips and reported no
+remaining blocker. Ruff, strict typing, import contracts, configured Bandit and
+file-length checks passed. Published-head CI and authorised integration remain.

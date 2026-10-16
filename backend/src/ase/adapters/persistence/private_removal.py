@@ -33,6 +33,13 @@ class SqlPrivateRemovalRepository:
         self.session = session
         self._prepared: tuple[RemovalRequest, RemovalInventory] | None = None
 
+    async def check_review_revision(self, owner_id: UUID, expected_revision: int) -> None:
+        row = await self.session.get(PrivateDataReviewRow, owner_id, populate_existing=True)
+        if (row.revision if row else 0) != expected_revision:
+            raise Conflict(
+                "The necessity review changed. Read its current revision before updating."
+            )
+
     async def review(
         self,
         owner_id: UUID,

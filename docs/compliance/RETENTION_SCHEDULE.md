@@ -113,8 +113,14 @@ necessity/holds and use [supported deletion controls](../PERSONAL_DATA_OPERATION
 Restrict unresolved material and record why it remains plus the next action/date.
 Before restoring service from older data, reconcile subsequent deactivations,
 deletions, objections, opt-outs and access changes. Inspect remote destinations,
-manual exports and mailbox copies separately. KAN-243 must make this reconciliation
-repeatable and evidenced; this text does not claim that drill has happened.
+manual exports and mailbox copies separately. KAN-243 adds a protected external
+journal, explicit copy-policy/review records and a
+[manual pre-reactivation checklist](../RECOVERY_RECONCILIATION.md). Its disposable
+SQLite drill restores an older snapshot and reapplies later guarded decisions;
+it is not a live or PostgreSQL recovery claim. The journal does not automatically
+capture UI changes, prune copies, lift holds or authorise activation. Quarterly
+and request-resolution reviews record actual selected periods/counts or holds;
+unselected installation values remain open operator actions, not legal deadlines.
 
 The six follow-ups above were created after duplicate review. They preserve the
 distinction between a recorded schedule and implemented deletion. Their completion

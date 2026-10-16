@@ -14,9 +14,14 @@ command uses normal settings, opens the database and never creates or migrates
 its schema. Migration 0095 must already be installed through the approved release
 process. Replace the example identifiers with verified account identifiers:
 
+KAN-243 requires an explicitly initialised external recovery journal and independent
+key for `review` and `apply`. Follow [recovery reconciliation](RECOVERY_RECONCILIATION.md)
+to provision protected paths outside the database, checkout and backup roots.
+The following placeholders are absolute paths, not secrets passed as arguments.
+
 ```text
 uv run ase private-data preview --operator ADMIN_UUID --owner OWNER_UUID
-uv run ase private-data review --operator ADMIN_UUID --owner OWNER_UUID --decision retain --purpose quarterly --expected-revision 0 --days 90
+uv run ase private-data review --operator ADMIN_UUID --owner OWNER_UUID --decision retain --purpose quarterly --expected-revision 0 --days 90 --journal JOURNAL_PATH --journal-key KEY_PATH
 ```
 
 `preview` is the default action. It returns table counts, blocker codes, retained
@@ -73,9 +78,9 @@ preview for the selected scope, inspect all counts and retained categories, then
 explicitly apply its fingerprint:
 
 ```text
-uv run ase private-data review --operator ADMIN_UUID --owner OWNER_UUID --decision remove --purpose rights_request --expected-revision REVIEW_REVISION
+uv run ase private-data review --operator ADMIN_UUID --owner OWNER_UUID --decision remove --purpose rights_request --expected-revision REVIEW_REVISION --journal JOURNAL_PATH --journal-key KEY_PATH
 uv run ase private-data preview --operator ADMIN_UUID --owner OWNER_UUID --scope report --target REPORT_UUID
-uv run ase private-data apply --operator ADMIN_UUID --owner OWNER_UUID --scope report --target REPORT_UUID --fingerprint PREVIEW_FINGERPRINT
+uv run ase private-data apply --operator ADMIN_UUID --owner OWNER_UUID --scope report --target REPORT_UUID --fingerprint PREVIEW_FINGERPRINT --journal JOURNAL_PATH --journal-key KEY_PATH
 ```
 
 Apply locks and rechecks current authority, dependencies, execution state, review
@@ -84,6 +89,9 @@ the account marker and the audit record commit together. A failed audit rolls
 back deletion. A connection or cleanup failure can leave the outcome uncertain,
 including after a successful commit: inspect the selected database and obtain a
 new preview before retrying. Do not infer rollback merely from a command error.
+The external journal retains a pending intent if commit or journal completion is
+uncertain. Investigate and retain evidence before resolving it; further journalled
+writes stop meanwhile. A `review(remove)` record is not a completed removal.
 
 An account becomes a permanently inactive UUID stub with a reserved invalid email,
 `Removed account` display name and no password. Its security version advances.
@@ -113,8 +121,8 @@ The preview explains these retained categories:
   in counts. Receipts attached to retained shared parents remain; deactivation
   prevents new releases but cannot recall messages already released to a provider.
 - Backups, off-site archives, provider/mailbox/browser copies and previous exports.
-  Follow [backup and restore](BACKUP_RESTORE.md); KAN-243 owns reconciliation before
-  restoring or reactivating a backup. Database removal alone does not erase them.
+  Follow [recovery reconciliation](RECOVERY_RECONCILIATION.md) before reactivating
+  a backup. Database removal alone does not erase these copies.
 - Other processes' in-memory private inputs until their normal expiry (15 minutes)
   or shutdown. The command does not signal remote processes to clear memory.
 

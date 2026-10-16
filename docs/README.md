@@ -58,6 +58,7 @@ explain what is and is not represented.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.
 - [Automatic deployment](AUTOMATIC_DEPLOYMENT.md): how a merge to `main` is tested and released.
 - [Backup and restore](BACKUP_RESTORE.md): explicit operator commands for SQLite and Compose PostgreSQL.
+- [Recovery reconciliation](RECOVERY_RECONCILIATION.md): protected decision records, external-copy reviews and the manual checklist before reactivation.
 - [Encryption key rotation](ENCRYPTION_KEY_ROTATION.md): protected key files, maintenance preflight and atomic database re-encryption.
 - [Runtime health and logs](RUNTIME_OPERATIONS.md): worker heartbeats, request correlation and shutdown phases.
 - [Invitation privacy](INVITATION_PRIVACY.md): sender receipts, private delivery state and legacy withdrawal.
