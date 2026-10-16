@@ -20,7 +20,6 @@ from ase.adapters.persistence.session_activity import (
 from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.token_families import (
     family_is_revoked,
-    prune_revoked_families,
     record_family_revocation,
     record_user_revocations,
 )
@@ -153,7 +152,6 @@ class SqlRefreshTokenRepository:
             .values(revoked_at=now)
         )
         result = cast("CursorResult[Any]", await self._session.execute(stmt))
-        await prune_revoked_families(self._session, now)
         return int(result.rowcount or 0)
 
     async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
@@ -166,7 +164,6 @@ class SqlRefreshTokenRepository:
             .values(revoked_at=now)
         )
         result = cast("CursorResult[Any]", await self._session.execute(stmt))
-        await prune_revoked_families(self._session, now)
         return int(result.rowcount or 0)
 
 

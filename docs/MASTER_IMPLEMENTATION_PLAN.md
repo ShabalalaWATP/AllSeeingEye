@@ -4,11 +4,23 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-238 authentication retention, 16 October 2026
+
+- [x] Define terminal-record windows and a conservative scoped housekeeping hold.
+- [x] Implement bounded preview/apply and opt-in independent scheduling; preserve
+  active families, replay detection, confirmed factors and pending account requests.
+- [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
+- [x] Complete independent review and broad regression/CI on the initial candidate.
+- [ ] Validate integration with KAN-242 and obtain release approval.
+- [ ] Operator review and explicit enablement remain separate from code delivery.
+
+See [the retention procedure](AUTH_RETENTION.md).
+
 ### Codex assigned queue, 16 October 2026
 
 The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested
-individual tickets and dependency order. KAN-244 is Done after authorised PR 204 integration at `9d5a0166`. KAN-242
-reproduces and repairs SQLite alert-outbox orphan retention without changing global
+individual tickets and dependency order. KAN-244 is Done after authorised PR 204 integration at `9d5a0166`. KAN-242 is Done after authorised PR 205 integration at `e1f36dcb`. It
+repairs SQLite alert-outbox orphan retention without changing global
 foreign-key semantics. Relevant local checks, review, CI and authorised integration
 remain tracked separately from implementation and production deletion.
 
