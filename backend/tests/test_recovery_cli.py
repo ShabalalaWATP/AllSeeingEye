@@ -2,7 +2,6 @@
 
 import json
 from datetime import UTC, datetime
-from pathlib import Path
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -165,8 +164,21 @@ def test_io_failure_output_is_sanitised(journal, monkeypatch):
     assert "unconfirmed" in result.output and "secret" not in result.output
 
 
-def test_known_repository_and_database_directories_are_rejected(journal, tmp_path):
-    repo = Path(__file__).resolve().parents[2]
+@pytest.mark.parametrize("git_marker", ["file", "directory"])
+def test_known_repository_and_database_directories_are_rejected(
+    journal, tmp_path, monkeypatch, git_marker
+):
+    # Exercise repository exclusion after the independent POSIX permission gate.
+    repo = tmp_path / "repository"
+    repo.mkdir(mode=0o700)
+    marker = repo / ".git"
+    if git_marker == "file":
+        marker.touch()
+    else:
+        marker.mkdir()
+    module = repo / "backend" / "src" / "ase" / "cli_recovery.py"
+    module.parent.mkdir(parents=True)
+    monkeypatch.setattr("ase.cli_recovery.__file__", str(module))
     with pytest.raises(Conflict, match="outside application"):
         open_journal(repo / "unsafe-recovery", journal.key)
     with pytest.raises(Conflict, match="outside application"):

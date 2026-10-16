@@ -6550,3 +6550,11 @@ collected different test identifiers. Replacing that collection-time value with 
 fixed synthetic UUID preserved the validation case. The seven affected recovery
 and private-removal CLI suites then passed 91 cases with four POSIX-only skips on
 four local workers. No product code or coverage threshold changed.
+
+The next CI run exposed a platform-specific fixture assumption: a Linux checkout's
+permissions rejected a path before the intended repository-exclusion assertion.
+The test now uses a private synthetic repository and covers both checkout and
+worktree Git markers. Four-worker journal/CLI/filesystem checks passed 61 cases
+with four POSIX-only Windows skips. An isolated, networkless Linux container also
+passed repository-marker, database-directory and POSIX-permission rejection checks
+against the current source. No product guard was weakened.
