@@ -49,6 +49,7 @@ explain what is and is not represented.
 - [AI usage and cost controls](AI_COST_CONTROLS.md): research tiers, call and token policies, and estimated spend.
 - [Administration](ADMINISTRATION.md): the `/admin` workspace and its areas.
 - [Personal-data requests](PERSONAL_DATA_OPERATIONS.md): the operator-assisted route, administrator contact, shared-work safeguards and export/deletion limits.
+- [Authentication retention](AUTH_RETENTION.md): bounded preview/apply housekeeping, operational periods and scoped holds.
 - [Multi-factor authentication](MFA_OPERATIONS.md): enrolment, administrator requirements and upgrade steps.
 - [Account email setup](EMAIL_SETUP.md): provider choice, SMTP settings and delivery checks.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.
@@ -129,6 +130,8 @@ and [diagram maintenance instructions](diagrams/README.md).
 
 [Security and privacy](07_SECURITY_BY_DESIGN.md) is the current design guide and
 [CI and security gates](security/CI_SECURITY_GATES.md) lists the automated checks.
+[Public security contact](SECURITY_CONTACT.md) covers installation-specific
+`security.txt` publication, disablement and expiry review.
 The [media and XML parser policy](security/MEDIA_PARSER_POLICY.md) defines supported
 formats, decoder restrictions, DTD rejection and the remaining native-library limits.
 The dated reviews below record the scope and findings at the time:

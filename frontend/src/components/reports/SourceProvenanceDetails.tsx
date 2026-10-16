@@ -1,3 +1,5 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
+import { isAiTranslation } from '@/components/research/AiTranslationDisclosure';
 import type { SourceDate, TextTransformation } from '@/lib/api/sourceProvenance';
 
 export function SourceProvenanceDetails({
@@ -18,6 +20,7 @@ export function SourceProvenanceDetails({
           <h3 className="font-medium capitalize">
             {value.kind} of original {value.field}
           </h3>
+          {isAiTranslation(value) && <AiDisclosure kind="translation" />}
           <dl className="space-y-2">
             <div>
               <dt className="text-muted">

@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import { ExplainerBadge, ExplainerProvenanceNote } from './ExplainerProvenance';
 import { PointList } from './WorldExplainer';
 import type { RegionExplainerView } from './explainerModel';
@@ -28,6 +29,7 @@ export function RegionExplainer({ name, view }: { name: string; view: RegionExpl
         </p>
         <ExplainerBadge status={view.status} />
       </header>
+      <AiDisclosure kind="explanation" className="mb-3 text-xs leading-5 text-muted" />
       <p className="max-w-[50ch] border-l-2 border-ember pl-4 text-lg leading-8 font-medium text-balance">
         {section.takeaway}
       </p>

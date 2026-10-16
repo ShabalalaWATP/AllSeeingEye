@@ -138,3 +138,9 @@ it('identifies missing saved citations rather than manufacturing a numbered refe
   expect(screen.queryByText(/Sources cited in this summary/)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Read full briefing and export' })).toBeInTheDocument();
 });
+
+it('identifies AI assistance even when the daily briefing passed automated checks', () => {
+  show();
+  expect(screen.getByText('AI-assisted assessment')).toBeVisible();
+  expect(screen.getByText(/Check original sources and important details/)).toBeVisible();
+});

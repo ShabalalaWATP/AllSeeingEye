@@ -14,7 +14,8 @@ from ase.adapters.reports.figure_validation import verify_document_figures
 from ase.adapters.reports.font_support import FONT_REGULAR as _FONT_NAME
 from ase.adapters.reports.font_support import cjk_font
 from ase.adapters.reports.font_support import font_characters as _font_characters
-from ase.adapters.reports.pdf_content import build_flowables, inline_markup
+from ase.adapters.reports.pdf_ai_metadata import mark_pdf
+from ase.adapters.reports.pdf_content import build_flowables, inline_markup, safe_text
 from ase.adapters.reports.pdf_masthead import masthead_flowables
 from ase.adapters.reports.pdf_styles import (
     BOTTOM_MARGIN,
@@ -69,9 +70,21 @@ def render_pdf(document: ReportDocument) -> bytes:
         style_map,
         lambda block: inline_markup(block.text, block.inlines, characters)[0],
     )
+    disclosure_missing = False
+    footer_markup = None
+    if document.ai_disclosure is not None:
+        statement, disclosure_missing = safe_text(document.ai_disclosure.statement, characters)
+        flowables.append(Paragraph(statement, style_map[BlockKind.METADATA]))
+        footer_markup = safe_text(document.ai_disclosure.footer, characters)[0]
+        if len(footer_markup) > 240:
+            footer_markup = safe_text(
+                "AI-assisted assessment | Model: full identifier at title | Provider: "
+                + document.ai_disclosure.provider_label,
+                characters,
+            )[0]
     body, missing = build_flowables(document, style_map, characters, figures, blocks=remaining)
     flowables.extend(body)
-    if missing:
+    if missing or disclosure_missing:
         flowables.append(
             Paragraph(
                 "Unsupported characters and text-direction controls appear as [U+XXXX] Unicode "
@@ -96,7 +109,7 @@ def render_pdf(document: ReportDocument) -> bytes:
         # comparisons stay stable; this pins the creation date and document id.
         invariant=1,
     )
-    furniture = page_furniture(document, selected_font)
+    furniture = page_furniture(document, selected_font, footer_markup)
     canvas_class = type("_ASECanvas", (NumberedCanvas,), {"page_font": selected_font})
     pdf.build(
         flowables,
@@ -104,4 +117,4 @@ def render_pdf(document: ReportDocument) -> bytes:
         onLaterPages=furniture,
         canvasmaker=cast("Any", canvas_class),
     )
-    return stream.getvalue()
+    return mark_pdf(stream.getvalue(), document.ai_disclosure)

@@ -1,3 +1,4 @@
+import { ReportAiDisclosure } from './ReportAiDisclosure';
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -154,6 +155,7 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
       ));
   return (
     <article aria-label={`${subject} briefing summary`} className="space-y-7">
+      <ReportAiDisclosure version={report.version} />
       {report.version.status !== 'ready' && (
         <p className="border-l-2 border-amber pl-3 text-sm leading-6 text-amber">
           This briefing needs review. Check its evidence and limitations before relying on it.

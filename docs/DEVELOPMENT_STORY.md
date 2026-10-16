@@ -6364,6 +6364,47 @@ The rebuilt image's fresh Trivy 0.69.3 database (15 October, 19:09 UTC) still re
 fixable gate passed. Full current-head CI and release approval remain required;
 there is no live-deployment claim or new full-suite coverage measurement yet.
 
+## 16 October 2026: KAN-238 bounded authentication housekeeping
+
+Authentication retention now has one explicit maintenance policy: a counts-only
+CLI preview, an apply operation, and a disabled-by-default minute worker independent
+of feeds and logins. It erases terminal links/challenges and decided requests,
+clears only pending TOTP fields, and retains all refresh ancestors until the entire
+family has passed its 91-day post-expiry window. Push receipts drain before devices,
+tokens and terminal family metadata. Each category changes at most 100 rows per
+transaction, with account locks and fresh predicates after the administration guard.
+The old unbounded logout-triggered family deletion is removed; revocation remains
+immediate. A scoped global pause applies to the new worker and CLI.
+
+The independent security review found and reproduced a new CLI settings-validation
+traceback that could include secrets. Settings construction now shares the sanitised
+error boundary, verified through an actual subprocess with a synthetic credential.
+The review found no remaining concrete security/correctness blocker. Its mixed-family
+backlog case is now permanent: 205 receipts and 250 tokens drain in bounded stages,
+while newer families and another owner's records remain unchanged.
+
+Verification: 54 focused SQLite tests passed with 99.24% branch-inclusive coverage
+of the four new implementation modules (95% local scope floor, no project threshold
+change). PostgreSQL passed 39 retention cases and five concurrency/revocation cases.
+A wider authentication/lifecycle run passed 106 cases; its one test-harness failure
+used a module invocation that did not execute Typer, and the corrected subprocess
+regression passed in the final focused run. Initial PostgreSQL race setup needed its
+private temporary parent directory created; all five then passed. An initial coverage
+invocation imported overlapping module sources and failed in NumPy; using source-path
+collection with a scoped report resolved it. Ruff, formatting, strict mypy over 1642
+source files, three import contracts, focused Bandit, file length and whitespace pass.
+
+The procedure and T02-T04 schedule distinguish code availability, physical erasure,
+scoped holds and operator rollout. Full current-head CI and authorised integration
+remain. No live database purge, enabling of the worker, or production retention claim
+was made. Public policy wording and statutory deadlines were not invented.
+
+Full CI subsequently caught migration CLI eager wiring and a missing setting in
+the snapshot lifecycle test double. The retention command now imports its wiring
+only when invoked; the migration CLI stays lightweight. The fixture declares the
+disabled default. All 28 startup, snapshot and retention-command checks pass after
+the repair; the existing architecture assertions remain unchanged.
+
 ## 16 October 2026: KAN-242 SQLite alert-outbox retention parity
 
 The production SQLite session construction reproduced orphaned delivery metadata
@@ -6393,6 +6434,86 @@ CI report). Alex approved the exact reviewed commit, and PR 204 merged as
 `9d5a0166`; the resulting tree matches the tested candidate. Jira is Done for the
 triage/mitigation scope. KAN-242 incorporated that main revision, preserving both
 documentation records. Main CI and live deployment verification remain separate.
+
+KAN-242 integration: Alex approved PR 205 at `6919008f` after all 40 checks passed.
+It merged as `e1f36dcb`; Jira is Done. KAN-238 preserves both changes during
+integration. The separately blocked manual production rollout was not approved.
+
+## 16 October 2026: KAN-191 AI output disclosure
+
+PDF and Word exports identify AI assistance beside the title and in page footers,
+with portable metadata derived only from the selected frozen version. Missing
+provider provenance stays unknown, and an OpenAI-compatible connector is not
+misrepresented as a verified OpenAI host. Full model details remain in metadata;
+long footer names are explicitly shortened. The canonical blocks, saved Markdown,
+report body and source evidence remain unchanged.
+
+The optional Chromium renderer receives bounded UTF-8 disclosure through a read-only
+file and writes PDF metadata inside its existing isolated child. Normal PDF output
+retains supported-glyph fallback and serial font subsetting. Word custom properties
+use typed OOXML. Evidence GeoJSON flags recorded AI visual-hypothesis titles and
+leaves other fields unclassified; live GeoJSON/KML describe source observations.
+
+Shared UI labels cover reports, briefings, the Eye assistant, matching recorded AI
+translations, photo results and economy explanations. Setup readiness, uncertainty,
+review status, raw figures and operator/source transformations keep their distinct
+meanings. ADR 0024 records the approach, legal limits and future C2PA considerations.
+
+The explicit no-evidence path is labelled as an application-written gap notice,
+without claiming that its configured model was called. Resumed or failed generated
+reports retain AI disclosure. Independent review also caught photo-hypothesis
+metadata, unsupported model glyphs and Unicode transport expansion; all have
+regression coverage and both final reviewers found no remaining blocker.
+
+Validation: 67 focused backend cases passed with 100% branch-inclusive coverage
+across four new modules. A wider 64-case export/access/font/startup run found one
+old assertion that excluded the model from every format. Updating it to distinguish
+unchanged canonical Markdown from PDF/Word disclosure passed all nine tests in that
+file; the other 63 cases had passed. Frontend: 94 cases passed across 12 files,
+strict type checks, targeted ESLint/formatting, build and bundle budgets passed.
+Backend Ruff/formatting, strict mypy (1,642 files), three import contracts and new
+module Bandit checks passed. File-length and whitespace checks passed. Normal,
+maximum-length, non-Latin and gap-notice PDF pages passed visual inspection.
+Chromium child isolation/metadata are tested with a fake browser process, not a
+live isolated Chromium render. Full current-head CI and release approval remain.
+
+Published CI flagged the standard-library XML import used only to construct Word
+properties. A rule-specific import annotation documents this false positive; no
+XML parser is called and no untrusted XML is consumed. Input XML protections and
+the global security gate are unchanged.
+
+## 16 October 2026: KAN-192 installation-specific security contact
+
+The web image now generates its public security contact from the configured HTTPS
+origin, contact URI and optional operator policy. Empty contact disables publication
+with 404. A small standard-library Go binary uses the existing image build toolchain;
+no dependency or lockfile changes were needed. It writes atomically to a private
+non-root tmpfs directory, with no writes to the read-only application image.
+
+Caddy retains the shared security headers and explicit UTF-8 plain-text response,
+without entering the SPA fallback. The reviewed expiry stays fixed. CI warns at
+30 days and the reference live monitor fails missing/near-expiry publication.
+Expired images disable publication at startup while allowing the app to start;
+continuous uptime still requires the existing live renewal monitor. Deployment
+instructions now require explicit contact configuration before release.
+
+Validation: eight Go test functions and their table cases passed at 90.7% statement
+coverage, with go vet and formatting checks. Repository tests: 178 run, six existing
+platform/dependency skips, no failures. The complete web image built, and actual
+non-root/read-only containers passed enabled 200, disabled 404, custom operator
+policy read-back, security headers and full existing static asset/SPA smoke checks.
+Invalid enabled HTTP configuration stopped startup with a sanitised error. Workflow
+syntax validation and entrypoint ShellCheck passed; full workflow ShellCheck also
+reported existing unused-variable/indirect-function warnings in unchanged scripts.
+Ruff, file length and whitespace checks passed. Independent correctness/security
+review found no remaining blocker after canonical URL, monitor and guide fixes.
+
+Local HTTP checks used loopback-only ephemeral ports and synthetic settings. An
+initial test harness omitted the existing NET_BIND_SERVICE capability and used the
+wrong host matcher; correcting the harness to match Compose resolved both. Slow
+Windows localhost resolution was avoided with explicit loopback and Host headers.
+No production configuration, reporting message or deployment was performed. Full
+current-head CI and exact-head release approval remain required.
 
 ## 16 October 2026: KAN-189 online safety desk assessment
 

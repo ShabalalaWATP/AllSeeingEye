@@ -8,15 +8,15 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import select, text
 
+from ase.adapters.persistence.auth_retention import SqlAuthRetention
 from ase.adapters.persistence.models import RefreshTokenRow
 from ase.adapters.persistence.token_families import (
-    REVOCATION_RETENTION,
     RefreshFamilyRevocationRow,
-    prune_revoked_families,
 )
 from ase.application.auth.sessions import SessionFactory
 from ase.application.dto import AuthSession, RequestContext
 from ase.container import Container
+from ase.domain.auth_retention import FAMILY_RETENTION, AuthRetentionPolicy
 from ase.domain.errors import InvalidRefreshToken
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, create_user
@@ -85,17 +85,23 @@ async def test_revocation_marker_rollback_and_safe_retention(race_container: Con
         await repo.revoke_family(root.family_id, now)
         await session.commit()
     async with container.session_factory() as session:
-        await prune_revoked_families(session, now + timedelta(days=15))
+        await SqlAuthRetention(session).sweep(
+            now + timedelta(days=15), AuthRetentionPolicy(), dry_run=False
+        )
         assert await session.scalar(select(RefreshFamilyRevocationRow)) is not None
         assert await session.get(RefreshTokenRow, root.id) is not None
         # Even an old marker is retained if a token has not expired.
         row = await session.get(RefreshTokenRow, root.id)
         assert row is not None
-        row.expires_at = now + REVOCATION_RETENTION + timedelta(days=1)
+        expiry = now + FAMILY_RETENTION + timedelta(days=1)
+        row.expires_at = expiry
         await session.commit()
-        await prune_revoked_families(session, now + REVOCATION_RETENTION)
+        await SqlAuthRetention(session).sweep(expiry, AuthRetentionPolicy(), dry_run=False)
         assert await session.scalar(select(RefreshFamilyRevocationRow)) is not None
-        await prune_revoked_families(session, now + REVOCATION_RETENTION + timedelta(days=1))
+        await SqlAuthRetention(session).sweep(
+            expiry + FAMILY_RETENTION, AuthRetentionPolicy(), dry_run=False
+        )
+        session.expire_all()
         assert await session.scalar(select(RefreshFamilyRevocationRow)) is None
         assert await session.get(RefreshTokenRow, root.id) is None
         await session.commit()

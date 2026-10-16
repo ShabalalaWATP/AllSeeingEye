@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
@@ -187,6 +188,7 @@ export function NewsPanel({
                 >
                   {shownTitle(lead).text}
                 </SourceText>
+                <AiTranslationDisclosure item={lead} />
                 <SourceLink url={lead.url}>Read source</SourceLink>
                 {lead.summary && lead.summary !== lead.title && (
                   <SourceText
