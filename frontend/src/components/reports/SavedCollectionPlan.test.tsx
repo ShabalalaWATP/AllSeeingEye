@@ -74,6 +74,7 @@ it('preserves and renders the frozen plan independently of collection attempt ou
   render(<SavedCollectionPlan plan={receipt.plan!} />);
   expect(screen.getByText('بندر')).toBeVisible();
   expect(screen.getByText(/Operator-supplied language terms/)).toBeVisible();
+  expect(screen.queryByText('AI-assisted translation')).not.toBeInTheDocument();
   expect(screen.getByText(/8 requests, 20 seconds, 50 items/)).toBeVisible();
   expect(
     screen.queryByRole('region', { name: 'Automatic query translation' }),
@@ -100,6 +101,7 @@ it('displays the recorded translation phrases and model without claiming verifie
   expect(
     section.getByText(/Translation meaning has not been independently verified/),
   ).toBeVisible();
+  expect(section.getByText('AI-assisted translation')).toBeVisible();
   expect(section.getByText('Port ABC-123')).toBeVisible();
   expect(section.getByText('بندر ABC-123')).toHaveAttribute('dir', 'auto');
   expect(section.getByText('港口 ABC-123')).toBeVisible();
@@ -128,6 +130,7 @@ it.each([
   render(<SavedCollectionPlan plan={plan} />);
   expect(screen.getByText(message)).toBeVisible();
   expect(screen.getByText('No translated phrases recorded.')).toBeVisible();
+  expect(screen.queryByText('AI-assisted translation')).not.toBeInTheDocument();
   expect(screen.queryByText(/Completed:/)).not.toBeInTheDocument();
   expect(screen.getByText('Port ABC-123')).toBeVisible();
 });

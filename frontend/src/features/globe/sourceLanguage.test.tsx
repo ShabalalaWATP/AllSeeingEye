@@ -1,3 +1,4 @@
+import { textTransformationSchema } from '@/lib/api/sourceProvenance';
 import { render, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { MemoryRouter } from 'react-router';
@@ -35,6 +36,19 @@ const arabic = article('ar', {
   title: 'قصف في حلب',
   title_en: 'Shelling in Aleppo',
   summary: 'تقارير عن انفجارات.',
+  transformations: [
+    textTransformationSchema.parse({
+      field: 'title',
+      original_text: 'قصف في حلب',
+      transformed_text: 'Shelling in Aleppo',
+      kind: 'translation',
+      source_language: 'ar',
+      target_language: 'en',
+      origin: 'machine',
+      method: 'ase-title-translation-v1',
+      review_status: 'unreviewed',
+    }),
+  ],
 });
 const undetermined = article('und', {
   language: 'und',
@@ -67,7 +81,9 @@ describe('EventInspector language marking', () => {
     inspect(arabic);
     expectMarked(screen.getByRole('heading', { level: 2, name: 'قصف في حلب' }), 'ar');
     expectMarked(screen.getByText('تقارير عن انفجارات.'), 'ar');
-    expect(screen.getByText('Shelling in Aleppo')).not.toHaveAttribute('lang');
+    const translation = screen.getByText('Shelling in Aleppo', { selector: 'p' });
+    expect(translation).not.toHaveAttribute('lang');
+    expect(within(translation.parentElement!).getByText('AI-assisted translation')).toBeVisible();
   });
 
   it('gives undetermined text automatic direction without a language', () => {
@@ -101,6 +117,7 @@ describe('NewsPanel language marking', () => {
     expectMarked(list.getByText('Повідомлення про вибухи.'), 'uk');
     expect(list.getByRole('heading', { name: 'Shelling in Aleppo' })).not.toHaveAttribute('lang');
     expectMarked(list.getByText('تقارير عن انفجارات.'), 'ar');
+    expect(list.getAllByText('AI-assisted translation')).toHaveLength(1);
     expectMarked(list.getByRole('heading', { name: 'Mixed feed headline' }), null);
     expectMarked(list.getByText('Mixed feed summary.'), null);
   });

@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+from html import escape
 from pathlib import Path
 
 from ase.adapters.reports.html_document import render_html
@@ -33,6 +34,20 @@ def render_print_html(document: ReportDocument) -> bytes:
     )
     html = html.replace("<style>", "<style>" + "".join(styles), 1)
     html = html.replace("font-family: sans-serif;", "font-family: ASENotoArabic, sans-serif;", 1)
+    if document.ai_disclosure is not None:
+        statement = escape(document.ai_disclosure.statement)
+        footer = escape(document.ai_disclosure.footer)
+        html = html.replace("<main>", f'<main><p class="metadata" dir="ltr">{statement}</p>', 1)
+        html = html.replace(
+            "</style>",
+            "@media print { @page { margin-bottom: 24mm; } "
+            ".ai-footer { position: fixed; bottom: -18mm; left: 0; right: 0; "
+            "font-size: 7pt; line-height: 1.2; overflow-wrap: anywhere; } }</style>",
+            1,
+        )
+        html = html.replace(
+            "</body>", f'<footer class="ai-footer" dir="ltr">{footer}</footer></body>', 1
+        )
     result = html.encode("utf-8")
     if len(result) > MAX_PRINT_HTML_BYTES:
         raise InvalidRequest("The print document exceeds its byte limit.")

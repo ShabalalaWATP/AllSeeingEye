@@ -51,6 +51,8 @@ it('opens a compact non-modal panel and returns focus when Escape closes it', as
   expect(launcher).toHaveAttribute('aria-expanded', 'true');
   const panel = screen.getByRole('dialog', { name: 'Eye assistant' });
   expect(panel).toHaveAttribute('aria-modal', 'false');
+  expect(within(panel).getByText('AI assistant')).toBeVisible();
+  expect(within(panel).getByText(/Check the cited sources before relying on them/)).toBeVisible();
   expect(parseInt(panel.style.width)).toBeLessThanOrEqual(420);
   expect(screen.getByLabelText('Ask the Eye')).toHaveFocus();
   await user.keyboard('{Escape}');
@@ -105,6 +107,7 @@ it('searches all retained sources regardless of display toggles and renders cite
   await user.type(screen.getByLabelText('Ask the Eye'), 'Where are the ships?');
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Ask Eye' }));
   expect(await screen.findByText('Two recent vessel observations are available.')).toBeVisible();
+  expect(within(screen.getByRole('dialog')).getAllByText('AI assistant')).toHaveLength(1);
   expect(body).toEqual({ question: 'Where are the ships?', prior_questions: [], scope: 'global' });
   await user.click(
     screen.getByRole('button', { name: 'View evidence E1: Example vessel position' }),

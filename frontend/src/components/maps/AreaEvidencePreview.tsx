@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { useMemo, useState } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
@@ -85,6 +86,7 @@ export function AreaEvidencePreview({ area, events, days, interval, onHighlight 
                     ) : (
                       <p>{event.title_en ?? event.title}</p>
                     )}
+                    <AiTranslationDisclosure item={event} />
                     <p className="map-tool-help">
                       {event.source_id} · {stamp(event.published_at ?? '')} UTC ·{' '}
                       {event.geo_confidence}

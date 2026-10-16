@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import { QueryVariantDetails } from './QueryVariantDetails';
 import { RegistryLookupDetails } from './RegistryLookupDetails';
 import { registryLabels } from '@/lib/api/registryRouting';
@@ -47,6 +48,7 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
           className="space-y-3 border-y border-line py-3 text-xs"
         >
           <h4 className="font-medium">Automatic query translation</h4>
+          {translation.status === 'completed' && <AiDisclosure kind="translation" />}
           <p>
             {translation.status === 'completed'
               ? 'Completed: generated phrases passed syntax and identifier checks only.'

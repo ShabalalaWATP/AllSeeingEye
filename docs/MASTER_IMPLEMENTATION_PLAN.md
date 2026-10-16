@@ -4,6 +4,23 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-191 AI output disclosure, 16 October 2026
+
+- [x] Add presentation-only disclosure from selected saved model provenance, without
+  current-profile lookups, endpoint disclosure or canonical research-text changes.
+- [x] Add visible PDF/Word statements and machine-readable properties, including
+  isolated Chromium metadata handling and explicit unknown provider provenance.
+- [x] Distinguish known AI visual-hypothesis fields from other evidence and live
+  source observations in GeoJSON/KML metadata.
+- [x] Apply shared UI labels to assessments, briefings, assistant responses, recorded
+  AI translations, photo hypotheses and economy explanations.
+- [x] Complete focused backend/frontend checks, export read-back and PDF visual
+  inspection, build, static checks and independent correctness/security reviews.
+- [ ] Pass current-head CI and obtain authorised integration. No complete Article
+  50 compliance claim is made.
+
+See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
+
 ### Codex assigned queue, 16 October 2026
 
 The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested

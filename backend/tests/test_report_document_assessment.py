@@ -203,10 +203,10 @@ def test_word_pdf_and_markdown_share_source_assessments_and_separate_confidence(
         ]
     )
     pdf = PdfReader(io.BytesIO(renderer.render(document, ExportFormat.PDF)))
-    for output in (
-        render_document_markdown(document),
-        word_text,
-        " ".join(page.extract_text() for page in pdf.pages),
+    for output, has_disclosure in (
+        (render_document_markdown(document), False),
+        (word_text, True),
+        (" ".join(page.extract_text() for page in pdf.pages), True),
     ):
         text = " ".join(output.split())
         for expected in (
@@ -223,7 +223,7 @@ def test_word_pdf_and_markdown_share_source_assessments_and_separate_confidence(
         ):
             assert expected in text, expected
         assert "historical-policy-not-for-reader" not in text
-        assert version.model not in text
+        assert (version.model in text) is has_disclosure
 
 
 def test_source_tables_are_small_and_long_recorded_rationales_stay_out_of_narrow_cells():

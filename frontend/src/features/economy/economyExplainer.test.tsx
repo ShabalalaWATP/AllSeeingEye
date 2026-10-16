@@ -36,6 +36,7 @@ it('leads with a plain-English world summary, its short lists and its provenance
   expect(
     await panel.findByText('The world economy is growing slowly while price rises keep easing.'),
   ).toBeVisible();
+  expect(panel.getByText('AI-assisted explanation')).toBeVisible();
   expect(panel.getByText(/Output grew by 2.4% in 2024/)).toBeVisible();
   const drivers = within(panel.getByRole('list', { name: 'What is driving it' }));
   expect(drivers.getAllByRole('listitem')).toHaveLength(2);
@@ -52,6 +53,7 @@ it('places the country summary beside that country figures and keeps the takeawa
     await screen.findByRole('region', { name: 'United Kingdom in plain English' }),
   );
   expect(panel.getByText(/The United Kingdom took a knock and is now edging back/)).toBeVisible();
+  expect(panel.getByText('AI-assisted explanation')).toBeVisible();
   const more = panel.getByText('Read the rest');
   expect(panel.getByText(/that part of the picture is missing/)).not.toBeVisible();
   await user.click(more);
@@ -74,6 +76,7 @@ it('explains each indicator through a keyboard reachable disclosure, careful not
   expect(plain).toBeVisible();
   // The project's careful note is always read before the model's everyday wording.
   expect(careful.compareDocumentPosition(plain) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(within(meaning).getByText('AI-assisted explanation')).toBeVisible();
   expect(within(meaning).getByText(/Written by the model from these figures/)).toBeVisible();
 });
 
@@ -84,6 +87,7 @@ it('says nothing has been written yet without hiding the figures', async () => {
   expect(panel.getByRole('status')).toHaveTextContent(
     'No plain-English summary has been written yet.',
   );
+  expect(panel.queryByText('AI-assisted explanation')).not.toBeInTheDocument();
   expect(
     await screen.findByText(/No plain-English summary for United Kingdom is available yet/),
   ).toBeVisible();
@@ -107,6 +111,7 @@ it('keeps a stale summary visible and says the figures have moved on', async () 
   expect(panel.getByTestId('explainer-badge')).toHaveTextContent('Figures moved on');
   expect(panel.getByText(/The world economy is growing slowly/)).toBeVisible();
   expect(panel.getByText(/The figures have moved on since this was written/)).toBeVisible();
+  expect(panel.getByText('AI-assisted explanation')).toBeVisible();
 });
 
 it('reports a spent allowance as an honest empty state, never an error page', async () => {

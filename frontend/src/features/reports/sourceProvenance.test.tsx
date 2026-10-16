@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { expect, it } from 'vitest';
 import { report } from '@/test/fixtures';
 import { EvidenceAnnex } from './EvidenceAnnex';
@@ -94,6 +95,7 @@ it('keeps translation and transliteration separate and displays date-only conver
     2,
   );
   expect(item.transformations[0]?.original_text).toBe('شرکت\u200cالف');
+  expect(screen.queryByText('AI-assisted translation')).not.toBeInTheDocument();
 });
 
 it('renders recorded instant offsets and declarers without borrowing capture or current connection metadata', () => {
@@ -147,4 +149,31 @@ it('retains an unspecified source date without presenting it as publication', ()
   render(<SourceProvenanceDetails dates={[date]} />);
   expect(screen.getByText('Declared source date: unspecified')).toBeVisible();
   expect(screen.queryByText('Declared source date: publication')).not.toBeInTheDocument();
+});
+
+it('discloses a recorded AI title translation beside the frozen evidence', async () => {
+  const item = evidenceItemSchema.parse({
+    ...report.version.evidence[0]!,
+    title: 'Original title',
+    title_en: 'Translated title',
+    transformations: [
+      {
+        field: 'title',
+        original_text: 'Original title',
+        transformed_text: 'Translated title',
+        kind: 'translation',
+        source_language: 'fr',
+        target_language: 'en',
+        origin: 'machine',
+        method: 'ase-title-translation-v1',
+        review_status: 'unreviewed',
+      },
+    ],
+  });
+  render(<EvidenceAnnex evidence={[item]} findings={[]} status="ready" />);
+  await userEvent.setup().click(screen.getByText('Original title', { selector: 'summary span' }));
+  const translation = screen.getByText('Translation (unverified)').parentElement!.parentElement!;
+  expect(within(translation).getByText('AI-assisted translation')).toBeVisible();
+  expect(item.title).toBe('Original title');
+  expect(item.title_en).toBe('Translated title');
 });
