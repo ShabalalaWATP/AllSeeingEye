@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-189 online safety assessment, 16 October 2026
+
+- [x] Map sharing, search, moderation and account admission to current source.
+- [x] Prepare dated scope, illegal-harm and children's access desk assessments,
+  using current official guidance and retaining unresolved territorial facts.
+- [x] Record the archived-team moderation gap as KAN-245 and hand the reporting,
+  complaints and age-policy findings to KAN-188 without changing its ownership.
+- [ ] Confirm actual audience/UK links and operating evidence, obtain Alex's
+  assessment approval and resolve any required legal confirmation.
+- [ ] Complete independent review, CI and authorised integration of the documents.
+
+See [the assessment](compliance/ONLINE_SAFETY.md). This conditional draft does not
+certify statutory compliance, an exemption, adult-only access or a live policy change.
+
 ### Codex assigned queue, 16 October 2026
 
 The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested

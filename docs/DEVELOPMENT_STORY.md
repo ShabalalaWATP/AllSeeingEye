@@ -6393,3 +6393,29 @@ CI report). Alex approved the exact reviewed commit, and PR 204 merged as
 `9d5a0166`; the resulting tree matches the tested candidate. Jira is Done for the
 triage/mitigation scope. KAN-242 incorporated that main revision, preserving both
 documentation records. Main CI and live deployment verification remain separate.
+
+## 16 October 2026: KAN-189 online safety desk assessment
+
+The assessment maps current boards, reports, maps, directory profiles, invitation
+notes and external research to the functional, territorial and exemption tests.
+The source supports user-to-user functionality but does not establish UK audience,
+an exemption or actual operating effectiveness. Current terms/account admission
+contain no age assurance or 18+ rule. The children's assessment therefore retains
+an unresolved stage-two audience conclusion rather than assuming adults only.
+
+Separate evidence and provisional risk records use the updated June 2026 Ofcom
+guidance, including serious self-harm and cyberflashing. A prepared reporting and
+complaints procedure is handed to KAN-188 for public-policy implementation. KAN-245
+tracks the confirmed archived-board removal gap: content remains readable while
+the ordinary moderation path rejects removal until team reactivation. No actual
+harmful content, private account records or complaints were inspected.
+
+Audience/UK facts, operating evidence, Alex's required assessment approval and
+any necessary legal confirmation remain outstanding. The draft changes no live
+settings or public terms, and makes no completed statutory-compliance claim.
+
+Independent technical review found no actionable source mismatch. Legal/security
+review identified the missed-first-assessment statutory default for child access;
+the draft now records that conditional duty and the current code index. All 46
+local documentation links resolve. Application tests and coverage were not rerun
+for these documentation-only changes.
