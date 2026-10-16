@@ -6363,3 +6363,33 @@ The rebuilt image's fresh Trivy 0.69.3 database (15 October, 19:09 UTC) still re
 227 package matches / 55 CVEs, with zero fixable HIGH/CRITICAL findings. The existing
 fixable gate passed. Full current-head CI and release approval remain required;
 there is no live-deployment claim or new full-suite coverage measurement yet.
+
+## 16 October 2026: KAN-242 SQLite alert-outbox retention parity
+
+The production SQLite session construction reproduced orphaned delivery metadata
+after alert expiry; PostgreSQL's cascade already removed it. A parent-existence
+delete now runs inside the existing guarded prune transaction, including when zero
+alerts expire. It repairs historical orphans without changing live retry state,
+terminal idempotency records, age cutoffs, returned counts or global FK settings.
+
+Validation covers 56 distinct SQLite cases across focused runs, including normal
+FK-off and explicit FK-on construction, all delivery states, exact cutoff, rollback,
+retry and terminal deduplication. PostgreSQL passed 48 cases with eight intentionally
+SQLite-specific cases skipped. A deterministic two-connection test on each backend
+pauses preparation, commits pruning, then checks refreshed denial and no resurrection.
+Ruff, formatting, strict mypy, three import contracts, focused Bandit, file length and
+whitespace checks passed. Independent review found no concrete defect; its concurrency
+test suggestion was implemented. A baseline test helper initially omitted a required
+enqueue keyword; it was corrected before the passing validation.
+
+Routing and retention documentation now distinguish explicit SQLite cleanup from
+PostgreSQL cascade. The assigned-ticket delivery queue records eleven individual
+items and their order. Full current-head CI and authorised integration remain; no
+production database, migration or deletion was performed and full-suite coverage
+was not remeasured locally.
+
+KAN-244 subsequently passed all 40 PR checks (backend coverage 94% in the rounded
+CI report). Alex approved the exact reviewed commit, and PR 204 merged as
+`9d5a0166`; the resulting tree matches the tested candidate. Jira is Done for the
+triage/mitigation scope. KAN-242 incorporated that main revision, preserving both
+documentation records. Main CI and live deployment verification remain separate.
