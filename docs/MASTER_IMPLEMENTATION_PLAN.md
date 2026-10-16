@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-192 configured security contact, 16 October 2026
+
+- [x] Replace the fixed production contact file with startup generation from public
+  installation settings, explicit disablement and validated canonical/contact URLs.
+- [x] Retain Caddy security headers, plain UTF-8 output and no SPA fallback.
+- [x] Keep reviewed expiry fixed; warn in CI and fail reference live monitoring on
+  missing/expired publication. Document startup-only expiry enforcement.
+- [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
+  web image checks, custom policy read-back and independent correctness/security review.
+- [ ] Pass current-head CI and obtain authorised integration. Production operators
+  must explicitly configure publication first.
+
+See [security contact configuration](SECURITY_CONTACT.md).
+
 ### Codex assigned queue, 16 October 2026
 
 The [delivery queue](delivery/CODEX_QUEUE_2026_10_16.md) records the eleven requested

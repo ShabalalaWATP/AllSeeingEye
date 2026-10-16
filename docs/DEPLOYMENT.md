@@ -77,7 +77,15 @@ Keep time synchronisation enabled. Watch memory, disk capacity, source status, m
 
 Caddy serves pre-compressed Brotli and gzip copies of the web client. Content-hashed files under `/assets/` are cached for a year as immutable; `index.html` and other fixed names revalidate on every visit, so a deploy reaches returning browsers immediately. A missing `/assets/` file answers 404 rather than the application shell.
 
-The web image also serves `/robots.txt` (crawlers are asked to skip `/api/` and `/admin`) and an RFC 9116 `/.well-known/security.txt`; any other `/.well-known/` path answers 404. Both files live in `frontend/public`. The shipped `security.txt` names this project's reporting channel and the reference deployment's canonical address, so another installation should edit its `Contact` and `Canonical` lines. Renew its `Expires` date before it passes. The `Uptime` workflow fetches the live file and fails from 30 days before that date; it only warns while the live site serves no `Expires` line. Repository tests check the date's format but never fail CI because it has passed.
+The web image serves `/robots.txt` from `frontend/public` and generates RFC 9116
+`/.well-known/security.txt` at startup from public installation settings. Set
+`ASE_SECURITY_CONTACT` and an HTTPS `ASE_PUBLIC_BASE_URL` before deploying to retain
+publication; empty contact disables it with 404. Review `ASE_SECURITY_POLICY` for
+the operator's practices. Unknown `/.well-known/` paths also return 404. Review the
+contact and renew `infra/caddy-build/security-contact/expiry.txt` before rebuilding
+and approving release. CI warns within 30 days; the reference Uptime monitor fails
+within 30 days or when publication is missing. An expired image disables publication
+on restart without stopping the app. See [configuration and expiry details](SECURITY_CONTACT.md).
 
 Before an update, review migration requirements, take and verify a backup, and check the target revision passed CI. An update restarts application processes: live feeds warm up again and running research may be interrupted. Verify health, readiness and sign-in after the update. Restoring application images does not reverse a database migration.
 
