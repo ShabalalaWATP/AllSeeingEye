@@ -9,7 +9,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import Flowable, SimpleDocTemplate
+from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate
 
 from ase.adapters.reports.font_support import FONT_BOLD as _FONT_BOLD
 from ase.adapters.reports.font_support import FONT_REGULAR as _FONT_NAME
@@ -153,7 +153,7 @@ FOOT_BASELINE = BOTTOM_MARGIN - 30
 
 
 def page_furniture(
-    document: ReportDocument, font: str
+    document: ReportDocument, font: str, footer_markup: str | None = None
 ) -> Callable[[Canvas, SimpleDocTemplate], None]:
     """Draw the running head and the footer rule; the page count is added on save."""
     title = document.title if len(document.title) <= 78 else document.title[:75] + "..."
@@ -170,6 +170,15 @@ def page_furniture(
             canvas.line(LEFT_MARGIN, HEAD_BASELINE - 6, A4[0] - RIGHT_MARGIN, HEAD_BASELINE - 6)
         canvas.line(LEFT_MARGIN, FOOT_RULE, A4[0] - RIGHT_MARGIN, FOOT_RULE)
         canvas.drawString(LEFT_MARGIN, FOOT_BASELINE, document.reference)
+        if footer_markup is not None:
+            disclosure = Paragraph(
+                footer_markup,
+                ParagraphStyle(
+                    "ASEAiFooter", fontName=font, fontSize=6.5, leading=8, textColor=INK_SOFT
+                ),
+            )
+            _, height = disclosure.wrap(PAGE_WIDTH, 24)
+            disclosure.drawOn(canvas, LEFT_MARGIN, FOOT_BASELINE - 4 - height)
         canvas.restoreState()
 
     return draw

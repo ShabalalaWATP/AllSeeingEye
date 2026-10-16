@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import type { EconomySeries } from '@/lib/api/economy';
 import type { ExplainerGlossaryEntry } from '@/lib/api/economyExplainer';
 import { metricExplanation } from './economyPresentation';
@@ -27,6 +28,7 @@ export function IndicatorMeaning({
           <p>
             <span className="font-medium text-text">In everyday words: </span>
             {plain}
+            <AiDisclosure kind="explanation" compact className="block text-2xs" />
             <span className="block text-2xs">Written by the model from these figures.</span>
           </p>
         )}

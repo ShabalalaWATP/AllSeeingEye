@@ -20,6 +20,7 @@ from docx.text.paragraph import Paragraph
 from ase.adapters.reports.document_sections import leading_identity
 from ase.adapters.reports.document_validation import validate_document_content
 from ase.adapters.reports.figure_validation import VerifiedFigure, verify_document_figures
+from ase.adapters.reports.word_ai_metadata import set_docx_metadata
 from ase.adapters.reports.word_styles import (
     add_masthead,
     add_page_furniture,
@@ -210,6 +211,8 @@ def render_docx(document: ReportDocument) -> bytes:
     add_masthead(
         word, head, lambda paragraph, block: _add_inlines(paragraph, block.text, block.inlines)
     )
+    if document.ai_disclosure is not None:
+        word.add_paragraph(document.ai_disclosure.statement, style="ASE Metadata")
     reference_index = 0
     section_number = 0
     for block in remaining:
@@ -245,10 +248,7 @@ def render_docx(document: ReportDocument) -> bytes:
         if block.kind is BlockKind.ANNEX:
             paragraph.paragraph_format.page_break_before = True
     add_page_furniture(word, document)
-    word.core_properties.title = document.title
-    word.core_properties.author = "The All Seeing Eye"
-    word.core_properties.subject = document.reference
-    word.core_properties.comments = ""
+    set_docx_metadata(word, document)
     stream = io.BytesIO()
     word.save(stream)
     return _invariant(stream.getvalue())

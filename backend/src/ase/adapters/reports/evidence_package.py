@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from ase.application.reports.ai_disclosure import report_ai_disclosure
 from ase.domain.errors import InvalidRequest
 from ase.domain.observation import observation_to_dict
 from ase.domain.project import project_to_dict
@@ -46,6 +47,7 @@ def _json(value: object, remaining: int = MAX_PACKAGE_BYTES) -> bytes:
 def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
     """Unlocated findings remain null geometries; never export centroid incident points."""
     features: list[dict[str, Any]] = []
+    ai_fields: list[str] = []
     for item in version.evidence:
         located = (
             item.geo_confidence in {"exact", "city", "admin1"}
@@ -101,7 +103,31 @@ def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
             features[-1]["properties"]["project"] = project_to_dict(item.project)
         if item.observation is not None:
             features[-1]["properties"]["observation"] = observation_to_dict(item.observation)
-    return {"type": "FeatureCollection", "features": features}
+        if (
+            item.source_id == "research_media"
+            and item.title.startswith("Unverified candidate: ")
+            and any(
+                attribute.key == "provenance_status"
+                and attribute.value == "unverified AI visual hypothesis"
+                for attribute in item.attributes
+            )
+        ):
+            ai_fields.append(f"/features/{len(features) - 1}/properties/title")
+    return {
+        "type": "FeatureCollection",
+        "metadata": {
+            "report_ai_disclosure": report_ai_disclosure(version).metadata(),
+            "application_ai_generated_fields": ai_fields,
+            "ai_field_classification": (
+                "Partial: recorded AI candidate-label titles only; other fields unclassified."
+            ),
+            "source_authorship": "unknown",
+            "scope": (
+                "Frozen evidence may include recorded AI hypotheses; not report assessment text."
+            ),
+        },
+        "features": features,
+    }
 
 
 class FrozenEvidencePackageRenderer:

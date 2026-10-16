@@ -6438,3 +6438,46 @@ documentation records. Main CI and live deployment verification remain separate.
 KAN-242 integration: Alex approved PR 205 at `6919008f` after all 40 checks passed.
 It merged as `e1f36dcb`; Jira is Done. KAN-238 preserves both changes during
 integration. The separately blocked manual production rollout was not approved.
+
+## 16 October 2026: KAN-191 AI output disclosure
+
+PDF and Word exports identify AI assistance beside the title and in page footers,
+with portable metadata derived only from the selected frozen version. Missing
+provider provenance stays unknown, and an OpenAI-compatible connector is not
+misrepresented as a verified OpenAI host. Full model details remain in metadata;
+long footer names are explicitly shortened. The canonical blocks, saved Markdown,
+report body and source evidence remain unchanged.
+
+The optional Chromium renderer receives bounded UTF-8 disclosure through a read-only
+file and writes PDF metadata inside its existing isolated child. Normal PDF output
+retains supported-glyph fallback and serial font subsetting. Word custom properties
+use typed OOXML. Evidence GeoJSON flags recorded AI visual-hypothesis titles and
+leaves other fields unclassified; live GeoJSON/KML describe source observations.
+
+Shared UI labels cover reports, briefings, the Eye assistant, matching recorded AI
+translations, photo results and economy explanations. Setup readiness, uncertainty,
+review status, raw figures and operator/source transformations keep their distinct
+meanings. ADR 0024 records the approach, legal limits and future C2PA considerations.
+
+The explicit no-evidence path is labelled as an application-written gap notice,
+without claiming that its configured model was called. Resumed or failed generated
+reports retain AI disclosure. Independent review also caught photo-hypothesis
+metadata, unsupported model glyphs and Unicode transport expansion; all have
+regression coverage and both final reviewers found no remaining blocker.
+
+Validation: 67 focused backend cases passed with 100% branch-inclusive coverage
+across four new modules. A wider 64-case export/access/font/startup run found one
+old assertion that excluded the model from every format. Updating it to distinguish
+unchanged canonical Markdown from PDF/Word disclosure passed all nine tests in that
+file; the other 63 cases had passed. Frontend: 94 cases passed across 12 files,
+strict type checks, targeted ESLint/formatting, build and bundle budgets passed.
+Backend Ruff/formatting, strict mypy (1,642 files), three import contracts and new
+module Bandit checks passed. File-length and whitespace checks passed. Normal,
+maximum-length, non-Latin and gap-notice PDF pages passed visual inspection.
+Chromium child isolation/metadata are tested with a fake browser process, not a
+live isolated Chromium render. Full current-head CI and release approval remain.
+
+Published CI flagged the standard-library XML import used only to construct Word
+properties. A rule-specific import annotation documents this false positive; no
+XML parser is called and no untrusted XML is consumed. Input XML protections and
+the global security gate are unchanged.

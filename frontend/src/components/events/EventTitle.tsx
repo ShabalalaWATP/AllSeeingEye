@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { SourceText, type SourceTextElement } from './SourceText';
@@ -12,14 +13,18 @@ export function EventTitle({
   as,
   className,
 }: {
-  event: Pick<LiveEvent, 'title' | 'title_en' | 'language'>;
+  event: Pick<LiveEvent, 'title' | 'title_en' | 'language'> &
+    Partial<Pick<LiveEvent, 'transformations'>>;
   as?: SourceTextElement;
   className?: string;
 }) {
   const shown = shownTitle(event);
   return (
-    <SourceText language={shown.language} as={as} className={className}>
-      {shown.text}
-    </SourceText>
+    <>
+      <SourceText language={shown.language} as={as} className={className}>
+        {shown.text}
+      </SourceText>
+      <AiTranslationDisclosure item={event} />
+    </>
   );
 }
