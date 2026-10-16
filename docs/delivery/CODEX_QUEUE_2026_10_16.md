@@ -17,7 +17,7 @@ guide, not automatic closure or release approval.
 | 8 | [KAN-185](https://alex-orr.atlassian.net/browse/KAN-185) | Finnish/EU privacy assessments | Alex approved the restricted assessment record on 16 October; Jira Done, with exclusions and open legal/operational actions retained |
 | 9 | [KAN-189](https://alex-orr.atlassian.net/browse/KAN-189) | UK Online Safety Act scope assessment | [PR 211](https://github.com/ShabalalaWATP/AllSeeingEye/pull/211), updated for operator-confirmed approved adults including UK users; assessment/release approval and refreshed CI pending; KAN-246 tracks operating validation |
 | 10 | [KAN-191](https://alex-orr.atlassian.net/browse/KAN-191) | Visible and machine-readable AI labels | [PR 212](https://github.com/ShabalalaWATP/AllSeeingEye/pull/212), all 40 checks passed, merged as `8f4921ab`, Jira Done |
-| 11 | [KAN-192](https://alex-orr.atlassian.net/browse/KAN-192) | Configured public security.txt | [PR 213](https://github.com/ShabalalaWATP/AllSeeingEye/pull/213), release approved; integrated image tests passed, refreshed full CI pending |
+| 11 | [KAN-192](https://alex-orr.atlassian.net/browse/KAN-192) | Configured public security.txt | [PR 213](https://github.com/ShabalalaWATP/AllSeeingEye/pull/213), all 41 checks passed, merged as `5f2a57d9`, Jira Done |
 
 The alert-deletion parity repair precedes the broader retention work because it
 establishes the correct dependent-row behaviour. Retention and recovery controls

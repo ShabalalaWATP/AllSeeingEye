@@ -6582,3 +6582,10 @@ approval and all 40 checks. The KAN-192 feature is also release-approved; its
 combined image checks pass and refreshed full CI is pending. Production rollout
 and operator enablement remain separate. The adult/UK audience confirmation has
 been incorporated into the KAN-189 draft; assessment approval is still outstanding.
+
+KAN-192 subsequently passed all 41 current-head checks and merged as `5f2a57d9`
+under the existing feature approval. Its test-only timing repair changed no
+application behaviour. Six of the eleven assigned tickets are now Done; five
+remain in review. Final KAN-239 ancestry reconciliation retained the exact
+validated implementation tree before this documentation checkpoint was updated.
+No manual production rollout, contact configuration or retention enablement occurred.
