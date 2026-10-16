@@ -6431,3 +6431,8 @@ module Bandit checks passed. File-length and whitespace checks passed. Normal,
 maximum-length, non-Latin and gap-notice PDF pages passed visual inspection.
 Chromium child isolation/metadata are tested with a fake browser process, not a
 live isolated Chromium render. Full current-head CI and release approval remain.
+
+Published CI flagged the standard-library XML import used only to construct Word
+properties. A rule-specific import annotation documents this false positive; no
+XML parser is called and no untrusted XML is consumed. Input XML protections and
+the global security gate are unchanged.

@@ -1,6 +1,7 @@
 """Typed OOXML AI properties; no signature or content-authenticity claim."""
 
 # Construct fixed OOXML only. No XML parser or untrusted XML input is used here.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec B405
 
 from docx.document import Document
