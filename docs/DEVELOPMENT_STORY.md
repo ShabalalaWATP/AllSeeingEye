@@ -6563,6 +6563,19 @@ All 18 operational-control cases then passed, including both worker configuratio
 Ruff, formatting, strict mypy over 1,650 source files and all three import contracts
 pass. Full CI against the resulting main and release approval remain required.
 
+## 16 October 2026: approved delivery and assessment checkpoint
+
+Alex approved the KAN-185 private assessment record with its exclusions and open
+actions retained. The exact reviewed package was archived privately before the
+approval record was added; no sensitive assessment contents were published. Jira
+records completion of that assessment task, not approval for excluded processing.
+
+KAN-238 merged as `7e594e38` and KAN-191 as `8f4921ab`, each after explicit release
+approval and all 40 checks. The KAN-192 feature is also release-approved; its
+combined image checks pass and refreshed full CI is pending. Production rollout
+and operator enablement remain separate. The adult/UK audience confirmation has
+been incorporated into the KAN-189 draft; assessment approval is still outstanding.
+
 ### 16 October 2026: KAN-241 dormant workload expiry
 
 Reproduced expired selected metadata returned for idle, paused, archived and
