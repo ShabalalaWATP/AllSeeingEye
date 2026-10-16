@@ -2,11 +2,12 @@
 
 import asyncio
 import io
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from pypdf import PdfWriter
+from pypdf import PdfReader, PdfWriter
 from pypdf.generic import (
     ArrayObject,
     BooleanObject,
@@ -29,8 +30,14 @@ from ase.domain.report_documents import BlockKind, DocumentBlock, ReportDocument
 @pytest.mark.parametrize(
     "tagged,pages,accepted", [(True, 1, True), (False, 1, False), (True, 129, False)]
 )
-def test_child_validates_real_pdf_pages_and_tags(tmp_path, monkeypatch, tagged, pages, accepted):
+@pytest.mark.parametrize("with_disclosure", [False, True])
+def test_child_validates_real_pdf_pages_and_tags(
+    tmp_path, monkeypatch, tagged, pages, accepted, with_disclosure
+):
     monkeypatch.chdir(tmp_path)
+    (tmp_path / "disclosure.json").write_text(
+        json.dumps({"model": "saved-model", "provider": "bedrock"} if with_disclosure else None)
+    )
     monkeypatch.setattr(chromium_pdf_child.sys, "argv", ["worker", "/fixed/browser"])
     commands = []
     output = io.BytesIO()
@@ -72,6 +79,14 @@ def test_child_validates_real_pdf_pages_and_tags(tmp_path, monkeypatch, tagged, 
     assert "--no-sandbox" not in commands[0]
     assert commands[0][-1] == "file:///work/input.html"
     assert bool(output.getvalue()) is accepted
+    if accepted:
+        receipt, content = output.getvalue().split(b"\n", 1)
+        assert json.loads(receipt)["bytes"] == len(content)
+        result = PdfReader(io.BytesIO(content))
+        assert "/StructTreeRoot" in result.trailer["/Root"]
+        assert ("/ase:ai-generated" in result.metadata) is with_disclosure
+        if with_disclosure:
+            assert result.metadata["/ase:ai-model"] == "saved-model"
 
 
 def test_print_html_embeds_verified_fonts_and_escapes_markup(monkeypatch):
@@ -126,6 +141,7 @@ def test_default_composition_has_no_browser_and_invalid_configuration_fails(tmp_
 @pytest.mark.parametrize("fault", ["false", "null", "wrong_type", "empty"])
 def test_child_rejects_false_marker_and_invalid_structure(tmp_path, monkeypatch, fault):
     monkeypatch.chdir(tmp_path)
+    (tmp_path / "disclosure.json").write_text("null")
     monkeypatch.setattr(chromium_pdf_child.sys, "argv", ["worker", "/fixed/browser"])
 
     def browser(*args, **kwargs):
@@ -167,6 +183,7 @@ def test_child_rejects_false_marker_and_invalid_structure(tmp_path, monkeypatch,
 )
 def test_child_requires_typed_structure_entries(tmp_path, monkeypatch, variant, accepted):
     monkeypatch.chdir(tmp_path)
+    (tmp_path / "disclosure.json").write_text("null")
     monkeypatch.setattr(chromium_pdf_child.sys, "argv", ["worker", "/fixed/browser"])
     output = io.BytesIO()
     monkeypatch.setattr(chromium_pdf_child.sys, "stdout", SimpleNamespace(buffer=output))

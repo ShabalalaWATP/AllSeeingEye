@@ -153,6 +153,10 @@ def add_page_furniture(word: WordDocument, document: ReportDocument) -> None:
         _field(paragraph, "PAGE")
         paragraph.add_run(" of ")
         _field(paragraph, "NUMPAGES")
+        if document.ai_disclosure is not None:
+            disclosure = footer.add_paragraph(document.ai_disclosure.footer, style="ASE Metadata")
+            for run in disclosure.runs:
+                run.font.size = Pt(7)
 
 
 def _text_width(section: Section) -> Length:

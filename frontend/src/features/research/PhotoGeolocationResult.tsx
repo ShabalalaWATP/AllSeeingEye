@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import type { ResearchGeolocation } from '@/lib/api/researchGeolocation';
 import { formatUtc } from '@/lib/format';
 
@@ -64,6 +65,7 @@ export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation
             ? 'No location identified'
             : 'Unverified location candidates'}
         </h3>
+        <AiDisclosure className="mt-2 text-xs leading-5 text-muted" />
         <p className="mt-2 break-words text-sm leading-relaxed text-muted">{result.summary}</p>
       </header>
       {result.cross_photo_analysis && (

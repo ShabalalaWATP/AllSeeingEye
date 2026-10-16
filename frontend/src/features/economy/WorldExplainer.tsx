@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import { useId } from 'react';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -46,6 +47,7 @@ export function ExplainerBody({ section }: { section: ExplainerSection }) {
   return (
     <div className="grid gap-x-12 gap-y-7 xl:grid-cols-[minmax(0,1fr)_minmax(240px,300px)]">
       <div className="min-w-0 space-y-5">
+        <AiDisclosure kind="explanation" />
         <p className="max-w-[44ch] border-l-2 border-ember pl-4 text-xl leading-8 font-medium text-balance sm:text-2xl sm:leading-9">
           {section.takeaway}
         </p>

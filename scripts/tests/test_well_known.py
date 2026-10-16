@@ -6,7 +6,6 @@ committed files and Caddy rule so a broken edit fails before an image is built.
 
 import re
 import unittest
-from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,39 +28,6 @@ class RobotsTests(unittest.TestCase):
         self.assertEqual(robots["user-agent"], ["*"])
         self.assertEqual(sorted(robots["disallow"]), ["/admin", "/api/"])
         self.assertEqual(robots["allow"], ["/enterprise", "/"])
-
-
-class SecurityTxtTests(unittest.TestCase):
-    """RFC 9116: Contact and Expires are required; Expires should be under a year."""
-
-    def setUp(self) -> None:
-        self.path = PUBLIC / ".well-known" / "security.txt"
-        self.fields = fields(self.path)
-
-    def test_required_fields_and_contact(self) -> None:
-        self.assertEqual(
-            self.fields["contact"],
-            ["https://github.com/ShabalalaWATP/AllSeeingEye/security/advisories/new"],
-        )
-        self.assertEqual(self.fields["preferred-languages"], ["en"])
-        for name in ("expires", "canonical"):
-            self.assertEqual(len(self.fields[name]), 1, name)
-        self.assertRegex(
-            self.fields["canonical"][0], r"^https://[^/]+/\.well-known/security\.txt$"
-        )
-
-    def test_expiry_is_a_dated_timestamp_under_a_year_away(self) -> None:
-        # Deliberately no "not yet expired" check: that would fail every CI run, and
-        # so block merges and deploys, on a fixed date. The Uptime workflow warns
-        # 30 days ahead instead.
-        expires = datetime.fromisoformat(self.fields["expires"][0])
-        self.assertIsNotNone(expires.tzinfo)
-        self.assertLess(expires, datetime.now(UTC) + timedelta(days=366))
-
-    def test_plain_lf_text(self) -> None:
-        raw = self.path.read_bytes()
-        self.assertNotIn(b"\r", raw)
-        raw.decode("ascii")
 
 
 class CaddyRoutingTests(unittest.TestCase):

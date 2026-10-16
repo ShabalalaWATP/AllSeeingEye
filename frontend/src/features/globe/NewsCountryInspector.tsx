@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { useEffect, useRef } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { SourceLink } from '@/components/ui/SourceLink';
@@ -62,6 +63,7 @@ export function NewsCountryInspector({
               >
                 {lead.title_en ?? lead.title}
               </button>
+              <AiTranslationDisclosure item={lead} />
               <div className="mt-2">
                 <SourceLink url={lead.url}>Read source</SourceLink>
               </div>

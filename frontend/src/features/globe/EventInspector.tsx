@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
 import { HistoricalBaselineNote } from '@/components/reports/HistoricalBaselineNote';
 import { SourceText } from '@/components/events/SourceText';
@@ -132,7 +133,10 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           </p>
         )}
         {event.title_en !== null && event.title_en !== event.title && (
-          <p className="mt-1 text-muted">{event.title_en}</p>
+          <div>
+            <p className="mt-1 text-muted">{event.title_en}</p>
+            <AiTranslationDisclosure item={event} className="mt-1 block text-2xs text-muted" />
+          </div>
         )}
         {event.grade_rationale !== '' && (
           <p className="mt-2 text-xs text-muted">

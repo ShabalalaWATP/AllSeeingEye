@@ -95,23 +95,50 @@ async def test_worker_retries_without_sensitive_errors_and_stops_on_cancellation
     assert "private SQL" not in str(logs)
 
 
-async def test_worker_starts_without_feeds_and_stops_before_disposal(runtime, monkeypatch):
+@pytest.mark.parametrize("auth_enabled", [False, True])
+async def test_worker_starts_without_feeds_and_stops_before_disposal(
+    runtime, monkeypatch, auth_enabled
+):
     app_instance, container, tasks = runtime
     container.settings.feeds_enabled = False
+    container.settings.auth_retention_enabled = auth_enabled
+    container.settings.account_request_retention_days = 90
+    container.settings.auth_retention_paused = True
     container.settings.operational_retention_enabled = True
     policy = OperationalRetentionPolicy(paused=True, held_categories=frozenset({"audit"}))
     container.settings.operational_retention_policy = policy
     started = asyncio.Event()
+    auth_started = asyncio.Event()
+    retention_tasks = []
 
     async def worker(_sessions, _clock, selected):
         assert selected == policy
         tasks.append(asyncio.current_task())
+        retention_tasks.append(asyncio.current_task())
         started.set()
         await asyncio.Event().wait()
 
+    async def auth_worker(_sessions, _clock, selected):
+        assert selected.decision_days == 90 and selected.paused
+        tasks.append(asyncio.current_task())
+        retention_tasks.append(asyncio.current_task())
+        auth_started.set()
+        await asyncio.Event().wait()
+
+    async def verify_cancelled_before_disposal():
+        assert len(retention_tasks) == (2 if auth_enabled else 1)
+        assert len(set(retention_tasks)) == len(retention_tasks)
+        assert all(task.cancelled() for task in retention_tasks)
+
+    container.dispose.side_effect = verify_cancelled_before_disposal
     monkeypatch.setattr("ase.app_lifecycle.run_operational_retention", worker)
+    monkeypatch.setattr("ase.app_lifecycle.run_auth_retention", auth_worker)
     async with lifespan(app_instance):
         await asyncio.wait_for(started.wait(), 10)
+        if auth_enabled:
+            await asyncio.wait_for(auth_started.wait(), 10)
+        else:
+            assert not auth_started.is_set()
     assert all(task.done() for task in tasks)
     container.scheduler.start.assert_not_awaited()
     container.dispose.assert_awaited_once()

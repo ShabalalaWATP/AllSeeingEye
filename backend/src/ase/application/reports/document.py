@@ -8,6 +8,7 @@ so the narrative is never interrupted by them.
 
 from __future__ import annotations
 
+from ase.application.reports.ai_disclosure import report_ai_disclosure
 from ase.application.reports.document_assessment import (
     assessment_method,
     confidence_rationale,
@@ -272,4 +273,5 @@ def build_document(
         str(record.scope.get("report_language", "en")),
         references,
         1,
+        report_ai_disclosure(version),
     )

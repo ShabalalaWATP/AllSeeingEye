@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from ase.adapters.reports import async_documents, chromium, chromium_runtime
 from ase.adapters.reports.chromium import ChromiumPdfWorker
 from ase.adapters.reports.chromium_runtime import LinuxChromiumPolicy
 from ase.application.ports.report_export import RenderCleanupFailed
+from ase.domain.ai_disclosure import AiDisclosure
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import ExportFormat, ReportDocument
 
@@ -86,6 +88,27 @@ async def test_bounded_owned_worker_completes_and_reaps(runtime):
     assert runtime.jobs[0].closed
     assert runtime.jobs[0].processes[0].returncode == 0
     assert not runtime.jobs[0].path.exists()
+
+
+async def test_maximum_unicode_disclosure_fits_child_transport(runtime, monkeypatch):
+    spawn = chromium._spawn
+    captured = []
+
+    async def inspect(directory):
+        raw = (directory / "disclosure.json").read_bytes()
+        captured.append(raw)
+        assert len(raw) <= 16_384
+        return await spawn(directory)
+
+    monkeypatch.setattr(chromium, "_spawn", inspect)
+    model = "\U0001f30d" * 2048
+    document = replace(DOC, ai_disclosure=AiDisclosure(model, "bedrock"))
+    assert await ChromiumPdfWorker(runtime).render(document) == b"%PDF-1.7 fixture"
+    assert json.loads(captured[0]) == {
+        "model": model,
+        "provider": "bedrock",
+        "assessment_generated": True,
+    }
 
 
 async def test_html_preparation_runs_off_loop_and_settles_cancellation(runtime, monkeypatch):
@@ -198,6 +221,9 @@ def test_platform_policy_fails_closed_and_keeps_chromium_sandbox(monkeypatch, tm
     assert command.count("--size") == 2
     assert command.count(str(64 * 1024 * 1024)) == 2
     assert str(tmp_path / "input.html") in command
+    index = command.index(str(tmp_path / "disclosure.json"))
+    assert command[index - 1] == "--ro-bind"
+    assert command[index + 1] == "/work/disclosure.json"
 
 
 async def test_failed_cleanup_retains_slot_and_live_descendant_workspace(runtime, monkeypatch):

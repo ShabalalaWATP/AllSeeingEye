@@ -1,3 +1,4 @@
+import { AiTranslationDisclosure } from '@/components/research/AiTranslationDisclosure';
 import { useId, useMemo, useRef, useState } from 'react';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
@@ -165,6 +166,7 @@ export function GeographicPrecisionPanel({
             <li key={event.id}>
               <button type="button" onClick={() => onSelect(event)}>
                 <span>{event.title_en ?? event.title}</span>
+                <AiTranslationDisclosure item={event} />
                 <span className="map-tool-help">
                   {event.country_iso ?? 'No country'} · {precisionLabel(event)}
                 </span>

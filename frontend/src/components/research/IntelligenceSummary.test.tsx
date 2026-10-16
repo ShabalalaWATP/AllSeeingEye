@@ -24,6 +24,7 @@ it.each(['Cyber', 'Economic'])(
     value.version.body.key_judgements[0]!.supporting_evidence = ['E1'];
     value.version.body.key_judgements[0]!.contradicting_evidence = ['E2'];
     show(value, subject);
+    expect(screen.getByText('AI-assisted assessment')).toBeVisible();
     const judgement = within(
       screen.getByRole('region', { name: 'Confidence and likelihood for KJ1' }),
     );
