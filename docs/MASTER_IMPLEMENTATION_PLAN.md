@@ -4,6 +4,19 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-240 operator-assisted private removal, 16 October 2026
+
+- [x] Implement scoped preview/apply and recorded quarterly/account-closure reviews.
+- [x] Preserve shared work, other authors, last managers, holds and uncertain jobs/deliveries.
+- [x] Permanently minimise removed identities and prevent stale account/conversation/tier writes.
+- [x] Reproduce and repair retained forecast evidence references; independent review passed.
+- [x] Complete scoped coverage (96.25%), 120 SQLite, 119 PostgreSQL-configured and 37 wider regression cases.
+- [ ] Complete current-head CI with the existing global gates.
+- [ ] Obtain release approval and integrate after KAN-238/239/241.
+
+See [the operator procedure](PRIVATE_DATA_REMOVAL.md). Production removal and
+backup/provider reconciliation remain separate; KAN-243 owns recovery reconciliation.
+
 ### KAN-241 dormant workload retention, 16 October 2026
 
 - [x] Reproduce dormant selected-index reads and exclude expired metadata before limits.

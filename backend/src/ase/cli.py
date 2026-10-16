@@ -6,7 +6,7 @@ import asyncio
 import json
 from pathlib import Path
 from typing import Annotated
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import typer
 
@@ -56,6 +56,42 @@ app.command("import-ukraine-oblasts")(import_oblasts)
 app.command("import-ukraine-reference")(import_reference)
 app.command("import-ukraine-losses")(import_losses)
 app.command("import-ukraine-casualties")(import_casualties)
+
+
+@app.command("private-data")
+def private_data(
+    owner: Annotated[UUID, typer.Option(help="Account whose private data is being reviewed")],
+    operator: Annotated[UUID, typer.Option(help="Active administrator recording the action")],
+    action: Annotated[str, typer.Argument(help="preview, review or apply")] = "preview",
+    scope: Annotated[
+        str, typer.Option(help="account, report, subscription, brief or job")
+    ] = "account",
+    target: Annotated[UUID | None, typer.Option(help="Saved-work identifier")] = None,
+    fingerprint: Annotated[
+        str | None, typer.Option(help="Exact reviewed preview fingerprint")
+    ] = None,
+    decision: Annotated[str | None, typer.Option(help="retain, hold or remove")] = None,
+    purpose: Annotated[str, typer.Option(help="Reason for necessity review")] = "quarterly",
+    expected_revision: Annotated[
+        int, typer.Option(help="Current review revision, initially 0")
+    ] = 0,
+    days: Annotated[int, typer.Option(help="Next necessity review in 1 to 90 days")] = 90,
+) -> None:
+    """Preview private removal, record a decision, or explicitly apply a reviewed plan."""
+    from ase.cli_private_removal import run_private_data  # noqa: PLC0415 - lazy migration startup
+
+    run_private_data(
+        owner,
+        operator,
+        action,
+        scope,
+        target,
+        fingerprint,
+        decision,
+        purpose,
+        expected_revision,
+        days,
+    )
 
 
 @app.command("recover-admin-mfa")

@@ -49,6 +49,7 @@ explain what is and is not represented.
 - [AI usage and cost controls](AI_COST_CONTROLS.md): research tiers, call and token policies, and estimated spend.
 - [Administration](ADMINISTRATION.md): the `/admin` workspace and its areas.
 - [Personal-data requests](PERSONAL_DATA_OPERATIONS.md): the operator-assisted route, administrator contact, shared-work safeguards and export/deletion limits.
+- [Private-data removal](PRIVATE_DATA_REMOVAL.md): scoped preview/apply, necessity decisions, preservation holds and retained shared history.
 - [Authentication retention](AUTH_RETENTION.md): bounded preview/apply housekeeping, operational periods and scoped holds.
 - [Audit, usage and delivery retention](OPERATIONAL_RETENTION.md): optional bounded expiry, terminal receipt minimisation and category holds.
 - [Dormant workload retention](DORMANT_RETENTION.md): independent expiry, replay safeguards, correction history and sweep backlogs.

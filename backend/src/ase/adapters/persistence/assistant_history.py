@@ -6,14 +6,15 @@ from datetime import datetime
 from typing import cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.assistant_history_models import AssistantConversationRow
 from ase.adapters.persistence.models import UserRow
+from ase.adapters.persistence.private_review_models import PrivateDataReviewRow
 from ase.application.assistant_history.service import encode_transcript, require_capacity
 from ase.application.ports.assistant_history import SavedConversation, SavedConversationSummary
-from ase.domain.errors import NotFound
+from ase.domain.errors import Forbidden, NotFound
 
 
 def _record(row: AssistantConversationRow) -> SavedConversation:
@@ -30,11 +31,19 @@ class SqlAssistantHistory:
         self.session = session
 
     async def lock_owner(self, owner_id: UUID) -> None:
-        # Serialises per-owner quota checks on PostgreSQL. Authentication and
-        # deactivation are rechecked by the route immediately before commit.
-        await self.session.scalar(
-            select(UserRow.id).where(UserRow.id == owner_id).with_for_update()
+        # Portable account lock, then a fresh decision after any waiting remover.
+        active = await self.session.scalar(
+            update(UserRow)
+            .where(UserRow.id == owner_id)
+            .values(security_version=UserRow.security_version)
+            .returning(UserRow.is_active)
+            .execution_options(synchronize_session=False)
         )
+        erased = await self.session.scalar(
+            select(PrivateDataReviewRow.erased_at).where(PrivateDataReviewRow.owner_id == owner_id)
+        )
+        if not active or erased is not None:
+            raise Forbidden()
 
     async def count(self, owner_id: UUID) -> int:
         return int(
@@ -81,6 +90,7 @@ class SqlAssistantHistory:
         )
 
     async def remove(self, owner_id: UUID, conversation_id: UUID) -> bool:
+        await self.lock_owner(owner_id)
         row = await self._row(owner_id, conversation_id)
         if row is None:
             return False
@@ -117,6 +127,7 @@ class SqlAssistantHistory:
         now: datetime,
     ) -> SavedConversation:
         transcript, size = encode_transcript(turns)
+        await self.lock_owner(owner_id)
         row = await self._row(owner_id, conversation_id)
         if row is None:
             raise NotFound()

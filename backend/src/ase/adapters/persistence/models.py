@@ -39,6 +39,7 @@ from ase.adapters.persistence import notification_models as _notification_models
 from ase.adapters.persistence import (
     original_passage_models as _original_passage_models,  # noqa: F401
 )
+from ase.adapters.persistence import private_review_models as _private_review_models  # noqa: F401
 from ase.adapters.persistence import report_job_models as _report_job_models  # noqa: F401
 from ase.adapters.persistence import (
     report_job_usage_models as _report_job_usage_models,  # noqa: F401

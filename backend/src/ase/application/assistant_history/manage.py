@@ -3,6 +3,7 @@
 from collections.abc import Iterable, Sequence
 from uuid import UUID
 
+from ase.application.access import AccessPolicy
 from ase.application.ports.assistant_history import (
     AssistantHistoryRepository,
     SavedConversation,
@@ -22,8 +23,10 @@ class ManageAssistantHistory:
         reports: GetReportUseCase,
         clock: Clock,
         uow: UnitOfWork,
+        access: AccessPolicy,
     ) -> None:
         self._repository, self._reports, self._clock, self._uow = repository, reports, clock, uow
+        self._access = access
 
     async def authorise_reports(self, actor: User, references: Iterable[tuple[UUID, int]]) -> None:
         for report_id, version in set(references):
@@ -50,6 +53,7 @@ class ManageAssistantHistory:
         references: Iterable[tuple[UUID, int]],
         conversation_id: UUID | None = None,
     ) -> SavedConversation:
+        await self._access.context(actor, for_update=True)
         await self.authorise_reports(actor, references)
         if conversation_id is None:
             return await self._repository.create(actor.id, title, turns, self._clock.now())
@@ -58,5 +62,6 @@ class ManageAssistantHistory:
         )
 
     async def remove(self, actor: User, conversation_id: UUID) -> None:
+        await self._access.context(actor, for_update=True)
         if not await self._repository.remove(actor.id, conversation_id):
             raise NotFound()

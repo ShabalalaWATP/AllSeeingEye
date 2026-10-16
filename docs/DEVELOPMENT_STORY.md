@@ -6473,3 +6473,39 @@ Ruff, formatting, strict mypy over 1650 source files and three architecture
 contracts pass. The guide and T06/T07/T08/T10/T13/T14 retention entries distinguish
 access expiry, batch backlogs, correction scans, operational holds and live rollout.
 Full CI and authorised serial integration remain; no production purge is claimed.
+
+## 16 October 2026: KAN-240 scoped private-data removal
+
+The new local operator command previews account/report/subscription/brief/job
+removal, records a purpose and necessity decision, and requires the exact reviewed
+inventory fingerprint before applying. The transaction rechecks administrator
+and owner state, execution/delivery locks, graph ownership, original uploads,
+foreign keys and structured saved references. A non-expiring manual hold blocks
+this workflow. Whole-account removal preserves an inactive UUID stub and shared
+attribution; stale account, conversation and tier writes cannot revive it.
+
+Independent security review found a missing dependency from a retained forecast
+decision to evidence in a later report. A real API regression reproduced an
+incorrectly unblocked removal, then passed after the bounded reference inventory
+included ledger passage references. Ten reference cases and eighteen operator CLI
+cases passed independently. Other review fixes clarified which delivery receipts
+remain and correctly report an uncertain result if cleanup fails after commit.
+
+Migration 0095 preserves review/hold and removal markers by refusing downgrade of
+a populated review table. The procedure explicitly separates database removal,
+shared history, audit/accounting, in-memory expiry and external copies. No live
+account deletion, provider request or production migration was performed.
+Final local evidence: 117 SQLite cases passed with 96.25% branch-inclusive
+coverage across eleven new removal modules, exceeding the scoped 95% floor.
+Three further canonical source-operation cases passed on both databases: open
+and unknown receipts prevent deletion, while settled receipts permit it.
+PostgreSQL passed 96 focused cases plus those three and 20 command/concurrency
+cases. A further 37 existing startup, assistant-history, account-audit and source
+ledger cases passed. Migration upgrade and protected downgrade were exercised on
+SQLite; production migration was not run.
+
+Ruff, formatting, strict mypy (1663 source files), all three import contracts,
+configured Bandit and file-length/whitespace checks passed. Independent reviewers
+passed 10 reference cases, 18 CLI cases and a 47-case safety/race selection.
+Global CI coverage gates remain unchanged. Full current-head CI and authorised
+serial integration after KAN-238/239/241 remain required.

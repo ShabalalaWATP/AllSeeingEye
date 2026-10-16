@@ -41,4 +41,5 @@ class PrivateRecordWiring(ContainerCore):
             self.get_report(session),
             self.clock,
             SqlAlchemyUnitOfWork(session),
+            self.access_policy(session),
         )
