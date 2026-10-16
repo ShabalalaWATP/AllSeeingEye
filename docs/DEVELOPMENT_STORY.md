@@ -6521,3 +6521,71 @@ metadata. The assertion now waits for the same exact required value. All 17
 focused public-route and metadata tests pass; independent review confirmed no
 product change, timeout increase or weakened assertion. The feature approval is
 retained, while refreshed required CI must pass before merge.
+
+### 16 October 2026: KAN-239 operational retention
+
+Added optional independent maintenance for audit events, per-call AI usage and
+terminal subscription/digest metadata. Proposed operational windows are 365, 400
+and 90 days, with a strict cutoff, at most 100 changes per category per transaction,
+counts-only preview, explicit CLI apply, category holds and a scoped global pause.
+Automatic operation defaults off. Current UTC-month usage, held categories,
+retryable deliveries, opt-outs, duplicate-prevention receipts, digest timezone/day
+and original windows remain intact. Receipt minimisation is not anonymisation.
+
+The investigator traced every recipient-reference consumer before removing that
+field from terminal email records. Historical cancellation does not always stamp
+activity time, so the guide accurately defines delivery inactivity rather than time
+since cancellation. SQLite reusable integer IDs are not used for specific holds.
+No schema, dependency, public API or raw/private-event persistence expansion occurs.
+
+Verification: 49 focused SQLite cases passed with 100% branch-inclusive coverage of
+the four new implementation modules, using a 95% scoped floor without changing
+project thresholds. PostgreSQL passed the initial 48 cases, including strict cutoffs,
+category/global holds, 205-row backlogs, rollback and two independent connections
+draining distinct batches. Independent security review passed 27 contract/control
+cases and real CLI secret-sanitisation probes; code-quality review passed 21 cases
+including the race. Both reported no actionable defect.
+The subsequent PostgreSQL delivery/digest/monthly-budget regression run passed
+29 cases, including the added uncertain checkpoint/reservation preservation test.
+
+The first local run exposed test counts that omitted a fixture's recent audit event;
+the corrected assertions preserve it explicitly. Wider startup testing caught the
+existing migration import budget at 200 modules; lazy policy construction restored
+the unchanged limit and both startup checks passed. Ruff, formatting, strict mypy
+over 1646 source files, three import contracts, focused Bandit, file length and
+whitespace checks pass. Broad CI and authorised integration remain required.
+The new operational guide and T05/T07/T09 schedule retain quarterly ownership,
+hold evidence, parent-record limitations and separate production rollout approval.
+
+Integration with the approved authentication, AI-disclosure and security-contact
+changes preserves both retention workers and both configuration groups. Independent
+review confirmed that no application change was lost. Added a regression covering
+both workers enabled together, distinct task ownership and cancellation before
+disposal, as well as the existing operational-only case.
+
+Combined retention, outbox, lifecycle, startup and export checks initially passed
+171 cases; 19 could not create temporary paths because their private parent directory
+was missing. Creating that directory repaired the harness and all 19 passed.
+All 18 operational-control cases then passed, including both worker configurations.
+Ruff, formatting, strict mypy over 1,650 source files and all three import contracts
+pass. Full CI against the resulting main and release approval remain required.
+
+## 16 October 2026: approved delivery and assessment checkpoint
+
+Alex approved the KAN-185 private assessment record with its exclusions and open
+actions retained. The exact reviewed package was archived privately before the
+approval record was added; no sensitive assessment contents were published. Jira
+records completion of that assessment task, not approval for excluded processing.
+
+KAN-238 merged as `7e594e38` and KAN-191 as `8f4921ab`, each after explicit release
+approval and all 40 checks. The KAN-192 feature is also release-approved; its
+combined image checks pass and refreshed full CI is pending. Production rollout
+and operator enablement remain separate. The adult/UK audience confirmation has
+been incorporated into the KAN-189 draft; assessment approval is still outstanding.
+
+KAN-192 subsequently passed all 41 current-head checks and merged as `5f2a57d9`
+under the existing feature approval. Its test-only timing repair changed no
+application behaviour. Six of the eleven assigned tickets are now Done; five
+remain in review. Final KAN-239 ancestry reconciliation retained the exact
+validated implementation tree before this documentation checkpoint was updated.
+No manual production rollout, contact configuration or retention enablement occurred.

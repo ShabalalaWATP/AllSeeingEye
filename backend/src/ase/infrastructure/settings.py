@@ -5,7 +5,7 @@ from __future__ import annotations
 import secrets
 from enum import StrEnum
 from pathlib import Path
-from typing import Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import EmailStr, Field, PrivateAttr, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,6 +17,9 @@ from ase.domain.reasoning import (
     parse_mechanical_effort,
     parse_mechanical_purposes,
 )
+
+if TYPE_CHECKING:
+    from ase.domain.operational_retention import OperationalRetentionPolicy
 
 MIN_SECRET_LENGTH = 32
 # Relative to the API working directory, like the SQLite database and satellite cache.
@@ -51,6 +54,14 @@ class Settings(BaseSettings):
     auth_retention_enabled: bool = False
     auth_retention_paused: bool = False
     account_request_retention_days: int = Field(default=90, ge=30, le=3650)
+    operational_retention_enabled: bool = False
+    operational_retention_paused: bool = False
+    operational_retention_held_categories: frozenset[
+        Literal["audit", "llm_usage", "subscription_email", "digest"]
+    ] = frozenset()
+    audit_retention_days: int = Field(default=365, ge=30, le=3650)
+    llm_usage_retention_days: int = Field(default=400, ge=30, le=3650)
+    delivery_history_retention_days: int = Field(default=90, ge=30, le=3650)
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     # The signed-out product page at /enterprise. Off so other installations do not show it.
@@ -213,6 +224,19 @@ class Settings(BaseSettings):
         # Fail at startup, not at the first model call, if either value is unusable.
         _ = self.reasoning_effort_policy, self.ai_token_prices
         return self
+
+    @property
+    def operational_retention_policy(self) -> OperationalRetentionPolicy:
+        # Migration startup does not need optional housekeeping policy modules.
+        from ase.domain.operational_retention import OperationalRetentionPolicy  # noqa: PLC0415
+
+        return OperationalRetentionPolicy(
+            audit_days=self.audit_retention_days,
+            usage_days=self.llm_usage_retention_days,
+            delivery_days=self.delivery_history_retention_days,
+            paused=self.operational_retention_paused,
+            held_categories=self.operational_retention_held_categories,
+        )
 
     @property
     def reasoning_effort_policy(self) -> ReasoningEffortPolicy:
