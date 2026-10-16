@@ -56,10 +56,12 @@ it.each([
   render(<App />);
   await screen.findByRole('heading', { level: 1, name: title });
   expect(refresh).not.toHaveBeenCalled();
-  expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute(
-    'content',
-    'noindex, follow',
-  );
+  await waitFor(() => {
+    expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute(
+      'content',
+      'noindex, follow',
+    );
+  });
   await userEvent.setup().click(screen.getByRole('link', { name: 'The All Seeing Eye' }));
   await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
   await screen.findByRole('heading', { level: 1, name: 'Sign in' });
