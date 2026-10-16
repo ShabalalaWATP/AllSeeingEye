@@ -5,6 +5,8 @@ from enum import StrEnum
 from typing import Literal
 from uuid import UUID
 
+from ase.domain.ai_disclosure import AiDisclosure
+
 
 class ExportFormat(StrEnum):
     PDF = "pdf"
@@ -215,6 +217,7 @@ class ReportDocument:
     language: str = "en"
     references: tuple[DocumentReference, ...] = ()
     schema_version: int = 1
+    ai_disclosure: AiDisclosure | None = None
 
     def __post_init__(self) -> None:
         if self.schema_version < 1 or len(self.references) > 500:

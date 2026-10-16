@@ -1,3 +1,4 @@
+import { AiDisclosure } from '@/components/research/AiDisclosure';
 import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import type { CSSProperties, SyntheticEvent } from 'react';
 import { Link } from 'react-router';
@@ -174,6 +175,7 @@ export function EyeAssistantPanel({
           }}
         />
       )}
+      <AiDisclosure kind="assistant" className="px-4 py-3 text-xs leading-5 text-muted" />
       <AiResearchNotice className="eye-setup-note" linkClassName="" onNavigate={onClose} />
       {chat.report && <EyeReportContext report={chat.report} onMapChat={chat.clear} />}
       {chat.savedSnapshotNotice && <p className="eye-snapshot-note">{chat.savedSnapshotNotice}</p>}

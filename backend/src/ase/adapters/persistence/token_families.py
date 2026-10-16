@@ -1,9 +1,9 @@
 """Durable family invalidation, including descendants outside an UPDATE snapshot."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Uuid, delete, exists, literal, select
+from sqlalchemy import Uuid, exists, literal, select
 from sqlalchemy.dialects.postgresql import Insert as PostgresInsert
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import Insert as SqliteInsert
@@ -14,11 +14,6 @@ from sqlalchemy.sql.selectable import Exists
 
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.models import RefreshTokenRow
-from ase.adapters.persistence.session_activity import RefreshFamilyActivityRow
-
-# Settings cap a refresh lifetime at 90 days. Keep an additional day before
-# collecting expired revoked families, and retain any family with a live token.
-REVOCATION_RETENTION = timedelta(days=91)
 
 
 class RefreshFamilyRevocationRow(Base):
@@ -59,28 +54,4 @@ async def record_user_revocations(session: AsyncSession, user_id: UUID, now: dat
         _insert(session)
         .from_select(["family_id", "revoked_at"], families)
         .on_conflict_do_nothing(index_elements=["family_id"])
-    )
-
-
-async def prune_revoked_families(session: AsyncSession, now: datetime) -> None:
-    old_families = select(RefreshFamilyRevocationRow.family_id).where(
-        RefreshFamilyRevocationRow.revoked_at <= now - REVOCATION_RETENTION,
-    )
-    await session.execute(
-        delete(RefreshTokenRow).where(
-            RefreshTokenRow.family_id.in_(old_families),
-            RefreshTokenRow.expires_at <= now,
-        )
-    )
-    await session.execute(
-        delete(RefreshFamilyActivityRow).where(
-            RefreshFamilyActivityRow.last_activity_at <= now - REVOCATION_RETENTION,
-            ~exists().where(RefreshTokenRow.family_id == RefreshFamilyActivityRow.family_id),
-        )
-    )
-    await session.execute(
-        delete(RefreshFamilyRevocationRow).where(
-            RefreshFamilyRevocationRow.revoked_at <= now - REVOCATION_RETENTION,
-            ~exists().where(RefreshTokenRow.family_id == RefreshFamilyRevocationRow.family_id),
-        )
     )
