@@ -3,7 +3,19 @@
 Reviewed main `e1f36dcb04c8dbdbe8945c756b0ac2747ae63ad3`, 16 October 2026.
 These relative links describe that revision; recheck them after product changes.
 No live account/complaint/content inspection was performed. Evidence does not
-establish user numbers, locations, ages or absence of incidents.
+independently establish user numbers, locations, ages or absence of incidents.
+
+## Dated operator evidence
+
+**O1, 16 October 2026:** Alex confirmed: "Approved adults, including UK users".
+This records the operator's account of the current approved audience, including UK access.
+It does not independently verify ages, locations or numbers, establish highly
+effective age assurance, prove a specific section 4 UK-link limb, or approve this
+assessment. Keep any supporting user records privately. KAN-246 tracks the remaining
+operating evidence and applicable deadlines; a statement of no inspected incidents
+must not become a statement of no incidents.
+
+## Source evidence
 
 | ID | Source | Fact and limitation |
 | --- | --- | --- |

@@ -11,11 +11,13 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   using current official guidance and retaining unresolved territorial facts.
 - [x] Record the archived-team moderation gap as KAN-245 and hand the reporting,
   complaints and age-policy findings to KAN-188 without changing its ownership.
-- [ ] Confirm actual audience/UK links and operating evidence, obtain Alex's
-  assessment approval and resolve any required legal confirmation.
+- [x] Record Alex's confirmed approved adult audience, including UK users; propose
+  regulated-service treatment for planning without inventing a statutory UK-link finding.
+- [x] Track remaining dates, children's access and operating validation in KAN-246.
+- [ ] Obtain Alex's assessment approval, retaining the recorded legal/operating follow-ups.
 - [ ] Complete independent review, CI and authorised integration of the documents.
 
-See [the assessment](compliance/ONLINE_SAFETY.md). This conditional draft does not
+See [the assessment](compliance/ONLINE_SAFETY.md). This working assessment does not
 certify statutory compliance, an exemption, adult-only access or a live policy change.
 
 ### Codex assigned queue, 16 October 2026

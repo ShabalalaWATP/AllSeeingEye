@@ -2,23 +2,27 @@
 
 **16 October 2026, KAN-189. Owner: Alex Orr. Draft for operator/legal review.**
 
-The reviewed application has user-to-user functionality. **An exemption and the
-absence of UK links have not been established.** Assess the affected service on a
-potentially regulated basis until the audience and territorial facts are resolved.
-This is a reasoned working conclusion, not legal advice, certification or evidence
-of completed operating duties. Alex's approval remains outstanding.
+The reviewed application has user-to-user functionality. Alex confirmed approved
+adult users, including UK users, on 16 October 2026. **For operational planning,
+treat the user-to-user service as regulated under Part 3.** No exemption is
+established. This conservative working scope does not prove a particular section 4
+UK-link test, settle the search-component boundary or certify completed duties.
+It remains subject to the recorded legal/factual review in KAN-246 and Alex's
+approval of this assessment. The audience confirmation is not assessment approval.
 
 Baseline: main `e1f36dcb04c8dbdbe8945c756b0ac2747ae63ad3`. The
 [source evidence](ONLINE_SAFETY_EVIDENCE.md) identifies actual features and limits.
 The [risk assessment](ONLINE_SAFETY_RISKS.md) includes a separate children-access
-analysis. Actual user locations/ages, service usage, complaints and moderation
-outcomes have not been inspected. No private user records belong in this public file.
+analysis. The operator's audience statement is recorded separately from code
+evidence. User counts, independent age/location evidence, usage, complaints and
+moderation outcomes have not been inspected. No private user records belong here.
 
 ## Service boundary and users
 
 This assessment concerns Alex's current personal installation, operated from
-Finland, not every deployment of the public source repository. Account approval
-and current team membership restrict access. Within those boundaries, users can
+Finland, not every deployment of the public source repository. The confirmed
+permitted audience is approved adults, including UK users. Account approval and
+current team membership restrict access. Within those boundaries, users can
 post/reply on boards, annotate reports/maps, share saved reports, view opted-in
 directory profiles/avatars and receive invitations/mentions. There are no verified
 anonymous public report feeds in this reviewed surface. Restricted visibility
@@ -53,7 +57,7 @@ before adopting an exemption. Its paragraph 7 conditions and paragraph 8 partial
 service rules require actual operating evidence. No provider pornography offering
 has been established; any future such content requires a separate scope assessment.
 
-## UK links: unresolved facts and decision rule
+## UK links: confirmed audience and working decision
 
 Section 4 considers significant UK users, UK targeting, or UK accessibility with
 reasonable grounds for a material risk of significant harm to people in the UK.
@@ -62,21 +66,18 @@ text alone is not proof of UK targeting, and internet accessibility alone does n
 establish the significant-harm limb. [Section 4](https://www.legislation.gov.uk/ukpga/2023/50/section/4),
 [Ofcom regulation checker](https://www.ofcom.org.uk/os-toolkit/regulation-checker/regulation-checker).
 
-Alex must record privately the current/intended audience, whether UK users are
-admitted or targeted, proportionate existing evidence of user locations, the date
-of UK availability if applicable, and any credible UK harm evidence. Do not collect
-identity documents or intrusive tracking simply to populate this assessment.
+Alex's dated confirmation establishes that UK users are part of the permitted
+audience. It is not, alone, a count of significant UK usage, proof of targeting or
+evidence satisfying the significant-harm limb. Do not turn admitted UK access into
+an unsupported legal finding, or treat Finland operation as excluding regulation.
 
-Proposed decision branches:
-
-1. If a UK-link test is met and no applicable exemption is evidenced, treat the
-   service as regulated and complete the relevant duties, including any search
-   component. Resolve the current outstanding measures below before claiming compliance.
-2. If reliable evidence supports no UK-link test, record the particular evidence,
-   date and limits for an out-of-scope conclusion. The sharing features still exist;
-   reassess before the audience or offering changes.
-3. If facts remain unresolved, retain this conditional conclusion. No absence of
-   incidents/users has been inferred from a lack of inspection.
+The working decision is to plan and assess on a regulated-service basis now,
+including the possible search component. KAN-246 records the remaining private
+evidence: UK availability/entry-into-scope dates, proportionate audience evidence,
+targeting and harm facts, exemption/search analysis, and legal advice if needed.
+Any later out-of-scope conclusion needs its own dated reasons and evidence. The
+absence of inspected incidents is not proof of no incidents. Do not collect
+identity documents or intrusive tracking merely to populate this assessment.
 
 The first-assessment deadline depends on actual entry into scope. The current date
 does not restart a past deadline. [Ofcom's current duties guidance](https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/illegal-content-duties-under-the-online-safety-act)
@@ -119,10 +120,11 @@ and acceptance controls. No fixed legal response deadline is invented here.
 
 | Owner / work | Outstanding deliverable |
 | --- | --- |
-| Alex / KAN-189 | Resolve audience/UK facts, final scope and children-access conclusion; verify current deployment, complaints evidence and relevant Ofcom measures; approve this dated record or record legal advice. |
+| Alex / KAN-189 | Approve this dated assessment record and conservative working scope, retaining its evidence limits and follow-ups, or record changes/legal advice. Adult and UK audience confirmation is already recorded. |
+| Operator validation / [KAN-246](https://alex-orr.atlassian.net/browse/KAN-246) | Promptly establish the actual UK availability dates and applicable deadlines, final territorial/search/exemption and children-access conclusions, current deployment/complaints evidence and applicable Ofcom measures. Verify reporting/removal/appeal effectiveness and record any resulting children's risk assessment and protective measures. The annual review date does not defer an existing duty. |
 | Claude queue / [KAN-188](https://alex-orr.atlassian.net/browse/KAN-188) | Complete full terms/AUP and acceptance, plus accessible reporting/complaints/appeal procedure. Historical 18+ and governing-law assumptions need review; current source contains no age rule/assurance. |
 | Unassigned follow-up / [KAN-245](https://alex-orr.atlassian.net/browse/KAN-245) | Permit authorised harmful-post removal while a team stays archived. Current board moderation rejects archived-team writes despite continued readability. Preserve ordinary read-only status, permissions, audit and revision guards. |
-| Alex / children's assessment | If the service is likely accessed by children, including the statutory default after a missed first access-assessment deadline or an Ofcom determination, complete a children's risk assessment and implement applicable protective measures. Establish the actual scope/deadline first. Do not treat an 18+ rule or approval as highly effective age assurance. A newly confirmed engineering gap requires a duplicate-checked ticket before expansion. |
+| Alex / children's assessment, tracked in KAN-246 | If the service is likely accessed by children, including the statutory default after a missed first access-assessment deadline or an Ofcom determination, complete a children's risk assessment and applicable protective measures. Existing access can trigger duties without intentional expansion. Establish actual scope/deadlines promptly. Do not treat an 18+ rule or approval as highly effective age assurance. Duplicate-check and ticket any newly confirmed engineering gap. |
 | Existing privacy/AI work | KAN-185 addresses privacy, KAN-191 AI labelling. Neither replaces illegal-content assessment or operating measures. |
 
 Reassess before public sharing, open sign-up, public profiles, broader invitations,

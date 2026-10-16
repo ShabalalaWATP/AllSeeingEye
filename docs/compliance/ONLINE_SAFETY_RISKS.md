@@ -23,8 +23,9 @@ search-component attention (S12-S13). No commercial advertising incentive is
 established for the current personal installation. These absences reduce some
 routes but cannot eliminate misuse of general text, images or links.
 
-Unknowns: actual users/ages/UK reach, frequency of shared work, incident reports,
-moderation response times, sensitive subject populations and effective deployment.
+Alex confirmed approved adult users, including UK users, on 16 October 2026 (O1).
+Unknowns: independent age/location evidence, user counts, frequency of shared work,
+incident reports, moderation response times, subject populations and deployment.
 No reviewed complaints is not evidence of no complaints. Closed groups may reduce
 reach but also hide harmful activity. Operator-approved accounts are not proof of
 trusted conduct, verified identity or age.
@@ -81,7 +82,8 @@ Priority measures are the actual-purpose/audience check, accessible reporting an
 complaints process, prompt proportionate moderation/access restriction, archived
 team removal fix, and documented review of child exposure. Existing tickets are
 listed in ONLINE_SAFETY.md; KAN-188 owns public policy/acceptance and KAN-245 the
-confirmed archived-board gap. There is no blanket recommendation to scan private
+confirmed archived-board gap. KAN-246 tracks the operating evidence, deadline and
+children's-duties validation. There is no blanket recommendation to scan private
 messages, add age biometrics or buy a moderation service without evaluating need,
 privacy, effectiveness and scope.
 
@@ -104,8 +106,10 @@ administrator approval would not establish effective age assurance. The public
 sign-in/policy pages and an account-request route also remain accessible.
 [Ofcom children-access guidance](https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/childrens-access-assessment-duties-under-the-online-safety-act).
 
-**Stage two:** actual child users are unknown. The research focus and gated accounts
-may reduce attraction/reach, while an interactive globe, current events, aircraft,
+**Stage two:** the operator reports an approved adult audience. This is relevant
+evidence of the intended admission policy, not independently verified ages or proof
+of no child access. The research focus and gated accounts may reduce attraction/reach,
+while an interactive globe, current events, aircraft,
 space, maps and AI assistance may interest younger people. A non-commercial purpose
 and no intended child audience do not settle likely access. There is no reliable
 evidence here to conclude that the child-user condition is not met.
@@ -114,7 +118,9 @@ evidence here to conclude that the child-user condition is not met.
 exemption. Alex must record proportionate existing audience evidence and likely
 appeal, including parts of the service; no identity-document collection is proposed
 just for this record. If likely accessed by children, complete the children's risk
-assessment and applicable measures before claiming readiness for that audience.
+assessment and applicable measures against the actual applicable deadlines. Duties
+arising from existing access or a missed-assessment default cannot wait for an
+intentional expansion to children. KAN-246 tracks this validation promptly.
 If a negative stage-two conclusion is supported, record the evidence/reason/date
 and repeat within 12 months or earlier trigger. Age assurance is one possible
 control, not an automatic requirement chosen by this draft for every service.
@@ -131,8 +137,10 @@ and [Ofcom guidance, paragraphs 2.34-2.36](https://www.ofcom.org.uk/siteassets/r
 
 ## 4. Decision and review
 
-Owner: Alex Orr. Approval: **pending**. Outstanding core evidence: audience/UK facts,
-children-access outcome, current deployment, complaints and moderation effectiveness,
+Owner: Alex Orr. Approval: **pending**. The approved-adult/UK permitted audience is
+confirmed; the conservative regulated-service working scope is proposed for approval.
+Outstanding core evidence: UK-link details/dates, children's access outcome,
+current deployment, complaints and moderation effectiveness,
 applicable code measures or alternatives, and legal confirmation of search/exemption
 boundaries. This conditional draft must not be represented as a final suitable and
 sufficient statutory assessment while those material facts remain unresolved.

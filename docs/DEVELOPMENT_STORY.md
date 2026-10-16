@@ -6419,3 +6419,11 @@ review identified the missed-first-assessment statutory default for child access
 the draft now records that conditional duty and the current code index. All 46
 local documentation links resolve. Application tests and coverage were not rerun
 for these documentation-only changes.
+
+Alex subsequently confirmed approved adult users, including UK users. The record
+now distinguishes that dated operator evidence from source inspection and proposes
+regulated-service treatment for planning. It does not equate UK admission with a
+proved statutory territorial limb or account approval with effective age assurance.
+KAN-246 tracks the remaining operational/deadline and children's-duties validation;
+existing access duties cannot wait for intentional audience expansion. Assessment
+approval remains separate from this factual confirmation and from KAN-185's sign-off.
