@@ -50,7 +50,9 @@ def runtime(monkeypatch):
     monkeypatch.setattr("ase.app_lifecycle.build_live_snapshot", lambda c: c.live_snapshot)
     monkeypatch.setattr("ase.app_lifecycle.alert_report_runner", lambda c: c.alert_report_admission)
     container = SimpleNamespace(
-        settings=SimpleNamespace(feeds_enabled=True, enterprise_enquiry_retention_days=365),
+        settings=SimpleNamespace(
+            feeds_enabled=True, enterprise_enquiry_retention_days=365, auth_retention_enabled=False
+        ),
         dispose=AsyncMock(),
         session_factory=Mock(),
         clock=Mock(),
@@ -143,6 +145,29 @@ async def test_disabled_live_snapshot_is_not_started(runtime, monkeypatch):
     container.live_snapshot.start.assert_not_awaited()
     container.live_snapshot.stop.assert_not_awaited()
     container.scheduler.stop.assert_awaited_once()
+
+
+async def test_auth_housekeeping_runs_with_feeds_disabled_and_is_owned(runtime, monkeypatch):
+    app, container, tasks = runtime
+    container.settings.feeds_enabled = False
+    container.settings.auth_retention_enabled = True
+    container.settings.auth_retention_paused = True
+    container.settings.account_request_retention_days = 180
+    started = asyncio.Event()
+    policies = []
+
+    async def auth_worker(_sessions, _clock, policy):
+        tasks.append(asyncio.current_task())
+        policies.append(policy)
+        started.set()
+        await asyncio.Event().wait()
+
+    monkeypatch.setattr("ase.app_lifecycle.run_auth_retention", auth_worker)
+    async with lifespan(app):
+        await asyncio.wait_for(started.wait(), 10)
+    assert policies[0].decision_days == 180 and policies[0].paused
+    assert all(task.done() for task in tasks)
+    container.scheduler.start.assert_not_awaited()
 
 
 async def test_lifespan_logs_slow_cleanup_in_dependency_order(runtime):
