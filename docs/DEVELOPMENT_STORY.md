@@ -6515,6 +6515,13 @@ Windows localhost resolution was avoided with explicit loopback and Host headers
 No production configuration, reporting message or deployment was performed. Full
 current-head CI and exact-head release approval remain required.
 
+The approved KAN-192 integration exposed a timing-sensitive public-route test in
+CI: the attribution heading appeared before the passive effect installed robots
+metadata. The assertion now waits for the same exact required value. All 17
+focused public-route and metadata tests pass; independent review confirmed no
+product change, timeout increase or weakened assertion. The feature approval is
+retained, while refreshed required CI must pass before merge.
+
 ## 16 October 2026: KAN-189 online safety desk assessment
 
 The assessment maps current boards, reports, maps, directory profiles, invitation
