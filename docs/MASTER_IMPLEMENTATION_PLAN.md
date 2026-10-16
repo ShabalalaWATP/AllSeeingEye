@@ -90,8 +90,8 @@ See [security contact configuration](SECURITY_CONTACT.md).
   AI translations, photo hypotheses and economy explanations.
 - [x] Complete focused backend/frontend checks, export read-back and PDF visual
   inspection, build, static checks and independent correctness/security reviews.
-- [ ] Pass current-head CI and obtain authorised integration. No complete Article
-  50 compliance claim is made.
+- [x] Pass all 40 current-head checks and authorised integration as `8f4921ab`;
+  KAN-191 is Done. No complete Article 50 compliance claim is made.
 
 See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
 
@@ -140,8 +140,8 @@ evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
   retain the existing personal-installation scope and refresh exact-content approval.
 - [x] Prepare KAN-187's activity/recipient/transfer register, source-backed retention
   schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
-- [ ] Complete KAN-185's source-specific conditions, recipient assessments, risk
-  decisions and assessment sign-off.
+- [x] Complete KAN-185's private assessment record and operator sign-off on
+  16 October. Its exclusions and open legal/operational actions remain explicit.
 - [x] Verify KAN-237's refreshed packages, image gate, repeat cache and media/runtime checks.
 - [ ] Complete current-head CI and authorised integration; KAN-244 separately tracks
   the full image inventory of unfixed advisories.
