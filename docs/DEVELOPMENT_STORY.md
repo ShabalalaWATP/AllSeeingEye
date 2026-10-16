@@ -6439,3 +6439,37 @@ over 1646 source files, three import contracts, focused Bandit, file length and
 whitespace checks pass. Broad CI and authorised integration remain required.
 The new operational guide and T05/T07/T09 schedule retain quarterly ownership,
 hold evidence, parent-record limitations and separate production rollout approval.
+
+### 16 October 2026: KAN-241 dormant workload expiry
+
+Reproduced expired selected metadata returned for idle, paused, archived and
+deactivated accounts. Reads now exclude stored expiry and the maximum age before
+limits. Independent bounded housekeeping removes expired selected metadata,
+alerts/outbox children/feedback, consumed identities, push receipts, obsolete
+research buckets and finished AI allowance history. Private input slots expire
+without another request. Existing periods remain, with no schema or provider change.
+
+Selected cleanup preserves acquisition cursors, correction fingerprints and
+coalesced coverage loss, including fan-out beyond one batch. Fixed endpoints keep
+new arrivals from starving earlier expiry. Scan state advances only after commit.
+Replay boundaries, corrupt fail-closed state, fresh push leases, current research
+buckets, held AI reservations and live private inputs remain intact.
+
+Review found two defects before handoff: a growing tail could prevent scan
+wraparound, and timeout placement omitted failure heartbeats. Both have regression
+tests and fixes. Separate category timers also prevent stalled SQL from delaying
+memory expiry; TaskGroup owns and joins their shutdown before database disposal.
+
+Verification: 36 focused SQLite cases passed with 100% branch-inclusive coverage
+across the four new implementation modules (95% scoped floor, unchanged project
+thresholds). PostgreSQL passed 55 focused/existing cases, then 19 final selected,
+worker and separate-connection race cases after the scheduling fixes. An initial
+61-case SQLite selected/lifecycle run and the final 53-case startup/lifecycle run
+passed. Independent security review passed 33 isolated SQLite cases and synthetic
+foreign-key-enforced fan-out/outbox checks; code-quality review passed eight final
+worker cases and independently reproduced the corrected timeout heartbeat.
+
+Ruff, formatting, strict mypy over 1650 source files and three architecture
+contracts pass. The guide and T06/T07/T08/T10/T13/T14 retention entries distinguish
+access expiry, batch backlogs, correction scans, operational holds and live rollout.
+Full CI and authorised serial integration remain; no production purge is claimed.

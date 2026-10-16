@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-241 dormant workload retention, 16 October 2026
+
+- [x] Reproduce dormant selected-index reads and exclude expired metadata before limits.
+- [x] Add bounded independent expiry, preserving correction fingerprints, coverage
+  losses, replay protection, active inputs, allowances and disabled providers.
+- [x] Freeze scan endpoints so continuing arrivals cannot starve earlier expiry.
+- [x] Complete SQLite/PostgreSQL boundary/backlog tests and two-connection races;
+  independent code-quality and security reviews report no remaining actionable defect.
+- [ ] Complete full CI on the committed candidate.
+- [ ] Integrate serially after the earlier retention PRs with release approval.
+
+See [dormant retention](DORMANT_RETENTION.md). Deployment starts this existing-policy
+maintenance automatically; no production purge or successful rollout is claimed.
+
 ### KAN-239 audit, usage and delivery retention, 16 October 2026
 
 - [x] Define purpose-based defaults, category/global holds and quarterly ownership.
