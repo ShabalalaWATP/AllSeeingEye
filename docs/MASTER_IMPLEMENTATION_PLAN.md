@@ -30,6 +30,8 @@ remain operator work; neither inspection nor this implementation authorises them
 - [x] Permanently minimise removed identities and prevent stale account/conversation/tier writes.
 - [x] Reproduce and repair retained forecast evidence references; independent review passed.
 - [x] Complete scoped coverage (96.25%), 120 SQLite, 119 PostgreSQL-configured and 37 wider regression cases.
+- [x] Repair the stale-connection test ordering exposed by refreshed CI; 47 focused
+  cases pass on both SQLite and isolated PostgreSQL, with independent review.
 - [ ] Complete current-head CI with the existing global gates.
 - [ ] Obtain release approval and integrate after KAN-238/239/241.
 

@@ -6729,3 +6729,19 @@ Moving the synthetic journal location to an isolated external temporary director
 made all 15 affected cases pass, without changing any product guard or fixture.
 Ruff, formatting, strict mypy over 1,673 source files and all three import contracts
 pass. No production restore, removal, external-copy action or activation occurred.
+
+### 17 October 2026: KAN-240 deterministic stale-connection regression
+
+Refreshed PostgreSQL CI exposed a test ordering flaw: its 250 ms fetch deadline
+could cancel the synthetic credential-clear transaction before it committed.
+A temporary slow-setup reproduction failed both failure/timeout cases. The test
+now pauses the real fetch budget during credential reads and administrative
+setup, resumes after the clear commits, and verifies the changed generation,
+actual timeout cancellation, stale-result message, redaction and no publication.
+The same slow reproduction passes; the temporary delay was removed. Production
+code, timeout settings and coverage thresholds are unchanged.
+
+All 47 FIRMS runtime, fixed-deadline and feed-resilience cases pass on SQLite and
+on a new isolated PostgreSQL database. The task-owned database container and
+volume were removed after verification. Independent review, Ruff, formatting and
+whitespace checks pass. Fresh CI and authorised serial integration remain required.
