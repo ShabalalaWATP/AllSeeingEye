@@ -13,6 +13,8 @@ from ase.adapters.feeds.firms_sensors import NOAA20, NOAA21
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
+from ase.application.feeds import poller as poller_module
+from ase.application.feeds.fetch_budget import UpstreamQueue
 from ase.application.ports.feed_release import FeedUnavailable
 from ase.domain.errors import Unauthenticated
 from feeds_helpers import make_event
@@ -189,17 +191,40 @@ async def test_stale_failure_and_timeout_do_not_poison_new_connection(
 ):
 
     actor, state = await active(client, container, admin)
+    original_budget = poller_module.fetch_budget
+    setup_queue = None
+    cleared = None
+    cancelled = False
+
+    @asynccontextmanager
+    async def budget_after_setup(slots, seconds):
+        nonlocal setup_queue
+        # Keep the real deadline, but exclude the synthetic administrative change.
+        async with original_budget(slots, seconds), UpstreamQueue() as queue:
+            setup_queue = queue
+            yield
 
     async def fetch(_self):
-        await call(container, actor, "clear", state.revision, CONTEXT)
+        nonlocal cleared, cancelled
+        cleared = await call(container, actor, "clear", state.revision, CONTEXT)
+        await setup_queue.resume()
         if timeout:
-            await asyncio.sleep(10)
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                cancelled = True
+                raise
         raise RuntimeError(KEY)
 
+    monkeypatch.setattr(poller_module, "fetch_budget", budget_after_setup)
     monkeypatch.setattr(FirmsConnector, "fetch", fetch)
     container.scheduler.poller._fetch_timeout = timedelta(seconds=0.25)
     outcome = await container.scheduler.poll_once(connector(container))
+    assert cleared is not None and not cleared.configured
+    assert cleared.active_revision > state.active_revision
+    assert cancelled is timeout
     assert not outcome.ok and KEY not in repr(outcome)
+    assert outcome.error == "Connection changed before publication."
     assert container.health.get(SPEC.id).polls == 0
     assert container.store.stats().total == 0
 
