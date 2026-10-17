@@ -6630,3 +6630,60 @@ review verified unchanged implementation files and lifecycle ownership. All 113
 combined dormant, lifecycle, startup, operational-control and outbox cases pass,
 including both optional retention workers enabled together. Ruff, formatting,
 strict mypy over 1,654 source files and all three import contracts pass.
+
+## 16 October 2026: KAN-240 scoped private-data removal
+
+The new local operator command previews account/report/subscription/brief/job
+removal, records a purpose and necessity decision, and requires the exact reviewed
+inventory fingerprint before applying. The transaction rechecks administrator
+and owner state, execution/delivery locks, graph ownership, original uploads,
+foreign keys and structured saved references. A non-expiring manual hold blocks
+this workflow. Whole-account removal preserves an inactive UUID stub and shared
+attribution; stale account, conversation and tier writes cannot revive it.
+
+Independent security review found a missing dependency from a retained forecast
+decision to evidence in a later report. A real API regression reproduced an
+incorrectly unblocked removal, then passed after the bounded reference inventory
+included ledger passage references. Ten reference cases and eighteen operator CLI
+cases passed independently. Other review fixes clarified which delivery receipts
+remain and correctly report an uncertain result if cleanup fails after commit.
+
+Migration 0095 preserves review/hold and removal markers by refusing downgrade of
+a populated review table. The procedure explicitly separates database removal,
+shared history, audit/accounting, in-memory expiry and external copies. No live
+account deletion, provider request or production migration was performed.
+Final local evidence: 117 SQLite cases passed with 96.25% branch-inclusive
+coverage across eleven new removal modules, exceeding the scoped 95% floor.
+Three further canonical source-operation cases passed on both databases: open
+and unknown receipts prevent deletion, while settled receipts permit it.
+PostgreSQL passed 96 focused cases plus those three and 20 command/concurrency
+cases. A further 37 existing startup, assistant-history, account-audit and source
+ledger cases passed. Migration upgrade and protected downgrade were exercised on
+SQLite; production migration was not run.
+
+Ruff, formatting, strict mypy (1663 source files), all three import contracts,
+configured Bandit and file-length/whitespace checks passed. Independent reviewers
+passed 10 reference cases, 18 CLI cases and a 47-case safety/race selection.
+Global CI coverage gates remain unchanged. Full current-head CI and authorised
+serial integration after KAN-238/239/241 remain required.
+
+The refreshed integration preserves all private-removal implementation files and
+the reviewed retention, AI-disclosure and security-contact changes. Independent
+review found no shared-state conflict. All 171 combined removal, lifecycle, startup
+and operational-control cases pass. No live removal or migration was performed.
+
+### 17 October 2026: KAN-240 deterministic stale-connection regression
+
+Refreshed PostgreSQL CI exposed a test ordering flaw: its 250 ms fetch deadline
+could cancel the synthetic credential-clear transaction before it committed.
+A temporary slow-setup reproduction failed both failure/timeout cases. The test
+now pauses the real fetch budget during credential reads and administrative
+setup, resumes after the clear commits, and verifies the changed generation,
+actual timeout cancellation, stale-result message, redaction and no publication.
+The same slow reproduction passes; the temporary delay was removed. Production
+code, timeout settings and coverage thresholds are unchanged.
+
+All 47 FIRMS runtime, fixed-deadline and feed-resilience cases pass on SQLite and
+on a new isolated PostgreSQL database. The task-owned database container and
+volume were removed after verification. Independent review, Ruff, formatting and
+whitespace checks pass. Fresh CI and authorised serial integration remain required.

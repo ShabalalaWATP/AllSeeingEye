@@ -11,6 +11,7 @@ from ase.adapters.llm.effort import MechanicalEffortGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.llm.router import RoutingLlmGateway
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
+from ase.adapters.persistence.private_removal import SqlPrivateRemovalRepository
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.security.cipher import FernetCipher
@@ -28,6 +29,7 @@ from ase.application.admin.llm_discovery import DiscoverDraftModels
 from ase.application.admin.llm_testing import DiscoverLlmModelsUseCase, TestLlmProfileUseCase
 from ase.application.admin.llm_workspace import LlmWorkspaceUseCase
 from ase.application.admin.llm_workspace_allowances import WorkspaceAllowances
+from ase.application.admin.private_removal import PrivateRemovalService
 from ase.application.admin.requests import (
     ApproveRequestUseCase,
     ListRequestsUseCase,
@@ -41,6 +43,16 @@ from ase.domain.reasoning import ReasoningEffortPolicy
 
 class AdminWiring(ContainerCore):
     """Administration factories."""
+
+    def private_removal(self, session: AsyncSession) -> PrivateRemovalService:
+        repositories = self.repositories(session)
+        return PrivateRemovalService(
+            repositories.users,
+            SqlPrivateRemovalRepository(session),
+            self.clock,
+            self._auditor(repositories),
+            repositories.uow,
+        )
 
     def initialise_models(
         self, encryption_key: str | None, effort: ReasoningEffortPolicy | None = None
