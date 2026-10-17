@@ -51,6 +51,7 @@ explain what is and is not represented.
 - [Personal-data requests](PERSONAL_DATA_OPERATIONS.md): the operator-assisted route, administrator contact, shared-work safeguards and export/deletion limits.
 - [Authentication retention](AUTH_RETENTION.md): bounded preview/apply housekeeping, operational periods and scoped holds.
 - [Audit, usage and delivery retention](OPERATIONAL_RETENTION.md): optional bounded expiry, terminal receipt minimisation and category holds.
+- [Dormant workload retention](DORMANT_RETENTION.md): independent expiry, replay safeguards, correction history and sweep backlogs.
 - [Multi-factor authentication](MFA_OPERATIONS.md): enrolment, administrator requirements and upgrade steps.
 - [Account email setup](EMAIL_SETUP.md): provider choice, SMTP settings and delivery checks.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.

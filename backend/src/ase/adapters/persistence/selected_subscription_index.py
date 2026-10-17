@@ -144,18 +144,27 @@ class SqlSelectedSubscriptionIndexRepository:
         self,
         subscription_id: UUID,
         *,
+        now: datetime,
         actor_id: UUID,
         authorised_team_ids: tuple[UUID, ...] = (),
         limit: int = 100,
     ) -> tuple[SelectedIndexRecordRow, ...]:
         if type(limit) is not int or not 1 <= limit <= 100:
             raise ValueError("limit must be 1 to 100")
+        normalised_now = _utc(now, "now")
+        if normalised_now is None:
+            raise ValueError("now is required")
         await self._schedule(
             subscription_id, actor_id=actor_id, authorised_team_ids=authorised_team_ids
         )
         rows = await self.session.scalars(
             select(SelectedIndexRecordRow)
-            .where(SelectedIndexRecordRow.subscription_id == subscription_id)
+            .where(
+                SelectedIndexRecordRow.subscription_id == subscription_id,
+                SelectedIndexRecordRow.expires_at > normalised_now,
+                SelectedIndexRecordRow.first_seen_at
+                > normalised_now - timedelta(days=SelectedIndexLimits().max_age_days),
+            )
             .order_by(SelectedIndexRecordRow.id.desc())
             .limit(limit)
         )

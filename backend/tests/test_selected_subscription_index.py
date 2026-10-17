@@ -110,7 +110,7 @@ async def test_page_and_cursor_rollback_together() -> None:
         async with maker() as session:
             repo = SqlSelectedSubscriptionIndexRepository(session)
             assert await repo.get_cursor(subscription_id, "usgs", actor_id=owner) is None
-            assert await repo.list_records(subscription_id, actor_id=owner) == ()
+            assert await repo.list_records(subscription_id, now=NOW, actor_id=owner) == ()
     finally:
         await engine.dispose()
 
@@ -160,7 +160,7 @@ async def test_replay_dedupe_and_correction_keep_distinct_versions() -> None:
             )
         async with maker() as session:
             repo = SqlSelectedSubscriptionIndexRepository(session)
-            rows = await repo.list_records(subscription_id, actor_id=owner)
+            rows = await repo.list_records(subscription_id, now=NOW, actor_id=owner)
             assert len(rows) == 2
             assert rows[0].corrects_id == rows[1].id
             assert rows[0].corrects_fingerprint == rows[1].fingerprint
@@ -203,7 +203,7 @@ async def test_owner_item_byte_and_age_eviction_record_coverage_loss() -> None:
                 )
                 == 2
             )
-            assert len(await repo.list_records(subscription_id, actor_id=owner)) == 2
+            assert len(await repo.list_records(subscription_id, now=NOW, actor_id=owner)) == 2
             assert (
                 await _page(
                     repo,
@@ -216,7 +216,7 @@ async def test_owner_item_byte_and_age_eviction_record_coverage_loss() -> None:
                 )
                 == 3
             )
-            assert len(await repo.list_records(subscription_id, actor_id=owner)) == 1
+            assert len(await repo.list_records(subscription_id, now=NOW, actor_id=owner)) == 1
             assert (
                 await _page(
                     repo,
@@ -230,7 +230,7 @@ async def test_owner_item_byte_and_age_eviction_record_coverage_loss() -> None:
                 )
                 == 4
             )
-            assert await repo.list_records(subscription_id, actor_id=owner) == ()
+            assert await repo.list_records(subscription_id, now=NOW, actor_id=owner) == ()
             losses = await repo.list_losses(subscription_id, actor_id=owner)
             assert {row.reason: row.lost_items for row in losses} == {
                 "owner_item_cap": 1,
@@ -273,8 +273,8 @@ async def test_global_cap_rejects_page_without_cross_tenant_eviction_or_cursor_c
                 )
         async with maker() as session:
             repo = SqlSelectedSubscriptionIndexRepository(session)
-            assert len(await repo.list_records(sub_a, actor_id=owner_a)) == 1
-            assert await repo.list_records(sub_b, actor_id=owner_b) == ()
+            assert len(await repo.list_records(sub_a, now=NOW, actor_id=owner_a)) == 1
+            assert await repo.list_records(sub_b, now=NOW, actor_id=owner_b) == ()
             assert await repo.get_cursor(sub_b, "usgs", actor_id=owner_b) is None
     finally:
         await engine.dispose()
