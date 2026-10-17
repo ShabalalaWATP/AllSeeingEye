@@ -82,7 +82,14 @@ selected rehearsal below does not prove their complete removal.
 In particular, user preference changes do not stop the operator-controlled
 installation-wide webhook copy or recall a delivery already released to a channel.
 
-## Unsupported account-wide work
+## Account-wide follow-ups and recovery
+
+KAN-240 now supplies [operator-assisted private removal](PRIVATE_DATA_REMOVAL.md)
+with scoped inventory, permanent identity minimisation and preservation guards.
+KAN-243 supplies the [external record and recovery checklist](RECOVERY_RECONCILIATION.md),
+including a disposable old-backup rehearsal. The earlier KAN-23 evidence below
+remains limited to its original selected records; it does not certify these newer
+features or removal of shared history, recipient/provider copies or backups.
 
 An account-wide bundle or erasure needs separately scoped implementation and
 policy decisions. The concrete follow-up boundaries are:
@@ -95,15 +102,16 @@ policy decisions. The concrete follow-up boundaries are:
   notification/routing metadata and encrypted credentials before implementing
   deletion. Acceptance must preserve shared work and active leadership, stop
   standing work and channels, tolerate interruption/retry, and identify retained
-  categories. No current action fulfils this whole-account operation.
+  categories. KAN-240 implements the bounded private-removal portion; retained
+  categories and operator approval remain explicit.
 - **Backups and external copies:** document approved restoration and provider
   handling. A disposable restore must not silently reactivate a removed account
   or resume its work. Explain which external copies local controls cannot recall;
   do not imply that live deletion changes old archives or recipients' copies.
 
-These are follow-up scope and acceptance criteria, not delivered features or
-permission to change retention policy. KAN-23 defines and verifies the supported
-procedure; it does not stand in for implementing these separate product gaps.
+The export-bundle work remains a follow-up. The linked removal/recovery procedures
+describe their implemented scope, not permission to change retention policy.
+KAN-23's rehearsal does not stand in for their separate validation or live approval.
 
 ## Verification and limits
 

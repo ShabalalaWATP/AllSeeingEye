@@ -6672,6 +6672,64 @@ the reviewed retention, AI-disclosure and security-contact changes. Independent
 review found no shared-state conflict. All 171 combined removal, lifecycle, startup
 and operational-control cases pass. No live removal or migration was performed.
 
+## KAN-243: preserve decisions across recovery, 16 October 2026
+
+Added an independently encrypted, bounded external journal for operator private
+reviews/removals, manually recorded objections and explicit external-copy policy
+reviews. Durable intent precedes database mutation, with completion after commit.
+Uncertain outcomes retain their intent and block later journalled writes until an
+operator records evidence against the current journal head. Review permission,
+completed removal and recorded-only instructions remain distinct. No command
+claims comprehensive history, automatic replay or permission to activate services.
+
+The manual recovery procedure keeps restored services offline, reapplies current
+restrictions and holds before removals, checks present authority/ownership and
+records target-specific evidence outside the affected archives. It names review
+ownership, quarterly/request-resolution cadence and actual selected copy policies
+without inventing statutory deadlines or claiming provider/recipient erasure.
+Windows ACL provisioning and latest independent journal copies remain explicit
+operator prerequisites. No production data, copies, configuration or keys changed.
+
+A real disposable SQLite backup/restore drill passed: later account removal and
+objection were reapplied through normal guards, restricted passwords failed and
+shared/held/permission-only work survived. The focused suite passed 102 cases with
+four POSIX-only skips on Windows and 95.51% branch-inclusive coverage across seven
+journal/operator modules. PostgreSQL passed 35 removal/journal command cases.
+The wider run passed 95 cases and found one startup import-budget regression;
+lazy recovery command loading fixed it without changing the budget, then all 31
+startup/CLI regression cases passed. Global coverage gates remain unchanged.
+
+Independent quality review caught a stale-review intent being recorded before
+revision validation; validation now precedes append under the account lock.
+Security review reproduced a Windows extended-path exclusion bypass; rejecting
+device/stream aliases and comparing canonical paths fixed it. The reviewer then
+passed 66 filesystem/journal/CLI cases with four POSIX-only skips and reported no
+remaining blocker. Ruff, strict typing, import contracts, configured Bandit and
+file-length checks passed. Published-head CI and authorised integration remain.
+
+Published CI found a random UUID in a parameterised test name, so parallel workers
+collected different test identifiers. Replacing that collection-time value with a
+fixed synthetic UUID preserved the validation case. The seven affected recovery
+and private-removal CLI suites then passed 91 cases with four POSIX-only skips on
+four local workers. No product code or coverage threshold changed.
+
+The next CI run exposed a platform-specific fixture assumption: a Linux checkout's
+permissions rejected a path before the intended repository-exclusion assertion.
+The test now uses a private synthetic repository and covers both checkout and
+worktree Git markers. Four-worker journal/CLI/filesystem checks passed 61 cases
+with four POSIX-only Windows skips. An isolated, networkless Linux container also
+passed repository-marker, database-directory and POSIX-permission rejection checks
+against the current source. No product guard was weakened.
+
+The refreshed integration preserves all recovery and incoming implementation
+files, confirmed by independent review. Combined recovery, removal, lifecycle and
+startup checks passed 134 cases with four existing POSIX-only skips; 15 journal
+CLI cases correctly rejected the initial test location inside the repository.
+Moving the synthetic journal location to an isolated external temporary directory
+made all 15 affected cases pass, without changing any product guard or fixture.
+Ruff, formatting, strict mypy over 1,673 source files and all three import contracts
+pass. No production restore, removal, external-copy action or activation occurred.
+
 ### 17 October 2026: KAN-240 deterministic stale-connection regression
 
 Refreshed PostgreSQL CI exposed a test ordering flaw: its 250 ms fetch deadline

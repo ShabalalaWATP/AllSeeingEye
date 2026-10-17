@@ -4,6 +4,25 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-243 recovery reconciliation, 16 October 2026
+
+- [x] Implement a bounded encrypted external record with explicit initialisation,
+  durable intent/completion and evidenced resolution of uncertain outcomes.
+- [x] Require the record for operator private-data mutations; distinguish completed
+  removal, review permission and manually recorded restrictions/copy policies.
+- [x] Rehearse real SQLite backup/restore and guarded manual reapplication while
+  preserving shared work, holds and permission-only records.
+- [x] Document operator ownership, quarterly/request-resolution copy reviews,
+  selected-policy evidence and the manual pre-reactivation checklist.
+- [x] Complete independent quality/security review, 102 focused SQLite cases,
+  95.51% scoped coverage, 35 PostgreSQL cases and startup/CLI regression checks.
+- [ ] Complete published-head CI with unchanged global gates.
+- [ ] Obtain release approval and integrate after the private-removal dependency.
+
+See [recovery reconciliation](RECOVERY_RECONCILIATION.md). Windows DACL provisioning,
+live copy-policy choices, current independent journal copies and production recovery
+remain operator work; neither inspection nor this implementation authorises them.
+
 ### KAN-240 operator-assisted private removal, 16 October 2026
 
 - [x] Implement scoped preview/apply and recorded quarterly/account-closure reviews.
