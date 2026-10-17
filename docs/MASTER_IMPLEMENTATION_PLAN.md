@@ -41,8 +41,8 @@ See [the operational retention procedure](OPERATIONAL_RETENTION.md).
   missing/expired publication. Document startup-only expiry enforcement.
 - [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
   web image checks, custom policy read-back and independent correctness/security review.
-- [ ] Pass current-head CI and obtain authorised integration. Production operators
-  must explicitly configure publication first.
+- [x] Pass all 41 current-head checks and authorised integration as `5f2a57d9`;
+  KAN-192 is Done. Production operators must explicitly configure publication first.
 
 See [security contact configuration](SECURITY_CONTACT.md).
 
