@@ -25,7 +25,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "gen:api": "openapi-typescript src/lib/api/openapi.json -o src/lib/api/types.gen.ts",
     "test:browser": "node scripts/browser.js test",
-    "test:browser:install": "node scripts/browser.js install chromium"
+    "test:browser:install": "node scripts/browser.js install chromium",
+    "capture:assets": "node scripts/browser.js test --config browser/capture.config.ts"
   },
   "dependencies": {
     "@deck.gl/core": "9.4.0",
