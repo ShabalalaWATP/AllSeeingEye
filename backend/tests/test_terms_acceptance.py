@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
 
@@ -174,6 +175,31 @@ async def test_a_repeat_acceptance_does_not_take_the_administration_lock(
     again = await client.post(ACCEPTANCE, json=body, headers=bearer(token))
     assert again.status_code == 200
     assert again.json()["acceptance_required"] is False
+
+
+async def test_an_acceptance_that_lands_while_waiting_for_the_lock_writes_nothing(
+    client: AsyncClient, container: Container, user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    body = {"version": CURRENT_TERMS_VERSION}
+    assert (await client.post(ACCEPTANCE, json=body, headers=bearer(token))).status_code == 200
+    real = terms_module.validate_current_session
+    calls = 0
+
+    async def stale_first_read(*args: object, **kwargs: object) -> User:
+        nonlocal calls
+        calls += 1
+        current = await real(*args, **kwargs)  # type: ignore[arg-type]
+        # The unlocked read predates a concurrent acceptance; the locked read sees it.
+        return replace(current, terms_version=None) if calls == 1 else current
+
+    monkeypatch.setattr(terms_module, "validate_current_session", stale_first_read)
+    again = await client.post(ACCEPTANCE, json=body, headers=bearer(token))
+    assert again.status_code == 200
+    assert again.json()["acceptance_required"] is False
+    assert calls == 2
+    accepted = AuditLogRow.action == "terms_accepted"
+    assert await _count(container, AuditLogRow, accepted) == 1
 
 
 def test_changing_the_accepted_wording_requires_a_version_bump() -> None:
