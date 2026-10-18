@@ -47,8 +47,10 @@ Port 5183 must be free. The run writes:
 | `frontend/src/features/product/content/assets.ts` | Generated typed manifest with each image's width, height, paths and alternative text |
 | `output/playwright/capture-report.json` | What was captured, what was skipped and why, and the assets that cannot be captured yet |
 
-Each run deletes the previous `public/product` images first, so always run the
-whole capture rather than a filtered subset. The targets and the list of assets
+Each run writes into `output/playwright/capture-staging` first. Only a run in which
+every target succeeds copies the images over `public/product` and rewrites the
+manifest; otherwise nothing committed changes and the report lists what is missing.
+Images are removed only for ids listed in `RETIRED_IDS`. The targets and the list of assets
 that cannot be captured live in `frontend/browser/captureTargets.ts`; the capture
 itself is `frontend/browser/assets.capture.ts`.
 
