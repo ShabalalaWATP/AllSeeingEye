@@ -255,11 +255,18 @@ export function workspaceDestinations(): readonly WorkspaceDestination[] {
   ];
 }
 
+export interface NavigationOptions {
+  readonly admin?: boolean;
+  /** Where Administration opens: the administration page visited last, else its overview. */
+  readonly adminTo?: string;
+}
+
 /**
  * The rail in reading order as flat entries: what the rail, the mobile dialog and the
  * palette's page results all show. Administration is present only for administrators.
  */
-export function navigationEntries(options: { admin?: boolean } = {}): readonly NavigationEntry[] {
+export function navigationEntries(options: NavigationOptions = {}): readonly NavigationEntry[] {
+  const to = options.adminTo ?? administrationDestination.to;
   const entry = (item: WorkspaceDestination, group: string): NavigationEntry => ({
     to: item.to,
     label: item.label,
@@ -271,7 +278,7 @@ export function navigationEntries(options: { admin?: boolean } = {}): readonly N
     ...workspaceSections.flatMap((section) =>
       section.items.flatMap(withChildren).map((item) => entry(item, section.title)),
     ),
-    ...(options.admin ? [entry(administrationDestination, 'Administration')] : []),
+    ...(options.admin ? [{ ...entry(administrationDestination, 'Administration'), to }] : []),
   ];
 }
 

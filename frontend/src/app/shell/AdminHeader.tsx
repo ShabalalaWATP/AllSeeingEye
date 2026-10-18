@@ -7,11 +7,18 @@ import { adminLocation } from '@/lib/adminNavigation';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useAuthStore } from '@/stores/auth';
 
+import { AccountMenu } from './AccountMenu';
 import { AdminNavigation } from './AdminNavigation';
 import { NavigationDialog } from './NavigationDialog';
 import { PersonalLinks } from './PersonalLinks';
+import { WorkspaceSwitch } from './WorkspaceSwitch';
 
-/** Administration deliberately has no research alerts or globe controls. */
+/**
+ * Administration deliberately has no research alerts or globe controls. An ember accent
+ * bar and the Administration badge mark this workspace apart from research, and the
+ * Research switch stays outside every menu. Narrow screens gather the personal links and
+ * Logout into the account menu, as the research top bar does.
+ */
 export function AdminHeader({ narrow }: { narrow: boolean }) {
   const { key, pathname } = useLocation();
   const [openedAt, setOpenedAt] = useState<string | null>(null);
@@ -23,7 +30,10 @@ export function AdminHeader({ narrow }: { narrow: boolean }) {
   });
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/80 px-2 backdrop-blur sm:px-5">
+      <header
+        data-workspace="admin"
+        className="relative flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/80 px-2 backdrop-blur before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-ember sm:px-5"
+      >
         <div className="flex min-w-0 items-center gap-1.5">
           {narrow && (
             <Button
@@ -40,10 +50,17 @@ export function AdminHeader({ narrow }: { narrow: boolean }) {
         </div>
         <div className="flex min-w-0 items-center gap-1 text-sm sm:gap-2">
           <SessionContext />
-          <PersonalLinks />
-          <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
-            Logout
-          </Button>
+          <WorkspaceSwitch to="research" />
+          {narrow ? (
+            <AccountMenu />
+          ) : (
+            <>
+              <PersonalLinks />
+              <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
+                Logout
+              </Button>
+            </>
+          )}
         </div>
       </header>
       {narrow && openedAt === key && (
@@ -55,6 +72,10 @@ export function AdminHeader({ narrow }: { narrow: boolean }) {
   );
 }
 
+// The badge names the workspace at every width; letter spacing opens up once there is room.
+const BADGE =
+  'inline-flex min-h-7 items-center rounded border border-ember/40 bg-ember/10 px-1.5 font-mono text-2xs tracking-normal text-ember uppercase sm:tracking-[0.18em]';
+
 function AdminBreadcrumb({ pathname }: { pathname: string }) {
   const location = adminLocation(pathname);
   const page = location?.page;
@@ -62,11 +83,13 @@ function AdminBreadcrumb({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="Breadcrumb" className="min-w-0">
       <ol className="flex min-w-0 items-center gap-1.5 text-sm">
-        <li className="hidden shrink-0 font-mono text-2xs tracking-[0.2em] text-muted uppercase sm:block">
+        <li className="shrink-0">
           {atOverview ? (
-            <span aria-current="page">Administration</span>
+            <span aria-current="page" className={BADGE}>
+              Administration
+            </span>
           ) : (
-            <Link to="/admin" className="rounded hover:text-text">
+            <Link to="/admin" className={`${BADGE} hover:bg-ember/20`}>
               Administration
             </Link>
           )}
@@ -77,11 +100,9 @@ function AdminBreadcrumb({ pathname }: { pathname: string }) {
             <span className="truncate">{location.section}</span>
           </li>
         )}
-        {atOverview ? (
-          <li className="truncate font-medium sm:hidden">Administration</li>
-        ) : (
+        {atOverview ? null : (
           <li className="flex min-w-0 items-center gap-1.5">
-            <span aria-hidden="true" className="hidden text-muted sm:inline">
+            <span aria-hidden="true" className="text-muted">
               /
             </span>
             <span aria-current="page" className="truncate font-medium">

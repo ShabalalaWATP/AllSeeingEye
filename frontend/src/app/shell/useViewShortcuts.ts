@@ -4,6 +4,7 @@ import { useGlobeStore } from '@/stores/globe';
 import { usePreferencesStore } from '@/stores/preferences';
 import { useShellStore } from '@/stores/shell';
 
+import { isPaletteShortcut } from './usePaletteShortcut';
 import { useViewNavigation } from './useViewNavigation';
 
 /** True when the key press happened inside a form control or editable region. */
@@ -49,13 +50,7 @@ export function useViewShortcuts(): void {
     function onKeyDown(event: KeyboardEvent) {
       const inDialog =
         event.target instanceof Element && event.target.closest('dialog[open]') !== null;
-      if (
-        !event.defaultPrevented &&
-        !inDialog &&
-        (event.ctrlKey || event.metaKey) &&
-        !event.altKey &&
-        event.key.toLowerCase() === 'k'
-      ) {
+      if (isPaletteShortcut(event)) {
         event.preventDefault();
         openPalette();
         return;

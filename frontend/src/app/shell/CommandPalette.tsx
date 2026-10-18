@@ -4,11 +4,23 @@ import { useNavigate } from 'react-router';
 
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useShellStore } from '@/stores/shell';
+import { useWorkspaceReturnStore } from '@/stores/workspaceReturn';
 
-import { commandTargets, matchTargets } from './commandTargets';
+import { commandTargets, matchTargets, type CommandTarget } from './commandTargets';
 
-/** One keyboard route to every page, tracker, map layer and source family. */
-export function CommandPalette() {
+const RESEARCH_SEARCH = 'Search pages, trackers, map layers and sources';
+
+/**
+ * One keyboard route to every page, tracker, map layer and source family. Administration
+ * passes its own `targets` and search label instead of the research catalogue.
+ */
+export function CommandPalette({
+  targets: own,
+  searchLabel = RESEARCH_SEARCH,
+}: {
+  targets?: readonly CommandTarget[];
+  searchLabel?: string;
+}) {
   const close = useShellStore((state) => state.closePalette);
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -18,7 +30,12 @@ export function CommandPalette() {
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
   const isAdmin = useAuthStore(selectIsAdmin);
-  const targets = useMemo(() => commandTargets({ admin: isAdmin }), [isAdmin]);
+  const adminTo = useWorkspaceReturnStore((state) => state.admin);
+  const research = useMemo(
+    () => (own === undefined ? commandTargets({ admin: isAdmin, adminTo }) : []),
+    [own, isAdmin, adminTo],
+  );
+  const targets = own ?? research;
   const matches = useMemo(() => matchTargets(targets, query), [targets, query]);
   const active = matches[Math.min(index, matches.length - 1)];
 
@@ -52,7 +69,7 @@ export function CommandPalette() {
     >
       <div className="flex max-h-[min(70vh,32rem)] flex-col">
         <label className="border-b border-line px-3 py-2">
-          <span className="sr-only">Search pages, trackers, map layers and sources</span>
+          <span className="sr-only">{searchLabel}</span>
           <input
             ref={inputRef}
             type="text"
@@ -62,7 +79,7 @@ export function CommandPalette() {
             aria-autocomplete="list"
             aria-activedescendant={active ? `${optionId}-${active.id}` : undefined}
             value={query}
-            placeholder="Search pages, trackers, map layers and sources"
+            placeholder={searchLabel}
             onChange={(event) => {
               setQuery(event.target.value.slice(0, 120));
               setIndex(0);
