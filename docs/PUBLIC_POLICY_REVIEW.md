@@ -22,9 +22,10 @@ installation and bounded-research scope remain the stated scope.
 
 The approved scope covers privacy, storage, requests, source credits and the
 personal-installation service disclosures. It creates no commercial offer, company,
-software licence or contractual promise from a third party. KAN-164, KAN-188 and
-KAN-193 retain their separate licence, acceptance-workflow and full accessibility
-scope. Publication does not grant permission for all sources or research uses.
+software licence or contractual promise from a third party. KAN-164 retains its
+separate licence and business identity scope. KAN-188 (terms, acceptable use and
+acceptance) and KAN-193 (accessibility statement) are drafted but not approved; their
+open decisions are listed in [the publication guide](PUBLIC_POLICY_PUBLICATION.md). Publication does not grant permission for all sources or research uses.
 
 ## Verified installation facts
 

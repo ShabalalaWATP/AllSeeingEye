@@ -2,7 +2,9 @@
 
 KAN-165 adds `/privacy`, `/privacy/requests` and `/attributions` outside the
 authenticated application. KAN-172 adds `/accessibility`, `/terms` and `/business`
-to complete the public footer. Storage is a section of `/privacy`. These pages contain
+to complete the public footer. KAN-188 adds `/acceptable-use` and restructures
+`/terms`; KAN-193 rewrites `/accessibility` as a statement following the GOV.UK
+sample structure. Storage is a section of `/privacy`. These pages contain
 structured React text, local styles and links, with no provider media. Privacy reads
 only the same-origin public `/api/site` retention setting without credentials;
 failure is shown as unavailable, never as a confirmed default.
@@ -46,15 +48,42 @@ use to privacy enquiries and complaints, and the delegated finalisation adopts
 its use for accessibility feedback. Account-wide export/erasure limits and shared
 team ownership requirements remain explicit.
 
+## KAN-188 and KAN-193 status: drafted, not approved
+
+The 18 October 2026 terms, acceptable use and accessibility drafts change the hashed
+content, so the 14 October approval no longer matches and every policy page shows
+the draft notice. The following decisions are recorded as `{ "pending": ... }`
+entries or null fields and fail both publication checks until Alex decides them:
+
+- governing law and courts (KAN-188 proposes England and Wales; the privacy notice
+  applies EU GDPR and Finnish law);
+- any limitation of liability;
+- further consequences of breaking the Acceptable Use Policy (notice, appeal, referral);
+- the geographic business address, or a decision that none is published (KAN-164);
+- the expected response time for accessibility reports;
+- the accessibility enforcement and complaints route.
+
+The 18+ eligibility and professional or research use come from the KAN-188 scope
+and still need Alex's approval with the rest of the wording. The accessibility
+statement says "partially compliant" because no complete audit has been done; its
+limitations were checked against the code on 18 October 2026, and its next review
+date is 18 April 2027. Legal review is recommended before approval.
+
 ## Editing and approval
 
 Use the [operator review pack](PUBLIC_POLICY_REVIEW.md) to collect the actual
 installation facts and processing decisions before completing the notice.
 
 The typed entry is `frontend/src/features/public-policy/content.ts`. Edit
-`privacy.json` for installation facts and wording, `service.json` for terms,
-business disclosures and accessibility contact, and `storage.json` for
-application-owned storage. Null decisions remain visible placeholders. The installation terms
+`privacy.json` for installation facts and wording, `service.json` for business
+disclosures, the business address and the accessibility contact, and `storage.json`
+for application-owned storage. `terms.json`, `acceptable-use.json` and
+`accessibility.json` hold structured sections: each paragraph or list item is
+published text or `{ "pending": "<decision>" }`, rendered as a visible "Decision
+needed" block. Null decisions and pending entries remain visible placeholders.
+Changing the terms `version` also requires `CURRENT_TERMS_VERSION` in
+`backend/src/ase/domain/terms.py`, which asks signed-in accounts to accept again
+(see `docs/api/AUTH_API.md`). The installation terms
 grant no software licence or deployment offer. Renderers,
 styles and generated credits live beside these inputs. Do not substitute an assumed
 lawful basis, invented retention period or a provider's marketing claim.
@@ -92,8 +121,12 @@ stop deployment. Both checks parse every required JSON input and reject explicit
 unresolved wording, including "not decided", "not yet confirmed" and "not yet
 approved", even if a matching hash is supplied. These checks catch known draft
 markers; they do not establish that arbitrary prose is complete or accurate.
-Both Node and Python checks require all three service fields,
-even when an approval hash matches the incomplete content.
+Both Node and Python checks require all three service fields
+(`businessDisclosure`, `businessAddress`, `accessibilityContact`), the three
+structured documents with dated `version`, `lastReviewed` and `nextReview` fields,
+and no pending entry, even when an approval hash matches the incomplete content.
+The shared footer reads the operator name, contact and business address from the
+same hashed files through the `virtual:policy-footer` build module.
 
 This controller change requires an operator-reviewed manual installation of the
 matching controller files. The repository does not install the host controller.
