@@ -55,11 +55,11 @@ describe('product story on a narrow screen', () => {
   it('pins no chapter, the hero and Observe included, and plays the motion in passing', async () => {
     screenSize(false);
     let heroTop = 0;
-    const realRect = Element.prototype.getBoundingClientRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
-      if (this.id !== 'top') return realRect.call(this);
+      // jsdom measures every element as empty; only the hero needs a real position.
+      if (this.id !== 'top') return new DOMRect();
       return new DOMRect(0, heroTop, 375, window.innerHeight);
     });
     const { container } = render(
