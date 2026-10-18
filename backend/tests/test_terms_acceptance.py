@@ -3,7 +3,9 @@ again on their next visit after a version change."""
 
 from __future__ import annotations
 
+import json
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 from httpx import AsyncClient
@@ -145,3 +147,8 @@ async def test_acceptance_needs_a_live_session_and_strict_input(
     await client.post("/api/auth/logout", headers=csrf_headers(client))
     ended = await client.post(ACCEPTANCE, json=body, headers=bearer(token))
     assert ended.status_code == 401
+
+
+def test_published_terms_page_shows_the_version_accounts_accept() -> None:
+    published = Path(__file__).parents[2] / "frontend/src/features/public-policy/terms.json"
+    assert json.loads(published.read_text(encoding="utf-8"))["version"] == CURRENT_TERMS_VERSION

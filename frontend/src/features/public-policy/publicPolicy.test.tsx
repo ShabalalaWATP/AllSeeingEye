@@ -3,6 +3,7 @@ import axe from 'axe-core';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 
+import { expectNoAxeViolations } from '@/test/axe';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { useAuthStore } from '@/stores/auth';
@@ -30,6 +31,7 @@ describe('public policy pages', () => {
     ['/privacy/requests', 'Personal-data requests'],
     ['/accessibility', 'Accessibility'],
     ['/terms', 'Terms'],
+    ['/acceptable-use', 'Acceptable Use Policy'],
     ['/business', 'Business details'],
   ])('renders %s without a session or a third-party request', async (path, title) => {
     const bootstrap = vi.spyOn(useAuthStore.getState(), 'bootstrap');
@@ -100,19 +102,111 @@ describe('public policy pages', () => {
     expect(screen.getByText(/Shared team work is preserved/)).toBeInTheDocument();
   });
 
-  it('shows proposed personal-installation terms while keeping outstanding facts and approval explicit', async () => {
+  it('shows the structured terms while keeping outstanding decisions and approval explicit', async () => {
     const { router } = renderApp('/terms', 'anonymous');
     await screen.findByRole('heading', { level: 1, name: 'Terms' });
     expect(screen.getByLabelText('Draft notice')).toHaveTextContent('Publication is blocked');
+    expect(screen.getByText(/Version of/)).toHaveTextContent('Version of 18 October 2026');
+    for (const name of [
+      'The service',
+      'Who may use it',
+      'Your account',
+      'AI output',
+      'Availability',
+      'Liability',
+      'Governing law',
+      'How changes are notified',
+    ])
+      expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();
+    expect(screen.getByText(/You must be 18 or over/)).toBeInTheDocument();
     expect(
       screen.getByText(/These access rules do not grant a software redistribution licence/),
     ).toBeInTheDocument();
+    const law = screen.getByRole('region', { name: 'Governing law' });
+    expect(law).toHaveTextContent(/Decision needed:.*England and Wales.*This blocks publication/);
     await act(() => router.navigate('/business'));
     await screen.findByRole('heading', { level: 1, name: 'Business details' });
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
     expect(screen.getByText('Alex Orr')).toBeInTheDocument();
     expect(screen.getByText('alexorr@yahoo.co.uk')).toBeInTheDocument();
-    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(1);
+    expect(screen.getByText('Geographic business address')).toBeInTheDocument();
+    // The mocked jurisdiction and the unconfirmed business address.
+    expect(screen.getAllByText(/Not yet confirmed by the operator/)).toHaveLength(2);
+  });
+
+  it('lists every prohibited use, the misuse contact and the consequences', async () => {
+    renderApp('/acceptable-use', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: 'Acceptable Use Policy' });
+    const prohibited = screen.getByRole('region', { name: 'You must not' });
+    for (const use of [
+      /target, profile, locate or monitor private individuals/,
+      /harass/,
+      /Computer Misuse Act 1990.*export controls or sanctions/,
+      /circumvent a source's terms.*redistribute licensed data/,
+      /sole basis for decisions affecting individuals' rights/,
+    ])
+      expect(within(prohibited).getByText(use)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'How to report misuse' })).toHaveTextContent(
+      'alexorr@yahoo.co.uk',
+    );
+    expect(
+      screen.getByRole('region', { name: 'What happens to accounts that break this policy' }),
+    ).toHaveTextContent(/deactivate an account.*Decision needed/);
+    expect(within(screen.getByRole('main')).getByRole('link', { name: 'Terms' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
+  });
+
+  it('publishes an honest accessibility statement with dated review and pending decisions', async () => {
+    renderApp('/accessibility', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: 'Accessibility' });
+    expect(screen.getByRole('region', { name: 'Technical standard' })).toHaveTextContent(
+      'WCAG) version 2.2 at level AA',
+    );
+    expect(screen.getByRole('region', { name: 'Compliance status' })).toHaveTextContent(
+      'partially compliant',
+    );
+    expect(screen.queryByText(/fully compliant/)).not.toBeInTheDocument();
+    const limits = screen.getByRole('region', { name: 'Known limitations and workarounds' });
+    for (const limit of [/3D globe/, /no captions/, /Third-party embeds/])
+      expect(within(limits).getByText(limit)).toBeInTheDocument();
+    const feedback = screen.getByRole('region', { name: 'Reporting accessibility problems' });
+    expect(feedback).toHaveTextContent('alexorr@yahoo.co.uk');
+    expect(feedback).toHaveTextContent(/Decision needed: Expected response time/);
+    expect(screen.getByRole('region', { name: 'Enforcement and complaints' })).toHaveTextContent(
+      'Decision needed',
+    );
+    expect(screen.getByRole('region', { name: 'How this service was tested' })).toHaveTextContent(
+      /axe-core.*No complete manual keyboard or screen reader pass/,
+    );
+    expect(screen.getByRole('region', { name: 'Preparation of this statement' })).toHaveTextContent(
+      'Last reviewed on 18 October 2026. The next review is due by 18 April 2027.',
+    );
+  });
+
+  it.each(['/accessibility', '/terms', '/acceptable-use'])(
+    'renders %s with no detectable accessibility violations',
+    async (path) => {
+      const { container } = renderApp(path, 'anonymous');
+      await screen.findByRole('heading', { level: 1 });
+      await expectNoAxeViolations(container);
+    },
+  );
+
+  it('names the operator and links every policy from the shared footer', async () => {
+    renderApp('/privacy', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: 'Privacy and storage' });
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('link', { name: 'Acceptable use' })).toHaveAttribute(
+      'href',
+      '/acceptable-use',
+    );
+    expect(footer).toHaveTextContent(
+      'Operated by Alex Orr · alexorr@yahoo.co.uk · Business address awaiting the operator’s decision',
+    );
+    // The header repeats the links without repeating the operator line.
+    expect(screen.getAllByText(/Operated by Alex Orr/)).toHaveLength(1);
   });
 
   it('keeps public links keyboard reachable and provides structural accessibility', async () => {

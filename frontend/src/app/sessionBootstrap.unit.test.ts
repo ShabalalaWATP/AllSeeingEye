@@ -49,6 +49,7 @@ describe('session code loading', () => {
     '/attributions',
     '/accessibility',
     '/terms',
+    '/acceptable-use',
     '/business',
   ])('does not load account code on matched public route %s', (path) => {
     const f = fixture(path);
