@@ -136,6 +136,9 @@
   border-radius: 0.6rem;
   background: var(--story-surface);
   color: var(--story-text);
+  /* Long server size options must shrink with the column on narrow screens. */
+  width: 100%;
+  min-width: 0;
 }
 .estimator-field {
   display: grid;
@@ -279,7 +282,7 @@
   .honest-grid,
   .estimator,
   .estimator-form {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .phone {
     max-width: 20rem;
