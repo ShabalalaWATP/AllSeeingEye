@@ -16,6 +16,7 @@ import { useViewShortcuts } from './useViewShortcuts';
 import { MobileHeader } from './MobileNavigation';
 import { useNarrowShell } from './useNarrowShell';
 import { useOpsRoomRoute } from './useOpsRoomRoute';
+import { useRememberRoute } from './useRememberRoute';
 import { useRouteFocus } from './useRouteFocus';
 
 // Rarely opened and it pulls in the whole destination catalogue, so keep it out of the shell chunk.
@@ -26,6 +27,7 @@ const CommandPalette = lazy(() =>
 /** Authenticated frame: left rail, top bar and the routed main area. */
 export function AppShell() {
   useViewShortcuts();
+  useRememberRoute('research');
   const { pathname } = useLocation();
   useOpsRoomRoute(pathname);
   const narrow = useNarrowShell();

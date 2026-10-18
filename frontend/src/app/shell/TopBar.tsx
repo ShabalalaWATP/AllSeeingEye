@@ -11,6 +11,7 @@ import { PersonalLinks } from './PersonalLinks';
 import { pageTitle } from './pageTitles';
 import { ShortcutHelp } from './ShortcutHelp';
 import { useSignOut } from './useSignOut';
+import { WorkspaceSwitch } from './WorkspaceSwitch';
 
 /** The root route names the current projection; every other route names its page. */
 export function viewTitle(pathname: string, mode: ViewMode): string {
@@ -54,6 +55,7 @@ function DesktopAccountControls() {
 /**
  * The narrow shell passes `onOpenNavigation` and gets a compact bar: navigation, title,
  * bell and an account menu, so nothing needs to scroll sideways at 320 CSS pixels.
+ * Administrators also get the Administration switch at every width, outside any menu.
  * The backdrop filter creates a stacking context; lift it above positioned page content
  * so its notification and account popovers remain visible and clickable.
  */
@@ -63,7 +65,10 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
   const narrow = onOpenNavigation !== undefined;
 
   return (
-    <header className="relative z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/85 px-2 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-ember/50 after:via-cyan/30 after:to-transparent sm:px-4">
+    <header
+      data-workspace="research"
+      className="relative z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/85 px-2 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-ember/50 after:via-cyan/30 after:to-transparent sm:px-4"
+    >
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         {onOpenNavigation !== undefined && (
           <Button
@@ -92,6 +97,7 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-2">
+        <WorkspaceSwitch to="admin" />
         <UtcClock />
         <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line/70 md:block" />
         <NotificationBell />
