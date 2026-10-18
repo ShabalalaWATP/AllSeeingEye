@@ -44,8 +44,15 @@ export function useEnterpriseEnquiry({ onSuccess }: EnquiryOptions = {}) {
     });
   }
 
-  /** Adds a cost estimate to the message without replacing anything already typed. */
+  /**
+   * Adds a cost estimate to the message without replacing anything already typed.
+   * While the enquiry is being sent the message stays as it is, and the notice says so.
+   */
   function prefillMessage(text: string): PrefillOutcome {
+    if (phase === 'submitting') {
+      setPrefillNotice(PREFILL_NOTICES.busy);
+      return 'busy';
+    }
     const merged = mergePrefill(draft.message, text);
     if (merged.message !== draft.message) update('message', merged.message);
     setPrefillNotice(PREFILL_NOTICES[merged.outcome]);

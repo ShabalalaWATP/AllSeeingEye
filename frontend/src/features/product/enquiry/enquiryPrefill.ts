@@ -7,7 +7,8 @@ import { createContext, useContext, useEffect } from 'react';
 
 export const MESSAGE_LIMIT = 2000;
 
-export type PrefillOutcome = 'filled' | 'appended' | 'unchanged' | 'too_long';
+/** 'busy': the enquiry is being sent, so the message cannot change until it finishes. */
+export type PrefillOutcome = 'filled' | 'appended' | 'unchanged' | 'too_long' | 'busy';
 
 export interface EnquiryPrefill {
   /** Whether an enquiry form is on the page to receive an estimate. */
@@ -57,7 +58,7 @@ export function mergePrefill(
   message: string,
   text: string,
   limit = MESSAGE_LIMIT,
-): { message: string; outcome: PrefillOutcome } {
+): { message: string; outcome: Exclude<PrefillOutcome, 'busy'> } {
   if (message.trim() === '') return { message: text.slice(0, limit), outcome: 'filled' };
   if (message.includes(text)) return { message, outcome: 'unchanged' };
   const combined = `${message.trimEnd()}\n\n${text}`;
@@ -70,4 +71,5 @@ export const PREFILL_NOTICES: Record<PrefillOutcome, string> = {
   appended: 'The estimate has been added below your message. Nothing has been sent.',
   unchanged: 'This estimate is already in your message.',
   too_long: 'Your message has no room for the estimate. Shorten it, then send the estimate again.',
+  busy: 'Wait for the enquiry to finish, then send the estimate again.',
 };

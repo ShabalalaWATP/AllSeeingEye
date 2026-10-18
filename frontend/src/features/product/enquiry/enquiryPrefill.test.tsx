@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { useState } from 'react';
@@ -95,6 +95,40 @@ describe('estimate hand-off to the enquiry message', () => {
     await user.click(screen.getByRole('button', { name: `Offer ${ESTIMATE.length}` }));
     expect(confirmation).toHaveFocus();
     expect(screen.queryByRole('textbox')).toBeNull();
+  });
+
+  it('says to wait, and leaves the message alone, while the enquiry is being sent', async () => {
+    let finish: (() => void) | undefined;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    server.use(
+      http.post('/api/enquiries', async () => {
+        await pending;
+        return HttpResponse.json({ message: 'ok' }, { status: 202 });
+      }),
+    );
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Example Visitor');
+    await user.type(screen.getByRole('textbox', { name: 'Work email' }), 'visitor@example.test');
+    await user.type(screen.getByRole('textbox', { name: 'Organisation' }), 'Example Organisation');
+    await user.selectOptions(screen.getByLabelText('Deployment interest'), 'own_cloud');
+    await user.selectOptions(screen.getByLabelText('Expected users'), '11_50');
+    await user.click(screen.getByRole('checkbox', { name: /I have read/ }));
+    await user.type(message(), 'Our own words.');
+    await user.click(screen.getByRole('button', { name: 'Send enquiry' }));
+    await waitFor(() => expect(message()).toBeDisabled());
+
+    const offer = screen.getByRole('button', { name: `Offer ${ESTIMATE.length}` });
+    await user.click(offer);
+    expect(screen.getByText(PREFILL_NOTICES.busy)).toHaveAttribute('role', 'status');
+    expect(message()).toHaveValue('Our own words.');
+    expect(offer).toHaveFocus();
+
+    finish?.();
+    expect(await screen.findByText(/Your enquiry has been received/)).toBeInTheDocument();
+    expect(screen.queryByText(PREFILL_NOTICES.busy)).toBeNull();
   });
 });
 

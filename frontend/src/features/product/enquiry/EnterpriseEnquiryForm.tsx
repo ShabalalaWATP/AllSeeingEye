@@ -44,8 +44,8 @@ export function EnterpriseEnquiryForm({ onSubmitted }: EnterpriseEnquiryFormProp
       feedbackRef.current?.focus();
       return;
     }
-    if (busy) return;
-    enquiry.prefillMessage(text);
+    // While sending, the message is locked and the notice asks to send it again later.
+    if (enquiry.prefillMessage(text) === 'busy') return;
     document.getElementById(`${id}-message`)?.focus();
   });
   return (
