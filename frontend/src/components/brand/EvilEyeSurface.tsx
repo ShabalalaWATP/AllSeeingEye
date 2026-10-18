@@ -30,12 +30,14 @@
  *   9. Public eyes can render the same engine in a worker; DOM timing and input stay here.
  *  10. Opt-in page-wide pointer following for hover-capable fine pointers, and an opt-in
  *      static capture when the browser asks to save data. Defaults keep the original.
+ *  11. The pointer wiring and its device hints are extracted unchanged into eyePointer.ts.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { EyeOptions, EyeSurface } from './evilEyeProtocol';
 import type { createEyeRenderer } from './evilEyeRenderer';
 import { loadEyeRenderer } from './evilEyeLoader';
 import { createEyeWorker } from './evilEyeWorkerClient';
+import { followPointer, savesData } from './eyePointer';
 
 // Added for The All Seeing Eye: real captures of this component at several widths.
 const CAPTURE_WIDTHS = [64, 128, 192, 512] as const;
@@ -44,17 +46,6 @@ function captureSet(format: 'png' | 'webp'): string {
 }
 const PNG_CAPTURES = captureSet('png');
 const WEBP_CAPTURES = captureSet('webp');
-
-// Added for The All Seeing Eye: device hints for the public hero.
-const FINE_POINTER_QUERY = '(hover: hover) and (pointer: fine)';
-function hasFinePointer(): boolean {
-  return typeof window.matchMedia === 'function' && window.matchMedia(FINE_POINTER_QUERY).matches;
-}
-function savesData(): boolean {
-  const connection = (navigator as Navigator & { connection?: { saveData?: unknown } }).connection;
-  return connection?.saveData === true;
-}
-const clampUnit = (value: number) => Math.min(1, Math.max(-1, value));
 
 interface EvilEyeProps {
   /** Existing synchronous callers supply the engine; public worker fallback loads it on demand. */
@@ -230,42 +221,7 @@ export default function EvilEye({
         if (stopped) return dispose;
 
         const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-        function onMouseMove(e: MouseEvent) {
-          const rect = container.getBoundingClientRect();
-          mouse.tx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-          mouse.ty = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-        }
-        function onMouseLeave() {
-          mouse.tx = 0;
-          mouse.ty = 0;
-        }
-        if (pointerScope === 'page') {
-          // Text over the eye must not block it, so listen on the window. Touch and
-          // coarse pointers keep a centred pupil; far pointers stop at the eye's edge.
-          const onPageMove = (e: MouseEvent) => {
-            onMouseMove(e);
-            mouse.tx = clampUnit(mouse.tx);
-            mouse.ty = clampUnit(mouse.ty);
-          };
-          const onPageOut = (e: MouseEvent) => {
-            if (e.relatedTarget === null) onMouseLeave();
-          };
-          if (hasFinePointer()) {
-            window.addEventListener('mousemove', onPageMove, { passive: true });
-            window.addEventListener('mouseout', onPageOut, { passive: true });
-            disposers.push(() => {
-              window.removeEventListener('mousemove', onPageMove);
-              window.removeEventListener('mouseout', onPageOut);
-            });
-          }
-        } else {
-          container.addEventListener('mousemove', onMouseMove);
-          container.addEventListener('mouseleave', onMouseLeave);
-          disposers.push(() => {
-            container.removeEventListener('mousemove', onMouseMove);
-            container.removeEventListener('mouseleave', onMouseLeave);
-          });
-        }
+        disposers.push(followPointer(container, mouse, pointerScope));
         function resize() {
           // OffscreenCanvas dimensions belong to the worker, but its placeholder's
           // CSS dimensions remain the DOM owner's responsibility (OGL dpr stays 1).
