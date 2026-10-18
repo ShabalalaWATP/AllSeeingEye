@@ -9,6 +9,7 @@ who must replace the installation facts and assess their own purposes and recipi
 | [Processing register](PROCESSING_REGISTER.md)            | People, data, purposes, recipients, safeguards and linked retention rules. |
 | [Processors and transfers](PROCESSORS_AND_TRANSFERS.md)  | Provider roles, agreement evidence, locations and transfer safeguards.     |
 | [Retention schedule](RETENTION_SCHEDULE.md)              | Enforced expiry, deletion triggers, manual duties and implementation gaps. |
+| [Online safety assessment](ONLINE_SAFETY.md) | Approved assessment record: conditional UK scope, illegal-content risks, children's access and outstanding operating evidence. |
 | [AI region and residency guide](../AI_DATA_RESIDENCY.md) | Configuration steps and the limits of regional AI routing.                 |
 
 Record owner: **Alex Orr**, contact **alexorr@yahoo.co.uk**. Review date:

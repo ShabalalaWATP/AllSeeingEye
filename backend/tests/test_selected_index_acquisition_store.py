@@ -67,7 +67,7 @@ async def test_page_and_outage_use_current_enabled_scope() -> None:
             repo = SqlSelectedSubscriptionIndexRepository(session)
             losses = await repo.list_losses(subscription_id, actor_id=owner)
             assert len(losses) == 1 and losses[0].reason == "initial_history_gap"
-            assert len(await repo.list_records(subscription_id, actor_id=owner)) == 1
+            assert len(await repo.list_records(subscription_id, now=NOW, actor_id=owner)) == 1
         async with maker.begin() as session:
             row = await session.get(ScheduleRow, subscription_id)
             assert row is not None
@@ -87,7 +87,7 @@ async def test_page_and_outage_use_current_enabled_scope() -> None:
             repo = SqlSelectedSubscriptionIndexRepository(session)
             cursor = await repo.get_cursor(subscription_id, POLICY.source_id, actor_id=owner)
             assert cursor is not None and cursor.revision == 1
-            assert len(await repo.list_records(subscription_id, actor_id=owner)) == 1
+            assert len(await repo.list_records(subscription_id, now=NOW, actor_id=owner)) == 1
     finally:
         await engine.dispose()
 
@@ -132,7 +132,7 @@ async def test_existing_public_cache_flows_to_scoped_index_without_provider_call
         assert await collector.tick() == 1
         async with maker() as session:
             rows = await SqlSelectedSubscriptionIndexRepository(session).list_records(
-                subscription_id, actor_id=owner
+                subscription_id, now=NOW, actor_id=owner
             )
             assert len(rows) == 1
             assert rows[0].item_key == "usgsitem"

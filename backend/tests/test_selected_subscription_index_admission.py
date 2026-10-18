@@ -58,6 +58,6 @@ async def test_disabled_schedule_stops_writes_and_source_ceiling_bounds_cursor_s
             repo = SqlSelectedSubscriptionIndexRepository(session)
             assert (await repo.get_cursor(subscription_id, "usgs", actor_id=owner)).revision == 1
             assert await repo.get_cursor(subscription_id, "other", actor_id=owner) is None
-            assert len(await repo.list_records(subscription_id, actor_id=owner)) == 1
+            assert len(await repo.list_records(subscription_id, now=NOW, actor_id=owner)) == 1
     finally:
         await engine.dispose()
