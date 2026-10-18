@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 import { privacyPublication } from './privacy-plugin.js';
-import { readPublicationState } from './privacy-publication.js';
+import { footerDetails, readPublicationState } from './privacy-publication.js';
 
 test('exports only the verified approval and ignores other virtual modules', () => {
   const plugin = privacyPublication();
@@ -13,6 +13,13 @@ test('exports only the verified approval and ignores other virtual modules', () 
     plugin.load(plugin.resolveId('virtual:policy-approval')),
     `export default ${readPublicationState().approved};`,
   );
+});
+
+test('exports the footer operator strings from the same reviewed content', () => {
+  const plugin = privacyPublication();
+  const source = plugin.load(plugin.resolveId('virtual:policy-footer'));
+  assert.equal(source, `export default ${JSON.stringify(footerDetails())};`);
+  assert.deepEqual(Object.keys(footerDetails()).sort(), ['address', 'contact', 'operator']);
 });
 
 test('adding, editing and deleting policy inputs invalidates a running preview', () => {
@@ -59,7 +66,8 @@ test('adding, editing and deleting policy inputs invalidates a running preview',
   for (const event of ['add', 'change', 'unlink']) changed(event, file);
   changed('change', '/unrelated');
   changed('ready', file);
-  assert.equal(invalidated, 3);
+  // Both virtual modules are invalidated for each of the three content events.
+  assert.equal(invalidated, 6);
   assert.equal(reloads, 3);
   close();
   assert.equal(detached, true);
