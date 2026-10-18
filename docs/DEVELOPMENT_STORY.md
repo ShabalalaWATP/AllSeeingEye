@@ -6522,6 +6522,40 @@ focused public-route and metadata tests pass; independent review confirmed no
 product change, timeout increase or weakened assertion. The feature approval is
 retained, while refreshed required CI must pass before merge.
 
+## 16 October 2026: KAN-189 online safety desk assessment
+
+The assessment maps current boards, reports, maps, directory profiles, invitation
+notes and external research to the functional, territorial and exemption tests.
+The source supports user-to-user functionality but does not establish UK audience,
+an exemption or actual operating effectiveness. Current terms/account admission
+contain no age assurance or 18+ rule. The children's assessment therefore retains
+an unresolved stage-two audience conclusion rather than assuming adults only.
+
+Separate evidence and provisional risk records use the updated June 2026 Ofcom
+guidance, including serious self-harm and cyberflashing. A prepared reporting and
+complaints procedure is handed to KAN-188 for public-policy implementation. KAN-245
+tracks the confirmed archived-board removal gap: content remains readable while
+the ordinary moderation path rejects removal until team reactivation. No actual
+harmful content, private account records or complaints were inspected.
+
+Audience/UK facts, operating evidence, Alex's required assessment approval and
+any necessary legal confirmation remain outstanding. The draft changes no live
+settings or public terms, and makes no completed statutory-compliance claim.
+
+Independent technical review found no actionable source mismatch. Legal/security
+review identified the missed-first-assessment statutory default for child access;
+the draft now records that conditional duty and the current code index. All 46
+local documentation links resolve. Application tests and coverage were not rerun
+for these documentation-only changes.
+
+Alex subsequently confirmed approved adult users, including UK users. The record
+now distinguishes that dated operator evidence from source inspection and proposes
+regulated-service treatment for planning. It does not equate UK admission with a
+proved statutory territorial limb or account approval with effective age assurance.
+KAN-246 tracks the remaining operational/deadline and children's-duties validation;
+existing access duties cannot wait for intentional audience expansion. Assessment
+approval remains separate from this factual confirmation and from KAN-185's sign-off.
+
 ### 16 October 2026: KAN-239 operational retention
 
 Added optional independent maintenance for audit events, per-call AI usage and
@@ -6789,3 +6823,50 @@ forward too. Its test blob and all relevant fetch-budget, credential and fixture
 paths match the validated candidate. All 91 FIRMS runtime, fixed-deadline and
 feed-resilience cases pass on isolated SQLite; Ruff and formatting pass. Existing
 PostgreSQL evidence remains recorded on KAN-240, and fresh CI covers this candidate.
+
+## 18 October 2026: KAN-189 assessment approval
+
+Alex approved the assessment record and its PR #211 merge, including conservative
+regulated-service treatment for planning. The dated record preserves the unresolved
+legal, children's-access and operating work in KAN-246, KAN-188 and KAN-245. Approval
+supplies no new operating evidence, certifies no statutory compliance and excludes
+manual production rollout. Independent review found no loss of these limitations.
+Final integration and published-head CI remain required before merging.
+
+## 18 October 2026: approved retention delivery and remaining rollout
+
+KAN-241's final candidate `178d912c` passed all 40 checks and merged as `888b4748`;
+the merged tree exactly matches the tested candidate. Backend coverage reports
+94% overall; frontend branch coverage is 92.34%, with 5,196 passing frontend tests
+and one existing skip. PostgreSQL migration and concurrency checks passed. KAN-241
+is Done, following KAN-239's approved merge `ea68f65c`.
+
+KAN-240 then passed all 40 refreshed checks at `7fd7be8b` and merged as `156b5266`.
+Independent review verified the exact prepared private-removal tree and preserved
+main content. Database migrations/races, coverage, browser and security checks
+passed. KAN-240 is Done; no live removal or migration command was run.
+
+KAN-243 passed all 40 refreshed checks at `08d71d1c` and merged as `0fb60965`.
+Independent review confirmed that the actual-main integration retained the exact
+prepared recovery-record implementation. The merged tree matches the tested tree;
+KAN-243 is Done. No live recovery record, removal or restore was activated.
+
+KAN-216 retains manual rollout and live acceptance even though its original
+twenty child tickets and twelve mapped implementation items are Done. A private
+draft records migration 0090–0095 effects, preflight evidence and recovery limits.
+Read-only public checks confirm basic availability and anonymous administrator
+denial, not the deployed version. The existing operator handoff, verified live
+state, backup/rehearsal evidence and separate rollout approval were the next steps.
+No manual production operation was performed.
+
+The earlier KAN-165 handoff subsequently supplied working operator access. Read-only
+inspection verified clean live `13efceef`, matching application image labels,
+PostgreSQL 16.15/PostGIS 3.5.7 and schema `0089`. An existing 9 October deployment
+backup passed server-side HMAC verification. Only its authenticated dump was copied
+to a private local directory; no environment file or backup key was transferred.
+The network-disabled rehearsal restored to a fresh local database and migrated to
+`0095`, preserving original contents of all 99 checked tables and verifying exact
+session-family ownership/grace and scoped warning-history cutoffs. It started no
+application workers. The disposable database and copied dump were removed after
+success; bounded private evidence remains. This rehearsal does not replace the
+fresh quiesced backup or separate approval required for production rollout.
