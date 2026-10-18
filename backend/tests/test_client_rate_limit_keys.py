@@ -83,10 +83,18 @@ async def test_ipv4_mapped_clients_share_the_ipv4_bucket(container: Container) -
         ip = "198.51.100.7" if index % 2 else "::ffff:198.51.100.7"
         async with container.session_factory() as session:
             await container.request_account(session).execute(
-                f"mapped{index}@example.com", "Mapped", None, RequestContext(ip=ip)
+                f"mapped{index}@example.com",
+                "Mapped",
+                None,
+                RequestContext(ip=ip),
+                accept_terms=True,
             )
     async with container.session_factory() as session:
         with pytest.raises(RateLimited):
             await container.request_account(session).execute(
-                "mapped-last@example.com", "Mapped", None, RequestContext(ip="198.51.100.7")
+                "mapped-last@example.com",
+                "Mapped",
+                None,
+                RequestContext(ip="198.51.100.7"),
+                accept_terms=True,
             )

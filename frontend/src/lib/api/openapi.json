@@ -2963,6 +2963,62 @@
         ]
       }
     },
+    "/api/me/terms-acceptance": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Accept Terms",
+        "operationId": "accept_terms_api_me_terms_acceptance_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermsAcceptanceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/me/notifications/feed": {
       "get": {
         "tags": [
@@ -22103,6 +22159,29 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "terms_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Version"
+          },
+          "terms_accepted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Accepted At"
           }
         },
         "type": "object",
@@ -22112,7 +22191,9 @@
           "display_name",
           "reason",
           "status",
-          "created_at"
+          "created_at",
+          "terms_version",
+          "terms_accepted_at"
         ],
         "title": "AccountRequestOut"
       },
@@ -45910,13 +45991,18 @@
           "enterprise_enquiry_retention_days": {
             "type": "integer",
             "title": "Enterprise Enquiry Retention Days"
+          },
+          "terms_version": {
+            "type": "string",
+            "title": "Terms Version"
           }
         },
         "type": "object",
         "required": [
           "product_page_enabled",
           "enterprise_enquiries_enabled",
-          "enterprise_enquiry_retention_days"
+          "enterprise_enquiry_retention_days",
+          "terms_version"
         ],
         "title": "PublicSiteOut",
         "description": "Facts the signed-out pages need about this installation; nothing private."
@@ -50016,12 +50102,17 @@
               }
             ],
             "title": "Reason"
+          },
+          "accept_terms": {
+            "type": "boolean",
+            "title": "Accept Terms"
           }
         },
         "type": "object",
         "required": [
           "email",
-          "display_name"
+          "display_name",
+          "accept_terms"
         ],
         "title": "RequestAccountIn"
       },
@@ -59062,6 +59153,65 @@
         ],
         "title": "TemplatesOut"
       },
+      "TermsAcceptanceIn": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "TermsAcceptanceIn"
+      },
+      "TermsStatusOut": {
+        "properties": {
+          "current_version": {
+            "type": "string",
+            "title": "Current Version"
+          },
+          "accepted_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted Version"
+          },
+          "accepted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "acceptance_required": {
+            "type": "boolean",
+            "title": "Acceptance Required"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_version",
+          "accepted_version",
+          "accepted_at",
+          "acceptance_required"
+        ],
+        "title": "TermsStatusOut"
+      },
       "TerrainElevationsOut": {
         "properties": {
           "elevations_m": {
@@ -60171,6 +60321,9 @@
               }
             ],
             "title": "Last Login At"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/TermsStatusOut"
           }
         },
         "type": "object",
@@ -60181,7 +60334,8 @@
           "role",
           "is_active",
           "created_at",
-          "last_login_at"
+          "last_login_at",
+          "terms"
         ],
         "title": "UserOut"
       },

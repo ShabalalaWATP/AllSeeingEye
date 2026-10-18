@@ -6,8 +6,9 @@ from datetime import datetime
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from ase.application.auth.terms import TermsStatus, terms_status
 from ase.application.dto import AuthSession
 from ase.domain.audit import AuditEntry
 from ase.domain.session_activity import SessionActivity
@@ -23,6 +24,8 @@ class RequestAccountIn(BaseModel):
     email: EmailStr
     display_name: str = Field(min_length=1, max_length=120)
     reason: str | None = Field(default=None, max_length=1000)
+    # Required. False is refused by the use case as a field error, like other invalid input.
+    accept_terms: bool
 
 
 class ForgotPasswordIn(BaseModel):
@@ -52,6 +55,28 @@ class UpdateUserIn(BaseModel):
     is_active: bool | None = None
 
 
+class TermsStatusOut(BaseModel):
+    current_version: str
+    accepted_version: str | None
+    accepted_at: datetime | None
+    acceptance_required: bool
+
+    @classmethod
+    def from_status(cls, status: TermsStatus) -> Self:
+        return cls(
+            current_version=status.current_version,
+            accepted_version=status.accepted_version,
+            accepted_at=status.accepted_at,
+            acceptance_required=status.acceptance_required,
+        )
+
+
+class TermsAcceptanceIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: str = Field(min_length=1, max_length=32)
+
+
 class UserOut(BaseModel):
     id: UUID
     email: str
@@ -60,6 +85,7 @@ class UserOut(BaseModel):
     is_active: bool
     created_at: datetime
     last_login_at: datetime | None
+    terms: TermsStatusOut
 
     @classmethod
     def from_user(cls, user: User) -> Self:
@@ -71,6 +97,7 @@ class UserOut(BaseModel):
             is_active=user.is_active,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
+            terms=TermsStatusOut.from_status(terms_status(user)),
         )
 
 
@@ -122,6 +149,8 @@ class AccountRequestOut(BaseModel):
     reason: str | None
     status: RequestStatus
     created_at: datetime
+    terms_version: str | None
+    terms_accepted_at: datetime | None
 
     @classmethod
     def from_entity(cls, request: AccountRequest) -> Self:
@@ -132,6 +161,8 @@ class AccountRequestOut(BaseModel):
             reason=request.reason,
             status=request.status,
             created_at=request.created_at,
+            terms_version=request.terms_version,
+            terms_accepted_at=request.terms_accepted_at,
         )
 
 
@@ -191,6 +222,8 @@ class PublicSiteOut(BaseModel):
     product_page_enabled: bool
     enterprise_enquiries_enabled: bool
     enterprise_enquiry_retention_days: int
+    # The Terms and Acceptable Use Policy version accounts must accept. Public by design.
+    terms_version: str
 
 
 class ReadyOut(BaseModel):

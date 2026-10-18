@@ -10,6 +10,7 @@ from fastapi import APIRouter, Response
 
 from ase.api.deps import ContainerDep
 from ase.api.schemas import PublicSiteOut
+from ase.domain.terms import CURRENT_TERMS_VERSION
 
 router = APIRouter(tags=["site"])
 
@@ -21,4 +22,5 @@ async def site(container: ContainerDep, response: Response) -> PublicSiteOut:
         product_page_enabled=container.settings.public_product_page_enabled,
         enterprise_enquiries_enabled=container.settings.enterprise_enquiries_enabled,
         enterprise_enquiry_retention_days=container.settings.enterprise_enquiry_retention_days,
+        terms_version=CURRENT_TERMS_VERSION,
     )

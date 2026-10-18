@@ -11,6 +11,7 @@ from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.domain.audit import AuditAction
 from ase.domain.errors import RateLimited
+from ase.domain.terms import CURRENT_TERMS_VERSION
 from ase.domain.users import RequestStatus
 from helpers import USER_EMAIL
 
@@ -21,7 +22,9 @@ def _context(index: int) -> RequestContext:
 
 async def _request_account(container: Container, email: str, index: int) -> None:
     async with container.session_factory() as session:
-        await container.request_account(session).execute(email, "Requester", None, _context(index))
+        await container.request_account(session).execute(
+            email, "Requester", None, _context(index), accept_terms=True
+        )
 
 
 async def test_request_account_global_cap_applies_across_clients(container: Container) -> None:
@@ -53,12 +56,12 @@ async def test_full_review_queue_stores_nothing_and_answers_uniformly(
     container.limits = replace(container.limits, pending_account_requests_max=2)
     accepted = await client.post(
         "/api/auth/request-account",
-        json={"email": "first@example.com", "display_name": "First"},
+        json={"email": "first@example.com", "display_name": "First", "accept_terms": True},
     )
     await _request_account(container, "second@example.com", 1)
     queued_out = await client.post(
         "/api/auth/request-account",
-        json={"email": "third@example.com", "display_name": "Third"},
+        json={"email": "third@example.com", "display_name": "Third", "accept_terms": True},
     )
     assert accepted.status_code == queued_out.status_code == 202
     assert accepted.json() == queued_out.json()
@@ -73,8 +76,9 @@ async def test_full_review_queue_stores_nothing_and_answers_uniformly(
         entries = await repos.audit.list_before(None, 20)
     requested = [entry for entry in entries if entry.action is AuditAction.ACCOUNT_REQUESTED]
     by_subject = {entry.subject: entry.details for entry in requested}
-    assert by_subject["third@example.com"] == {"duplicate": False, "queue_full": True}
-    assert by_subject["first@example.com"] == {"duplicate": False, "queue_full": False}
+    accepted = {"terms_version": CURRENT_TERMS_VERSION}
+    assert by_subject["third@example.com"] == {"duplicate": False, "queue_full": True, **accepted}
+    assert by_subject["first@example.com"] == {"duplicate": False, "queue_full": False, **accepted}
 
 
 async def test_full_queue_and_existing_accounts_look_the_same(
@@ -83,10 +87,12 @@ async def test_full_queue_and_existing_accounts_look_the_same(
     container.limits = replace(container.limits, pending_account_requests_max=1)
     await _request_account(container, "only@example.com", 2)
     existing = await client.post(
-        "/api/auth/request-account", json={"email": USER_EMAIL, "display_name": "Existing"}
+        "/api/auth/request-account",
+        json={"email": USER_EMAIL, "display_name": "Existing", "accept_terms": True},
     )
     dropped = await client.post(
-        "/api/auth/request-account", json={"email": "new@example.com", "display_name": "New"}
+        "/api/auth/request-account",
+        json={"email": "new@example.com", "display_name": "New", "accept_terms": True},
     )
     assert existing.status_code == dropped.status_code == 202
     assert existing.json() == dropped.json()

@@ -144,7 +144,7 @@ class TestWithEmailDelivery:
     ) -> None:
         await client.post(
             "/api/auth/request-account",
-            json={"email": "fresh@example.com", "display_name": "Fresh"},
+            json={"email": "fresh@example.com", "display_name": "Fresh", "accept_terms": True},
         )
         token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
         listed = await client.get("/api/admin/account-requests", headers=bearer(token))

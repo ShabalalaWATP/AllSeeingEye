@@ -19,6 +19,7 @@ from ase.application.ports import (
 )
 from ase.domain.audit import AuditAction
 from ase.domain.errors import RateLimited
+from ase.domain.terms import CURRENT_TERMS_VERSION, TermsNotAccepted
 from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import AccountRequest, RequestStatus, normalise_email
 
@@ -52,8 +53,17 @@ class RequestAccountUseCase:
         self._uow = uow
 
     async def execute(
-        self, email: str, display_name: str, reason: str | None, context: RequestContext
+        self,
+        email: str,
+        display_name: str,
+        reason: str | None,
+        context: RequestContext,
+        *,
+        accept_terms: bool,
     ) -> None:
+        # Refused before any lookup, as a field error, so it reveals nothing about the address.
+        if accept_terms is not True:
+            raise TermsNotAccepted()
         _enforce(
             self._limiter,
             self._limits.hourly_window_seconds,
@@ -71,6 +81,7 @@ class RequestAccountUseCase:
             and await self._requests.count_pending() >= self._limits.pending_account_requests_max
         )
         if not duplicate and not queue_full:
+            now = self._clock.now()
             await self._requests.add(
                 AccountRequest(
                     id=uuid4(),
@@ -80,14 +91,20 @@ class RequestAccountUseCase:
                     status=RequestStatus.PENDING,
                     decided_by=None,
                     decided_at=None,
-                    created_at=self._clock.now(),
+                    created_at=now,
+                    terms_version=CURRENT_TERMS_VERSION,
+                    terms_accepted_at=now,
                 )
             )
         await self._auditor.record(
             AuditAction.ACCOUNT_REQUESTED,
             subject=email,
             ip=context.ip,
-            details={"duplicate": duplicate, "queue_full": queue_full},
+            details={
+                "duplicate": duplicate,
+                "queue_full": queue_full,
+                "terms_version": CURRENT_TERMS_VERSION,
+            },
         )
         await self._uow.commit()
 

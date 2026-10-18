@@ -39,6 +39,9 @@ class User:
     created_at: datetime
     last_login_at: datetime | None
     security_version: int = 0
+    # The Terms version this account accepted, if any. See ase.domain.terms.
+    terms_version: str | None = None
+    terms_accepted_at: datetime | None = None
 
     @property
     def is_admin(self) -> bool:
@@ -61,6 +64,8 @@ class AccountRequest:
     decided_by: UUID | None
     decided_at: datetime | None
     created_at: datetime
+    terms_version: str | None = None
+    terms_accepted_at: datetime | None = None
 
     @property
     def is_pending(self) -> bool:

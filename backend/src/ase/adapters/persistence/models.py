@@ -106,6 +106,8 @@ class UserRow(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     security_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    terms_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
 class AdministrationLockRow(Base):
@@ -127,6 +129,8 @@ class AccountRequestRow(Base):
     decided_by: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     decided_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    terms_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
 class RefreshTokenRow(Base):

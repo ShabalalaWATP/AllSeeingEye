@@ -28,6 +28,7 @@ from ase.application.auth.recovery_codes import RecoveryCodesUseCase
 from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
+from ase.application.auth.terms import AcceptTermsUseCase
 from ase.application.auth.totp import TotpUseCase
 from ase.container.core import ContainerCore
 from ase.domain.session_activity import SessionIdlePolicy
@@ -133,6 +134,10 @@ class AuthWiring(ContainerCore):
             r.users, r.password_tokens, r.refresh_tokens, self.hasher, self.totp(session),
             self.clock, self.limiter, self._auditor(r), r.uow, self.mfa_management(session),
         )  # fmt: skip
+
+    def accept_terms(self, session: AsyncSession) -> AcceptTermsUseCase:
+        r = self.repositories(session)
+        return AcceptTermsUseCase(r.users, r.refresh_tokens, self.clock, self._auditor(r), r.uow)
 
     def profile(self, session: AsyncSession) -> ProfileUseCase:
         r = self.repositories(session)
