@@ -5,7 +5,7 @@
  * projecting the visible points.
  */
 import { project, toSphere, type SpherePoint, type View } from './globeMath';
-import type { SceneLayer } from './sceneData';
+import { ORBITS, type SceneLayer } from './sceneData';
 
 export interface FrameState {
   view: View;
@@ -15,13 +15,15 @@ export interface FrameState {
   time: number;
   /** Index of the layer the text is currently describing, emphasised on the globe. */
   active: number;
+  /** 0 shows the whole Earth; near 1 the camera has settled and the selection ring shows. */
+  focus: number;
 }
 
-const ORBITS = [
-  { tilt: 52, phase: 0, speed: 0.11, count: 7 },
-  { tilt: 98, phase: 1.3, speed: 0.08, count: 6 },
-  { tilt: 28, phase: 2.6, speed: 0.06, count: 5 },
-];
+/** Where the camera settles at the end of the chapter: the Red Sea, for the Ask chapter. */
+export const FOCUS = { lon: 42, lat: 16 } as const;
+const FOCUS_POINT = toSphere(FOCUS);
+/** The ring fades in over the last part of the camera's approach. */
+const RING_FROM = 0.85;
 
 function withAlpha(hex: string, alpha: number): string {
   const value = Math.round(Math.min(1, Math.max(0, alpha)) * 255)
@@ -214,6 +216,26 @@ function drawCells(
   }
 }
 
+/** A selection ring over the focus region, handing the reader over to the Ask chapter. */
+function drawRing(ctx: CanvasRenderingContext2D, view: View, focus: number, time: number): void {
+  const alpha = Math.min(1, Math.max(0, (focus - RING_FROM) / (1 - RING_FROM)));
+  if (alpha <= 0) return;
+  const p = project(FOCUS_POINT, view);
+  if (p.depth <= 0.2) return;
+  const size = view.radius / 9;
+  const pulse = 0.5 + 0.5 * Math.sin(time * 2);
+  ctx.lineWidth = Math.max(1.5, view.radius / 180);
+  ctx.strokeStyle = withAlpha('#ff6f37', alpha);
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = withAlpha('#ff6f37', alpha * 0.45 * (1 - pulse));
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, size * (1.25 + pulse * 0.35), 0, Math.PI * 2);
+  ctx.stroke();
+}
+
 export function drawGlobe(
   ctx: CanvasRenderingContext2D,
   land: readonly SpherePoint[],
@@ -233,4 +255,5 @@ export function drawGlobe(
     else if (layer.kind === 'orbits') drawOrbits(ctx, layer, view, alpha * dim, frame.time);
     else drawCells(ctx, layer, view, alpha * dim, layer.kind);
   });
+  drawRing(ctx, view, frame.focus, frame.time);
 }
