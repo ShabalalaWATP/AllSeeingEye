@@ -6745,3 +6745,15 @@ All 47 FIRMS runtime, fixed-deadline and feed-resilience cases pass on SQLite an
 on a new isolated PostgreSQL database. The task-owned database container and
 volume were removed after verification. Independent review, Ruff, formatting and
 whitespace checks pass. Fresh CI and authorised serial integration remain required.
+
+## 18 October 2026: KAN-243 frontend integration checks
+
+CI exposed competing navigations in the account-switch motion-preference test.
+It now waits for the administrator login redirect before navigating to research;
+all preference-isolation assertions remain unchanged. Local verification also
+exposed a cold lazy-overview dependency in the login tests. Those assertions now
+check the protected Administration navigation and retain the exact destination,
+matching the existing ordinary-user login test. Separate overview tests continue
+to verify its heading and content. All 33 focused motion, login, feedback and
+overview cases pass. Independent review found no weakened authority check or
+product change. No test timeout or coverage threshold changed.

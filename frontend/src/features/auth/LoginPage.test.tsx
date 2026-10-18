@@ -32,15 +32,14 @@ describe('LoginPage', () => {
     await user.type(await screen.findByLabelText('Email'), adminUser.email);
     await user.type(screen.getByLabelText('Password'), ADMIN_PASSWORD);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(
-      await screen.findByRole('heading', { name: 'Administration', level: 1 }),
-    ).toBeInTheDocument();
+    // Login routing does not depend on the separately tested overview's lazy import.
+    expect(await screen.findByRole('navigation', { name: 'Administration' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/admin');
   });
 
   it('sends an authenticated administrator to their workspace', async () => {
     const { router } = renderApp('/login', 'admin');
-    await screen.findByRole('heading', { name: 'Administration', level: 1 });
+    await screen.findByRole('navigation', { name: 'Administration' });
     expect(router.state.location.pathname).toBe('/admin');
   });
 
