@@ -230,6 +230,7 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
     for name in ("alert_dispatcher", "notification_dispatcher", "digest_worker"):
         monkeypatch.setattr(f"ase.app_lifecycle.{name}", lambda _: SimpleNamespace(run=AsyncMock()))
     monkeypatch.setattr("ase.app_lifecycle.run_web_push", AsyncMock())
+    monkeypatch.setattr("ase.app_lifecycle.run_dormant_retention", AsyncMock())
     monkeypatch.setattr(
         "ase.app_lifecycle.build_annotation_monitor_worker",
         lambda _: SimpleNamespace(run=AsyncMock()),
@@ -238,7 +239,10 @@ def lifecycle(monkeypatch: pytest.MonkeyPatch) -> Lifecycle:
     app = FastAPI()
     app.state.container = SimpleNamespace(
         settings=SimpleNamespace(
-            feeds_enabled=True, enterprise_enquiry_retention_days=90, auth_retention_enabled=False
+            feeds_enabled=True,
+            enterprise_enquiry_retention_days=90,
+            auth_retention_enabled=False,
+            operational_retention_enabled=False,
         ),
         dispose=AsyncMock(side_effect=lambda: order.append("dispose")),
         session_factory=Mock(),

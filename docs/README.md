@@ -49,12 +49,16 @@ explain what is and is not represented.
 - [AI usage and cost controls](AI_COST_CONTROLS.md): research tiers, call and token policies, and estimated spend.
 - [Administration](ADMINISTRATION.md): the `/admin` workspace and its areas.
 - [Personal-data requests](PERSONAL_DATA_OPERATIONS.md): the operator-assisted route, administrator contact, shared-work safeguards and export/deletion limits.
+- [Private-data removal](PRIVATE_DATA_REMOVAL.md): scoped preview/apply, necessity decisions, preservation holds and retained shared history.
 - [Authentication retention](AUTH_RETENTION.md): bounded preview/apply housekeeping, operational periods and scoped holds.
+- [Audit, usage and delivery retention](OPERATIONAL_RETENTION.md): optional bounded expiry, terminal receipt minimisation and category holds.
+- [Dormant workload retention](DORMANT_RETENTION.md): independent expiry, replay safeguards, correction history and sweep backlogs.
 - [Multi-factor authentication](MFA_OPERATIONS.md): enrolment, administrator requirements and upgrade steps.
 - [Account email setup](EMAIL_SETUP.md): provider choice, SMTP settings and delivery checks.
 - [Self-hosting](DEPLOYMENT.md): requirements and deployment contract for a hosted installation.
 - [Automatic deployment](AUTOMATIC_DEPLOYMENT.md): how a merge to `main` is tested and released.
 - [Backup and restore](BACKUP_RESTORE.md): explicit operator commands for SQLite and Compose PostgreSQL.
+- [Recovery reconciliation](RECOVERY_RECONCILIATION.md): protected decision records, external-copy reviews and the manual checklist before reactivation.
 - [Encryption key rotation](ENCRYPTION_KEY_ROTATION.md): protected key files, maintenance preflight and atomic database re-encryption.
 - [Runtime health and logs](RUNTIME_OPERATIONS.md): worker heartbeats, request correlation and shutdown phases.
 - [Invitation privacy](INVITATION_PRIVACY.md): sender receipts, private delivery state and legacy withdrawal.

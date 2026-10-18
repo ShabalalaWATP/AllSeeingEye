@@ -118,6 +118,7 @@ describe('rail animation control', () => {
     act(() => {
       useAuthStore.getState().setSession(tokenFor(adminUser));
     });
+    await screen.findByRole('navigation', { name: 'Administration' });
     await act(async () => {
       await router.navigate('/research');
     });

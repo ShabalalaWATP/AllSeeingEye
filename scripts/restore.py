@@ -83,6 +83,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     sys.stdout.write(
         "Restored to new targets. Configuration awaits manual review; services were not changed.\n"
+        "Before activation: reconcile the latest external deletion/objection records, "
+        "current holds and unrecorded decisions. See docs/RECOVERY_RECONCILIATION.md.\n"
     )
     return 0
 

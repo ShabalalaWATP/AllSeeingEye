@@ -6,7 +6,7 @@ import asyncio
 import json
 from pathlib import Path
 from typing import Annotated
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import typer
 
@@ -22,6 +22,7 @@ from ase.cli_infrastructure import (
     import_semiconductor,
     import_stations,
 )
+from ase.cli_operational_retention import operational_retention
 from ase.cli_public_figures import import_figures
 from ase.cli_reference import import_reference_notes
 from ase.cli_ukraine import (
@@ -40,6 +41,7 @@ from ase.infrastructure.settings import Environment, Settings
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
 app.command("rotate-encryption-key")(rotate_key)
 app.command("auth-retention")(auth_retention)
+app.command("operational-retention")(operational_retention)
 app.command("import-designations")(import_designations)
 app.command("import-aiddata")(import_aiddata)
 app.command("import-public-figures")(import_figures)
@@ -54,6 +56,63 @@ app.command("import-ukraine-oblasts")(import_oblasts)
 app.command("import-ukraine-reference")(import_reference)
 app.command("import-ukraine-losses")(import_losses)
 app.command("import-ukraine-casualties")(import_casualties)
+
+
+@app.command(
+    "recovery-record",
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+        "help_option_names": [],
+    },
+)
+def recovery_record(context: typer.Context) -> None:
+    """Protected manual recovery records; never starts services."""
+    from ase import cli_recovery_commands  # noqa: PLC0415 - keep migrations lightweight
+
+    cli_recovery_commands.app(args=context.args, prog_name="ase recovery-record")
+
+
+@app.command("private-data")
+def private_data(
+    owner: Annotated[UUID, typer.Option(help="Account whose private data is being reviewed")],
+    operator: Annotated[UUID, typer.Option(help="Active administrator recording the action")],
+    action: Annotated[str, typer.Argument(help="preview, review or apply")] = "preview",
+    scope: Annotated[
+        str, typer.Option(help="account, report, subscription, brief or job")
+    ] = "account",
+    target: Annotated[UUID | None, typer.Option(help="Saved-work identifier")] = None,
+    fingerprint: Annotated[
+        str | None, typer.Option(help="Exact reviewed preview fingerprint")
+    ] = None,
+    decision: Annotated[str | None, typer.Option(help="retain, hold or remove")] = None,
+    purpose: Annotated[str, typer.Option(help="Reason for necessity review")] = "quarterly",
+    expected_revision: Annotated[
+        int, typer.Option(help="Current review revision, initially 0")
+    ] = 0,
+    days: Annotated[int, typer.Option(help="Next necessity review in 1 to 90 days")] = 90,
+    journal: Annotated[
+        Path | None, typer.Option(help="External recovery journal, required for writes")
+    ] = None,
+    journal_key: Annotated[Path | None, typer.Option(help="Independent recovery key file")] = None,
+) -> None:
+    """Preview private removal, record a decision, or explicitly apply a reviewed plan."""
+    from ase.cli_private_removal import run_private_data  # noqa: PLC0415 - lazy migration startup
+
+    run_private_data(
+        owner,
+        operator,
+        action,
+        scope,
+        target,
+        fingerprint,
+        decision,
+        purpose,
+        expected_revision,
+        days,
+        journal,
+        journal_key,
+    )
 
 
 @app.command("recover-admin-mfa")

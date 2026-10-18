@@ -44,6 +44,7 @@ def runtime(monkeypatch):
     )
     monkeypatch.setattr("ase.app_lifecycle.digest_worker", lambda _: SimpleNamespace(run=idle))
     monkeypatch.setattr("ase.app_lifecycle.run_web_push", idle)
+    monkeypatch.setattr("ase.app_lifecycle.run_dormant_retention", idle)
     monkeypatch.setattr(
         "ase.app_lifecycle.build_annotation_monitor_worker", lambda _: SimpleNamespace(run=idle)
     )
@@ -51,7 +52,10 @@ def runtime(monkeypatch):
     monkeypatch.setattr("ase.app_lifecycle.alert_report_runner", lambda c: c.alert_report_admission)
     container = SimpleNamespace(
         settings=SimpleNamespace(
-            feeds_enabled=True, enterprise_enquiry_retention_days=365, auth_retention_enabled=False
+            feeds_enabled=True,
+            enterprise_enquiry_retention_days=365,
+            auth_retention_enabled=False,
+            operational_retention_enabled=False,
         ),
         dispose=AsyncMock(),
         session_factory=Mock(),

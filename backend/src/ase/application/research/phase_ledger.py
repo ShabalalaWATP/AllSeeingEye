@@ -178,6 +178,23 @@ def _phase(ledger: dict[str, Any], phase: Phase) -> dict[str, Any]:
     return cast("dict[str, Any]", ledger["phases"][phase])
 
 
+def require_settled_source_ledger(payload: dict[str, Any]) -> None:
+    """Removal must retain malformed, open or unknown acquisition receipts."""
+    if LEDGER_KEY not in payload:
+        return
+    try:
+        mode = ResearchMode(payload[LEDGER_KEY]["mode"])
+        ledger = _validated(payload, mode)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise PhaseLedgerError("The source-phase ledger cannot be verified") from exc
+    if any(
+        operation["status"] != "settled"
+        for phase in ledger["phases"].values()
+        for operation in phase["operations"].values()
+    ):
+        raise PhaseLedgerError("Unsettled source operations must remain retained")
+
+
 def _usage(phase: dict[str, Any]) -> tuple[int, int, int]:
     operations = phase["operations"]
     return (

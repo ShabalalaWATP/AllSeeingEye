@@ -20,6 +20,79 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 See [the assessment](compliance/ONLINE_SAFETY.md). This working assessment does not
 certify statutory compliance, an exemption, adult-only access or a live policy change.
 
+### KAN-243 recovery reconciliation, 16 October 2026
+
+- [x] Implement a bounded encrypted external record with explicit initialisation,
+  durable intent/completion and evidenced resolution of uncertain outcomes.
+- [x] Require the record for operator private-data mutations; distinguish completed
+  removal, review permission and manually recorded restrictions/copy policies.
+- [x] Rehearse real SQLite backup/restore and guarded manual reapplication while
+  preserving shared work, holds and permission-only records.
+- [x] Document operator ownership, quarterly/request-resolution copy reviews,
+  selected-policy evidence and the manual pre-reactivation checklist.
+- [x] Complete independent quality/security review, 102 focused SQLite cases,
+  95.51% scoped coverage, 35 PostgreSQL cases and startup/CLI regression checks.
+- [x] Repair navigation ordering and lazy-page dependencies in integration tests;
+  33 focused frontend cases pass with the existing timeouts and assertions of authority.
+- [ ] Complete published-head CI with unchanged global gates.
+- [x] Record Alex's 18 October release approval, excluding manual production operations.
+- [ ] Integrate after the private-removal dependency and pass refreshed checks.
+
+See [recovery reconciliation](RECOVERY_RECONCILIATION.md). Windows DACL provisioning,
+live copy-policy choices, current independent journal copies and production recovery
+remain operator work; neither inspection nor this implementation authorises them.
+
+### KAN-240 operator-assisted private removal, 16 October 2026
+
+- [x] Implement scoped preview/apply and recorded quarterly/account-closure reviews.
+- [x] Preserve shared work, other authors, last managers, holds and uncertain jobs/deliveries.
+- [x] Permanently minimise removed identities and prevent stale account/conversation/tier writes.
+- [x] Reproduce and repair retained forecast evidence references; independent review passed.
+- [x] Complete scoped coverage (96.25%), 120 SQLite, 119 PostgreSQL-configured and 37 wider regression cases.
+- [x] Repair the stale-connection test ordering exposed by refreshed CI; 47 focused
+  cases pass on both SQLite and isolated PostgreSQL, with independent review.
+- [ ] Complete current-head CI with the existing global gates.
+- [x] Record Alex's 18 October release approval, excluding live removal/migration operations.
+- [ ] Integrate after KAN-238/239/241 and pass refreshed required checks.
+
+See [the operator procedure](PRIVATE_DATA_REMOVAL.md). Production removal and
+backup/provider reconciliation remain separate; KAN-243 owns recovery reconciliation.
+
+### KAN-241 dormant workload retention, 16 October 2026
+
+- [x] Reproduce dormant selected-index reads and exclude expired metadata before limits.
+- [x] Add bounded independent expiry, preserving correction fingerprints, coverage
+  losses, replay protection, active inputs, allowances and disabled providers.
+- [x] Freeze scan endpoints so continuing arrivals cannot starve earlier expiry.
+- [x] Complete SQLite/PostgreSQL boundary/backlog tests and two-connection races;
+  independent code-quality and security reviews report no remaining actionable defect.
+- [x] Refresh cached Debian security packages after five fixable Expat findings;
+  rebuilt-image package inspection, five native controls and the fixable scan pass.
+- [x] Repair metadata-effect ordering and retain the reviewed login-test fixes;
+  all 48 focused frontend cases pass without changing product behaviour or thresholds.
+- [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
+  deadline and resilience cases pass on SQLite with unchanged production paths.
+- [ ] Complete full CI on the committed candidate.
+- [x] Record Alex's 18 October release approval, excluding manual production operations.
+- [ ] Complete authorised integration after KAN-239 with refreshed required checks.
+
+See [dormant retention](DORMANT_RETENTION.md). Deployment starts this existing-policy
+maintenance automatically; no production purge or successful rollout is claimed.
+
+### KAN-239 audit, usage and delivery retention, 16 October 2026
+
+- [x] Define purpose-based defaults, category/global holds and quarterly ownership.
+- [x] Implement counts-only preview, explicit bounded apply and disabled-by-default
+  scheduling independent of feeds. Preserve current-month accounting and receipt keys.
+- [x] Verify strict boundaries, rollback, backlog, opt-out, duplicate publication,
+  late completion, retryable delivery and monthly-budget invariants on SQLite.
+- [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
+  independent code-quality and security reviews found no actionable defect.
+- [x] Pass all 40 checks and authorised integration as `ea68f65c`; KAN-239 is Done.
+- [ ] Obtain installation policy/rollout approval before any production purge.
+
+See [the operational retention procedure](OPERATIONAL_RETENTION.md).
+
 ### KAN-192 configured security contact, 16 October 2026
 
 - [x] Replace the fixed production contact file with startup generation from public
@@ -29,8 +102,8 @@ certify statutory compliance, an exemption, adult-only access or a live policy c
   missing/expired publication. Document startup-only expiry enforcement.
 - [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
   web image checks, custom policy read-back and independent correctness/security review.
-- [ ] Pass current-head CI and obtain authorised integration. Production operators
-  must explicitly configure publication first.
+- [x] Pass all 41 current-head checks and authorised integration as `5f2a57d9`;
+  KAN-192 is Done. Production operators must explicitly configure publication first.
 
 See [security contact configuration](SECURITY_CONTACT.md).
 
@@ -46,8 +119,8 @@ See [security contact configuration](SECURITY_CONTACT.md).
   AI translations, photo hypotheses and economy explanations.
 - [x] Complete focused backend/frontend checks, export read-back and PDF visual
   inspection, build, static checks and independent correctness/security reviews.
-- [ ] Pass current-head CI and obtain authorised integration. No complete Article
-  50 compliance claim is made.
+- [x] Pass all 40 current-head checks and authorised integration as `8f4921ab`;
+  KAN-191 is Done. No complete Article 50 compliance claim is made.
 
 See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
 
@@ -58,7 +131,8 @@ See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitati
   active families, replay detection, confirmed factors and pending account requests.
 - [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
 - [x] Complete independent review and broad regression/CI on the initial candidate.
-- [ ] Validate integration with KAN-242 and obtain release approval.
+- [x] Validate integration with KAN-242 and obtain release approval; PR 206 merged
+  as `7e594e38`, Jira Done. Production enablement remains separate.
 - [ ] Operator review and explicit enablement remain separate from code delivery.
 
 See [the retention procedure](AUTH_RETENTION.md).
@@ -95,8 +169,8 @@ evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
   retain the existing personal-installation scope and refresh exact-content approval.
 - [x] Prepare KAN-187's activity/recipient/transfer register, source-backed retention
   schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
-- [ ] Complete KAN-185's source-specific conditions, recipient assessments, risk
-  decisions and assessment sign-off.
+- [x] Complete KAN-185's private assessment record and operator sign-off on
+  16 October. Its exclusions and open legal/operational actions remain explicit.
 - [x] Verify KAN-237's refreshed packages, image gate, repeat cache and media/runtime checks.
 - [ ] Complete current-head CI and authorised integration; KAN-244 separately tracks
   the full image inventory of unfixed advisories.
