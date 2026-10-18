@@ -1,31 +1,46 @@
 /* Review chapter. Colours come from product.css; Workspaces are in story-workspaces.css. */
 
-/* Review: a timeline that slides past. */
+/* Review: a vertical timeline that grows as it passes; pinned, a row that slides past. */
 .review-head {
   max-width: 52rem;
 }
 .timeline {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(var(--count), minmax(15rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  max-width: 40rem;
   margin-top: 3rem;
-  padding-top: 2rem;
+  padding-left: 2rem;
 }
 .timeline::before {
   content: '';
   position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.4rem;
+  width: 2px;
+  background: linear-gradient(180deg, var(--story-ember), var(--story-amber));
+  transform-origin: top;
+  transform: scaleY(var(--progress));
+}
+[data-mode='pinned'] .timeline {
+  grid-template-columns: repeat(var(--count), minmax(15rem, 1fr));
+  width: max-content;
+  max-width: none;
+  padding: 2rem 0 0;
+  transform: translateX(calc(var(--progress) * -1 * max(0px, (var(--count) * 16rem) - 85vw)));
+}
+[data-mode='pinned'] .timeline::before {
   top: 0.45rem;
+  bottom: auto;
   left: 0;
   right: 0;
+  width: auto;
   height: 2px;
   background: linear-gradient(90deg, var(--story-ember), var(--story-amber));
   transform-origin: left;
   transform: scaleX(var(--progress));
-}
-[data-mode='pinned'] .timeline {
-  width: max-content;
-  transform: translateX(calc(var(--progress) * -1 * max(0px, (var(--count) * 16rem) - 85vw)));
 }
 .timeline-beat {
   --t: clamp(0, calc(var(--progress) * 7 - var(--i)), 1);
@@ -39,14 +54,18 @@
 .timeline-beat::before {
   content: '';
   position: absolute;
-  top: -1.95rem;
-  left: 1.1rem;
+  top: 1.25rem;
+  left: -1.95rem;
   width: 0.8rem;
   height: 0.8rem;
   border-radius: 999px;
   background: var(--story-ember);
   box-shadow: 0 0 calc(var(--t) * 20px) var(--story-ember);
   transform: scale(calc(0.5 + var(--t) * 0.5));
+}
+[data-mode='pinned'] .timeline-beat::before {
+  top: -1.95rem;
+  left: 1.1rem;
 }
 .timeline-when {
   color: var(--story-ember);
