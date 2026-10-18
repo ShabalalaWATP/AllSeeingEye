@@ -63,10 +63,10 @@ Scroll-linked stagger formulas (each `t` is clamped to 0 to 1):
 | Assess | judgement | `p × 4 − 0.7i` | 1/4 |
 | Assess | thread (`DrawPath`) | start `0.15 + i/16`, rate 4 | 1/4 |
 | Assess | challenge outline; note and alternative | `p × 5 − 3.4`; `p × 5 − 3.6` | 0.68 to 0.88; 0.72 to 0.92 |
-| Assess | closing chip | `p × 6 − 5 − 0.3i` | 1/6, from 0.83 (does not complete, see storyboard issue 1) |
+| Assess | closing chip | `p × 10 − 8.2 − 0.35i` | 1/10, from 0.82; the third chip completes at 0.99 |
 | Review | timeline beat and dot | `p × 7 − i` | 1/7 |
-| Trust | layer | `p × 5 − 0.8i` | 1/5 |
-| Deploy | link; node | `p × 3 − 0.4i`; `p × 4 − 0.5i` | 1/3; 1/4 (last link and node do not complete, issue 2) |
+| Trust | layer | `p × 5 − 0.8i`; spread `(1 − p) × i × −1rem` | 1/5 |
+| Deploy | link; node | `p × 3 − 0.3i`; `p × 4 − 0.4i` | 1/3; 1/4; the last link and node complete at 0.93 and 0.95 |
 
 ## Animatable properties
 
@@ -76,24 +76,25 @@ line drawing, canvas drawing for the globe and WebGL uniforms for the Eye. `filt
 used sparingly and statically (`drop-shadow` on Assess threads; `backdrop-filter` on the
 header and hero eyebrow). Layout properties should not animate.
 
-Exceptions found in the current CSS:
+`storyMotionEnd.test.tsx` evaluates every formula above that combines `p` with `i`
+for the last item of its list and fails if any element is short of 1 at `p` = 1.
 
-1. **Observe list scroll** (`story-hero.css`): the first row's `margin-top` transitions
-   over 500 ms when the active layer changes (pinned mode only). Layout property.
-2. **Trust stack spacing** (`story-close.css`): `gap: calc(0.3rem + var(--progress) × 1rem)`
-   changes on every scroll frame. Layout property.
-3. **Active layer label** (`story-hero.css`): `font-size` jumps to 1.25rem on the active
+On 18 October 2026 the Observe list scroll (formerly a 500 ms `margin-top` transition)
+became a `transform` on every row, and the Trust stack spacing (formerly an animated
+`gap`) became a fixed 1.3rem gap with each layer translated. Remaining exceptions in
+the current CSS:
+
+1. **Active layer label** (`story-hero.css`): `font-size` jumps to 1.25rem on the active
    row. Not transitioned, but it changes layout once per beat.
-4. **Typed question** (`AskChapter.tsx`): writes `textContent` per frame, which reflows
+2. **Typed question** (`AskChapter.tsx`): writes `textContent` per frame, which reflows
    that line. Deliberate; no React render.
-5. **Paint-only properties driven by progress or transitions:** `box-shadow` (timeline
+3. **Paint-only properties driven by progress or transitions:** `box-shadow` (timeline
    dot glow, challenged judgement outline, button hover), `background` (challenged
    judgement tint, depth selector), `border-color` (trust layers, depth selector,
    buttons), `color` (header links). These repaint but do not reflow.
 
 The KAN-171 ticket names WebGL uniforms and `filter` as allowed; the build adds
-`clip-path`, `stroke-dashoffset` and 2D canvas drawing. Items 1 and 2 conflict with the
-"never layout properties" rule and need a decision.
+`clip-path`, `stroke-dashoffset` and 2D canvas drawing.
 
 ## Pinning and scroll distance
 
@@ -103,8 +104,8 @@ height, not `innerHeight`, so a collapsing mobile address bar cannot end a chapt
 
 | Chapter | `length` | Pins on desktop | Pins on phone and tablet | Beats (`steps`) |
 | --- | --- | --- | --- | --- |
-| Hero | 0.9 | yes | yes (`pinNarrow`) | 1 |
-| Observe | 16 × 0.32 = 5.12 | yes | yes (`pinNarrow`) | 16 |
+| Hero | 0.9 | yes | passing (window 0.5 to 1) | 1 |
+| Observe | 16 × 0.32 = 5.12 | yes | passing (window 0.04 to 0.2) | 16 |
 | Tools | none | ordinary section | ordinary section | |
 | Sources | 1.6 | no (`pin={false}`), passing | passing | 1 |
 | Ask | 1.8 | yes | passing | 8 |
@@ -116,9 +117,10 @@ height, not `innerHeight`, so a collapsing mobile address bar cannot end a chapt
 | Deploy | 0.6 | no (`pin={false}`), passing | passing | 1 |
 | Contact | none | ordinary section | ordinary section | |
 
-Total pinned distance on desktop is 17.62 screens; on phones and tablets 6.02 screens.
+Total pinned distance on desktop is 17.62 screens; nothing pins on phones and tablets.
 For passing chapters `length` only switches the motion on; it adds no height. Passing
-progress is `segment(passProgress(top, height, viewport), 0.05, 0.5)`.
+progress is `segment(passProgress(top, height, viewport), start, end)`, with the window
+0.05 to 0.5 unless the chapter sets `passWindow`.
 
 ## Shared scroll scheduler
 

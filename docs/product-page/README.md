@@ -15,8 +15,11 @@ against the repository, and lists the copy and motion points that need a decisio
 - The documents describe the existing code. They do not propose a new design.
   Where the build differs from the KAN-170 or KAN-171 ticket text, the difference
   is recorded rather than resolved.
-- No copy, motion or code was changed while writing them. Copy issues are listed
-  in [narrative.md](narrative.md#copy-issues-for-review) for Alex to decide.
+- No copy, motion or code was changed while writing them. Later the same day the
+  factual copy issues, the source split and the motion build issues they found were
+  fixed in the code, and these documents were updated to match. The remaining copy
+  issues are listed in [narrative.md](narrative.md#copy-issues-for-review) for Alex
+  to decide.
 - The cost estimator's figures are outside this specification. They are drafts
   governed by `content/costModel.ts` and KAN-178, and production builds do not show
   the estimator until `COST_MODEL_STATUS` is `'approved'`.

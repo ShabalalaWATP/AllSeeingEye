@@ -136,5 +136,5 @@ adds chapters, scenes and images; the bundle and Lighthouse figures must be re-m
 before release. CSS, fonts and images are outside the JavaScript budget. Product images
 are WebP with PNG fallback (`content/assets.ts`); the hero's 512 px Eye capture is
 preloaded by Caddy on `/enterprise` only. The Open Graph image is now
-`/brand/og-enterprise.png` (1200 by 630, `content/assets.ts`); the acceptance record
-still names `/brand/eye-512.png` and should be updated by its owner.
+`/brand/og-enterprise.png` (1200 by 630, `content/assets.ts`), as the acceptance record
+also states.

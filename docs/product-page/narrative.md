@@ -19,8 +19,8 @@ Source: `chapters/HeroChapter.tsx`.
 **Headline:** "The All Seeing Eye." (eyebrow "Open-source intelligence · self-hosted").
 
 **Explanation:** "Watch the world's public signals on a living globe, ask a bounded
-question and get an assessment that shows every source, grade and doubt behind it.
-On your own infrastructure, with the AI provider you choose."
+question and get an assessment that shows the selected evidence, grades and doubts
+behind each judgement. On your own infrastructure, with the AI provider you choose."
 
 **Supporting points** (the "At a glance" counts, computed from content modules):
 
@@ -59,7 +59,7 @@ Source: `chapters/ToolsChapter.tsx`, `content/observe.ts`, `lib/mapLayerDirector
 **Headline:** "Cut the picture down to what matters." (eyebrow "Filters and tools").
 
 **Explanation:** "Filter by time, place, location quality or a collection plan, replay
-the last hours event by event, then measure, draw and plan on the same map."
+the retained hours one hour at a time, then measure, draw and plan on the same map."
 
 **Supporting points:**
 
@@ -78,13 +78,16 @@ Source: `chapters/SourcesChapter.tsx`, `content/sources.ts`.
 **Headline:** "Hundreds of sources, organised by topic." (eyebrow "02 · Sources").
 
 **Explanation:** "[263] scheduled feeds and [160] on-demand research connectors across
-eleven topics, from seismology to sanctions. Each record keeps its source, licence
-notes and collection time."
+eleven topics, from seismology to sanctions. Each record keeps its source and
+collection time; licence notes, where a source has them, stay with that source in the
+catalogue."
 
 **Supporting points:**
 
 - Orbit core: "[423] sources"; eleven topic rows, each "[n] scheduled · [n] on demand"
-  with representative providers.
+  with representative providers. Scheduled figures are the live feed connectors built
+  with no keys, recounted on 18 October 2026 (see the
+  [recount](claims-register.md#source-catalogue-recount)).
 - "Scheduled feeds": "Public feeds and APIs polled on their own cadence into a bounded
   live store that is never written to the database."
 - "On-demand research" and "Reference data": "Connectors that run only when a question
@@ -133,16 +136,17 @@ Source: `chapters/CollectChapter.tsx`, `content/research.ts`.
 **Headline:** "Evidence with a receipt, and gaps you can see." (eyebrow "04 · Collect").
 
 **Explanation:** "Connectors fan out across the scope. Each record comes back with its
-source, a grade and a collection receipt, and anything the run could not find is
-recorded as a gap rather than papered over."
+source and a grade. Collection receipts record which providers ran, including empty
+and unavailable ones, and requirements without enough support stay visible as gaps
+rather than papered over."
 
 **Supporting points:**
 
 - "Similar reports may share one original source, so copies are grouped rather than
   counted as extra confirmation."
 - "Source reliability A to F" and "Information credibility 1 to 6".
-- "F and 6 mean the source or claim cannot yet be judged. On-demand results start
-  unassessed until reviewed."
+- "F and 6 mean the source or claim cannot yet be judged. New research material without
+  an assessed source basis stays unassessed."
 - Six example cards (grades B2, A2, C3, B3, F6 and one "Gap": "No independent satellite
   confirmation found"). Footnote: "Illustrative evidence: example sources, grades and
   receipts."
@@ -154,10 +158,12 @@ Source: `chapters/AssessChapter.tsx`, `content/research.ts`.
 **Headline:** "Judgements you can trace, challenge and defend." (eyebrow "05 · Assess").
 
 **Explanation:** the chapter has no lead paragraph. The example report carries it:
-title "Shipping through the Bab el-Mandeb strait", "Maritime activity report · Moderate
-confidence", "Deep research · Model: your configured provider · AI-assisted
-assessment", status "Ready", three judgements ("Highly likely", "Likely" with
-"Challenged: confidence held at moderate.", "Realistic possibility"), the alternative
+title "Shipping through the Bab el-Mandeb strait", "Maritime activity report ·
+Confidence stated per judgement", "Deep research · Model: your configured provider ·
+AI-assisted assessment", status "Ready", three judgements, each labelled with its
+likelihood and confidence ("Highly likely · Moderate confidence", "Likely · Moderate
+confidence" with "Challenged: confidence held at moderate.", "Realistic possibility ·
+Low confidence"), the alternative
 explanation and the closing chips "Saved as version 1", "Follow-up question in the
 same scope", "Regenerate as version 2 and compare". Footnote: "Illustrative report. It
 is static text, never generated here."
@@ -206,11 +212,14 @@ sentences, three points and one limit.
 **Supporting points** (panel names and bodies):
 
 - "Live monitoring": "Focused trackers for conflict, hazards, aviation, maritime, space
-  and public figures." "Ukraine": "A dedicated workspace for the war: datasets, official
+  and public figures." Points: "A daily briefing on the monitor page", "Conflict source
+  coverage and health", "Ops room playlist for wall screens". "Ukraine": "A dedicated workspace for the war: datasets, official
   statements and a fortnightly digest."
 - "Cyber intelligence": "Exploited vulnerabilities, ransomware claims, advisories and
   connectivity signals with a cited briefing." "Economy": "Official statistics and
-  central bank series, compared across countries with a plain-English explainer."
+  central bank series, compared across five countries with explanations of unfamiliar
+  measures." Points: "Five-country comparison", "Market charts after consent",
+  "Briefings over 2 to 14 days".
 - "Photo geolocation": "Candidate locations from an image, then a sun and shadow check
   against the capture time." (with the only workspace screenshot, captioned
   "Illustrative screenshot").
@@ -231,7 +240,8 @@ every model response as untrusted."
 
 **Supporting points:**
 
-- Four layers: Edge (Caddy, CSP, request size limits), Identity (Argon2id, MFA,
+- Four layers: Edge (Caddy, "A content security policy allowing only same-origin
+  scripts", request size limits), Identity (Argon2id, MFA,
   rotating refresh tokens), Policy (object-level authorisation, session re-checks,
   append-only audit log), Data (raw live events, isolated parser, encrypted keys).
 - Data minimisation footnote: "The database keeps reports, frozen evidence, accounts,
@@ -250,11 +260,12 @@ every model response as untrusted."
 
 Source: `chapters/DeployChapter.tsx`, `content/platform.ts`.
 
-**Headline:** "One server. One command. Your data stays put." (eyebrow "09 · Deploy").
+**Headline:** "One server you run. Your database stays on it." (eyebrow "09 · Deploy").
 
 **Explanation:** "A Docker Compose stack on a single Linux server: Caddy at the edge, the
-API, PostgreSQL and an isolated document parser. Model calls go only to the provider
-you configure."
+API, PostgreSQL and an isolated document parser. Questions and selected evidence go to
+the AI provider you configure, links cited by saved reports go to the Internet Archive
+unless you turn that off, and email, push and webhooks are optional."
 
 **Supporting points:**
 
@@ -288,61 +299,30 @@ this page are illustrative and use no live data."
 
 ## Copy issues for review
 
-No code was changed. Each item names the file, the copy and the concern. Items 1 to 9
-are factual accuracy; 10 to 13 need a decision rather than a fix.
+Items 1 to 10 of the first review, and the content security policy half of item 11,
+were fixed in the copy on 18 October 2026 (hero evidence wording, hour-by-hour replay,
+licence notes, the per-topic source split, collection gaps, unassessed material,
+per-judgement confidence, the Live monitoring and Economy points, the Deploy headline
+and lead, and the CSP line); the claims register shows each row's new status and
+`content/productContent.unit.test.ts` keeps the old wording out. These remain open:
 
-1. **Hero, every source** (`chapters/HeroChapter.tsx`): "shows every source, grade and
-   doubt behind it". Reports show selected, frozen evidence and its grades; "every"
-   cannot be shown. Suggest "shows the sources, grades and doubts behind it".
-2. **Tools, event by event** (`chapters/ToolsChapter.tsx`): "replay the last hours event
-   by event". The replay is hour by hour (`lib/mapLayerDirectory.ts`, and the chip
-   "Hour by hour replay" in the same chapter).
-3. **Sources, per-record licence notes** (`chapters/SourcesChapter.tsx`): "Each record
-   keeps its source, licence notes and collection time". Licence notes are held on the
-   source specification (`SourceSpec.licence_note`), linked from each record by
-   `source_id`, and are empty for some sources.
-4. **Sources, per-topic split** (`content/sources.ts`): totals match the current
-   catalogue, but the per-topic scheduled figures do not match either way of counting
-   (seven of eleven differ from the live connectors, four from the Sources inventory). See the
-   [recount](claims-register.md#source-catalogue-recount).
-5. **Collect, anything not found** (`chapters/CollectChapter.tsx`): "anything the run
-   could not find is recorded as a gap". Receipts record empty and unavailable
-   providers; unmet requirements "should remain visible as gaps"
-   (`docs/03_DOCTRINE_AND_REPORTING.md`). "Anything" overstates this.
-6. **Collect, until reviewed** (`content/research.ts`): "On-demand results start
-   unassessed until reviewed." The documented rule is that material without an
-   assessed source basis remains unassessed; no review step is implied.
-7. **Assess, report-level confidence** (`content/research.ts`): "Maritime activity report
-   · Moderate confidence". The engine sets confidence per judgement and "does not give an
-   entire report one confidence level" (`docs/03_DOCTRINE_AND_REPORTING.md`).
-8. **Workspaces, Live monitoring points** (`content/platform.ts`): "Per-domain filters"
-   and "Source health beside every feed" were not found on the tracker pages
-   (`features/trackers/`). Source health appears on the Sources page, the conflict
-   tracker and the cyber workspace. Recommend cutting or rewording both.
-9. **Workspaces, Economy** (`content/platform.ts`): "Briefing for any date window". The
-   briefing offers 2, 5, 7 or 14 days, and comparison covers the workspace's five
-   countries (`docs/ECONOMY_WORKSPACE.md`).
-10. **Deploy headline** (`chapters/DeployChapter.tsx`): "One command" omits configuration,
-    the first administrator and MFA (`docs/SETUP.md`). "Your data stays put" conflicts
-    with "What may leave the installation" (`docs/07_SECURITY_BY_DESIGN.md`): model
-    prompts and selected evidence go to the AI provider, cited URLs go to the Internet
-    Archive by default, and email, push and webhooks are optional outbound channels.
-    Suggest "Your database stays on your server."
-11. **Trust, strict CSP and WCAG** (`content/platform.ts`): the CSP allows inline
-    styles and lists many camera image hosts (`infra/Caddyfile`); "Work to WCAG 2.2 AA"
-    is a target with no conformance audit, and the accessibility statement (KAN-193) is
-    not published. Suggest "Self-only scripts in the content security policy" and
-    "Built towards WCAG 2.2 AA; not independently audited".
-12. **Contact, promise of help** (`chapters/ContactChapter.tsx`): "We will help you plan
-    the deployment, connect your AI provider and choose sources whose terms fit your
-    use" is a service commitment. It depends on the KAN-164 offer (ADR 0023, proposed).
-13. **Ask, area chip** (`content/research.ts`): "Area: Drawn on the map" alongside
-    region, countries, languages and template is a composite. Area research is a
-    separate flow (`docs/AREA_RESEARCH.md`). Either label the console as a composite or
-    drop the area chip.
+1. **Trust, WCAG** (`content/platform.ts`): "Work to WCAG 2.2 AA accessibility" is an
+   aim with no conformance audit, and the accessibility statement (KAN-193) is not
+   published. Kept as an aim; suggest "Built towards WCAG 2.2 AA; not independently
+   audited" if Alex wants it explicit.
+2. **Contact, promise of help** (`chapters/ContactChapter.tsx`): "We will help you plan
+   the deployment, connect your AI provider and choose sources whose terms fit your
+   use" is a service commitment. It depends on Alex's KAN-164 offer decision (ADR 0023,
+   proposed).
+3. **Ask, area chip** (`content/research.ts`): "Area: Drawn on the map" alongside
+   region, countries, languages and template is a composite. Area research is a
+   separate flow (`docs/AREA_RESEARCH.md`). Either label the console as a composite or
+   drop the area chip.
 
 Lower priority, wording only: "defend" in the Assess headline and "every byte" in the
 Trust lead are rhetorical absolutes; the Day 9 timeline beat's "after its warm-up
-baseline" applies only to relative alert rules. No em dashes were found in the
-product copy, and the restricted-source names test (`content/productContent.unit.test.ts`)
-covers both the content modules and the chapter files.
+baseline" applies only to relative alert rules; "Ready" on the example report means
+automated checks passed, not human approval; "Take it anywhere" mixes report exports
+with the GeoJSON and KML map export. No em dashes were found in the product copy, and
+the restricted-source names test (`content/productContent.unit.test.ts`) covers both
+the content modules and the chapter files.

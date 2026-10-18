@@ -5,6 +5,8 @@ against branch `claude/KAN-170-product-gaps` (`main` at `ea68f65c` plus the
 integrated product page work). "Where" paths are relative to
 `frontend/src/features/product/`. "Evidence" names the file or document that was
 opened for the check; backend paths are relative to `backend/src/ase/`.
+Rows whose copy was corrected later on 18 October 2026 (KAN-171, KAN-196) describe the
+corrected copy; their caveats say what it replaced. No row is currently Unverified.
 
 Status values:
 
@@ -26,7 +28,7 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | H3 | 11 intelligence topics; "eleven topics" | `chapters/HeroChapter.tsx`, `chapters/SourcesChapter.tsx` | `domain/events.py` `Category` (11 values); `frontend/src/lib/categories.ts` | | 18 Oct 2026 | Verified |
 | H4 | 7 probability bands | `chapters/HeroChapter.tsx`, `content/research.ts` | `domain/doctrine.py` `YARDSTICK` (7 bands); `docs/03_DOCTRINE_AND_REPORTING.md` "Likelihood" | | 18 Oct 2026 | Verified |
 | H5 | Self-hosted, on your own infrastructure, with the AI provider you choose | `chapters/HeroChapter.tsx`, `content/chapters.ts` | `README.md` "How AI is used"; `docs/AI.md`; `docs/DEPLOYMENT.md` | Self-hosting does not make cloud model calls local (`docs/AI.md`) | 18 Oct 2026 | Verified |
-| H6 | An assessment "shows every source, grade and doubt behind it" | `chapters/HeroChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` (selected evidence, grades, uncertainty, gaps) | Reports show selected, frozen evidence, not every source consulted. Copy issue 1 | 18 Oct 2026 | Caveat |
+| H6 | An assessment "shows the selected evidence, grades and doubts behind each judgement" | `chapters/HeroChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` (selected, frozen evidence; grades; per-judgement confidence and uncertainty) | Reworded on 18 October 2026 from "every source, grade and doubt" | 18 Oct 2026 | Verified |
 | H7 | Globe outlines from Natural Earth (public domain) | `ProductStory.tsx` footer | `scenes/landMask.generated.ts` header (generated from Natural Earth 1:110m) | | 18 Oct 2026 | Verified |
 | H8 | Scenes, questions and reports are illustrative and use no live data | `ProductStory.tsx` footer, chapter footnotes | `scenes/sceneData.ts`, `scenes/sceneData.generated.json` (seed 20261007); static content modules | | 18 Oct 2026 | Verified |
 
@@ -38,7 +40,7 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | O2 | Each layer has its own filters, as listed in the chips | `content/observe.ts` | Spot check of labels in `features/globe/` (for example `newsFilters.ts`, `ConflictOverviewPanel.tsx`, `cameras/cameraMediaFilters.ts`) | Spot-checked, not every chip. Chips paraphrase panel controls, for example "Wars" and "Tensions" for "War region" and "Tension area" | 18 Oct 2026 | Caveat |
 | O3 | Layers carry source details | `chapters/ObserveChapter.tsx` | `docs/04_FEATURES_AND_VIEWS.md` "Open an item to inspect its source, date, grade and location precision" | | 18 Oct 2026 | Verified |
 | T1 | 17 map setup and planning tools | `chapters/ToolsChapter.tsx` | `frontend/src/lib/mapLayerDirectory.ts` (8 and 9 entries); unit test pins 17 | | 18 Oct 2026 | Verified |
-| T2 | Event time 1 h, 6 h, 24 h, 72 h, 7 d, All, and replay | `content/observe.ts`, `chapters/ToolsChapter.tsx` | `features/globe/LayerPanel.tsx` `WINDOWS`; directory "an hour-by-hour replay of the events still retained" | The lead says "event by event"; the replay is hour by hour. Copy issue 2 | 18 Oct 2026 | Caveat |
+| T2 | Event time 1 h, 6 h, 24 h, 72 h, 7 d, All, and replay "one hour at a time" | `content/observe.ts`, `chapters/ToolsChapter.tsx` | `features/globe/LayerPanel.tsx` `WINDOWS`; directory "an hour-by-hour replay of the events still retained" | Lead reworded on 18 October 2026 from "event by event" | 18 Oct 2026 | Verified |
 | T3 | Location quality, find nation, collection plan, research area, 3D or 2D, daily NASA imagery, day and night | `content/observe.ts` | Directory entries `quality`, `nation`, `plan`, `area`, `imagery`, `style`; "Propagated" and "Not plotted" labels in `features/globe/` | | 18 Oct 2026 | Verified |
 
 ## Sources
@@ -47,9 +49,9 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | --- | --- | --- | --- | --- | --- | --- |
 | S1 | 263 scheduled feeds | `chapters/SourcesChapter.tsx`, `content/sources.ts` | Recount below: 263 connectors built with no keys | Matches the live connectors. The Sources inventory classifies 268 as scheduled because five keyed connectors are listed before their keys exist. The 19 September health audit's "263 of 278 healthy" is a different, coincidental figure | 18 Oct 2026 | Caveat |
 | S2 | 160 on-demand research connectors | `chapters/SourcesChapter.tsx`, `content/sources.ts` | Recount below: 160 research specs; per-topic on-demand figures all match | Includes the private-file and media input routes and some sources not named on the page | 18 Oct 2026 | Caveat |
-| S3 | Per-topic scheduled split (disaster 13, conflict 5, news 96, aviation 6, maritime 3, space 8, cyber 21, social 68, political 11, humanitarian 6, economic 26) | `content/sources.ts` | Recount below | Does not match the live connectors (7 topics differ) or the Sources inventory (4 differ). Recommendation: replace with recounted figures under one stated rule, or cut the split | 18 Oct 2026 | Unverified |
+| S3 | Per-topic scheduled split (disaster 15, conflict 4, news 97, aviation 7, maritime 2, space 8, cyber 20, social 68, political 11, humanitarian 5, economic 26) | `content/sources.ts` | Recount below (two independent read-only runs agree); `content/productContent.unit.test.ts` pins the split | Counts the live connectors built with no keys. The Sources inventory also lists the five optional keyed connector specs, so it shows one more for conflict, cyber and humanitarian and two more for maritime | 18 Oct 2026 | Verified |
 | S4 | Representative providers per topic | `content/sources.ts` | Names found in `adapters/`, `container/` and `resources/` (USGS, GDACS, FIRMS, GVP, UCDP, CelesTrak, SWPC, KEV, MITRE, RDAP, ONS, Bank of England, SEC, GLEIF, UK sanctions, WHO, IFRC, OCHA, IOM DTM, IPC, FCDO and others) | Some need keys or snapshots, for example the UK sanctions list (`ASE_UKSL_SNAPSHOT_PATH`); the page footnote states this | 18 Oct 2026 | Verified |
-| S5 | "Each record keeps its source, licence notes and collection time" | `chapters/SourcesChapter.tsx` | `domain/events.py` `Event.source_id`, `observed_at`; `domain/sources.py` `SourceSpec.licence_note` | Licence notes belong to the source, not the record, and are empty for some sources. Copy issue 3 | 18 Oct 2026 | Caveat |
+| S5 | "Each record keeps its source and collection time; licence notes, where a source has them, stay with that source in the catalogue" | `chapters/SourcesChapter.tsx` | `domain/events.py` `Event.source_id`, `observed_at`; `domain/sources.py` `SourceSpec.licence_note` | Reworded on 18 October 2026 from per-record licence notes | 18 Oct 2026 | Verified |
 | S6 | Scheduled feeds go into a bounded live store that is never written to the database | `content/sources.ts` | ADR 0003, ADR 0008 (amended), ADR 0010, ADR 0022; `docs/01_ARCHITECTURE.md` "What is stored" | One disposable snapshot file exists for restarts (ADR 0022); it is not the database | 18 Oct 2026 | Verified |
 | S7 | On-demand connectors run only when a question needs them | `content/sources.ts` | `container/research_sources.py`; `docs/02_DATA_SOURCES.md` (collection receipts per run) | | 18 Oct 2026 | Verified |
 | S8 | Packaged reference data: infrastructure registers, aircraft types, public figures, country boundaries | `content/sources.ts` | `resources/` (`energy_sites.json`, `nuclear_facilities.json`, `reference_aircraft_types.json`, `public_figures.json`, `countries_110m.json`) | | 18 Oct 2026 | Verified |
@@ -70,19 +72,19 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | A8 | Photo geolocation with a sun and shadow check | `content/research.ts`, `content/platform.ts` | `domain/sun_shadow.py`; `docs/DEVELOPMENT_STORY.md` (ShadowFinder method) | Vision depends on the configured model (`README.md`) | 18 Oct 2026 | Caveat |
 | A9 | Private inputs are analysed by your configured AI provider | `content/research.ts` | `docs/07_SECURITY_BY_DESIGN.md` "What may leave the installation" | | 18 Oct 2026 | Verified |
 | A10 | Basic 750 to 1,350 words and 24 evidence items; Deep 1,800 to 3,000 and 48; Advanced 3,750 to 6,000 and 80 | `content/research.ts` | `application/reports/depth.py` `DEPTHS` | Word ranges are targets, not guaranteed lengths (`docs/04_FEATURES_AND_VIEWS.md`); evidence figures are maximums | 18 Oct 2026 | Caveat |
-| A11 | Scope chip "Area: Drawn on the map", carried over from the map | `content/research.ts` | `docs/AREA_RESEARCH.md` | Composite illustration. Area research is a separate flow, not one form with region, countries, languages and template. Copy issue 13 | 18 Oct 2026 | Caveat |
+| A11 | Scope chip "Area: Drawn on the map", carried over from the map | `content/research.ts` | `docs/AREA_RESEARCH.md` | Composite illustration. Area research is a separate flow, not one form with region, countries, languages and template. Copy issue 3 | 18 Oct 2026 | Caveat |
 | A12 | "Illustrative request. Nothing is sent from this page." | `chapters/AskChapter.tsx` | Static content; product import boundary (`docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md`, "Implemented controls") | | 18 Oct 2026 | Verified |
 
 ## Collect and Assess
 
 | # | Claim | Where | Evidence | Caveats | Verified | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| C1 | Each record comes back with its source, a grade and a collection receipt | `chapters/CollectChapter.tsx` | `docs/01_ARCHITECTURE.md` ("Freeze evidence and collection receipts"); `docs/02_DATA_SOURCES.md` | Receipts record provider attempts per run, not one receipt per record | 18 Oct 2026 | Caveat |
+| C1 | Each record comes back with its source and a grade; collection receipts record which providers ran, including empty and unavailable ones | `chapters/CollectChapter.tsx` | `docs/01_ARCHITECTURE.md` ("Freeze evidence and collection receipts"); `docs/03_DOCTRINE_AND_REPORTING.md` (receipts include empty responses and unavailable sources) | Reworded on 18 October 2026; receipts are per provider attempt, not per record | 18 Oct 2026 | Verified |
 | C2 | Collection receipts shown on the evidence cards | `content/research.ts` | Code comment: "Illustrative collection receipt reference; real receipts record each source task" | Illustrative values; the footnote says so | 18 Oct 2026 | Caveat |
-| C3 | Anything not found is recorded as a gap | `chapters/CollectChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` (receipts include empty and unavailable; gaps "should remain visible") | "Anything" overstates this. Copy issue 5 | 18 Oct 2026 | Caveat |
+| C3 | Requirements without enough support stay visible as gaps rather than papered over | `chapters/CollectChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` (requirements without adequate support "should remain visible as gaps") | Reworded on 18 October 2026 from "anything the run could not find" | 18 Oct 2026 | Verified |
 | C4 | Copies are grouped, not counted as extra confirmation | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` (organisation and possible-copy groups) | Different labels do not prove independent chains | 18 Oct 2026 | Verified |
 | C5 | Reliability A to F, credibility 1 to 6; F and 6 cannot be judged | `content/research.ts` | `domain/events.py` `Reliability`, `Credibility`; `docs/03_DOCTRINE_AND_REPORTING.md` | | 18 Oct 2026 | Verified |
-| C6 | On-demand results start unassessed until reviewed | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` ("remains explicitly unassessed") | No review step is documented. Copy issue 6 | 18 Oct 2026 | Caveat |
+| C6 | New research material without an assessed source basis stays unassessed | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` ("remains explicitly unassessed") | Reworded on 18 October 2026 from "until reviewed" | 18 Oct 2026 | Verified |
 | X1 | Probability language checked against the PHIA yardstick | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` (validator); `domain/doctrine.py` | Wording checks cannot interpret every use of language | 18 Oct 2026 | Verified |
 | X2 | Confidence high, moderate or low, capped by the evidence | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` "Confidence and evidence strength" | | 18 Oct 2026 | Verified |
 | X3 | Citation, entailment and contradiction checks | `content/research.ts` | `application/reports/entailment.py`, `contradiction_checks.py`; `docs/03_DOCTRINE_AND_REPORTING.md` | A citation match is not proof of support | 18 Oct 2026 | Verified |
@@ -92,7 +94,7 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | X7 | Exact calculations with formula receipts | `content/research.ts` | `domain/quantitative_calculations.py` | | 18 Oct 2026 | Verified |
 | X8 | Report shows its model line and an AI-assisted label; no bundled model | `content/research.ts` | `README.md` ("model details"); ADR 0024 | | 18 Oct 2026 | Verified |
 | X9 | Example status "Ready" | `chapters/AssessChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` status table | Ready means automated checks passed, not human approval; the page does not say so | 18 Oct 2026 | Caveat |
-| X10 | "Maritime activity report · Moderate confidence" | `content/research.ts` | `docs/03_DOCTRINE_AND_REPORTING.md` (confidence is per judgement) | A report-level confidence label misrepresents the model. Copy issue 7 | 18 Oct 2026 | Caveat |
+| X10 | "Maritime activity report · Confidence stated per judgement", with each judgement labelled by likelihood and confidence (Moderate, Moderate, Low) | `content/research.ts`, `chapters/AssessChapter.tsx` | `docs/03_DOCTRINE_AND_REPORTING.md` (confidence is per judgement; the engine "does not give an entire report one confidence level") | Illustrative values. Replaced the report-level "Moderate confidence" on 18 October 2026 | 18 Oct 2026 | Verified |
 | X11 | Saved as version 1, follow-up in the same scope, regenerate as version 2 and compare | `content/research.ts` | `docs/04_FEATURES_AND_VIEWS.md`; `application/reports/followup_scope.py`, `comparison.py` | | 18 Oct 2026 | Verified |
 
 ## Review
@@ -122,13 +124,13 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | # | Claim | Where | Evidence | Caveats | Verified | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | W1 | Trackers for conflict, hazards, aviation, maritime, space and public figures | `content/platform.ts` | `frontend/src/features/trackers/` (Conflict, Hazard, Aviation, Maritime, Space, Figures pages) | | 18 Oct 2026 | Verified |
-| W2 | Per-domain filters (Live monitoring) | `content/platform.ts` | Tracker pages searched; no filter controls found | Recommendation: cut | 18 Oct 2026 | Unverified |
-| W3 | Source health beside every feed (Live monitoring) | `content/platform.ts` | Health shown in `features/trackers/ConflictSourceCoverage.tsx`, `features/cyber/CyberSourceCoverage.tsx` and the Sources page only | Recommendation: cut, or reword to the Sources page | 18 Oct 2026 | Unverified |
+| W2 | "A daily briefing on the monitor page" (Live monitoring) | `content/platform.ts` | `features/trackers/TrackersPage.tsx` renders `DailyBriefing`; `docs/04_FEATURES_AND_VIEWS.md` ("Read the daily briefing") | Replaced "Per-domain filters" on 18 October 2026 | 18 Oct 2026 | Verified |
+| W3 | "Conflict source coverage and health" (Live monitoring) | `content/platform.ts` | `features/trackers/ConflictSourceCoverage.tsx` on the monitor page (Configured, Waiting for data, Healthy, Degraded) | Replaced "Source health beside every feed" on 18 October 2026 | 18 Oct 2026 | Verified |
 | W4 | Ops room playlist for wall screens | `content/platform.ts` | Directory entry `ops-room` | | 18 Oct 2026 | Verified |
 | W5 | Ukraine: losses and casualties datasets, official channels, cited digest every two weeks | `content/platform.ts` | `docs/UKRAINE_WAR_TRACKER.md`; `resources/ukraine_losses.json`, `ukraine_casualties.json` | The digest needs an assigned AI model | 18 Oct 2026 | Caveat |
 | W6 | Cyber: advisories, KEV, ransomware, connectivity, CERT advisories, MITRE ATT&CK, GNSS, cited briefing | `content/platform.ts` | `docs/CYBER_THREAT_INTELLIGENCE.md`; `features/cyber/CyberGnss.tsx`; CERT connectors in the recount | MITRE ATT&CK is reference context, not a live connector (`container/cyber.py`) | 18 Oct 2026 | Verified |
-| W7 | Economy: official statistics and central bank series, compared across countries, market charts | `content/platform.ts` | `docs/ECONOMY_WORKSPACE.md` | Comparison covers five countries; market charts are a third-party embed loaded after consent | 18 Oct 2026 | Caveat |
-| W8 | Economy: "Briefing for any date window" | `content/platform.ts` | `docs/ECONOMY_WORKSPACE.md`: 2, 5, 7 or 14 days | Contradicted. Recommendation: cut or reword to the four periods. Copy issue 9 | 18 Oct 2026 | Unverified |
+| W7 | Economy: official statistics and central bank series, compared across five countries with explanations of unfamiliar measures; "Five-country comparison", "Market charts after consent" | `content/platform.ts` | `docs/ECONOMY_WORKSPACE.md` (five countries; "explains unfamiliar measures"; TradingView chart loads after provider consent) | Market charts are a third-party embed | 18 Oct 2026 | Verified |
+| W8 | Economy: "Briefings over 2 to 14 days" | `content/platform.ts` | `docs/ECONOMY_WORKSPACE.md` "Reporting periods and AI summaries" (2, 5, 7 or 14 days) | Replaced "Briefing for any date window" on 18 October 2026 | 18 Oct 2026 | Verified |
 | W9 | Photo geolocation: vision candidates, shadow check, saved assessments | `content/platform.ts` | `docs/04_FEATURES_AND_VIEWS.md` (Geolocation row); `domain/sun_shadow.py` | Vision depends on the configured model | 18 Oct 2026 | Caveat |
 | W10 | Map tools: paths, areas, circles, named collections of up to 50 objects, radio studies with assumptions, terrain profiles | `content/platform.ts` | `docs/MAP_WORKSPACE.md`; `domain/map_workspace.py` (50-object limit) | | 18 Oct 2026 | Verified |
 | W11 | Teams: board with mentions, invitations, shared research, team AI usage, archived teams readable | `content/platform.ts` | `features/teams/` (`TeamBoard`, `BoardMentionPicker`, `TeamInvitationPanel`, `TeamAiUsage`); `docs/04_FEATURES_AND_VIEWS.md` section 5 | | 18 Oct 2026 | Verified |
@@ -140,7 +142,7 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | --- | --- | --- | --- | --- | --- | --- |
 | U1 | Treats internet content, feed items and model responses as untrusted | `chapters/TrustChapter.tsx` | `docs/07_SECURITY_BY_DESIGN.md` "Untrusted sources, files and model output" | Cannot eliminate all prompt-injection risk; "every byte" is rhetorical | 18 Oct 2026 | Caveat |
 | U2 | Caddy edge with TLS and security headers | `content/platform.ts` | `infra/Caddyfile` header block | HSTS is off until the operator sets `ASE_HSTS_MAX_AGE` | 18 Oct 2026 | Caveat |
-| U3 | Strict content security policy | `content/platform.ts` | `infra/Caddyfile` CSP (`script-src 'self'`, `frame-ancestors 'none'`) | Allows inline styles and many camera image hosts. Copy issue 11 | 18 Oct 2026 | Caveat |
+| U3 | "A content security policy allowing only same-origin scripts" | `content/platform.ts` | `infra/Caddyfile` CSP (`script-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`) | Replaced "Strict content security policy" on 18 October 2026; the policy still allows inline styles and many camera image hosts | 18 Oct 2026 | Verified |
 | U4 | Request size limits per route | `content/platform.ts` | `infra/Caddyfile` `request_body` limits (64 KiB ordinary, 2 MiB avatar, 8 MiB uploads, 12 MiB map image) | | 18 Oct 2026 | Verified |
 | U5 | Argon2id passwords | `content/platform.ts` | `docs/07_SECURITY_BY_DESIGN.md` | | 18 Oct 2026 | Verified |
 | U6 | MFA by email or authenticator, required for administrators | `content/platform.ts` | `docs/MFA_OPERATIONS.md` | Email MFA needs SMTP; authenticator needs `ASE_ENCRYPTION_KEY` | 18 Oct 2026 | Verified |
@@ -159,15 +161,15 @@ The review rule in [README.md](README.md#review-rule) applies to every row.
 | U19 | Strict typing; layered architecture enforced by import contracts | `content/platform.ts` | `backend/pyproject.toml` (mypy `strict`, `[tool.importlinter]`); `frontend/tsconfig.app.json` (`strict`) | | 18 Oct 2026 | Verified |
 | U20 | A 90 percent test coverage gate | `content/platform.ts` | `backend/pyproject.toml` (`--cov-fail-under=90`); `frontend/vitest.config.ts` (lines 90); `.github/workflows/ci.yml` | | 18 Oct 2026 | Verified |
 | U21 | Dependency auditing and secret scanning in CI | `content/platform.ts` | `.github/workflows/ci.yml` (pip-audit, pnpm audit, dependency review, gitleaks, Semgrep, Trivy) | | 18 Oct 2026 | Verified |
-| U22 | Work to WCAG 2.2 AA accessibility | `content/platform.ts` | `docs/01_ARCHITECTURE.md` (axe checks, "not a WCAG conformance claim") | A target, not audited; KAN-193 statement unpublished. Copy issue 11 | 18 Oct 2026 | Caveat |
+| U22 | Work to WCAG 2.2 AA accessibility | `content/platform.ts` | `docs/01_ARCHITECTURE.md` (axe checks, "not a WCAG conformance claim") | An aim, not audited; KAN-193 statement unpublished. Kept as an aim. Copy issue 1 | 18 Oct 2026 | Caveat |
 | D1 | Docker Compose on a single Linux server: Caddy, API, PostgreSQL, isolated parser | `chapters/DeployChapter.tsx` | `docker-compose.yml` (`web`, `api`, `db`, `parser`); `docs/DEPLOYMENT.md` | | 18 Oct 2026 | Verified |
-| D2 | "One command" | `chapters/DeployChapter.tsx` | `docs/SETUP.md` (configuration, `create-admin`, MFA) | `docker compose up` starts the stack; setup needs more. Copy issue 10 | 18 Oct 2026 | Caveat |
-| D3 | "Your data stays put" | `chapters/DeployChapter.tsx` | `docs/07_SECURITY_BY_DESIGN.md` "What may leave the installation" | The database stays put; prompts, evidence, cited URLs (archive on by default) and optional notifications leave. Copy issue 10 | 18 Oct 2026 | Caveat |
-| D4 | Model calls go only to the provider you configure | `chapters/DeployChapter.tsx` | `docs/07_SECURITY_BY_DESIGN.md`; `docs/AI.md` | Optional fresh web research sends the question to a compatible search provider | 18 Oct 2026 | Verified |
+| D2 | "One server you run" | `chapters/DeployChapter.tsx` | `docker-compose.yml`; `docs/DEPLOYMENT.md` (single Linux server) | Replaced "One command" on 18 October 2026; setup steps are in `docs/SETUP.md` | 18 Oct 2026 | Verified |
+| D3 | "Your database stays on it"; questions and selected evidence go to the configured AI provider, cited links to the Internet Archive unless turned off, and email, push and webhooks are optional | `chapters/DeployChapter.tsx` | `docs/07_SECURITY_BY_DESIGN.md` "What may leave the installation" | Replaced "Your data stays put" on 18 October 2026. Feed and map requests and optional fresh web research also leave, as the diagram and that table show | 18 Oct 2026 | Verified |
+| D4 | Model calls (questions and selected evidence) go to the AI provider you configure | `chapters/DeployChapter.tsx` | `docs/07_SECURITY_BY_DESIGN.md`; `docs/AI.md` | Optional fresh web research sends the question to a compatible search provider | 18 Oct 2026 | Verified |
 | D5 | Optional email service, SMTP with TLS | `chapters/DeployChapter.tsx` | `docs/MFA_OPERATIONS.md` (SMTP, `starttls` default) | | 18 Oct 2026 | Verified |
 | D6 | Costs "we will estimate with you"; estimator hidden in production | `chapters/DeployChapter.tsx` | `content/costModel.ts` (`COST_MODEL_STATUS` `'draft'`) | A service commitment that depends on KAN-164 | 18 Oct 2026 | Caveat |
 | K1 | Enquiry form appears only when the installation accepts enquiries | `ProductPage.tsx`, `chapters/ContactChapter.tsx` | `docs/PUBLIC_PRODUCT_PAGE_ACCEPTANCE.md` (flags fail closed) | | 18 Oct 2026 | Verified |
-| K2 | "We will help you plan the deployment, connect your AI provider and choose sources" | `chapters/ContactChapter.tsx` | ADR 0023 (proposed) | Undecided offer. Copy issue 12 | 18 Oct 2026 | Caveat |
+| K2 | "We will help you plan the deployment, connect your AI provider and choose sources" | `chapters/ContactChapter.tsx` | ADR 0023 (proposed) | Undecided offer; needs Alex's KAN-164 decision. Copy issue 2 | 18 Oct 2026 | Caveat |
 
 ## Source catalogue recount
 
@@ -186,27 +188,30 @@ exactly as the test suite does (`Settings(env=TEST, database_url="sqlite+aiosqli
 `Container(settings, connectors=None)`), never started it, and counted each set by
 category. It was run from `backend/` with
 `uv run --no-sync python -I count_catalogue.py`. A second run with `env=DEV` gave the
-same totals. No keys were configured and `ASE_FEEDS_DISABLED` was empty.
+same totals. An independent second script, written separately with the test suite's
+`Settings` arguments (`env=TEST`, in-memory SQLite, no `ASE_` variables), gave the same
+per-topic figures on 18 October 2026. No keys were configured and `ASE_FEEDS_DISABLED` was empty.
 
 | Topic | Page scheduled | Live connectors | Inventory scheduled | Page on demand | Research specs |
 | --- | --- | --- | --- | --- | --- |
-| Disasters | 13 | 15 | 15 | 2 | 2 |
-| Conflict | 5 | 4 | 5 | 0 | 0 |
-| News | 96 | 97 | 97 | 62 | 62 |
-| Aviation | 6 | 7 | 7 | 0 | 0 |
-| Maritime | 3 | 2 | 4 | 0 | 0 |
+| Disasters | 15 | 15 | 15 | 2 | 2 |
+| Conflict | 4 | 4 | 5 | 0 | 0 |
+| News | 97 | 97 | 97 | 62 | 62 |
+| Aviation | 7 | 7 | 7 | 0 | 0 |
+| Maritime | 2 | 2 | 4 | 0 | 0 |
 | Space | 8 | 8 | 8 | 1 | 1 |
-| Cyber | 21 | 20 | 21 | 28 | 28 |
+| Cyber | 20 | 20 | 21 | 28 | 28 |
 | Social | 68 | 68 | 68 | 3 | 3 |
 | Political | 11 | 11 | 11 | 12 | 12 |
-| Humanitarian | 6 | 5 | 6 | 7 | 7 |
+| Humanitarian | 5 | 5 | 6 | 7 | 7 |
 | Economic | 26 | 26 | 26 | 45 | 45 |
 | **Total** | **263** | **263** | **268** | **160** | **160** |
 
 **Findings.** The totals of 263 scheduled and 160 on-demand match the live connectors
 and research specs exactly, so 263 is a catalogue count, not the 19 September healthy
 count (`docs/source-audit/deployed-health-2026-09-19.md`), although the numbers
-coincide. The per-topic scheduled figures match neither set. Disasters counts 15 live
-connectors because both the public and the keyed FIRMS connectors are built when no
-key exists. On a fresh installation the Sources page shows 428 entries (268 scheduled,
+coincide. The page's per-topic scheduled figures originally matched neither set; on
+18 October 2026 they were set to the live connector counts, so the "Page scheduled"
+column above now equals "Live connectors". Disasters counts 15 live connectors because
+both the public and the keyed FIRMS connectors are built when no key exists. On a fresh installation the Sources page shows 428 entries (268 scheduled,
 160 on demand). These counts depend on the commit, on keys and on disabled feed IDs.

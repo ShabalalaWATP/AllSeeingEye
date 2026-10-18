@@ -24,17 +24,20 @@ roomy and behaves as desktop.
 
 - **pinned**: the section is `(length + 1) × 100svh` tall and its stage sticks to the
   viewport; `p` follows the scroll through `length` screens.
-- **passing**: no pinning; `p` rises from 0 when 5 percent of the section has crossed
-  the viewport to 1 at 50 percent (`segment(passProgress, 0.05, 0.5)`).
+- **passing**: no pinning; by default `p` rises from 0 when 5 percent of the section has
+  crossed the viewport to 1 at 50 percent (`segment(passProgress, 0.05, 0.5)`). A
+  chapter can set its own `passWindow`: the hero uses 0.5 to 1 (it is already in view
+  at load, half way through its pass) and Observe uses 0.04 to 0.2 (see below).
 - **still**: the story is paused or the device asks for reduced motion. Ordinary height,
   `p` fixed at 1 (the hero overrides it to 0), every scene in its end state.
 
-Pinning by chapter: hero and Observe pin at every width (`pinNarrow`); Ask, Collect,
-Assess, Review, Workspaces and Trust pin on desktop and pass elsewhere; Sources and
-Deploy always pass (`pin={false}`); Tools, Contact and the three follow-on sections
-(Analytic standards, Watching, Choices and limits) are ordinary sections with
-`Reveal` entrances only. The KAN-170 constraint says narrow screens should not pin;
-the hero and Observe stages were built to fit a phone and do pin.
+Pinning by chapter: hero, Observe, Ask, Collect, Assess, Review, Workspaces and Trust
+pin on desktop and pass elsewhere; Sources and Deploy always pass (`pin={false}`);
+Tools, Contact and the three follow-on sections (Analytic standards, Watching, Choices
+and limits) are ordinary sections with `Reveal` entrances only. No chapter pins below
+the desktop class, as KAN-170 requires (the former `pinNarrow` option was removed on
+18 October 2026). Checked in a browser at 375 by 812 and 768 by 1024 on that date:
+every chapter passing, no horizontal page overflow.
 
 ## Header (all chapters)
 
@@ -48,7 +51,8 @@ still; it reports position rather than animating.
 - **Start:** the Eye opens from a narrow slit (1100 ms, from 150 ms), the title and
   lead rise in (900 ms, lead 120 ms later), the background grid drifts, the scroll cue
   line loops, and the four counts count up on first view.
-- **Transition (pinned, 0.9 screens):** the Eye scales from 1 to 2.4 and fades (gone at
+- **Transition (pinned 0.9 screens on desktop; passing elsewhere, over the second half
+  of the pass, as the hero leaves the screen):** the Eye scales from 1 to 2.4 and fades (gone at
   `p` 0.91); the copy rises 80 px and fades (gone at 0.63); the grid fades to 20 percent;
   the cue fades by 0.25. On a fine pointer the pupil follows the cursor.
 - **End:** an empty dark stage; the Observe globe follows.
@@ -63,16 +67,22 @@ still; it reports position rather than animating.
 
 - **Start:** the whole Earth turns slowly (5 degrees per second); the first layer is
   fading in and is the active row.
-- **Transition (pinned, 16 beats over 5.12 screens):** beats 0 to 14 reveal one layer
+- **Transition (pinned, 16 beats over 5.12 screens on desktop):** beats 0 to 14 reveal one layer
   each. The active layer is emphasised on the globe (others dimmed to 55 percent,
   points pulse). The list scrolls one row (500 ms) and the active row's detail (description,
   illustrative count with a fresh count-up, filter chips) rises in (500 ms). Beat 15
   turns the camera to the Red Sea (42 E, 16 N), zooms 30 percent, stops the spin and
   fades in a pulsing ember ring over the last 15 percent.
+  The list moves by transform only (every row translates together). **Passing
+  (elsewhere):** the globe leads a long section, so the 16 beats play between 4 and 20
+  percent of the pass, while the globe is on screen (measured on 18 October 2026: at
+  375 by 812 the beats run over about 700 px of scroll with the globe at least half
+  visible for most of it; at 768 by 1024 the globe is fully visible for the later
+  beats). The list shows every row with its detail and chips, as in the still state.
 - **End:** all 15 layers visible, settled on the Red Sea with the ring.
-- **Text position:** Desktop: globe left, copy and layer list right (list 46svh, masked
-  top and bottom). Phone and tablet: globe on top (46svh), then a 1.6rem title, no lead,
-  and a 30svh list below.
+- **Text position:** Desktop pinned: globe left, copy and layer list right (list 46svh,
+  masked top and bottom). Unpinned: both columns start at the top. Phone and tablet:
+  globe on top (46svh), then the title, lead and full list.
 - **Still:** ordinary height; the globe draws one frame with every layer and the Red
   Sea focus, no emphasis; the list shows every row with its detail and chips.
 
@@ -136,19 +146,20 @@ still; it reports position rather than animating.
   the evidence (from 0.15 to 0.65); an amber outline marks the challenged judgement
   (0.68 to 0.88); the challenge note and alternative fade in (0.72 to 0.92); the
   "what happens next" chips arrive from 0.83.
-- **End:** the full report. See build issue 1: two of the three closing chips stay faint.
+- **End:** the full report, all three closing chips fully in (fixed 18 October 2026).
 - **Text position:** Desktop: heading above; evidence list left, report right, threads
   between. Phone and tablet: evidence above the report; threads hidden.
 - **Analytic standards (ordinary section):** the seven-band yardstick (two columns on
   phone and tablet) is static; the seven checks rise in.
-- **Still:** end state, with the same closing-chip issue.
+- **Still:** end state.
 
 ## 6. Review, then Watching
 
 - **Start:** an undrawn timeline line; six faint beats (30 percent) with small dots.
 - **Transition (pinned 2 screens on desktop, passing elsewhere):** the line grows with
   `p`; beat `i` brightens between i/7 and (i+1)/7 while its dot grows and glows. When
-  pinned, the row also slides left by up to `6 × 16rem − 85vw`.
+  pinned, the beats form one row that slides left by up to `6 × 16rem − 85vw`; otherwise
+  they form a vertical list (up to 40rem wide) beside a line that grows downwards.
 - **End:** all six beats bright.
 - **Watching (ordinary section):** three panels rise in; on the phone, the five channel
   toasts drop in one by one (700 ms each, 450 ms apart); export cards flip into place
@@ -156,7 +167,7 @@ still; it reports position rather than animating.
 - **Text position:** Desktop: heading above the sliding row; panels in three columns
   (panel, 18rem phone, exports). Phone and tablet: one column, phone centred at up to
   20rem.
-- **Still:** line full, beats bright, toasts and exports in place. See build issue 3.
+- **Still:** vertical list, line full, beats bright, toasts and exports in place.
 
 ## 7. Specialist workspaces
 
@@ -176,8 +187,8 @@ still; it reports position rather than animating.
 - **Start:** four tilted, faint layers close together.
 - **Transition (pinned 1.6 screens on desktop, passing elsewhere):** layer `i` opens
   between `p` 0.16i and 0.16i + 0.2: it untilts from 35 degrees, shifts sideways by up to
-  18 px, gains an ember border and full opacity; the gap between layers grows from 0.3rem
-  to 1.3rem.
+  18 px, gains an ember border and full opacity; the layers start 1rem closer each and
+  move apart to the 1.3rem gap by transform (the gap itself is fixed).
 - **End:** an exploded four-layer stack.
 - **Text position:** Desktop: copy and data minimisation note left, stack right. Phone
   and tablet: copy above the stack.
@@ -192,10 +203,10 @@ still; it reports position rather than animating.
 - **Transition (passing at every width):** the server boundary fades in over the first
   quarter; the seven links draw in turn; the eight nodes fade in turn. The cost section
   (production sentence, or the draft estimator in development) rises in.
-- **End:** the full diagram. See build issue 2.
+- **End:** the full diagram, every link drawn and node opaque (fixed 18 October 2026).
 - **Text position:** centred column; the diagram scales to the column width; the
   estimator uses two columns on desktop and one below 900 px.
-- **Still:** the end state, with the same issue.
+- **Still:** the end state.
 
 ## 10. Talk to us and footer
 
@@ -208,17 +219,8 @@ still; it reports position rather than animating.
 
 ## Build issues found
 
-These come from reading the CSS formulas at `p` = 1. They are not copy issues and no
-code was changed. They need a fix in the owning chapter or a browser check.
-
-1. **Assess closing chips** (`story-research.css`, `.report-next li`): `t = p × 6 − 5 − 0.3i`
-   reaches only 0.7 and 0.4 for the second and third chips at `p` = 1, so "Follow-up
-   question in the same scope" and "Regenerate as version 2 and compare" stay partly
-   transparent and offset, including in the still state.
-2. **Deploy diagram** (`story-close.css`): the seventh link (API to Email service) reaches
-   only 60 percent drawn (`p × 3 − 0.4 × 6`), and the eighth node (Email service) only
-   50 percent opacity (`p × 4 − 0.5 × 7`), including in the still state.
-3. **Review timeline outside pinned mode** (`story-review.css`, `.timeline`): six columns
-   of at least 15rem plus gaps are wider than the stage on phones, tablets and the
-   still desktop view; with `overflow-x: clip` on the page, later beats may be cut off at
-   the right. Not verified in a browser for this document.
+Three issues found when this document was written were fixed on 18 October 2026:
+the Assess closing chips and the Deploy diagram now reach their end state at `p` = 1
+(`storyMotionEnd.test.tsx` evaluates every staggered formula for the last item of
+each list), and the Review timeline is a vertical list whenever it is not pinned.
+No open build issues are recorded here.
