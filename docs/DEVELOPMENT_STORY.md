@@ -6522,6 +6522,40 @@ focused public-route and metadata tests pass; independent review confirmed no
 product change, timeout increase or weakened assertion. The feature approval is
 retained, while refreshed required CI must pass before merge.
 
+## 16 October 2026: KAN-189 online safety desk assessment
+
+The assessment maps current boards, reports, maps, directory profiles, invitation
+notes and external research to the functional, territorial and exemption tests.
+The source supports user-to-user functionality but does not establish UK audience,
+an exemption or actual operating effectiveness. Current terms/account admission
+contain no age assurance or 18+ rule. The children's assessment therefore retains
+an unresolved stage-two audience conclusion rather than assuming adults only.
+
+Separate evidence and provisional risk records use the updated June 2026 Ofcom
+guidance, including serious self-harm and cyberflashing. A prepared reporting and
+complaints procedure is handed to KAN-188 for public-policy implementation. KAN-245
+tracks the confirmed archived-board removal gap: content remains readable while
+the ordinary moderation path rejects removal until team reactivation. No actual
+harmful content, private account records or complaints were inspected.
+
+Audience/UK facts, operating evidence, Alex's required assessment approval and
+any necessary legal confirmation remain outstanding. The draft changes no live
+settings or public terms, and makes no completed statutory-compliance claim.
+
+Independent technical review found no actionable source mismatch. Legal/security
+review identified the missed-first-assessment statutory default for child access;
+the draft now records that conditional duty and the current code index. All 46
+local documentation links resolve. Application tests and coverage were not rerun
+for these documentation-only changes.
+
+Alex subsequently confirmed approved adult users, including UK users. The record
+now distinguishes that dated operator evidence from source inspection and proposes
+regulated-service treatment for planning. It does not equate UK admission with a
+proved statutory territorial limb or account approval with effective age assurance.
+KAN-246 tracks the remaining operational/deadline and children's-duties validation;
+existing access duties cannot wait for intentional audience expansion. Assessment
+approval remains separate from this factual confirmation and from KAN-185's sign-off.
+
 ### 16 October 2026: KAN-239 operational retention
 
 Added optional independent maintenance for audit events, per-call AI usage and
@@ -6589,3 +6623,250 @@ application behaviour. Six of the eleven assigned tickets are now Done; five
 remain in review. Final KAN-239 ancestry reconciliation retained the exact
 validated implementation tree before this documentation checkpoint was updated.
 No manual production rollout, contact configuration or retention enablement occurred.
+
+### 16 October 2026: KAN-241 dormant workload expiry
+
+Reproduced expired selected metadata returned for idle, paused, archived and
+deactivated accounts. Reads now exclude stored expiry and the maximum age before
+limits. Independent bounded housekeeping removes expired selected metadata,
+alerts/outbox children/feedback, consumed identities, push receipts, obsolete
+research buckets and finished AI allowance history. Private input slots expire
+without another request. Existing periods remain, with no schema or provider change.
+
+Selected cleanup preserves acquisition cursors, correction fingerprints and
+coalesced coverage loss, including fan-out beyond one batch. Fixed endpoints keep
+new arrivals from starving earlier expiry. Scan state advances only after commit.
+Replay boundaries, corrupt fail-closed state, fresh push leases, current research
+buckets, held AI reservations and live private inputs remain intact.
+
+Review found two defects before handoff: a growing tail could prevent scan
+wraparound, and timeout placement omitted failure heartbeats. Both have regression
+tests and fixes. Separate category timers also prevent stalled SQL from delaying
+memory expiry; TaskGroup owns and joins their shutdown before database disposal.
+
+Verification: 36 focused SQLite cases passed with 100% branch-inclusive coverage
+across the four new implementation modules (95% scoped floor, unchanged project
+thresholds). PostgreSQL passed 55 focused/existing cases, then 19 final selected,
+worker and separate-connection race cases after the scheduling fixes. An initial
+61-case SQLite selected/lifecycle run and the final 53-case startup/lifecycle run
+passed. Independent security review passed 33 isolated SQLite cases and synthetic
+foreign-key-enforced fan-out/outbox checks; code-quality review passed eight final
+worker cases and independently reproduced the corrected timeout heartbeat.
+
+Ruff, formatting, strict mypy over 1650 source files and three architecture
+contracts pass. The guide and T06/T07/T08/T10/T13/T14 retention entries distinguish
+access expiry, batch backlogs, correction scans, operational holds and live rollout.
+Full CI and authorised serial integration remain; no production purge is claimed.
+
+The refreshed integration retains the merged alert-outbox repair and the reviewed
+auth, operational-retention, AI-disclosure and security-contact changes. Independent
+review verified unchanged implementation files and lifecycle ownership. All 113
+combined dormant, lifecycle, startup, operational-control and outbox cases pass,
+including both optional retention workers enabled together. Ruff, formatting,
+strict mypy over 1,654 source files and all three import contracts pass.
+
+## 16 October 2026: KAN-240 scoped private-data removal
+
+The new local operator command previews account/report/subscription/brief/job
+removal, records a purpose and necessity decision, and requires the exact reviewed
+inventory fingerprint before applying. The transaction rechecks administrator
+and owner state, execution/delivery locks, graph ownership, original uploads,
+foreign keys and structured saved references. A non-expiring manual hold blocks
+this workflow. Whole-account removal preserves an inactive UUID stub and shared
+attribution; stale account, conversation and tier writes cannot revive it.
+
+Independent security review found a missing dependency from a retained forecast
+decision to evidence in a later report. A real API regression reproduced an
+incorrectly unblocked removal, then passed after the bounded reference inventory
+included ledger passage references. Ten reference cases and eighteen operator CLI
+cases passed independently. Other review fixes clarified which delivery receipts
+remain and correctly report an uncertain result if cleanup fails after commit.
+
+Migration 0095 preserves review/hold and removal markers by refusing downgrade of
+a populated review table. The procedure explicitly separates database removal,
+shared history, audit/accounting, in-memory expiry and external copies. No live
+account deletion, provider request or production migration was performed.
+Final local evidence: 117 SQLite cases passed with 96.25% branch-inclusive
+coverage across eleven new removal modules, exceeding the scoped 95% floor.
+Three further canonical source-operation cases passed on both databases: open
+and unknown receipts prevent deletion, while settled receipts permit it.
+PostgreSQL passed 96 focused cases plus those three and 20 command/concurrency
+cases. A further 37 existing startup, assistant-history, account-audit and source
+ledger cases passed. Migration upgrade and protected downgrade were exercised on
+SQLite; production migration was not run.
+
+Ruff, formatting, strict mypy (1663 source files), all three import contracts,
+configured Bandit and file-length/whitespace checks passed. Independent reviewers
+passed 10 reference cases, 18 CLI cases and a 47-case safety/race selection.
+Global CI coverage gates remain unchanged. Full current-head CI and authorised
+serial integration after KAN-238/239/241 remain required.
+
+The refreshed integration preserves all private-removal implementation files and
+the reviewed retention, AI-disclosure and security-contact changes. Independent
+review found no shared-state conflict. All 171 combined removal, lifecycle, startup
+and operational-control cases pass. No live removal or migration was performed.
+
+## KAN-243: preserve decisions across recovery, 16 October 2026
+
+Added an independently encrypted, bounded external journal for operator private
+reviews/removals, manually recorded objections and explicit external-copy policy
+reviews. Durable intent precedes database mutation, with completion after commit.
+Uncertain outcomes retain their intent and block later journalled writes until an
+operator records evidence against the current journal head. Review permission,
+completed removal and recorded-only instructions remain distinct. No command
+claims comprehensive history, automatic replay or permission to activate services.
+
+The manual recovery procedure keeps restored services offline, reapplies current
+restrictions and holds before removals, checks present authority/ownership and
+records target-specific evidence outside the affected archives. It names review
+ownership, quarterly/request-resolution cadence and actual selected copy policies
+without inventing statutory deadlines or claiming provider/recipient erasure.
+Windows ACL provisioning and latest independent journal copies remain explicit
+operator prerequisites. No production data, copies, configuration or keys changed.
+
+A real disposable SQLite backup/restore drill passed: later account removal and
+objection were reapplied through normal guards, restricted passwords failed and
+shared/held/permission-only work survived. The focused suite passed 102 cases with
+four POSIX-only skips on Windows and 95.51% branch-inclusive coverage across seven
+journal/operator modules. PostgreSQL passed 35 removal/journal command cases.
+The wider run passed 95 cases and found one startup import-budget regression;
+lazy recovery command loading fixed it without changing the budget, then all 31
+startup/CLI regression cases passed. Global coverage gates remain unchanged.
+
+Independent quality review caught a stale-review intent being recorded before
+revision validation; validation now precedes append under the account lock.
+Security review reproduced a Windows extended-path exclusion bypass; rejecting
+device/stream aliases and comparing canonical paths fixed it. The reviewer then
+passed 66 filesystem/journal/CLI cases with four POSIX-only skips and reported no
+remaining blocker. Ruff, strict typing, import contracts, configured Bandit and
+file-length checks passed. Published-head CI and authorised integration remain.
+
+Published CI found a random UUID in a parameterised test name, so parallel workers
+collected different test identifiers. Replacing that collection-time value with a
+fixed synthetic UUID preserved the validation case. The seven affected recovery
+and private-removal CLI suites then passed 91 cases with four POSIX-only skips on
+four local workers. No product code or coverage threshold changed.
+
+The next CI run exposed a platform-specific fixture assumption: a Linux checkout's
+permissions rejected a path before the intended repository-exclusion assertion.
+The test now uses a private synthetic repository and covers both checkout and
+worktree Git markers. Four-worker journal/CLI/filesystem checks passed 61 cases
+with four POSIX-only Windows skips. An isolated, networkless Linux container also
+passed repository-marker, database-directory and POSIX-permission rejection checks
+against the current source. No product guard was weakened.
+
+The refreshed integration preserves all recovery and incoming implementation
+files, confirmed by independent review. Combined recovery, removal, lifecycle and
+startup checks passed 134 cases with four existing POSIX-only skips; 15 journal
+CLI cases correctly rejected the initial test location inside the repository.
+Moving the synthetic journal location to an isolated external temporary directory
+made all 15 affected cases pass, without changing any product guard or fixture.
+Ruff, formatting, strict mypy over 1,673 source files and all three import contracts
+pass. No production restore, removal, external-copy action or activation occurred.
+
+### 17 October 2026: KAN-240 deterministic stale-connection regression
+
+Refreshed PostgreSQL CI exposed a test ordering flaw: its 250 ms fetch deadline
+could cancel the synthetic credential-clear transaction before it committed.
+A temporary slow-setup reproduction failed both failure/timeout cases. The test
+now pauses the real fetch budget during credential reads and administrative
+setup, resumes after the clear commits, and verifies the changed generation,
+actual timeout cancellation, stale-result message, redaction and no publication.
+The same slow reproduction passes; the temporary delay was removed. Production
+code, timeout settings and coverage thresholds are unchanged.
+
+All 47 FIRMS runtime, fixed-deadline and feed-resilience cases pass on SQLite and
+on a new isolated PostgreSQL database. The task-owned database container and
+volume were removed after verification. Independent review, Ruff, formatting and
+whitespace checks pass. Fresh CI and authorised serial integration remain required.
+
+## 18 October 2026: KAN-243 frontend integration checks
+
+CI exposed competing navigations in the account-switch motion-preference test.
+It now waits for the administrator login redirect before navigating to research;
+all preference-isolation assertions remain unchanged. Local verification also
+exposed a cold lazy-overview dependency in the login tests. Those assertions now
+check the protected Administration navigation and retain the exact destination,
+matching the existing ordinary-user login test. Separate overview tests continue
+to verify its heading and content. All 33 focused motion, login, feedback and
+overview cases pass. Independent review found no weakened authority check or
+product change. No test timeout or coverage threshold changed.
+
+## 18 October 2026: KAN-241 final integration and security refresh
+
+Alex approved the serial retention/removal/recovery merges, excluding manual
+production operations. KAN-239 passed all 40 checks and merged as `ea68f65c`.
+Independent review confirmed that integrating that actual main preserved KAN-241's
+validated implementation tree. Fresh CI then found five fixable HIGH advisories in
+cached Debian `libexpat1` 2.8.3. The existing documented security-refresh argument
+now advances to 18 October, causing the shared API/parser package layer to update.
+
+Local image `sha256:d43547410d6c703786308d0cf657ca4b52a112537ed8152d5a051c6a2b5a7c75`
+contains Debian `libexpat1` 2.9.0-1~deb13u1 and reports system Expat 2.9.0.
+A fresh Trivy database reports zero fixable HIGH/CRITICAL findings. Five non-root,
+network-disabled controls pass: synthetic OCR, audio-bearing MP4/WebM extraction,
+and rejected CFHD in selected and secondary tracks. Python's separate bundled
+Expat remains 2.8.5; this update does not close KAN-244's unresolved native
+applicability questions. No ignores, scanner thresholds, Python pin or application
+lockfile changed. Final published-head CI remains required before integration.
+
+The next CI run exposed an existing disabled-product-page test reading robots
+metadata before its passive effect completed. Its three exact assertions now wait
+together using the existing timeout. The previously reviewed KAN-243 login-test
+repairs are also carried forward into this earlier dependency. All 48 focused
+metadata, public-route, motion, login and overview cases pass. Independent review
+confirmed unchanged authority/destination expectations and no product, timeout,
+skip or coverage-policy change.
+
+The already reviewed FIRMS credential-clear test repair from KAN-240 is carried
+forward too. Its test blob and all relevant fetch-budget, credential and fixture
+paths match the validated candidate. All 91 FIRMS runtime, fixed-deadline and
+feed-resilience cases pass on isolated SQLite; Ruff and formatting pass. Existing
+PostgreSQL evidence remains recorded on KAN-240, and fresh CI covers this candidate.
+
+## 18 October 2026: KAN-189 assessment approval
+
+Alex approved the assessment record and its PR #211 merge, including conservative
+regulated-service treatment for planning. The dated record preserves the unresolved
+legal, children's-access and operating work in KAN-246, KAN-188 and KAN-245. Approval
+supplies no new operating evidence, certifies no statutory compliance and excludes
+manual production rollout. Independent review found no loss of these limitations.
+Final integration and published-head CI remain required before merging.
+
+## 18 October 2026: approved retention delivery and remaining rollout
+
+KAN-241's final candidate `178d912c` passed all 40 checks and merged as `888b4748`;
+the merged tree exactly matches the tested candidate. Backend coverage reports
+94% overall; frontend branch coverage is 92.34%, with 5,196 passing frontend tests
+and one existing skip. PostgreSQL migration and concurrency checks passed. KAN-241
+is Done, following KAN-239's approved merge `ea68f65c`.
+
+KAN-240 then passed all 40 refreshed checks at `7fd7be8b` and merged as `156b5266`.
+Independent review verified the exact prepared private-removal tree and preserved
+main content. Database migrations/races, coverage, browser and security checks
+passed. KAN-240 is Done; no live removal or migration command was run.
+
+KAN-243 passed all 40 refreshed checks at `08d71d1c` and merged as `0fb60965`.
+Independent review confirmed that the actual-main integration retained the exact
+prepared recovery-record implementation. The merged tree matches the tested tree;
+KAN-243 is Done. No live recovery record, removal or restore was activated.
+
+KAN-216 retains manual rollout and live acceptance even though its original
+twenty child tickets and twelve mapped implementation items are Done. A private
+draft records migration 0090–0095 effects, preflight evidence and recovery limits.
+Read-only public checks confirm basic availability and anonymous administrator
+denial, not the deployed version. The existing operator handoff, verified live
+state, backup/rehearsal evidence and separate rollout approval were the next steps.
+No manual production operation was performed.
+
+The earlier KAN-165 handoff subsequently supplied working operator access. Read-only
+inspection verified clean live `13efceef`, matching application image labels,
+PostgreSQL 16.15/PostGIS 3.5.7 and schema `0089`. An existing 9 October deployment
+backup passed server-side HMAC verification. Only its authenticated dump was copied
+to a private local directory; no environment file or backup key was transferred.
+The network-disabled rehearsal restored to a fresh local database and migrated to
+`0095`, preserving original contents of all 99 checked tables and verifying exact
+session-family ownership/grace and scoped warning-history cutoffs. It started no
+application workers. The disposable database and copied dump were removed after
+success; bounded private evidence remains. This rehearsal does not replace the
+fresh quiesced backup or separate approval required for production rollout.

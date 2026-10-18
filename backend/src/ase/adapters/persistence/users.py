@@ -10,9 +10,10 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import AccountRequestRow, AdministrationLockRow, UserRow
+from ase.adapters.persistence.private_review_models import PrivateDataReviewRow
 from ase.adapters.persistence.session_changes import mark_session_change
 from ase.adapters.persistence.web_push_devices import remove_push_user
-from ase.domain.errors import NotFound
+from ase.domain.errors import Conflict, NotFound
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
 
@@ -99,6 +100,13 @@ class SqlUserRepository:
         await self._session.flush()
 
     async def save(self, user: User) -> None:
+        # Read the marker afresh even if this session cached the account before
+        # removal. Callers hold the account lock, shared with operator removal.
+        erased_at = await self._session.scalar(
+            select(PrivateDataReviewRow.erased_at).where(PrivateDataReviewRow.owner_id == user.id)
+        )
+        if erased_at is not None:
+            raise Conflict("This account was removed and cannot be restored.")
         row = await self._session.get(UserRow, user.id)
         if row is None:
             raise NotFound()

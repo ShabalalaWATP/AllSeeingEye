@@ -1,6 +1,7 @@
 """Atomic warning consumption and bounded expiry, under the administration guard."""
 
 import logging
+from collections.abc import Iterable
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -70,6 +71,63 @@ async def prune(session: AsyncSession, now: datetime) -> None:
             )
         )
     )
+    await _prune_rows(session, rows, now)
+
+
+async def prune_batch(
+    session: AsyncSession,
+    now: datetime,
+    *,
+    after: UUID | None = None,
+    through: UUID | None = None,
+    limit: int = 100,
+) -> tuple[UUID | None, UUID | None, int]:
+    """Rotate across at most limit rules, so corrupt state cannot starve later rules.
+
+    Caller holds the administration guard and owns commit. Only advance its saved
+    cursor after commit. Equality remains eligible evidence, not expired history.
+    """
+    if not 1 <= limit <= 100:
+        raise ValueError("Consumed evidence expiry batch must be 1 to 100")
+    if through is None:
+        through = await session.scalar(
+            select(WarningConsumptionRow.indicator_id)
+            .order_by(WarningConsumptionRow.indicator_id.desc())
+            .limit(1)
+        )
+    if through is None:
+        return None, None, 0
+    query = (
+        select(WarningConsumptionRow)
+        .where(WarningConsumptionRow.indicator_id <= through)
+        .order_by(WarningConsumptionRow.indicator_id)
+        .limit(limit)
+    )
+    if after is not None:
+        query = query.where(WarningConsumptionRow.indicator_id > after)
+    scanned = list(await session.scalars(query))
+    cursor = (
+        scanned[-1].indicator_id
+        if len(scanned) == limit and scanned[-1].indicator_id < through
+        else None
+    )
+    eligible = [
+        row
+        for row in scanned
+        if (row.expires_at is not None and row.expires_at < now)
+        or (row.legacy_before is not None and row.legacy_before < now - CONSUMED_RETENTION)
+    ]
+    return (
+        cursor,
+        through if cursor is not None else None,
+        await _prune_rows(session, eligible, now),
+    )
+
+
+async def _prune_rows(
+    session: AsyncSession, rows: Iterable[WarningConsumptionRow], now: datetime
+) -> int:
+    changed = 0
     for row in rows:
         try:
             entries = await _entries(row, now)
@@ -82,7 +140,9 @@ async def prune(session: AsyncSession, now: datetime) -> None:
             await session.delete(row)
         else:
             await _fill(row, entries)
+        changed += 1
     await session.flush()
+    return changed
 
 
 async def consume(

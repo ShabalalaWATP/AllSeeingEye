@@ -87,16 +87,18 @@ class BoundedResearchInputStore:
         self._ready: dict[UUID, StoredResearchInput] = {}
         self._sizes: dict[UUID, int] = {}
 
-    def _expire(self) -> None:
+    def expire(self) -> int:
+        """Release expired slots on the app loop, including when no new input arrives."""
         now = self._clock.now()
         expired = [key for key, value in self._reservations.items() if value.expires_at <= now]
         for key in expired:
             self._reservations.pop(key, None)
             self._ready.pop(key, None)
             self._sizes.pop(key, None)
+        return len(expired)
 
     def reserve(self, actor: User, filename: str) -> InputReservation:
-        self._expire()
+        self.expire()
         if not actor.is_active:
             raise NotFound()
         owned = sum(item.owner_id == actor.id for item in self._reservations.values())
@@ -118,7 +120,7 @@ class BoundedResearchInputStore:
         return reservation
 
     def require_pending(self, reservation: InputReservation) -> None:
-        self._expire()
+        self.expire()
         if self._reservations.get(reservation.id) != reservation or reservation.id in self._ready:
             raise NotFound()
 
@@ -176,7 +178,7 @@ class BoundedResearchInputStore:
             self._reservations.pop(reservation.id, None)
 
     def read(self, actor: User, input_id: UUID) -> StoredResearchInput:
-        self._expire()
+        self.expire()
         reservation = self._reservations.get(input_id)
         if (
             not actor.is_active

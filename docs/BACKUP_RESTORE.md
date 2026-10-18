@@ -217,6 +217,13 @@ too, which is why the off-site option exists.
 
 ## Offline restore drill
 
+Before any restored target is activated, follow
+[recovery reconciliation](RECOVERY_RECONCILIATION.md). Keep the latest protected
+deletion/objection journal and key outside these archives. The restore command
+does not replay decisions or authorise activation. A separate disposable SQLite
+drill in `test_recovery_drill.py` proves guarded manual reapplication of decisions
+made after a backup, including preservation holds and retained shared work.
+
 The deterministic test drill creates a temporary SQLite database with reports,
 frozen evidence and configuration, commits a second report into WAL, takes a
 snapshot, then changes the source and restores to a fresh temporary destination.

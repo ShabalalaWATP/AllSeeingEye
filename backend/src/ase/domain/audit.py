@@ -48,6 +48,8 @@ class AuditAction(StrEnum):
     TERMS_ACCEPTED = "terms_accepted"
     PASSWORD_CHANGE_FAILED = "password_change_failed"
     USER_UPDATED = "user_updated"
+    PRIVATE_DATA_REVIEWED = "private_data_reviewed"
+    PRIVATE_DATA_REMOVED = "private_data_removed"
     RESET_LINK_ISSUED = "reset_link_issued"
     LLM_PROFILE_CREATED = "llm_profile_created"
     LLM_PROFILE_UPDATED = "llm_profile_updated"

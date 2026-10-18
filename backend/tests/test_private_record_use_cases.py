@@ -126,7 +126,8 @@ async def test_conversation_report_access_failure_prevents_both_create_and_repla
     reports = SimpleNamespace(execute=AsyncMock(side_effect=NotFound()))
     clock = SimpleNamespace(now=Mock(return_value=NOW))
     uow = SimpleNamespace(commit=AsyncMock())
-    service = ManageAssistantHistory(repository, reports, clock, uow)
+    access = SimpleNamespace(context=AsyncMock())
+    service = ManageAssistantHistory(repository, reports, clock, uow, access)
     reference = (uuid4(), 2)
     for conversation_id in (None, uuid4()):
         with pytest.raises(NotFound):
@@ -134,13 +135,15 @@ async def test_conversation_report_access_failure_prevents_both_create_and_repla
     repository.create.assert_not_awaited()
     repository.update.assert_not_awaited()
     uow.commit.assert_not_awaited()
+    assert access.context.await_count == 2
+    access.context.assert_awaited_with(owner, for_update=True)
 
 
 async def test_conversation_rechecks_exact_distinct_report_editions():
     owner = actor()
     report_id = uuid4()
     reports = SimpleNamespace(execute=AsyncMock())
-    service = ManageAssistantHistory(Mock(), reports, Mock(), Mock())
+    service = ManageAssistantHistory(Mock(), reports, Mock(), Mock(), Mock())
     await service.authorise_reports(owner, [(report_id, 1), (report_id, 1), (report_id, 2)])
     assert reports.execute.await_count == 2
     reports.execute.assert_any_await(owner, report_id, 1)
