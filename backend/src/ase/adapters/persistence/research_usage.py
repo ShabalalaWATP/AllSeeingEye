@@ -3,10 +3,12 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.private_review_models import PrivateDataReviewRow
 from ase.adapters.persistence.research_usage_models import ResearchTierRow, ResearchUsageRow
+from ase.domain.errors import Conflict
 from ase.domain.research_usage import ResearchPeriod
 
 
@@ -19,6 +21,15 @@ class SqlResearchUsageRepository:
         return (row.tier, row.revision) if row else (1, 0)
 
     async def assign(self, user_id: UUID, tier: int, revision: int) -> None:
+        if (
+            await self._session.scalar(
+                select(PrivateDataReviewRow.erased_at).where(
+                    PrivateDataReviewRow.owner_id == user_id
+                )
+            )
+            is not None
+        ):
+            raise Conflict("This account was removed and cannot be assigned a research tier.")
         row = await self._session.get(ResearchTierRow, user_id, populate_existing=True)
         if row is None:
             self._session.add(ResearchTierRow(user_id=user_id, tier=tier, revision=revision))
