@@ -76,10 +76,10 @@
   stroke: var(--story-ember);
   stroke-width: 2;
   stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - clamp(0, var(--progress) * 3 - var(--i) * 0.4, 1));
+  stroke-dashoffset: calc(1 - clamp(0, var(--progress) * 3 - var(--i) * 0.3, 1));
 }
 .architecture-node {
-  opacity: clamp(0, calc(var(--progress) * 4 - var(--i) * 0.5), 1);
+  opacity: clamp(0, calc(var(--progress) * 4 - var(--i) * 0.4), 1);
 }
 .architecture-boundary {
   opacity: clamp(0, calc(var(--progress) * 4), 1);
