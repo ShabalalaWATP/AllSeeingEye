@@ -1,6 +1,6 @@
 # Online safety: provisional risk and children's access record
 
-**16 October 2026. Owner: Alex Orr. Approval and operating evidence pending.**
+**16 October 2026. Owner: Alex Orr. Record approved 18 October 2026; operating evidence pending.**
 Read with [scope](ONLINE_SAFETY.md) and [source evidence](ONLINE_SAFETY_EVIDENCE.md).
 This completes the desk assessment, not an assurance that statutory operating
 duties are met. It must be reconciled with actual users, complaints, incidents,
@@ -123,7 +123,7 @@ arising from existing access or a missed-assessment default cannot wait for an
 intentional expansion to children. KAN-246 tracks this validation promptly.
 If a negative stage-two conclusion is supported, record the evidence/reason/date
 and repeat within 12 months or earlier trigger. Age assurance is one possible
-control, not an automatic requirement chosen by this draft for every service.
+control, not an automatic requirement chosen by this record for every service.
 
 **Deadline check:** if this installation is already in scope and has missed its
 first children's access-assessment deadline, the statutory default treats it as
@@ -137,12 +137,13 @@ and [Ofcom guidance, paragraphs 2.34-2.36](https://www.ofcom.org.uk/siteassets/r
 
 ## 4. Decision and review
 
-Owner: Alex Orr. Approval: **pending**. The approved-adult/UK permitted audience is
-confirmed; the conservative regulated-service working scope is proposed for approval.
+Owner: Alex Orr. Assessment-record approval: **18 October 2026**. Alex approved
+the conservative regulated-service working scope for planning, retaining the
+evidence limits and follow-ups. The approved-adult/UK permitted audience is confirmed.
 Outstanding core evidence: UK-link details/dates, children's access outcome,
 current deployment, complaints and moderation effectiveness,
 applicable code measures or alternatives, and legal confirmation of search/exemption
-boundaries. This conditional draft must not be represented as a final suitable and
+boundaries. This conditional record must not be represented as a final suitable and
 sufficient statutory assessment while those material facts remain unresolved.
 
 Keep case records privately and review measures after incidents/complaints, changed

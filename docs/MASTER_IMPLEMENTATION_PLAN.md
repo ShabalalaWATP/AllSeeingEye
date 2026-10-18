@@ -14,7 +14,7 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] Record Alex's confirmed approved adult audience, including UK users; propose
   regulated-service treatment for planning without inventing a statutory UK-link finding.
 - [x] Track remaining dates, children's access and operating validation in KAN-246.
-- [ ] Obtain Alex's assessment approval, retaining the recorded legal/operating follow-ups.
+- [x] Record Alex's 18 October assessment approval, retaining the legal/operating follow-ups.
 - [ ] Complete independent review, CI and authorised integration of the documents.
 
 See [the assessment](compliance/ONLINE_SAFETY.md). This working assessment does not

@@ -15,6 +15,12 @@ assessment. Keep any supporting user records privately. KAN-246 tracks the remai
 operating evidence and applicable deadlines; a statement of no inspected incidents
 must not become a statement of no incidents.
 
+**O2, 18 October 2026:** Alex approved the separate assessment-record and PR #211
+merge request, retaining KAN-246, KAN-188 and KAN-245. This approves the conservative
+regulated-service working scope for planning and the review record. It supplies
+no new operating evidence, certifies no statutory compliance and excludes a
+manual production rollout.
+
 ## Source evidence
 
 | ID | Source | Fact and limitation |

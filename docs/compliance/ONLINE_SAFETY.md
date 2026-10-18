@@ -1,14 +1,15 @@
 # Online safety scope and operating assessment
 
-**16 October 2026, KAN-189. Owner: Alex Orr. Draft for operator/legal review.**
+**16 October 2026, KAN-189. Owner: Alex Orr. Assessment record approved 18 October 2026.**
 
 The reviewed application has user-to-user functionality. Alex confirmed approved
 adult users, including UK users, on 16 October 2026. **For operational planning,
 treat the user-to-user service as regulated under Part 3.** No exemption is
 established. This conservative working scope does not prove a particular section 4
 UK-link test, settle the search-component boundary or certify completed duties.
-It remains subject to the recorded legal/factual review in KAN-246 and Alex's
-approval of this assessment. The audience confirmation is not assessment approval.
+Alex approved this assessment record and conservative working scope on 18 October
+2026, retaining the recorded legal/factual review in KAN-246. This approval is
+separate from the earlier audience confirmation and does not resolve those facts.
 
 Baseline: main `e1f36dcb04c8dbdbe8945c756b0ac2747ae63ad3`. The
 [source evidence](ONLINE_SAFETY_EVIDENCE.md) identifies actual features and limits.
@@ -118,9 +119,9 @@ and acceptance controls. No fixed legal response deadline is invented here.
 
 ## Measures, follow-ups and review triggers
 
-| Owner / work | Outstanding deliverable |
+| Owner / work | Deliverable and status |
 | --- | --- |
-| Alex / KAN-189 | Approve this dated assessment record and conservative working scope, retaining its evidence limits and follow-ups, or record changes/legal advice. Adult and UK audience confirmation is already recorded. |
+| Alex / KAN-189 | Completed 18 October 2026: approved this dated assessment record and conservative working scope, retaining its evidence limits and the follow-ups below. |
 | Operator validation / [KAN-246](https://alex-orr.atlassian.net/browse/KAN-246) | Promptly establish the actual UK availability dates and applicable deadlines, final territorial/search/exemption and children-access conclusions, current deployment/complaints evidence and applicable Ofcom measures. Verify reporting/removal/appeal effectiveness and record any resulting children's risk assessment and protective measures. The annual review date does not defer an existing duty. |
 | Claude queue / [KAN-188](https://alex-orr.atlassian.net/browse/KAN-188) | Complete full terms/AUP and acceptance, plus accessible reporting/complaints/appeal procedure. Historical 18+ and governing-law assumptions need review; current source contains no age rule/assurance. |
 | Unassigned follow-up / [KAN-245](https://alex-orr.atlassian.net/browse/KAN-245) | Permit authorised harmful-post removal while a team stays archived. Current board moderation rejects archived-team writes despite continued readability. Preserve ordinary read-only status, permissions, audit and revision guards. |
@@ -134,6 +135,9 @@ of children/UK use, and significant guidance/risk-profile changes. Review this
 record at least annually, next routine date **16 October 2027**, sooner if any
 trigger occurs. Keep dated private evidence and a non-sensitive decision summary.
 
-**Approval record:** pending Alex. This ticket remains open until its required
-approval and relevant factual conclusion are recorded. No production setting or
-public policy was changed by preparing this assessment.
+**Approval record, 18 October 2026:** Alex explicitly approved the assessment-record
+and PR #211 merge request. Approval adopts the conservative regulated-service
+working scope for planning and retains the unresolved legal, children-access and
+operating follow-ups in KAN-246, KAN-188 and KAN-245. It does not certify statutory
+compliance, establish effective age assurance or approve a manual production
+rollout. No production setting or public policy was changed by this assessment.
