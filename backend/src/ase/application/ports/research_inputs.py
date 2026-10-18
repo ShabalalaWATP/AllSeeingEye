@@ -78,6 +78,10 @@ class DocumentImportPort(Protocol):
 
 
 class ResearchInputStore(Protocol):
+    def expire(self) -> int:
+        """Erase expired process-local slots on the app loop; return the released count."""
+        ...
+
     def reserve(self, actor: User, filename: str) -> InputReservation: ...
     def require_pending(self, reservation: InputReservation) -> None: ...
     def put(

@@ -68,9 +68,11 @@ describe('public product metadata', () => {
     enable(false);
     renderApp('/enterprise', 'anonymous');
     await screen.findByRole('heading', { name: /not found/i });
-    expect(meta('robots')).toBe('noindex, follow');
-    expect(meta('og:title', 'property')).toBeUndefined();
-    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    await waitFor(() => {
+      expect(meta('robots')).toBe('noindex, follow');
+      expect(meta('og:title', 'property')).toBeUndefined();
+      expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    });
   });
 
   it('lets signed-in visitors pause the public story without private API calls', async () => {

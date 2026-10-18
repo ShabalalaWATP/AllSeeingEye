@@ -8,7 +8,7 @@ from ase.adapters.persistence.selected_subscription_index import (
     SqlSelectedSubscriptionIndexRepository,
 )
 from ase.domain.errors import Forbidden
-from test_selected_subscription_index import _database, _page, _record, _schedule
+from test_selected_subscription_index import NOW, _database, _page, _record, _schedule
 
 
 @pytest.mark.asyncio
@@ -31,7 +31,7 @@ async def test_team_scope_requires_membership_and_originating_owner_for_page_wri
                         records=(_record("a"),),
                     )
                 with pytest.raises(Forbidden):
-                    await repo.list_records(subscription_id, actor_id=actor)
+                    await repo.list_records(subscription_id, now=NOW, actor_id=actor)
             await session.rollback()
             async with session.begin():
                 assert (
@@ -51,7 +51,7 @@ async def test_team_scope_requires_membership_and_originating_owner_for_page_wri
             assert (
                 len(
                     await repo.list_records(
-                        subscription_id, actor_id=member, authorised_team_ids=(team,)
+                        subscription_id, now=NOW, actor_id=member, authorised_team_ids=(team,)
                     )
                 )
                 == 1
