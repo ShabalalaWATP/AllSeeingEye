@@ -4,6 +4,20 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-239 audit, usage and delivery retention, 16 October 2026
+
+- [x] Define purpose-based defaults, category/global holds and quarterly ownership.
+- [x] Implement counts-only preview, explicit bounded apply and disabled-by-default
+  scheduling independent of feeds. Preserve current-month accounting and receipt keys.
+- [x] Verify strict boundaries, rollback, backlog, opt-out, duplicate publication,
+  late completion, retryable delivery and monthly-budget invariants on SQLite.
+- [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
+  independent code-quality and security reviews found no actionable defect.
+- [ ] Complete full CI and authorised integration after KAN-242 and KAN-238.
+- [ ] Obtain installation policy/rollout approval before any production purge.
+
+See [the operational retention procedure](OPERATIONAL_RETENTION.md).
+
 ### KAN-192 configured security contact, 16 October 2026
 
 - [x] Replace the fixed production contact file with startup generation from public
@@ -13,8 +27,8 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   missing/expired publication. Document startup-only expiry enforcement.
 - [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
   web image checks, custom policy read-back and independent correctness/security review.
-- [ ] Pass current-head CI and obtain authorised integration. Production operators
-  must explicitly configure publication first.
+- [x] Pass all 41 current-head checks and authorised integration as `5f2a57d9`;
+  KAN-192 is Done. Production operators must explicitly configure publication first.
 
 See [security contact configuration](SECURITY_CONTACT.md).
 
@@ -30,8 +44,8 @@ See [security contact configuration](SECURITY_CONTACT.md).
   AI translations, photo hypotheses and economy explanations.
 - [x] Complete focused backend/frontend checks, export read-back and PDF visual
   inspection, build, static checks and independent correctness/security reviews.
-- [ ] Pass current-head CI and obtain authorised integration. No complete Article
-  50 compliance claim is made.
+- [x] Pass all 40 current-head checks and authorised integration as `8f4921ab`;
+  KAN-191 is Done. No complete Article 50 compliance claim is made.
 
 See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
 
@@ -42,7 +56,8 @@ See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitati
   active families, replay detection, confirmed factors and pending account requests.
 - [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
 - [x] Complete independent review and broad regression/CI on the initial candidate.
-- [ ] Validate integration with KAN-242 and obtain release approval.
+- [x] Validate integration with KAN-242 and obtain release approval; PR 206 merged
+  as `7e594e38`, Jira Done. Production enablement remains separate.
 - [ ] Operator review and explicit enablement remain separate from code delivery.
 
 See [the retention procedure](AUTH_RETENTION.md).
@@ -79,8 +94,8 @@ evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
   retain the existing personal-installation scope and refresh exact-content approval.
 - [x] Prepare KAN-187's activity/recipient/transfer register, source-backed retention
   schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
-- [ ] Complete KAN-185's source-specific conditions, recipient assessments, risk
-  decisions and assessment sign-off.
+- [x] Complete KAN-185's private assessment record and operator sign-off on
+  16 October. Its exclusions and open legal/operational actions remain explicit.
 - [x] Verify KAN-237's refreshed packages, image gate, repeat cache and media/runtime checks.
 - [ ] Complete current-head CI and authorised integration; KAN-244 separately tracks
   the full image inventory of unfixed advisories.
