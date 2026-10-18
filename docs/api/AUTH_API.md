@@ -22,8 +22,9 @@ security contract; [team management](TEAMS_API.md) and
 ## Objects
 
 ```
-User            {id: uuid, email, display_name, role: "user" | "manager" | "admin", is_active: bool, created_at, last_login_at: datetime | null}
-AccountRequest  {id: uuid, email, display_name, reason: string | null, status: "pending" | "approved" | "rejected", created_at}
+User            {id: uuid, email, display_name, role: "user" | "manager" | "admin", is_active: bool, created_at, last_login_at: datetime | null, terms: TermsStatus}
+TermsStatus     {current_version, accepted_version: string | null, accepted_at: datetime | null, acceptance_required: bool}
+AccountRequest  {id: uuid, email, display_name, reason: string | null, status: "pending" | "approved" | "rejected", created_at, terms_version: string | null, terms_accepted_at: datetime | null}
 AuditEntry      {id: int, at, actor_user_id: uuid | null, action, subject: string | null, ip: string | null, details: object}
 TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, user: User, activity: SessionActivityOut}
 SessionActivityOut {server_now, last_activity_at, idle_expires_at: datetime, idle_minutes: int}
@@ -37,10 +38,11 @@ SessionActivityOut {server_now, last_activity_at, idle_expires_at: datetime, idl
 | `POST /api/auth/refresh` | cookie + CSRF header | none | 200 `TokenResponse`; rotates cookies | 401 `invalid_refresh` (missing, expired, revoked or reused); 403 `csrf_failed` |
 | `POST /api/auth/activity` | bearer + CSRF header | none | 200 `SessionActivityOut`; records explicit interaction only | 401 `session_idle_expired` or `unauthenticated`; 403 `csrf_failed`; 429 with `Retry-After` for the family minute limit |
 | `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies. Conditional idle checks can return 200 `SessionActivityOut` without mutation, as below. | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
-| `POST /api/auth/request-account` | none | `{email, display_name, reason?}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}` | 422; 429 |
+| `POST /api/auth/request-account` | none | `{email, display_name, reason?, accept_terms}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}`; stores the current terms version and acceptance time with the request | 422 `validation_error` with `fields.accept_terms` when `accept_terms` is missing or false, before any address lookup; 429 |
 | `POST /api/auth/forgot-password` | none | `{email}` | 202 `{message, email_available}`; both fields are identical for known and unknown addresses. When email is unconfigured, the message directs the user to an administrator for a reset link. | 422; 429 |
 | `POST /api/auth/set-password` | none | `{token, new_password}` | 204 (token purpose may be `activation` or `reset`; single use) | 400 `invalid_token`; 422 `weak_password` with `fields.new_password` reason; 429 |
 | `GET /api/me` | bearer | | 200 `User` | 401 |
+| `POST /api/me/terms-acceptance` | bearer | `{version}`; extra fields forbidden | 200 `TermsStatus`; records the current version and time once and audits `terms_accepted`; repeating it changes nothing | 401 for an ended session; 409 `conflict` when `version` is not the current terms version; 422 |
 | `POST /api/me/password` | bearer | `{current_password, new_password, totp_code?, mfa_challenge_token?, mfa_code?}`; extra fields forbidden | 204; changes only the authenticated account's password, ends all its sessions and outstanding password links, clears cookies | 401 for an ended/inactive session; 422 `invalid_request` for incorrect current password or required authenticator proof; 422 `weak_password`; 429 |
 | `GET /api/admin/account-requests?status=pending` | admin | | 200 `{"items": [AccountRequest]}` | 401, 403 |
 | `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "admin"}` (defaults to user) | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided`; 409 `email_taken` when a user with that address already exists |
@@ -51,6 +53,20 @@ SessionActivityOut {server_now, last_activity_at, idle_expires_at: datetime, idl
 | `GET /api/admin/audit-log?limit=100&before=<id>` | admin | | 200 `{"items": [AuditEntry], "next_before": int | null}` | 401, 403 |
 | `GET /api/health` | none | | 200 `{"status": "ok", "version": string}` | |
 | `GET /api/ready` | none | | 200 `{"status": "ready"}` when the database answers | 503 `not_ready` |
+
+## Terms acceptance (KAN-188)
+
+`CURRENT_TERMS_VERSION` in `backend/src/ase/domain/terms.py` is the Terms and
+Acceptable Use Policy version every account must accept. `GET /api/site` publishes
+it as `terms_version`; it must equal the `version` in
+`frontend/src/features/public-policy/terms.json`, which a backend test checks.
+Account requests must accept it, and approval copies the request's version and
+time onto the new account. Accounts created any other way, such as by
+`ase create-admin`, and accounts that accepted an earlier version have
+`terms.acceptance_required` set. The signed-in shells then show a blocking dialog
+until the account accepts or signs out. Other API routes are not blocked, so the
+dialog is a user-interface requirement, not an authorisation control. Bump the
+constant and the page version together when the wording changes materially.
 
 Interactive docs (`/api/docs`, `/api/openapi.json`) are served only when `ASE_ENV=dev`; the schema is also exported to a file by `uv run ase export-openapi <path>`.
 

@@ -72,11 +72,7 @@ export function recordActivity(accessToken: string): Promise<SessionActivity> {
   });
 }
 
-export interface AccountRequestInput {
-  email: string;
-  display_name: string;
-  reason?: string;
-}
+export type AccountRequestInput = components['schemas']['RequestAccountIn'];
 
 export async function requestAccount(input: AccountRequestInput): Promise<string> {
   const result = await apiCall('/api/auth/request-account', {

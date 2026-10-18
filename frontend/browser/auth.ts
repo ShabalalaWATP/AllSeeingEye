@@ -14,6 +14,13 @@ export const firstUser: User = {
   is_active: true,
   created_at: BROWSER_NOW.toISOString(),
   last_login_at: null,
+  // Current acceptance, so the terms dialog does not cover the journeys under test.
+  terms: {
+    current_version: '2026-10-18',
+    accepted_version: '2026-10-18',
+    accepted_at: BROWSER_NOW.toISOString(),
+    acceptance_required: false,
+  },
 };
 export const secondUser: User = {
   ...firstUser,

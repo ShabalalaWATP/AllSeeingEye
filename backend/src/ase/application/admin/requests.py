@@ -95,6 +95,9 @@ class ApproveRequestUseCase:
             locked_until=None,
             created_at=now,
             last_login_at=None,
+            # The requester's acceptance carries over; the account starts on that version.
+            terms_version=request.terms_version,
+            terms_accepted_at=request.terms_accepted_at,
         )
         await self._users.add(user)
         request.status = RequestStatus.APPROVED
@@ -120,7 +123,7 @@ class ApproveRequestUseCase:
             actor=actor.id,
             subject=user.email,
             ip=context.ip,
-            details={"role": role.value},
+            details={"role": role.value, "terms_version": request.terms_version},
         )
         await self._uow.commit()
         # The decision, account, token and audit are atomic. Delivery happens

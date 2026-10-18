@@ -15,7 +15,7 @@ export function PolicyLayout({ title, children }: { title: string; children: Rea
       </a>
       <header className="policy-header">
         <Link to="/login">The All Seeing Eye</Link>
-        <PolicyLinks />
+        <PolicyLinks business={false} />
       </header>
       <main id="policy-main" tabIndex={-1}>
         <PublicRouteFocus title={title} />

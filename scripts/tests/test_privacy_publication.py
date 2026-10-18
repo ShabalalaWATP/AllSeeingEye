@@ -18,6 +18,28 @@ from privacy_publication import (
 )
 
 DIRECTORY = Path(__file__).resolve().parents[2] / "frontend/src/features/public-policy"
+DOCUMENTS = ("terms.json", "acceptable-use.json", "accessibility.json")
+
+
+def resolved(document):
+    """Replace every pending decision in a shipped document with confirmed wording."""
+
+    def wording(value):
+        return value if isinstance(value, str) else "Confirmed wording"
+
+    document = copy.deepcopy(document)
+    for section in document["sections"]:
+        section["paragraphs"] = [wording(value) for value in section["paragraphs"]]
+        if "items" in section:
+            section["items"] = [wording(value) for value in section["items"]]
+    return document
+
+
+def approve(files):
+    approval = json.loads(files["approval.json"])
+    approval["contentSha256"] = policy_hash(files)
+    files["approval.json"] = json.dumps(approval)
+    return files
 
 
 def candidate():
@@ -35,11 +57,13 @@ def candidate():
     files["privacy.json"] = json.dumps(notice)
     files["service.json"] = json.dumps(
         {
-            "terms": "Approved installation terms",
             "businessDisclosure": "Confirmed business disclosures",
+            "businessAddress": "Confirmed business address",
             "accessibilityContact": "Confirmed accessibility contact",
         }
     )
+    for name in DOCUMENTS:
+        files[name] = json.dumps(resolved(json.loads(files[name])))
     files["approval.json"] = json.dumps(
         {
             "approvedBy": "Operator",
@@ -85,7 +109,7 @@ class PolicyValidationTests(unittest.TestCase):
                 elif field == "lawfulBasis":
                     notice["purposes"][0]["lawfulBasis"] = value
                 else:
-                    service["terms"] = value
+                    service["businessAddress"] = value
                 files["privacy.json"] = json.dumps(notice)
                 files["service.json"] = json.dumps(service)
                 approval = json.loads(files["approval.json"])
@@ -101,13 +125,13 @@ class PolicyValidationTests(unittest.TestCase):
         files = candidate()
         validate_publication(files)
         service = json.loads(files["service.json"])
-        service["terms"] = "Changed installation terms"
+        service["businessDisclosure"] = "Changed business disclosures"
         files["service.json"] = json.dumps(service)
         with self.assertRaisesRegex(PublicationError, "changed or unapproved"):
             validate_publication(files)
 
     def test_matching_privacy_approval_cannot_publish_incomplete_service_details(self):
-        for key in ("terms", "businessDisclosure", "accessibilityContact"):
+        for key in ("businessDisclosure", "businessAddress", "accessibilityContact"):
             files = candidate()
             service = json.loads(files["service.json"])
             service[key] = None
@@ -220,6 +244,70 @@ class PolicyValidationTests(unittest.TestCase):
             files["approval.json"] = json.dumps(approval)
             with self.subTest(date=value), self.assertRaises(PublicationError):
                 validate_publication(files)
+
+
+class StructuredDocumentTests(unittest.TestCase):
+    def test_pending_decisions_block_publication_with_matching_approval(self):
+        for name in DOCUMENTS:
+            for field in ("paragraphs", "items"):
+                files = candidate()
+                document = json.loads(files[name])
+                document["sections"][0][field] = [{"pending": "Governing law"}]
+                files[name] = json.dumps(document)
+                with (
+                    self.subTest(name=name, field=field),
+                    self.assertRaisesRegex(PublicationError, "documents incomplete"),
+                ):
+                    validate_publication(approve(files))
+
+    def test_documents_need_sections_wording_and_review_dates(self):
+        broken = (
+            lambda document: document.update(sections=[]),
+            lambda document: document["sections"][0].update(paragraphs=[]),
+            lambda document: document["sections"][0].update(paragraphs=["TBC"]),
+            lambda document: document["sections"][0].update(items="list"),
+            lambda document: document["sections"][0].update(title=None),
+        )
+        for name in DOCUMENTS:
+            for change in broken:
+                files = candidate()
+                document = json.loads(files[name])
+                change(document)
+                files[name] = json.dumps(document)
+                with self.subTest(name=name), self.assertRaises(PublicationError):
+                    validate_publication(approve(files))
+        for name, key in (
+            ("terms.json", "version"),
+            ("accessibility.json", "lastReviewed"),
+            ("accessibility.json", "nextReview"),
+        ):
+            for value in (None, "2026-02-30", "soon"):
+                files = candidate()
+                document = json.loads(files[name])
+                document[key] = value
+                files[name] = json.dumps(document)
+                with (
+                    self.subTest(name=name, key=key, value=value),
+                    self.assertRaises(PublicationError),
+                ):
+                    validate_publication(approve(files))
+
+    def test_missing_document_blocks_publication(self):
+        for name in DOCUMENTS:
+            files = candidate()
+            del files[name]
+            with (
+                self.subTest(name=name),
+                self.assertRaisesRegex(PublicationError, "required content missing"),
+            ):
+                validate_publication(approve(files))
+
+    def test_shipped_documents_keep_their_decisions_unresolved(self):
+        files = candidate()
+        for name in DOCUMENTS:
+            files[name] = (DIRECTORY / name).read_text(encoding="utf-8")
+        with self.assertRaisesRegex(PublicationError, "documents incomplete"):
+            validate_publication(approve(files))
 
 
 class DeploymentPublicationTests(unittest.TestCase):

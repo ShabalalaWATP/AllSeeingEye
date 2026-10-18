@@ -132,7 +132,7 @@ async def request_account(
     context: ContextDep,
 ) -> MessageOut:
     await container.request_account(session).execute(
-        body.email, body.display_name, body.reason, context
+        body.email, body.display_name, body.reason, context, accept_terms=body.accept_terms
     )
     return MessageOut(message=REQUEST_ACCOUNT_MESSAGE)
 
