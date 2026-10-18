@@ -1,42 +1,54 @@
 /**
- * Chapter 7: Specialist workspaces. On wide screens vertical scroll drives a
- * horizontal gallery; the track offset is computed from measured widths on resize
- * and applied per frame as a transform. The cards hold no controls, so keyboard
- * scrolling moves the gallery and screen readers read every card in order. Small
- * screens get an ordinary swipeable row.
+ * Chapter 7: Specialist workspaces. A gallery of panels: on roomy screens vertical
+ * scroll drives the track sideways while the chapter is pinned; elsewhere it is a
+ * swipeable row. Previous and next buttons, and the arrow keys on the focusable
+ * gallery, move one panel at a time and announce the position. A still story shows
+ * the panels as an ordinary vertical list. Panels hold no controls, so focus moves
+ * from the gallery to its buttons and on, in visual order.
  */
-import { useCallback, useEffect, useRef, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 
-import { WORKSPACES } from '../content/platform';
+import { WORKSPACES, type Workspace } from '../content/platform';
 import { ScrollChapter } from '../motion/ScrollChapter';
+import { useHorizontalPin } from '../motion/useHorizontalPin';
+import { useStoryMotion } from '../motion/useStoryMotion';
+import { WorkspaceMedia } from './WorkspaceMedia';
 
-export function WorkspacesChapter() {
-  const trackRef = useRef<HTMLUListElement>(null);
-  const travelRef = useRef(0);
+import '../story-workspaces.css';
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (track === null) return undefined;
-    const measure = () => {
-      const viewport = track.parentElement?.clientWidth ?? window.innerWidth;
-      travelRef.current = Math.max(0, track.scrollWidth - viewport);
-    };
-    measure();
-    if (typeof ResizeObserver !== 'function') return undefined;
-    const observer = new ResizeObserver(measure);
-    observer.observe(track);
-    if (track.parentElement !== null) observer.observe(track.parentElement);
-    return () => observer.disconnect();
-  }, []);
+function WorkspaceCard({ workspace, number }: { workspace: Workspace; number: number }) {
+  return (
+    <article
+      className="workspace-card"
+      aria-labelledby={`workspace-${workspace.id}`}
+      style={{ '--accent': workspace.accent } as CSSProperties}
+    >
+      <span className="workspace-number" aria-hidden="true">
+        {String(number).padStart(2, '0')}
+      </span>
+      <h3 id={`workspace-${workspace.id}`}>{workspace.name}</h3>
+      {workspace.media !== undefined ? <WorkspaceMedia media={workspace.media} /> : null}
+      <p>{workspace.body}</p>
+      <ul>
+        {workspace.points.map((point) => (
+          <li key={point}>{point}</li>
+        ))}
+      </ul>
+      {workspace.limit !== undefined ? (
+        <p className="workspace-limit">
+          <strong>Limit</strong> {workspace.limit}
+        </p>
+      ) : null}
+    </article>
+  );
+}
 
-  const onProgress = useCallback((progress: number) => {
-    const track = trackRef.current;
-    if (track === null) return;
-    const pinned = track.closest('[data-mode="pinned"]') !== null;
-    track.style.transform = pinned
-      ? `translate3d(${(-progress * travelRef.current).toFixed(1)}px,0,0)`
-      : '';
-  }, []);
+export function WorkspacesChapter({ panels = WORKSPACES }: { panels?: readonly Workspace[] }) {
+  const { still } = useStoryMotion();
+  const { trackRef, viewportRef, index, last, goTo, onProgress, onKeyDown } = useHorizontalPin(
+    panels.length,
+  );
+  const carousel = !still;
 
   return (
     <ScrollChapter
@@ -50,29 +62,55 @@ export function WorkspacesChapter() {
         <p className="story-eyebrow">07 · Go deeper</p>
         <h2 className="story-title">Specialist workspaces for specialist questions.</h2>
       </div>
-      <div className="workspaces-viewport">
-        <ul ref={trackRef} className="workspace-track">
-          {WORKSPACES.map((workspace, index) => (
-            <li key={workspace.id}>
-              <article
-                className="workspace-card"
-                aria-labelledby={`workspace-${workspace.id}`}
-                style={{ '--accent': workspace.accent } as CSSProperties}
+      {/* The carousel region takes focus so the arrow keys can move it (WAI-ARIA APG). */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div
+        className="workspaces-gallery"
+        role={carousel ? 'region' : undefined}
+        aria-roledescription={carousel ? 'carousel' : undefined}
+        aria-label={carousel ? 'Workspace gallery' : undefined}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- Arrow keys move the gallery.
+        tabIndex={carousel ? 0 : undefined}
+        onKeyDown={carousel ? onKeyDown : undefined}
+      >
+        {carousel ? (
+          <div className="workspaces-controls">
+            <button
+              type="button"
+              aria-label="Previous workspace"
+              disabled={index === 0}
+              onClick={() => goTo(index - 1)}
+            >
+              <span aria-hidden="true">←</span>
+            </button>
+            <p className="workspaces-position" aria-live="polite" aria-atomic="true">
+              Panel {index + 1} of {panels.length}
+            </p>
+            <button
+              type="button"
+              aria-label="Next workspace"
+              disabled={index === last}
+              onClick={() => goTo(index + 1)}
+            >
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        ) : null}
+        <div ref={viewportRef} className="workspaces-viewport">
+          <div ref={trackRef} className="workspace-track" role={carousel ? undefined : 'list'}>
+            {panels.map((workspace, position) => (
+              <div
+                key={workspace.id}
+                className="workspace-slide"
+                role={carousel ? 'group' : 'listitem'}
+                aria-roledescription={carousel ? 'slide' : undefined}
+                aria-label={carousel ? `${position + 1} of ${panels.length}` : undefined}
               >
-                <span className="workspace-number" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 id={`workspace-${workspace.id}`}>{workspace.name}</h3>
-                <p>{workspace.body}</p>
-                <ul>
-                  {workspace.points.map((point) => (
-                    <li key={point}>{point}</li>
-                  ))}
-                </ul>
-              </article>
-            </li>
-          ))}
-        </ul>
+                <WorkspaceCard workspace={workspace} number={position + 1} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </ScrollChapter>
   );

@@ -1,11 +1,19 @@
 /**
  * Chapter 6: Review. A timeline slides past as the reader scrolls, showing one
  * assessment living on: follow-ups, subscription editions, an alert, a new version
- * and a resolved forecast. Alerts arrive on a phone; exports flip into a stack.
+ * and a resolved forecast. Alerts arrive on a phone, exports flip into a stack and a
+ * sharing beat shows who can see personal and team work.
  */
 import type { CSSProperties } from 'react';
 
-import { ALERT_CHANNELS, EXPORTS, REVIEW_TIMELINE, WATCH_TYPES } from '../content/platform';
+import {
+  ALERT_CHANNELS,
+  EXPORTS,
+  REVIEW_TIMELINE,
+  TEAM_ACCESS_NOTE,
+  TEAM_SCOPES,
+  WATCH_TYPES,
+} from '../content/platform';
 import { Reveal } from '../motion/Reveal';
 import { ScrollChapter } from '../motion/ScrollChapter';
 
@@ -37,7 +45,7 @@ export function ReviewChapter() {
       </ScrollChapter>
       <section
         className="story-chapter story-review-more"
-        aria-label="Watching, alerts and exports"
+        aria-label="Watching, alerts, exports and sharing"
       >
         <div className="review-grid story-wrap">
           <Reveal className="review-panel">
@@ -62,7 +70,7 @@ export function ReviewChapter() {
               ))}
             </ul>
           </Reveal>
-          <Reveal className="review-panel">
+          <Reveal className="review-panel review-exports">
             <h3>Take it anywhere</h3>
             <ul className="export-grid">
               {EXPORTS.map((item, index) => (
@@ -78,6 +86,20 @@ export function ReviewChapter() {
             </ul>
           </Reveal>
         </div>
+        <Reveal variant="fade" className="review-panel review-sharing story-wrap">
+          <div>
+            <h3>Personal or team work</h3>
+            <p className="story-footnote">{TEAM_ACCESS_NOTE}</p>
+          </div>
+          <ul className="scope-cards">
+            {TEAM_SCOPES.map((scope) => (
+              <li key={scope.name} className="scope-card">
+                <strong>{scope.name}</strong>
+                {scope.detail}
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </section>
     </>
   );
