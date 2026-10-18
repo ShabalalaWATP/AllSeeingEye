@@ -259,6 +259,66 @@ describe('Evil Eye graphics lifetime', () => {
     expect(uniforms.uMouse?.value).toEqual([0.0475, 0.0475]);
   });
 
+  it('follows the pointer across the page only for a hover-capable fine pointer', () => {
+    const fine = (matches: boolean) =>
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: matches && query === '(hover: hover) and (pointer: fine)',
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }));
+    const box = (element: Element) =>
+      vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
+        left: 100,
+        top: 100,
+        right: 200,
+        bottom: 200,
+        width: 100,
+        height: 100,
+        x: 100,
+        y: 100,
+        toJSON: () => ({}),
+      });
+    fine(true);
+    const { container, unmount } = render(<EvilEye pupilFollow={1} pointerScope="page" />);
+    box(container.querySelector('canvas')!.parentElement!);
+    // Far beyond the eye's top right corner: the pupil stops at the edge.
+    fireEvent.mouseMove(window, { clientX: 900, clientY: 0 });
+    frame();
+    const uniforms = graphics.uniforms.at(-1)!;
+    expect(uniforms.uMouse?.value).toEqual([0.05, 0.05]);
+    fireEvent.mouseOut(window, { relatedTarget: null });
+    frame(1050);
+    expect(uniforms.uMouse?.value).toEqual([0.0475, 0.0475]);
+    unmount();
+
+    fine(false);
+    const coarse = render(<EvilEye pupilFollow={1} pointerScope="page" />);
+    box(coarse.container.querySelector('canvas')!.parentElement!);
+    fireEvent.mouseMove(window, { clientX: 900, clientY: 0 });
+    frame();
+    expect(graphics.uniforms.at(-1)?.uMouse?.value).toEqual([0, 0]);
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps the static capture when an opted-in eye is asked to save data', () => {
+    const connection = (value: unknown) =>
+      Object.defineProperty(navigator, 'connection', { configurable: true, value });
+    connection({ saveData: true });
+    const saving = render(<EvilEye saveDataFallback />);
+    expect(saving.container.querySelector('canvas')).toBeNull();
+    expect(saving.container.querySelector('img')).toBeVisible();
+    expect(graphics.uniforms).toHaveLength(0);
+    expect(graphics.frames.size).toBe(0);
+    // Other eyes, and browsers without the hint, keep the live mark.
+    render(<EvilEye />);
+    expect(graphics.uniforms).toHaveLength(1);
+    connection(undefined);
+    render(<EvilEye saveDataFallback />);
+    expect(graphics.uniforms).toHaveLength(2);
+    Reflect.deleteProperty(navigator, 'connection');
+  });
+
   it('releases the frame, canvas and graphics resources on unmount', () => {
     const { unmount } = render(<EvilEye />);
     expect(graphics.frames.size).toBe(1);

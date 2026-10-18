@@ -28,6 +28,8 @@
  *      context still owns its texture and disposes it independently.
  *   8. Optionally initialise only when visible, retaining the original capture until then.
  *   9. Public eyes can render the same engine in a worker; DOM timing and input stay here.
+ *  10. Opt-in page-wide pointer following for hover-capable fine pointers, and an opt-in
+ *      static capture when the browser asks to save data. Defaults keep the original.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { EyeOptions, EyeSurface } from './evilEyeProtocol';
@@ -42,6 +44,17 @@ function captureSet(format: 'png' | 'webp'): string {
 }
 const PNG_CAPTURES = captureSet('png');
 const WEBP_CAPTURES = captureSet('webp');
+
+// Added for The All Seeing Eye: device hints for the public hero.
+const FINE_POINTER_QUERY = '(hover: hover) and (pointer: fine)';
+function hasFinePointer(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia(FINE_POINTER_QUERY).matches;
+}
+function savesData(): boolean {
+  const connection = (navigator as Navigator & { connection?: { saveData?: unknown } }).connection;
+  return connection?.saveData === true;
+}
+const clampUnit = (value: number) => Math.min(1, Math.max(-1, value));
 
 interface EvilEyeProps {
   /** Existing synchronous callers supply the engine; public worker fallback loads it on demand. */
@@ -71,6 +84,13 @@ interface EvilEyeProps {
   deferUntilVisible?: boolean;
   /** Public eyes use an offscreen worker when supported, with a synchronous fallback. */
   workerRendering?: boolean;
+  /**
+   * Added for The All Seeing Eye: 'page' follows the pointer anywhere in the window,
+   * only for hover-capable fine pointers; the default follows it over the eye alone.
+   */
+  pointerScope?: 'surface' | 'page';
+  /** Added for The All Seeing Eye: keep the static capture when the browser asks to save data. */
+  saveDataFallback?: boolean;
 }
 
 export default function EvilEye({
@@ -93,6 +113,8 @@ export default function EvilEye({
   fallbackPriority,
   deferUntilVisible = false,
   workerRendering = false,
+  pointerScope = 'surface',
+  saveDataFallback = false,
 }: EvilEyeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
@@ -114,6 +136,7 @@ export default function EvilEye({
 
   useEffect(() => {
     if (unavailable || !containerRef.current) return;
+    if (saveDataFallback && savesData()) return;
     const container = containerRef.current;
     const fallback = fallbackRef.current;
     if (fallback) fallback.hidden = false;
@@ -216,12 +239,33 @@ export default function EvilEye({
           mouse.tx = 0;
           mouse.ty = 0;
         }
-        container.addEventListener('mousemove', onMouseMove);
-        container.addEventListener('mouseleave', onMouseLeave);
-        disposers.push(() => {
-          container.removeEventListener('mousemove', onMouseMove);
-          container.removeEventListener('mouseleave', onMouseLeave);
-        });
+        if (pointerScope === 'page') {
+          // Text over the eye must not block it, so listen on the window. Touch and
+          // coarse pointers keep a centred pupil; far pointers stop at the eye's edge.
+          const onPageMove = (e: MouseEvent) => {
+            onMouseMove(e);
+            mouse.tx = clampUnit(mouse.tx);
+            mouse.ty = clampUnit(mouse.ty);
+          };
+          const onPageOut = (e: MouseEvent) => {
+            if (e.relatedTarget === null) onMouseLeave();
+          };
+          if (hasFinePointer()) {
+            window.addEventListener('mousemove', onPageMove, { passive: true });
+            window.addEventListener('mouseout', onPageOut, { passive: true });
+            disposers.push(() => {
+              window.removeEventListener('mousemove', onPageMove);
+              window.removeEventListener('mouseout', onPageOut);
+            });
+          }
+        } else {
+          container.addEventListener('mousemove', onMouseMove);
+          container.addEventListener('mouseleave', onMouseLeave);
+          disposers.push(() => {
+            container.removeEventListener('mousemove', onMouseMove);
+            container.removeEventListener('mouseleave', onMouseLeave);
+          });
+        }
         function resize() {
           // OffscreenCanvas dimensions belong to the worker, but its placeholder's
           // CSS dimensions remain the DOM owner's responsibility (OGL dpr stays 1).
@@ -308,6 +352,8 @@ export default function EvilEye({
     deferUntilVisible,
     workerRendering,
     createRenderer,
+    pointerScope,
+    saveDataFallback,
   ]);
 
   return (

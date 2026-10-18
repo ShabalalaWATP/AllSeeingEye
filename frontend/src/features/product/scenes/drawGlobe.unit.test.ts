@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { fakeContext } from '@/test/fakeCanvas';
 
 import { drawGlobe, FOCUS, type FrameState } from './drawGlobe';
-import { landPoints, toSphere } from './globeMath';
+import { landPoints, toSphere, type View } from './globeMath';
 import { buildScene, type SceneLayer } from './sceneData';
 
 const land = landPoints(3000);
@@ -95,7 +95,7 @@ describe('drawGlobe', () => {
   });
 
   it('rings the Red Sea once the camera settles there, and not before', () => {
-    const settled = { ...FOCUS, radius: 200, cx: 250, cy: 250 };
+    const settled: View = { ...FOCUS, radius: 200, cx: 250, cy: 250 };
     const strokes = (focus: number, view = settled) => {
       const { ctx, counts } = fakeContext();
       drawGlobe(ctx, [], [], frame({ view, focus }));

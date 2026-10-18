@@ -7,9 +7,11 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 
 import { LAYER_STORIES, LIVE_LAYER_COUNT, STORY_LAYERS } from '../content/observe';
+import { CountUp } from '../motion/CountUp';
 import { segment } from '../motion/scrollScheduler';
 import { ScrollChapter } from '../motion/ScrollChapter';
 import { GlobeCanvas, type GlobeControls } from '../scenes/GlobeCanvas';
+import { SCENE_COUNTS } from '../scenes/sceneData';
 
 const STEPS = STORY_LAYERS.length + 1;
 const LAYER_SPAN = STORY_LAYERS.length / STEPS;
@@ -60,6 +62,7 @@ export function ObserveChapter() {
         <ol className="layer-list" style={{ '--active': active } as CSSProperties}>
           {STORY_LAYERS.map((layer, index) => {
             const story = LAYER_STORIES[layer.id];
+            const count = SCENE_COUNTS[layer.id];
             const state = index === active ? 'active' : index < active ? 'seen' : 'next';
             return (
               <li key={layer.id} className="layer-row" data-state={state}>
@@ -76,6 +79,17 @@ export function ObserveChapter() {
                 </span>
                 <div className="layer-detail">
                   <p>{layer.description}</p>
+                  {count !== undefined && (
+                    <p className="layer-count">
+                      {/* A fresh count-up each time the layer becomes the active one. */}
+                      {state === 'active' ? (
+                        <CountUp value={count.value} />
+                      ) : (
+                        count.value.toLocaleString('en-GB')
+                      )}{' '}
+                      illustrative {count.noun} on this globe
+                    </p>
+                  )}
                   {story !== undefined && (
                     <ul className="chip-row" aria-label={`${layer.label} filters`}>
                       {story.filters.map((filter) => (

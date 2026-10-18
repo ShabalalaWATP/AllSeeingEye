@@ -1,8 +1,10 @@
 /**
- * Chapter 0: the Eye opens. The real React Bits Evil Eye brand mark fills the stage;
+ * Chapter 0: the Eye opens. The real React Bits Evil Eye brand mark fills the stage,
+ * wakes on arrival and, on a fine pointer, watches the cursor anywhere on the page;
  * as the reader scrolls it grows and dissolves into the globe that follows. The
  * headline is ordinary text and remains available independently of WebGL.
  */
+import { useSyncExternalStore } from 'react';
 import { Link } from 'react-router';
 
 import EvilEye from '@/components/brand/EvilEyeSurface';
@@ -20,8 +22,23 @@ const STATS = [
   { value: 7, suffix: '', label: 'probability bands' },
 ];
 
+const FINE_POINTER = '(hover: hover) and (pointer: fine)';
+
+function subscribePointer(onChange: () => void): () => void {
+  if (typeof window.matchMedia !== 'function') return () => undefined;
+  const query = window.matchMedia(FINE_POINTER);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function readFinePointer(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia(FINE_POINTER).matches;
+}
+
 export function HeroChapter() {
   const { still, idle } = useStoryMotion();
+  const finePointer = useSyncExternalStore(subscribePointer, readFinePointer, () => false);
+  const follow = finePointer && !still;
   return (
     <ScrollChapter
       id="top"
@@ -32,18 +49,22 @@ export function HeroChapter() {
     >
       <div className="hero-grid" aria-hidden="true" />
       <div className="hero-eye" aria-hidden="true">
-        <EvilEye
-          deferUntilVisible
-          workerRendering
-          backgroundColor="#060606"
-          scale={0.95}
-          maxFps={still ? 1 : 30}
-          flameSpeed={still ? 0 : 1}
-          pupilFollow={still ? 0 : 1}
-          paused={idle}
-          fallbackSizes="(max-width: 600px) 320px, 512px"
-          fallbackPriority="high"
-        />
+        <div className="hero-eye-wake">
+          <EvilEye
+            deferUntilVisible
+            workerRendering
+            backgroundColor="#060606"
+            scale={0.95}
+            maxFps={still ? 1 : 30}
+            flameSpeed={still ? 0 : 1}
+            pupilFollow={follow ? 1 : 0}
+            pointerScope="page"
+            saveDataFallback
+            paused={idle}
+            fallbackSizes="(max-width: 600px) 320px, 512px"
+            fallbackPriority="high"
+          />
+        </div>
       </div>
       <div className="hero-copy">
         <p className="story-eyebrow">Open-source intelligence · self-hosted</p>
