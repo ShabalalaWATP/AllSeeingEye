@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, useLocation } from 'react-router';
 
 import { AdminIcon } from '@/components/admin/AdminIcon';
 import { Button } from '@/components/ui/Button';
 import { adminLocation } from '@/lib/adminNavigation';
-import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useAuthStore } from '@/stores/auth';
 
 import { AccountMenu } from './AccountMenu';
 import { AdminNavigation } from './AdminNavigation';
 import { NavigationDialog } from './NavigationDialog';
 import { PersonalLinks } from './PersonalLinks';
+import { useSignOut } from './useSignOut';
 import { WorkspaceSwitch } from './WorkspaceSwitch';
 
 /**
@@ -22,12 +22,7 @@ import { WorkspaceSwitch } from './WorkspaceSwitch';
 export function AdminHeader({ narrow }: { narrow: boolean }) {
   const { key, pathname } = useLocation();
   const [openedAt, setOpenedAt] = useState<string | null>(null);
-  const logout = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
-  const { run, busy } = useAsyncAction(async () => {
-    await logout();
-    await navigate('/login', { replace: true });
-  });
+  const { signOut, busy } = useSignOut();
   return (
     <>
       <header
@@ -56,7 +51,12 @@ export function AdminHeader({ narrow }: { narrow: boolean }) {
           ) : (
             <>
               <PersonalLinks />
-              <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
+              <Button
+                variant="ghost"
+                className="min-h-11"
+                busy={busy}
+                onClick={() => void signOut()}
+              >
                 Logout
               </Button>
             </>
