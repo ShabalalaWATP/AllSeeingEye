@@ -12,13 +12,17 @@ The 18 October retention and assessment merge approvals exclude that rollout.
 
 - [x] Prepare the migration 0090–0095 effects and recovery limits in the private
   operator draft; record basic read-only public availability checks in Jira.
-- [ ] Obtain the existing operator handoff and verify the live version, images,
-  database revision, configuration, backup and isolated recovery rehearsal.
+- [x] Recover the existing operator handoff and verify clean live `13efceef`,
+  matching application image labels and database revision `0089` read-only.
+- [x] Authenticate an existing backup and rehearse `0089` to `0095` locally with
+  networking disabled, preserving original contents of all 99 checked tables.
+- [ ] Take and verify a fresh quiesced backup during the separately approved rollout.
 - [ ] Present the exact final release and maintenance plan for separate approval.
 - [ ] Complete the approved rollout and live acceptance before closing the epic.
 
-Public health/readiness responses do not identify the deployed version. No manual
-production rollout, optional cleanup enablement, live removal or restore is claimed.
+The rehearsal used the authenticated 9 October backup, not a fresh production
+snapshot. No manual production rollout, optional cleanup enablement, live removal
+or restore is claimed.
 
 ### KAN-189 online safety assessment, 16 October 2026
 
@@ -52,9 +56,10 @@ certify statutory compliance, an exemption, adult-only access or a live policy c
   95.51% scoped coverage, 35 PostgreSQL cases and startup/CLI regression checks.
 - [x] Repair navigation ordering and lazy-page dependencies in integration tests;
   33 focused frontend cases pass with the existing timeouts and assertions of authority.
-- [ ] Complete published-head CI with unchanged global gates.
+- [x] Pass all 40 published-head checks on `08d71d1c` with unchanged global gates.
 - [x] Record Alex's 18 October release approval, excluding manual production operations.
-- [ ] Integrate after the private-removal dependency and pass refreshed checks.
+- [x] Integrate after KAN-240 and merge as `0fb60965`, preserving the tested tree;
+  KAN-243 is Done.
 
 See [recovery reconciliation](RECOVERY_RECONCILIATION.md). Windows DACL provisioning,
 live copy-policy choices, current independent journal copies and production recovery
@@ -69,9 +74,9 @@ remain operator work; neither inspection nor this implementation authorises them
 - [x] Complete scoped coverage (96.25%), 120 SQLite, 119 PostgreSQL-configured and 37 wider regression cases.
 - [x] Repair the stale-connection test ordering exposed by refreshed CI; 47 focused
   cases pass on both SQLite and isolated PostgreSQL, with independent review.
-- [ ] Complete current-head CI with the existing global gates.
+- [x] Pass all 40 checks on `7fd7be8b` with the existing global gates.
 - [x] Record Alex's 18 October release approval, excluding live removal/migration operations.
-- [ ] Integrate after KAN-238/239/241 and pass refreshed required checks.
+- [x] Merge after KAN-238/239/241 as `156b5266`; KAN-240 is Done.
 
 See [the operator procedure](PRIVATE_DATA_REMOVAL.md). Production removal and
 backup/provider reconciliation remain separate; KAN-243 owns recovery reconciliation.

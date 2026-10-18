@@ -6841,10 +6841,32 @@ the merged tree exactly matches the tested candidate. Backend coverage reports
 and one existing skip. PostgreSQL migration and concurrency checks passed. KAN-241
 is Done, following KAN-239's approved merge `ea68f65c`.
 
+KAN-240 then passed all 40 refreshed checks at `7fd7be8b` and merged as `156b5266`.
+Independent review verified the exact prepared private-removal tree and preserved
+main content. Database migrations/races, coverage, browser and security checks
+passed. KAN-240 is Done; no live removal or migration command was run.
+
+KAN-243 passed all 40 refreshed checks at `08d71d1c` and merged as `0fb60965`.
+Independent review confirmed that the actual-main integration retained the exact
+prepared recovery-record implementation. The merged tree matches the tested tree;
+KAN-243 is Done. No live recovery record, removal or restore was activated.
+
 KAN-216 retains manual rollout and live acceptance even though its original
 twenty child tickets and twelve mapped implementation items are Done. A private
 draft records migration 0090–0095 effects, preflight evidence and recovery limits.
 Read-only public checks confirm basic availability and anonymous administrator
 denial, not the deployed version. The existing operator handoff, verified live
-state, backup/rehearsal evidence and separate rollout approval remain necessary.
+state, backup/rehearsal evidence and separate rollout approval were the next steps.
 No manual production operation was performed.
+
+The earlier KAN-165 handoff subsequently supplied working operator access. Read-only
+inspection verified clean live `13efceef`, matching application image labels,
+PostgreSQL 16.15/PostGIS 3.5.7 and schema `0089`. An existing 9 October deployment
+backup passed server-side HMAC verification. Only its authenticated dump was copied
+to a private local directory; no environment file or backup key was transferred.
+The network-disabled rehearsal restored to a fresh local database and migrated to
+`0095`, preserving original contents of all 99 checked tables and verifying exact
+session-family ownership/grace and scoped warning-history cutoffs. It started no
+application workers. The disposable database and copied dump were removed after
+success; bounded private evidence remains. This rehearsal does not replace the
+fresh quiesced backup or separate approval required for production rollout.
