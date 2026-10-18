@@ -6,8 +6,8 @@ Existing rows keep null values: those accounts are asked to accept on their next
 import sqlalchemy as sa
 from alembic import op
 
-revision = "0095"
-down_revision = "0094"
+revision = "0096"
+down_revision = "0095"
 branch_labels = None
 depends_on = None
 

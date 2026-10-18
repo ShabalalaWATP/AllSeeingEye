@@ -28,7 +28,7 @@ def _matches_models(connection: sa.Connection) -> None:
 def test_terms_migration_leaves_existing_rows_unaccepted_and_guards_downgrade(tmp_path):
     database = tmp_path / "terms.sqlite"
     config = alembic_config(f"sqlite+aiosqlite:///{database.as_posix()}")
-    command.upgrade(config, "0094")
+    command.upgrade(config, "0095")
     engine = sa.create_engine(f"sqlite:///{database.as_posix()}")
     try:
         metadata = sa.MetaData()
@@ -38,7 +38,7 @@ def test_terms_migration_leaves_existing_rows_unaccepted_and_guards_downgrade(tm
                 connection, metadata.tables["users"], role="user", email="old@example.com"
             )
             _insert(connection, metadata.tables["account_requests"], status="pending")
-        command.upgrade(config, "0095")
+        command.upgrade(config, "0096")
         with engine.begin() as connection:
             _matches_models(connection)
             for table in TABLES:
@@ -54,10 +54,10 @@ def test_terms_migration_leaves_existing_rows_unaccepted_and_guards_downgrade(tm
                 {"at": datetime(2026, 10, 18, tzinfo=UTC), "id": user},
             )
         with pytest.raises(RuntimeError, match="recorded terms acceptance"):
-            command.downgrade(config, "0094")
+            command.downgrade(config, "0095")
         with engine.begin() as connection:
             connection.execute(sa.text("UPDATE users SET terms_accepted_at = NULL"))
-        command.downgrade(config, "0094")
+        command.downgrade(config, "0095")
         with engine.connect() as connection:
             for table in TABLES:
                 columns = {column["name"] for column in sa.inspect(connection).get_columns(table)}
