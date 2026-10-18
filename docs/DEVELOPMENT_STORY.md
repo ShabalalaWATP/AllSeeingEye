@@ -6648,3 +6648,17 @@ and rejected CFHD in selected and secondary tracks. Python's separate bundled
 Expat remains 2.8.5; this update does not close KAN-244's unresolved native
 applicability questions. No ignores, scanner thresholds, Python pin or application
 lockfile changed. Final published-head CI remains required before integration.
+
+The next CI run exposed an existing disabled-product-page test reading robots
+metadata before its passive effect completed. Its three exact assertions now wait
+together using the existing timeout. The previously reviewed KAN-243 login-test
+repairs are also carried forward into this earlier dependency. All 48 focused
+metadata, public-route, motion, login and overview cases pass. Independent review
+confirmed unchanged authority/destination expectations and no product, timeout,
+skip or coverage-policy change.
+
+The already reviewed FIRMS credential-clear test repair from KAN-240 is carried
+forward too. Its test blob and all relevant fetch-budget, credential and fixture
+paths match the validated candidate. All 91 FIRMS runtime, fixed-deadline and
+feed-resilience cases pass on isolated SQLite; Ruff and formatting pass. Existing
+PostgreSQL evidence remains recorded on KAN-240, and fresh CI covers this candidate.

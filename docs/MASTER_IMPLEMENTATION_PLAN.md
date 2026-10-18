@@ -14,6 +14,10 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   independent code-quality and security reviews report no remaining actionable defect.
 - [x] Refresh cached Debian security packages after five fixable Expat findings;
   rebuilt-image package inspection, five native controls and the fixable scan pass.
+- [x] Repair metadata-effect ordering and retain the reviewed login-test fixes;
+  all 48 focused frontend cases pass without changing product behaviour or thresholds.
+- [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
+  deadline and resilience cases pass on SQLite with unchanged production paths.
 - [ ] Complete full CI on the committed candidate.
 - [x] Record Alex's 18 October release approval, excluding manual production operations.
 - [ ] Complete authorised integration after KAN-239 with refreshed required checks.
