@@ -2,7 +2,8 @@
  * A story chapter. Pinned chapters are tall sections whose stage sticks to the
  * viewport while the reader scrolls through `length` screens. Where pinning does not
  * suit the screen (tall content on a small display), the chapter plays the same
- * motion as it passes through the viewport instead. Progress (0..1) is written
+ * motion as it passes through the viewport instead; no chapter pins below that size,
+ * so nothing is clipped on phones and tablets. Progress (0..1) is written
  * straight to the `--progress` custom property, so CSS-driven motion never re-renders
  * React; `onStep` reports a discrete beat only when it changes. When the story is
  * still, the chapter is ordinary height and shows its end state.
@@ -13,6 +14,7 @@ import { passProgress, pinnedProgress, segment, subscribeScroll } from './scroll
 import { useStoryMotion } from './useStoryMotion';
 
 const ROOMY = '(min-width: 900px) and (min-height: 700px)';
+const PASS_WINDOW = [0.05, 0.5] as const;
 
 function subscribeRoomy(onChange: () => void): () => void {
   if (typeof window.matchMedia !== 'function') return () => undefined;
@@ -33,8 +35,12 @@ export interface ScrollChapterProps {
   length?: number;
   /** False plays the motion as the chapter passes, never pinning (tall content). */
   pin?: boolean;
-  /** Also pin on small screens; only for stages designed to fit a phone. */
-  pinNarrow?: boolean;
+  /**
+   * When passing, the stretch of the pass (0 entering at the bottom, 1 gone at the top)
+   * that drives progress 0..1. The default plays the motion while the chapter fills
+   * the screen; the hero, already in view at load, starts at its midpoint.
+   */
+  passWindow?: readonly [number, number];
   /** Number of discrete beats; `onStep` receives 0..steps-1. */
   steps?: number;
   onStep?: (step: number) => void;
@@ -49,7 +55,7 @@ export function ScrollChapter({
   label,
   length,
   pin = true,
-  pinNarrow = false,
+  passWindow = PASS_WINDOW,
   steps = 1,
   onStep,
   onProgress,
@@ -65,7 +71,8 @@ export function ScrollChapter({
     callbacks.current = { onStep, onProgress };
   });
   const animated = length !== undefined && !still;
-  const pinned = animated && pin && (roomy || pinNarrow);
+  const pinned = animated && pin && roomy;
+  const [passStart, passEnd] = passWindow;
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -88,7 +95,11 @@ export function ScrollChapter({
       measure: () => {
         const rect = section.getBoundingClientRect();
         if (!pinned) {
-          return segment(passProgress(rect.top, rect.height, window.innerHeight), 0.05, 0.5);
+          return segment(
+            passProgress(rect.top, rect.height, window.innerHeight),
+            passStart,
+            passEnd,
+          );
         }
         // The stuck stage's own height (in svh), not innerHeight, which grows when a
         // mobile address bar collapses and would end the chapter before it unsticks.
@@ -98,7 +109,7 @@ export function ScrollChapter({
       },
       apply: report,
     });
-  }, [animated, pinned, steps]);
+  }, [animated, pinned, steps, passStart, passEnd]);
 
   const mode = pinned ? 'pinned' : animated ? 'passing' : 'still';
   return (

@@ -89,18 +89,6 @@ export function project(point: SpherePoint, view: View): Projected {
   };
 }
 
-/** A small deterministic generator, so the illustrative scene is identical every visit. */
-export function seededRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** Points along the great circle from a to b, for flight and cable arcs. */
 export function greatCircle(a: GeoPoint, b: GeoPoint, steps: number): GeoPoint[] {
   const [la1, lo1, la2, lo2] = [a.lat * DEG, a.lon * DEG, b.lat * DEG, b.lon * DEG];

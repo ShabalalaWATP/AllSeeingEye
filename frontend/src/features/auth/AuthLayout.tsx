@@ -12,21 +12,31 @@ import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 
 import './auth.css';
 
+const PUBLIC_LINK =
+  'inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4';
+
 export function AuthLayout() {
   const { pathname } = useLocation();
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
   const { chosenPause } = useMotionPause();
   const site = useSiteFacts();
-  const productPage = site.status === 'ready' && site.facts.product_page_enabled;
-  const enquiryLink =
-    site.status === 'ready' && site.facts.enterprise_enquiries_enabled ? (
-      <Link
-        className="mt-3 inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
-        to="/enterprise#contact"
-      >
-        Self-hosting for organisations
-      </Link>
+  const facts = site.status === 'ready' ? site.facts : null;
+  // Public pages sit beside the privacy and attribution links, outside the sign-in form.
+  const publicLinks =
+    facts?.product_page_enabled === true || facts?.enterprise_enquiries_enabled === true ? (
+      <div className="mt-3 flex flex-wrap gap-x-5">
+        {facts.product_page_enabled ? (
+          <Link className={PUBLIC_LINK} to="/enterprise">
+            Discover The All Seeing Eye
+          </Link>
+        ) : null}
+        {facts.enterprise_enquiries_enabled ? (
+          <Link className={PUBLIC_LINK} to="/enterprise#contact">
+            Self-hosting for organisations
+          </Link>
+        ) : null}
+      </div>
     ) : null;
 
   return (
@@ -54,13 +64,8 @@ export function AuthLayout() {
             <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
             <div className="mt-5 hidden min-[900px]:block">
               <PolicyLinks />
-              {enquiryLink}
+              {publicLinks}
             </div>
-            {productPage ? (
-              <Link className="auth-discover" to="/enterprise">
-                Discover what it can do
-              </Link>
-            ) : null}
           </div>
         </div>
         <div className="auth-brand-footer" aria-hidden="true">
@@ -80,7 +85,7 @@ export function AuthLayout() {
           </div>
           <div className="mt-6 min-[900px]:hidden">
             <PolicyLinks label="Footer privacy and source information" />
-            {enquiryLink}
+            {publicLinks}
           </div>
         </div>
       </main>

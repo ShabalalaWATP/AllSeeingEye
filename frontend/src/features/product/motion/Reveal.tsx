@@ -1,7 +1,8 @@
 /**
- * Content that rises into place the first time it enters the viewport. The text is
- * always in the document; only its transform and opacity change, and a still story
- * (or a browser without IntersectionObserver) shows it immediately.
+ * Content that enters the first time it reaches the viewport: it rises (the default),
+ * fades, or is unmasked from the top down. The text is always in the document; only
+ * transform, opacity or clip-path change, and a still story (or a browser without
+ * IntersectionObserver) shows it immediately.
  */
 import {
   useEffect,
@@ -14,15 +15,26 @@ import {
 
 import { useStoryMotion } from './useStoryMotion';
 
+import '../story-motion.css';
+
+export type RevealVariant = 'rise' | 'fade' | 'mask';
+
 export interface RevealProps {
   as?: ElementType;
+  variant?: RevealVariant;
   /** Stagger position; each step delays the entrance by 70 ms. */
   order?: number;
   className?: string;
   children: ReactNode;
 }
 
-export function Reveal({ as: Tag = 'div', order = 0, className = '', children }: RevealProps) {
+export function Reveal({
+  as: Tag = 'div',
+  variant = 'rise',
+  order = 0,
+  className = '',
+  children,
+}: RevealProps) {
   const { still } = useStoryMotion();
   const ref = useRef<HTMLElement>(null);
   const [seen, setSeen] = useState(false);
@@ -49,6 +61,7 @@ export function Reveal({ as: Tag = 'div', order = 0, className = '', children }:
     <Tag
       ref={ref}
       className={`story-reveal ${className}`}
+      data-variant={variant}
       data-shown={still || seen || !observable ? 'true' : 'false'}
       style={style}
     >

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { fakeContext } from '@/test/fakeCanvas';
 
-import { drawGlobe, type FrameState } from './drawGlobe';
-import { landPoints, toSphere } from './globeMath';
+import { drawGlobe, FOCUS, type FrameState } from './drawGlobe';
+import { landPoints, toSphere, type View } from './globeMath';
 import { buildScene, type SceneLayer } from './sceneData';
 
 const land = landPoints(3000);
@@ -14,6 +14,7 @@ function frame(overrides: Partial<FrameState> = {}): FrameState {
     view: { lon: 30, lat: 15, radius: 200, cx: 250, cy: 250 },
     revealed: layers.length,
     active: 0,
+    focus: 0,
     time: 1.5,
     ...overrides,
   };
@@ -91,5 +92,21 @@ describe('drawGlobe', () => {
     const large = fakeContext();
     drawGlobe(large.ctx, landPoints(6000), [], frame());
     expect(large.counts.fillRect).toBeGreaterThan(small.counts.fillRect ?? 0);
+  });
+
+  it('rings the Red Sea once the camera settles there, and not before', () => {
+    const settled: View = { ...FOCUS, radius: 200, cx: 250, cy: 250 };
+    const strokes = (focus: number, view = settled) => {
+      const { ctx, counts } = fakeContext();
+      drawGlobe(ctx, [], [], frame({ view, focus }));
+      // The ocean disc always draws one outline.
+      return (counts.stroke ?? 0) - 1;
+    };
+    expect(strokes(0)).toBe(0);
+    expect(strokes(0.8)).toBe(0);
+    expect(strokes(0.95)).toBe(2);
+    expect(strokes(1)).toBe(2);
+    // Never drawn through the Earth when the region is on the far side.
+    expect(strokes(1, { ...settled, lon: FOCUS.lon + 180, lat: -FOCUS.lat })).toBe(0);
   });
 });

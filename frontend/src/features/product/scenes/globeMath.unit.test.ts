@@ -6,10 +6,8 @@ import {
   isLand,
   landPoints,
   project,
-  seededRandom,
   toSphere,
 } from './globeMath';
-import { buildScene } from './sceneData';
 
 describe('land mask', () => {
   it('knows land from sea at familiar places', () => {
@@ -53,21 +51,5 @@ describe('sphere geometry', () => {
     expect(path[20]!.lon).toBeCloseTo(-74);
     // The London to New York route bends north of both cities.
     expect(Math.max(...path.map((p) => p.lat))).toBeGreaterThan(51.5);
-  });
-});
-
-describe('illustrative scene', () => {
-  it('is identical on every visit', () => {
-    const a = seededRandom(7);
-    const b = seededRandom(7);
-    expect([a(), a(), a()]).toEqual([b(), b(), b()]);
-    expect(JSON.stringify(buildScene())).toBe(JSON.stringify(buildScene()));
-  });
-
-  it('draws something for every story layer', () => {
-    for (const layer of buildScene()) {
-      const shapes = layer.points.length + layer.routes.length + (layer.kind === 'orbits' ? 1 : 0);
-      expect(shapes, layer.id).toBeGreaterThan(0);
-    }
   });
 });

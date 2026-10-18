@@ -1,12 +1,22 @@
 /**
  * Chapter 5: Assess. Judgements write themselves into the report, citation threads
  * draw back to the evidence they rest on, and a challenge sweep marks one judgement
- * as contested before the alternative explanation appears. All drawing is CSS driven
- * by --progress; connector shapes are measured only on resize.
+ * as contested before the alternative explanation appears; a closing beat shows the
+ * report living on as versions and follow-ups. All drawing is CSS driven by
+ * --progress; connector shapes are measured only on resize.
  */
 import { useRef, type CSSProperties } from 'react';
 
-import { ALTERNATIVE, ASSESS_CHECKS, EVIDENCE, JUDGEMENTS, PHIA_BANDS } from '../content/research';
+import {
+  ALTERNATIVE,
+  ASSESS_CHECKS,
+  EVIDENCE,
+  JUDGEMENTS,
+  PHIA_BANDS,
+  REPORT_HEADER,
+  REPORT_NEXT,
+} from '../content/research';
+import { DrawPath } from '../motion/DrawPath';
 import { useConnectorPaths } from '../motion/useConnectorPaths';
 import { Reveal } from '../motion/Reveal';
 import { ScrollChapter } from '../motion/ScrollChapter';
@@ -38,19 +48,15 @@ export function AssessChapter() {
           </ul>
           <svg className="assess-threads" width={width} height={height} aria-hidden="true">
             {connectors.map((connector, index) => (
-              <path
-                key={connector.key}
-                d={connector.d}
-                pathLength={1}
-                style={{ '--i': index } as CSSProperties}
-              />
+              <DrawPath key={connector.key} d={connector.d} start={0.15 + index / 16} rate={4} />
             ))}
           </svg>
           <article className="assess-report" aria-label="Example assessment">
             <header>
               <span className="report-status">Ready</span>
-              <h3>Shipping through the Bab el-Mandeb strait</h3>
-              <p>Maritime activity report · Deep · Moderate confidence</p>
+              <h3>{REPORT_HEADER.title}</h3>
+              <p>{REPORT_HEADER.summary}</p>
+              <p className="report-model">{REPORT_HEADER.model}</p>
             </header>
             <ol>
               {JUDGEMENTS.map((judgement, index) => (
@@ -60,7 +66,9 @@ export function AssessChapter() {
                   data-challenged={judgement.challenged ? 'true' : 'false'}
                   style={{ '--i': index } as CSSProperties}
                 >
-                  <span className="judgement-band">{judgement.likelihood}</span>
+                  <span className="judgement-band">
+                    {judgement.likelihood} · {judgement.confidence} confidence
+                  </span>
                   <p>
                     {judgement.text}{' '}
                     {judgement.cites.map((cite) => (
@@ -76,8 +84,18 @@ export function AssessChapter() {
               ))}
             </ol>
             <p className="alternative">{ALTERNATIVE}</p>
+            <ul className="report-next" aria-label="What happens next">
+              {REPORT_NEXT.map((step, index) => (
+                <li key={step} style={{ '--i': index } as CSSProperties}>
+                  {step}
+                </li>
+              ))}
+            </ul>
           </article>
         </div>
+        <p className="story-footnote">
+          Illustrative report. It is static text, never generated here.
+        </p>
       </ScrollChapter>
       <section className="story-chapter story-assess-more" aria-label="Analytic standards">
         <div className="assess-foot story-wrap">

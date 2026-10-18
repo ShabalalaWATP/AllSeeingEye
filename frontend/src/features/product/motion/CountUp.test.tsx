@@ -44,6 +44,21 @@ describe('CountUp', () => {
     vi.useRealTimers();
   });
 
+  it('never shows a negative number when the first frame predates the start', () => {
+    const observer = installObserver();
+    let frames = 0;
+    vi.stubGlobal('requestAnimationFrame', (tick: FrameRequestCallback) => {
+      frames += 1;
+      // Browsers stamp a frame with its start time, which can precede performance.now().
+      if (frames === 1) tick(performance.now() - 16);
+      return frames;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    renderCount(false);
+    act(() => observer.enter());
+    expect(document.querySelector('[aria-hidden="true"]')?.textContent).toBe('0+');
+  });
+
   it('shows the final value at once when the story is still, and always to screen readers', () => {
     installObserver();
     renderCount(true);

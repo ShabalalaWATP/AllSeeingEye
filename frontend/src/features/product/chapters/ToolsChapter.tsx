@@ -14,8 +14,8 @@ export function ToolsChapter() {
           <p className="story-eyebrow">Filters and tools</p>
           <h2 className="story-title">Cut the picture down to what matters.</h2>
           <p className="story-lead">
-            Filter by time, place, location quality or a collection plan, replay the last hours
-            event by event, then measure, draw and plan on the same map.
+            Filter by time, place, location quality or a collection plan, replay the retained hours
+            one hour at a time, then measure, draw and plan on the same map.
           </p>
         </Reveal>
         <dl className="filter-table">
