@@ -16,6 +16,7 @@ from ase.container.alert_reports import alert_report_runner
 from ase.container.alert_routing import alert_dispatcher
 from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.auth_retention import run_auth_retention
+from ase.container.dormant_retention import run_dormant_retention
 from ase.container.live_snapshot import build_live_snapshot
 from ase.container.notifications import digest_worker, notification_dispatcher
 from ase.container.operational_retention import run_operational_retention
@@ -47,6 +48,8 @@ async def _cancel(task: asyncio.Task[None]) -> None:
 
 
 def _start_retention(cleanup: AsyncExitStack, container: Container, phases: ShutdownPhases) -> None:
+    dormant_task = asyncio.create_task(run_dormant_retention(container))
+    cleanup.push_async_callback(phases.run, "dormant_retention", lambda: _cancel(dormant_task))
     if container.settings.auth_retention_enabled:
         auth_task = asyncio.create_task(
             run_auth_retention(

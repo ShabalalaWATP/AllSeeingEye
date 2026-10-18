@@ -6589,3 +6589,76 @@ application behaviour. Six of the eleven assigned tickets are now Done; five
 remain in review. Final KAN-239 ancestry reconciliation retained the exact
 validated implementation tree before this documentation checkpoint was updated.
 No manual production rollout, contact configuration or retention enablement occurred.
+
+### 16 October 2026: KAN-241 dormant workload expiry
+
+Reproduced expired selected metadata returned for idle, paused, archived and
+deactivated accounts. Reads now exclude stored expiry and the maximum age before
+limits. Independent bounded housekeeping removes expired selected metadata,
+alerts/outbox children/feedback, consumed identities, push receipts, obsolete
+research buckets and finished AI allowance history. Private input slots expire
+without another request. Existing periods remain, with no schema or provider change.
+
+Selected cleanup preserves acquisition cursors, correction fingerprints and
+coalesced coverage loss, including fan-out beyond one batch. Fixed endpoints keep
+new arrivals from starving earlier expiry. Scan state advances only after commit.
+Replay boundaries, corrupt fail-closed state, fresh push leases, current research
+buckets, held AI reservations and live private inputs remain intact.
+
+Review found two defects before handoff: a growing tail could prevent scan
+wraparound, and timeout placement omitted failure heartbeats. Both have regression
+tests and fixes. Separate category timers also prevent stalled SQL from delaying
+memory expiry; TaskGroup owns and joins their shutdown before database disposal.
+
+Verification: 36 focused SQLite cases passed with 100% branch-inclusive coverage
+across the four new implementation modules (95% scoped floor, unchanged project
+thresholds). PostgreSQL passed 55 focused/existing cases, then 19 final selected,
+worker and separate-connection race cases after the scheduling fixes. An initial
+61-case SQLite selected/lifecycle run and the final 53-case startup/lifecycle run
+passed. Independent security review passed 33 isolated SQLite cases and synthetic
+foreign-key-enforced fan-out/outbox checks; code-quality review passed eight final
+worker cases and independently reproduced the corrected timeout heartbeat.
+
+Ruff, formatting, strict mypy over 1650 source files and three architecture
+contracts pass. The guide and T06/T07/T08/T10/T13/T14 retention entries distinguish
+access expiry, batch backlogs, correction scans, operational holds and live rollout.
+Full CI and authorised serial integration remain; no production purge is claimed.
+
+The refreshed integration retains the merged alert-outbox repair and the reviewed
+auth, operational-retention, AI-disclosure and security-contact changes. Independent
+review verified unchanged implementation files and lifecycle ownership. All 113
+combined dormant, lifecycle, startup, operational-control and outbox cases pass,
+including both optional retention workers enabled together. Ruff, formatting,
+strict mypy over 1,654 source files and all three import contracts pass.
+
+## 18 October 2026: KAN-241 final integration and security refresh
+
+Alex approved the serial retention/removal/recovery merges, excluding manual
+production operations. KAN-239 passed all 40 checks and merged as `ea68f65c`.
+Independent review confirmed that integrating that actual main preserved KAN-241's
+validated implementation tree. Fresh CI then found five fixable HIGH advisories in
+cached Debian `libexpat1` 2.8.3. The existing documented security-refresh argument
+now advances to 18 October, causing the shared API/parser package layer to update.
+
+Local image `sha256:d43547410d6c703786308d0cf657ca4b52a112537ed8152d5a051c6a2b5a7c75`
+contains Debian `libexpat1` 2.9.0-1~deb13u1 and reports system Expat 2.9.0.
+A fresh Trivy database reports zero fixable HIGH/CRITICAL findings. Five non-root,
+network-disabled controls pass: synthetic OCR, audio-bearing MP4/WebM extraction,
+and rejected CFHD in selected and secondary tracks. Python's separate bundled
+Expat remains 2.8.5; this update does not close KAN-244's unresolved native
+applicability questions. No ignores, scanner thresholds, Python pin or application
+lockfile changed. Final published-head CI remains required before integration.
+
+The next CI run exposed an existing disabled-product-page test reading robots
+metadata before its passive effect completed. Its three exact assertions now wait
+together using the existing timeout. The previously reviewed KAN-243 login-test
+repairs are also carried forward into this earlier dependency. All 48 focused
+metadata, public-route, motion, login and overview cases pass. Independent review
+confirmed unchanged authority/destination expectations and no product, timeout,
+skip or coverage-policy change.
+
+The already reviewed FIRMS credential-clear test repair from KAN-240 is carried
+forward too. Its test blob and all relevant fetch-budget, credential and fixture
+paths match the validated candidate. All 91 FIRMS runtime, fixed-deadline and
+feed-resilience cases pass on isolated SQLite; Ruff and formatting pass. Existing
+PostgreSQL evidence remains recorded on KAN-240, and fresh CI covers this candidate.

@@ -4,6 +4,27 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-241 dormant workload retention, 16 October 2026
+
+- [x] Reproduce dormant selected-index reads and exclude expired metadata before limits.
+- [x] Add bounded independent expiry, preserving correction fingerprints, coverage
+  losses, replay protection, active inputs, allowances and disabled providers.
+- [x] Freeze scan endpoints so continuing arrivals cannot starve earlier expiry.
+- [x] Complete SQLite/PostgreSQL boundary/backlog tests and two-connection races;
+  independent code-quality and security reviews report no remaining actionable defect.
+- [x] Refresh cached Debian security packages after five fixable Expat findings;
+  rebuilt-image package inspection, five native controls and the fixable scan pass.
+- [x] Repair metadata-effect ordering and retain the reviewed login-test fixes;
+  all 48 focused frontend cases pass without changing product behaviour or thresholds.
+- [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
+  deadline and resilience cases pass on SQLite with unchanged production paths.
+- [ ] Complete full CI on the committed candidate.
+- [x] Record Alex's 18 October release approval, excluding manual production operations.
+- [ ] Complete authorised integration after KAN-239 with refreshed required checks.
+
+See [dormant retention](DORMANT_RETENTION.md). Deployment starts this existing-policy
+maintenance automatically; no production purge or successful rollout is claimed.
+
 ### KAN-239 audit, usage and delivery retention, 16 October 2026
 
 - [x] Define purpose-based defaults, category/global holds and quarterly ownership.
@@ -13,7 +34,7 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   late completion, retryable delivery and monthly-budget invariants on SQLite.
 - [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
   independent code-quality and security reviews found no actionable defect.
-- [ ] Complete full CI and authorised integration after KAN-242 and KAN-238.
+- [x] Pass all 40 checks and authorised integration as `ea68f65c`; KAN-239 is Done.
 - [ ] Obtain installation policy/rollout approval before any production purge.
 
 See [the operational retention procedure](OPERATIONAL_RETENTION.md).

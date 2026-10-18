@@ -4,12 +4,13 @@ from collections.abc import Callable
 from datetime import datetime, timedelta
 from uuid import UUID, uuid5
 
-from sqlalchemy import delete, exists, select, update
+from sqlalchemy import exists, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.dormant_retention import prune_push_receipts
 from ase.adapters.persistence.operational_models import AlertRow
 from ase.adapters.persistence.web_push_devices import remove_push_device
 from ase.adapters.persistence.web_push_models import PushDeliveryRow, PushDeviceRow
@@ -69,9 +70,7 @@ async def enqueue_push(
             )
             .values(state="uncertain", updated_at=now)
         )
-        await session.execute(
-            delete(PushDeliveryRow).where(PushDeliveryRow.created_at < now - timedelta(days=7))
-        )
+        await prune_push_receipts(session, now)
         ids = list(
             await session.scalars(
                 select(PushDeviceRow.id)
