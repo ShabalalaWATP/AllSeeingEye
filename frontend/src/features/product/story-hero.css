@@ -204,9 +204,12 @@
   overflow: hidden;
   mask-image: linear-gradient(transparent, black 12%, black 82%, transparent);
 }
-[data-mode='pinned'] .layer-list > li:first-child {
-  margin-top: calc((2 - var(--active, 0)) * var(--row));
-  transition: margin-top 500ms var(--ease-out);
+/* Every row moves together so the active one sits third; transform only, never layout. */
+[data-mode='pinned'] .layer-row {
+  transform: translateY(calc((2 - var(--active, 0)) * var(--row)));
+  transition:
+    opacity 400ms,
+    transform 500ms var(--ease-out);
 }
 .layer-row {
   display: grid;
@@ -266,7 +269,7 @@
 [data-motion='still'] [data-mode] .layer-row[data-state] .layer-detail {
   animation: none;
 }
-[data-motion='still'] [data-mode] :is(.layer-list > li:first-child, .layer-row) {
+[data-motion='still'] [data-mode] .layer-row {
   transition: none;
 }
 [data-mode='pinned'] .layer-row[data-state='active'] .layer-label {
