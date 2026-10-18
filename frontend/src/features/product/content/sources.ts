@@ -3,6 +3,8 @@
  * them (features/sources and lib/categories). Counts were taken from the backend
  * catalogue for this release (scheduled connectors plus on-demand research specs,
  * before installation keys); a deployment's own Sources page shows its real state.
+ * Scheduled figures are the live feed connectors built with no keys configured, by
+ * topic; on-demand figures are the research specs (recounted 18 October 2026).
  * Named providers are public bodies and services whose terms allow this use; sources
  * with non-commercial terms are deliberately not named here.
  */
@@ -28,19 +30,19 @@ function topic(
 }
 
 export const SOURCE_TOPICS: readonly SourceTopic[] = [
-  topic('disaster', 13, 2, [
+  topic('disaster', 15, 2, [
     'USGS',
     'GDACS',
     'NASA FIRMS',
     'NOAA tsunami centres',
     'Smithsonian GVP',
   ]),
-  topic('conflict', 5, 0, ['UCDP', 'GDELT events', 'Think-tank assessments']),
-  topic('news', 96, 62, ['International broadcasters', 'Multilingual news research', 'GDELT']),
-  topic('aviation', 6, 0, ['Volunteer ADS-B network', 'Military and PIA views']),
-  topic('maritime', 3, 0, ['AIS streams', 'NGA navigation warnings']),
+  topic('conflict', 4, 0, ['UCDP', 'GDELT events', 'Think-tank assessments']),
+  topic('news', 97, 62, ['International broadcasters', 'Multilingual news research', 'GDELT']),
+  topic('aviation', 7, 0, ['Volunteer ADS-B network', 'Military and PIA views']),
+  topic('maritime', 2, 0, ['AIS streams', 'NGA navigation warnings']),
   topic('space', 8, 1, ['CelesTrak', 'NOAA SWPC', 'Launch Library 2', 'Sentinel-2 footprints']),
-  topic('cyber', 21, 28, [
+  topic('cyber', 20, 28, [
     'CISA KEV',
     'National CERT advisories',
     'Internet outage signals',
@@ -49,7 +51,7 @@ export const SOURCE_TOPICS: readonly SourceTopic[] = [
   ]),
   topic('social', 68, 3, ['Curated Telegram channels', 'Mastodon', 'Bluesky']),
   topic('political', 11, 12, ['FCDO', 'UK Parliament questions', 'UN', 'US State Department']),
-  topic('humanitarian', 6, 7, ['WHO outbreaks', 'IFRC GO', 'OCHA', 'IOM DTM', 'IPC']),
+  topic('humanitarian', 5, 7, ['WHO outbreaks', 'IFRC GO', 'OCHA', 'IOM DTM', 'IPC']),
   topic('economic', 26, 45, ['ONS', 'Bank of England', 'SEC EDGAR', 'GLEIF', 'UK sanctions list']),
 ];
 

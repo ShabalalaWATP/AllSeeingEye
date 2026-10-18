@@ -58,9 +58,23 @@ describe('product story content', () => {
 
   it('covers all eleven source topics and adds up its own totals', () => {
     expect(SOURCE_TOPICS).toHaveLength(11);
-    // Counted from the backend catalogue on 7 October 2026 (KAN-171 claims register).
+    // Recounted from the backend catalogue on 18 October 2026: live connectors built
+    // with no keys, and research specs (KAN-171 claims register, source recount).
     expect(SCHEDULED_TOTAL).toBe(263);
     expect(ON_DEMAND_TOTAL).toBe(160);
+    expect(Object.fromEntries(SOURCE_TOPICS.map((topic) => [topic.id, topic.scheduled]))).toEqual({
+      disaster: 15,
+      conflict: 4,
+      news: 97,
+      aviation: 7,
+      maritime: 2,
+      space: 8,
+      cyber: 20,
+      social: 68,
+      political: 11,
+      humanitarian: 5,
+      economic: 26,
+    });
     expect(SOURCE_TOTAL).toBe(
       SOURCE_TOPICS.reduce((sum, topic) => sum + topic.scheduled + topic.onDemand, 0),
     );
