@@ -164,7 +164,7 @@
   }
 }
 @media (max-width: 640px) {
-  /* The pinned hero must fit one phone screen; the counts reappear in later chapters. */
+  /* The hero opens within one phone screen; the counts reappear in later chapters. */
   .hero-stats,
   .hero-cue {
     display: none;
@@ -275,6 +275,10 @@
 [data-mode='pinned'] .layer-row[data-state='active'] .layer-label {
   font-size: 1.25rem;
 }
+.story-observe:not([data-mode='pinned']) .story-stage {
+  /* Unpinned, the globe leads the section so its beats play while it is on screen. */
+  align-items: start;
+}
 .story-observe:not([data-mode='pinned']) .layer-list {
   max-height: none;
   mask-image: none;
@@ -289,15 +293,5 @@
   }
   .observe-globe {
     height: 46svh;
-  }
-  [data-mode='pinned'].story-observe .observe-copy .story-lead {
-    display: none;
-  }
-  [data-mode='pinned'].story-observe .story-title {
-    font-size: 1.6rem;
-  }
-  [data-mode='pinned'] .layer-list {
-    max-height: 30svh;
-    margin-top: 0.75rem;
   }
 }

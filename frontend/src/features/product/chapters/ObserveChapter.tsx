@@ -1,5 +1,5 @@
 /**
- * Chapter 1: Observe. A pinned globe reveals every map layer in the app's own order,
+ * Chapter 1: Observe. A globe, pinned on roomy screens, reveals every map layer in the app's own order,
  * one per scroll beat, while the list beside it explains the layer and the filters it
  * offers. The final beat turns the Earth towards the Red Sea, where the Ask chapter's
  * question begins.
@@ -15,6 +15,11 @@ import { SCENE_COUNTS } from '../scenes/sceneData';
 
 const STEPS = STORY_LAYERS.length + 1;
 const LAYER_SPAN = STORY_LAYERS.length / STEPS;
+/**
+ * Unpinned (phones, tablets, short windows), the globe leads a long section, so its
+ * beats play early in the pass, while the globe is still on screen.
+ */
+const OBSERVE_PASS = [0.04, 0.2] as const;
 
 export function ObserveChapter() {
   const controls = useRef<GlobeControls>({ revealed: 0, active: 0, focus: 0 });
@@ -39,7 +44,7 @@ export function ObserveChapter() {
       id="observe"
       label="Observe"
       length={STEPS * 0.32}
-      pinNarrow
+      passWindow={OBSERVE_PASS}
       steps={STEPS}
       onStep={onStep}
       onProgress={onProgress}

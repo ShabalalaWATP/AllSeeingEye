@@ -22,6 +22,12 @@ const STATS = [
   { value: 7, suffix: '', label: 'probability bands' },
 ];
 
+/**
+ * Unpinned, the hero is already in view at load (half way through its pass), so the
+ * Eye's dissolve plays over the second half, as the hero leaves the screen.
+ */
+const HERO_PASS = [0.5, 1] as const;
+
 const FINE_POINTER = '(hover: hover) and (pointer: fine)';
 
 function subscribePointer(onChange: () => void): () => void {
@@ -44,7 +50,7 @@ export function HeroChapter() {
       id="top"
       label="The All Seeing Eye"
       length={0.9}
-      pinNarrow
+      passWindow={HERO_PASS}
       className="story-hero"
     >
       <div className="hero-grid" aria-hidden="true" />
