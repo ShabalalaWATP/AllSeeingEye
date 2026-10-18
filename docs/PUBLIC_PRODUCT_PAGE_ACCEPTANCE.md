@@ -3,6 +3,7 @@
 KAN-172 covers the opt-in `/enterprise` route. The existing chapters remain in
 place. The cost estimator remains hidden pending approved figures. This record
 separates implemented controls from browser and deployment evidence.
+The page's capability claims are checked in the draft [claims register](product-page/claims-register.md) (KAN-171).
 
 ## Current mobile target and result, 10 October 2026
 

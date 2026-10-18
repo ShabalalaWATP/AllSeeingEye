@@ -167,6 +167,7 @@ app is built; they do not replace checking the current code and tests.
 - [Implementation plan](MASTER_IMPLEMENTATION_PLAN.md): the maintained status record and checklist.
 - [Development story](DEVELOPMENT_STORY.md): chronological record of the build.
 - [Product direction](OSINT_PRODUCT_DIRECTION.md): the automated-research product objective from 6 September 2026.
+- [Public product page specification](product-page/README.md): draft narrative, claims register, storyboard, motion and visual direction for `/enterprise` (KAN-171), awaiting approval.
 - [Automated research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md): delivered research milestones and open acceptance items.
 - [Research and subscriptions plan](RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md), with its [task packets and execution log](plans/research-subscriptions/EXECUTION_LOG.md).
 - [Performance repair](PERFORMANCE_REPAIR.md), with the [backend](PERF_BACKEND_AUDIT.md) and [rendering](PERF_RENDERING_AUDIT.md) audits.
