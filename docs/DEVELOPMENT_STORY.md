@@ -6832,3 +6832,19 @@ legal, children's-access and operating work in KAN-246, KAN-188 and KAN-245. App
 supplies no new operating evidence, certifies no statutory compliance and excludes
 manual production rollout. Independent review found no loss of these limitations.
 Final integration and published-head CI remain required before merging.
+
+## 18 October 2026: approved retention delivery and remaining rollout
+
+KAN-241's final candidate `178d912c` passed all 40 checks and merged as `888b4748`;
+the merged tree exactly matches the tested candidate. Backend coverage reports
+94% overall; frontend branch coverage is 92.34%, with 5,196 passing frontend tests
+and one existing skip. PostgreSQL migration and concurrency checks passed. KAN-241
+is Done, following KAN-239's approved merge `ea68f65c`.
+
+KAN-216 retains manual rollout and live acceptance even though its original
+twenty child tickets and twelve mapped implementation items are Done. A private
+draft records migration 0090–0095 effects, preflight evidence and recovery limits.
+Read-only public checks confirm basic availability and anonymous administrator
+denial, not the deployed version. The existing operator handoff, verified live
+state, backup/rehearsal evidence and separate rollout approval remain necessary.
+No manual production operation was performed.

@@ -4,6 +4,22 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-216 rollout acceptance, 18 October 2026
+
+The original twenty child tickets and twelve mapped implementation items are Done.
+KAN-216 retains the manual production rollout and live acceptance recorded in Jira.
+The 18 October retention and assessment merge approvals exclude that rollout.
+
+- [x] Prepare the migration 0090–0095 effects and recovery limits in the private
+  operator draft; record basic read-only public availability checks in Jira.
+- [ ] Obtain the existing operator handoff and verify the live version, images,
+  database revision, configuration, backup and isolated recovery rehearsal.
+- [ ] Present the exact final release and maintenance plan for separate approval.
+- [ ] Complete the approved rollout and live acceptance before closing the epic.
+
+Public health/readiness responses do not identify the deployed version. No manual
+production rollout, optional cleanup enablement, live removal or restore is claimed.
+
 ### KAN-189 online safety assessment, 16 October 2026
 
 - [x] Map sharing, search, moderation and account admission to current source.
@@ -15,7 +31,9 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
   regulated-service treatment for planning without inventing a statutory UK-link finding.
 - [x] Track remaining dates, children's access and operating validation in KAN-246.
 - [x] Record Alex's 18 October assessment approval, retaining the legal/operating follow-ups.
-- [ ] Complete independent review, CI and authorised integration of the documents.
+- [x] Complete independent review of the assessment, dated approval and integration.
+- Final CI and authorised merge evidence are maintained on
+  [KAN-189](https://alex-orr.atlassian.net/browse/KAN-189) and PR #211.
 
 See [the assessment](compliance/ONLINE_SAFETY.md). This working assessment does not
 certify statutory compliance, an exemption, adult-only access or a live policy change.
@@ -72,9 +90,9 @@ backup/provider reconciliation remain separate; KAN-243 owns recovery reconcilia
   all 48 focused frontend cases pass without changing product behaviour or thresholds.
 - [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
   deadline and resilience cases pass on SQLite with unchanged production paths.
-- [ ] Complete full CI on the committed candidate.
+- [x] Pass all 40 checks on `178d912c`, including PostgreSQL, coverage and image gates.
 - [x] Record Alex's 18 October release approval, excluding manual production operations.
-- [ ] Complete authorised integration after KAN-239 with refreshed required checks.
+- [x] Merge after KAN-239 as `888b4748`, preserving the tested tree; KAN-241 is Done.
 
 See [dormant retention](DORMANT_RETENTION.md). Deployment starts this existing-policy
 maintenance automatically; no production purge or successful rollout is claimed.
