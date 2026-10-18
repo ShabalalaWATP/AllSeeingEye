@@ -68,6 +68,10 @@
   opacity: var(--t);
   transform: translateY(calc((1 - var(--t)) * 14px)) scale(calc(0.92 + var(--t) * 0.08));
 }
+.scope-chip[data-from-map='true'] {
+  border-color: var(--story-ember);
+  background: var(--story-ember-faint);
+}
 .scope-chip span {
   color: var(--story-muted);
   font: 0.6875rem var(--font-mono);
@@ -132,6 +136,28 @@
   display: grid;
   gap: 0.2rem;
 }
+.collect-stage {
+  position: relative;
+}
+.collect-arcs {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  width: clamp(1.5rem, 4vw, 4rem);
+  overflow: visible;
+  pointer-events: none;
+}
+.collect-arcs path {
+  stroke: var(--story-cyan);
+  stroke-width: 1.25;
+  opacity: 0.6;
+}
+.collect-arcs path:last-of-type {
+  stroke: var(--story-amber);
+}
+.collect-scope {
+  fill: var(--story-ember);
+}
 .evidence-stack {
   display: grid;
   gap: 0.6rem;
@@ -164,10 +190,15 @@
 }
 .evidence-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
   color: var(--story-muted);
   font-size: 0.8125rem;
+}
+.evidence-receipt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
 }
 .evidence-grade {
   display: inline-grid;
@@ -213,11 +244,8 @@
   pointer-events: none;
 }
 .assess-threads path {
-  fill: none;
   stroke: var(--story-ember);
   stroke-width: 1.5;
-  stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - clamp(0, var(--progress) * 4 - 0.6 - var(--i) * 0.25, 1));
   opacity: 0.75;
   filter: drop-shadow(0 0 6px var(--story-ember-glow));
 }
@@ -239,6 +267,10 @@
 .assess-report header p {
   color: var(--story-muted);
   font-size: 0.8125rem;
+}
+.assess-report header .report-model {
+  margin-top: 0.2rem;
+  font: 0.75rem var(--font-mono);
 }
 .report-status {
   padding: 0.15rem 0.55rem;
@@ -292,6 +324,27 @@
   padding-top: 0.8rem;
   border-top: 1px dashed var(--story-line);
 }
+/* Closing beat: the saved report carries on as versions and follow-ups. */
+.report-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+.report-next li {
+  --t: clamp(0, calc(var(--progress) * 6 - 5 - var(--i) * 0.3), 1);
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--story-line);
+  border-radius: 999px;
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  opacity: var(--t);
+  transform: translateY(calc((1 - var(--t)) * 8px));
+}
+.report-next li:first-child {
+  border-color: var(--story-good);
+  color: var(--story-good);
+}
 .story-assess-more .story-stage {
   padding-top: 2rem;
 }
@@ -323,7 +376,8 @@
   .assess-stage {
     grid-template-columns: 1fr;
   }
-  .assess-threads {
+  .assess-threads,
+  .collect-arcs {
     display: none;
   }
   .yardstick {

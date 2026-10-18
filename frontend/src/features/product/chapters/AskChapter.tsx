@@ -1,7 +1,8 @@
 /**
  * Chapter 3: Ask. The example question types itself as the reader scrolls, then its
- * scope chips snap in and the depth selector steps from Basic to Advanced. Typing is
- * written straight into a text node, so scrolling does not re-render React.
+ * scope chips snap in (led by the area selected on the map in the Observe chapter) and
+ * the depth selector steps from Basic to Advanced. Typing is written straight into a
+ * text node, so scrolling does not re-render React.
  */
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 
@@ -42,7 +43,9 @@ export function AskChapter() {
         <h2 className="story-title">Start with a question, not a search box.</h2>
         <p className="story-lead">
           Every run has an explicit scope: places, dates, languages, sources, a report template and
-          a depth. Scope is what keeps the collection honest and the assessment checkable.
+          a depth. Scope is what keeps the collection honest and the assessment checkable. Saved
+          Research Briefs keep explicit requirements for reuse, and supported private documents and
+          media are another input route.
         </p>
         <ul className="tick-list">
           {ASK_FEATURES.map((feature, index) => (
@@ -70,9 +73,15 @@ export function AskChapter() {
         <p className="console-label">Scope</p>
         <ul className="scope-chips">
           {SCOPE_CHIPS.map((chip, index) => (
-            <li key={chip.label} className="scope-chip" style={{ '--i': index } as CSSProperties}>
+            <li
+              key={chip.label}
+              className="scope-chip"
+              data-from-map={chip.fromMap ? 'true' : undefined}
+              style={{ '--i': index } as CSSProperties}
+            >
               <span>{chip.label}</span>
               {chip.value}
+              {chip.fromMap ? <span className="sr-only"> (carried over from the map)</span> : null}
             </li>
           ))}
         </ul>
@@ -86,6 +95,7 @@ export function AskChapter() {
             </li>
           ))}
         </ul>
+        <p className="story-footnote">Illustrative request. Nothing is sent from this page.</p>
       </div>
     </ScrollChapter>
   );
