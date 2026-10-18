@@ -6630,3 +6630,21 @@ review verified unchanged implementation files and lifecycle ownership. All 113
 combined dormant, lifecycle, startup, operational-control and outbox cases pass,
 including both optional retention workers enabled together. Ruff, formatting,
 strict mypy over 1,654 source files and all three import contracts pass.
+
+## 18 October 2026: KAN-241 final integration and security refresh
+
+Alex approved the serial retention/removal/recovery merges, excluding manual
+production operations. KAN-239 passed all 40 checks and merged as `ea68f65c`.
+Independent review confirmed that integrating that actual main preserved KAN-241's
+validated implementation tree. Fresh CI then found five fixable HIGH advisories in
+cached Debian `libexpat1` 2.8.3. The existing documented security-refresh argument
+now advances to 18 October, causing the shared API/parser package layer to update.
+
+Local image `sha256:d43547410d6c703786308d0cf657ca4b52a112537ed8152d5a051c6a2b5a7c75`
+contains Debian `libexpat1` 2.9.0-1~deb13u1 and reports system Expat 2.9.0.
+A fresh Trivy database reports zero fixable HIGH/CRITICAL findings. Five non-root,
+network-disabled controls pass: synthetic OCR, audio-bearing MP4/WebM extraction,
+and rejected CFHD in selected and secondary tracks. Python's separate bundled
+Expat remains 2.8.5; this update does not close KAN-244's unresolved native
+applicability questions. No ignores, scanner thresholds, Python pin or application
+lockfile changed. Final published-head CI remains required before integration.
