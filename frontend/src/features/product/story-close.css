@@ -9,7 +9,7 @@
 }
 .trust-stack {
   display: grid;
-  gap: calc(0.3rem + var(--progress) * 1rem);
+  gap: 1.3rem;
   perspective: 1200px;
 }
 .trust-layer {
@@ -18,8 +18,9 @@
   border: 1px solid color-mix(in srgb, var(--story-ember) calc(var(--t) * 45%), var(--story-line));
   border-radius: 1rem;
   background: linear-gradient(120deg, var(--story-surface-2), var(--story-ground-2));
-  transform: rotateX(calc((1 - var(--t)) * 35deg))
-    translateX(calc((var(--i) - 1.5) * var(--t) * 12px));
+  /* The layers start 1rem closer each and move apart; the gap itself never animates. */
+  transform: translateY(calc((1 - var(--progress)) * var(--i) * -1rem))
+    rotateX(calc((1 - var(--t)) * 35deg)) translateX(calc((var(--i) - 1.5) * var(--t) * 12px));
   opacity: calc(0.35 + var(--t) * 0.65);
 }
 .trust-layer h3 {
