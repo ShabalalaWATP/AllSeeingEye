@@ -33,6 +33,7 @@ REVIEWED_ADDITIONS = {
     ("admin_enquiries", "PATCH", "/api/admin/enquiries/{enquiry_id}"),
     ("admin_enquiries", "DELETE", "/api/admin/enquiries/{enquiry_id}"),
     ("schedules", "PUT", "/api/schedules/{schedule_id}/brief-settings"),
+    ("account", "POST", "/api/me/terms-acceptance"),
 }
 
 
