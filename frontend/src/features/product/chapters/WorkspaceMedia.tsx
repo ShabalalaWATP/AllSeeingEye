@@ -9,6 +9,7 @@ import { useEffect, useRef } from 'react';
 import type { WorkspaceMedia as Media } from '../content/platform';
 import { useStoryMotion } from '../motion/useStoryMotion';
 
+// No workspace uses a video yet; Loop stays for the loops planned in KAN-179.
 function Loop({ media }: { media: Media }) {
   const { idle } = useStoryMotion();
   const ref = useRef<HTMLVideoElement>(null);

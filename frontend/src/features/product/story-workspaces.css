@@ -34,10 +34,10 @@
   cursor: pointer;
   transition: border-color 160ms;
 }
-.workspaces-controls button:hover:not(:disabled) {
+.workspaces-controls button:hover:not([aria-disabled='true']) {
   border-color: var(--story-muted);
 }
-.workspaces-controls button:disabled {
+.workspaces-controls button[aria-disabled='true'] {
   opacity: 0.4;
   cursor: default;
 }

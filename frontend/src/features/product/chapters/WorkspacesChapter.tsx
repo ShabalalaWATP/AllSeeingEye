@@ -4,7 +4,8 @@
  * swipeable row. Previous and next buttons, and the arrow keys on the focusable
  * gallery, move one panel at a time and announce the position. A still story shows
  * the panels as an ordinary vertical list. Panels hold no controls, so focus moves
- * from the gallery to its buttons and on, in visual order.
+ * from the gallery to its buttons and on, in visual order. At either end a button is
+ * marked unavailable rather than disabled, so pressing it keeps focus where it is.
  */
 import type { CSSProperties } from 'react';
 
@@ -45,7 +46,7 @@ function WorkspaceCard({ workspace, number }: { workspace: Workspace; number: nu
 
 export function WorkspacesChapter({ panels = WORKSPACES }: { panels?: readonly Workspace[] }) {
   const { still } = useStoryMotion();
-  const { trackRef, viewportRef, index, last, goTo, onProgress, onKeyDown } = useHorizontalPin(
+  const { trackRef, viewportRef, index, last, step, onProgress, onKeyDown } = useHorizontalPin(
     panels.length,
   );
   const carousel = !still;
@@ -78,8 +79,8 @@ export function WorkspacesChapter({ panels = WORKSPACES }: { panels?: readonly W
             <button
               type="button"
               aria-label="Previous workspace"
-              disabled={index === 0}
-              onClick={() => goTo(index - 1)}
+              aria-disabled={index === 0}
+              onClick={() => step(-1)}
             >
               <span aria-hidden="true">←</span>
             </button>
@@ -89,8 +90,8 @@ export function WorkspacesChapter({ panels = WORKSPACES }: { panels?: readonly W
             <button
               type="button"
               aria-label="Next workspace"
-              disabled={index === last}
-              onClick={() => goTo(index + 1)}
+              aria-disabled={index === last}
+              onClick={() => step(1)}
             >
               <span aria-hidden="true">→</span>
             </button>

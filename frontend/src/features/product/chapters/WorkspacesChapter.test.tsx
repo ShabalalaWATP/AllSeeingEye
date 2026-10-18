@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import {
   afterEach,
   beforeEach,
@@ -13,6 +13,7 @@ import {
 import { mockMatchMedia } from '@/test/env';
 
 import { WORKSPACES, type Workspace } from '../content/platform';
+import { SETTLE_MS } from '../motion/useHorizontalPin';
 import { StoryMotionContext } from '../motion/useStoryMotion';
 import { WorkspacesChapter } from './WorkspacesChapter';
 
@@ -77,13 +78,71 @@ describe('workspace gallery while pinned', () => {
     expect(gallery).toHaveAttribute('aria-roledescription', 'carousel');
     expect(position()).toHaveTextContent(`Panel 1 of ${total}`);
     expect(position()).toHaveAttribute('aria-live', 'polite');
-    expect(screen.getByRole('button', { name: 'Previous workspace' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous workspace' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Next workspace' }));
     // Travel is 3,400 - 1,000 px; panel 2 of 7 sits a sixth of the way along it.
     expect(scrollWindow).toHaveBeenLastCalledWith({ top: 900, behavior: 'smooth' });
     expect(position()).toHaveTextContent(`Panel 2 of ${total}`);
-    expect(screen.getByRole('button', { name: 'Previous workspace' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Previous workspace' })).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
+  });
+
+  it('keeps focus on an end button and does nothing when it is pressed', async () => {
+    renderGallery(false);
+    const chapter = screen.getByRole('region', { name: 'Specialist workspaces' });
+    await waitFor(() => expect(chapter.style.getPropertyValue('--progress')).toBe('0.0000'));
+    const previous = screen.getByRole('button', { name: 'Previous workspace' });
+    previous.focus();
+    fireEvent.click(previous);
+    expect(scrollWindow).not.toHaveBeenCalled();
+    expect(previous).toHaveFocus();
+
+    const next = screen.getByRole('button', { name: 'Next workspace' });
+    next.focus();
+    for (let press = 1; press < total; press++) fireEvent.click(next);
+    expect(position()).toHaveTextContent(`Panel ${total} of ${total}`);
+    expect(next).toHaveAttribute('aria-disabled', 'true');
+    expect(next).toBeEnabled();
+    const calls = scrollWindow.mock.calls.length;
+    fireEvent.click(next);
+    expect(scrollWindow).toHaveBeenCalledTimes(calls);
+    expect(position()).toHaveTextContent(`Panel ${total} of ${total}`);
+    expect(next).toHaveFocus();
+  });
+
+  it('steps on from the chosen panel while the smooth scroll is still on its way', async () => {
+    const rect = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
+    renderGallery(false);
+    const chapter = screen.getByRole('region', { name: 'Specialist workspaces' });
+    await waitFor(() => expect(chapter.style.getPropertyValue('--progress')).toBe('0.0000'));
+    const gallery = screen.getByRole('region', { name: 'Workspace gallery' });
+    fireEvent.keyDown(gallery, { key: 'ArrowRight' });
+    // The scroll has barely started: its progress still rounds to the first panel.
+    rect.mockReturnValue({ top: -100, height: 3400 } as DOMRect);
+    fireEvent.scroll(window);
+    await waitFor(() => expect(chapter.style.getPropertyValue('--progress')).toBe('0.0417'));
+    expect(position()).toHaveTextContent(`Panel 2 of ${total}`);
+
+    fireEvent.keyDown(gallery, { key: 'ArrowRight' });
+    expect(position()).toHaveTextContent(`Panel 3 of ${total}`);
+    // Panel 3 sits a third of the way along the 2,400 px travel from the section's top.
+    expect(scrollWindow).toHaveBeenLastCalledWith({ top: 700, behavior: 'smooth' });
+
+    // Once the scroll ends, the position follows wherever the track really stopped.
+    rect.mockReturnValue({ top: -800, height: 3400 } as DOMRect);
+    fireEvent.scroll(window);
+    await waitFor(() => expect(chapter.style.getPropertyValue('--progress')).toBe('0.3333'));
+    fireEvent(window, new Event('scrollend'));
+    expect(position()).toHaveTextContent(`Panel 3 of ${total}`);
+    rect.mockReturnValue({ top: -400, height: 3400 } as DOMRect);
+    fireEvent.scroll(window);
+    await waitFor(() => expect(position()).toHaveTextContent(`Panel 2 of ${total}`));
   });
 
   it('moves with the arrow keys on the focusable gallery and stops at either end', async () => {
@@ -102,7 +161,10 @@ describe('workspace gallery while pinned', () => {
       fireEvent.keyDown(gallery, { key: 'ArrowRight' });
     expect(scrollWindow).toHaveBeenLastCalledWith({ top: 2900, behavior: 'smooth' });
     expect(position()).toHaveTextContent(`Panel ${total} of ${total}`);
-    expect(screen.getByRole('button', { name: 'Next workspace' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next workspace' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   it('labels each panel as a slide in visual order', () => {
@@ -150,9 +212,41 @@ describe('workspace gallery as a swipe row', () => {
     expect(scrollViewport).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
     expect(position()).toHaveTextContent(`Panel 2 of ${total}`);
 
+    // The row settles on the chosen panel, then follows swipes again.
+    fireEvent(viewport!, new Event('scrollend'));
     Object.defineProperty(viewport, 'scrollLeft', { configurable: true, value: 1210 });
     fireEvent.scroll(viewport!);
     await waitFor(() => expect(position()).toHaveTextContent(`Panel 4 of ${total}`));
+  });
+
+  it('ignores its own smooth scroll until it settles, even where scrollend never fires', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = renderGallery(false);
+      const viewport = container.querySelector<HTMLElement>('.workspaces-viewport')!;
+      screen
+        .getAllByRole('group')
+        .forEach((slide, index) =>
+          Object.defineProperty(slide, 'offsetLeft', { configurable: true, value: index * 400 }),
+        );
+      const gallery = screen.getByRole('region', { name: 'Workspace gallery' });
+      fireEvent.keyDown(gallery, { key: 'ArrowRight' });
+      Object.defineProperty(viewport, 'scrollLeft', { configurable: true, value: 120 });
+      fireEvent.scroll(viewport);
+      act(() => vi.advanceTimersByTime(20));
+      expect(position()).toHaveTextContent(`Panel 2 of ${total}`);
+      fireEvent.keyDown(gallery, { key: 'ArrowRight' });
+      expect(scrollViewport).toHaveBeenLastCalledWith({ left: 800, behavior: 'smooth' });
+      expect(position()).toHaveTextContent(`Panel 3 of ${total}`);
+
+      act(() => vi.advanceTimersByTime(SETTLE_MS));
+      Object.defineProperty(viewport, 'scrollLeft', { configurable: true, value: 1610 });
+      fireEvent.scroll(viewport);
+      act(() => vi.advanceTimersByTime(20));
+      expect(position()).toHaveTextContent(`Panel 5 of ${total}`);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
