@@ -2,7 +2,9 @@
  * Captures the product page's illustrative assets and Open Graph image (KAN-179) from
  * development preview pages and their synthetic fixtures. Each image is written as
  * WebP (encoded in the page with canvas.toBlob) with a PNG fallback, and the typed
- * manifest records the sizes. Run through `pnpm capture:assets`; see docs/images/README.md.
+ * manifest records the sizes. Images are staged first: public/product and the manifest
+ * change only once every target is captured, so a failed or skipped target never drops
+ * a committed asset. Run through `pnpm capture:assets`; see docs/images/README.md.
  */
 import { spawnSync } from 'node:child_process';
 import {
@@ -26,6 +28,7 @@ import {
   type CaptureTarget,
 } from './captureTargets';
 import { CAPTURE_PATHS } from './capturePaths';
+import { missingCaptures, promoteCaptures, stagedImage, STAGING_DIR } from './captureStaging';
 
 const { frontend: FRONTEND, productDir: PRODUCT_DIR, skippedLog: SKIPPED_LOG } = CAPTURE_PATHS;
 const OG_FILE = resolve(FRONTEND, 'public/brand/og-enterprise.png');
@@ -144,8 +147,8 @@ for (const target of CAPTURE_TARGETS) {
     );
     const png = await page.screenshot({ animations: 'disabled', caret: 'hide' });
     const webp = await encode(page, png, 'image/webp');
-    writeFileSync(resolve(PRODUCT_DIR, `${target.id}.png`), png);
-    writeFileSync(resolve(PRODUCT_DIR, `${target.id}.webp`), webp);
+    writeFileSync(stagedImage(STAGING_DIR, target.id, 'png'), png);
+    writeFileSync(stagedImage(STAGING_DIR, target.id, 'webp'), webp);
   });
 }
 
@@ -243,26 +246,18 @@ function quote(text: string): string {
   return `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 }
 
-/** This run's captures, read from disk: the global setup cleared older ones. */
+/** This run's captures, read from staging: the global setup emptied it. */
 function capturedAssets() {
   return CAPTURE_TARGETS.flatMap((target) => {
-    const png = resolve(PRODUCT_DIR, `${target.id}.png`);
-    const webp = resolve(PRODUCT_DIR, `${target.id}.webp`);
+    const png = stagedImage(STAGING_DIR, target.id, 'png');
+    const webp = stagedImage(STAGING_DIR, target.id, 'webp');
     if (!existsSync(png) || !existsSync(webp)) return [];
     const bytes = statSync(png).size + statSync(webp).size;
     return [{ id: target.id, alt: target.alt, ...size(readFileSync(png)), bytes }];
   });
 }
 
-// Runs again after a worker restart, so each pass rewrites the complete manifest.
-test.afterAll(() => {
-  const captured = capturedAssets();
-  const skipped = existsSync(SKIPPED_LOG)
-    ? readFileSync(SKIPPED_LOG, 'utf8')
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => JSON.parse(line) as unknown)
-    : [];
+function writeManifest(captured: ReturnType<typeof capturedAssets>): void {
   const entries = captured
     .map((asset) =>
       [
@@ -310,9 +305,32 @@ test.afterAll(() => {
   );
   // Keep the generated module in the repository's formatting.
   spawnSync('pnpm', ['exec', 'prettier', '--write', MANIFEST], { cwd: FRONTEND, shell: true });
+}
+
+// Runs again after a worker restart; only a pass that finds every target staged
+// replaces the committed images and rewrites the manifest.
+test.afterAll(() => {
+  const ids = CAPTURE_TARGETS.map((target) => target.id);
+  const captured = capturedAssets();
+  const missing = missingCaptures(STAGING_DIR, ids);
+  const skipped = existsSync(SKIPPED_LOG)
+    ? readFileSync(SKIPPED_LOG, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line) as unknown)
+    : [];
+  const complete = missing.length === 0;
+  if (complete) {
+    promoteCaptures(STAGING_DIR, PRODUCT_DIR, ids);
+    writeManifest(captured);
+  }
   mkdirSync(dirname(REPORT), { recursive: true });
-  writeFileSync(
-    REPORT,
-    `${JSON.stringify({ captured, skipped, notCaptured: NOT_CAPTURED }, null, 2)}\n`,
-  );
+  const report = { complete, captured, missing, skipped, notCaptured: NOT_CAPTURED };
+  writeFileSync(REPORT, `${JSON.stringify(report, null, 2)}\n`);
+  if (!complete) {
+    throw new Error(
+      `Not captured: ${missing.join(', ')}. public/product and the manifest are unchanged; ` +
+        'fix the target, or move it to NOT_CAPTURED, and run the whole capture again.',
+    );
+  }
 });
