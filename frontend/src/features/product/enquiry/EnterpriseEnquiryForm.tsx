@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 
 import { DEPLOYMENTS, USER_COUNTS, type EnquiryDraft } from './enquiryFields';
+import { useEnquiryPrefillReceiver } from './enquiryPrefill';
 import { useEnterpriseEnquiry } from './useEnterpriseEnquiry';
 
 const CONTACT_FIELDS = [
@@ -26,11 +27,27 @@ const CONTACT_FIELDS = [
   },
 ] as const;
 
-export function EnterpriseEnquiryForm() {
-  const { draft, errors, phase, feedback, feedbackRef, update, submit } = useEnterpriseEnquiry();
+export interface EnterpriseEnquiryFormProps {
+  /** Called once the enquiry has been received. */
+  onSubmitted?: (() => void) | undefined;
+}
+
+export function EnterpriseEnquiryForm({ onSubmitted }: EnterpriseEnquiryFormProps = {}) {
+  const enquiry = useEnterpriseEnquiry({ onSuccess: onSubmitted });
+  const { draft, errors, phase, feedback, feedbackRef, prefillNotice, update, submit } = enquiry;
   const id = useId();
   const busy = phase === 'submitting';
   const finished = phase === 'success' || phase === 'unavailable';
+  // An estimate from the Deploy chapter goes into the message for the visitor to edit.
+  useEnquiryPrefillReceiver((text) => {
+    if (finished) {
+      feedbackRef.current?.focus();
+      return;
+    }
+    if (busy) return;
+    enquiry.prefillMessage(text);
+    document.getElementById(`${id}-message`)?.focus();
+  });
   return (
     <div className="enterprise-enquiry">
       <h3 className="text-xl font-semibold" id={`${id}-title`}>
@@ -116,6 +133,12 @@ export function EnterpriseEnquiryForm() {
             disabled={busy}
             onChange={(event) => update('message', event.target.value)}
           />
+          <p
+            role="status"
+            className={prefillNotice === null ? 'sr-only' : 'mt-2 text-sm text-muted'}
+          >
+            {prefillNotice}
+          </p>
           <div className="sr-only" aria-hidden="true">
             <label htmlFor={`${id}-website`}>Website</label>
             <input

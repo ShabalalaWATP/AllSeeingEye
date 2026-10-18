@@ -47,6 +47,6 @@ it('preserves product discovery but hides enquiry navigation when enquiries are 
     ),
   );
   renderApp('/login', 'anonymous');
-  await screen.findByRole('link', { name: 'Discover what it can do' });
+  await screen.findAllByRole('link', { name: 'Discover The All Seeing Eye' });
   expect(screen.queryByRole('link', { name: 'Self-hosting for organisations' })).toBeNull();
 });

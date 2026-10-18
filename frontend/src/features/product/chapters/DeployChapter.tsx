@@ -14,22 +14,42 @@ import { CostEstimator } from './CostEstimator';
 
 const SHOW_ESTIMATOR = COST_MODEL_STATUS === 'approved' || import.meta.env.DEV;
 
+/**
+ * Nodes follow the container view in docs/01_ARCHITECTURE.md: the browser, the four
+ * Compose services inside the server boundary, and the external services the API may
+ * call. ARCHITECTURE holds the services; the rest are named here.
+ */
+const DIAGRAM_NODES: readonly { id: string; name: string; detail: string }[] = [
+  { id: 'browser', name: 'Browser', detail: 'Globe, research and reports' },
+  ...ARCHITECTURE.filter((node) => node.id !== 'ai'),
+  { id: 'sources', name: 'Public sources', detail: 'Feeds, APIs and catalogues' },
+  ...ARCHITECTURE.filter((node) => node.id === 'ai'),
+  { id: 'mail', name: 'Email service', detail: 'Optional, SMTP with TLS' },
+];
+const OUTSIDE_SERVER = new Set(['browser', 'sources', 'ai', 'mail']);
+
 const NODES: Record<string, { x: number; y: number }> = {
-  caddy: { x: 120, y: 120 },
-  api: { x: 360, y: 120 },
-  db: { x: 600, y: 60 },
-  parser: { x: 600, y: 180 },
-  ai: { x: 360, y: 280 },
+  browser: { x: 120, y: 50 },
+  caddy: { x: 120, y: 215 },
+  api: { x: 360, y: 215 },
+  db: { x: 600, y: 160 },
+  parser: { x: 600, y: 270 },
+  sources: { x: 120, y: 420 },
+  ai: { x: 360, y: 420 },
+  mail: { x: 600, y: 420 },
 };
 function at(id: string): { x: number; y: number } {
   return NODES[id] ?? { x: 0, y: 0 };
 }
 
 const LINKS: readonly [string, string][] = [
+  ['browser', 'caddy'],
   ['caddy', 'api'],
   ['api', 'db'],
   ['api', 'parser'],
+  ['api', 'sources'],
   ['api', 'ai'],
+  ['api', 'mail'],
 ];
 
 export function DeployChapter() {
@@ -50,16 +70,24 @@ export function DeployChapter() {
         </p>
         <figure className="architecture">
           <svg
-            viewBox="0 0 720 340"
+            viewBox="0 0 720 470"
             role="img"
             aria-labelledby="architecture-title architecture-desc"
           >
             <title id="architecture-title">Deployment architecture</title>
             <desc id="architecture-desc">
-              Browsers reach Caddy, which serves the app and forwards API calls. The API stores
-              reports, evidence and accounts in PostgreSQL, sends documents to an isolated parser
-              with no network access, and calls your chosen AI provider.
+              The browser reaches Caddy on your server, which serves the app and forwards API calls.
+              Inside the Docker Compose boundary the API stores reports, evidence and accounts in
+              PostgreSQL and sends supplied documents to an isolated parser with no network access.
+              Outside it, the API collects from public sources, calls your chosen AI provider and,
+              when configured, sends account email through an SMTP service.
             </desc>
+            <g className="architecture-boundary">
+              <rect x={10} y={115} width={700} height={215} rx={18} />
+              <text x={28} y={140} className="architecture-detail">
+                Your server · Docker Compose
+              </text>
+            </g>
             {LINKS.map(([from, to], index) => (
               <line
                 key={`${from}-${to}`}
@@ -72,10 +100,14 @@ export function DeployChapter() {
                 style={{ '--i': index } as CSSProperties}
               />
             ))}
-            {ARCHITECTURE.map((node, index) => (
+            {DIAGRAM_NODES.map((node, index) => (
               <g
                 key={node.id}
-                className="architecture-node"
+                className={
+                  OUTSIDE_SERVER.has(node.id)
+                    ? 'architecture-node architecture-node-external'
+                    : 'architecture-node'
+                }
                 style={{ '--i': index } as CSSProperties}
               >
                 <rect

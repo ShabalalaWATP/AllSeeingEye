@@ -28,10 +28,12 @@ describe('public product metadata', () => {
       expect(meta('robots')).toBe('index, follow');
       expect(meta('og:url', 'property')).toBe(canonical);
       expect(meta('og:title', 'property')).toBe(PAGE_TITLE);
-      expect(meta('og:image', 'property')).toBe(`${window.location.origin}/brand/eye-512.png`);
+      expect(meta('og:image', 'property')).toBe(
+        `${window.location.origin}/brand/og-enterprise.png`,
+      );
       expect(meta('og:image:type', 'property')).toBe('image/png');
-      expect(meta('og:image:width', 'property')).toBe('512');
-      expect(meta('og:image:height', 'property')).toBe('512');
+      expect(meta('og:image:width', 'property')).toBe('1200');
+      expect(meta('og:image:height', 'property')).toBe('630');
       expect(meta('og:image:alt', 'property')).toMatch(/brand mark/);
       expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
     },
@@ -52,7 +54,9 @@ describe('public product metadata', () => {
     await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
     await waitFor(() => {
       expect(meta('robots')).toBe('index, follow');
-      expect(meta('og:image', 'property')).toBe(`${window.location.origin}/brand/eye-512.png`);
+      expect(meta('og:image', 'property')).toBe(
+        `${window.location.origin}/brand/og-enterprise.png`,
+      );
       expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
         'href',
         `${window.location.origin}/enterprise`,
