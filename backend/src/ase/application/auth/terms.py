@@ -53,6 +53,14 @@ class AcceptTermsUseCase:
         # The reader accepts the version they were shown; a newer one needs a fresh review.
         if version != CURRENT_TERMS_VERSION:
             raise TermsVersionChanged()
+        # A repeat needs no write, so it answers without contending for the shared
+        # administration lock that every account mutation takes.
+        unlocked = await validate_current_session(
+            claims, self._users, self._refresh_tokens, self._clock
+        )
+        if unlocked.terms_version == CURRENT_TERMS_VERSION:
+            await self._uow.rollback()
+            return terms_status(unlocked)
         # Follow administrative lock ordering, then reload the identity, so this write
         # never overwrites a concurrent role, credential or status change.
         await self._users.lock_administration()

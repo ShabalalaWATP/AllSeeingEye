@@ -3,6 +3,7 @@ again on their next visit after a version change."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import timedelta
 from pathlib import Path
@@ -12,6 +13,7 @@ from httpx import AsyncClient
 from sqlalchemy import func, select
 
 from ase.adapters.persistence.models import AccountRequestRow, AuditLogRow
+from ase.adapters.persistence.users import SqlUserRepository
 from ase.application.auth import terms as terms_module
 from ase.container import Container
 from ase.domain.terms import CURRENT_TERMS_VERSION
@@ -29,6 +31,10 @@ from helpers import (
 
 REQUEST = {"email": "newcomer@example.com", "display_name": "New Comer"}
 ACCEPTANCE = "/api/me/terms-acceptance"
+POLICY = Path(__file__).parents[2] / "frontend/src/features/public-policy"
+# The accepted wording: changing either document needs a CURRENT_TERMS_VERSION bump, so
+# accounts are asked again, and then this hash is updated alongside it.
+ACCEPTED_WORDING_SHA256 = "4a6338555333c2fde737c8c1a85002df7bc5d62dd15f116804a9752be5ca6495"
 
 
 async def _count(container: Container, model: type, *conditions: object) -> int:
@@ -150,5 +156,31 @@ async def test_acceptance_needs_a_live_session_and_strict_input(
 
 
 def test_published_terms_page_shows_the_version_accounts_accept() -> None:
-    published = Path(__file__).parents[2] / "frontend/src/features/public-policy/terms.json"
+    published = POLICY / "terms.json"
     assert json.loads(published.read_text(encoding="utf-8"))["version"] == CURRENT_TERMS_VERSION
+
+
+async def test_a_repeat_acceptance_does_not_take_the_administration_lock(
+    client: AsyncClient, user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    body = {"version": CURRENT_TERMS_VERSION}
+    assert (await client.post(ACCEPTANCE, json=body, headers=bearer(token))).status_code == 200
+
+    async def refuse(_: SqlUserRepository) -> None:
+        raise AssertionError("a repeat acceptance must not lock administration")
+
+    monkeypatch.setattr(SqlUserRepository, "lock_administration", refuse)
+    again = await client.post(ACCEPTANCE, json=body, headers=bearer(token))
+    assert again.status_code == 200
+    assert again.json()["acceptance_required"] is False
+
+
+def test_changing_the_accepted_wording_requires_a_version_bump() -> None:
+    digest = hashlib.sha256()
+    for name in ("terms.json", "acceptable-use.json"):
+        digest.update(POLICY.joinpath(name).read_bytes().replace(b"\r\n", b"\n"))
+    assert digest.hexdigest() == ACCEPTED_WORDING_SHA256, (
+        "The Terms or Acceptable Use Policy changed: bump CURRENT_TERMS_VERSION so accounts "
+        "accept again, then update ACCEPTED_WORDING_SHA256."
+    )

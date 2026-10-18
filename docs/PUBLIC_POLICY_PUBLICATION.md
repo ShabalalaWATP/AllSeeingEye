@@ -83,7 +83,12 @@ published text or `{ "pending": "<decision>" }`, rendered as a visible "Decision
 needed" block. Null decisions and pending entries remain visible placeholders.
 Changing the terms `version` also requires `CURRENT_TERMS_VERSION` in
 `backend/src/ase/domain/terms.py`, which asks signed-in accounts to accept again
-(see `docs/api/AUTH_API.md`). The installation terms
+(see `docs/api/AUTH_API.md`). A backend test pins a hash of `terms.json` and
+`acceptable-use.json`, so changing either fails until the version is bumped and the
+hash updated. The consent wording outside this folder is not hashed: review the
+checkbox text in `RequestAccountPage.tsx`, the re-acceptance dialog in
+`components/account/TermsAcceptanceDialog.tsx` and the footer in
+`components/privacy/PolicyLinks.tsx` as part of every approval. The installation terms
 grant no software licence or deployment offer. Renderers,
 styles and generated credits live beside these inputs. Do not substitute an assumed
 lawful basis, invented retention period or a provider's marketing claim.
