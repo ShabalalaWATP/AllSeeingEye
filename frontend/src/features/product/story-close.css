@@ -81,6 +81,18 @@
 .architecture-node {
   opacity: clamp(0, calc(var(--progress) * 4 - var(--i) * 0.5), 1);
 }
+.architecture-boundary {
+  opacity: clamp(0, calc(var(--progress) * 4), 1);
+}
+.architecture-boundary rect {
+  fill: none;
+  stroke: var(--story-line);
+  stroke-dasharray: 6 6;
+}
+.architecture-node.architecture-node-external rect {
+  fill: var(--story-ground-2);
+  stroke-dasharray: 4 4;
+}
 .architecture-node rect {
   fill: var(--story-surface);
   stroke: var(--story-line);
@@ -124,6 +136,21 @@
   border-radius: 0.6rem;
   background: var(--story-surface);
   color: var(--story-text);
+}
+.estimator-field {
+  display: grid;
+  gap: 0.25rem;
+}
+.estimator-form input[aria-invalid='true'] {
+  border-color: var(--story-critical);
+}
+.estimator-hint {
+  color: var(--story-muted);
+  font-size: 0.8125rem;
+}
+.estimator-error {
+  color: var(--story-critical);
+  font-size: 0.8125rem;
 }
 .estimator-currency {
   grid-column: 1 / -1;
@@ -172,10 +199,29 @@
   font: 600 0.875rem var(--font-mono);
   text-align: right;
 }
+.estimator-send {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+.estimator-send button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .estimator-assumptions {
   margin-top: 1rem;
   color: var(--story-muted);
   font-size: 0.8125rem;
+}
+.estimator-assumptions summary {
+  cursor: pointer;
+}
+.estimator-assumptions p {
+  margin-top: 0.5rem;
+}
+.estimator-assumption-label {
+  color: var(--story-text);
 }
 .estimator-assumptions ul {
   display: grid;
@@ -206,6 +252,20 @@
   display: grid;
   justify-items: center;
   max-width: 46rem;
+}
+/* The Eye closes softly once an enquiry has been received; never while the story is still. */
+.contact-eye {
+  transform-origin: 50% 50%;
+  transition:
+    transform 900ms cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 900ms ease;
+}
+[data-motion='still'] .contact-eye {
+  transition: none;
+}
+[data-motion='moving'] .contact-eye[data-closed='true'] {
+  transform: scaleY(0.08);
+  opacity: 0.45;
 }
 .contact-inner .story-eyebrow {
   margin-top: 1.5rem;
