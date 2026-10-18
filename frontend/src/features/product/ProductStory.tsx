@@ -2,6 +2,7 @@
  * The public product story: header, eleven scroll chapters and a footer. Rendered
  * outside the app shell and account themes, on its own fixed dark palette.
  */
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { PolicyLinks } from '@/components/privacy/PolicyLinks';
 
@@ -21,6 +22,7 @@ import { useProductMetadata } from './useProductMetadata';
 import { useProductContactNavigation } from './useProductContactNavigation';
 import { StoryMotionContext, useStoryMotionSource } from './motion/useStoryMotion';
 import { ProductHeader } from './ProductHeader';
+import { createPrefillChannel, EnquiryPrefillContext } from './enquiry/enquiryPrefill';
 
 import './product.css';
 import './story-hero.css';
@@ -33,37 +35,45 @@ export function ProductStory({ enquiriesEnabled = false }: { enquiriesEnabled?: 
   const motion = useStoryMotionSource();
   useProductMetadata();
   useProductContactNavigation();
+  // Lets the cost estimator hand its summary to the enquiry form's message.
+  const [channel] = useState(createPrefillChannel);
+  const prefill = useMemo(
+    () => ({ ...channel, available: enquiriesEnabled }),
+    [channel, enquiriesEnabled],
+  );
   return (
     <StoryMotionContext.Provider value={motion}>
-      <div className="product-story" data-motion={motion.still ? 'still' : 'moving'}>
-        <ProductHeader />
-        <main id="story">
-          <HeroChapter />
-          <ObserveChapter />
-          <ToolsChapter />
-          <SourcesChapter />
-          <AskChapter />
-          <CollectChapter />
-          <AssessChapter />
-          <ReviewChapter />
-          <WorkspacesChapter />
-          <TrustChapter />
-          <DeployChapter />
-          <ContactChapter enquiriesEnabled={enquiriesEnabled} />
-        </main>
-        <footer className="story-footer">
-          <p>The All Seeing Eye. Self-hosted open-source intelligence.</p>
-          <p>
-            Globe outlines from Natural Earth (public domain). Scenes, questions and reports on this
-            page are illustrative and use no live data.
-          </p>
-          <nav aria-label="Account">
-            <Link to="/login">Sign in</Link>
-            <Link to="/request-account">Request access</Link>
-          </nav>
-          <PolicyLinks />
-        </footer>
-      </div>
+      <EnquiryPrefillContext.Provider value={prefill}>
+        <div className="product-story" data-motion={motion.still ? 'still' : 'moving'}>
+          <ProductHeader />
+          <main id="story">
+            <HeroChapter />
+            <ObserveChapter />
+            <ToolsChapter />
+            <SourcesChapter />
+            <AskChapter />
+            <CollectChapter />
+            <AssessChapter />
+            <ReviewChapter />
+            <WorkspacesChapter />
+            <TrustChapter />
+            <DeployChapter />
+            <ContactChapter enquiriesEnabled={enquiriesEnabled} />
+          </main>
+          <footer className="story-footer">
+            <p>The All Seeing Eye. Self-hosted open-source intelligence.</p>
+            <p>
+              Globe outlines from Natural Earth (public domain). Scenes, questions and reports on
+              this page are illustrative and use no live data.
+            </p>
+            <nav aria-label="Account">
+              <Link to="/login">Sign in</Link>
+              <Link to="/request-account">Request access</Link>
+            </nav>
+            <PolicyLinks />
+          </footer>
+        </div>
+      </EnquiryPrefillContext.Provider>
     </StoryMotionContext.Provider>
   );
 }

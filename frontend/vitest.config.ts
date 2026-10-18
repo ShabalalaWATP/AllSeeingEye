@@ -62,6 +62,13 @@ export default mergeConfig(
           statements: 90,
           functions: 90,
           branches: 90,
+          // The cost estimator's arithmetic is shown to prospective customers (KAN-178).
+          'src/features/product/content/costing.ts': {
+            lines: 100,
+            statements: 100,
+            functions: 100,
+            branches: 100,
+          },
         },
       },
     },
