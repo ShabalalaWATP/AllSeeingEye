@@ -5,7 +5,13 @@
  */
 import type { CSSProperties } from 'react';
 
-import { AI_CHOICES, ENGINEERING, LIMITS_TEXT, TRUST_LAYERS } from '../content/platform';
+import {
+  AI_CHOICES,
+  DATA_MINIMISATION,
+  ENGINEERING,
+  LIMITS_TEXT,
+  TRUST_LAYERS,
+} from '../content/platform';
 import { Reveal } from '../motion/Reveal';
 import { ScrollChapter } from '../motion/ScrollChapter';
 
@@ -21,6 +27,7 @@ export function TrustChapter() {
             choose and treats every byte from the internet, every feed item and every model response
             as untrusted.
           </p>
+          <p className="story-footnote">{DATA_MINIMISATION}</p>
         </div>
         <ol className="trust-stack" aria-label="Security layers">
           {TRUST_LAYERS.map((layer, index) => (

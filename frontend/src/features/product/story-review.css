@@ -1,4 +1,4 @@
-/* Review and Workspaces chapters. Colours come from product.css. */
+/* Review chapter. Colours come from product.css; Workspaces are in story-workspaces.css. */
 
 /* Review: a timeline that slides past. */
 .review-head {
@@ -142,85 +142,67 @@
   background: var(--story-ground-2);
   font-size: 0.75rem;
   color: var(--story-muted);
+  backface-visibility: hidden;
+  transition: transform 650ms var(--ease-out);
+  transition-delay: calc(300ms + var(--i) * 110ms);
+}
+/* Exports flip over, one after another, and settle into the stack. Transform only. */
+.review-exports[data-shown='false'] .export-card {
+  transform: perspective(40rem) translateY(calc(var(--i) * -0.6rem)) rotateX(-95deg);
+}
+[data-motion='still'] .export-card {
+  transition: none;
+}
+@media print {
+  .review-exports[data-shown='false'] .export-card {
+    transform: none;
+  }
 }
 .export-card strong {
   color: var(--story-text);
   font: 600 0.875rem var(--font-mono);
+}
+/* Team sharing: who can see personal and team work. */
+.review-sharing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+.scope-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.scope-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1rem;
+  background: var(--story-ground-2);
+  color: var(--story-muted);
+  font-size: 0.875rem;
+}
+.scope-card strong {
+  color: var(--story-text);
+  font: 600 0.8125rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.scope-card + .scope-card {
+  border-color: color-mix(in srgb, var(--story-ember) 45%, var(--story-line));
+}
+@media (max-width: 899px) {
+  .review-sharing,
+  .scope-cards {
+    grid-template-columns: 1fr;
+  }
 }
 @keyframes story-toast {
   from {
     opacity: 0;
     transform: translateY(-16px) scale(0.96);
   }
-}
-
-/* Workspaces: a gallery driven sideways by vertical scroll. */
-.workspaces-viewport {
-  margin-top: 2.5rem;
-}
-.story-workspaces:not([data-mode='pinned']) .workspaces-viewport {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 1rem;
-}
-.workspace-track {
-  display: flex;
-  gap: 1.1rem;
-  width: max-content;
-  will-change: transform;
-}
-.workspace-track > li {
-  scroll-snap-align: start;
-}
-.workspace-card {
-  position: relative;
-  display: grid;
-  align-content: start;
-  gap: 0.8rem;
-  width: min(80vw, 24rem);
-  min-height: 22rem;
-  padding: 1.6rem;
-  border: 1px solid var(--story-line);
-  border-radius: 1.4rem;
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      color-mix(in srgb, var(--accent) 22%, transparent),
-      transparent 60%
-    ),
-    var(--story-surface);
-  overflow: hidden;
-}
-.workspace-card:focus-visible {
-  outline-offset: -3px;
-}
-.workspace-number {
-  color: color-mix(in srgb, var(--accent) 70%, var(--story-text));
-  font: 600 3.75rem var(--font-mono);
-  line-height: 1;
-  letter-spacing: -0.06em;
-}
-.workspace-card h3 {
-  font-size: 1.5rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-}
-.workspace-card p {
-  color: var(--story-muted);
-  line-height: 1.55;
-}
-.workspace-card ul {
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.875rem;
-}
-.workspace-card li::before {
-  content: '';
-  display: inline-block;
-  width: 0.4rem;
-  height: 0.4rem;
-  margin-right: 0.55rem;
-  border-radius: 999px;
-  background: var(--accent);
-  vertical-align: 0.15em;
 }
