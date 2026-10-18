@@ -6687,3 +6687,35 @@ All 47 FIRMS runtime, fixed-deadline and feed-resilience cases pass on SQLite an
 on a new isolated PostgreSQL database. The task-owned database container and
 volume were removed after verification. Independent review, Ruff, formatting and
 whitespace checks pass. Fresh CI and authorised serial integration remain required.
+
+## 18 October 2026: KAN-241 final integration and security refresh
+
+Alex approved the serial retention/removal/recovery merges, excluding manual
+production operations. KAN-239 passed all 40 checks and merged as `ea68f65c`.
+Independent review confirmed that integrating that actual main preserved KAN-241's
+validated implementation tree. Fresh CI then found five fixable HIGH advisories in
+cached Debian `libexpat1` 2.8.3. The existing documented security-refresh argument
+now advances to 18 October, causing the shared API/parser package layer to update.
+
+Local image `sha256:d43547410d6c703786308d0cf657ca4b52a112537ed8152d5a051c6a2b5a7c75`
+contains Debian `libexpat1` 2.9.0-1~deb13u1 and reports system Expat 2.9.0.
+A fresh Trivy database reports zero fixable HIGH/CRITICAL findings. Five non-root,
+network-disabled controls pass: synthetic OCR, audio-bearing MP4/WebM extraction,
+and rejected CFHD in selected and secondary tracks. Python's separate bundled
+Expat remains 2.8.5; this update does not close KAN-244's unresolved native
+applicability questions. No ignores, scanner thresholds, Python pin or application
+lockfile changed. Final published-head CI remains required before integration.
+
+The next CI run exposed an existing disabled-product-page test reading robots
+metadata before its passive effect completed. Its three exact assertions now wait
+together using the existing timeout. The previously reviewed KAN-243 login-test
+repairs are also carried forward into this earlier dependency. All 48 focused
+metadata, public-route, motion, login and overview cases pass. Independent review
+confirmed unchanged authority/destination expectations and no product, timeout,
+skip or coverage-policy change.
+
+The already reviewed FIRMS credential-clear test repair from KAN-240 is carried
+forward too. Its test blob and all relevant fetch-budget, credential and fixture
+paths match the validated candidate. All 91 FIRMS runtime, fixed-deadline and
+feed-resilience cases pass on isolated SQLite; Ruff and formatting pass. Existing
+PostgreSQL evidence remains recorded on KAN-240, and fresh CI covers this candidate.

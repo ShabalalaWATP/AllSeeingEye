@@ -14,7 +14,8 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] Repair the stale-connection test ordering exposed by refreshed CI; 47 focused
   cases pass on both SQLite and isolated PostgreSQL, with independent review.
 - [ ] Complete current-head CI with the existing global gates.
-- [ ] Obtain release approval and integrate after KAN-238/239/241.
+- [x] Record Alex's 18 October release approval, excluding live removal/migration operations.
+- [ ] Integrate after KAN-238/239/241 and pass refreshed required checks.
 
 See [the operator procedure](PRIVATE_DATA_REMOVAL.md). Production removal and
 backup/provider reconciliation remain separate; KAN-243 owns recovery reconciliation.
@@ -27,8 +28,15 @@ backup/provider reconciliation remain separate; KAN-243 owns recovery reconcilia
 - [x] Freeze scan endpoints so continuing arrivals cannot starve earlier expiry.
 - [x] Complete SQLite/PostgreSQL boundary/backlog tests and two-connection races;
   independent code-quality and security reviews report no remaining actionable defect.
+- [x] Refresh cached Debian security packages after five fixable Expat findings;
+  rebuilt-image package inspection, five native controls and the fixable scan pass.
+- [x] Repair metadata-effect ordering and retain the reviewed login-test fixes;
+  all 48 focused frontend cases pass without changing product behaviour or thresholds.
+- [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
+  deadline and resilience cases pass on SQLite with unchanged production paths.
 - [ ] Complete full CI on the committed candidate.
-- [ ] Integrate serially after the earlier retention PRs with release approval.
+- [x] Record Alex's 18 October release approval, excluding manual production operations.
+- [ ] Complete authorised integration after KAN-239 with refreshed required checks.
 
 See [dormant retention](DORMANT_RETENTION.md). Deployment starts this existing-policy
 maintenance automatically; no production purge or successful rollout is claimed.
@@ -42,7 +50,7 @@ maintenance automatically; no production purge or successful rollout is claimed.
   late completion, retryable delivery and monthly-budget invariants on SQLite.
 - [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
   independent code-quality and security reviews found no actionable defect.
-- [ ] Complete full CI and authorised integration after KAN-242 and KAN-238.
+- [x] Pass all 40 checks and authorised integration as `ea68f65c`; KAN-239 is Done.
 - [ ] Obtain installation policy/rollout approval before any production purge.
 
 See [the operational retention procedure](OPERATIONAL_RETENTION.md).
