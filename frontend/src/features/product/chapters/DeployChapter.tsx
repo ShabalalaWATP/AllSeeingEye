@@ -63,10 +63,12 @@ export function DeployChapter() {
     >
       <div className="story-wrap">
         <p className="story-eyebrow">09 · Deploy</p>
-        <h2 className="story-title">One server. One command. Your data stays put.</h2>
+        <h2 className="story-title">One server you run. Your database stays on it.</h2>
         <p className="story-lead">
           A Docker Compose stack on a single Linux server: Caddy at the edge, the API, PostgreSQL
-          and an isolated document parser. Model calls go only to the provider you configure.
+          and an isolated document parser. Questions and selected evidence go to the AI provider you
+          configure, links cited by saved reports go to the Internet Archive unless you turn that
+          off, and email, push and webhooks are optional.
         </p>
         <figure className="architecture">
           <svg

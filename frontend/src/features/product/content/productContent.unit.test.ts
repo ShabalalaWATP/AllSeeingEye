@@ -115,9 +115,22 @@ describe('product story content', () => {
     const ids = new Set(EVIDENCE.map((card) => card.id));
     for (const judgement of JUDGEMENTS) {
       expect(PHIA_BANDS).toContain(judgement.likelihood);
+      expect(['High', 'Moderate', 'Low']).toContain(judgement.confidence);
       for (const cite of judgement.cites) expect(ids.has(cite)).toBe(true);
     }
     expect(DEPTHS.map((depth) => depth.name)).toEqual(['Basic', 'Deep', 'Advanced']);
+  });
+
+  it('keeps out the wording the claims register found unsupported', () => {
+    // docs/product-page/claims-register.md: each phrase overstated or contradicted the
+    // code or documentation it describes (KAN-171).
+    const overclaims =
+      /every source, grade|event by event|one command|data stays put|strict content security|any date window|per-domain filters|source health beside every feed|until reviewed|could not find/i;
+    const text = JSON.stringify([observe, platform, research, sources]);
+    expect(text).not.toMatch(overclaims);
+    for (const file of STORY_SOURCES) {
+      expect(readFileSync(file, 'utf8'), file).not.toMatch(overclaims);
+    }
   });
 
   it('links each header chapter to a story section and keeps copy free of em dashes', () => {

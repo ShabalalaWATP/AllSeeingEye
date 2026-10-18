@@ -73,8 +73,8 @@ export function HeroChapter() {
         </h1>
         <p className="hero-lead">
           Watch the world&rsquo;s public signals on a living globe, ask a bounded question and get
-          an assessment that shows every source, grade and doubt behind it. On your own
-          infrastructure, with the AI provider you choose.
+          an assessment that shows the selected evidence, grades and doubts behind each judgement.
+          On your own infrastructure, with the AI provider you choose.
         </p>
         <div className="hero-actions">
           <Link className="story-button story-button-primary" to="#contact">

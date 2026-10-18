@@ -53,7 +53,7 @@ describe('public product page', () => {
       'An assessment is the start of the work, not the end.',
       'Specialist workspaces for specialist questions.',
       'Your server. Your model. Your rules.',
-      'One server. One command. Your data stays put.',
+      'One server you run. Your database stays on it.',
       'Bring The All Seeing Eye inside your organisation.',
     ]) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();

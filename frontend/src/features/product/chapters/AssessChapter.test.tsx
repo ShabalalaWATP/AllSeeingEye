@@ -30,6 +30,16 @@ describe('Assess chapter when the story is still', () => {
       expect(within(report).getByText(judgement.text, { exact: false })).toBeInTheDocument();
   });
 
+  it('states confidence per judgement, never as one level for the whole report', () => {
+    renderStill();
+    const report = screen.getByRole('article', { name: 'Example assessment' });
+    for (const judgement of JUDGEMENTS)
+      expect(
+        within(report).getByText(`${judgement.likelihood} · ${judgement.confidence} confidence`),
+      ).toBeInTheDocument();
+    expect(REPORT_HEADER.summary).not.toMatch(/(high|moderate|low) confidence/i);
+  });
+
   it('shows the challenge, the alternative explanation and the closing beat', () => {
     renderStill();
     expect(screen.getByText(/Challenged: confidence held at moderate/)).toBeInTheDocument();

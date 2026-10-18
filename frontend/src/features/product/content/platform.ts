@@ -107,8 +107,8 @@ export const WORKSPACES: readonly Workspace[] = [
     accent: '#ff5a5a',
     body: 'Focused trackers for conflict, hazards, aviation, maritime, space and public figures.',
     points: [
-      'Per-domain filters',
-      'Source health beside every feed',
+      'A daily briefing on the monitor page',
+      'Conflict source coverage and health',
       'Ops room playlist for wall screens',
     ],
     limit: 'Counts describe loaded reports, not verified or independently unique incidents.',
@@ -137,8 +137,12 @@ export const WORKSPACES: readonly Workspace[] = [
     id: 'economy',
     name: 'Economy',
     accent: '#6ee7b7',
-    body: 'Official statistics and central bank series, compared across countries with a plain-English explainer.',
-    points: ['Country comparison', 'Market charts', 'Briefing for any date window'],
+    body: 'Official statistics and central bank series, compared across five countries with explanations of unfamiliar measures.',
+    points: [
+      'Five-country comparison',
+      'Market charts after consent',
+      'Briefings over 2 to 14 days',
+    ],
     limit: 'The latest available year can differ by country and measure.',
   },
   {
@@ -193,7 +197,7 @@ export const TRUST_LAYERS: readonly TrustLayer[] = [
     name: 'Edge',
     controls: [
       'Caddy edge with TLS and security headers',
-      'Strict content security policy',
+      'A content security policy allowing only same-origin scripts',
       'Request size limits per route',
     ],
   },

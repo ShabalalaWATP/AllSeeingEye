@@ -36,9 +36,9 @@ export function CollectChapter() {
         <p className="story-eyebrow">04 · Collect</p>
         <h2 className="story-title">Evidence with a receipt, and gaps you can see.</h2>
         <p className="story-lead">
-          Connectors fan out across the scope. Each record comes back with its source, a grade and a
-          collection receipt, and anything the run could not find is recorded as a gap rather than
-          papered over.
+          Connectors fan out across the scope. Each record comes back with its source and a grade.
+          Collection receipts record which providers ran, including empty and unavailable ones, and
+          requirements without enough support stay visible as gaps rather than papered over.
         </p>
         <p className="story-lead">{SHARED_ORIGIN}</p>
         <Reveal className="grade-legend">

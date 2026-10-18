@@ -66,7 +66,9 @@ export function AssessChapter() {
                   data-challenged={judgement.challenged ? 'true' : 'false'}
                   style={{ '--i': index } as CSSProperties}
                 >
-                  <span className="judgement-band">{judgement.likelihood}</span>
+                  <span className="judgement-band">
+                    {judgement.likelihood} · {judgement.confidence} confidence
+                  </span>
                   <p>
                     {judgement.text}{' '}
                     {judgement.cites.map((cite) => (

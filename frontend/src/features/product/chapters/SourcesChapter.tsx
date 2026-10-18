@@ -63,8 +63,8 @@ export function SourcesChapter() {
         <p className="story-lead">
           <CountUp value={SCHEDULED_TOTAL} /> scheduled feeds and{' '}
           <CountUp value={ON_DEMAND_TOTAL} /> on-demand research connectors across eleven topics,
-          from seismology to sanctions. Each record keeps its source, licence notes and collection
-          time.
+          from seismology to sanctions. Each record keeps its source and collection time; licence
+          notes, where a source has them, stay with that source in the catalogue.
         </p>
         <ul className="topic-list">
           {SOURCE_TOPICS.map((topic, index) => {

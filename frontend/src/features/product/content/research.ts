@@ -108,13 +108,15 @@ export const SHARED_ORIGIN =
 export const GRADING = {
   reliability: 'Source reliability A to F',
   credibility: 'Information credibility 1 to 6',
-  note: 'F and 6 mean the source or claim cannot yet be judged. On-demand results start unassessed until reviewed.',
+  note: 'F and 6 mean the source or claim cannot yet be judged. New research material without an assessed source basis stays unassessed.',
 };
 
 export interface Judgement {
   id: string;
   text: string;
   likelihood: string;
+  /** Set per judgement: the engine never gives a whole report one confidence level. */
+  confidence: 'High' | 'Moderate' | 'Low';
   cites: readonly string[];
   challenged?: boolean;
 }
@@ -124,12 +126,14 @@ export const JUDGEMENTS: readonly Judgement[] = [
     id: 'j1',
     text: 'Transit volumes have fallen because insurers and operators are rerouting around the strait.',
     likelihood: 'Highly likely',
+    confidence: 'Moderate',
     cites: ['e1', 'e2'],
   },
   {
     id: 'j2',
     text: 'Recent incidents reported in the area are the main driver of the rerouting decisions.',
     likelihood: 'Likely',
+    confidence: 'Moderate',
     cites: ['e3', 'e4'],
     challenged: true,
   },
@@ -137,6 +141,7 @@ export const JUDGEMENTS: readonly Judgement[] = [
     id: 'j3',
     text: 'The reported vessel attack shown in circulating video took place this week.',
     likelihood: 'Realistic possibility',
+    confidence: 'Low',
     cites: ['e5'],
   },
 ];
@@ -144,7 +149,7 @@ export const JUDGEMENTS: readonly Judgement[] = [
 /** Report header. The model line names no model: none is bundled, each installation chooses. */
 export const REPORT_HEADER = {
   title: 'Shipping through the Bab el-Mandeb strait',
-  summary: 'Maritime activity report · Moderate confidence',
+  summary: 'Maritime activity report · Confidence stated per judgement',
   model: 'Deep research · Model: your configured provider · AI-assisted assessment',
 };
 
