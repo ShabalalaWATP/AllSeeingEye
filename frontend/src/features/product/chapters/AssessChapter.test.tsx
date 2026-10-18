@@ -37,7 +37,7 @@ describe('Assess chapter when the story is still', () => {
       expect(
         within(report).getByText(`${judgement.likelihood} · ${judgement.confidence} confidence`),
       ).toBeInTheDocument();
-    expect(REPORT_HEADER.summary).not.toMatch(/(high|moderate|low) confidence/i);
+    expect(REPORT_HEADER.summary).not.toMatch(/(?:high|moderate|low) confidence/i);
   });
 
   it('shows the challenge, the alternative explanation and the closing beat', () => {
