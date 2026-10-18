@@ -33,14 +33,6 @@ export const PRODUCT_ASSETS: readonly ProductAsset[] = [
     png: '/product/report-reader.png',
   },
   {
-    id: 'report-evidence',
-    alt: 'Illustrative evidence annex with graded sources behind a report.',
-    width: 1280,
-    height: 800,
-    webp: '/product/report-evidence.webp',
-    png: '/product/report-evidence.png',
-  },
-  {
     id: 'report-mobile',
     alt: 'Illustrative report reader on a phone-sized screen.',
     width: 390,
@@ -79,14 +71,6 @@ export const PRODUCT_ASSETS: readonly ProductAsset[] = [
     height: 800,
     webp: '/product/economy.webp',
     png: '/product/economy.png',
-  },
-  {
-    id: 'admin-ai',
-    alt: 'Illustrative administration page for AI connections, with keys hidden.',
-    width: 1280,
-    height: 800,
-    webp: '/product/admin-ai.webp',
-    png: '/product/admin-ai.png',
   },
 ];
 

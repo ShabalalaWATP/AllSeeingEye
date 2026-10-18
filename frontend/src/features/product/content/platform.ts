@@ -148,6 +148,13 @@ export const WORKSPACES: readonly Workspace[] = [
     body: 'Candidate locations from an image, then a sun and shadow check against the capture time.',
     points: ['Vision model candidates', 'Shadow geometry check', 'Saved assessments'],
     limit: 'A shadow check can rule a candidate out, but it never confirms a place.',
+    media: {
+      kind: 'image',
+      src: '/product/photo-geolocation.webp',
+      alt: 'Illustrative photo geolocation workspace before an image is supplied.',
+      width: 1280,
+      height: 800,
+    },
   },
   {
     id: 'map-tools',

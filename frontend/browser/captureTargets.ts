@@ -68,15 +68,6 @@ export const CAPTURE_TARGETS: readonly CaptureTarget[] = [
     hide: [PREVIEW_STATUS],
   },
   {
-    id: 'report-evidence',
-    path: '/dev/report-preview#annex',
-    alt: 'Illustrative evidence annex with graded sources behind a report.',
-    viewport: DESKTOP,
-    ready: 'main',
-    answers: LANGUAGES,
-    hide: [PREVIEW_STATUS],
-  },
-  {
     id: 'report-mobile',
     path: '/dev/report-preview#ready',
     alt: 'Illustrative report reader on a phone-sized screen.',
@@ -116,17 +107,22 @@ export const CAPTURE_TARGETS: readonly CaptureTarget[] = [
     ready: 'main h1',
     hideText: ['Fixture preview'],
   },
-  {
-    id: 'admin-ai',
-    path: '/dev/admin-preview?to=/admin/llm',
-    alt: 'Illustrative administration page for AI connections, with keys hidden.',
-    viewport: DESKTOP,
-    ready: 'main h1',
-  },
 ];
 
 /** Not captured, with the reason, so the asset list stays honest. */
 export const NOT_CAPTURED: readonly { asset: string; reason: string }[] = [
+  {
+    asset: 'Evidence annex',
+    reason:
+      'The report fixtures cite real publishers by name, which would read as a real ' +
+      'attribution on a public page; a neutral fixture is needed first.',
+  },
+  {
+    asset: 'Administration AI connections',
+    reason:
+      'The administration fixture shows an invented model under a real provider brand, ' +
+      'which must not appear in promotional material.',
+  },
   {
     asset: 'Research composer',
     reason:
