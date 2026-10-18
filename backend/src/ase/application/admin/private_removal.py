@@ -8,6 +8,7 @@ from ase.application.admin.users import _lock_accounts
 from ase.application.auditing import Auditor
 from ase.application.ports import Clock, UnitOfWork, UserRepository
 from ase.application.ports.private_removal import PrivateRemovalRepository
+from ase.application.ports.recovery_journal import RecoveryJournal
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, InvalidRequest
 from ase.domain.private_removal import (
@@ -29,9 +30,11 @@ class PrivateRemovalService:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        journal: RecoveryJournal | None = None,
     ) -> None:
         self.users, self.repository = users, repository
         self.clock, self.auditor, self.uow = clock, auditor, uow
+        self.journal = journal
 
     async def preview(self, actor: User, request: RemovalRequest) -> RemovalPlan:
         await _lock_accounts(self.users, actor, request.owner_id)
@@ -51,6 +54,7 @@ class PrivateRemovalService:
             or not hmac.compare_digest(fingerprint, plan.fingerprint)
         ):
             raise Conflict("The removal preview changed. Review a fresh preview before applying.")
+        intent = self.journal.begin_removal(actor.id, request, now) if self.journal else None
         counts = await self.repository.remove(request, now)
         await self.auditor.record(
             AuditAction.PRIVATE_DATA_REMOVED,
@@ -64,6 +68,7 @@ class PrivateRemovalService:
             },
         )
         await self.uow.commit()
+        self._complete(intent)
         return counts
 
     async def review(
@@ -81,7 +86,21 @@ class PrivateRemovalService:
                 "Use a non-negative revision and a review interval of 1 to 90 days."
             )
         await _lock_accounts(self.users, actor, owner_id)
+        await self.repository.check_review_revision(owner_id, expected_revision)
         now = self.clock.now()
+        intent = (
+            self.journal.begin_review(
+                actor.id,
+                owner_id,
+                decision,
+                purpose,
+                expected_revision + 1,
+                now,
+                now + timedelta(days=days),
+            )
+            if self.journal
+            else None
+        )
         review = await self.repository.review(
             owner_id,
             actor.id,
@@ -103,4 +122,15 @@ class PrivateRemovalService:
             },
         )
         await self.uow.commit()
+        self._complete(intent)
         return review
+
+    def _complete(self, intent: UUID | None) -> None:
+        if self.journal and intent is not None:
+            try:
+                self.journal.complete(intent)
+            except Exception:
+                raise Conflict(
+                    "The database committed, but journal completion is unconfirmed. "
+                    "Keep recovery offline and investigate the pending intent before retrying."
+                ) from None

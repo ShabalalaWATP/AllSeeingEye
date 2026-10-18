@@ -37,6 +37,7 @@ from ase.application.admin.requests import (
 )
 from ase.application.admin.source_controls import AdminSourceControls
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
+from ase.application.ports.recovery_journal import RecoveryJournal
 from ase.container.core import ContainerCore
 from ase.domain.reasoning import ReasoningEffortPolicy
 
@@ -44,7 +45,11 @@ from ase.domain.reasoning import ReasoningEffortPolicy
 class AdminWiring(ContainerCore):
     """Administration factories."""
 
-    def private_removal(self, session: AsyncSession) -> PrivateRemovalService:
+    def private_removal(
+        self,
+        session: AsyncSession,
+        journal: RecoveryJournal | None = None,
+    ) -> PrivateRemovalService:
         repositories = self.repositories(session)
         return PrivateRemovalService(
             repositories.users,
@@ -52,6 +57,7 @@ class AdminWiring(ContainerCore):
             self.clock,
             self._auditor(repositories),
             repositories.uow,
+            journal,
         )
 
     def initialise_models(

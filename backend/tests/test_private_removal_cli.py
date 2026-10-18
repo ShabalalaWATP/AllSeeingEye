@@ -17,11 +17,14 @@ from ase.domain.private_removal import RemovalRequest, RemovalScope, ReviewDecis
 from ase.domain.users import Role
 from helpers import ADMIN_PASSWORD, USER_PASSWORD, create_user
 from private_removal_helpers import report
+from recovery_helpers import journal as journal  # noqa: PLC0414
 from token_race_helpers import race_container as race_container  # noqa: PLC0414
 
 
 @pytest.mark.parametrize("cleanup_fails", [False, True])
-async def test_real_database_cli_review_preview_apply(race_container, monkeypatch, cleanup_fails):
+async def test_real_database_cli_review_preview_apply(
+    race_container, monkeypatch, cleanup_fails, journal
+):
     container = race_container
     admin = await create_user(
         container, email="operator@example.com", password=ADMIN_PASSWORD, role=Role.ADMIN
@@ -40,6 +43,8 @@ async def test_real_database_cli_review_preview_apply(race_container, monkeypatc
         ReviewPurpose.RIGHTS_REQUEST,
         0,
         90,
+        journal.path,
+        journal.key,
     )
     assert review["review"]["revision"] == 1
     request = RemovalRequest(user.id, RemovalScope.REPORT, target.id)
@@ -83,6 +88,8 @@ async def test_real_database_cli_review_preview_apply(race_container, monkeypatc
         ReviewPurpose.QUARTERLY,
         0,
         90,
+        journal.path,
+        journal.key,
     )
     if cleanup_fails:
         with pytest.raises(RuntimeError, match="after commit"):

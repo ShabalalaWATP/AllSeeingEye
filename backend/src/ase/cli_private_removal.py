@@ -3,11 +3,13 @@
 import asyncio
 import json
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 import typer
 
+from ase.cli_recovery import open_journal
 from ase.container import Container
 from ase.domain.errors import AppError, InvalidCredentials
 from ase.domain.private_removal import RemovalRequest, RemovalScope, ReviewDecision, ReviewPurpose
@@ -26,10 +28,14 @@ def run_private_data(
     purpose: str,
     expected_revision: int,
     days: int,
+    journal: Path | None = None,
+    journal_key: Path | None = None,
 ) -> None:
     try:
         if action not in {"preview", "review", "apply"}:
             raise ValueError("Use preview, review or apply.")
+        if (journal is None) != (journal_key is None) or (action != "preview" and journal is None):
+            raise ValueError("Writes require both external recovery journal paths.")
         request = RemovalRequest(owner, RemovalScope(scope), target)
         review_decision = ReviewDecision(decision) if decision is not None else None
         review_purpose = ReviewPurpose(purpose)
@@ -56,6 +62,8 @@ def run_private_data(
                 review_purpose,
                 expected_revision,
                 days,
+                journal,
+                journal_key,
             )
         )
     except AppError as exc:
@@ -83,7 +91,16 @@ async def _run(
     purpose: ReviewPurpose,
     expected_revision: int,
     days: int,
+    journal: Path | None = None,
+    journal_key: Path | None = None,
 ) -> dict[str, Any]:
+    if (journal is None) != (journal_key is None) or (action != "preview" and journal is None):
+        raise ValueError("Writes require both recovery journal paths")
+    recorder = (
+        open_journal(journal, journal_key, settings.database_url)
+        if journal and journal_key
+        else None
+    )
     container = Container(settings)
     try:
         async with container.session_factory() as session:
@@ -95,7 +112,7 @@ async def _run(
                 or not await container.hasher.verify(actor.password_hash or "", password)
             ):
                 raise InvalidCredentials()
-            service = container.private_removal(session)
+            service = container.private_removal(session, recorder)
             if action == "review":
                 if decision is None:
                     raise ValueError("Missing review decision")

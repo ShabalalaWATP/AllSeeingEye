@@ -58,6 +58,21 @@ app.command("import-ukraine-losses")(import_losses)
 app.command("import-ukraine-casualties")(import_casualties)
 
 
+@app.command(
+    "recovery-record",
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+        "help_option_names": [],
+    },
+)
+def recovery_record(context: typer.Context) -> None:
+    """Protected manual recovery records; never starts services."""
+    from ase import cli_recovery_commands  # noqa: PLC0415 - keep migrations lightweight
+
+    cli_recovery_commands.app(args=context.args, prog_name="ase recovery-record")
+
+
 @app.command("private-data")
 def private_data(
     owner: Annotated[UUID, typer.Option(help="Account whose private data is being reviewed")],
@@ -76,6 +91,10 @@ def private_data(
         int, typer.Option(help="Current review revision, initially 0")
     ] = 0,
     days: Annotated[int, typer.Option(help="Next necessity review in 1 to 90 days")] = 90,
+    journal: Annotated[
+        Path | None, typer.Option(help="External recovery journal, required for writes")
+    ] = None,
+    journal_key: Annotated[Path | None, typer.Option(help="Independent recovery key file")] = None,
 ) -> None:
     """Preview private removal, record a decision, or explicitly apply a reviewed plan."""
     from ase.cli_private_removal import run_private_data  # noqa: PLC0415 - lazy migration startup
@@ -91,6 +110,8 @@ def private_data(
         purpose,
         expected_revision,
         days,
+        journal,
+        journal_key,
     )
 
 
