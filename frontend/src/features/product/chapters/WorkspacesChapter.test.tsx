@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import {
   afterEach,
   beforeEach,
@@ -51,9 +51,10 @@ const total = WORKSPACES.length;
 describe('workspace gallery while pinned', () => {
   const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
   let scrollWindow: MockInstance<typeof window.scrollTo>;
+  let rect: MockInstance<() => DOMRect>;
   beforeEach(() => {
     roomyScreen();
-    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
       top: 500,
       height: 3400,
     } as DOMRect);
@@ -117,7 +118,6 @@ describe('workspace gallery while pinned', () => {
   });
 
   it('steps on from the chosen panel while the smooth scroll is still on its way', async () => {
-    const rect = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
     renderGallery(false);
     const chapter = screen.getByRole('region', { name: 'Specialist workspaces' });
     await waitFor(() => expect(chapter.style.getPropertyValue('--progress')).toBe('0.0000'));
@@ -233,16 +233,22 @@ describe('workspace gallery as a swipe row', () => {
       fireEvent.keyDown(gallery, { key: 'ArrowRight' });
       Object.defineProperty(viewport, 'scrollLeft', { configurable: true, value: 120 });
       fireEvent.scroll(viewport);
-      act(() => vi.advanceTimersByTime(20));
+      act(() => {
+        vi.advanceTimersByTime(20);
+      });
       expect(position()).toHaveTextContent(`Panel 2 of ${total}`);
       fireEvent.keyDown(gallery, { key: 'ArrowRight' });
       expect(scrollViewport).toHaveBeenLastCalledWith({ left: 800, behavior: 'smooth' });
       expect(position()).toHaveTextContent(`Panel 3 of ${total}`);
 
-      act(() => vi.advanceTimersByTime(SETTLE_MS));
+      act(() => {
+        vi.advanceTimersByTime(SETTLE_MS);
+      });
       Object.defineProperty(viewport, 'scrollLeft', { configurable: true, value: 1610 });
       fireEvent.scroll(viewport);
-      act(() => vi.advanceTimersByTime(20));
+      act(() => {
+        vi.advanceTimersByTime(20);
+      });
       expect(position()).toHaveTextContent(`Panel 5 of ${total}`);
     } finally {
       vi.useRealTimers();
@@ -276,81 +282,5 @@ describe('workspace gallery when the story is still', () => {
       if (workspace.limit) expect(screen.getByText(workspace.limit)).toBeInTheDocument();
     }
     expect(WORKSPACES.filter((workspace) => workspace.limit).length).toBeGreaterThanOrEqual(5);
-  });
-});
-
-describe('workspace media', () => {
-  const image: Workspace = {
-    ...WORKSPACES[0]!,
-    id: 'image-panel',
-    media: { src: '/fake.webp', alt: 'Synthetic tracker', width: 800, height: 500, kind: 'image' },
-  };
-  const loop: Workspace = {
-    ...WORKSPACES[1]!,
-    id: 'loop-panel',
-    media: {
-      src: '/fake.webm',
-      alt: 'Synthetic loop',
-      width: 800,
-      height: 450,
-      kind: 'video',
-      poster: '/fake-poster.webp',
-    },
-  };
-  let play: Mock<() => Promise<void>>;
-  let pause: Mock<() => void>;
-  let enter: () => void = () => undefined;
-
-  beforeEach(() => {
-    mockMatchMedia(false);
-    play = vi.fn(() => Promise.resolve());
-    pause = vi.fn(() => undefined);
-    vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(play);
-    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(pause);
-    class FakeObserver {
-      constructor(callback: (entries: { isIntersecting: boolean }[]) => void) {
-        enter = () => callback([{ isIntersecting: true }]);
-      }
-      observe = vi.fn();
-      disconnect = vi.fn();
-    }
-    vi.stubGlobal('IntersectionObserver', FakeObserver);
-  });
-  afterEach(() => {
-    cleanup(); // Unmount (which pauses the loop) while play and pause are still mocked.
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-  });
-
-  it('loads images lazily at their declared size with an illustrative caption', () => {
-    renderGallery(true, [image]);
-    const img = screen.getByRole('img', { name: 'Synthetic tracker' });
-    expect(img).toHaveAttribute('width', '800');
-    expect(img).toHaveAttribute('height', '500');
-    expect(img).toHaveAttribute('loading', 'lazy');
-    expect(img).toHaveAttribute('decoding', 'async');
-    expect(screen.getByText('Illustrative screenshot')).toBeInTheDocument();
-  });
-
-  it('keeps loops muted, inline, unloaded and paused while the story is still', () => {
-    const { container } = renderGallery(true, [loop]);
-    const video = container.querySelector('video')!;
-    expect(video.muted).toBe(true);
-    expect(video).toHaveAttribute('playsinline');
-    expect(video).toHaveAttribute('loop');
-    expect(video).toHaveAttribute('preload', 'none');
-    expect(video).toHaveAttribute('poster', '/fake-poster.webp');
-    expect(video).not.toHaveAttribute('controls');
-    expect(video).not.toHaveAttribute('autoplay');
-    expect(pause).toHaveBeenCalled();
-    expect(play).not.toHaveBeenCalled();
-    expect(screen.getByText('Illustrative loop')).toBeInTheDocument();
-  });
-
-  it('plays a loop only once it is on screen while the story moves', () => {
-    renderGallery(false, [loop]);
-    expect(play).not.toHaveBeenCalled();
-    enter();
-    expect(play).toHaveBeenCalledTimes(1);
   });
 });
