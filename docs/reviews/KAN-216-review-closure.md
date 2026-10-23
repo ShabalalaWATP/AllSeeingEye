@@ -1,5 +1,12 @@
 # KAN-216 acceptance and closure record
 
+Update, 11 October 2026: approved aggregate PR #192 merged as `e1eabc93` after
+all 40 checks passed; main CI also passed. All 27 eligible implementation tickets
+moved to Done and delivery PRs #162–#191 closed as superseded. KAN-225's live
+gate acceptance is now [verified](2026-10-11-KAN-225-live-gate.md). KAN-164 and
+KAN-165 remain open. The matrix below preserves the pre-merge acceptance record;
+its "await integration" entries are historical, not current Jira status.
+
 Reviewed 10 October 2026. The batch contains 32 tickets, represented by 30 delivery
 PRs (#162–#191) and aggregate PR #192. PR #191 groups KAN-165, KAN-168 and KAN-172.
 Every delivery PR head is an ancestor of integration revision `ca810947`.

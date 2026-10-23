@@ -1856,11 +1856,22 @@ migration procedure; those requirements are not inferred from ticket status.
 - [x] Complete KAN-168 desktop/mobile form screenshots published; KAN-169's four contrast incompletes resolved.
 - [x] KAN-184 fresh sanitised consent request capture recorded, with no provider traffic forwarded.
 - [x] Final mobile build measured at 90/97/100; initial 89 and host variability retained in acceptance evidence.
-- [ ] Complete final aggregate published-head CI, obtain required release approval and integrate PR #192.
-- [ ] Verify main integration before moving the 27 eligible implementation tickets to Done.
-- [ ] Finish operator decisions and live acceptance for KAN-164, KAN-165 and KAN-225 separately.
+- [x] Complete final aggregate published-head CI, obtain required release approval and integrate PR #192 (`e1eabc93`, 10 October).
+- [x] Verify main integration before moving the 27 eligible implementation tickets to Done (Jira read-back confirmed).
+- [x] Apply and verify KAN-225's approved live release gate (11 October).
+- [ ] Finish the remaining KAN-164 and KAN-165 operator, licensing and publication decisions.
 
 See [closure matrix](reviews/KAN-216-review-closure.md),
 [final browser evidence](reviews/KAN-216-final-browser-evidence.md), and
 [provenance review](reviews/KAN-194-provenance-closure.md). Existing policy, approval,
 coverage and security gates remain enforced; no production rollout was performed.
+
+### Operator acceptance follow-up, 11 October 2026
+
+PR #192 passed all 40 pre-merge checks and its main CI passed. The approved
+production reviewer gate is now effective, administrator bypass is disabled and
+main-only restrictions are preserved. Both harmless approve/reject outcomes are
+verified, with independent review; see [KAN-225 acceptance](reviews/2026-10-11-KAN-225-live-gate.md).
+No new VPS deployment occurred. The existing manual migration/controller guard
+stopped the 10 October deployment. KAN-164 and KAN-165 remain open because licence
+compatibility and the actual operator/publication decisions are unresolved.

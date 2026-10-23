@@ -1,10 +1,13 @@
 # Production release approval
 
-KAN-225 proposes an explicit approval before the `Deploy VPS` job can access
-the `production` environment. This document and the checked-in payload do not
-apply GitHub settings. Alex must approve their application first.
+KAN-225's explicit approval gate was applied on 11 October 2026 after Alex
+approved the exact settings and two harmless verification runs. The live
+`production` environment now requires approval before `Deploy VPS` can run.
+See the [verified settings and test outcomes](reviews/2026-10-11-KAN-225-live-gate.md).
+The checked-in payload does not apply itself; later configuration changes still
+require the applicable approval.
 
-## Proposed settings
+## Verified settings
 
 Require `ShabalalaWATP` (verified GitHub user ID `128953080`) to approve each
 production job. Retain the existing selected-branch policy, whose only allowed
@@ -22,7 +25,7 @@ Alex have Alex's authority; this gate does not distinguish a human from an agent
 using those credentials. Restrict credential access and retain the recorded
 release approval. Existing main-branch review and CI requirements remain intact.
 
-## Apply after approval
+## Apply or restore after approval
 
 1. Check there are no active or pending production jobs. Record the current
    environment settings and deployment branch rules for recovery.
@@ -58,9 +61,10 @@ it; confirm the summary step never runs. Record both run URLs and conclusions.
 These checks create GitHub deployment records for the environment but do not
 contact or change the production host.
 
-Do not mark KAN-225 complete until effective settings and both outcomes are
-verified. No live configuration or gate check has been performed by preparing
-this proposal.
+The initial acceptance is complete: both jobs first waited without executing a
+step, the approved check succeeded and wrote its summary, and the rejected check
+failed with no executed steps. Repeat this procedure when an authorised change
+requires fresh verification; the previous approval does not authorise future runs.
 
 ## Actual releases
 
