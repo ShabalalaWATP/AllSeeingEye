@@ -87,6 +87,21 @@ with crowded global statistics need one event request instead of the former
 eight-request path. Exactly 2,000-row pages still load supplements. These are
 deterministic request/result checks, not measured network latency.
 
+The final integrated selection passed 182 backend cases and 206 frontend cases.
+The separate serial, non-coverage stream probe also passed: new-ID batches had
+a 21.93 ms median (32.83 ms maximum), existing-ID batches 14.05 ms median, mixed
+batches 22.05 ms median, and one React commit per batch. This uses mocked graphics;
+it remains close to the assessment's 21.75/13.13/19.17 ms respective medians and
+does not establish a GPU or production throughput guarantee.
+
+Broad CI exposed two minimal session-fence test containers missing the new signal
+contract. They now share a real in-memory signal instance with their freshness
+cache, preserving the upload and post-close expiry assertions. Required full CI
+on the published head remains the broader validation authority.
+The partition-layer stability fixture also waits for initial coverage to finish
+and its React transition to display the current snapshot before capturing layer
+rows. Its partition-only request and unchanged-layer assertions are retained.
+
 ## Reproduction and release
 
 From `backend`, using an isolated checkout and its existing frozen environment:

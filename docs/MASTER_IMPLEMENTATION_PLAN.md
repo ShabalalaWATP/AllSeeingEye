@@ -14,7 +14,8 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 - [x] Publish useful map snapshots progressively while retaining serial read admission,
   stream reconciliation, source coverage and cancellation.
 - [x] Record serial before/after evidence and reproduce review findings with regressions.
-- [ ] Complete final independent review and required CI checks on the published candidate.
+- [x] Complete final independent quality/security review and the combined local checks.
+- Required full CI results are maintained on the PR for its published head.
 - [ ] Obtain release approval, merge and verify deployment before closing KAN-249.
 
 Implementation is coordinated in [PR #229](https://github.com/ShabalalaWATP/AllSeeingEye/pull/229).

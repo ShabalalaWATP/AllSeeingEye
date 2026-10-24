@@ -99,15 +99,15 @@ async def test_original_token_expiry_is_checked_after_fresh_session_closes(
         return_value=SessionActivity(checked_at, checked_at, idle_deadline, idle_minutes=60)
     )
     monkeypatch.setattr("ase.api.session_fence.validate_current_session", check)
+    signals = InMemorySessionSignals(clock)
     fake = SimpleNamespace(
         session_factory=lambda: context,
         clock=clock,
         repositories=lambda _: SimpleNamespace(
             users=object(), refresh_tokens=SimpleNamespace(activity=activity)
         ),
-        session_freshness=SessionFreshness(
-            clock, InMemorySessionSignals(clock), timedelta(seconds=15)
-        ),
+        session_signals=signals,
+        session_freshness=SessionFreshness(clock, signals, timedelta(seconds=15)),
     )
     with pytest.raises(Unauthenticated, match="The session has ended"):
         await SessionFence(fake, claims).confirm()
