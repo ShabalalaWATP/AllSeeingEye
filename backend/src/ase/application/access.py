@@ -118,14 +118,11 @@ class AccessPolicy:
 
     async def owner_names(self, actor: User, owner_ids: Iterable[UUID]) -> dict[UUID, str]:
         """Display names for owners of records the caller has already been allowed to list."""
-        names: dict[UUID, str] = {}
-        for owner_id in dict.fromkeys(owner_ids):
-            if owner_id == actor.id:
-                names[owner_id] = actor.display_name
-                continue
-            owner = await self._users.get_by_id(owner_id)
-            if owner is not None:
-                names[owner_id] = owner.display_name
+        owners = dict.fromkeys(owner_ids)
+        names = {actor.id: actor.display_name} if actor.id in owners else {}
+        others = [owner_id for owner_id in owners if owner_id != actor.id]
+        if others:
+            names.update(await self._users.display_names(others))
         return names
 
     async def context(self, actor: User, *, for_update: bool = False) -> AccessContext:
