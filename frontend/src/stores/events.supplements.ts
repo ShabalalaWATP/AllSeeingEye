@@ -16,6 +16,13 @@ interface SupplementRequest {
   query: EventsQuery;
 }
 
+interface SupplementProgress {
+  /** Records from the request that just settled, before the caller's coverage filter. */
+  events: LiveEvent[];
+  error: string | null;
+  limited: boolean;
+}
+
 /**
  * Supplemental snapshots stop busy categories from hiding ships or public spacecraft.
  * `only` limits them to the partitions a bulk update touched.
@@ -26,6 +33,7 @@ export async function loadCoverageSupplements(
   signal: AbortSignal,
   scope: Pick<EventsQuery, 'bbox' | 'sampling'> = {},
   only: ReadonlySet<Category> | null = null,
+  onProgress?: (progress: SupplementProgress) => void,
 ): Promise<{ events: LiveEvent[]; error: string | null; limited: boolean }> {
   const requests: SupplementRequest[] = [];
   const count = (category: 'maritime' | 'space' | 'disaster' | 'aviation') =>
@@ -96,15 +104,21 @@ export async function loadCoverageSupplements(
   for (const request of requests) {
     if (only !== null && !only.has(request.category)) continue;
     signal.throwIfAborted();
+    let latest: LiveEvent[] = [];
     try {
-      const result = await fetchEvents({ ...request.query, ...scope }, signal);
+      latest = await fetchEvents({ ...request.query, ...scope }, signal);
       signal.throwIfAborted();
-      additional.push(...result);
-      limited ||= result.length >= (request.query.limit ?? Infinity);
+      additional.push(...latest);
+      limited ||= latest.length >= (request.query.limit ?? Infinity);
     } catch (failure) {
       signal.throwIfAborted();
       errors.push(`Additional ${request.label} coverage unavailable: ${describeError(failure)}`);
     }
+    onProgress?.({
+      events: latest,
+      error: errors.length ? errors.join(' ') : null,
+      limited,
+    });
   }
   return { events: additional, error: errors.length ? errors.join(' ') : null, limited };
 }

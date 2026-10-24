@@ -6910,3 +6910,28 @@ security-refresh argument advances to 24 October so the normal Debian update
 and upgrade layer runs again. Application code, package locks, runtime commands,
 deployment gates and database configuration are unchanged. Actual image scans
 and the required CI checks must pass before the protected deployment proceeds.
+
+## 24 October 2026: KAN-249 runtime and map responsiveness
+
+Alex asked to fix the four measured performance bottlenecks. Social boards and
+sampling, aviation boards and translation selection now use admitted worker
+projections over immutable event snapshots. A literal prefilter avoids repeated
+non-matching social regex scans. Empty translation polls reuse only an unchanged
+store generation. Database sessions, mutable interference state and current
+private-term checks stay on the API loop; the final social response also checks
+source and session authority after worker completion.
+
+Map snapshots publish primary data before serial supplements, preserving live
+upserts, expiry, selection and cancellation. Exhaustive small viewports skip
+redundant coverage reads. Owner labels use bounded ID/name projections rather
+than loading one full account per owner. Independent review prompted regressions
+for concurrent translation provenance and incomplete-coverage warnings during
+partial map refreshes.
+
+The serial 60,000-event fixture reduced a busy-hour social board with 32 terms
+from 2.72 seconds to 215 ms, with median maximum loop gaps from 2.72 seconds to
+32 ms. Two hundred owner names require one SQL query instead of 200. These local
+fixtures do not establish production latency or GPU performance. All 182 focused
+backend cases pass; frontend and release gates are recorded in PR #229. The
+[measurement record](reviews/2026-10-24-KAN-249-performance.md) includes bounds,
+limitations and the repeatable offline probe. Release approval remains pending.

@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 from datetime import datetime, timedelta
 
 from httpx import AsyncClient
 
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.application.trackers import aviation as aviation_tracker
 from ase.application.trackers.aviation import (
     AviationMonitor,
+    AviationService,
     WatchedArea,
     samples_for,
     summary_text,
@@ -186,6 +189,22 @@ async def test_aviation_board_and_jamming_api(
     assert (await client.get("/api/trackers/aviation/jamming")).status_code == 401
 
 
+async def test_aviation_board_projects_events_in_worker(monkeypatch) -> None:
+    store = InMemoryEventStore()
+    store.upsert(fleet())
+    seen: list[int] = []
+    original = aviation_tracker.military_by_country
+
+    def recording(events):
+        seen.append(threading.get_ident())
+        return original(events)
+
+    monkeypatch.setattr(aviation_tracker, "military_by_country", recording)
+    board = await AviationService(store, JamMap(), FakeClock(NOW)).board({"UA": 3.0}, {})
+    assert board.military_total == 6 and board.by_country[0].baseline == 3.0
+    assert len(seen) == 1 and seen[0] != threading.get_ident()
+
+
 async def test_aviation_report_carries_the_board_as_background(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
@@ -208,5 +227,5 @@ async def test_aviation_report_carries_the_board_as_background(
     prompt = gateway.requests[0].messages[1].content
     assert "Military aircraft tracked now: 6" in prompt and "GNSS interference cells" in prompt
     assert len(created.json()["version"]["evidence"]) == 8
-    board = container.aviation().board({"UA": 5.0}, {})
+    board = await container.aviation().board({"UA": 5.0}, {})
     assert "UA 6 (baseline 5.0)" in summary_text(board)

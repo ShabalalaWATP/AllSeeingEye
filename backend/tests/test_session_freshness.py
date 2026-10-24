@@ -124,7 +124,9 @@ def test_signals_notify_and_prune_by_retention_and_capacity() -> None:
         clock, notify=woken.append, retention=timedelta(minutes=1), capacity=2
     )
     first, second, third = uuid4(), uuid4(), uuid4()
+    assert signals.generation == 0
     signals.publish(first)
+    assert signals.generation == 1
     assert signals.changed_since(first, START)
     assert not signals.changed_since(first, START + timedelta(microseconds=1))
     clock.advance(timedelta(minutes=2))
@@ -133,4 +135,5 @@ def test_signals_notify_and_prune_by_retention_and_capacity() -> None:
     signals.publish(third)
     signals.publish(first)
     assert not signals.changed_since(second, START)  # Evicted beyond capacity.
+    assert signals.generation == 4  # Eviction never rolls back the global revision.
     assert woken == [first, second, third, first]

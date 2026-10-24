@@ -74,9 +74,33 @@ async def test_queue_waits_when_no_translator_is_available() -> None:
     store = InMemoryEventStore()
     event = foreign("a", "Ракетний удар по Києву")
     store.upsert([event])
-    queue = TranslationQueue(
-        store, InMemoryEventBus(), FakeTranslator(available=False), FakeClock(NOW)
-    )
+    translator = FakeTranslator(available=False)
+    queue = TranslationQueue(store, InMemoryEventBus(), translator, FakeClock(NOW))
     assert await queue.run_once() == 0
     assert queue.calls_this_hour == 0
     assert (store.get(event.id) or event).title_en is None
+    translator.available = True
+    assert await queue.run_once() == 1
+
+
+async def test_unchanged_all_english_store_skips_repeat_selection(monkeypatch) -> None:
+    store = InMemoryEventStore()
+    store.upsert([replace(make_event("english"), language="en")])
+    translator = FakeTranslator()
+    queue = TranslationQueue(store, InMemoryEventBus(), translator, FakeClock(NOW))
+    reads = 0
+    original = store.read_cooperatively
+
+    async def counting(query, project, *, admission_key="internal:legacy"):
+        nonlocal reads
+        reads += 1
+        return await original(query, project, admission_key=admission_key)
+
+    monkeypatch.setattr(store, "read_cooperatively", counting)
+    assert await queue.run_once() == 0
+    assert await queue.run_once() == 0
+    assert reads == 1 and not translator.batches
+    foreign_event = foreign("foreign", "Bonjour", language="fr")
+    store.upsert([foreign_event])
+    assert await queue.run_once() == 1
+    assert reads == 2 and translator.batches == [[("Bonjour", "fr")]]

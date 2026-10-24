@@ -39,6 +39,7 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
 
     last_activity_at = harness.clock.now()
     idle_expires_at = last_activity_at + timedelta(minutes=180)
+    signals = InMemorySessionSignals(harness.clock)
 
     async def active_family(*args: Any, **kwargs: Any) -> bool:
         return harness.clock.now() < idle_expires_at
@@ -66,9 +67,8 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
             refresh_tokens=SimpleNamespace(family_is_active=active_family, activity=activity),
         ),
         clock=harness.clock,
-        session_freshness=SessionFreshness(
-            harness.clock, InMemorySessionSignals(harness.clock), timedelta(seconds=15)
-        ),
+        session_signals=signals,
+        session_freshness=SessionFreshness(harness.clock, signals, timedelta(seconds=15)),
     )
     return application
 

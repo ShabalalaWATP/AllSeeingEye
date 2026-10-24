@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import replace
 from datetime import timedelta
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -11,8 +12,10 @@ from fastapi import FastAPI
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.app_lifecycle import lifespan
+from ase.application.ports.translate import TranslatedText
 from ase.application.translate.queue import TranslationQueue
 from ase.domain.events import Credibility
+from ase.domain.text_transformations import TextTransformation
 from feeds_helpers import NOW, make_event
 from helpers import FakeClock
 
@@ -58,6 +61,123 @@ async def test_slow_translation_merges_only_onto_current_title(change: str) -> N
             assert current.title_en == "Existing translation"
         else:
             assert current.title_en is None
+
+
+async def test_slow_translation_preserves_newer_provenance_and_model_identity() -> None:
+    store = InMemoryEventStore()
+    original = replace(make_event("provenance", title="Bonjour"), language="fr", summary="Résumé")
+    store.upsert([original])
+    entered, finish = asyncio.Event(), asyncio.Event()
+    profile_id = uuid4()
+
+    class DelayedTranslator:
+        async def translate(self, items):
+            raise AssertionError("The traced translator should be used")
+
+        async def translate_traced(self, items):
+            entered.set()
+            await finish.wait()
+            return [
+                TranslatedText(
+                    "Hello", model="translation-model", profile_id=profile_id, provider="test"
+                )
+            ]
+
+    queue = TranslationQueue(store, InMemoryEventBus(), DelayedTranslator(), FakeClock(NOW))
+    task = asyncio.create_task(queue.run_once())
+    await entered.wait()
+    newer = TextTransformation(
+        field="summary",
+        original_text="Résumé",
+        transformed_text="Summary",
+        kind="translation",
+        source_language="fr",
+        target_language="en",
+        origin="source",
+        method="source-summary",
+    )
+    store.put([replace(original, transformations=(newer,))])
+    finish.set()
+    assert await task == 1
+    current = store.get(original.id)
+    assert current is not None and current.title_en == "Hello"
+    assert current.transformations[0] == newer
+    machine = [
+        row for row in current.transformations if row.field == "title" and row.origin == "machine"
+    ]
+    assert len(machine) == 1
+    assert (machine[0].transformed_text, machine[0].model, machine[0].profile_id) == (
+        "Hello",
+        "translation-model",
+        profile_id,
+    )
+
+
+async def test_slow_translation_does_not_replace_full_newer_provenance() -> None:
+    store = InMemoryEventStore()
+    original = replace(make_event("full", title="Bonjour"), language="fr", summary="Résumé")
+    store.upsert([original])
+    entered, finish = asyncio.Event(), asyncio.Event()
+
+    async def translate(items):
+        entered.set()
+        await finish.wait()
+        return ["Hello"]
+
+    translator = AsyncMock()
+    translator.translate.side_effect = translate
+    bus = AsyncMock()
+    queue = TranslationQueue(store, bus, translator, FakeClock(NOW))
+    task = asyncio.create_task(queue.run_once())
+    await entered.wait()
+    source = TextTransformation(
+        field="summary",
+        original_text="Résumé",
+        transformed_text="Summary",
+        kind="translation",
+        source_language="fr",
+        target_language="en",
+        origin="source",
+        method="source-summary",
+    )
+    current = replace(
+        original, transformations=tuple(replace(source, method=f"source-{i}") for i in range(4))
+    )
+    store.put([current])
+    finish.set()
+    assert await task == 0
+    assert store.get(original.id) == current
+    bus.publish.assert_not_awaited()
+
+
+@pytest.mark.parametrize("change", ["title", "language", "on_demand", "already", "prune"])
+async def test_changed_candidate_is_not_sent_to_model_after_selection(
+    change: str, monkeypatch
+) -> None:
+    store = InMemoryEventStore()
+    original = replace(make_event("candidate", title="Bonjour"), language="fr")
+    store.upsert([original])
+    translator = AsyncMock()
+    queue = TranslationQueue(store, InMemoryEventBus(), translator, FakeClock(NOW))
+
+    async def interrupted_read(query, project, *, admission_key):
+        snapshot = store.query(query)
+        await asyncio.sleep(0)
+        if change == "prune":
+            store.prune(NOW + timedelta(days=60))
+        else:
+            changes = {
+                "title": {"title": "Bonsoir"},
+                "language": {"language": "de"},
+                "on_demand": {"tags": frozenset({"translate_on_demand"})},
+                "already": {"title_en": "Already English"},
+            }
+            store.put([replace(original, **changes[change])])
+        return project(snapshot)
+
+    monkeypatch.setattr(store, "read_cooperatively", interrupted_read)
+    assert await queue.run_once() == 0
+    translator.translate.assert_not_awaited()
 
 
 async def test_failures_consume_budget_and_same_queue_resets_next_hour() -> None:

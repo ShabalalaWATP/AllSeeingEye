@@ -8,7 +8,11 @@ from ase.domain.errors import RateLimited
 
 
 async def read_board_response[T](
-    container: ContainerDep, fence: FenceDep, work: Callable[[], Awaitable[T]]
+    container: ContainerDep,
+    fence: FenceDep,
+    work: Callable[[], Awaitable[T]],
+    *,
+    final_authority: Callable[[T], Awaitable[None]] | None = None,
 ) -> T:
     # Admission belongs to the store. Only the short final fence takes the
     # source guard, so requests cannot queue outside bounded read admission.
@@ -22,4 +26,7 @@ async def read_board_response[T](
         if any(value and not current.get(key, False) for key, value in enabled.items()):
             raise RateLimited(1)
         await fence.confirm()
+        if final_authority is not None:
+            await final_authority(result)
+            fence.assert_current()
         return result

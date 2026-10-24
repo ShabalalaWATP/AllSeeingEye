@@ -11,7 +11,7 @@ from ase.adapters.security.session_signals import InMemorySessionSignals
 from ase.api.session_fence import SessionFence
 from ase.application.auth.session_freshness import SessionFreshness
 from ase.application.dto import AccessClaims
-from ase.domain.errors import Forbidden, Unauthenticated
+from ase.domain.errors import Forbidden, RateLimited, Unauthenticated
 from ase.domain.users import Role
 from helpers import FakeClock
 
@@ -121,6 +121,16 @@ async def test_a_signalled_change_forces_a_fresh_read(check: AsyncMock) -> None:
     with pytest.raises(Unauthenticated):
         await fence.confirm()
     assert check.await_count == 2
+
+
+async def test_final_fence_detects_same_clock_change_after_confirm(check: AsyncMock) -> None:
+    token = claims()
+    fence, _, signals = fence_with(check, FakeClock(START), token=token)
+    await fence.confirm()
+    fence.assert_current()
+    signals.publish(token.user_id)
+    with pytest.raises(RateLimited):
+        fence.assert_current()
 
 
 async def test_admin_only_still_applies_to_a_reused_check(check: AsyncMock) -> None:
