@@ -1864,3 +1864,15 @@ See [closure matrix](reviews/KAN-216-review-closure.md),
 [final browser evidence](reviews/KAN-216-final-browser-evidence.md), and
 [provenance review](reviews/KAN-194-provenance-closure.md). Existing policy, approval,
 coverage and security gates remain enforced; no production rollout was performed.
+
+### KAN-247 security remediation, 24 October 2026
+
+- [x] Reproduce original-asset quota denial through delete, failed upload and expiry.
+- [x] Separate live personal/team capacity from bounded lifecycle history.
+- [x] Add an uploader history allowance while retaining global/pending/byte caps.
+- [x] Preserve active multi-team retention, admitted completion and 30-day purge.
+- [x] Pass 107 focused regressions, including existing routing/session controls.
+- [x] Complete independent candidate review and local backend quality gates.
+- [ ] Obtain release approval before merging or deploying the reviewed fix.
+
+The PR carries the required full CI and coverage gates before integration.

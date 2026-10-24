@@ -6870,3 +6870,17 @@ session-family ownership/grace and scoped warning-history cutoffs. It started no
 application workers. The disposable database and copied dump were removed after
 success; bounded private evidence remains. This rehearsal does not replace the
 fresh quiesced backup or separate approval required for production rollout.
+
+## 24 October 2026: KAN-247 original-asset quota isolation
+
+The security follow-up reproduced team retention denial using discarded empty
+reservations, failed uploads and idle expiry. Scoped capacity now counts live
+assets, while the global row cap still includes scrubbed 30-day history. A separate
+256-retired-row uploader allowance bounds churn across reports, teams and sessions
+without reducing active multi-team capacity or blocking admitted upload completion.
+The focused regression and neighbouring suites pass 107 tests, including nine
+independent-transaction concurrency cases. The existing team model-routing and
+report-search session fixes are retained. Independent candidate review found no
+concrete bypass or regression. Backend lint, format, strict typing, import rules,
+Bandit, file length and OpenAPI consistency pass. The PR runs broader CI before
+release; no merge or production operation was performed.
