@@ -6900,3 +6900,13 @@ and the existing override mechanism for Undici 7.30.1. The frontend audit report
 no known vulnerabilities; 210 API tests, type checks, production build, bundle
 budgets and formatting pass. Independent lockfile compatibility review found no
 concrete regression and confirmed unchanged test/coverage thresholds.
+
+## 24 October 2026: KAN-247 release image refresh
+
+Alex authorised merge and deployment. PR #225 was squash-merged as `e7f0a617`
+after all 40 PR checks passed. Push CI then identified the API image's cached
+Debian `libbrotli1` package as affected by CVE-2026-111497. The existing dated
+security-refresh argument advances to 24 October so the normal Debian update
+and upgrade layer runs again. Application code, package locks, runtime commands,
+deployment gates and database configuration are unchanged. Actual image scans
+and the required CI checks must pass before the protected deployment proceeds.
