@@ -20,6 +20,7 @@ from ase.domain.original_assets import (
     MAX_PENDING_UPLOADS_PER_USER,
     MAX_PERSONAL_BYTES,
     MAX_PERSONAL_RECORDS,
+    MAX_RETIRED_RECORDS_PER_USER,
     MAX_SELECTED_ASSETS,
     MAX_TEAM_BYTES,
     MAX_TEAM_RECORDS,
@@ -109,7 +110,11 @@ class OriginalAssets:
                 MAX_TEAM_BYTES if team else MAX_PERSONAL_BYTES,
             ),
         ):
-            used_count, used_bytes = await self.assets.usage(personal, scope)
+            # Global admission bounds every persisted row, including scrubbed history.
+            # Scoped capacity is reusable once the original is deleted or expired.
+            used_count, used_bytes = await self.assets.usage(
+                personal, scope, live_only=personal is not None or scope is not None
+            )
             if used_count + count > max_count or used_bytes + additional > max_bytes:
                 raise InvalidRequest("Original retention has reached its storage or record limit.")
 
@@ -131,6 +136,8 @@ class OriginalAssets:
             or await self.assets.pending_count() >= MAX_PENDING_UPLOADS
         ):
             raise RateLimited(60)
+        if await self.assets.retired_count(access.actor.id) >= MAX_RETIRED_RECORDS_PER_USER:
+            raise InvalidRequest("Your original retention has reached its discarded-record limit.")
         await self._quota(report.created_by, report.team_id, request.byte_count, 1)
         now = self.clock.now()
         asset = OriginalAsset(

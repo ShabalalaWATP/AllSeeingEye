@@ -86,15 +86,23 @@ class SqlOriginalAssetRepository:
         )
 
     async def usage(
-        self, owner_id: UUID | None = None, team_id: UUID | None = None
+        self, owner_id: UUID | None = None, team_id: UUID | None = None, *, live_only: bool = False
     ) -> tuple[int, int]:
         query = select(func.count(Row.id), func.coalesce(func.sum(Row.byte_count), 0))
+        if live_only:
+            query = query.where(Row.status.in_(LIVE))
         if team_id is not None:
             query = query.where(Row.team_id == team_id)
         elif owner_id is not None:
             query = query.where(Row.team_id.is_(None), Row.owner_id == owner_id)
         count, size = (await self.session.execute(query)).one()
         return int(count), int(size)
+
+    async def retired_count(self, uploader_id: UUID) -> int:
+        query = select(func.count(Row.id)).where(
+            Row.uploader_id == uploader_id, Row.status.in_(("deleted", "expired"))
+        )
+        return int(await self.session.scalar(query) or 0)
 
     async def pending_count(self, uploader_id: UUID | None = None) -> int:
         query = select(func.count(Row.id)).where(Row.status.in_(PENDING))

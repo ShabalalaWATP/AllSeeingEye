@@ -207,12 +207,50 @@ async def test_tombstones_count_towards_quota_until_exact_thirty_day_purge(conta
         repo = SqlOriginalAssetRepository(session)
         await repo.delete(asset.id, now)
         assert await repo.usage(user.id) == (1, 0)
+        assert await repo.usage(user.id, live_only=True) == (0, 0)
+        assert await repo.retired_count(user.id) == 1
         assert (await repo.get(asset.id)).session_family_id is None
         await repo.expire(now + timedelta(days=30) - timedelta(microseconds=1))
         assert await repo.usage() == (1, 0)
         await repo.expire(now + timedelta(days=30))
         assert await repo.get(asset.id) is None
         assert await repo.usage() == (0, 0)
+        assert await repo.retired_count(user.id) == 0
+
+
+async def test_live_usage_and_retired_history_follow_status_scope_and_uploader(
+    container, user, admin
+):
+    asset = await seed(container, user)
+    team = await team_for(container, admin, user)
+    now = container.clock.now()
+    async with container.session_factory() as session:
+        repo = SqlOriginalAssetRepository(session)
+        await repo.delete(asset.id, now)
+        expired = replace(asset, id=uuid4(), team_id=team.id, reservation_expires_at=now)
+        await repo.create(expired)
+        await repo.expire(now)
+        assert (await repo.get(expired.id)).status == "expired"
+        active = replace(asset, id=uuid4(), team_id=team.id)
+        await repo.create(active)
+        assert await repo.begin_upload(active.id, now)
+        assert await repo.activate(active.id, b"data", now)
+        await repo.create(replace(asset, id=uuid4()))
+        uploading = replace(asset, id=uuid4())
+        await repo.create(uploading)
+        assert await repo.begin_upload(uploading.id, now)
+        other = replace(asset, id=uuid4(), uploader_id=admin.id, owner_id=admin.id)
+        await repo.create(other)
+        await repo.delete(other.id, now)
+
+        assert await repo.retired_count(user.id) == 2
+        assert await repo.retired_count(admin.id) == 1
+        assert await repo.retired_count(uuid4()) == 0
+        assert await repo.usage() == (6, 12)
+        assert await repo.usage(live_only=True) == (3, 12)
+        assert await repo.usage(user.id, live_only=True) == (2, 8)
+        assert await repo.usage(team_id=team.id) == (2, 4)
+        assert await repo.usage(team_id=team.id, live_only=True) == (1, 4)
 
 
 async def test_upload_admission_refreshes_short_remaining_reservation(container, user):

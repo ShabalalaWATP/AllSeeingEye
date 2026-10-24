@@ -3,7 +3,7 @@
 # Build the SPA and the same standard Caddy release with patched, locked Go
 # dependencies. The final image retains the upstream runtime and shared Caddyfile.
 
-FROM golang:1.27.2-alpine3.23@sha256:2ac5c2a64f1f970b5120fe21c6a5e3d9190b196a9ead95797564738ecd07a8a2 AS caddy-build
+FROM golang:1.27.3-alpine3.23@sha256:754d5200fc3edae76d3b6598a9a3fac7e74981ee6a5413ab955025f185753ef2 AS caddy-build
 ENV CGO_ENABLED=0 GOTOOLCHAIN=local
 WORKDIR /build
 COPY infra/caddy-build/go.mod infra/caddy-build/go.sum ./
@@ -31,6 +31,8 @@ RUN pnpm "$BUILD_COMMAND" && node scripts/precompress.js dist
 
 FROM caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.
+# Bump for security updates so a cached upgrade layer cannot retain old packages.
+ARG ASE_ALPINE_SECURITY_REFRESH=2026-10-24
 RUN apk upgrade --no-cache \
     && addgroup -S -g 10001 aseweb \
     && adduser -S -D -H -u 10001 -G aseweb aseweb
