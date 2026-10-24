@@ -88,6 +88,23 @@ afterEach(() => {
 });
 
 describe('a bulk maritime update', () => {
+  it('uses one scoped read for a small bounded partition refresh', async () => {
+    useEventsStore.getState().setCoverageBounds([-20, 40, 20, 60]);
+    const answer = await loaded([ship('inside'), plane]);
+    expect(useEventsStore.getState().snapshotLimited).toBe(false);
+
+    hint(['maritime']);
+    await vi.advanceTimersByTimeAsync(SNAPSHOT_REFRESH_MS);
+    expect(answer.queries).toHaveLength(1);
+    expect(answer.queries[0]).toMatchObject({
+      bbox: [-20, 40, 20, 60],
+      categories: ['maritime'],
+      limit: 2_000,
+    });
+    expect(useEventsStore.getState().byId.inside).toBeDefined();
+    expect(useEventsStore.getState().snapshotLimited).toBe(false);
+  });
+
   it('requests only maritime partitions, where a full refresh requested every partition', async () => {
     const full = await loaded([ship('a'), plane, quake]);
     hint();

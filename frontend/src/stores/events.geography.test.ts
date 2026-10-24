@@ -56,7 +56,7 @@ it('handles antimeridian bounds and excludes unlocated records only in scoped vi
   expect(insideCoverage(unknown, [170, -30, -170, 30])).toBe(false);
 });
 
-it('passes geographic viewport scope to main and supplemental queries and rejects remote updates', async () => {
+it('passes geographic viewport scope to the main query and rejects remote updates', async () => {
   const fetch = vi.spyOn(api, 'fetchEvents').mockResolvedValue([]);
   vi.spyOn(api, 'fetchStats').mockResolvedValue({
     ...storeStats,
@@ -65,7 +65,7 @@ it('passes geographic viewport scope to main and supplemental queries and reject
   const store = useEventsStore.getState();
   store.setCoverageBounds([100, -50, 160, 50]);
   await store.load();
-  expect(fetch.mock.calls.length).toBeGreaterThan(1);
+  expect(fetch).toHaveBeenCalledOnce();
   for (const [query] of fetch.mock.calls)
     expect(query).toMatchObject({ bbox: [100, -50, 160, 50], sampling: 'geographic' });
   store.applyUpsert([
