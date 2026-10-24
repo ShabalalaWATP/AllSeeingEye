@@ -1873,6 +1873,9 @@ coverage and security gates remain enforced; no production rollout was performed
 - [x] Preserve active multi-team retention, admitted completion and 30-day purge.
 - [x] Pass 107 focused regressions, including existing routing/session controls.
 - [x] Complete independent candidate review and local backend quality gates.
+- [x] Refresh the five dependencies reported by the inherited Python audit gate.
 - [ ] Obtain release approval before merging or deploying the reviewed fix.
 
-The PR carries the required full CI and coverage gates before integration.
+The PR carries the required full CI, coverage and container scan gates before
+integration. Its container candidate also refreshes the pinned Go patch and the
+cached Alpine package layer identified by the inherited image audit failures.
