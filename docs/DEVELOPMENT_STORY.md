@@ -6893,3 +6893,10 @@ The web builder uses pinned Go 1.27.3 and a dated Alpine refresh invalidates the
 old cached package layer. Existing Dependabot proposals remain unmodified; the
 combined candidate owns validation of these prerequisites. The local Docker
 daemon was unavailable, so actual image build/scan evidence comes from required CI.
+
+Those image gates now pass. The next audit stage exposed inherited frontend
+advisories, addressed with Vite 8.3.3, Zod 4.6.6, matching Vitest/coverage 5.0.3
+and the existing override mechanism for Undici 7.30.1. The frontend audit reports
+no known vulnerabilities; 210 API tests, type checks, production build, bundle
+budgets and formatting pass. Independent lockfile compatibility review found no
+concrete regression and confirmed unchanged test/coverage thresholds.

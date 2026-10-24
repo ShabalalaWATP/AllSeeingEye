@@ -1874,6 +1874,7 @@ coverage and security gates remain enforced; no production rollout was performed
 - [x] Pass 107 focused regressions, including existing routing/session controls.
 - [x] Complete independent candidate review and local backend quality gates.
 - [x] Refresh the five dependencies reported by the inherited Python audit gate.
+- [x] Clear the inherited frontend audit with reviewed compatible package updates.
 - [ ] Obtain release approval before merging or deploying the reviewed fix.
 
 The PR carries the required full CI, coverage and container scan gates before
