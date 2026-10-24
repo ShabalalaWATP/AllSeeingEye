@@ -60,6 +60,36 @@ async def test_slow_translation_merges_only_onto_current_title(change: str) -> N
             assert current.title_en is None
 
 
+@pytest.mark.parametrize("change", ["title", "language", "on_demand", "already", "prune"])
+async def test_changed_candidate_is_not_sent_to_model_after_selection(
+    change: str, monkeypatch
+) -> None:
+    store = InMemoryEventStore()
+    original = replace(make_event("candidate", title="Bonjour"), language="fr")
+    store.upsert([original])
+    translator = AsyncMock()
+    queue = TranslationQueue(store, InMemoryEventBus(), translator, FakeClock(NOW))
+
+    async def interrupted_read(query, project, *, admission_key):
+        snapshot = store.query(query)
+        await asyncio.sleep(0)
+        if change == "prune":
+            store.prune(NOW + timedelta(days=60))
+        else:
+            changes = {
+                "title": {"title": "Bonsoir"},
+                "language": {"language": "de"},
+                "on_demand": {"tags": frozenset({"translate_on_demand"})},
+                "already": {"title_en": "Already English"},
+            }
+            store.put([replace(original, **changes[change])])
+        return project(snapshot)
+
+    monkeypatch.setattr(store, "read_cooperatively", interrupted_read)
+    assert await queue.run_once() == 0
+    translator.translate.assert_not_awaited()
+
+
 async def test_failures_consume_budget_and_same_queue_resets_next_hour() -> None:
     store = InMemoryEventStore()
     store.upsert([replace(make_event("a"), language="fr")])

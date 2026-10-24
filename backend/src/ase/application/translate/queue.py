@@ -17,8 +17,10 @@ from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from datetime import datetime, timedelta
 
+from ase.application.feeds.board_reads import read_events
 from ase.application.ports import Clock
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
+from ase.application.ports.store_generation import GenerationalEventStore
 from ase.application.ports.translate import (
     TracedTranslator,
     TranslatedText,
@@ -76,6 +78,7 @@ class TranslationQueue:
         self._calls = 0
         self._task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
+        self._empty_generation: int | None = None
 
     @property
     def calls_this_hour(self) -> int:
@@ -94,6 +97,35 @@ class TranslationQueue:
         while len(self._cache) > CACHE_SIZE:
             self._cache.popitem(last=False)
 
+    async def _select_batch(self, now: datetime) -> list[Event]:
+        generational = self._store if isinstance(self._store, GenerationalEventStore) else None
+        generation = generational.generation if generational is not None else None
+        if generation is not None and generation == self._empty_generation:
+            return []
+        tried = frozenset(self._tried)
+        batch = await read_events(
+            self._store,
+            EventQuery(since=now - LOOKBACK, limit=POOL),
+            lambda pool: [
+                event for event in pool if needs_translation(event) and event.id not in tried
+            ][: self._batch],
+            admission_key="internal:translation",
+        )
+        if not batch:
+            if generational is not None and generational.generation == generation:
+                self._empty_generation = generation
+            return []
+        # Selection yields. A later poll, regrade or edit may have replaced an event.
+        return [
+            current
+            for event in batch
+            if (current := self._store.get(event.id)) is not None
+            and current.title == event.title
+            and current.language.lower() == event.language.lower()
+            and needs_translation(current)
+            and current.id not in self._tried
+        ]
+
     async def run_once(self) -> int:
         """Translate one batch; the number of events that gained an English title."""
         now = self._clock.now()
@@ -102,11 +134,9 @@ class TranslationQueue:
             current = self._store.get(event_id)
             if current is None or (current.language.lower(), current.title) != key:
                 del self._tried[event_id]
-        pool = self._store.query(EventQuery(since=now - LOOKBACK, limit=POOL))
-        candidates = [e for e in pool if needs_translation(e) and e.id not in self._tried]
-        if not candidates:
+        batch = await self._select_batch(now)
+        if not batch:
             return 0
-        batch = candidates[: self._batch]
         updated: list[Event] = []
         pending: list[Event] = []
         for event in batch:
@@ -126,7 +156,7 @@ class TranslationQueue:
                 current is not None
                 and current.title == event.title
                 and current.language.lower() == event.language.lower()
-                and current.title_en is None
+                and needs_translation(current)
             ):
                 merged.append(
                     replace(current, title_en=event.title_en, transformations=event.transformations)

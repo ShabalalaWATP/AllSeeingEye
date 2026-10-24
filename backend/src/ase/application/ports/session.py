@@ -18,6 +18,11 @@ class SessionSignals(Protocol):
     """Committed changes to a user's sessions or access: revocation, security version,
     role, activation, team membership or team state."""
 
+    @property
+    def generation(self) -> int:
+        """Increase on every committed in-process session or access change."""
+        ...
+
     def publish(self, user_id: UUID) -> None:
         """Record a committed change; call only after the transaction has committed."""
         ...

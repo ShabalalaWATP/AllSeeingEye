@@ -42,12 +42,12 @@ def test_repeated_sampling_does_not_move_observations_to_new_hours():
     assert jam.updated_at == NOW
 
 
-def test_reads_expire_cells_even_when_the_sampler_stops():
+async def test_reads_expire_cells_even_when_the_sampler_stops():
     jam = JamMap()
     jam.observe([observation(str(i)) for i in range(5)], NOW)
     service = AviationService(InMemoryEventStore(), jam, FakeClock(NOW + timedelta(hours=26)))
     assert service.jam_cells() == []
-    assert service.board({}, {}).jam_red == 0
+    assert (await service.board({}, {})).jam_red == 0
 
 
 def test_old_future_and_undated_observations_do_not_refresh_the_map():

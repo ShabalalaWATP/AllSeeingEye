@@ -5,20 +5,24 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from ase.application.feeds.board_reads import read_events
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.social import SocialActivityStore, SocialTermsSource
 from ase.application.worker_progress import run_cycle
+from ase.domain.errors import RateLimited
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
 from ase.domain.social import (
     HashtagActivity,
     KeywordActivity,
     PlatformActivity,
+    SocialBaseline,
+    WatchedTerm,
     keyword_counts,
     platform_groups,
     top_hashtags,
@@ -33,11 +37,17 @@ SleepFn = Callable[[float], Awaitable[None]]
 
 
 def social_events(store: EventStore, since: datetime, before: datetime) -> list[Event]:
+    return _within_window(store.query(_social_query(since)), since, before)
+
+
+def _social_query(since: datetime) -> EventQuery:
+    return EventQuery(categories=frozenset({Category.SOCIAL}), since=since, limit=SOCIAL_POOL)
+
+
+def _within_window(events: list[Event], since: datetime, before: datetime) -> list[Event]:
     return [
         event
-        for event in store.query(
-            EventQuery(categories=frozenset({Category.SOCIAL}), since=since, limit=SOCIAL_POOL)
-        )
+        for event in events
         if event.published_at is not None and since <= event.published_at < before
     ]
 
@@ -68,51 +78,78 @@ class SocialService:
         self._activity = activity
         self._clock = clock
 
-    async def board(self, actor: User) -> SocialBoard:
+    async def board(self, actor: User, *, admission_key: str | None = None) -> SocialBoard:
         now = self._clock.now()
         hour_end = now.replace(minute=0, second=0, microsecond=0)
         hour = hour_end - timedelta(hours=1)
         since = now - timedelta(hours=24)
-        events = social_events(self._store, since, now)
-        terms = await self._terms.visible_to(actor)
-        counts = keyword_counts(
-            [
-                event
-                for event in events
-                if event.published_at is not None and hour <= event.published_at < hour_end
-            ],
-            terms,
-        )
+        terms = tuple(await self._terms.visible_to(actor))
         baselines = await self._activity.baselines(
             hour_end - timedelta(days=BASELINE_DAYS), hour, [term.key for term in terms]
         )
-        keywords = []
-        for term in terms:
-            baseline = baselines.get(term.key)
-            keywords.append(
-                KeywordActivity(
-                    term.term,
-                    counts[term.key],
-                    baseline.mean if baseline else None,
-                    baseline.hours if baseline else 0,
-                )
-            )
-        keywords.sort(key=lambda row: (not row.burst, -row.count, row.term))
-        return SocialBoard(
-            total=len(events),
-            located=sum(event.point is not None for event in events),
-            platforms=platform_groups(events),
-            hashtags=top_hashtags(events),
-            keywords=tuple(keywords),
-            posts=tuple(
-                sorted(
-                    events, key=lambda event: (publication_order(event), event.id), reverse=True
-                )[:50]
-            ),
-            window_start=since,
-            window_end=now,
-            keyword_hour=hour,
+        baseline_snapshot = dict(baselines)
+        board = await read_events(
+            self._store,
+            _social_query(since),
+            lambda rows: _social_board(rows, since, now, hour, hour_end, terms, baseline_snapshot),
+            admission_key=admission_key or f"user:{actor.id}",
         )
+        # A team or private collection can be withdrawn while the worker runs.
+        await self.confirm_visible(actor, board)
+        return board
+
+    async def confirm_visible(self, actor: User, board: SocialBoard) -> None:
+        """Reject a board if any captured private term is no longer visible."""
+        currently_visible = {term.term for term in await self._terms.visible_to(actor)}
+        if any(row.term not in currently_visible for row in board.keywords):
+            raise RateLimited(1)
+
+
+def _social_board(
+    rows: list[Event],
+    since: datetime,
+    now: datetime,
+    hour: datetime,
+    hour_end: datetime,
+    terms: Sequence[WatchedTerm],
+    baselines: Mapping[str, SocialBaseline],
+) -> SocialBoard:
+    events = _within_window(rows, since, now)
+    counts = keyword_counts(
+        [
+            event
+            for event in events
+            if event.published_at is not None and hour <= event.published_at < hour_end
+        ],
+        terms,
+    )
+    keywords = []
+    for term in terms:
+        baseline = baselines.get(term.key)
+        keywords.append(
+            KeywordActivity(
+                term.term,
+                counts[term.key],
+                baseline.mean if baseline else None,
+                baseline.hours if baseline else 0,
+            )
+        )
+    keywords.sort(key=lambda row: (not row.burst, -row.count, row.term))
+    return SocialBoard(
+        total=len(events),
+        located=sum(event.point is not None for event in events),
+        platforms=platform_groups(events),
+        hashtags=top_hashtags(events),
+        keywords=tuple(keywords),
+        posts=tuple(
+            sorted(events, key=lambda event: (publication_order(event), event.id), reverse=True)[
+                :50
+            ]
+        ),
+        window_start=since,
+        window_end=now,
+        keyword_hour=hour,
+    )
 
 
 class SocialMonitor:
@@ -141,10 +178,15 @@ class SocialMonitor:
     async def sample(self) -> int:
         end = self._clock.now().replace(minute=0, second=0, microsecond=0)
         hour = end - timedelta(hours=1)
-        terms = await self._terms.configured()
-        events = social_events(self._store, hour, end)
-        await self._activity.record(hour, keyword_counts(events, terms))
-        return len(events)
+        terms = tuple(await self._terms.configured())
+        count, counts = await read_events(
+            self._store,
+            _social_query(hour),
+            lambda rows: _social_sample(rows, hour, end, terms),
+            admission_key="internal:social-monitor",
+        )
+        await self._activity.record(hour, counts)
+        return count
 
     async def start(self) -> None:
         if self._task is None:
@@ -164,3 +206,10 @@ class SocialMonitor:
             except Exception:
                 log.warning("Social activity sampling failed")
             await self._sleep(SAMPLE_INTERVAL.total_seconds())
+
+
+def _social_sample(
+    rows: list[Event], hour: datetime, end: datetime, terms: Sequence[WatchedTerm]
+) -> tuple[int, dict[str, int]]:
+    events = _within_window(rows, hour, end)
+    return len(events), dict(keyword_counts(events, terms))
