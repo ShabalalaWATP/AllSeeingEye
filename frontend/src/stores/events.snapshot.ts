@@ -34,6 +34,7 @@ interface Snapshot {
   merged: Map<string, LiveEvent>;
   bounds: CoverageBounds | null;
   area: Pick<EventsQuery, 'bbox' | 'sampling'>;
+  partial: boolean;
   error: string | null;
   limited: boolean;
 }
@@ -90,7 +91,16 @@ export function createSnapshotLoader(get: Get, set: Set) {
       if (!insideCoverage(event, bounds) || (scope !== null && !scope.has(event.category)))
         merged.delete(id);
     }
-    return { events, stats, merged, bounds, area, error: null, limited: false };
+    return {
+      events,
+      stats,
+      merged,
+      bounds,
+      area,
+      partial: scope !== null,
+      error: null,
+      limited: false,
+    };
   }
 
   /** Journalled deltas are newer than any response, then the browser bound applies. */
@@ -128,7 +138,9 @@ export function createSnapshotLoader(get: Get, set: Set) {
       stats: snapshot.stats,
       loaded: true,
       snapshotCount,
+      // A partition cannot prove that untouched categories from the last full load are complete.
       snapshotLimited:
+        (snapshot.partial && current.snapshotLimited) ||
         snapshot.events.length >= SNAPSHOT_LIMIT ||
         snapshot.limited ||
         (snapshot.bounds === null && snapshot.stats.total > snapshotCount),

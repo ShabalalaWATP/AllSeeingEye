@@ -7,6 +7,7 @@ import { ApiError } from '@/lib/api/errors';
 import { liveEvent } from '@/test/fixtures';
 
 import { useEventsStore } from './events';
+import { SNAPSHOT_LIMIT } from './events.limits';
 import { MAX_REFRESH_RETRIES, SNAPSHOT_REFRESH_MS } from './events.refresh';
 import { REFRESH_FAILED_ERROR } from './events.snapshot';
 
@@ -102,6 +103,30 @@ describe('a bulk maritime update', () => {
       limit: 2_000,
     });
     expect(useEventsStore.getState().byId.inside).toBeDefined();
+    expect(useEventsStore.getState().snapshotLimited).toBe(false);
+  });
+
+  it('keeps a limited viewport warning across a short partition refresh until a full replacement', async () => {
+    vi.mocked(api.fetchStats).mockResolvedValue({
+      ...busy,
+      per_category: [{ category: 'maritime', count: 1, oldest: null, newest: null }],
+    });
+    const store = useEventsStore.getState();
+    store.setCoverageBounds([-20, 40, 20, 60]);
+    const records = Array.from({ length: SNAPSHOT_LIMIT }, (_, index) =>
+      liveEvent({ id: `disaster-${index}` }),
+    );
+    const answer = await loaded(records);
+    expect(useEventsStore.getState().snapshotLimited).toBe(true);
+
+    hint(['maritime']);
+    await vi.advanceTimersByTimeAsync(SNAPSHOT_REFRESH_MS);
+    expect(answer.queries).toHaveLength(1);
+    expect(answer.queries[0]?.categories).toEqual(['maritime']);
+    expect(useEventsStore.getState().snapshotLimited).toBe(true);
+
+    records.splice(0, records.length, liveEvent({ id: 'exhaustive' }));
+    await store.load();
     expect(useEventsStore.getState().snapshotLimited).toBe(false);
   });
 
