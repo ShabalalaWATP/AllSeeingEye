@@ -14,7 +14,6 @@ import contextlib
 import logging
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable
-from dataclasses import replace
 from datetime import datetime, timedelta
 
 from ase.application.feeds.board_reads import read_events
@@ -137,20 +136,20 @@ class TranslationQueue:
         batch = await self._select_batch(now)
         if not batch:
             return 0
-        updated: list[Event] = []
+        updated: list[tuple[Event, TranslatedText]] = []
         pending: list[Event] = []
         for event in batch:
             cached = self._cache.get((event.language.lower(), event.title))
             if cached is not None:
-                updated.append(translated_event(event, cached))
+                updated.append((event, cached))
             else:
                 pending.append(event)
         if pending and budget_left:
             updated.extend(await self._translate(pending))
-        # A model call yields to polling, regrading and pruning. Merge only the translated
-        # field onto a still-current title, never restore a captured event wholesale.
+        # A model call yields to polling, regrading and pruning. Apply the result to
+        # the current event so newer provenance survives and its four-row cap holds.
         merged: list[Event] = []
-        for event in updated:
+        for event, text in updated:
             current = self._store.get(event.id)
             if (
                 current is not None
@@ -158,21 +157,20 @@ class TranslationQueue:
                 and current.language.lower() == event.language.lower()
                 and needs_translation(current)
             ):
-                merged.append(
-                    replace(current, title_en=event.title_en, transformations=event.transformations)
-                )
-        updated = merged
-        if updated:
+                translated = translated_event(current, text)
+                if translated.title_en is not None:
+                    merged.append(translated)
+        if merged:
             # put, not upsert: the content hash is unchanged, only the English title is new.
-            self._store.put(updated)
-            updated = [event for event in updated if self._store.get(event.id) is not None]
-            if updated:
+            self._store.put(merged)
+            merged = [event for event in merged if self._store.get(event.id) is not None]
+            if merged:
                 await self._bus.publish(
-                    BusMessage("event.upsert", {"source_id": "translation", "events": updated})
+                    BusMessage("event.upsert", {"source_id": "translation", "events": merged})
                 )
-        return len(updated)
+        return len(merged)
 
-    async def _translate(self, pending: list[Event]) -> list[Event]:
+    async def _translate(self, pending: list[Event]) -> list[tuple[Event, TranslatedText]]:
         """One call for the batch; repeated titles inside it are translated once."""
         unique: list[tuple[str, str]] = []
         seen: dict[tuple[str, str], int] = {}
@@ -193,7 +191,7 @@ class TranslationQueue:
         except TranslatorUnavailable:
             self._calls -= 1
             return []
-        translated: list[Event] = []
+        translated: list[tuple[Event, TranslatedText]] = []
         for event in pending:
             key = (event.language.lower(), event.title)
             self._tried[event.id] = key
@@ -203,7 +201,7 @@ class TranslationQueue:
             text = texts[seen[key]] if seen[key] < len(texts) else None
             if text:
                 self._remember(key, text)
-                translated.append(translated_event(event, text))
+                translated.append((event, text))
         return translated
 
     async def start(self) -> None:
