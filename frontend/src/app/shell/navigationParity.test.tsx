@@ -92,7 +92,10 @@ describe('one navigation definition', () => {
     ['user', false],
     ['admin', true],
   ] as const)('gives the %s the same entries in the mobile dialog', async (session, admin) => {
-    expect(await mobileEntries(session)).toEqual(expected(admin));
+    // The dialog leads with Administration so it never needs a scroll; nothing else moves.
+    const definition = expected(admin);
+    const switchFirst = admin ? [definition.at(-1)!, ...definition.slice(0, -1)] : definition;
+    expect(await mobileEntries(session)).toEqual(switchFirst);
   });
 
   it('nests each supported watch type under Watches instead of beside it', async () => {

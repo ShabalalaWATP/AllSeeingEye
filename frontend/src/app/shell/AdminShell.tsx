@@ -1,18 +1,29 @@
-import { Suspense, useRef } from 'react';
+import { Suspense, lazy, useRef } from 'react';
 import { Outlet } from 'react-router';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 import { PersonalAppearance } from '@/components/account/PersonalAppearance';
+import { useShellStore } from '@/stores/shell';
 
 import { AdminHeader } from './AdminHeader';
 import { AdminNavigation } from './AdminNavigation';
 import { useNarrowShell } from './useNarrowShell';
+import { usePaletteShortcut } from './usePaletteShortcut';
+import { useRememberRoute } from './useRememberRoute';
 import { useRouteFocus } from './useRouteFocus';
+
+// Loaded on first use, as the research shell loads its palette.
+const AdminPalette = lazy(() =>
+  import('./AdminPalette').then((module) => ({ default: module.AdminPalette })),
+);
 
 /** Mounted only inside both authentication and active-administrator guards. */
 export function AdminShell() {
+  usePaletteShortcut();
+  useRememberRoute('admin');
   const narrow = useNarrowShell();
+  const paletteOpen = useShellStore((state) => state.paletteOpen);
   const mainRef = useRef<HTMLElement>(null);
   const announcer = useRouteFocus(mainRef);
   return (
@@ -35,6 +46,11 @@ export function AdminShell() {
           </Suspense>
         </main>
       </div>
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <AdminPalette />
+        </Suspense>
+      )}
       <EyeAssistant />
     </div>
   );

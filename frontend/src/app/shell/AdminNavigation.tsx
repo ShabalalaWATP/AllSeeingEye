@@ -5,9 +5,13 @@ import { AdminIcon } from '@/components/admin/AdminIcon';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { adminOverview, adminSections, type AdminDestination } from '@/lib/adminNavigation';
 import { useShellStore } from '@/stores/shell';
+import { useWorkspaceReturnStore } from '@/stores/workspaceReturn';
 import { useSiteFacts } from '@/lib/useSiteFacts';
 
-/** Administrator-only destinations. Research controls never appear in this rail. */
+/**
+ * Administrator-only destinations. Research controls never appear in this rail; the one
+ * way out, "Return to research", leads first in the mobile dialog and last on the rail.
+ */
 export function AdminNavigation({
   mobile = false,
   onNavigate,
@@ -49,6 +53,11 @@ export function AdminNavigation({
           </span>
         </span>
       </Link>
+      {mobile ? (
+        <div className="border-b border-line/70 p-2">
+          <ReturnToResearch collapsed={false} onNavigate={onNavigate} />
+        </div>
+      ) : null}
       <nav
         aria-label="Administration"
         className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3"
@@ -76,18 +85,9 @@ export function AdminNavigation({
           </div>
         ))}
       </nav>
-      <div className="border-t border-line/70 p-2">
-        <Link
-          to="/"
-          onClick={onNavigate}
-          aria-label={collapsed ? 'Return to research' : undefined}
-          title={collapsed ? 'Return to research' : undefined}
-          className={`flex min-h-11 items-center gap-3 rounded-lg text-sm text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center' : 'px-3'}`}
-        >
-          <AdminIcon name="back" size={18} />
-          {collapsed ? null : <span>Return to research</span>}
-        </Link>
-        {mobile ? null : (
+      {mobile ? null : (
+        <div className="border-t border-line/70 p-2">
+          <ReturnToResearch collapsed={collapsed} onNavigate={onNavigate} />
           <button
             type="button"
             onClick={toggleRail}
@@ -100,9 +100,32 @@ export function AdminNavigation({
             <AdminIcon name={collapsed ? 'expand' : 'collapse'} size={16} />
             {collapsed ? null : <span>Collapse</span>}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
+  );
+}
+
+/** Leaves administration for the last research page visited, or the globe. */
+function ReturnToResearch({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  onNavigate?: (() => void) | undefined;
+}) {
+  const target = useWorkspaceReturnStore((state) => state.research);
+  return (
+    <Link
+      to={target}
+      onClick={onNavigate}
+      aria-label={collapsed ? 'Return to research' : undefined}
+      title={collapsed ? 'Return to research' : undefined}
+      className={`flex min-h-11 items-center gap-3 rounded-lg text-sm text-muted transition-colors hover:bg-surface hover:text-text ${collapsed ? 'justify-center' : 'px-3'}`}
+    >
+      <AdminIcon name="back" size={18} />
+      {collapsed ? null : <span>Return to research</span>}
+    </Link>
   );
 }
 

@@ -12,6 +12,7 @@ import {
   navigationEntries,
   savedViews,
   trackerModules,
+  type NavigationOptions,
 } from '@/lib/workspaceNavigation';
 
 export interface CommandTarget {
@@ -22,7 +23,7 @@ export interface CommandTarget {
   readonly to: string;
 }
 
-export function commandTargets(options: { admin?: boolean } = {}): readonly CommandTarget[] {
+export function commandTargets(options: NavigationOptions = {}): readonly CommandTarget[] {
   return [
     ...navigationEntries(options).map((page) => ({ id: `page:${page.to}`, ...page })),
     ...savedViews().map((view) => ({ id: `view:${view.to}`, ...view })),
