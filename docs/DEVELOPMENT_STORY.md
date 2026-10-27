@@ -282,6 +282,7 @@ A concise, chronological record of how The All Seeing Eye is being built. Mainta
   remote or push. Scoring, product direction, API, operations, ADR and scoped
   security-review documents were updated together.
 
+
 ## 6 September 2026: bounded automated research implementation in progress
 
 - Started the full operator-research milestone on `codex/automated-research` from
@@ -615,6 +616,7 @@ preserving those earlier test results as historical evidence.
   of 96.42%. Focused code re-review confirmed both final findings are resolved.
   No production migration, live mail, deployment or remote push was performed.
 
+
 ## 6 September 2026: personal profiles and recovery
 
 - Replaced the basic account screen with Profile, Security, Research defaults and
@@ -655,6 +657,7 @@ preserving those earlier test results as historical evidence.
   96.40%. All final file-length and diff checks pass. The milestone is committed
   locally on `main`; no remote is configured. Database migrations, real SMTP
   delivery and configured-model evaluation remain operator follow-up.
+
 
 ## 6 September 2026: regional research and map expansion planning
 
@@ -1019,6 +1022,7 @@ contract remains unchanged; new maps use v2, and old maps require an explicit
 operator upgrade before source footprints appear. Real GPU acceptance, saved
 acquisition-time filtering and the operator launch workflow remain unfinished.
 
+
 ### Explicit saved timeline basis, 7 September 2026
 
 Map state now records publication or acquisition-where-recorded time filtering.
@@ -1048,6 +1052,7 @@ and file-length checks passed. The existing bundle-size advisory remains.
 The historical launch must add an explicit collection interval: the current
 create-report contract only supports a rolling window. Collection, selection,
 report periods and regeneration must agree without changing actual creation time.
+
 
 ### Fixed historical area intervals and HTTP launch contract
 
@@ -1082,6 +1087,7 @@ two exact-payload fixtures were updated for explicit false area-disclosure conse
 Final scoped Ruff passed. The fixed-interval slice remains uncommitted pending
 native-provider HTTP interval, prompt and wider integration verification.
 
+
 ### Operator saved-area launch form
 
 Saved report maps now link to research using the exact saved view/revision. A dirty
@@ -1114,6 +1120,7 @@ measurement. Archived-team launch is disabled for ordinary users; the existing
 administrator override remains. Source/file-length checks passed. The combined
 interval and launch work remains uncommitted pending final integration checks.
 
+
 ### Native HTTP integration and browser launch acceptance
 
 Four tests now drive HTTP report creation through the actual registered catalogue
@@ -1142,6 +1149,7 @@ read-only combined review found no remaining confirmed blocker. Full backend
 regression and commit status remain pending; no operator migration or deployment
 is implied by these results.
 
+
 ### Area-research launch regression completion
 
 The unchanged interval and saved-area launch implementation completed the full
@@ -1157,6 +1165,7 @@ The broader plan remains incomplete. Live catalogue/model acceptance, expanded
 regional datasets, map export/performance acceptance and the human-reviewed
 benchmark are not established by these tests. No operator database was migrated,
 no source was activated and no deployment or push was performed.
+
 
 ### Project evidence inspection and temporal precision foundation
 
@@ -1178,6 +1187,7 @@ project text while exports retain the original. Sixty-three focused backend test
 and twelve frontend tests passed. Ruff, mypy (492 source files), architecture and
 scoped Bandit checks passed; final integration and adapter delivery remain pending.
 No source activation, dataset import or operational acceptance is implied.
+
 
 ### Native AidData parsing and atomic reference catalogue
 
@@ -1208,6 +1218,7 @@ query adapter, provenance/financial facts propagated into Events and frozen
 metadata, and year-policy integration through collection and both map views.
 The full expansion objective remains active.
 
+
 ### Bounded catalogue search and operator import command
 
 `uv run ase import-aiddata <directory> --cache-dir <destination>` now exposes the
@@ -1227,6 +1238,7 @@ source text consistently becomes Unknown. Tests cover each finding and failure
 cleanup. Twenty-nine adapter/import/search tests passed; mypy passed across 496
 source files. Source discovery/activation, provider routing, financial metadata
 capture and year-aware report/map policies are still pending.
+
 
 ### Explicit recorded-time policy for project evidence
 
@@ -1250,6 +1262,7 @@ Report creation/preview must still carry the explicit time policy, admit bounded
 project-year windows and wire the catalogue provider. These changes alone do not
 establish an operational end-to-end AidData research workflow.
 
+
 ### Historical project request and provider integration checks
 
 Report creation, collection queries and plan previews now carry an explicit
@@ -1268,6 +1281,7 @@ whole-release import compatibility or an operational end-to-end historical form.
 Historical form controls, geographical catalogue queries, broader integration
 verification and source activation remain unfinished. The changes are uncommitted.
 
+
 ### Operator historical project controls
 
 General research now offers recent reporting or a fixed commitment-year range.
@@ -1283,6 +1297,7 @@ with all seven collection-plan tests. Type checks, scoped ESLint and file-length
 checks passed before that final test-only addition. No real-browser or configured
 catalogue/model acceptance is claimed. Financial detail presentation, spatial
 catalogue querying and broader backend report integration remain outstanding.
+
 
 ### Native historical report integration and financial inspection
 
@@ -1302,6 +1317,7 @@ four UI tests passed, including zero, unknown and long fractional values. Scoped
 UI lint passed. Read-only integration review is pending; no live catalogue/model
 acceptance, source activation or commit is implied.
 
+
 ### Historical scope review repairs
 
 Read-only review identified three integration gaps. Historical forms now default
@@ -1318,6 +1334,7 @@ collection-plan tests passed, including deselecting AidData and selecting news.
 Backend Ruff and mypy (497 source files), frontend type checks and scoped ESLint
 passed. Review verification of the repairs remains pending. These changes are
 uncommitted; spatial catalogue queries and full expansion acceptance remain open.
+
 
 ### Exact project-area search foundation
 
@@ -1345,6 +1362,7 @@ form wiring, native-release performance and broader acceptance remain pending.
 The prior three integration fixes were verified read-only with no remaining
 confirmed blocker. No source activation, operational import or commit occurred.
 
+
 ### Project provider spatial admission and saved-area form
 
 AidData now declares area support for explicitly selected recorded-time project
@@ -1366,6 +1384,7 @@ file-length and diff checks passed. Spatial review, combined saved-area native
 historical HTTP/regeneration acceptance and real-browser/performance checks remain
 pending. No operational source activation, import, deployment or commit occurred.
 
+
 ### Saved-area native historical HTTP verification
 
 The native catalogue HTTP tests now cover both country research and an exact
@@ -1382,6 +1401,7 @@ result, including an empty result. Eighteen combined spatial, catalogue and HTTP
 cases passed after the fix. Ruff and mypy across 498 files passed. Full regression
 runs are the next gate; no commit or operational acceptance is claimed yet.
 
+
 ### Full frontend regression completion
 
 The unchanged AidData frontend completed all 775 tests in 138 files, terminal
@@ -1393,11 +1413,13 @@ the CI command explicitly loads their existing pyproject policy. No new exclusio
 were added. Backend full regression is still live under session 59672, with log
 at data/aiddata-backend-full.log. No terminal result or commit is claimed.
 
+
 Eight additional pinned AidData source projects parsed successfully in a bounded
 nonrepresentative smoke sample, with 5 to 622 geometry vertices. Hashes and
 selection details are recorded in data/aiddata-release-sample.json and the AidData
 contract. The frontend build passed with its existing bundle-size advisory.
 Backend full regression remains running; no production source edits or commit.
+
 
 ### Full backend regression and targeted fixture repairs
 
@@ -1416,6 +1438,7 @@ architecture, configured Bandit and dependency audit results are recorded above.
 The integrated AidData milestone is ready for final pre-commit gates. Exact-ID
 lookup and relevance ranking are isolated follow-up drafts and are not included.
 Whole-release, real-browser and configured-model acceptance remain outstanding.
+
 
 ### Exact lookup and relevance follow-up, after 0a48040
 
@@ -1445,6 +1468,7 @@ ESLint, final Ruff, mypy (499 files), file-length and diff checks passed. Read-o
 review and final integrated checks remain pending. No new full coverage run or
 follow-up commit is claimed; prior full verification belongs to 0a48040.
 
+
 ### Exact lookup receipt and preview verification
 
 Read-only review found that challenge collection preserved the selected project
@@ -1464,6 +1488,7 @@ coverage measurement. Whole-release catalogue performance, configured-model and
 real-browser operational acceptance remain open. No source activation, operator
 migration or deployment was performed.
 
+
 ### Atomic claim revision foundation
 
 Added a separate internal immutable claim-revision contract with proposed,
@@ -1482,6 +1507,7 @@ mutable-input isolation and malformed Unicode. Ruff and mypy (500 files) passed;
 file-length and diff checks passed. No coverage was measured, migration run,
 source activated or deployment performed. Persistence integration is next.
 
+
 ### Internal claim persistence foundation
 
 Added scoped claim root and immutable revision ORM records, bounded canonical
@@ -1495,6 +1521,7 @@ No migration, application/API wiring, exposed editor or complete access/quota
 acceptance is claimed. Read-only repository review is pending. Full plan remains
 active, including automated claim proposals and user-facing history.
 
+
 ### Claim migration and storage validation
 
 Implemented additive migration 0025 and report-deletion cleanup. Review found
@@ -1505,6 +1532,7 @@ suite passed 56 tests, including malformed rehashed payloads, retained-history
 downgrade refusal and explicit report deletion. Ruff, mypy (503 files), file-length
 and diff checks passed. No operator database was migrated. Application access,
 quota and API/editor integration remain unfinished; changes remain uncommitted.
+
 
 ### Claim application service and quota enforcement
 
@@ -1525,6 +1553,7 @@ stale correction rejection and unchanged frozen report content. Ruff and mypy
 scoped lists, editor, automatic proposals, full team/revocation/concurrency tests
 and PostgreSQL acceptance remain unfinished. No operator migration or deployment.
 
+
 ### Claim HTTP and scoped listing
 
 Added /api/claims create, conditional correction, current/exact revision reads
@@ -1540,6 +1569,7 @@ types were regenerated; frontend type checking, scoped Ruff, backend mypy (508
 files), file-length and diff checks passed. Earlier service review found no
 confirmed access/quota blocker. API/list review is pending; the editor, automated
 proposals and broader team/concurrency/operational acceptance remain unfinished.
+
 
 ### Claim viewer and API review follow-up
 
@@ -1560,6 +1590,7 @@ passed. Frontend type checking passed before the final viewer formatting change;
 ESLint identified non-null assertions, which were replaced with explicit guards.
 Broader history/access UI acceptance and final integration checks remain open.
 
+
 ### Operator claim editor
 
 Added the report-page editor for proposed claims and appended review/correction/
@@ -1578,6 +1609,7 @@ ESLint passed after explicit code-point conversion and test assertion repairs.
 File-length and diff checks passed. UI review, correction/conflict/access regression
 coverage, visual acceptance and automated model proposals remain outstanding.
 
+
 ### Claim editor review repairs
 
 Read-only UI review found textarea CRLF/CR normalisation could shift original
@@ -1592,6 +1624,7 @@ including Unicode/newline locators, proposal submission, withdrawal against an
 exact base, stale-edit retention, access-change draft clearing and suppressed
 completion after unmount. Broader frontend regression and final static checks
 are next. No automated claim-generation completion is implied.
+
 
 ### Claim integration regression and coverage follow-up
 
@@ -1608,6 +1641,7 @@ pending test-only require-await lint issue was repaired. A new full frontend
 coverage run is required; thresholds remain unchanged. Automated claim proposals
 and broader operational acceptance are still unfinished.
 
+
 ### Full frontend coverage passes; model-proposal validation starts
 
 The full frontend rerun completed successfully: 789 tests in 141 files passed,
@@ -1622,6 +1656,7 @@ are rejected. Model output cannot mark itself reviewed. Ten parser tests passed;
 Ruff and mypy (509 files) passed. This parser is not yet connected to a model call,
 provenance record, automatic report generation or persistence. Those integration
 steps remain part of the full objective. All claim changes remain uncommitted.
+
 
 ### Bounded claim-proposal model call
 
@@ -1640,6 +1675,7 @@ call was made. Pipeline/API admission, provenance persistence, automatic report
 proposal creation and operator-facing generation remain unfinished; this is an
 internal gateway boundary, not end-to-end automated claim delivery. Review pending.
 
+
 ### Immutable model-origin metadata
 
 Added optional model-origin metadata to claim revisions: batch/profile IDs,
@@ -1657,7 +1693,6 @@ the client's normalised null and declared generated response types. File-length
 and diff checks passed. Automatic generation admission and origin-aware batch
 persistence are still pending; no actual model proposals were stored or generated
 against an external provider. The full objective remains active and uncommitted.
-
 # Claim proposal admission and atomic persistence, 7 September 2026
 
 Pipeline regression follow-up: the affected backend group had 407 passes and six
@@ -1717,6 +1752,7 @@ Fourteen combined cases and the subsequent six-case access suite passed; scoped
 Ruff and mypy (522 source files) passed. Download API/UI integration remains open.
 The concurrent full automatic report-pipeline suite is not yet a recorded pass.
 
+
 ### Selected claim download integration and verification
 
 Added POST /api/reports/{report_id}/claim-evidence-package with strict explicit
@@ -1742,6 +1778,7 @@ The repaired direction/plan and new export API group subsequently passed all
 14 tests. This is the full run plus targeted repair evidence, not a second
 clean full run. File-length and diff checks also passed.
 
+
 ### Selected claim package interface
 
 The claim panel now supports selecting exact current or historical revisions,
@@ -1762,6 +1799,7 @@ version. No browser visual acceptance or real provider test is implied.
 A fresh full backend run is active in data/claim-export-backend-full.log; its
 process handle is 81995. Do not infer completion from the previous repaired run.
 
+
 ### Claim export review follow-up
 
 Added direct account-switch cancellation and cross-page exact-selection tests.
@@ -1769,6 +1807,7 @@ The eight-test selection/scope group passed, and scoped ESLint passed. Updated t
 claim plan's current status to distinguish committed delivery, working-tree
 integration and outstanding verification, replacing stale pending-work wording.
 The backend full run remains active under handle 81995; no pass or commit claimed.
+
 
 ### Organisation identity review domain foundation
 
@@ -1780,6 +1819,7 @@ Thirteen domain tests passed; mypy (527 files) and scoped Ruff passed. Added
 IDENTITY_REVIEW_IMPLEMENTATION.md for storage/API/UI/export and acceptance work.
 This is an isolated foundation, not yet a persisted or user-facing capability.
 The earlier full backend suite remains active and excludes these new tests.
+
 
 ### Identity review validation and storage codec
 
@@ -1797,6 +1837,7 @@ combined domain/codec tests passed; scoped Ruff and mypy (528 source files) pass
 SQL tables, migration, repository and authorised API/UI remain unfinished. The
 concurrent full backend run excludes these newly introduced modules/tests.
 
+
 ### Globe clocks and traffic presentation
 
 Added ten timezone-aware city clocks, dark cyan dashboard surfaces, reduced-motion
@@ -1812,6 +1853,7 @@ coverage. Identity modules added after collection passed separately, including
 six SQL cases with revision-insert failure rollback. They are not covered by that
 full run. No combined full-plan completion or commit is implied.
 
+
 ### Independent observation overlay controls
 
 Added separate aircraft/vessel/FIRMS display filters and loaded-count/category
@@ -1820,6 +1862,7 @@ Three focused tests, type checks, ESLint, file-length and diff checks passed.
 The earlier full UI run missed branch coverage at 89.98%; a new full run is active
 after adding density/selection/overlay behaviour coverage. No provider activation
 or browser acceptance is claimed.
+
 
 ### Dashboard review repairs and integration checks
 
@@ -2113,6 +2156,7 @@ found no actionable issues. No new coverage, provider call, account onboarding o
 GPU validation. Updated ADR 0015, status audit and master plan. Map-image export
 and wider operational acceptance remain open.
 
+
 ## 7 September 2026: predeclared challenge and candidate searches
 
 Added up to eight immutable operator candidate hypotheses and eight additional
@@ -2143,6 +2187,7 @@ passed. Initial test typing/default fixtures and one incorrect grade expectation
 were corrected. No coverage remeasurement, live provider/model call or browser
 acceptance. Updated operations, status audit and master plan. Automated candidate
 planning, contradiction-triggered replan and sufficiency stopping remain open.
+
 
 ## 7 September 2026: bounded evidence continuation review
 
@@ -2216,6 +2261,7 @@ provider/model call, browser/GPU check, operator migration or deployment occurre
 Wider original-source capture, retain-at-import, backup/recovery acceptance and
 saved-map image export remain unfinished parts of the full plan.
 
+
 ## 7 September 2026: saved-map image packages
 
 Implemented exact saved-revision preview and two-canvas map capture, default
@@ -2224,6 +2270,7 @@ and bounded PNG/ZIP processing. Fresh access and immutable revision checks run
 before intake and after packaging; cancellation retains worker admission.
 Client pixels are explicitly not server-attested evidence. The local checks and
 remaining browser/GPU gate are recorded in SAVED_MAP_IMAGE_EXPORT.md.
+
 
 ## 7 September 2026: guided administrator AI connections
 
@@ -2240,6 +2287,7 @@ combined frontend pass contains 222 tests. Build, types, lint, configured Bandit
 architecture contracts and file checks passed. The acceptance record and remaining
 operator migration/live-provider gates are in ADMIN_AI_CONNECTION_JOURNEY.md.
 No operator credentials, model assignments or database were changed.
+
 
 ## 7 September 2026: identity-review concurrency acceptance
 
@@ -2269,6 +2317,7 @@ passed 3,059 tests with 24 skips and 95.39% coverage. Its one non-failing SQLite
 resource warning remains recorded in the acceptance log. Exact evidence and semantic/live limitations are recorded in
 AUTOMATIC_RESEARCH_PLANNING.md. The wider expansion remains incomplete.
 
+
 ## 7 September 2026: dated organisation relationship review
 
 Added independent source-derived GLEIF relationship assertions, attributed
@@ -2290,6 +2339,7 @@ RELATIONSHIP_REVIEW_IMPLEMENTATION.md. The next comparison contract records exac
 annotation checkpoints and a reproduced simultaneous link/confidence alert gap;
 that work and the wider expansion remain unfinished.
 
+
 ## 7 September 2026: reproducible annotation comparisons integrated
 
 Main `d37f723` adds exact selected claim, identity and organisation-review
@@ -2310,6 +2360,7 @@ connection warning. No remote push, operator migration or deployment occurred.
 Durable independent annotation monitoring is the next delivery; exact outbox
 revisions must preserve intermediate corrections and failed research must not
 advance a successful research baseline. The complete expansion remains active.
+
 
 ## 8 September 2026: registry routing and durable annotation monitoring
 
@@ -2429,6 +2480,7 @@ licence distinctions. Browser policy verification prevented opening its live
 demo; no alternative route was used to access that demo. Camera integration is
 a follow-up, while clickable layer/cluster/geometry improvements are underway.
 
+
 ## 8 September 2026: inspectable map objects and globe icons
 
 Added overlap and cluster-member selection, current interference-cell details,
@@ -2444,6 +2496,7 @@ passed 39 tests, strict types, lint and production build. Provider access and th
 full authenticated dashboard were outside the isolated GPU fixture's scope.
 Camera source integration remains planned in OSIRIS_MAP_INTERFACE_PLAN.md.
 
+
 ## 8 September 2026: map layer and tool rails
 
 User screenshots showed the desktop control column still occupied too much of
@@ -2458,6 +2511,7 @@ Focused controls/navigation/measurement checks, types, lint and build passed.
 Authenticated browser checks verified default closed panels, single-click map
 styles, Escape/focus restoration, layer switches and actual measurement with
 closed panels. Full regression results are recorded in the map interface plan.
+
 
 ## 8 September 2026: map usability and grid corrections
 
@@ -2495,6 +2549,7 @@ authorisation or credential handling was introduced. CCTV remains unconnected.
 Final regression: 1,135 tests passed across 225 files. Coverage: 95.21%
 statements, 90.09% branches, 93.59% functions and 96.57% lines. Existing
 coverage thresholds remain unchanged. Build retains its bundle-size warning.
+
 
 8 September camera delivery: implemented an authenticated, bounded public camera
 catalogue for TfL, Hong Kong Transport Department and Fintraffic. Added optional
@@ -2542,6 +2597,7 @@ TypeScript and lint checks passed. Final frontend suite: 1,163 tests across 230 
 90.08% branches, 93.78% functions and 96.62% lines, with thresholds unchanged.
 The existing production bundle-size warning remains. No operator database migration.
 
+
 ## 8 September 2026: public satellite and infrastructure expansion
 
 Expanded CelesTrak collection to active, public military and Skynet catalogues.
@@ -2563,6 +2619,7 @@ requires the optional database credential table or encryption key. No operator
 migration was performed. The official no-key NASA download also validated 62,025
 observations, but has a different freshness window from the keyed Area API.
 
+
 Real feed integration exposed quadratic headline clustering of sensor readings.
 A batch of 5,000 identical thermal labels created about 12.5 million candidate
 pairs and stalled the backend. Instrument records now receive individual,
@@ -2576,6 +2633,7 @@ Satellite positions now expire after ten minutes on server and client. The
 runtime returned 22 crewed/station, 24 public military and 12 Skynet objects.
 The active catalogue returned HTTP 403, with a two-hour retry backoff. Its earlier
 16,510-record successful probe is not current display evidence.
+
 
 Final backend validation: 136 focused feed, grading, expiry, credential, catalogue
 and infrastructure tests passed. Whole-backend Ruff, formatting, mypy and both
@@ -2596,11 +2654,13 @@ policy. Automated interaction tests cover both projections and selection clearin
 The pre-existing alerts database-column mismatch remains on the older local
 schema; no migration was run as part of this map milestone.
 
+
 Final frontend gate: 1,187 tests passed across 235 files. Coverage: 95.30%
 statements, 90.16% branches, 93.73% functions and 96.65% lines, without lowering
 thresholds. Added cancellation, late-result, selection, measurement and keyboard
 edge cases. Camera interaction fixtures await the lazy route import before
 asserting map behaviour, removing a cold-transform timing dependency.
+
 
 ## 8 September 2026: remaining map crashes and resource pressure
 
@@ -2625,12 +2685,14 @@ operator migration or credential change was performed. Live AIS and FIRMS remain
 populated. Backend regression suite: 158 passed; Ruff, formatting, mypy and
 architecture contracts passed. Frontend build and lint passed.
 
+
 Final frontend gate: 1,210 tests passed across 239 files. Coverage is 95.36%
 statements, 90.19% branches, 93.70% functions and 96.71% lines. The regression test
 for live map interactions awaits the deliberate batching interval and expiry.
 Thresholds were unchanged. Staged whitespace and supplied-key checks passed;
 secrets remain in ignored local configuration. Visual GPU and long-duration soak
 verification remain explicitly unclaimed.
+
 
 ## 8 September 2026: CelesTrak restart-safe retrieval
 
@@ -2662,6 +2724,7 @@ calls. The empty active cache must wait until the next permitted attempt after
 The cache and local diagnostics are ignored by git. This is a scoped code and
 security review, not a repository-wide security scan or a browser/GPU soak test.
 
+
 ## 8 September 2026: conflict evidence and coverage
 
 Implemented separate violence/activity classification, conservative evidence
@@ -2670,6 +2733,7 @@ filters and authenticated provider coverage. Added public UCDP Candidate with
 optional token API, optional ACLED and approved-appname ReliefWeb integration.
 See [conflict coverage](CONFLICT_COVERAGE.md) for source limits and activation
 gates. Live ACLED and ReliefWeb API activation still require provider access.
+
 
 Validation: 148 focused backend regression tests passed; the additional GDELT
 expectations now explicitly reject article-volume-based credibility. The scoped
@@ -2687,6 +2751,7 @@ existing large vendor-chunk warning. Additional backend suites passed 40 HTTP/GD
 tests and 37 scheduler, map registration and source-control tests. Configured-secret
 matching found no local credential values in the changed code. No remote exists,
 so this milestone is committed locally on main and cannot be pushed.
+
 
 ## 8 September 2026: visible military traffic and map lists
 
@@ -2708,6 +2773,7 @@ lowered. Live traffic samples included 314 provider-labelled military aircraft,
 three AIS-labelled military vessels and 291 regional aircraft records after the
 bounded collector repair; these are changing samples, not complete inventories.
 
+
 ## 8 September 2026: globe graphics and camera loading repair
 
 - [x] Replace incompatible overlay adapter and verify globe bearing/pitch maths.
@@ -2720,6 +2786,7 @@ bounded collector repair; these are changing samples, not complete inventories.
 See [rendering repair](PERFORMANCE_REPAIR.md) and [camera coverage](CAMERA_FEEDS.md)
 for evidence, checks and remaining limits. No database migration or production
 deployment was performed; no remote is configured for this repository.
+
 
 ## 9 September 2026: worldwide collection and geographic map loading
 
@@ -2740,6 +2807,7 @@ Final live checks also identified and fixed FIRMS UTC-midnight gaps and a measur
 61.74-second response exceeding the former deadline. Both NASA sensors loaded
 successfully after the fixes, alongside other categories at 339.1 MiB estimated
 store use within the 512 MiB budget. See the worldwide coverage validation record.
+
 
 ## 9 September 2026: map categories and planning tools
 
@@ -2805,6 +2873,7 @@ passed. The full formatter still flags three unchanged files, listed in the
 feature notes. Browser/GPU inspection remains blocked by the existing policy.
 No provider account, dependency, migration, production deployment or remote
 push was added.
+
 
 ## 9 September 2026: discoverable map controls and practical planning inputs
 
@@ -3387,6 +3456,7 @@ passed, including preservation of the direct-area scope boundary. Independent
 reviews reported no actionable correctness or security findings. Temporary
 validation logs were removed before committing; no remote is configured.
 
+
 ## 10 September 2026: source access audit and practical collection repairs
 
 Audited all baseline scheduled source IDs, research capabilities and camera
@@ -3628,7 +3698,8 @@ large map/deck/HLS chunk warnings remain. File-length and configured-secret chec
 passed, with only the existing untouched MapLibre target-length warning. Browser
 checks used synthetic intercepted APIs and inspected desktop/mobile screenshots;
 no actual photo or web report was submitted. The restarted local API and frontend
-login returned 200, and unauthenticated new photo analysis/deletion routes returned 401. No dependency, remote service deployment or production migration was added.
+login returned 200, and unauthenticated new photo analysis/deletion routes returned
+401. No dependency, remote service deployment or production migration was added.
 
 OpenAQ authentication still passes independently. Actual AI evaluation remains
 blocked: the saved OpenAI Luna profile is disabled/untested and the original server
@@ -3715,6 +3786,7 @@ secret, file-length and restarted API checks passed. The operator's choice about
 testing High reasoning remains pending; Max stays selected and full live report
 acceptance remains open. No additional live acceptance runs were started after
 that choice was requested; already-running checks retained their bounded retries.
+
 
 ### 11 September 2026: floating Eye map assistant
 
@@ -3934,6 +4006,7 @@ in isolation and in the clean full run. Independent correctness and security
 rechecks found no remaining actionable issue. The full backend suite, visual
 DOCX rendering and production deployment were not performed.
 
+
 ## Research types, scheduled reports and standalone geolocation, 12 September 2026
 
 Research now offers Basic, Deep and Advanced. The choices control bounded source
@@ -3978,6 +4051,7 @@ No migration, new production dependency, live model evaluation or deployment was
 performed. Actual report length and geolocation accuracy still require evaluation
 against known examples. Operational guidance and the implementation plan are updated.
 
+
 Final frontend acceptance passed all 1,993 tests with one existing skip. Coverage
 was 95.09% statements, 90% branches, 93.32% functions and 96.32% lines, meeting the
 unchanged thresholds. The final selected backend run passed 209 tests; full backend
@@ -3985,6 +4059,7 @@ coverage was not measured. Final frontend typing, scoped ESLint/Prettier and dif
 checks passed. The existing MapLibre vendor-size warning and 380-line engine warning
 remain. Both local services respond successfully; the live API advertises all
 three research modes and the six-photo request contract. No Git remote is configured.
+
 
 ## 12 September 2026: subscriptions, daily briefings and reusable map areas
 
@@ -4821,6 +4896,7 @@ the constants. A force chart also called `scrollIntoView` unguarded, which tore 
 down through the error boundary wherever that API is absent. Final state: backend 8,467
 tests at 94 percent coverage, frontend 2,685 tests at 90.11 percent branch coverage, with
 three economy and schedule tests that time out only under parallel load and pass alone.
+
 
 On 17 September 2026 five more branches were merged, all of them about what a report costs
 and what it is worth reading. The cost work came first, after a question about the OpenAI
@@ -5937,6 +6013,7 @@ owner and operator receipts remain retained. Browser acceptance is incomplete;
 a staged operator protocol is being prepared without changing the application,
 fixture, authentication or latency targets.
 
+
 ### KAN-81 revised reference binding, 6 October 2026
 
 The observer now fixes candidate 38c487c9 and verifies its complete frontend Git
@@ -6189,6 +6266,7 @@ exemption or completed high-risk review is asserted. Jurisdiction and transfer
 safeguards stay unset pending facts, and complete-wording approval stays unset.
 The private assessment is Git-ignored, not published in the repository or Jira.
 
+
 ## 11 October 2026: finalise KAN-165 under delegated authority
 
 Alex explicitly delegated the remaining notice decisions and asked for the ticket
@@ -6229,6 +6307,7 @@ both type checks, targeted lint, formatting, build, bundle budgets and local gui
 links. Browser review confirmed the actual built Finnish notice and complaints
 action without a draft banner. Independent review reported no remaining blocker.
 Coverage was not remeasured; publication/deployment protections remain unchanged.
+
 
 ## 14 October 2026: KAN-187 registers and KAN-237 image prerequisite
 

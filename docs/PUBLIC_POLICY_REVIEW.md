@@ -33,14 +33,14 @@ Read-only inspection on 11 October 2026 established the following for the runnin
 installation at `allseeingeyeosint.com`, checkout
 `13efceef48efbc6d5f2895e60c55076db5d40e3f`:
 
-| Fact                             | Evidence and limit                                                                                                                                                                                                                       |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. Alex separately confirmed the recorded DPA on 14 October.                 |
-| Resend application email         | Running settings use `smtp.resend.com` and encrypted SMTP; KAN-22 also records a delivery check.                                                                                                                                         |
-| OpenAI API                       | Read-only allowlisted database projections identified enabled `api.openai.com` connections: GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use. Aggregate records establish prior calls; both models do not receive every task. |
-| One account                      | Aggregate count only, without selecting identity. This does not establish residence, all past uses or a domestic-purpose exemption.                                                                                                      |
-| Other recipients                 | Feeds, conflict screening, Internet Archive capture and browser-push configuration enabled; no installation-wide webhook or enquiry recipient configured.                                                                                |
-| Log and backup controls          | Five 20 MB log files per container; daily backup and weekly drill cron entries without keep/off-site overrides. Size/count rotation is not a universal age limit. No fresh restore test was performed.                                   |
+| Fact | Evidence and limit |
+| --- | --- |
+| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. Alex separately confirmed the recorded DPA on 14 October. |
+| Resend application email | Running settings use `smtp.resend.com` and encrypted SMTP; KAN-22 also records a delivery check. |
+| OpenAI API | Read-only allowlisted database projections identified enabled `api.openai.com` connections: GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use. Aggregate records establish prior calls; both models do not receive every task. |
+| One account | Aggregate count only, without selecting identity. This does not establish residence, all past uses or a domestic-purpose exemption. |
+| Other recipients | Feeds, conflict screening, Internet Archive capture and browser-push configuration enabled; no installation-wide webhook or enquiry recipient configured. |
+| Log and backup controls | Five 20 MB log files per container; daily backup and weekly drill cron entries without keep/off-site overrides. Size/count rotation is not a universal age limit. No fresh restore test was performed. |
 
 No credentials, encrypted keys, identities, prompts or research content were
 selected. No model call or production mutation was made. The running release

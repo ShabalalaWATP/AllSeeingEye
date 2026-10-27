@@ -7,12 +7,12 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 ### KAN-249 runtime responsiveness, 24 October 2026
 
 - [x] Reproduce the bounded social, aviation, translation and owner-label workloads;
-      retain the assessment in [KAN-248](https://alex-orr.atlassian.net/browse/KAN-248).
+  retain the assessment in [KAN-248](https://alex-orr.atlassian.net/browse/KAN-248).
 - [x] Replace repeated owner-label account reads with bounded ID/name projections;
-      preserve existing list authority and missing/inactive-owner behaviour.
+  preserve existing list authority and missing/inactive-owner behaviour.
 - [x] Integrate admitted social/aviation worker projections and cooperative translation.
 - [x] Publish useful map snapshots progressively while retaining serial read admission,
-      stream reconciliation, source coverage and cancellation.
+  stream reconciliation, source coverage and cancellation.
 - [x] Record serial before/after evidence and reproduce review findings with regressions.
 - [x] Complete final independent quality/security review and the combined local checks.
 - Required full CI results are maintained on the PR for its published head.
@@ -29,11 +29,11 @@ KAN-216 retains the manual production rollout and live acceptance recorded in Ji
 The 18 October retention and assessment merge approvals exclude that rollout.
 
 - [x] Prepare the migration 0090–0095 effects and recovery limits in the private
-      operator draft; record basic read-only public availability checks in Jira.
+  operator draft; record basic read-only public availability checks in Jira.
 - [x] Recover the existing operator handoff and verify clean live `13efceef`,
-      matching application image labels and database revision `0089` read-only.
+  matching application image labels and database revision `0089` read-only.
 - [x] Authenticate an existing backup and rehearse `0089` to `0095` locally with
-      networking disabled, preserving original contents of all 99 checked tables.
+  networking disabled, preserving original contents of all 99 checked tables.
 - [ ] Take and verify a fresh quiesced backup during the separately approved rollout.
 - [ ] Present the exact final release and maintenance plan for separate approval.
 - [ ] Complete the approved rollout and live acceptance before closing the epic.
@@ -46,11 +46,11 @@ or restore is claimed.
 
 - [x] Map sharing, search, moderation and account admission to current source.
 - [x] Prepare dated scope, illegal-harm and children's access desk assessments,
-      using current official guidance and retaining unresolved territorial facts.
+  using current official guidance and retaining unresolved territorial facts.
 - [x] Record the archived-team moderation gap as KAN-245 and hand the reporting,
-      complaints and age-policy findings to KAN-188 without changing its ownership.
+  complaints and age-policy findings to KAN-188 without changing its ownership.
 - [x] Record Alex's confirmed approved adult audience, including UK users; propose
-      regulated-service treatment for planning without inventing a statutory UK-link finding.
+  regulated-service treatment for planning without inventing a statutory UK-link finding.
 - [x] Track remaining dates, children's access and operating validation in KAN-246.
 - [x] Record Alex's 18 October assessment approval, retaining the legal/operating follow-ups.
 - [x] Complete independent review of the assessment, dated approval and integration.
@@ -63,21 +63,21 @@ certify statutory compliance, an exemption, adult-only access or a live policy c
 ### KAN-243 recovery reconciliation, 16 October 2026
 
 - [x] Implement a bounded encrypted external record with explicit initialisation,
-      durable intent/completion and evidenced resolution of uncertain outcomes.
+  durable intent/completion and evidenced resolution of uncertain outcomes.
 - [x] Require the record for operator private-data mutations; distinguish completed
-      removal, review permission and manually recorded restrictions/copy policies.
+  removal, review permission and manually recorded restrictions/copy policies.
 - [x] Rehearse real SQLite backup/restore and guarded manual reapplication while
-      preserving shared work, holds and permission-only records.
+  preserving shared work, holds and permission-only records.
 - [x] Document operator ownership, quarterly/request-resolution copy reviews,
-      selected-policy evidence and the manual pre-reactivation checklist.
+  selected-policy evidence and the manual pre-reactivation checklist.
 - [x] Complete independent quality/security review, 102 focused SQLite cases,
-      95.51% scoped coverage, 35 PostgreSQL cases and startup/CLI regression checks.
+  95.51% scoped coverage, 35 PostgreSQL cases and startup/CLI regression checks.
 - [x] Repair navigation ordering and lazy-page dependencies in integration tests;
-      33 focused frontend cases pass with the existing timeouts and assertions of authority.
+  33 focused frontend cases pass with the existing timeouts and assertions of authority.
 - [x] Pass all 40 published-head checks on `08d71d1c` with unchanged global gates.
 - [x] Record Alex's 18 October release approval, excluding manual production operations.
 - [x] Integrate after KAN-240 and merge as `0fb60965`, preserving the tested tree;
-      KAN-243 is Done.
+  KAN-243 is Done.
 
 See [recovery reconciliation](RECOVERY_RECONCILIATION.md). Windows DACL provisioning,
 live copy-policy choices, current independent journal copies and production recovery
@@ -91,7 +91,7 @@ remain operator work; neither inspection nor this implementation authorises them
 - [x] Reproduce and repair retained forecast evidence references; independent review passed.
 - [x] Complete scoped coverage (96.25%), 120 SQLite, 119 PostgreSQL-configured and 37 wider regression cases.
 - [x] Repair the stale-connection test ordering exposed by refreshed CI; 47 focused
-      cases pass on both SQLite and isolated PostgreSQL, with independent review.
+  cases pass on both SQLite and isolated PostgreSQL, with independent review.
 - [x] Pass all 40 checks on `7fd7be8b` with the existing global gates.
 - [x] Record Alex's 18 October release approval, excluding live removal/migration operations.
 - [x] Merge after KAN-238/239/241 as `156b5266`; KAN-240 is Done.
@@ -103,16 +103,16 @@ backup/provider reconciliation remain separate; KAN-243 owns recovery reconcilia
 
 - [x] Reproduce dormant selected-index reads and exclude expired metadata before limits.
 - [x] Add bounded independent expiry, preserving correction fingerprints, coverage
-      losses, replay protection, active inputs, allowances and disabled providers.
+  losses, replay protection, active inputs, allowances and disabled providers.
 - [x] Freeze scan endpoints so continuing arrivals cannot starve earlier expiry.
 - [x] Complete SQLite/PostgreSQL boundary/backlog tests and two-connection races;
-      independent code-quality and security reviews report no remaining actionable defect.
+  independent code-quality and security reviews report no remaining actionable defect.
 - [x] Refresh cached Debian security packages after five fixable Expat findings;
-      rebuilt-image package inspection, five native controls and the fixable scan pass.
+  rebuilt-image package inspection, five native controls and the fixable scan pass.
 - [x] Repair metadata-effect ordering and retain the reviewed login-test fixes;
-      all 48 focused frontend cases pass without changing product behaviour or thresholds.
+  all 48 focused frontend cases pass without changing product behaviour or thresholds.
 - [x] Carry forward the reviewed FIRMS test-ordering repair; 91 focused runtime,
-      deadline and resilience cases pass on SQLite with unchanged production paths.
+  deadline and resilience cases pass on SQLite with unchanged production paths.
 - [x] Pass all 40 checks on `178d912c`, including PostgreSQL, coverage and image gates.
 - [x] Record Alex's 18 October release approval, excluding manual production operations.
 - [x] Merge after KAN-239 as `888b4748`, preserving the tested tree; KAN-241 is Done.
@@ -124,11 +124,11 @@ maintenance automatically; no production purge or successful rollout is claimed.
 
 - [x] Define purpose-based defaults, category/global holds and quarterly ownership.
 - [x] Implement counts-only preview, explicit bounded apply and disabled-by-default
-      scheduling independent of feeds. Preserve current-month accounting and receipt keys.
+  scheduling independent of feeds. Preserve current-month accounting and receipt keys.
 - [x] Verify strict boundaries, rollback, backlog, opt-out, duplicate publication,
-      late completion, retryable delivery and monthly-budget invariants on SQLite.
+  late completion, retryable delivery and monthly-budget invariants on SQLite.
 - [x] Complete PostgreSQL boundary/hold/backlog and two-connection concurrency checks;
-      independent code-quality and security reviews found no actionable defect.
+  independent code-quality and security reviews found no actionable defect.
 - [x] Pass all 40 checks and authorised integration as `ea68f65c`; KAN-239 is Done.
 - [ ] Obtain installation policy/rollout approval before any production purge.
 
@@ -137,31 +137,31 @@ See [the operational retention procedure](OPERATIONAL_RETENTION.md).
 ### KAN-192 configured security contact, 16 October 2026
 
 - [x] Replace the fixed production contact file with startup generation from public
-      installation settings, explicit disablement and validated canonical/contact URLs.
+  installation settings, explicit disablement and validated canonical/contact URLs.
 - [x] Retain Caddy security headers, plain UTF-8 output and no SPA fallback.
 - [x] Keep reviewed expiry fixed; warn in CI and fail reference live monitoring on
-      missing/expired publication. Document startup-only expiry enforcement.
+  missing/expired publication. Document startup-only expiry enforcement.
 - [x] Pass generator tests (90.7% statements), repository tests, actual enabled/disabled
-      web image checks, custom policy read-back and independent correctness/security review.
+  web image checks, custom policy read-back and independent correctness/security review.
 - [x] Pass all 41 current-head checks and authorised integration as `5f2a57d9`;
-      KAN-192 is Done. Production operators must explicitly configure publication first.
+  KAN-192 is Done. Production operators must explicitly configure publication first.
 
 See [security contact configuration](SECURITY_CONTACT.md).
 
 ### KAN-191 AI output disclosure, 16 October 2026
 
 - [x] Add presentation-only disclosure from selected saved model provenance, without
-      current-profile lookups, endpoint disclosure or canonical research-text changes.
+  current-profile lookups, endpoint disclosure or canonical research-text changes.
 - [x] Add visible PDF/Word statements and machine-readable properties, including
-      isolated Chromium metadata handling and explicit unknown provider provenance.
+  isolated Chromium metadata handling and explicit unknown provider provenance.
 - [x] Distinguish known AI visual-hypothesis fields from other evidence and live
-      source observations in GeoJSON/KML metadata.
+  source observations in GeoJSON/KML metadata.
 - [x] Apply shared UI labels to assessments, briefings, assistant responses, recorded
-      AI translations, photo hypotheses and economy explanations.
+  AI translations, photo hypotheses and economy explanations.
 - [x] Complete focused backend/frontend checks, export read-back and PDF visual
-      inspection, build, static checks and independent correctness/security reviews.
+  inspection, build, static checks and independent correctness/security reviews.
 - [x] Pass all 40 current-head checks and authorised integration as `8f4921ab`;
-      KAN-191 is Done. No complete Article 50 compliance claim is made.
+  KAN-191 is Done. No complete Article 50 compliance claim is made.
 
 See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitations.
 
@@ -169,11 +169,11 @@ See [ADR 0024](adr/0024-ai-output-disclosure.md) for scope and metadata limitati
 
 - [x] Define terminal-record windows and a conservative scoped housekeeping hold.
 - [x] Implement bounded preview/apply and opt-in independent scheduling; preserve
-      active families, replay detection, confirmed factors and pending account requests.
+  active families, replay detection, confirmed factors and pending account requests.
 - [x] Verify exact cutoffs, backlog, rollback and enrolment races on SQLite/PostgreSQL.
 - [x] Complete independent review and broad regression/CI on the initial candidate.
 - [x] Validate integration with KAN-242 and obtain release approval; PR 206 merged
-      as `7e594e38`, Jira Done. Production enablement remains separate.
+  as `7e594e38`, Jira Done. Production enablement remains separate.
 - [ ] Operator review and explicit enablement remain separate from code delivery.
 
 See [the retention procedure](AUTH_RETENTION.md).
@@ -189,15 +189,15 @@ remain tracked separately from implementation and production deletion.
 ### KAN-244 native image triage, 16 October 2026
 
 - [x] Preserve the original image/scan identity and deduplicate 227 package matches
-      to 55 advisories across 15 Debian source packages.
+  to 55 advisories across 15 Debian source packages.
 - [x] Inspect actual native components and distinguish Python's bundled libraries.
 - [x] Constrain decoder opening and reject internal XML DTDs at shared boundaries.
 - [x] Pass 185 focused tests, Linux synthetic controls, lint, formatting, typing,
-      architectural contracts and Bandit; independent review found no concrete issue.
+  architectural contracts and Bandit; independent review found no concrete issue.
 - [x] Complete all 40 PR checks, explicit release approval and integration as `9d5a0166`.
-      Main CI and live deployment verification remain separate.
+  Main CI and live deployment verification remain separate.
 - [ ] Review 16 unresolved native paths by 23 October or before release; do not
-      equate completed triage or application mitigations with patched system packages.
+  equate completed triage or application mitigations with patched system packages.
 
 See [the parser policy](security/MEDIA_PARSER_POLICY.md) and the per-advisory
 evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
@@ -205,16 +205,16 @@ evidence on [KAN-244](https://alex-orr.atlassian.net/browse/KAN-244).
 ### KAN-187 country and provider confirmation, 14 October 2026
 
 - [x] Record Finland and the operator-confirmed Hetzner DPA / standard OpenAI and
-      Resend terms without opt-ins or custom settings.
+  Resend terms without opt-ins or custom settings.
 - [x] Correct the public notice, Finnish complaints action and restricted assessment;
-      retain the existing personal-installation scope and refresh exact-content approval.
+  retain the existing personal-installation scope and refresh exact-content approval.
 - [x] Prepare KAN-187's activity/recipient/transfer register, source-backed retention
-      schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
+  schedule and host-neutral AI residency guide; link gaps to KAN-238 through KAN-243.
 - [x] Complete KAN-185's private assessment record and operator sign-off on
-      16 October. Its exclusions and open legal/operational actions remain explicit.
+  16 October. Its exclusions and open legal/operational actions remain explicit.
 - [x] Verify KAN-237's refreshed packages, image gate, repeat cache and media/runtime checks.
 - [ ] Complete current-head CI and authorised integration; KAN-244 separately tracks
-      the full image inventory of unfixed advisories.
+  the full image inventory of unfixed advisories.
 - Integration and live release are separate from this factual correction. See
   [the decision record](PUBLIC_POLICY_REVIEW.md) and the Jira handoff for validation.
 
@@ -248,15 +248,15 @@ the measured CI result; no further 30-minute optimisation gate remains.
 KAN-81 and parent KAN-25 are also Done. Older dated counts below are historical.
 
 - [x] Record the approved private contact and administrator-assisted KAN-23
-      procedure, preserving shared work and explicit account-wide limitations.
+  procedure, preserving shared work and explicit account-wide limitations.
 - [ ] Merge the reviewed contact/procedure documentation and close KAN-23.
 - [ ] Verify the KAN-22 synthetic email reaches the owner's mailbox.
 - [x] Complete the approved KAN-134 bounded HDX HAPI shape probe: 20 valid rows
-      from each of three topics. KAN-134 and parent KAN-107 are Done. See the
-      [live evidence](reviews/2026-10-07-KAN-134-live-shape.md).
+  from each of three topics. KAN-134 and parent KAN-107 are Done. See the
+  [live evidence](reviews/2026-10-07-KAN-134-live-shape.md).
 - [ ] Agree and provision KAN-45 off-site storage and missed-run monitoring,
-      then prove a real isolated restore and test alert delivery. The operator
-      confirmed that neither external service currently exists.
+  then prove a real isolated restore and test alert delivery. The operator
+  confirmed that neither external service currently exists.
 
 See the [operator approval record](reviews/2026-10-07-KAN-22-23-operator-approval.md).
 
@@ -497,6 +497,7 @@ backend processes and observed PostgreSQL lock waiting establish real concurrent
 transactions. Disposable databases/container were removed. See
 [IDENTITY_REVIEW_IMPLEMENTATION.md](archive/IDENTITY_REVIEW_IMPLEMENTATION.md).
 
+
 7 September continuation: administrator AI setup is a progressive provider,
 model/test and audience-confirmation journey. Unsaved account model discovery,
 per-person personal-workspace overrides and safe authority-bound mutations are
@@ -505,6 +506,7 @@ SQLite/PostgreSQL acceptance; 222 combined frontend tests and production build
 passed. The operator database and live provider settings remain unchanged.
 See [ADMIN_AI_CONNECTION_JOURNEY.md](archive/ADMIN_AI_CONNECTION_JOURNEY.md).
 
+
 7 September continuation: exact saved-map image packaging now has a dedicated
 1,200 by 800 two-canvas preview, default annotation exclusion, source-use review,
 burned-in attribution and bounded authenticated ZIP delivery. Local backend,
@@ -512,6 +514,7 @@ frontend and static checks passed, with evidence in
 [SAVED_MAP_IMAGE_EXPORT.md](SAVED_MAP_IMAGE_EXPORT.md). Real globe/flat-map GPU
 acceptance remains open because browser policy verification denied access.
 Earlier notes describing image export as absent are superseded by this entry.
+
 
 7 September continuation: selected originals can now be deliberately re-uploaded
 against frozen report evidence, retained with scoped quotas and expiry, downloaded
@@ -591,16 +594,16 @@ Baseline before this continuation: backend 229 tests passing with 95.36 percent 
 
 Verification on 6 September 2026:
 
-| Check                      | Result                                                                                                                                                                                                      |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Final SQLite backend suite | 467 passed, one PostgreSQL-only skip; 96.11 percent combined statement/branch coverage                                                                                                                      |
-| PostgreSQL 17              | Full 462-test suite passed; after final report-production changes, the 36-test report/gateway selection passed with PostgreSQL configured (the writer-lock regressions deliberately use file-backed SQLite) |
-| Frontend                   | 262 tests passed across 60 files; 97.82 percent lines, 91.34 percent branches, 97.12 percent statements, 95.49 percent functions                                                                            |
-| Source checks              | Ruff lint/format, mypy strict, both import contracts, ESLint, TypeScript and file-length check passed; only the untouched 366-line grading module exceeds the 350-line target                               |
-| Security tools             | Python/pnpm audits found no known vulnerabilities; Bandit and Gitleaks passed; Semgrep passed with 457 applicable rules after 13 precisely documented false-positive annotations                            |
-| Container images           | Final API and web builds passed; Trivy reported no HIGH/CRITICAL findings under the recorded scan policies. Rebuilt standard Caddy retains all 132 modules; local HTTPS/static/API checks passed            |
-| Recovery                   | Real SQLite and PostgreSQL 17 CLI drills passed, including migrations 0001 to 0011, all 19 tables and decryption of recovered credentials/TOTP; original data unchanged                                     |
-| Browser                    | Desktop Chrome checked real globe/map tiles and markers, social, report comparison/downloads, unavailable search, admin access, keyboard focus and reduced motion using isolated synthetic data             |
+| Check | Result |
+|---|---|
+| Final SQLite backend suite | 467 passed, one PostgreSQL-only skip; 96.11 percent combined statement/branch coverage |
+| PostgreSQL 17 | Full 462-test suite passed; after final report-production changes, the 36-test report/gateway selection passed with PostgreSQL configured (the writer-lock regressions deliberately use file-backed SQLite) |
+| Frontend | 262 tests passed across 60 files; 97.82 percent lines, 91.34 percent branches, 97.12 percent statements, 95.49 percent functions |
+| Source checks | Ruff lint/format, mypy strict, both import contracts, ESLint, TypeScript and file-length check passed; only the untouched 366-line grading module exceeds the 350-line target |
+| Security tools | Python/pnpm audits found no known vulnerabilities; Bandit and Gitleaks passed; Semgrep passed with 457 applicable rules after 13 precisely documented false-positive annotations |
+| Container images | Final API and web builds passed; Trivy reported no HIGH/CRITICAL findings under the recorded scan policies. Rebuilt standard Caddy retains all 132 modules; local HTTPS/static/API checks passed |
+| Recovery | Real SQLite and PostgreSQL 17 CLI drills passed, including migrations 0001 to 0011, all 19 tables and decryption of recovered credentials/TOTP; original data unchanged |
+| Browser | Desktop Chrome checked real globe/map tiles and markers, social, report comparison/downloads, unavailable search, admin access, keyboard focus and reduced motion using isolated synthetic data |
 
 Container scan results and remaining deployment requirements are recorded in the
 [ASVS review](security/PHASE6_ASVS_REVIEW.md). GitHub CI has not run because no
@@ -626,7 +629,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 ## Phase 0: Foundation
 
 ### Backend
-
 - [x] `backend/pyproject.toml` with uv, ruff, mypy strict, pytest, coverage gate 90 percent, import-linter contracts
 - [x] Layered skeleton `ase/{domain,application,adapters,api,infrastructure}` and `ase/container.py`
 - [x] Settings (`ASE_` prefix), structured logging with redaction and tracebacks, `/api/health`, `/api/ready`
@@ -641,7 +643,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 - [x] Tests covering every endpoint and every security rule, coverage at or above 90 percent
 
 ### Frontend
-
 - [x] Vite + React 19 + TypeScript strict + Tailwind 4 + pnpm, eslint (typescript-eslint strict, jsx-a11y, react-hooks), prettier, vitest with coverage gate 90 percent
 - [x] Dark theme tokens (obsidian ground, ember accent #FF6F37, cyan data, amber warnings)
 - [x] Evil Eye component copied verbatim from the React Bits registry (`EvilEye-TS-TW`) with licence header and `THIRD_PARTY_NOTICES.md`; `BrandMark` wrapper (small, frame-capped, pauses when hidden, static under reduced motion)
@@ -655,7 +656,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 - [x] Static brand assets captured from the component (favicon, apple touch icon, PWA icons, web manifest) and linked from `index.html`
 
 ### Infrastructure and repo
-
 - [x] `.gitignore`, `.env.example`, `README.md` quick start
 - [x] `docker-compose.yml` (api, web via Caddy, db postgis), `infra/Caddyfile`, non-root read-only Dockerfiles
 - [x] `justfile`, `.pre-commit-config.yaml` (ruff, ruff-format, gitleaks, file-length check, frontend lint and typecheck)
@@ -664,7 +664,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 - [x] `SECURITY.md` at the root, `docs/DEVELOPMENT_STORY.md`
 
 ### Acceptance
-
 - [x] A visitor requests an account; an admin approves it and receives an activation link; the user sets a password, logs in and lands on the 3D globe (verified in the embedded browser and in Chrome on 4 September 2026)
 - [x] Code quality review and security review completed with findings fixed (see `DEVELOPMENT_STORY.md`)
 - [x] All checks green locally; coverage at or above 90 percent on both sides
@@ -672,7 +671,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 ## Phase 1: Fusion core and globe data
 
 ### Backend fusion core
-
 - [x] Unified `Event` model with grade, provenance, geo confidence, severity and frozen attributes; `SourceSpec` and the source registry
 - [x] Ports for connectors, the event store and the event bus; in-memory store with per-category retention windows, caps and a memory budget; in-memory bus
 - [x] Normaliser pipeline, health registry with circuit breakers, feed scheduler (timeouts, jitter, backoff, resume), hardened feed HTTP client (SSRF guard, size caps, conditional requests)
@@ -687,7 +685,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 - [ ] Admin source overrides persisted (enable, disable, interval)
 
 ### Frontend live globe
-
 - [x] zod schemas for events, stats, sources and stream payloads; typed events API module
 - [x] Fetch-based server-sent events client with bearer auth, reconnect with backoff, and a fresh token on `bye` or 401
 - [x] Events store: bounded client mirror (5,000), upsert and expiry from the stream, category visibility, selection
@@ -705,14 +702,12 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 ## Phase 2: Grading and reporting
 
 ### Grading engine
-
 - [x] Story clustering: stemmed title tokens with Jaccard similarity inside a 48-hour window (any category), plus same-subtype events within 150 km and 12 hours for disasters; deterministic story ids
 - [x] Credibility per doctrine section 4.3: confirmed with two or more independent corroborations, probably true with one, instruments and authoritative registries probably true, state-controlled or interested-party single sources possibly true, other single sources possibly true when consistent with the picture (same country or within 150 km, same category, same window) and otherwise cannot be judged; independence by parent organisation with near-identical text across organisations folded as syndication; a rationale string on every item
 - [x] Regrading runs after every poll for the categories the batch touched and republishes neighbours whose grade moved; grades are recomputed as items arrive
 - [ ] Contradiction rules (doubtful, improbable) and instrument anomaly flags; corroboration and contradiction identifiers on the event
 
 ### Reports
-
 - [x] LLM gateway: profiles for any OpenAI-compatible endpoint (name, base URL, model, roles, token and temperature limits), keys encrypted with Fernet under `ASE_ENCRYPTION_KEY` and shown only as a four-character hint, migration 0002, a connection test that must answer `{"ok": true}` through JSON-schema output, a usage log, audit entries, and the admin Models page (create, edit without resending the key, test, two-step delete)
 - [x] Doctrine vocabulary as matchers (yardstick bands with ranges, forbidden ICD 203 phrases, hedges, confidence phrases), the report body schema (JSON schema for the model plus a lenient parser), the linter (one term per judgement matching its probability, no hedges, confidence separate and never in the same sentence, reporting cites and contains no terms, unknown citations stripped, no foreign URLs, assumptions and alternatives required, confidence capped by the information base, change_from_previous when a previous version exists, length budgets)
 - [x] Templates as typed rows (INTSUM, INTREP, Country Brief, Ask the Eye) with evidence strategy and token budget; evidence selection by grade, recency, severity and per-source diversity with instruction-like text screened out; frozen evidence items; quality-of-information statistics with a confidence ceiling; prompt composition with the doctrine preamble; generation with one retry carrying the validator's findings, then needs_review or failed
@@ -727,7 +722,6 @@ The revised order is: Phase 3a disaster and conflict trackers with their product
 Acceptance from the roadmap: each tracker has a board, a detail view, a globe layer and a report template. Feeds are the ones verified in `02_DATA_SOURCES.md` section O.
 
 ### 3a. Framework, disasters and conflicts
-
 - [x] Tracker domain: hazards folded from connector subtypes, curated `Conflict` definitions, activity (24 h, 7 d, previous 7 d, trend), day buckets, hazard and conflict cards computed from the live store, never stored
 - [x] Curated conflicts and tension areas as a packaged resource (Ukraine, Gaza and the West Bank, Israel and Hezbollah, Sudan, Yemen and the Red Sea, the central Sahel, eastern DR Congo, Myanmar, Somalia, Syria, Haiti, Ethiopia, north-east Nigeria, Cabo Delgado, Libya, Taiwan Strait, the Korean peninsula, the South China Sea, India and Pakistan, Armenia and Azerbaijan, Colombia, the Pakistan and Afghanistan border, Iran and Israel), each with countries, a bounding box, belligerents, keywords and a summary; admin editing is a later follow-up
 - [x] Tracker service and API: `/api/trackers/disasters`, `/api/trackers/disasters/{hazard}`, `/api/trackers/conflicts`, `/api/trackers/conflicts/{id}` with cards, timelines and the events behind them
@@ -738,7 +732,6 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Globe upgrades the trackers need: aircraft icons rotated to their heading, cyclone and volcano icons, grid clustering with counts below zoom 3 (a click flies in), and a time window control (1 h to 7 d or everything retained); playback over the window is still to come
 
 ### 3b. Aviation
-
 - [x] adsb.lol LADD and PIA lists with the database flags (military, interesting, PIA, LADD) as tags; emergency squawk polling (7500, 7700, 7600) as severe events; all traffic over eight watched areas through 250-nautical-mile point queries (`ase/resources/air_watch.json`); one event id per airframe whichever query saw it
 - [ ] OpenSky anonymous bounding boxes as the fallback for the watched areas
 - [x] Aircraft rendering: heading icons (with the globe upgrades) and emergency colouring
@@ -749,7 +742,6 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Aviation in the app: a board page (counts, nations and watched areas against baseline, emergency squawks, a link to the activity report), a GNSS interference layer on the globe refreshed every five minutes while it is on, and emergency aircraft drawn in the critical colour
 
 ### 3c. Maritime, space and cyber
-
 - [x] Connectors: NAVAREA broadcast warnings (positions parsed from the text, kind and severity from keywords), space stations propagated with SGP4 from CelesTrak elements cached for two hours, Launch Library 2 upcoming launches at their pads, the SWPC planetary K index, ransomware.live victim claims (credibility possibly true, as criminal statements) and IODA outage alerts (critical and warning only); country-level events now sit at the nation's centroid with country-level geo confidence, so outages and claims appear on the globe; the maritime retention window grew to six hours so warnings polled every two hours survive
 - [x] Boards and pages: maritime (warnings by area and kind, notable and latest), space (stations now with altitude, upcoming launches, the K index and space weather alerts), cyber (outage signals and ransomware by nation and group, the week's exploited vulnerabilities); Maritime Activity Report and Cyber Summary templates with the boards as background; the trackers page lists every module
 - [ ] AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist; SWPC aurora oval as a globe overlay; satellites over an area and next passes
@@ -817,14 +809,14 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 - [x] Regional RSS, language catalogue and explicit collection-plan/source controls.
 - [x] Admin source admission, including release-time revocation checks.
 - [x] Shared frozen report maps, geographic precision disclosure, private GeoJSON
-      overlays and bounded Copernicus footprint queries.
+  overlays and bounded Copernicus footprint queries.
 - [x] Company relationships, local designation snapshots, procurement, academic,
-      parliamentary and development-indicator adapters, with explicit coverage limits.
+  parliamentary and development-indicator adapters, with explicit coverage limits.
 - [x] Claim inspection, bounded evidence ZIP exports, Chinese PDF fonts and personal
-      report library annotations.
+  report library annotations.
 - [ ] Complete the wider expansion acceptance gates and deferred features listed
-      in archive/RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md. This milestone is partial against
-      that plan, not completion of every E0-E13 workstream.
+  in archive/RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md. This milestone is partial against
+  that plan, not completion of every E0-E13 workstream.
 
 See RESEARCH_EXPANSION_OPERATIONS.md for behaviour, deployment requirements and
 remaining limits. Migrations 0022/0023 have not been applied to operator data.
@@ -865,12 +857,14 @@ transport headings and far-side occlusion. The 1,101-test frontend suite precede
 final narrow repairs; those passed 39 focused tests, types, lint and build.
 Camera catalogue and live-provider acceptance remain separate follow-up work.
 
+
 8 September compact-control follow-up: replaced the persistent desktop column
 with layer/tool icon rails and on-demand panels. Added navigation controls and a
 measurement result that remains visible while picking with the panel closed.
 The actual authenticated mobile layout and interaction checks supplement the
 earlier isolated renderer tests. CCTV remains planned. See
 archive/OSIRIS_MAP_INTERFACE_PLAN.md for verification and remaining source work.
+
 
 8 September map corrections: completed recognisable control icons, visible
 hover/focus labels and explicit style access; unified sidebar Map destination;
@@ -885,6 +879,7 @@ and CCTV placement, removed the separate observation-filter panel, and unified
 effective observation visibility between settings and quick toggles. Desktop
 and mobile browser checks passed. CCTV provider integration remains outstanding.
 
+
 8 September camera delivery: implemented an authenticated, bounded public camera
 catalogue for TfL, Hong Kong Transport Department and Fintraffic. Added optional
 camera markers, searchable provider filters, selection halos and requested
@@ -896,13 +891,13 @@ unavailable notes above.
 ## Camera expansion milestone, 8 September 2026
 
 - [x] Add the remaining OSIRIS CCTV source groups through explicit regional adapters
-      (57 source entries total, with on-demand loading and honest failure statuses).
+  (57 source entries total, with on-demand loading and honest failure statuses).
 - [x] Add user-requested live stream, embedded video, MJPEG and clip playback.
 - [x] Preserve searchable map/globe selection and distinguish approximate positions.
 - [x] Verify an actual live HLS stream in the browser and bound nested media requests.
 - [x] Document source inventories, attribution, access restrictions and observed probes.
 - [ ] Revalidate blocked/retired providers when their public endpoints or authorised
-      access become available. Source-group coverage is not universal camera availability.
+  access become available. Source-group coverage is not universal camera availability.
 
 Details: CAMERA_FEEDS.md, CAMERA_AMERICAS.md, CAMERA_EUROPE.md, CAMERA_WORLD.md.
 
@@ -910,65 +905,68 @@ Details: CAMERA_FEEDS.md, CAMERA_AMERICAS.md, CAMERA_EUROPE.md, CAMERA_WORLD.md.
 
 - [x] Investigate current vessel source coverage with a live provider probe.
 - [x] Add optional AISStream global position adapter with bounded, authenticated
-      server-side collection and explicit coverage limitations.
+  server-side collection and explicit coverage limitations.
 - [x] Group the catalogue by topic and add combined geography, language, collection
-      and API-key filters with explicit source-discovery metadata.
+  and API-key filters with explicit source-discovery metadata.
 - [x] Add Washington DC and lower the map clock strip.
 - [x] Development activation: supplied AISStream key verified against the real feed;
-      one bounded collection returned 6,706 fresh vessel positions.
+  one bounded collection returned 6,706 fresh vessel positions.
 
 See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md for setup and limitations.
 
 - [x] Prevent ship crowd-out with a bounded maritime snapshot and reserved browser
-      vessel capacity; preserve cancellation, expiry and partial-failure handling.
+  vessel capacity; preserve cancellation, expiry and partial-failure handling.
+
 
 ## Satellite, infrastructure and thermal coverage, 8 September 2026
 
 - [x] Replace stations-only coverage with public active, military and Skynet
-      catalogues; exclude invalid elements and Skynet launch debris.
+  catalogues; exclude invalid elements and Skynet launch debris.
 - [x] Add explicit catalogue filters, NORAD deduplication and bounded browser
-      reservations for satellites, vessels and FIRMS detections.
+  reservations for satellites, vessels and FIRMS detections.
 - [x] Add an optional provider-classified military flight filter under Flights.
 - [x] Package 1,999 attributed OSM cable segments and 25 public ground-station
-      locations, with authenticated delivery and approximate-location provenance.
+  locations, with authenticated delivery and approximate-location provenance.
 - [x] Verify development AISStream and NASA FIRMS keys without committing secrets.
 - [x] Make environment FIRMS credentials work without the optional credential
-      management table; add the official public CSV option for no-key deployments.
+  management table; add the official public CSV option for no-key deployments.
 - [x] Verify backend feed publication and responsiveness, and map controls in
-      automated interaction tests for both projections.
+  automated interaction tests for both projections.
 - [x] Diagnose the active-catalogue 403 as CelesTrak's unchanged-data response;
-      implement bounded restart-safe orbital caching, request reservations,
-      differentiated unchanged/access-error handling and cache-backed predictions.
+  implement bounded restart-safe orbital caching, request reservations,
+  differentiated unchanged/access-error handling and cache-backed predictions.
 - [x] Keep geostationary prediction timestamps current even when rounded positions
-      are unchanged; retain visible degraded diagnostics and administrator reset.
+  are unchanged; retain visible degraded diagnostics and administrator reset.
 - [ ] Observe the active catalogue populated after the next permitted provider
-      update. The initial empty cache is waiting; do not count the earlier successful
-      download as current running-app coverage.
+  update. The initial empty cache is waiting; do not count the earlier successful
+  download as current running-app coverage.
 - [ ] Perform a visual GPU check when administrator browser-control policy allows it.
 
 See SATELLITE_COVERAGE.md, MAP_INFRASTRUCTURE.md, GROUND_STATIONS.md and
 FIRMS_OPERATIONS.md. Public military coverage is incomplete. Satellite markers
 are propagated estimates. Cable coverage is a bounded, uneven snapshot.
 
+
 ## Map stability and efficiency, 8 September 2026
 
 - [x] Move clocks and coordinate readout to the bottom safe area.
 - [x] Bound stream publication, subscriber queues and browser frame parsing.
 - [x] Coalesce browser updates and refresh requests without dropping expiry or
-      authorisation barriers; retain selection during normal bulk refreshes.
+  authorisation barriers; retain selection during normal bulk refreshes.
 - [x] Pause hidden-tab feeds and camera playback; bound camera downloads/cache.
 - [x] Cap map pixel ratio, tile cache and overlapping-object picking work.
 - [x] Yield large backend batches, index source queries and account for retained
-      object overhead in the store budget.
+  object overhead in the store budget.
 - [x] Bound narrative similarity work and grade incoming instrument batches
-      independently of the narrative context limit.
+  independently of the narrative context limit.
 - [x] Verify synthetic work bounds and populated authenticated live snapshots.
 - [x] Complete final frontend coverage gate (1,210 tests, 90.19% branches) and
-      prepare the checked repair on main.
+  prepare the checked repair on main.
 - [ ] Validate GPU behaviour visually when administrator browser policy permits;
-      short runtime checks are not a long-duration soak test.
+  short runtime checks are not a long-duration soak test.
 
 See PERFORMANCE_REPAIR.md for measurements, tradeoffs and verification limits.
+
 
 ## 8 September 2026: conflict evidence and coverage
 
@@ -978,6 +976,7 @@ filters and authenticated provider coverage. Added public UCDP Candidate with
 optional token API, optional ACLED and approved-appname ReliefWeb integration.
 See [conflict coverage](CONFLICT_COVERAGE.md) for source limits and activation
 gates. Live ACLED and ReliefWeb API activation still require provider access.
+
 
 ## 8 September 2026: visible military traffic and map lists
 
@@ -999,6 +998,7 @@ lowered. Live traffic samples included 314 provider-labelled military aircraft,
 three AIS-labelled military vessels and 291 regional aircraft records after the
 bounded collector repair; these are changing samples, not complete inventories.
 
+
 ## 8 September 2026: globe graphics and camera loading repair
 
 - [x] Replace incompatible overlay adapter and verify globe bearing/pitch maths.
@@ -1011,6 +1011,7 @@ bounded collector repair; these are changing samples, not complete inventories.
 See [rendering repair](PERFORMANCE_REPAIR.md) and [camera coverage](CAMERA_FEEDS.md)
 for evidence, checks and remaining limits. No database migration or production
 deployment was performed; no remote is configured for this repository.
+
 
 ## 9 September 2026: worldwide collection and geographic map loading
 
@@ -1031,6 +1032,7 @@ Final live checks also identified and fixed FIRMS UTC-midnight gaps and a measur
 61.74-second response exceeding the former deadline. Both NASA sensors loaded
 successfully after the fixes, alongside other categories at 339.1 MiB estimated
 store use within the 512 MiB budget. See the worldwide coverage validation record.
+
 
 ## 9 September 2026: map categories and planning tools
 
@@ -1075,6 +1077,7 @@ See [GNSS and map controls](GNSS_AND_MAP_CONTROLS.md) for the control layout,
 method, limitations and validation record. Official interference advisories and
 independently sourced spoofing classifications remain possible future inputs;
 this change does not infer confirmed jamming from aircraft accuracy alone.
+
 
 ## 9 September 2026: map-tool usability follow-up
 
@@ -1126,17 +1129,17 @@ requirements from the earlier milestone remain in force.
 - [x] Configure the supplied operator contact in the ignored development environment.
 - [x] Reproduce and fix Valhalla HTTP 400 caused by form-encoded JSON spaces.
 - [x] Verify a public London walking route through the existing protected adapter;
-      restart ASE on port 8001 and check health/readiness and frontend port 5174.
+  restart ASE on port 8001 and check health/readiness and frontend port 5174.
 - [x] Default all overlays off except conflicts, ignoring older saved GNSS/day-night toggles.
 - [x] Review OSIRIS conflict sources and renderer at a pinned current revision.
 - [x] Add a searchable regional overview, curated war/tension distinction, selected
-      outline/halo and existing evidence/timeline links on globe and map.
+  outline/halo and existing evidence/timeline links on globe and map.
 - [x] Preserve report coordinates, dates, grouping and source precision; add no fabricated incident locations.
 - [x] Bound region rendering and cancel requests across access changes; avoid new polling.
 - [x] Complete full frontend verification: 1,524 tests passed (one existing skip),
-      95.45% statements and 90.26% branches; lint, types, build and file-length checks passed.
+  95.45% statements and 90.26% branches; lint, types, build and file-length checks passed.
 - [x] Pass 59 focused backend routing, conflict-evidence/coverage and protected-URL
-      tests, plus scoped Ruff, mypy and Bandit checks.
+  tests, plus scoped Ruff, mypy and Bandit checks.
 - [ ] Interactive browser/GPU acceptance, blocked by the existing browser policy.
 
 Source findings and limits are recorded in [OSIRIS interface plan](archive/OSIRIS_MAP_INTERFACE_PLAN.md)
@@ -1206,23 +1209,23 @@ or a fresh search of every source catalogue entry.
 ## 12 September 2026: professional research report product
 
 - [x] Project each frozen report version into one canonical reader document used
-      by the browser and PDF, DOCX and Markdown exports.
+  by the browser and PDF, DOCX and Markdown exports.
 - [x] Present a concise professional report with stable in-text citations, one
-      reference list, native tables and plain-language uncertainty and review state.
+  reference list, native tables and plain-language uncertainty and review state.
 - [x] Keep provider, model, reasoning, token and audit detail in the supporting
-      workspace rather than the reader product and shared exports.
+  workspace rather than the reader product and shared exports.
 - [x] Preserve contradictory evidence, evidence gaps, warning changes, indicators
-      and access-controlled supporting records across legacy and current versions.
+  and access-controlled supporting records across legacy and current versions.
 - [x] Add bounded PNG/JPEG figure handling and deterministic evidence relationship
-      diagrams when a multi-judgement citation graph adds useful information.
+  diagrams when a multi-judgement citation graph adds useful information.
 - [x] Export reports without figures as Markdown and reports with figures as a
-      deterministic portable ZIP with `report.md` and fixed relative image paths.
+  deterministic portable ZIP with `report.md` and fixed relative image paths.
 - [x] Recheck exact-version authorisation immediately before releasing every
-      format, and complete focused correctness and security review.
+  format, and complete focused correctness and security review.
 - [ ] Add source-backed timeline figures and frozen area maps when retained data
-      justifies them.
+  justifies them.
 - [ ] Complete the wider browser, Word and multilingual visual acceptance matrix;
-      PDF output and automated DOCX structure have been verified locally.
+  PDF output and automated DOCX structure have been verified locally.
 
 See [professional research report product](archive/PROFESSIONAL_REPORT_PRODUCT_PLAN.md)
 for the product boundary, report structure, export contract and verification
@@ -1231,31 +1234,31 @@ record. No production deployment or live model acceptance run is claimed.
 ## 13 September 2026: Ask Eye research companion
 
 - [x] Apply publication-time constraints before retained-event paging and report
-      the interpreted period, place and actual source-category scope.
+  the interpreted period, place and actual source-category scope.
 - [x] Add an explicit bounded Source types selector and reporting-window control.
 - [x] Search additional packaged infrastructure records and attributed public
-      UK PHIA, MOD and NATO methodology references without ingesting doctrine PDFs.
+  UK PHIA, MOD and NATO methodology references without ingesting doctrine PDFs.
 - [x] Reuse a server-owned, account-bound evidence packet for a short referential
-      follow-up, with session/source rechecks and a 20-minute expiry.
+  follow-up, with session/source rechecks and a 20-minute expiry.
 - [x] Reject unsupported numeric claims in an answer and keep source links,
-      publication times, grades and coverage beside the cited paragraphs.
+  publication times, grades and coverage beside the cited paragraphs.
 - [x] Let a cited, still-visible map record open its actual inspector; centre on
-      its point only when selection is unavailable.
+  its point only when selection is unavailable.
 - [x] Preserve a valid question, one country and time range in a reviewable
-      Research draft, and open a reviewable Subscription draft from chat.
+  Research draft, and open a reviewable Subscription draft from chat.
 - [x] Preserve in-flight work on minimise and offer explicit private saved-chat
-      snapshots with resume and delete, separate from verified report evidence.
+  snapshots with resume and delete, separate from verified report evidence.
 - [ ] Search GNSS and Cloudflare Radar aggregate products, saved reports and
-      fresh provider/web results with matching access and provenance controls.
+  fresh provider/web results with matching access and provenance controls.
 - [ ] Add claim-level semantic evidence checks and an evaluation set of
-      contradictory, correlated and misleading reports; numeric grounding alone
-      does not establish correctness.
+  contradictory, correlated and misleading reports; numeric grounding alone
+  does not establish correctness.
 - [ ] Carry an exact drawn area, chosen evidence and unresolved questions into a
-      full Research draft; a map viewport and text-only draft are not equivalent.
+  full Research draft; a map viewport and text-only draft are not equivalent.
 - [ ] Add multi-record temporary map result overlays and richer page-specific
-      context for Economy, Cyber and saved reports.
+  context for Economy, Cyber and saved reports.
 - [ ] Complete live provider/model, migration, browser and visual acceptance
-      against the running app before production release.
+  against the running app before production release.
 
 The public methodology references are guidance for phrasing and uncertainty,
 not an official UK or NATO certification. See [Ask Eye](EYE_ASSISTANT.md) for
@@ -1264,33 +1267,33 @@ the source and conversation boundaries.
 ## 15 September 2026: teams, profiles and AI usage
 
 - [x] Create an isolated `codex/teams-profiles-ai-usage` branch/worktree so this
-      implementation does not touch concurrent work in `main`.
+  implementation does not touch concurrent work in `main`.
 - [x] Make team authority membership-based, allow any active account to create a
-      team, assign the creator as Manager atomically, protect Administrators and keep
-      the final active Manager invariant.
+  team, assign the creator as Manager atomically, protect Administrators and keep
+  the final active Manager invariant.
 - [x] Add team descriptions, explicit leave, archive/recovery behaviour and
-      capability-driven Team dashboard tabs.
+  capability-driven Team dashboard tabs.
 - [x] Add opt-in directory profiles with bounded fields, unique handles, privacy-safe
-      search and an Account settings editor.
+  search and an Account settings editor.
 - [x] Add a durable AI allowance ledger with atomic reservations, settlement,
-      calendar periods, administrator policy controls, audit events and Ask Eye
-      integration, plus a personal usage view.
+  calendar periods, administrator policy controls, audit events and Ask Eye
+  integration, plus a personal usage view.
 - [x] Add an administrator effective-policy preview for personal and team
-      destinations before changing assignments.
+  destinations before changing assignments.
 - [x] Add a bounded team message board with replies, pins, revision checks and
-      moderation tombstones.
+  moderation tombstones.
 - [x] Add directory-backed invitations, acceptance/decline, withdrawal, expiry,
-      pending caps and duplicate protection, alongside the bounded direct-add path.
+  pending caps and duplicate protection, alongside the bounded direct-add path.
 - [x] Retire legacy global Manager account values through migration 0040 while
-      preserving explicit team-manager memberships and expiring old sessions.
+  preserving explicit team-manager memberships and expiring old sessions.
 - [x] Enforce bounded team creation and roster sizes, and add database uniqueness
-      for active AI allowance targets through migration 0041.
+  for active AI allowance targets through migration 0041.
 - [x] Apply the allowance ledger to Ask Eye, synchronous and queued report
-      generation, native web search, automatic claim proposals and photo geolocation.
+  generation, native web search, automatic claim proposals and photo geolocation.
 - [x] Add subscription/system model accounting, effective-policy previews and
-      bounded reconciliation, as recorded in the detailed successor plan.
+  bounded reconciliation, as recorded in the detailed successor plan.
 - [ ] Complete administrator review of unknown calls and the remaining teams
-      browser acceptance matrix.
+  browser acceptance matrix.
 
 The detailed status and evidence log is in
 [TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](archive/TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).
@@ -1298,43 +1301,43 @@ The detailed status and evidence log is in
 ## 17 September 2026: AI connection setup repair
 
 - [x] Reproduce the duplicate-name failure on both creating and renaming a
-      connection. Return a recoverable field error while preserving the saved
-      profiles, test receipts and active bindings.
+  connection. Return a recoverable field error while preserving the saved
+  profiles, test receipts and active bindings.
 - [x] Separate setup into provider, model test and audience confirmation, with
-      account model discovery and an exact model ID fallback.
+  account model discovery and an exact model ID fallback.
 - [x] Retain entered credentials after a failed save, distinguish saving from
-      provider testing, and avoid reusing a model's reasoning setting by accident.
+  provider testing, and avoid reusing a model's reasoning setting by accident.
 - [x] Pass 70 distinct backend and 49 frontend regression tests, production build,
-      type checks, focused lint, formatting and Bandit. Independent review found no
-      blocking issues; its focus and exception-coverage findings were addressed.
+  type checks, focused lint, formatting and Bandit. Independent review found no
+  blocking issues; its focus and exception-coverage findings were addressed.
 - [x] Verify account model discovery and a real `gpt-5.6-sol` Max compatibility
-      request against the configured OpenAI account, without changing assignments.
+  request against the configured OpenAI account, without changing assignments.
 - [x] Complete authenticated desktop and narrow-screen visual acceptance of the
-      revised popup, model cards and assignment matrix on the local admin page.
+  revised popup, model cards and assignment matrix on the local admin page.
 
 No schema migration or change to the current global connection is required.
 
 ## 17 September 2026: multi-model administration workspace
 
 - [x] Replace the inline setup form with a six-step modal: name, credentials,
-      automatic account model discovery, reasoning, connection test and audience.
+  automatic account model discovery, reasoning, connection test and audience.
 - [x] Show up to five text-model connections as horizontal cards, including
-      recoverable drafts. Keep embedding-only connections separate.
+  recoverable drafts. Keep embedding-only connections separate.
 - [x] Add searchable team/user assignments and daily allowance presets beneath
-      the cards, driven by the same authoritative server response.
+  the cards, driven by the same authoritative server response.
 - [x] Apply model and allowance changes atomically with current administrator,
-      target, tested-configuration and optimistic-revision checks.
+  target, tested-configuration and optimistic-revision checks.
 - [x] Provide Light (50 calls/100,000 tokens), Standard (250/500,000), Intensive
-      (1,000/2,000,000) and Power (2,500/5,000,000) daily UTC presets, plus inheritance
-      and blocking. Preserve weekly/monthly policies and require temporary overrides
-      to be resolved before changing the underlying daily preset.
+  (1,000/2,000,000) and Power (2,500/5,000,000) daily UTC presets, plus inheritance
+  and blocking. Preserve weekly/monthly policies and require temporary overrides
+  to be resolved before changing the underlying daily preset.
 - [x] Bound audience batches to 100 targets and enforce the five-profile cap
-      server-side, including concurrent creation and embedding-role conversion.
+  server-side, including concurrent creation and embedding-role conversion.
 - [x] Pass 152 focused backend tests and the full frontend suite (2,780 passed,
-      one existing test skipped), all four frontend coverage gates, production build,
-      type/lint checks, Bandit and the staged secret scan. Prepare the revised draft PR.
+  one existing test skipped), all four frontend coverage gates, production build,
+  type/lint checks, Bandit and the staged secret scan. Prepare the revised draft PR.
 - [x] Close the queued-report embedding-accounting gap, with zero-allowance,
-      exact-counting and personal/team/subscription-owner regression coverage.
+  exact-counting and personal/team/subscription-owner regression coverage.
 
 Existing global and individual assignments are preserved. A legacy installation
 with five enabled partial-role profiles and no explicit global binding needs a
@@ -1344,43 +1347,43 @@ the current local configuration. No cap bypass or destructive migration is used.
 ## 19 September 2026: repository security scan remediation
 
 - [x] Remove attacker-triggered account lockout while retaining login and MFA
-      challenge rate limits.
+  challenge rate limits.
 - [x] Recheck sessions, membership and exact report versions after JSON report
-      projection, and prevent automatic mutation replay after refresh.
+  projection, and prevent automatic mutation replay after refresh.
 - [x] Isolate production import parsers in a networkless, read-only service with
-      aggregate memory, process and temporary-storage limits.
+  aggregate memory, process and temporary-storage limits.
 - [x] Authenticate PostgreSQL backup manifests with an independently held HMAC key.
 - [x] Bound actual archive expansion, remote image decoding and outbound response
-      bodies; constrain Wayback redirects and redact OS Maps keys from HTTP logs.
+  bodies; constrain Wayback redirects and redact OS Maps keys from HTTP logs.
 - [x] Add OS Maps admission limits, finite default AI policies and conservative
-      full-request token reservations.
+  full-request token reservations.
 - [x] Add owner-fair report job selection and keyed admission for event queries,
-      report rendering and camera waits.
+  report rendering and camera waits.
 - [x] Run Caddy as uid 10001 with a read-only root filesystem, and reduce the API
-      build context to an allowlist that excludes local secrets.
+  build context to an allowlist that excludes local secrets.
 - [x] Enforce one running report job per owner atomically and authenticate the exact
-      manifest bytes used by PostgreSQL restore.
+  manifest bytes used by PostgreSQL restore.
 - [ ] Apply the documented one-time Caddy volume ownership migration on any
-      existing deployment before starting the hardened web container.
+  existing deployment before starting the hardened web container.
 
 ## 19 September 2026: automatic VPS releases
 
 - [x] Add a separate deployment workflow after successful main-push CI, with
-      exact revision checks, production environment restriction and serial cutover.
+  exact revision checks, production environment restriction and serial cutover.
 - [x] Add a restricted SSH controller, verified backup, image retention, health
-      checks and application rollback; gate schema and Compose changes manually.
+  checks and application rollback; gate schema and Compose changes manually.
 - [x] Document setup, retry, recovery, retained storage and deployment limitations.
 - [x] Exercise the GitHub trigger and automatic restoration after a failed VPS
-      cutover; correct build-checkout permissions and add isolated runtime probes.
-      Subsequent release outcomes are recorded in GitHub's production environment.
+  cutover; correct build-checkout permissions and add isolated runtime probes.
+  Subsequent release outcomes are recorded in GitHub's production environment.
 
 ## 20 September 2026: SOLID review and proposed remediation
 
 - [x] Review backend, frontend and composition boundaries at `6f4d2757`, with
-      architecture/type checks, a focused 41-test baseline and an offline model
-      adapter contract comparison. Record a qualitative overall rating of 7/10.
+  architecture/type checks, a focused 41-test baseline and an offline model
+  adapter contract comparison. Record a qualitative overall rating of 7/10.
 - [x] Document evidence, priorities and acceptance criteria in
-      [the SOLID review](archive/SOLID_REVIEW.md). This is an assessment, not completed fixes.
+  [the SOLID review](archive/SOLID_REVIEW.md). This is an assessment, not completed fixes.
 - [x] Normalise explicit model-token exhaustion and add cross-adapter contracts.
 - [x] Make partial-startup and cleanup failure handling reliable, including digest drain.
 - [x] Repair and enforce frontend feature boundaries.
@@ -1397,19 +1400,19 @@ No migration or production deployment is included.
 ## 20 September 2026: application audit remediation
 
 - [x] Reproduce and document ten functional findings in
-      [the application audit](archive/APP_AUDIT_2026-09-20.md).
+  [the application audit](archive/APP_AUDIT_2026-09-20.md).
 - [x] Fence team-board mutations against concurrent revocation and preserve
-      archived read tracking, authorship, moderation reasons and revision checks.
+  archived read tracking, authorship, moderation reasons and revision checks.
 - [x] Preserve unresolved brief-run identity across network retries and replay
-      admitted relative windows server-side without duplicate jobs.
+  admitted relative windows server-side without duplicate jobs.
 - [x] Repair subscription pause/retry transitions and prevent inactive retry waits
-      from starving the bounded due queue.
+  from starving the bounded due queue.
 - [x] Preserve regional follow-up scope, regenerated brief requirements/provenance
-      and recurring brief comparison/repetition context.
+  and recurring brief comparison/repetition context.
 - [x] Add brief-library pagination and repair supplemental news selection and
-      effective conflict-region controls.
+  effective conflict-region controls.
 - [x] Require an active team Manager on reactivation with an atomic administrator
-      recovery path and matching UI.
+  recovery path and matching UI.
 - [x] Add behavioural regressions and independent boundary/regression review.
 - [ ] Configure a production AI connection and evaluate real-model workflows.
 - [ ] Verify the repaired workflows after an authorised production release.
@@ -1433,30 +1436,30 @@ model quality and provider account permissions remain installation-specific.
 ## 20 September 2026: map workspace implementation
 
 - [x] Add grouped tool discovery, four pinned favourites, resizable/collapsible
-      inspectors, mobile sheets and an object/result list.
+  inspectors, mobile sheets and an object/result list.
 - [x] Add saved personal/team drawing collections, editable geometry, bounded
-      undo/redo, validated GeoJSON and revision conflict checks.
+  undo/redo, validated GeoJSON and revision conflict checks.
 - [x] Retain research drafts across tool changes, preview loaded evidence and
-      preserve exact supported boundaries in reusable areas and monitoring.
+  preserve exact supported boundaries in reusable areas and monitoring.
 - [x] Add named radio sites, saved study snapshots, comparisons, linked profile
-      inspection and idealised directional link assumptions.
+  inspection and idealised directional link assumptions.
 - [x] Add bounded terrain profiles, sampled visibility, coordinate conversion
-      and reviewed corridor generation.
+  and reviewed corridor generation.
 - [x] Document the external educational nuclear-effects reference without
-      sending workspace locations or questions to it.
+  sending workspace locations or questions to it.
 - [x] Add focused regressions for authority changes, stale responses, drawing
-      edits, imports, boundaries, document conflicts and pagination.
+  edits, imports, boundaries, document conflicts and pagination.
 - [x] Update the [map workspace guide](MAP_WORKSPACE.md) and
-      [implementation checklist](archive/MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
+  [implementation checklist](archive/MAP_WORKSPACE_IMPLEMENTATION_PLAN.md).
 - [x] Complete independent integration review and local desktop/mobile browser
-      verification, including input ownership and authority-boundary corrections.
+  verification, including input ownership and authority-boundary corrections.
 - [x] Pass 81 combined new backend regressions, backend lint/format/type/import
-      checks, frontend type checks/build/lint and repository source-length checks.
+  checks, frontend type checks/build/lint and repository source-length checks.
 - [x] Complete the final full frontend coverage run, repeated static checks and CI:
-      3,109 frontend tests pass at 90.53% branch coverage; SQLite and PostgreSQL
-      backend coverage is 94%. All 31 checks pass for implementation commit `7b0a90f3`.
+  3,109 frontend tests pass at 90.53% branch coverage; SQLite and PostgreSQL
+  backend coverage is 94%. All 31 checks pass for implementation commit `7b0a90f3`.
 - [ ] Review and apply the new workspace/geometry database migrations during
-      an authorised release, then verify the deployed workflows.
+  an authorised release, then verify the deployed workflows.
 
 ITM and higher-resolution terrain are evaluated follow-ups, not implemented
 propagation upgrades. The app retains its existing model boundaries and bounded
@@ -1472,22 +1475,22 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Add a shared plain-English result, suggested next step and model limits.
 - [x] Keep detailed figures and an explanation of terms available on demand.
 - [x] Distinguish weak signal, insufficient spare signal strength, obstructed
-      paths and missing data without changing propagation calculations.
+  paths and missing data without changing propagation calculations.
 - [x] Preserve receiver-specific HF checks and sampled area limits; describe
-      skywave as illustrative travel distances only.
+  skywave as illustrative travel distances only.
 - [x] Verify desktop/mobile layouts and keyboard disclosures, and complete an
-      independent accuracy, accessibility and security review.
+  independent accuracy, accessibility and security review.
 - [x] Complete full coverage measurement and targeted follow-up checks before
-      push: 95.22% statements, 90.55% branches, 93.21% functions, 96.53% lines.
-      The full run passed 3,144 tests with one outdated disclosure-visibility
-      assertion, corrected and verified afterwards. A concurrent rerun hit four
-      unrelated timeouts; all four and the RF regressions passed in an isolated
-      86-test run. Final-commit CI remains the full-suite release check.
+  push: 95.22% statements, 90.55% branches, 93.21% functions, 96.53% lines.
+  The full run passed 3,144 tests with one outdated disclosure-visibility
+  assertion, corrected and verified afterwards. A concurrent rerun hit four
+  unrelated timeouts; all four and the RF regressions passed in an isolated
+  86-test run. Final-commit CI remains the full-suite release check.
 
 ### Open pull request integration, 20 September 2026
 
 - [x] Review feature, dependency and CI PRs together; preserve application fixes
-      already delivered through PR #28 when reconciling duplicate feature PRs.
+  already delivered through PR #28 when reconciling duplicate feature PRs.
 - [x] Pair React with React DOM, align router Node requirements and use Node 24 LTS.
 - [x] Repair and build the Caddy dependency graph with the pinned Go toolchain.
 - [x] Preserve isolated Semgrep publication while updating pinned CI actions.
@@ -1497,17 +1500,17 @@ release follow-ups are recorded in the implementation checklist.
 ### Live-site audit repairs, 20 September 2026
 
 - [x] Correct public-figure fallback transparency and selected-marker ordering;
-      provide a keyboard-accessible choice at shared locations.
+  provide a keyboard-accessible choice at shared locations.
 - [x] Serialise context-panel reads with cancellation and partial-result handling.
 - [x] Reject older vessel positions across collection batches without extending retention.
 - [x] Distinguish ordinary sampling limits from failed upstream refreshes in source health.
 - [x] Refresh authoritative source-family settings after activation changes.
 - [x] Require a global default before targeted first-model assignments.
 - [x] Add failing regression cases, verify focused suites and complete independent
-      code-quality and defensive reviews.
+  code-quality and defensive reviews.
 - [x] Integrate the model-removal and satellite-supplement fixes into one repair
-      branch. Combined suites passed 130 backend and 252 frontend tests; type checks,
-      lint, formatting, build, import contracts and scoped Bandit checks passed.
+  branch. Combined suites passed 130 backend and 252 frontend tests; type checks,
+  lint, formatting, build, import contracts and scoped Bandit checks passed.
 - [ ] Complete full CI and coverage gates for the combined repair pull request.
 - [ ] Merge and verify an authorised production release.
 
@@ -1519,8 +1522,8 @@ release follow-ups are recorded in the implementation checklist.
 - [x] Preserve active-assignment, administrator and session protections.
 - [x] Document removal of tested and untested unused connections.
 - [x] Complete SQLite and PostgreSQL concurrency regressions and final review:
-      final removal suites passed 10 SQLite and 11 PostgreSQL tests; all 12 frontend
-      removal/recovery tests passed. Ruff, mypy and import contracts passed.
+  final removal suites passed 10 SQLite and 11 PostgreSQL tests; all 12 frontend
+  removal/recovery tests passed. Ruff, mypy and import contracts passed.
 - [ ] Release the fix through reviewed CI and verify removal in the deployed app.
 
 ### Satellite catalogue loading, 20 September 2026
@@ -1540,18 +1543,18 @@ requests and internal provider calls do not consume research runs. Existing
 provider-call and token limits continue to apply separately.
 
 - [x] Trace durable, synchronous and scheduled admission paths and agree the
-      subscription counting rule with the operator.
+  subscription counting rule with the operator.
 - [x] Add persisted tier assignments and daily/weekly counters with migration 0065.
 - [x] Enforce admission atomically, preserve counts across tier changes and
-      deletion, and avoid charging existing-job retries or resumes twice.
+  deletion, and avoid charging existing-job retries or resumes twice.
 - [x] Add administrator tier assignment and user-visible usage/reset information.
 - [x] Give exhausted subscriptions a clear reason and recheck after allowance reset
-      or a tier increase, preserving the same pending manual request.
+  or a tier increase, preserving the same pending manual request.
 - [x] Verify permissions, concurrent admission, idempotency, reset boundaries,
-      scheduled attribution and ordinary-request exclusions.
+  scheduled attribution and ordinary-request exclusions.
 - [x] Update reader documentation and complete independent quality/security review.
 - [x] Pass the relevant local checks and full CI before release review.
-      PR 59 is merged and release `3f0137aa` is deployed with migration 0065 verified.
+  PR 59 is merged and release `3f0137aa` is deployed with migration 0065 verified.
 
 Defaults: unassigned and newly created accounts use Level 1. Administrators may
 change their own research tier without changing their role or account status.
@@ -1569,7 +1572,7 @@ Both usage counters continue to advance, preserving usage on a later downgrade.
 - [x] Implement strict administration, admission/recovery and migration 0066.
 - [x] Show unlimited research without remaining/reset messages in the UI.
 - [x] Add regressions for finite limits, unlimited admission, downgrades, provider
-      budgets, permissions, subscription recovery and SQLite/PostgreSQL migrations.
+  budgets, permissions, subscription recovery and SQLite/PostgreSQL migrations.
 - [x] Pass focused local tests and independent quality/security review.
 
 Release gate: merge after full CI, then verify a backup, migration and live
@@ -1582,7 +1585,7 @@ completion. Recovery must preserve any Level 5 assignments and usage counters.
 - [x] Preserve all 2,895 original native IDs and ordinary template eligibility.
 - [x] Verify fixture capability restoration and native child database cleanup.
 - [x] Pass focused tests, bounded serial/four-worker native correctness and
-      independent code-quality/security review.
+  independent code-quality/security review.
 - [x] Pass full CI on the published head and complete release verification.
 - [ ] Meet the 30 PostgreSQL runner-minute target across five before/after runs.
 
@@ -1597,13 +1600,13 @@ the 30-minute target and five before/after observations are unmet.
 - [x] Isolate current event/clock/filter/selection derivation from static controls.
 - [x] Preserve current callbacks and projection-aware engine navigation lifecycle.
 - [x] Preserve fairness, quotas and selection while reducing repeated priority,
-      satellite-count and scene-row work.
+  satellite-count and scene-row work.
 - [x] Pass independent combined quality/security review and broader validation:
-      4,547 tests pass, one skip, 92.24% branch coverage; unchanged coverage floors,
-      production build and bundle budgets pass.
+  4,547 tests pass, one skip, 92.24% branch coverage; unchanged coverage floors,
+  production build and bundle budgets pass.
 - [x] Pass rendering-milestone published-head CI and complete release verification.
 - [ ] Meet unchanged canonical median/maximum latency limits and complete
-      real-browser validation.
+  real-browser validation.
 
 Latest uninstrumented candidate medians remain above 20 ms. The broader run
 incidentally executed the canonical test under coverage despite its exclusion
@@ -1708,6 +1711,7 @@ owner receipt failed because the operator stop arrived after automatic deadline
 shutdown. All jobs, streams, owned handles and listeners closed cleanly. These
 receipts remain preserved; a staged operator driver must close that coordination
 gap before claiming browser acceptance.
+
 
 ### KAN-81 revised reference binding, 6 October 2026
 
