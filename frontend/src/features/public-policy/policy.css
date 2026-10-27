@@ -141,3 +141,13 @@
     padding-inline: 1rem;
   }
 }
+.policy-page .policy-pending {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--policy-draft-border);
+  background: var(--policy-draft-background);
+  color: var(--policy-draft-ink);
+}
+.policy-page .policy-meta {
+  color: var(--policy-muted);
+}

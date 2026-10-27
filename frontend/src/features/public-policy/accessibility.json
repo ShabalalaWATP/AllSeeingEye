@@ -1,0 +1,81 @@
+{
+  "lastReviewed": "2026-10-27",
+  "nextReview": "2027-04-27",
+  "sections": [
+    {
+      "id": "scope",
+      "title": "Using this service",
+      "paragraphs": [
+        "This statement applies to Alex Orr's current personal All Seeing Eye installation: its public pages, the sign-in and account request pages, and the signed-in research and administration workspaces. You should be able to:"
+      ],
+      "items": [
+        "use the skip link to reach the main content and Tab to move between links and controls",
+        "zoom the page and use narrow layouts, and use text lists and detail panels alongside the visual maps",
+        "pause the brand and product animation, which also follows your device's reduced-motion preference",
+        "see form validation errors next to the field, with the information you entered kept for correction",
+        "get a warning before an idle session ends, with a choice to stay signed in"
+      ]
+    },
+    {
+      "id": "standard",
+      "title": "Technical standard",
+      "paragraphs": [
+        "This service aims to meet the Web Content Accessibility Guidelines (WCAG) version 2.2 at level AA."
+      ]
+    },
+    {
+      "id": "status",
+      "title": "Compliance status",
+      "paragraphs": [
+        "This service is partially compliant with WCAG 2.2 level AA because of the limitations listed below. No complete accessibility audit has been carried out, so there may be other problems that are not listed here."
+      ]
+    },
+    {
+      "id": "limitations",
+      "title": "Known limitations and workarounds",
+      "paragraphs": ["These limitations were checked against the current application."],
+      "items": [
+        "3D globe and map: event markers drawn on the globe or map cannot be selected with a keyboard. Workaround: tab to the globe and use the Browse loaded events as a list link, which opens a searchable list of the same events with their detail panels. The zoom and reset view buttons are labelled controls.",
+        "Drawing on the map: free drawing needs a mouse, pen or touch, and corridor research needs a path that was drawn or measured first. Workaround: area selection, footprint search and collection areas accept typed west, south, east and north bounds or a choice of countries, measuring accepts typed coordinates, and GeoJSON files can be imported.",
+        "Hover-only map details: some Ukraine map layer details appear only as hover tooltips and cannot be reached with a keyboard.",
+        "Live camera media: camera streams have no captions or transcripts. Video starts only after you choose Play, starts muted and uses the browser's own controls. Whether a stream carries sound depends on the camera provider.",
+        "Third-party embeds: TradingView, YouTube and IPCamLive content loads only after you choose to load it, and the provider controls that content and its accessibility. The TradingView market chart has no text alternative. Workaround: where a provider link is shown beside the embed, open the content on the provider's own website.",
+        "Ops room view: the globe's slow rotation in the ops room has no separate pause control. Workaround: rotation stops when your device asks for reduced motion, or when Reduce graphics load is turned on in the map display settings.",
+        "Contrast over imagery, reflow at high zoom and screen reader behaviour have not been checked across the whole service."
+      ]
+    },
+    {
+      "id": "feedback",
+      "title": "Reporting accessibility problems",
+      "paragraphs": [
+        "When reporting an access barrier, include the page, the task you were trying to complete and the browser or assistive technology involved. Avoid including passwords or private research material.",
+        "The operator will acknowledge contactable feedback within five working days and respond within 14 calendar days. The response may offer an accessible alternative, describe a planned fix or explain why remediation needs more time."
+      ]
+    },
+    {
+      "id": "enforcement",
+      "title": "Enforcement and complaints",
+      "paragraphs": [
+        "Where this installation falls under Finland's Act on the Provision of Digital Services, you may refer an unresolved accessibility concern, or no reply within 14 days, to Traficom's Digital Accessibility Supervision Unit. Contact the operator first and explain the page, the barrier and the response received, if any.",
+        "This conditional escalation route does not claim that every service or feature falls within the Act. It does not restrict any other right or complaint route available under applicable law."
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "How this service was tested",
+      "paragraphs": [
+        "Automated axe-core checks run in the frontend test suite on representative pages through the application's routes, on the shared interface components and on these public policy pages. They run in a simulated browser that cannot check colour contrast, links within text or target size, so contrast is checked separately from the theme colours for every palette.",
+        "Browser tests cover selected journeys, including signing in and notifications, but do not run accessibility checks. Targeted manual keyboard checks of specific changes were recorded during development, for example pagination focus on 5 October 2026. No complete manual keyboard or screen reader pass of the whole service has been recorded.",
+        "A page-specific Chromium keyboard review of Terms, Acceptable Use and Accessibility was completed on 27 October 2026. The skip links, forward and reverse tab order, visible focus and the accessibility complaints link were checked, including the accessibility page at 375 px. This was not a whole-service keyboard or screen reader audit.",
+        "Passing automated checks does not establish conformance."
+      ]
+    },
+    {
+      "id": "preparation",
+      "title": "Preparation of this statement",
+      "paragraphs": [
+        "This statement was prepared from a review of the current code and tests. It is reviewed again with each major interface release."
+      ]
+    }
+  ]
+}

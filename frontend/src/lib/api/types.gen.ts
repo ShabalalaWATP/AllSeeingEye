@@ -764,6 +764,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/terms-acceptance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Terms */
+        post: operations["accept_terms_api_me_terms_acceptance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/notifications/feed": {
         parameters: {
             query?: never;
@@ -5103,6 +5120,10 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Terms Version */
+            terms_version: string | null;
+            /** Terms Accepted At */
+            terms_accepted_at: string | null;
         };
         /** AccountRequestsOut */
         AccountRequestsOut: {
@@ -13607,6 +13628,8 @@ export interface components {
             enterprise_enquiries_enabled: boolean;
             /** Enterprise Enquiry Retention Days */
             enterprise_enquiry_retention_days: number;
+            /** Terms Version */
+            terms_version: string;
         };
         /** PushDeviceOut */
         PushDeviceOut: {
@@ -15004,6 +15027,8 @@ export interface components {
             display_name: string;
             /** Reason */
             reason?: string | null;
+            /** Accept Terms */
+            accept_terms: boolean;
         };
         /**
          * RequestStatus
@@ -18265,6 +18290,22 @@ export interface components {
             /** Items */
             items: components["schemas"]["TemplateOut"][];
         };
+        /** TermsAcceptanceIn */
+        TermsAcceptanceIn: {
+            /** Version */
+            version: string;
+        };
+        /** TermsStatusOut */
+        TermsStatusOut: {
+            /** Current Version */
+            current_version: string;
+            /** Accepted Version */
+            accepted_version: string | null;
+            /** Accepted At */
+            accepted_at: string | null;
+            /** Acceptance Required */
+            acceptance_required: boolean;
+        };
         /** TerrainElevationsOut */
         TerrainElevationsOut: {
             /** Elevations M */
@@ -18697,6 +18738,7 @@ export interface components {
             created_at: string;
             /** Last Login At */
             last_login_at: string | null;
+            terms: components["schemas"]["TermsStatusOut"];
         };
         /** UserResearchAllowanceOut */
         UserResearchAllowanceOut: {
@@ -20921,6 +20963,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Default Response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    accept_terms_api_me_terms_acceptance_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsAcceptanceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsStatusOut"];
+                };
             };
             /** @description Unprocessable Content */
             422: {

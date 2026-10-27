@@ -45,6 +45,7 @@ class AuditAction(StrEnum):
     PASSWORD_RESET_REQUESTED = "password_reset_requested"
     PASSWORD_SET = "password_set"
     PASSWORD_CHANGED = "password_changed"
+    TERMS_ACCEPTED = "terms_accepted"
     PASSWORD_CHANGE_FAILED = "password_change_failed"
     USER_UPDATED = "user_updated"
     PRIVATE_DATA_REVIEWED = "private_data_reviewed"

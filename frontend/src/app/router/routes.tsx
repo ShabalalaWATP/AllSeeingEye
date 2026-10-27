@@ -90,6 +90,7 @@ const AttributionsPage = lazy(() => import('@/features/public-policy/Attribution
 const PersonalDataPage = lazy(() => import('@/features/public-policy/PersonalDataPage'));
 const AccessibilityPage = lazy(() => import('@/features/public-policy/AccessibilityPage'));
 const TermsPage = lazy(() => import('@/features/public-policy/TermsPage'));
+const AcceptableUsePage = lazy(() => import('@/features/public-policy/AcceptableUsePage'));
 const BusinessPage = lazy(() => import('@/features/public-policy/BusinessPage'));
 // Development previews render fixtures only. Each import lives inside the DEV branch,
 // so production builds fold the branch away and never emit the preview chunks.
@@ -143,6 +144,7 @@ const pages: RouteObject[] = [
     { path: '/privacy/requests', element: <PersonalDataPage /> },
     { path: '/accessibility', element: <AccessibilityPage /> },
     { path: '/terms', element: <TermsPage /> },
+    { path: '/acceptable-use', element: <AcceptableUsePage /> },
     { path: '/business', element: <BusinessPage /> },
   ].map((page) => ({
     ...page,

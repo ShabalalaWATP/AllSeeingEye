@@ -6,6 +6,7 @@ const PUBLIC_DOCUMENT_PATHS = new Set([
   '/attributions',
   '/accessibility',
   '/terms',
+  '/acceptable-use',
   '/business',
 ]);
 

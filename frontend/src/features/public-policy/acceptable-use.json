@@ -1,0 +1,46 @@
+{
+  "sections": [
+    {
+      "id": "purpose",
+      "title": "Why this policy exists",
+      "paragraphs": [
+        "This policy forms part of the Terms for Alex Orr's current personal All Seeing Eye installation. The main risk for an open-source intelligence tool is misuse against private individuals, so these rules apply to everything you do with the installation and its outputs."
+      ]
+    },
+    {
+      "id": "prohibited",
+      "title": "You must not",
+      "paragraphs": [
+        "Use the installation only for lawful, proportionate research. In particular, you must not:"
+      ],
+      "items": [
+        "target, profile, locate or monitor private individuals",
+        "stalk, harass, threaten or dox anyone",
+        "carry out unauthorised surveillance or credential theft",
+        "breach the Computer Misuse Act 1990 or other computer misuse law that applies to you, export controls or sanctions",
+        "circumvent a source's terms, access controls or rate limits, or redistribute licensed data beyond what its licence allows",
+        "use outputs as the sole basis for decisions affecting individuals' rights, or for discriminatory decisions",
+        "upload material you lack authority to use or send to the selected providers"
+      ]
+    },
+    {
+      "id": "reporting",
+      "title": "How to report misuse",
+      "paragraphs": [
+        "Anyone, including someone without an account, may report suspected misuse of the installation or its outputs to alexorr@yahoo.co.uk. Include a page URL or record reference, the concern and the outcome you are asking for. Do not send passwords, suspected illegal imagery or private research dossiers, and do not repost harmful material to make a report.",
+        "The operator will acknowledge contactable reports within five working days, triage credible immediate harm promptly, and provide an initial decision or meaningful update within 14 calendar days. Fixing or investigating the underlying issue may take longer; the update will explain the next steps.",
+        "The operator will keep a private case reference, the relevant facts, the action taken and the outcome. Information will be limited to what is needed for handling, review and any applicable retention or legal hold."
+      ]
+    },
+    {
+      "id": "consequences",
+      "title": "What happens to accounts that break this policy",
+      "paragraphs": [
+        "The operator may restrict access to investigate misuse or protect the service. An administrator can deactivate an account, which stops it signing in and ends its access to the installation, while personal-data requests continue to be handled through the published procedure.",
+        "Decisions will be proportionate to the evidence and risk. They may include no action, a supported restriction or removal of material, restoring access where supported, another practicable remedy, or deactivating an account. Removed content may not be recoverable. Where lawful and safe, the operator will explain the reasons to the reporter and affected account holder without disclosing another person's private information.",
+        "You may request a review through the same email address, quoting the case reference if you have one and explaining the concern or new evidence. The operator will reconsider the decision and correct mistakes. Independent review may be unavailable in this one-person operation; this process does not remove any right to contact a competent authority or court.",
+        "The operator may refer suspected unlawful use to an appropriate authority where required or permitted by law. Notice to an affected person may be delayed or withheld where giving it would be unlawful or create a safety or investigation risk."
+      ]
+    }
+  ]
+}

@@ -22,9 +22,10 @@ installation and bounded-research scope remain the stated scope.
 
 The approved scope covers privacy, storage, requests, source credits and the
 personal-installation service disclosures. It creates no commercial offer, company,
-software licence or contractual promise from a third party. KAN-164, KAN-188 and
-KAN-193 retain their separate licence, acceptance-workflow and full accessibility
-scope. Publication does not grant permission for all sources or research uses.
+software licence or contractual promise from a third party. KAN-164 retains its
+separate licence and business identity scope. KAN-188 (terms, acceptable use and
+acceptance) and KAN-193 (accessibility statement) are drafted but not approved; their
+open decisions are listed in [the publication guide](PUBLIC_POLICY_PUBLICATION.md). Publication does not grant permission for all sources or research uses.
 
 ## Verified installation facts
 
@@ -151,3 +152,43 @@ checked in the browser: version 2026-10-14, Finnish details and complaint links,
 no draft banner, and explicit unavailable retention when no API is served.
 Independent review found and resolved the old hard-coded ICO action, then reported
 no remaining blocker. No new coverage measurement or production change was made.
+
+## Delegated Terms and accessibility decisions, 27 October 2026
+
+Alex delegated the outstanding wording decisions to Codex on 27 October. The
+review branch adopts Finnish governing law without exclusive courts, preserves
+mandatory rights and adds no contractual liability cap. The 18+ account rule is a
+declaration, not independent age verification. Terms and AUP version `2026-10-27`
+matches the backend version and the accepted-wording regression hash.
+
+The AUP gives non-users a reporting route, private case references, proportionate
+decisions and reconsideration. Contactable reports receive acknowledgement within
+five working days and an initial decision or meaningful update within 14 calendar
+days. Accessibility feedback has the same acknowledgement target and a response
+within 14 calendar days. Traficom escalation is conditional on the Finnish Act
+applying. The statement retains its partial-compliance and audit limitations.
+
+Sources checked: [Finnish consumer contract guidance](https://www.kkv.fi/en/consumer-affairs/contracts/unfair-contract-terms/),
+[Traficom user rights](https://www.saavutettavuusvaatimukset.fi/en/rights-user-service)
+and [Traficom complaints](https://saavutettavuusvaatimukset.fi/en/submit-complaint-web-accessibility-or-request-clarification).
+These references do not establish this installation's legal scope or certify
+service-wide conformance. KAN-246 retains the operating and children-access review.
+
+`service.businessAddress` remains unconfirmed. The publication validators and
+approval manifest remain unchanged, so the revised draft cannot be published as
+approved. A real applicable address or an evidenced, reviewed personal-installation
+disclosure decision is still needed. The draft's UI consent gate is not an added
+API authorisation boundary. Final acceptance must resolve that scope explicitly.
+Protected controller installation, migration 0096, backup and recovery review,
+current CI and exact-content approval remain prerequisites to release.
+
+Local validation covers 10 backend acceptance cases, 30 policy/dialog UI cases,
+13 Node publication cases and 16 Python publication cases. Both TypeScript
+configurations, targeted lint/format checks and the review production build pass.
+Initial, globe and product bundles remain within the existing budgets. Chromium
+keyboard checks of the three pages verified skip/main focus, Tab and Shift+Tab,
+visible focus and the complaints link, including 375 px without sideways overflow.
+This is targeted page evidence, not a whole-service audit. Independent review
+tightened remedies for unrecoverable content and made appeal references optional,
+then found no further concrete issue or weakened gate in the delta. Published-head
+CI and operator rollout evidence remain tracked on KAN-188/193 and draft PR #215.

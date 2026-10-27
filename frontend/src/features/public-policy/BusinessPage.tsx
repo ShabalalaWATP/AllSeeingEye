@@ -30,7 +30,16 @@ export default function BusinessPage() {
         </dl>
       </PolicySection>
       <PolicySection id="business-disclosures" title="Registered address and business disclosures">
-        <p className="whitespace-pre-line">
+        <dl>
+          <div>
+            <dt>Geographic business address</dt>
+            <dd>
+              {serviceDetails.businessAddress ??
+                'Not yet confirmed by the operator. The address, or a decision that none is published, blocks publication.'}
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-4 whitespace-pre-line">
           {serviceDetails.businessDisclosure ??
             'The operator has not yet confirmed the applicable business identity, address and registration disclosures. This blocks publication.'}
         </p>

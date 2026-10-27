@@ -22,11 +22,16 @@ from helpers import (
 )
 
 NEW_EMAIL = "newcomer@example.com"
-REQUEST_BODY = {"email": NEW_EMAIL, "display_name": "New Comer", "reason": "Analyst"}
+REQUEST_BODY = {
+    "email": NEW_EMAIL,
+    "display_name": "New Comer",
+    "reason": "Analyst",
+    "accept_terms": True,
+}
 ACCEPTED_MESSAGE = "If the address is eligible, an administrator will review the request."
 
 
-async def request_account(client: AsyncClient, body: dict[str, str] | None = None) -> None:
+async def request_account(client: AsyncClient, body: dict[str, object] | None = None) -> None:
     response = await client.post("/api/auth/request-account", json=body or REQUEST_BODY)
     assert response.status_code == 202
     assert response.json() == {"message": ACCEPTED_MESSAGE}
@@ -75,7 +80,9 @@ async def test_full_activation_flow(client: AsyncClient, admin: User, clock: Fak
 async def test_duplicate_requests_get_the_same_answer(client: AsyncClient, admin: User) -> None:
     await request_account(client)
     await request_account(client)
-    await request_account(client, {"email": ADMIN_EMAIL, "display_name": "Impostor"})
+    await request_account(
+        client, {"email": ADMIN_EMAIL, "display_name": "Impostor", "accept_terms": True}
+    )
     token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     assert len(await pending_requests(client, token)) == 1
 
@@ -92,7 +99,7 @@ async def test_request_account_validation(client: AsyncClient) -> None:
         "/api/auth/request-account", json={"email": "bad", "display_name": ""}
     )
     assert response.status_code == 422
-    assert set(response.json()["error"]["fields"]) == {"email", "display_name"}
+    assert set(response.json()["error"]["fields"]) == {"email", "display_name", "accept_terms"}
 
 
 async def test_reject_and_decided_conflicts(client: AsyncClient, admin: User) -> None:

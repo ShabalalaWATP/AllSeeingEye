@@ -1,0 +1,68 @@
+{
+  "version": "2026-10-27",
+  "sections": [
+    {
+      "id": "service",
+      "title": "The service",
+      "paragraphs": [
+        "These terms apply to access to Alex Orr's current personal All Seeing Eye installation. It is a self-hosted research tool: public observations appear on a globe and map, and question-led research produces saved assessments with selected evidence, provenance and uncertainty.",
+        "Access requires the operator's permission. These access rules do not grant a software redistribution licence, a third-party data licence, paid support or an availability guarantee. Any future commercial service requires its own agreed terms."
+      ]
+    },
+    {
+      "id": "eligibility",
+      "title": "Who may use it",
+      "paragraphs": [
+        "You must be 18 or over, and you may use the installation only for professional or research purposes. By requesting an account and accepting these terms, you declare that you meet this rule. This declaration and account approval do not independently verify your age.",
+        "Use it only for lawful, proportionate research and respect other people's privacy, intellectual property and source-specific conditions. The Acceptable Use Policy forms part of these terms."
+      ]
+    },
+    {
+      "id": "accounts",
+      "title": "Your account",
+      "paragraphs": [
+        "Your account is for you alone. Keep your password and sign-in factors to yourself, and tell the operator promptly at alexorr@yahoo.co.uk if you think someone else has used your account.",
+        "Do not upload material you lack authority to use or send to the selected providers. Do not submit sensitive personal information without a separately assessed lawful condition and safeguards.",
+        "The operator may restrict access to investigate misuse or protect the service, while handling personal-data requests through the published procedure."
+      ]
+    },
+    {
+      "id": "ai-output",
+      "title": "AI output",
+      "paragraphs": [
+        "AI outputs and source labels are research aids and can be wrong; check the evidence before relying on or sharing them.",
+        "The installation must not be used to make solely automated decisions with legal or similarly significant effects on people."
+      ]
+    },
+    {
+      "id": "availability",
+      "title": "Availability",
+      "paragraphs": [
+        "No availability guarantee is given. Public sources and AI providers can be unavailable, change or withdraw data without notice, and the installation may be paused for maintenance or to protect the service."
+      ]
+    },
+    {
+      "id": "liability",
+      "title": "Liability",
+      "paragraphs": [
+        "Nothing here removes rights that cannot lawfully be excluded.",
+        "These terms do not impose a contractual liability cap. Any liability is determined under applicable law."
+      ]
+    },
+    {
+      "id": "governing-law",
+      "title": "Governing law",
+      "paragraphs": [
+        "These terms are governed by the law of Finland. This choice does not remove any mandatory rights or protections that apply to you. You may bring a claim before any court that has jurisdiction under applicable law; these terms do not require an exclusive court."
+      ]
+    },
+    {
+      "id": "changes",
+      "title": "How changes are notified",
+      "paragraphs": [
+        "When these terms or the Acceptable Use Policy change, the version date on this page changes. In the web interface, signed-in accounts are then asked to review and accept the new version on their next visit before continuing. Each acceptance is recorded with its version and time.",
+        "Report misuse or access concerns to alexorr@yahoo.co.uk."
+      ]
+    }
+  ]
+}

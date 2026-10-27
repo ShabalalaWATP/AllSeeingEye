@@ -28,3 +28,7 @@ release approval before merging and live verification separately afterwards. -->
 ## Documentation and remaining work
 
 <!-- Updated docs and any linked follow-up items or blockers. -->
+
+- [ ] Major interface change: the accessibility statement's limitations and review dates
+      (`frontend/src/features/public-policy/accessibility.json`) were reviewed, or a
+      follow-up item is linked.

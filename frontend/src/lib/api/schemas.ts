@@ -8,6 +8,8 @@ import { z } from 'zod';
 
 import { sessionActivitySchema } from '@/lib/sessionActivity';
 
+import { termsStatusSchema } from './terms';
+
 export const roleSchema = z.enum(['user', 'manager', 'admin']);
 export type Role = z.infer<typeof roleSchema>;
 
@@ -19,6 +21,8 @@ export const userSchema = z.object({
   is_active: z.boolean(),
   created_at: z.string(),
   last_login_at: z.string().nullable(),
+  // Optional so a response without it never blocks the shell; the server always sends it.
+  terms: termsStatusSchema.optional(),
 });
 export type User = z.infer<typeof userSchema>;
 

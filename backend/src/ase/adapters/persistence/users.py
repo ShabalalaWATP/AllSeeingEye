@@ -32,6 +32,8 @@ def _user_from_row(row: UserRow) -> User:
         created_at=row.created_at,
         last_login_at=row.last_login_at,
         security_version=row.security_version,
+        terms_version=row.terms_version,
+        terms_accepted_at=row.terms_accepted_at,
     )
 
 
@@ -47,6 +49,8 @@ def _apply_user(row: UserRow, user: User) -> None:
     row.created_at = user.created_at
     row.last_login_at = user.last_login_at
     row.security_version = user.security_version
+    row.terms_version = user.terms_version
+    row.terms_accepted_at = user.terms_accepted_at
 
 
 class SqlUserRepository:
@@ -143,6 +147,8 @@ def _request_from_row(row: AccountRequestRow) -> AccountRequest:
         decided_by=row.decided_by,
         decided_at=row.decided_at,
         created_at=row.created_at,
+        terms_version=row.terms_version,
+        terms_accepted_at=row.terms_accepted_at,
     )
 
 
@@ -154,6 +160,8 @@ def _apply_request(row: AccountRequestRow, request: AccountRequest) -> None:
     row.decided_by = request.decided_by
     row.decided_at = request.decided_at
     row.created_at = request.created_at
+    row.terms_version = request.terms_version
+    row.terms_accepted_at = request.terms_accepted_at
 
 
 class SqlAccountRequestRepository:

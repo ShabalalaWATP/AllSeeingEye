@@ -25,13 +25,27 @@ REQUIRED_OPERATOR = (
     "storageAssessment",
     "automatedDecisions",
 )
+# Structured public documents. Strings are published wording; {"pending": ...} marks
+# a decision the operator has not made and always blocks publication.
+DOCUMENT_DATES = {
+    "terms.json": ("version",),
+    "acceptable-use.json": (),
+    "accessibility.json": ("lastReviewed", "nextReview"),
+}
+SERVICE_FIELDS = ("businessDisclosure", "businessAddress", "accessibilityContact")
 REQUIRED_FILES = {
     "privacy.json",
     "service.json",
     "storage.json",
     "attributions.generated.json",
     "approval.json",
+    *DOCUMENT_DATES,
 }
+UNRESOLVED = re.compile(
+    r"\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation|"
+    r"not (?:yet )?(?:decided|confirmed|approved)|to be confirmed)\b",
+    re.IGNORECASE,
+)
 
 
 class PublicationError(RuntimeError):
@@ -51,6 +65,44 @@ def policy_hash(files: dict[str, str]) -> str:
             digest.update(content.replace("\r\n", "\n").strip().encode())
             digest.update(b"\0")
     return digest.hexdigest()
+
+
+def _iso_date(value: object) -> bool:
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return False
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _document_complete(
+    document: object, dated: tuple[str, ...], valid: Callable[[object], bool]
+) -> bool:
+    """Every section needs an id, title and wording; any pending decision blocks it."""
+    if not isinstance(document, dict) or not all(
+        _iso_date(document.get(key)) for key in dated
+    ):
+        return False
+    sections = document.get("sections")
+    if not isinstance(sections, list) or not sections:
+        return False
+    for section in sections:
+        if not isinstance(section, dict):
+            return False
+        paragraphs = section.get("paragraphs")
+        items = section.get("items", [])
+        if not (
+            valid(section.get("id"))
+            and valid(section.get("title"))
+            and isinstance(paragraphs, list)
+            and paragraphs
+            and isinstance(items, list)
+            and all(valid(value) for value in [*paragraphs, *items])
+        ):
+            return False
+    return True
 
 
 def validate_publication(files: dict[str, str]) -> None:
@@ -79,25 +131,22 @@ def validate_publication(files: dict[str, str]) -> None:
             return (
                 isinstance(value, str)
                 and len(value.strip()) >= 3
-                and not re.search(
-                    r"\b(TODO|TBC|TBD|placeholder|pending approval|awaiting confirmation|"
-                    r"not (?:yet )?(?:decided|confirmed|approved)|to be confirmed)\b",
-                    value,
-                    re.IGNORECASE,
-                )
+                and not UNRESOLVED.search(value)
             )
 
         if not all(valid(operator.get(key)) for key in REQUIRED_OPERATOR):
             raise PublicationError(
                 "Public policy publication blocked: operator details incomplete."
             )
-        if not all(
-            valid(service.get(key))
-            for key in ("terms", "businessDisclosure", "accessibilityContact")
-        ):
+        if not all(valid(service.get(key)) for key in SERVICE_FIELDS):
             raise PublicationError(
                 "Public policy publication blocked: service details incomplete."
             )
+        for name, dated in DOCUMENT_DATES.items():
+            if not _document_complete(content[name], dated, valid):
+                raise PublicationError(
+                    "Public policy publication blocked: public documents incomplete."
+                )
         if (
             not isinstance(purposes, list)
             or len(purposes) < 5
@@ -110,12 +159,8 @@ def validate_publication(files: dict[str, str]) -> None:
             raise PublicationError(
                 "Public policy publication blocked: approval missing."
             )
-        approved_on = approval["approvedOn"]
-        if not isinstance(approved_on, str) or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}", approved_on
-        ):
+        if not _iso_date(approval["approvedOn"]):
             raise ValueError("Invalid approval date")
-        date.fromisoformat(approved_on)
         if approval.get("contentSha256") != policy_hash(files):
             raise PublicationError(
                 "Public policy publication blocked: content changed or unapproved."

@@ -1898,3 +1898,15 @@ coverage and security gates remain enforced; no production rollout was performed
 The PR carries the required full CI, coverage and container scan gates before
 integration. Its container candidate also refreshes the pinned Go patch and the
 cached Alpine package layer identified by the inherited image audit failures.
+
+### KAN-188/193 policy review continuation, 27 October 2026
+
+- [x] Record Alex's delegated wording authority and retain truthful operator details.
+- [x] Resolve law, liability, reporting/review and accessibility response wording.
+- [x] Pair the Terms/AUP version bump with backend and accepted-wording guards.
+- [x] Complete focused local checks, page-specific keyboard and independent review evidence.
+- [ ] Resolve the address and UI-consent acceptance scope before final publication.
+- [ ] Approve exact final content and complete the protected controller/migration rollout.
+
+Draft PR #215 remains behind these release gates. See
+[the policy decision record](PUBLIC_POLICY_REVIEW.md) and live KAN-188/193 status.

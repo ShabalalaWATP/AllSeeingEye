@@ -5,6 +5,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useGlobeStore } from '@/stores/globe';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 import { PersonalAppearance } from '@/components/account/PersonalAppearance';
+import { TermsAcceptanceDialog } from '@/components/account/TermsAcceptanceDialog';
 import { StartHereCard } from '@/app/help/StartHereCard';
 
 import { useShellStore } from '@/stores/shell';
@@ -65,6 +66,7 @@ export function AppShell() {
         </Suspense>
       )}
       <EyeAssistant />
+      <TermsAcceptanceDialog />
     </div>
   );
 }

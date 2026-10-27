@@ -4,6 +4,7 @@ import { Outlet } from 'react-router';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 import { PersonalAppearance } from '@/components/account/PersonalAppearance';
+import { TermsAcceptanceDialog } from '@/components/account/TermsAcceptanceDialog';
 import { useShellStore } from '@/stores/shell';
 
 import { AdminHeader } from './AdminHeader';
@@ -52,6 +53,7 @@ export function AdminShell() {
         </Suspense>
       )}
       <EyeAssistant />
+      <TermsAcceptanceDialog />
     </div>
   );
 }

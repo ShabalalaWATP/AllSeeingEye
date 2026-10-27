@@ -6950,3 +6950,17 @@ before the protected deployment. No live release is claimed by this note.
 
 Sources: [curl advisory](https://curl.se/docs/CVE-2026-92392.html) and
 [Alpine package](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/curl).
+
+## 27 October 2026: KAN-188 delegated policy wording
+
+After Alex delegated the pending policy answers, the review branch adopts Finnish
+law without exclusive courts, no new liability cap, an honest adult declaration,
+and accessible reporting, reconsideration and conditional Traficom escalation.
+Terms/AUP version 2026-10-27 is paired with the backend constant and wording hash.
+Integration preserves both the new admin palette and the Terms dialog.
+
+The business address and exact-content publication approval remain unresolved.
+The existing validators, controller boundary and migration 0096 manual rollout
+remain enforced. This is preparation of draft PR #215, not a released policy or a
+whole-service accessibility audit. Decisions and remaining gates are recorded in
+[the policy review](PUBLIC_POLICY_REVIEW.md) and KAN-188/193.
