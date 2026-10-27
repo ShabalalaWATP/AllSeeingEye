@@ -82,6 +82,12 @@ it('refreshes only the maritime partition and leaves other event layers untouche
   renderApp('/', 'user');
   await screen.findByText('Natural hazards: 1 loaded');
   await waitFor(() => expect(layer('events-maritime')).toBeDefined());
+  // Capture the full snapshot before measuring a later partition-only refresh.
+  await waitFor(() => expect(useEventsStore.getState().loading).toBe(false));
+  // The map applies non-empty list updates in a React transition.
+  await waitFor(() =>
+    expect(layer('events-disaster')!.props.data[0]).toBe(useEventsStore.getState().byId.quake),
+  );
   const disaster = layer('events-disaster')!;
   const maritime = layer('events-maritime')!;
   requested.length = 0;

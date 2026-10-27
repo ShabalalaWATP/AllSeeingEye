@@ -26,11 +26,16 @@ export function isFirms(event: LiveEvent): boolean {
 /** Keep the newer copy when a vessel appears in both asynchronous snapshots. */
 export function mergeSnapshots(main: LiveEvent[], maritime: LiveEvent[]): Map<string, LiveEvent> {
   const merged = new Map(main.map((event) => [event.id, event]));
-  for (const event of maritime) {
+  mergeSnapshotRecords(merged, maritime);
+  return merged;
+}
+
+/** Add one completed supplement without rebuilding every earlier response. */
+export function mergeSnapshotRecords(merged: Map<string, LiveEvent>, events: readonly LiveEvent[]) {
+  for (const event of events) {
     const previous = merged.get(event.id);
     if (!previous || observationOrder(event, previous) >= 0) merged.set(event.id, event);
   }
-  return merged;
 }
 
 interface TimedEvent {

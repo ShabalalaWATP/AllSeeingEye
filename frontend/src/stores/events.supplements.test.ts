@@ -58,6 +58,56 @@ it('loads military and Skynet catalogues within the two-read server allowance', 
   expect(state.loading).toBe(false);
 });
 
+it('publishes each successful supplement before the next one finishes', async () => {
+  vi.spyOn(api, 'fetchStats').mockResolvedValue(crowded);
+  const ship = liveEvent({ id: 'ship', category: 'maritime', subtype: 'vessel_position' });
+  const plane = liveEvent({ id: 'plane', category: 'aviation', subtype: 'aircraft' });
+  let release!: (events: LiveEvent[]) => void;
+  const fetch = vi
+    .spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([liveEvent({ id: 'main' })])
+    .mockResolvedValueOnce([ship])
+    .mockImplementationOnce(() => new Promise<LiveEvent[]>((done) => (release = done)))
+    .mockResolvedValue([]);
+
+  const loading = useEventsStore.getState().load();
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+  expect(useEventsStore.getState()).toMatchObject({
+    loaded: true,
+    loading: true,
+    snapshotCount: 2,
+  });
+  expect(useEventsStore.getState().byId.main).toBeDefined();
+  expect(useEventsStore.getState().byId.ship).toBe(ship);
+  expect(useEventsStore.getState().byId.plane).toBeUndefined();
+
+  release([plane]);
+  await loading;
+  expect(useEventsStore.getState()).toMatchObject({
+    loaded: true,
+    loading: false,
+    snapshotCount: 3,
+  });
+  expect(useEventsStore.getState().byId.plane).toBe(plane);
+  expect(fetch).toHaveBeenCalledTimes(8);
+});
+
+it('retains primary and completed supplements when a later supplement fails', async () => {
+  vi.spyOn(api, 'fetchStats').mockResolvedValue(crowded);
+  const ship = liveEvent({ id: 'ship', category: 'maritime', subtype: 'vessel_position' });
+  vi.spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([liveEvent({ id: 'main' })])
+    .mockResolvedValueOnce([ship])
+    .mockRejectedValueOnce(new Error('offline'))
+    .mockResolvedValue([]);
+
+  await useEventsStore.getState().load();
+  expect(useEventsStore.getState().byId.main).toBeDefined();
+  expect(useEventsStore.getState().byId.ship).toBe(ship);
+  expect(useEventsStore.getState().error).toContain('aviation coverage unavailable');
+  expect(useEventsStore.getState().loading).toBe(false);
+});
+
 it('waits for each supplement, preserving scope, successes and per-request failures', async () => {
   let release!: (events: LiveEvent[]) => void;
   const first = new Promise<LiveEvent[]>((resolve) => {
@@ -91,9 +141,13 @@ it('does not start queued supplements or publish late results after logout', asy
   const delayed = new Promise<LiveEvent[]>((resolve) => {
     release = resolve;
   });
-  const fetch = vi.spyOn(api, 'fetchEvents').mockResolvedValueOnce([]).mockReturnValue(delayed);
+  const fetch = vi
+    .spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([liveEvent({ id: 'primary' })])
+    .mockReturnValue(delayed);
   const loading = useEventsStore.getState().load();
   await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  expect(useEventsStore.getState().byId.primary).toBeDefined();
   useEventsStore.getState().reset();
   release(satellites);
   await loading;
