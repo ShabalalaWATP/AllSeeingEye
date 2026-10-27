@@ -67,6 +67,20 @@ describe('scroll scheduler', () => {
     expect(subscriberCount()).toBe(0);
   });
 
+  it('shares one passive scroll and resize listener between every subscriber', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    const add = vi.spyOn(window, 'addEventListener');
+    const stops = [1, 2, 3].map(() =>
+      subscribeScroll({ measure: () => 1, apply: () => undefined }),
+    );
+    const added = (type: string) => add.mock.calls.filter(([name]) => name === type);
+    expect(added('scroll')).toEqual([['scroll', expect.any(Function), { passive: true }]]);
+    expect(added('resize')).toEqual([['resize', expect.any(Function), { passive: true }]]);
+    stops.forEach((stop) => stop());
+    expect(subscriberCount()).toBe(0);
+  });
+
   it('removes its listeners when the last subscriber leaves', () => {
     vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
     const cancel = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);

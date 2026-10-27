@@ -14,6 +14,7 @@ export function ProductBrandMark({ size = 26 }: { size?: number }) {
       <EvilEye
         deferUntilVisible
         workerRendering
+        saveDataFallback
         transparent
         scale={0.6}
         pupilFollow={0}

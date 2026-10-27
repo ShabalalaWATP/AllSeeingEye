@@ -10,17 +10,24 @@ import {
   type EnquiryDraft,
   type EnquiryErrors,
 } from './enquiryFields';
+import { mergePrefill, PREFILL_NOTICES, type PrefillOutcome } from './enquiryPrefill';
 
 export const ENQUIRY_CONFIRMATION = 'Thank you. Your enquiry has been received.';
 
+export interface EnquiryOptions {
+  /** Called once the enquiry has been received, for the closing scene. */
+  onSuccess?: (() => void) | undefined;
+}
+
 /** Drafts exist only in this mounted form; no account, storage or analytics calls. */
-export function useEnterpriseEnquiry() {
+export function useEnterpriseEnquiry({ onSuccess }: EnquiryOptions = {}) {
   const [draft, setDraft] = useState<EnquiryDraft>({ ...EMPTY_ENQUIRY });
   const [errors, setErrors] = useState<EnquiryErrors>({});
   const [phase, setPhase] = useState<'editing' | 'submitting' | 'success' | 'unavailable'>(
     'editing',
   );
   const [feedback, setFeedback] = useState<{ message: string } | null>(null);
+  const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
   const request = useRef<AbortController | null>(null);
 
@@ -35,6 +42,21 @@ export function useEnterpriseEnquiry() {
       const { [field]: _previousError, ...remaining } = previous;
       return remaining;
     });
+  }
+
+  /**
+   * Adds a cost estimate to the message without replacing anything already typed.
+   * While the enquiry is being sent the message stays as it is, and the notice says so.
+   */
+  function prefillMessage(text: string): PrefillOutcome {
+    if (phase === 'submitting') {
+      setPrefillNotice(PREFILL_NOTICES.busy);
+      return 'busy';
+    }
+    const merged = mergePrefill(draft.message, text);
+    if (merged.message !== draft.message) update('message', merged.message);
+    setPrefillNotice(PREFILL_NOTICES[merged.outcome]);
+    return merged.outcome;
   }
 
   async function submit(): Promise<void> {
@@ -54,7 +76,9 @@ export function useEnterpriseEnquiry() {
       if (controller.signal.aborted) return;
       setDraft({ ...EMPTY_ENQUIRY });
       setPhase('success');
+      setPrefillNotice(null);
       setFeedback({ message: ENQUIRY_CONFIRMATION });
+      onSuccess?.();
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
       setPhase('editing');
@@ -80,5 +104,15 @@ export function useEnterpriseEnquiry() {
     }
   }
 
-  return { draft, errors, phase, feedback, feedbackRef, update, submit };
+  return {
+    draft,
+    errors,
+    phase,
+    feedback,
+    feedbackRef,
+    prefillNotice,
+    update,
+    submit,
+    prefillMessage,
+  };
 }

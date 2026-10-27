@@ -7,9 +7,28 @@ import { mockMatchMedia } from '@/test/env';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { resetSiteFacts } from '@/lib/useSiteFacts';
+import { MOTION_STORAGE_KEY } from '@/components/brand/localMotionPause';
 
 import { EXAMPLE_QUESTION } from './content/research';
-import { STORY_LAYERS } from './content/observe';
+import { MAP_TOOLS, STORY_LAYERS } from './content/observe';
+
+/** A mouse or trackpad: hover-capable and fine, with no reduced-motion request. */
+function finePointer() {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: query === '(hover: hover) and (pointer: fine)',
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }),
+  });
+}
 
 function siteFacts(enabled: boolean) {
   server.use(http.get('/api/site', () => HttpResponse.json({ product_page_enabled: enabled })));
@@ -27,14 +46,14 @@ describe('public product page', () => {
     for (const name of [
       'One picture of a noisy world.',
       'Cut the picture down to what matters.',
-      'Hundreds of sources. Every one named.',
+      'Hundreds of sources, organised by topic.',
       'Start with a question, not a search box.',
       'Evidence with a receipt, and gaps you can see.',
       'Judgements you can trace, challenge and defend.',
       'An assessment is the start of the work, not the end.',
       'Specialist workspaces for specialist questions.',
       'Your server. Your model. Your rules.',
-      'One server. One command. Your data stays put.',
+      'One server you run. Your database stays on it.',
       'Bring The All Seeing Eye inside your organisation.',
     ]) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument();
@@ -45,6 +64,23 @@ describe('public product page', () => {
     for (const layer of STORY_LAYERS)
       expect(within(layers).getByText(layer.label)).toBeInTheDocument();
     expect(document.querySelector('.hero-eye [data-testid="evil-eye"]')).not.toBeNull();
+    const tools = screen.getByRole('region', { name: 'Filters and map tools' });
+    expect(tools).toHaveAttribute('id', 'tools');
+    for (const tool of MAP_TOOLS)
+      expect(
+        within(tools).getByRole('heading', { level: 3, name: tool.label }),
+      ).toBeInTheDocument();
+    const hero = screen.getByRole('region', { name: 'The All Seeing Eye' });
+    expect(within(hero).getByRole('link', { name: 'Talk to us' })).toHaveAttribute(
+      'href',
+      '/enterprise#contact',
+    );
+    expect(within(hero).getByRole('link', { name: 'See how it works' })).toHaveAttribute(
+      'href',
+      '#observe',
+    );
+    expect(document.getElementById('contact')).not.toBeNull();
+    expect(document.getElementById('observe')).not.toBeNull();
     const contact = screen.getByRole('region', { name: 'Talk to us' });
     expect(within(contact).getByRole('link', { name: 'Request access' })).toHaveAttribute(
       'href',
@@ -82,8 +118,34 @@ describe('public product page', () => {
     expect(document.querySelectorAll('[data-mode="pinned"]')).toHaveLength(0);
     expect(document.querySelectorAll('.story-reveal[data-shown="false"]')).toHaveLength(0);
     expect(screen.getAllByText(EXAMPLE_QUESTION).length).toBeGreaterThan(0);
+    const eye = document.querySelector('.hero-eye [data-testid="evil-eye"]');
+    expect(eye).toHaveAttribute('data-flame-speed', '0');
+    expect(eye).toHaveAttribute('data-pupil-follow', '0');
+  });
+
+  it('lets the hero pupil follow a fine pointer only while the story moves', async () => {
+    finePointer();
+    siteFacts(true);
+    const moving = renderApp('/enterprise', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
+    const eye = () => document.querySelector('.hero-eye [data-testid="evil-eye"]');
+    expect(eye()).toHaveAttribute('data-pupil-follow', '1');
+    moving.unmount();
+
+    localStorage.setItem(MOTION_STORAGE_KEY, 'paused');
+    renderApp('/enterprise', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
+    expect(document.querySelector('.product-story')).toHaveAttribute('data-motion', 'still');
+    expect(eye()).toHaveAttribute('data-pupil-follow', '0');
+  });
+
+  it('keeps the pupil still on touch screens', async () => {
+    siteFacts(true);
+    renderApp('/enterprise', 'anonymous');
+    await screen.findByRole('heading', { level: 1, name: /The All Seeing Eye/ });
+    expect(document.querySelector('.product-story')).toHaveAttribute('data-motion', 'moving');
     expect(document.querySelector('.hero-eye [data-testid="evil-eye"]')).toHaveAttribute(
-      'data-flame-speed',
+      'data-pupil-follow',
       '0',
     );
   });

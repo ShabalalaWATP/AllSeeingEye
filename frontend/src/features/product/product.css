@@ -268,7 +268,10 @@
   position: sticky;
   top: 0;
   height: 100svh;
+  /* Clip rather than hide: a hidden box can still be scrolled sideways by focus or
+     find-in-page, which would leave a pinned track showing the wrong panels. */
   overflow: hidden;
+  overflow: clip;
   display: grid;
   align-content: center;
   padding-block: 5rem 2rem;

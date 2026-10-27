@@ -1,0 +1,171 @@
+/*
+ * Workspaces chapter, imported by chapters/WorkspacesChapter.tsx. Colours come from
+ * product.css.
+ */
+
+/* Workspaces: a gallery driven sideways by vertical scroll, or swiped on small screens. */
+.workspaces-gallery {
+  /* A grid item would otherwise grow to the track's full width, pushing the controls
+     off screen and hiding the distance the pinned track has to travel. */
+  min-width: 0;
+  margin-top: 2rem;
+  border-radius: 1.4rem;
+}
+.product-story .workspaces-gallery:focus-visible {
+  outline-offset: 8px;
+}
+.workspaces-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.workspaces-controls button {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--story-line);
+  border-radius: 999px;
+  background: var(--story-surface);
+  color: var(--story-text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: border-color 160ms;
+}
+.workspaces-controls button:hover:not([aria-disabled='true']) {
+  border-color: var(--story-muted);
+}
+.workspaces-controls button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: default;
+}
+[data-motion='still'] .workspaces-controls button {
+  transition: none;
+}
+.workspaces-position {
+  min-width: 7.5rem;
+  color: var(--story-muted);
+  font: 0.75rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.workspaces-viewport {
+  position: relative;
+}
+.story-workspaces[data-mode='passing'] .workspaces-viewport {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 1rem;
+}
+.workspace-track {
+  display: flex;
+  gap: 1.1rem;
+  width: max-content;
+  will-change: transform;
+}
+.workspace-slide {
+  scroll-snap-align: start;
+}
+/* Still: an ordinary vertical list, full width, with nothing pinned or overflowing. */
+.story-workspaces[data-mode='still'] .workspace-track {
+  flex-direction: column;
+  width: auto;
+  will-change: auto;
+  transform: none;
+}
+.story-workspaces[data-mode='still'] .workspace-card {
+  width: auto;
+  min-height: 0;
+}
+.workspace-card {
+  position: relative;
+  height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.8rem;
+  width: min(80vw, 24rem);
+  min-height: 22rem;
+  padding: 1.6rem;
+  border: 1px solid var(--story-line);
+  border-radius: 1.4rem;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      transparent 60%
+    ),
+    var(--story-surface);
+  overflow: hidden;
+}
+.product-story .workspace-card:focus-visible {
+  outline-offset: -3px;
+}
+.workspace-number {
+  color: color-mix(in srgb, var(--accent) 70%, var(--story-text));
+  font: 600 3.75rem var(--font-mono);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+.workspace-card h3 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.workspace-card p {
+  color: var(--story-muted);
+  line-height: 1.55;
+}
+.workspace-card ul {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+.workspace-card li::before {
+  content: '';
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  vertical-align: 0.15em;
+}
+.workspace-limit {
+  padding: 0.6rem 0.75rem;
+  border-left: 2px solid var(--story-amber);
+  border-radius: 0 0.6rem 0.6rem 0;
+  background: color-mix(in srgb, var(--story-amber) 8%, transparent);
+  font-size: 0.8125rem;
+}
+.workspace-card .workspace-limit {
+  color: var(--story-text);
+}
+.workspace-limit strong {
+  margin-right: 0.35rem;
+  color: var(--story-amber);
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.workspace-media {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+.workspace-media img,
+.workspace-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--story-line);
+  border-radius: 0.8rem;
+  background: var(--story-ground-2);
+}
+.workspace-media figcaption {
+  color: var(--story-muted);
+  font: 0.6875rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

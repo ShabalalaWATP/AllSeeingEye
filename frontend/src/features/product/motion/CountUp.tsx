@@ -33,7 +33,8 @@ export function CountUp({ value, suffix = '' }: CountUpProps) {
     const run = () => {
       const started = performance.now();
       const tick = (now: number) => {
-        const t = Math.min(1, (now - started) / DURATION_MS);
+        // A frame timestamp can precede the start time read just before it.
+        const t = Math.min(1, Math.max(0, (now - started) / DURATION_MS));
         setCounted(Math.round(value * easeOut(t)));
         if (t < 1) frame = requestAnimationFrame(tick);
       };

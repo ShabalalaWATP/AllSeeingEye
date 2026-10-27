@@ -23,10 +23,11 @@ function nodeStyle(index: number, count: number): CSSProperties {
   const angle = (index / SOURCE_TOPICS.length) * Math.PI * 2 - Math.PI / 2;
   const ring = index % 2 === 0 ? 38 : 30;
   return {
-    '--x': `${50 + Math.cos(angle) * ring}%`,
-    '--y': `${50 + Math.sin(angle) * ring}%`,
-    '--from-x': `${50 + Math.cos(angle) * 90}%`,
-    '--from-y': `${50 + Math.sin(angle) * 90}%`,
+    // Percentages of the orbit box, applied as container-relative translations.
+    '--x': (50 + Math.cos(angle) * ring).toFixed(2),
+    '--y': (50 + Math.sin(angle) * ring).toFixed(2),
+    '--from-x': (50 + Math.cos(angle) * 90).toFixed(2),
+    '--from-y': (50 + Math.sin(angle) * 90).toFixed(2),
     '--size': `${18 + Math.sqrt(count / MAX) * 40}px`,
     '--i': index,
   } as CSSProperties;
@@ -58,12 +59,12 @@ export function SourcesChapter() {
       </div>
       <div className="sources-copy">
         <p className="story-eyebrow">02 · Sources</p>
-        <h2 className="story-title">Hundreds of sources. Every one named.</h2>
+        <h2 className="story-title">Hundreds of sources, organised by topic.</h2>
         <p className="story-lead">
           <CountUp value={SCHEDULED_TOTAL} /> scheduled feeds and{' '}
           <CountUp value={ON_DEMAND_TOTAL} /> on-demand research connectors across eleven topics,
-          from seismology to sanctions. Each record keeps its source, licence notes and collection
-          time.
+          from seismology to sanctions. Each record keeps its source and collection time; licence
+          notes, where a source has them, stay with that source in the catalogue.
         </p>
         <ul className="topic-list">
           {SOURCE_TOPICS.map((topic, index) => {
@@ -77,6 +78,9 @@ export function SourcesChapter() {
                 />
                 <span className="topic-name">{topic.label}</span>
                 <span className="topic-count">{count}</span>
+                <span className="topic-split">
+                  {topic.scheduled} scheduled · {topic.onDemand} on demand
+                </span>
                 <span className="topic-examples">{topic.examples.join(' · ')}</span>
               </Reveal>
             );

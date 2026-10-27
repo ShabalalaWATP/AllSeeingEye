@@ -52,3 +52,26 @@ it.each([
     flags.form,
   );
 });
+
+it('hands the cost estimate to the enquiry message without sending it', async () => {
+  const posts: unknown[] = [];
+  server.use(
+    http.get('/api/site', () =>
+      HttpResponse.json({ product_page_enabled: true, enterprise_enquiries_enabled: true }),
+    ),
+    http.post('/api/enquiries', ({ request }) => {
+      posts.push(request.url);
+      return HttpResponse.json({ message: 'ok' }, { status: 202 });
+    }),
+  );
+  const { user } = renderApp('/enterprise', 'anonymous');
+  await user.click(
+    await screen.findByRole('button', { name: 'Send this estimate with an enquiry' }),
+  );
+  const message = screen.getByLabelText('Message (optional)');
+  expect(message).toHaveFocus();
+  expect((message as HTMLTextAreaElement).value).toMatch(
+    /^Self-hosting running-cost estimate from the product page\. This is an estimate, not a quote\./,
+  );
+  expect(posts).toEqual([]);
+});

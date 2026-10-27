@@ -58,6 +58,8 @@
   position: sticky;
   top: 6rem;
   aspect-ratio: 1;
+  /* Lets orbit nodes move by transform in units of this box (cqw and cqh). */
+  container-type: size;
   max-height: 80svh;
 }
 .orbit-ring {
@@ -98,12 +100,16 @@
 .orbit-node {
   --t: clamp(0, calc(var(--progress) * 14 - var(--i)), 1);
   position: absolute;
-  left: calc(var(--from-x) + (var(--x) - var(--from-x)) * var(--t));
-  top: calc(var(--from-y) + (var(--y) - var(--from-y)) * var(--t));
+  left: 0;
+  top: 0;
   display: grid;
   justify-items: center;
   gap: 0.3rem;
-  transform: translate(-50%, -50%);
+  /* Compositor-only motion: the same path the left and top offsets used to take. */
+  transform: translate(
+    calc((var(--from-x) + (var(--x) - var(--from-x)) * var(--t)) * 1cqw - 50%),
+    calc((var(--from-y) + (var(--y) - var(--from-y)) * var(--t)) * 1cqh - 50%)
+  );
   opacity: var(--t);
 }
 .orbit-dot {
@@ -152,6 +158,13 @@
 .topic-count {
   position: relative;
   font: 600 0.875rem var(--font-mono);
+}
+.topic-split {
+  position: relative;
+  grid-column: 1 / -1;
+  color: var(--story-text);
+  font: 0.75rem var(--font-mono);
+  letter-spacing: 0.04em;
 }
 .topic-examples {
   position: relative;

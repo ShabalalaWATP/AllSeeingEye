@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import { setCanonicalUrl, setDocumentMeta } from '@/lib/documentMetadata';
 
+import { OPEN_GRAPH_IMAGE } from './content/assets';
 import { PAGE_DESCRIPTION, PAGE_TITLE } from './content/chapters';
 
 /** Only mounted after the installation enables this page; never uses URL query data. */
@@ -10,8 +11,9 @@ export function useProductMetadata(): void {
     const previousTitle = document.title;
     document.title = PAGE_TITLE;
     const canonical = new URL('/enterprise', window.location.origin).href;
-    // This PNG is the existing 512 x 512 capture of the original React Bits brand eye.
-    const image = new URL('/brand/eye-512.png', window.location.origin).href;
+    // A 1200 x 630 PNG of the real React Bits brand eye and the page headline, made
+    // by `pnpm capture:assets`.
+    const image = new URL(OPEN_GRAPH_IMAGE.url, window.location.origin).href;
     const restore = [
       setDocumentMeta('description', PAGE_DESCRIPTION),
       setDocumentMeta('robots', 'index, follow'),
@@ -24,9 +26,9 @@ export function useProductMetadata(): void {
         'og:url': canonical,
         'og:image': image,
         'og:image:type': 'image/png',
-        'og:image:width': '512',
-        'og:image:height': '512',
-        'og:image:alt': 'The All Seeing Eye brand mark, a glowing eye.',
+        'og:image:width': String(OPEN_GRAPH_IMAGE.width),
+        'og:image:height': String(OPEN_GRAPH_IMAGE.height),
+        'og:image:alt': OPEN_GRAPH_IMAGE.alt,
         'og:locale': 'en_GB',
       }).map(([key, value]) => setDocumentMeta(key, value, 'property')),
     ];

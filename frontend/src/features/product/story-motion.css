@@ -1,0 +1,38 @@
+/*
+ * Shared motion primitives, imported by the components in motion/ so they style
+ * wherever they are used. Base Reveal and chapter rules live in product.css.
+ */
+
+/* Reveal variants (motion/Reveal). Rise is the default in product.css. */
+.story-reveal[data-variant='fade'][data-shown='false'] {
+  transform: none;
+}
+.story-reveal[data-variant='mask'] {
+  transition-property: opacity, transform, clip-path;
+  transition-duration: 700ms, 900ms, 900ms;
+}
+.story-reveal[data-variant='mask'][data-shown='false'] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 100% 0);
+}
+[data-motion='still'] .story-reveal[data-variant='mask'] {
+  transition: none;
+}
+@media print {
+  .story-reveal[data-variant='mask'][data-shown='false'] {
+    clip-path: none;
+  }
+}
+
+/* Path drawing (motion/DrawPath): stroke-dashoffset follows the chapter's progress. */
+.draw-path {
+  fill: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(
+    1 - clamp(0, (var(--progress) - var(--draw-start, 0)) * var(--draw-rate, 1), 1)
+  );
+}
+[data-motion='still'] .draw-path {
+  stroke-dashoffset: 0;
+}

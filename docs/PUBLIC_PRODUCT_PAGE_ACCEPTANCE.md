@@ -3,6 +3,7 @@
 KAN-172 covers the opt-in `/enterprise` route. The existing chapters remain in
 place. The cost estimator remains hidden pending approved figures. This record
 separates implemented controls from browser and deployment evidence.
+The page's capability claims are checked in the draft [claims register](product-page/claims-register.md) (KAN-171).
 
 ## Current mobile target and result, 10 October 2026
 
@@ -110,9 +111,13 @@ result and were removed. This evidence authorises no merge or production deploym
   not-found view. Only the enabled page installs its title, description, canonical
   URL and Open Graph metadata.
 - The canonical URL uses the current origin and `/enterprise`, without query
-  strings or fragments. The social image is the existing, same-origin
-  `/brand/eye-512.png`: a 512 by 512 PNG capture of the original React Bits Evil Eye,
-  292,756 bytes. It adds no image service or third-party request.
+  strings or fragments. The social image is the same-origin
+  `/brand/og-enterprise.png` (`OPEN_GRAPH_IMAGE` in
+  `frontend/src/features/product/content/assets.ts`): a 1200 by 630 PNG of the real
+  React Bits Evil Eye from `/brand/capture` beside the page title and description,
+  548,920 bytes, generated with the other product assets
+  ([docs/images/README.md](images/README.md)). It adds no image service or
+  third-party request.
 - Metadata restores prior head values when the route unmounts. Application,
   account and not-found views use `noindex, follow`. Caddy also sends that header
   for application URLs, including `/` and `/index.html`. It leaves `/enterprise`
@@ -455,3 +460,14 @@ Final gzip totals are 145,648 initial bytes, 829,209 additional globe bytes and
 61,645 additional product bytes, all within unchanged budgets. Full published-head
 CI remains required. No merge, infrastructure change or deployment is authorised
 by this evidence.
+
+### Build measurements, 18 October 2026
+
+After the KAN-170 gap fixes on branch `claude/KAN-170-product-gaps` (code at
+`3f2c3c0d`: recounted source topics, corrected copy, motion end states, the unpinned
+Review timeline and hero and Observe chapters passing on narrow screens), a local
+`pnpm build` followed by `pnpm check:bundle` reported 129,500 bytes of initial
+JavaScript gzip (budget 245,760), 848,665 additional globe route bytes (budget
+870,400) and 70,174 additional product route bytes (budget 153,600). These are build
+measurements of compressed JavaScript only, not Lighthouse results; no Lighthouse run
+was made for this change.

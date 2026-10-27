@@ -70,12 +70,34 @@ export const EXPORTS: readonly { format: string; detail: string }[] = [
   { format: 'GeoJSON / KML', detail: 'The live map picture' },
 ];
 
+export const TEAM_SCOPES: readonly { name: string; detail: string }[] = [
+  { name: 'Personal', detail: 'Visible to you and administrators' },
+  { name: 'Team', detail: 'Visible to current team members and administrators' },
+];
+
+export const TEAM_ACCESS_NOTE =
+  'Access always follows current membership: leaving a team ends access to its work.';
+
+/** An illustrative still or short muted loop, made from synthetic data (KAN-179). */
+export interface WorkspaceMedia {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  kind: 'image' | 'video';
+  poster?: string;
+}
+
 export interface Workspace {
   id: string;
   name: string;
+  /** At most two sentences. */
   body: string;
   points: readonly string[];
   accent: string;
+  /** One honest limit, where the workspace has an obvious one. */
+  limit?: string;
+  media?: WorkspaceMedia;
 }
 
 export const WORKSPACES: readonly Workspace[] = [
@@ -85,10 +107,11 @@ export const WORKSPACES: readonly Workspace[] = [
     accent: '#ff5a5a',
     body: 'Focused trackers for conflict, hazards, aviation, maritime, space and public figures.',
     points: [
-      'Per-domain filters',
-      'Source health beside every feed',
+      'A daily briefing on the monitor page',
+      'Conflict source coverage and health',
       'Ops room playlist for wall screens',
     ],
+    limit: 'Counts describe loaded reports, not verified or independently unique incidents.',
   },
   {
     id: 'ukraine',
@@ -100,6 +123,7 @@ export const WORKSPACES: readonly Workspace[] = [
       'Official channels in one place',
       'Cited digest every two weeks',
     ],
+    limit: 'The control map shows a reported line, not observed positions.',
   },
   {
     id: 'cyber',
@@ -107,13 +131,19 @@ export const WORKSPACES: readonly Workspace[] = [
     accent: '#22d3ee',
     body: 'Exploited vulnerabilities, ransomware claims, advisories and connectivity signals with a cited briefing.',
     points: ['National CERT advisories', 'MITRE ATT&CK context', 'GPS and GNSS interference'],
+    limit: 'Built from public reporting; it does not claim to measure all cyberattacks.',
   },
   {
     id: 'economy',
     name: 'Economy',
     accent: '#6ee7b7',
-    body: 'Official statistics and central bank series, compared across countries with a plain-English explainer.',
-    points: ['Country comparison', 'Market charts', 'Briefing for any date window'],
+    body: 'Official statistics and central bank series, compared across five countries with explanations of unfamiliar measures.',
+    points: [
+      'Five-country comparison',
+      'Market charts after consent',
+      'Briefings over 2 to 14 days',
+    ],
+    limit: 'The latest available year can differ by country and measure.',
   },
   {
     id: 'geolocation',
@@ -121,6 +151,26 @@ export const WORKSPACES: readonly Workspace[] = [
     accent: '#a78bfa',
     body: 'Candidate locations from an image, then a sun and shadow check against the capture time.',
     points: ['Vision model candidates', 'Shadow geometry check', 'Saved assessments'],
+    limit: 'A shadow check can rule a candidate out, but it never confirms a place.',
+    media: {
+      kind: 'image',
+      src: '/product/photo-geolocation.webp',
+      alt: 'Illustrative photo geolocation workspace before an image is supplied.',
+      width: 1280,
+      height: 800,
+    },
+  },
+  {
+    id: 'map-tools',
+    name: 'Map tools',
+    accent: '#38bdf8',
+    body: 'Draw paths, areas and circles, save them as named collections and measure distance or area. Radio studies and terrain profiles support planning on the same map.',
+    points: [
+      'Drawing collections of up to 50 objects',
+      'Saved radio studies with their assumptions',
+      'Terrain profiles and sampled visibility',
+    ],
+    limit: 'Radio and terrain results are coarse planning screens, not measured reception.',
   },
   {
     id: 'teams',
@@ -147,7 +197,7 @@ export const TRUST_LAYERS: readonly TrustLayer[] = [
     name: 'Edge',
     controls: [
       'Caddy edge with TLS and security headers',
-      'Strict content security policy',
+      'A content security policy allowing only same-origin scripts',
       'Request size limits per route',
     ],
   },
@@ -179,6 +229,10 @@ export const TRUST_LAYERS: readonly TrustLayer[] = [
     ],
   },
 ];
+
+/** Data minimisation, stated positively (docs/01_ARCHITECTURE.md "What is stored"). */
+export const DATA_MINIMISATION =
+  'The database keeps reports, frozen evidence, accounts, teams, configuration and small operational records. Raw live events stay in a bounded memory store, with one disposable snapshot file for restarts, and never enter the database.';
 
 export const AI_CHOICES: readonly string[] = [
   'OpenAI-compatible endpoints, including models you host',

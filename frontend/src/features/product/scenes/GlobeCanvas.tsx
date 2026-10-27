@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, type RefObject } from 'react';
 
 import { useStoryMotion } from '../motion/useStoryMotion';
-import { drawGlobe } from './drawGlobe';
+import { drawGlobe, FOCUS } from './drawGlobe';
 import { landPoints } from './globeMath';
 import { buildScene } from './sceneData';
 
@@ -29,7 +29,6 @@ interface Renderer {
   wake: () => void;
 }
 
-const FOCUS = { lon: 42, lat: 16 };
 const SPIN_DEGREES_PER_SECOND = 5;
 
 export function GlobeCanvas({ controls, label }: GlobeCanvasProps) {
@@ -66,8 +65,10 @@ export function GlobeCanvas({ controls, label }: GlobeCanvasProps) {
     };
 
     const paint = (now: number) => {
-      const { revealed, active, focus } = controls.current;
+      const { revealed, active } = controls.current;
       const { still: frozen } = motion.current;
+      // A still story shows the final frame: every layer, settled on the Red Sea.
+      const focus = frozen ? 1 : controls.current.focus;
       const eased = focus * focus * (3 - 2 * focus);
       const radius = (Math.min(width, height) / 2.3) * (1 + eased * 0.3);
       ctx.clearRect(0, 0, width, height);
@@ -81,6 +82,7 @@ export function GlobeCanvas({ controls, label }: GlobeCanvasProps) {
         },
         revealed: frozen ? layers.length : revealed,
         active: frozen ? -1 : active,
+        focus,
         time: (now - started) / 1000,
       });
     };
