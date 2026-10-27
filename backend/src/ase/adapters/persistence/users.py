@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from uuid import UUID
 
 from sqlalchemy import func, select, update
@@ -88,6 +89,20 @@ class SqlUserRepository:
     async def get_by_id(self, user_id: UUID) -> User | None:
         row = await self._session.get(UserRow, user_id, populate_existing=True)
         return _user_from_row(row) if row else None
+
+    async def display_names(self, user_ids: Sequence[UUID]) -> dict[UUID, str]:
+        # Limit bind parameters on both SQLite and PostgreSQL, even for callers
+        # larger than the current 200-alert and 50-job list bounds.
+        unique = list(dict.fromkeys(user_ids))
+        names: dict[UUID, str] = {}
+        for start in range(0, len(unique), 200):
+            rows = await self._session.execute(
+                select(UserRow.id, UserRow.display_name).where(
+                    UserRow.id.in_(unique[start : start + 200])
+                )
+            )
+            names.update((row.id, row.display_name) for row in rows)
+        return names
 
     async def get_by_email(self, email: str) -> User | None:
         row = (await self._session.scalars(select(UserRow).where(UserRow.email == email))).first()

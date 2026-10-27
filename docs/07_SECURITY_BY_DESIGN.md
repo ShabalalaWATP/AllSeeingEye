@@ -120,6 +120,15 @@ selected original assets have their
 own retention rules; inspect the workflow rather than assuming all inputs are
 permanent or all are immediately deleted.
 
+Original-asset personal/team capacity counts live reservations, uploads and
+retained assets. Scrubbed deleted/expired rows remain for 30 days and still count
+towards the global 4,096-record backstop. Each uploader may accumulate at most
+256 retired rows before new reservations are refused until history is purged.
+This allowance spans teams, personal reports and login sessions. It preserves
+other members' live capacity and does not interrupt an already admitted upload,
+deletion or expiry. Active uploads across multiple scopes do not consume this
+history allowance.
+
 The [personal-data operations inventory](PERSONAL_DATA_OPERATIONS.md) distinguishes
 supported record exports/deletion from account deactivation and the remaining
 account-wide gaps. This installation uses the documented operator-assisted

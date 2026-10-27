@@ -12,6 +12,9 @@ MAX_GLOBAL_BYTES = 1024 * 1024 * 1024
 MAX_PERSONAL_RECORDS = 64
 MAX_TEAM_RECORDS = 256
 MAX_GLOBAL_RECORDS = 4096
+# Discarded lifecycle history is charged to its uploader, separately from live
+# personal/team capacity. Keep one uploader's history below the global row ceiling.
+MAX_RETIRED_RECORDS_PER_USER = 256
 # Reservations awaiting bytes: one per uploader, with a small shared backstop so a
 # single account cannot occupy every intake slot.
 MAX_PENDING_UPLOADS = 4

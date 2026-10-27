@@ -6870,3 +6870,83 @@ session-family ownership/grace and scoped warning-history cutoffs. It started no
 application workers. The disposable database and copied dump were removed after
 success; bounded private evidence remains. This rehearsal does not replace the
 fresh quiesced backup or separate approval required for production rollout.
+
+## 24 October 2026: KAN-247 original-asset quota isolation
+
+The security follow-up reproduced team retention denial using discarded empty
+reservations, failed uploads and idle expiry. Scoped capacity now counts live
+assets, while the global row cap still includes scrubbed 30-day history. A separate
+256-retired-row uploader allowance bounds churn across reports, teams and sessions
+without reducing active multi-team capacity or blocking admitted upload completion.
+The focused regression and neighbouring suites pass 107 tests, including nine
+independent-transaction concurrency cases. The existing team model-routing and
+report-search session fixes are retained. Independent candidate review found no
+concrete bypass or regression. Backend lint, format, strict typing, import rules,
+Bandit, file length and OpenAPI consistency pass. The PR runs broader CI before
+release; no merge or production operation was performed.
+
+The published candidate exposed inherited dependency and image audit failures.
+Five locked Python packages were refreshed to verified fixes, with Pillow/pypdf
+minimums raised. The audit reports no known vulnerabilities; 313 parser, image,
+notification and original-asset tests pass, with three opt-in PostgreSQL skips.
+The web builder uses pinned Go 1.27.3 and a dated Alpine refresh invalidates the
+old cached package layer. Existing Dependabot proposals remain unmodified; the
+combined candidate owns validation of these prerequisites. The local Docker
+daemon was unavailable, so actual image build/scan evidence comes from required CI.
+
+Those image gates now pass. The next audit stage exposed inherited frontend
+advisories, addressed with Vite 8.3.3, Zod 4.6.6, matching Vitest/coverage 5.0.3
+and the existing override mechanism for Undici 7.30.1. The frontend audit reports
+no known vulnerabilities; 210 API tests, type checks, production build, bundle
+budgets and formatting pass. Independent lockfile compatibility review found no
+concrete regression and confirmed unchanged test/coverage thresholds.
+
+## 24 October 2026: KAN-247 release image refresh
+
+Alex authorised merge and deployment. PR #225 was squash-merged as `e7f0a617`
+after all 40 PR checks passed. Push CI then identified the API image's cached
+Debian `libbrotli1` package as affected by CVE-2026-111497. The existing dated
+security-refresh argument advances to 24 October so the normal Debian update
+and upgrade layer runs again. Application code, package locks, runtime commands,
+deployment gates and database configuration are unchanged. Actual image scans
+and the required CI checks must pass before the protected deployment proceeds.
+
+## 24 October 2026: KAN-249 runtime and map responsiveness
+
+Alex asked to fix the four measured performance bottlenecks. Social boards and
+sampling, aviation boards and translation selection now use admitted worker
+projections over immutable event snapshots. A literal prefilter avoids repeated
+non-matching social regex scans. Empty translation polls reuse only an unchanged
+store generation. Database sessions, mutable interference state and current
+private-term checks stay on the API loop; the final social response also checks
+source and session authority after worker completion.
+
+Map snapshots publish primary data before serial supplements, preserving live
+upserts, expiry, selection and cancellation. Exhaustive small viewports skip
+redundant coverage reads. Owner labels use bounded ID/name projections rather
+than loading one full account per owner. Independent review prompted regressions
+for concurrent translation provenance and incomplete-coverage warnings during
+partial map refreshes.
+
+The serial 60,000-event fixture reduced a busy-hour social board with 32 terms
+from 2.72 seconds to 215 ms, with median maximum loop gaps from 2.72 seconds to
+32 ms. Two hundred owner names require one SQL query instead of 200. These local
+fixtures do not establish production latency or GPU performance. All 182 focused
+backend cases pass; frontend and release gates are recorded in PR #229. The
+[measurement record](reviews/2026-10-24-KAN-249-performance.md) includes bounds,
+limitations and the repeatable offline probe. Release approval remains pending.
+
+## 27 October 2026: KAN-249 approved release and image refresh
+
+Alex approved merging PR #229, which was squash-merged as `89f3c0c8` with the
+reviewed tree unchanged and all 40 PR checks passing. Push CI then blocked the
+web image on cached Alpine curl/libcurl 8.22.0-r0. Alpine published 8.23.0-r0
+on 25 October, after the existing 24 October cache refresh. The existing dated
+security-refresh argument advances to 27 October so the normal package upgrade
+layer runs again. This is a one-line packaging correction for the approved
+release, with no application, dependency-manifest, routing, controller or schema
+change. Independent review, the rebuilt image audit and required CI must pass
+before the protected deployment. No live release is claimed by this note.
+
+Sources: [curl advisory](https://curl.se/docs/CVE-2026-92392.html) and
+[Alpine package](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/curl).

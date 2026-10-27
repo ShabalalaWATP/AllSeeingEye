@@ -12,6 +12,7 @@ import {
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import { useShellStore } from '@/stores/shell';
+import { useWorkspaceReturnStore } from '@/stores/workspaceReturn';
 
 import { RailItem } from './RailLinks';
 import { ChevronIcon, RailIcon } from './railIcons';
@@ -53,6 +54,10 @@ export function LeftRail({
       </Link>
       <MotionToggle compact={collapsed} className="px-2 pb-2" />
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
+        {/* The mobile dialog leads with the way to administration, so it never needs a scroll. */}
+        {isAdmin && mobile && (
+          <AdministrationGroup collapsed={false} onNavigate={onNavigate} first />
+        )}
         <button
           type="button"
           onClick={() => {
@@ -107,14 +112,8 @@ export function LeftRail({
             </div>
           );
         })}
-        {isAdmin && (
-          <ul className="mt-3 border-t border-line/70 pt-3">
-            <RailItem
-              item={administrationDestination}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          </ul>
+        {isAdmin && !mobile && (
+          <AdministrationGroup collapsed={collapsed} onNavigate={onNavigate} />
         )}
       </nav>
       {!mobile && (
@@ -134,5 +133,47 @@ export function LeftRail({
         </div>
       )}
     </aside>
+  );
+}
+
+/**
+ * Administration is a separate workspace, so it sits in its own headed group apart from
+ * every research section, and opens on the administration page visited last.
+ */
+function AdministrationGroup({
+  collapsed,
+  onNavigate,
+  first = false,
+}: {
+  collapsed: boolean;
+  onNavigate?: (() => void) | undefined;
+  first?: boolean;
+}) {
+  const headingId = useId();
+  const target = useWorkspaceReturnStore((state) => state.admin);
+  return (
+    <div
+      className={`flex flex-col gap-0.5 border-line/70 ${first ? 'mb-2 border-b pb-3' : 'mt-3 border-t pt-3'}`}
+    >
+      {collapsed ? null : (
+        <p
+          id={headingId}
+          className="px-3 pb-1 font-mono text-2xs tracking-[0.18em] text-ember uppercase"
+        >
+          Switch workspace
+        </p>
+      )}
+      <ul
+        aria-labelledby={collapsed ? undefined : headingId}
+        aria-label={collapsed ? 'Switch workspace' : undefined}
+        className="flex flex-col gap-0.5"
+      >
+        <RailItem
+          item={{ ...administrationDestination, to: target }}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+      </ul>
+    </div>
   );
 }

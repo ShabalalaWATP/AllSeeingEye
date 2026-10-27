@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 from datetime import timedelta
 from uuid import uuid4
 
@@ -13,8 +14,10 @@ from sqlalchemy import select
 from ase.adapters.persistence.models import ActivitySampleRow
 from ase.adapters.persistence.social import KIND_SOCIAL, SqlSocialActivity, SqlSocialTerms
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.application.trackers import social as social_tracker
 from ase.application.trackers.social import SocialMonitor, SocialService
 from ase.container import Container
+from ase.domain.errors import RateLimited
 from ase.domain.social import (
     MAX_TERMS,
     KeywordActivity,
@@ -57,6 +60,23 @@ def test_keyword_counts_use_word_boundaries_and_count_each_post_once() -> None:
     counts = keyword_counts(events, terms)
     assert all(counts[term.key] == 1 for term in terms)
     assert set(keyword_counts([], terms).values()) == {0}
+
+
+def test_literal_prefilter_keeps_boundaries_overlaps_and_unicode() -> None:
+    terms = vocabulary(["war", "art", "c++", "台湾", "naïve", "new york"], [])
+    events = [
+        social_post("a", "war warfare art c++ 台湾 naïve New York"),
+        social_post("b", "beware article c+++ 台湾人 naïvely New Yorker"),
+    ]
+    counts = keyword_counts(events, terms)
+    assert {term.term: counts[term.key] for term in terms} == {
+        "art": 1,
+        "c++": 2,
+        "naïve": 1,
+        "new york": 1,
+        "war": 1,
+        "台湾": 1,
+    }
 
 
 def test_hashtags_are_deduplicated_and_platforms_keep_locations() -> None:
@@ -155,6 +175,42 @@ async def test_monitor_counts_only_previous_hour_and_recovers_from_failure() -> 
     assert sleeps[0] == 300
 
 
+async def test_social_board_and_sample_aggregate_in_worker(monkeypatch, user: User) -> None:
+    store = InMemoryEventStore()
+    store.upsert([social_post("a")])
+    term = WatchedTerm("ukraine", True)
+    activity = MemoryActivity()
+    seen: list[int] = []
+    original = social_tracker.keyword_counts
+
+    def recording(events, terms):
+        seen.append(threading.get_ident())
+        return original(events, terms)
+
+    monkeypatch.setattr(social_tracker, "keyword_counts", recording)
+    board = await SocialService(store, FixedTerms((term,)), activity, FakeClock(NOW)).board(user)
+    sampled = await SocialMonitor(store, FixedTerms((term,)), activity, FakeClock(NOW)).sample()
+    assert board.total == 1 and board.keywords[0].count == 1
+    assert sampled == 1 and activity.rows[NOW - timedelta(hours=1)][term.key] == 1
+    assert len(seen) == 2 and all(thread != threading.get_ident() for thread in seen)
+
+
+async def test_social_board_rechecks_private_terms_after_worker(user: User, monkeypatch) -> None:
+    store = InMemoryEventStore()
+    private = WatchedTerm("secret", False, frozenset({user.id}))
+    terms = FixedTerms((private,))
+    service = SocialService(store, terms, MemoryActivity(), FakeClock(NOW))
+
+    async def withdrawn(query, project, *, admission_key):
+        result = project(store.query(query))
+        terms.terms = ()
+        return result
+
+    monkeypatch.setattr(store, "read_cooperatively", withdrawn)
+    with pytest.raises(RateLimited):
+        await service.board(user)
+
+
 async def test_sql_samples_keep_zeroes_exclude_current_hour_and_prune(container: Container) -> None:
     activity = SqlSocialActivity(container.session_factory)
     term, removed = WatchedTerm("ukraine", True), WatchedTerm("removed", True)
@@ -206,3 +262,54 @@ async def test_social_board_api(client: AsyncClient, container: Container, user:
     body = response.json()
     assert body["total"] == 1 and body["platforms"][0]["instance"] == "mastodon.social"
     assert body["hashtags"][0] == {"tag": "ukraine", "count": 1}
+
+
+async def test_social_route_rechecks_terms_after_source_fence_await(
+    client: AsyncClient, container: Container, user: User, monkeypatch
+) -> None:
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    terms = FixedTerms((WatchedTerm("secret", False, frozenset({user.id})),))
+    service = SocialService(container.store, terms, MemoryActivity(), container.clock)
+    monkeypatch.setattr(container, "social", lambda: service)
+    original = container.source_admission.enabled_many
+    calls = 0
+
+    async def withdrawing_enabled(profiles):
+        nonlocal calls
+        result = await original(profiles)
+        calls += 1
+        if calls == 2:
+            terms.terms = ()
+        return result
+
+    monkeypatch.setattr(container.source_admission, "enabled_many", withdrawing_enabled)
+    response = await client.get("/api/trackers/social", headers=bearer(token))
+    assert response.status_code == 429
+    assert "secret" not in response.text
+
+
+async def test_social_route_rejects_logout_during_final_terms_read(
+    client: AsyncClient, container: Container, user: User, monkeypatch
+) -> None:
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    terms = FixedTerms((WatchedTerm("secret", False, frozenset({user.id})),))
+    service = SocialService(container.store, terms, MemoryActivity(), container.clock)
+    monkeypatch.setattr(container, "social", lambda: service)
+    original = service.confirm_visible
+    checks = 0
+
+    async def revoking_visible(actor, board):
+        nonlocal checks
+        checks += 1
+        if checks == 2:
+            async with container.session_factory() as session:
+                await container.repositories(session).refresh_tokens.revoke_family(
+                    container.issuer.verify(token).family_id, container.clock.now()
+                )
+                await session.commit()
+        await original(actor, board)
+
+    monkeypatch.setattr(service, "confirm_visible", revoking_visible)
+    response = await client.get("/api/trackers/social", headers=bearer(token))
+    assert response.status_code == 429
+    assert "secret" not in response.text

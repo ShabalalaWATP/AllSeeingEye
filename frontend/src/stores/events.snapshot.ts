@@ -9,8 +9,8 @@ import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import { describeError } from '@/lib/api/errors';
 import type { EventsState } from './events';
 import { toList } from './events.batch';
-import { boundedEvents, mergeSnapshots } from './events.coverage';
-import { insideCoverage } from './events.geography';
+import { boundedEvents, mergeSnapshotRecords, mergeSnapshots } from './events.coverage';
+import { insideCoverage, type CoverageBounds } from './events.geography';
 import { MAX_CLIENT_EVENTS, SNAPSHOT_LIMIT } from './events.limits';
 import { MAX_REFRESH_RETRIES, SnapshotRefresh } from './events.refresh';
 import { selectionAfterMirrorUpdate } from './events.selection';
@@ -25,12 +25,16 @@ interface Request {
   controller: AbortController;
   changes: Map<string, LiveEvent | null>;
   overflow: boolean;
+  retainedSelection: boolean;
 }
 
 interface Snapshot {
   events: LiveEvent[];
   stats: StoreStats;
   merged: Map<string, LiveEvent>;
+  bounds: CoverageBounds | null;
+  area: Pick<EventsQuery, 'bbox' | 'sampling'>;
+  partial: boolean;
   error: string | null;
   limited: boolean;
 }
@@ -56,13 +60,18 @@ export function createSnapshotLoader(get: Get, set: Set) {
     for (const flush of barriers) flush();
     refresh.started();
     pending?.controller.abort();
-    const request = { controller: new AbortController(), changes: new Map(), overflow: false };
+    const request = {
+      controller: new AbortController(),
+      changes: new Map(),
+      overflow: false,
+      retainedSelection: false,
+    };
     pending = request;
     return request;
   }
 
-  /** Fetch a bounded snapshot of the scope, or null when superseded or cancelled. */
-  async function fetchSnapshot(
+  /** Fetch the primary snapshot before slower category supplements start. */
+  async function fetchPrimary(
     request: Request,
     scope: ReadonlySet<Category> | null,
   ): Promise<Snapshot | null> {
@@ -73,29 +82,55 @@ export function createSnapshotLoader(get: Get, set: Set) {
     const { signal } = request.controller;
     const [events, stats] = await Promise.all([fetchEvents(query, signal), fetchStats(signal)]);
     if (!isCurrent(request)) return null;
-    const supplement = await loadCoverageSupplements(events, stats, signal, area, scope);
-    if (!isCurrent(request)) return null;
     if (request.overflow) {
       set({ error: OVERFLOW_ERROR, loaded: true });
       return null;
     }
-    const merged = mergeSnapshots(events, supplement.events);
+    const merged = mergeSnapshots(events, []);
     for (const [id, event] of merged) {
       if (!insideCoverage(event, bounds) || (scope !== null && !scope.has(event.category)))
         merged.delete(id);
     }
-    return { events, stats, merged, error: supplement.error, limited: supplement.limited };
+    return {
+      events,
+      stats,
+      merged,
+      bounds,
+      area,
+      partial: scope !== null,
+      error: null,
+      limited: false,
+    };
   }
 
   /** Journalled deltas are newer than any response, then the browser bound applies. */
-  function publish(request: Request, snapshot: Snapshot, records: Map<string, LiveEvent>) {
+  function publish(
+    request: Request,
+    snapshot: Snapshot,
+    records: Map<string, LiveEvent>,
+    final = false,
+  ) {
     const current = get();
     for (const [id, event] of request.changes) {
       if (event === null) records.delete(id);
       else records.set(id, event);
     }
+    const selectedId = current.selectedId;
+    const previousSelection = selectedId === null ? undefined : current.byId[selectedId];
+    if (
+      !final &&
+      selectedId !== null &&
+      !records.has(selectedId) &&
+      previousSelection &&
+      insideCoverage(previousSelection, snapshot.bounds)
+    ) {
+      // Keep the selected marker and details while its category is still loading.
+      // It is not counted as part of the new snapshot and is rechecked at the end.
+      records.set(selectedId, previousSelection);
+      request.retainedSelection = true;
+    }
     const byId = Object.fromEntries(records);
-    const capped = boundedEvents(byId, MAX_CLIENT_EVENTS, current.selectedId);
+    const capped = boundedEvents(byId, MAX_CLIENT_EVENTS, selectedId);
     const snapshotCount = [...counts.values()].reduce((sum, count) => sum + count, 0);
     failures = 0;
     return {
@@ -103,12 +138,16 @@ export function createSnapshotLoader(get: Get, set: Set) {
       stats: snapshot.stats,
       loaded: true,
       snapshotCount,
+      // A partition cannot prove that untouched categories from the last full load are complete.
       snapshotLimited:
+        (snapshot.partial && current.snapshotLimited) ||
         snapshot.events.length >= SNAPSHOT_LIMIT ||
         snapshot.limited ||
-        snapshot.stats.total > snapshotCount,
+        (snapshot.bounds === null && snapshot.stats.total > snapshotCount),
       mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
-      selectedId: selectionAfterMirrorUpdate(current, capped),
+      // A selected record can be in a pending supplement. Resolve a missing selection
+      // only after the final request, while a live expiry still clears it immediately.
+      selectedId: current.selectedId,
     };
   }
 
@@ -122,13 +161,60 @@ export function createSnapshotLoader(get: Get, set: Set) {
   async function run(
     scope: ReadonlySet<Category> | null,
     soft: boolean,
-    apply: (request: Request, snapshot: Snapshot) => void,
+    apply: (request: Request, snapshot: Snapshot, final?: boolean) => void,
   ) {
     const request = begin();
     set(scope === null ? { loading: true, error: null } : { loading: true });
     try {
-      const snapshot = await fetchSnapshot(request, scope);
-      if (snapshot !== null) apply(request, snapshot);
+      const snapshot = await fetchPrimary(request, scope);
+      if (snapshot === null) return;
+      apply(request, snapshot);
+      if (!isCurrent(request)) return;
+      // A short bbox result is the whole scoped query. Global statistics cannot
+      // justify another read for this viewport; a full page may still hide sources.
+      if (snapshot.bounds === null || snapshot.events.length >= SNAPSHOT_LIMIT)
+        await loadCoverageSupplements(
+          snapshot.events,
+          snapshot.stats,
+          request.controller.signal,
+          snapshot.area,
+          scope,
+          (progress) => {
+            if (!isCurrent(request) || request.overflow) return;
+            snapshot.error = progress.error;
+            const limitChanged = snapshot.limited !== progress.limited;
+            snapshot.limited = progress.limited;
+            if (progress.events.length > 0) {
+              mergeSnapshotRecords(
+                snapshot.merged,
+                progress.events.filter(
+                  (event) =>
+                    insideCoverage(event, snapshot.bounds) &&
+                    (scope === null || scope.has(event.category)),
+                ),
+              );
+            }
+            if (progress.events.length > 0 || limitChanged) apply(request, snapshot);
+            else {
+              const current = get();
+              const error =
+                progress.error ??
+                (scope !== null && current.error !== REFRESH_FAILED_ERROR ? current.error : null);
+              if (current.error !== error) set({ error });
+            }
+          },
+        );
+      if (!isCurrent(request)) return;
+      if (request.overflow) {
+        set({ error: OVERFLOW_ERROR, loaded: true });
+        return;
+      }
+      if (request.retainedSelection) apply(request, snapshot, true);
+      if (!isCurrent(request)) return;
+      if (scope === null) complete = true;
+      const current = get();
+      const selectedId = selectionAfterMirrorUpdate(current, current.byId);
+      if (selectedId !== current.selectedId) set({ selectedId });
     } catch (caught) {
       if (!isCurrent(request)) return;
       if (!soft) {
@@ -151,16 +237,15 @@ export function createSnapshotLoader(get: Get, set: Set) {
   }
 
   function loadAll(soft: boolean) {
-    return run(null, soft, (request, snapshot) => {
+    return run(null, soft, (request, snapshot, final) => {
       countPartitions(snapshot.merged, null);
-      const update = publish(request, snapshot, new Map(snapshot.merged));
-      complete = true;
+      const update = publish(request, snapshot, new Map(snapshot.merged), final);
       set({ ...update, list: toList(update.byId), error: snapshot.error });
     });
   }
 
   function loadPartition(scope: ReadonlySet<Category>) {
-    return run(scope, true, (request, snapshot) => {
+    return run(scope, true, (request, snapshot, final) => {
       const current = get();
       const records = new Map<string, LiveEvent>();
       for (const [id, event] of Object.entries(current.byId))
@@ -168,7 +253,7 @@ export function createSnapshotLoader(get: Get, set: Set) {
       // Replace the whole partition: records no longer in it, or expired, are removed.
       for (const [id, event] of snapshot.merged) records.set(id, event);
       countPartitions(snapshot.merged, scope);
-      const update = publish(request, snapshot, records);
+      const update = publish(request, snapshot, records, final);
       const error =
         snapshot.error ?? (current.error === REFRESH_FAILED_ERROR ? null : current.error);
       // Unchanged records keep their identity and order, so unrelated layers stay as they are.

@@ -22,9 +22,15 @@ class InMemorySessionSignals:
         self._clock, self._notify = clock, notify
         self._retention, self._capacity = retention, capacity
         self._changes: OrderedDict[UUID, datetime] = OrderedDict()
+        self._generation = 0
+
+    @property
+    def generation(self) -> int:
+        return self._generation
 
     def publish(self, user_id: UUID) -> None:
         now = self._clock.now()
+        self._generation += 1
         self._changes[user_id] = now
         self._changes.move_to_end(user_id)
         oldest_kept = now - self._retention

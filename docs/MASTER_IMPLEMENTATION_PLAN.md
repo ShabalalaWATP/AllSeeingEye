@@ -4,6 +4,24 @@ Maintained by the implementation-plan keeper. Phases follow `archive/05_ROADMAP.
 
 ## Current status
 
+### KAN-249 runtime responsiveness, 24 October 2026
+
+- [x] Reproduce the bounded social, aviation, translation and owner-label workloads;
+  retain the assessment in [KAN-248](https://alex-orr.atlassian.net/browse/KAN-248).
+- [x] Replace repeated owner-label account reads with bounded ID/name projections;
+  preserve existing list authority and missing/inactive-owner behaviour.
+- [x] Integrate admitted social/aviation worker projections and cooperative translation.
+- [x] Publish useful map snapshots progressively while retaining serial read admission,
+  stream reconciliation, source coverage and cancellation.
+- [x] Record serial before/after evidence and reproduce review findings with regressions.
+- [x] Complete final independent quality/security review and the combined local checks.
+- Required full CI results are maintained on the PR for its published head.
+- [ ] Obtain release approval, merge and verify deployment before closing KAN-249.
+
+Implementation is coordinated in [PR #229](https://github.com/ShabalalaWATP/AllSeeingEye/pull/229).
+The [measurement record](reviews/2026-10-24-KAN-249-performance.md) describes
+synthetic fixtures, not production latency or GPU performance.
+
 ### KAN-216 rollout acceptance, 18 October 2026
 
 The original twenty child tickets and twelve mapped implementation items are Done.
@@ -1864,3 +1882,19 @@ See [closure matrix](reviews/KAN-216-review-closure.md),
 [final browser evidence](reviews/KAN-216-final-browser-evidence.md), and
 [provenance review](reviews/KAN-194-provenance-closure.md). Existing policy, approval,
 coverage and security gates remain enforced; no production rollout was performed.
+
+### KAN-247 security remediation, 24 October 2026
+
+- [x] Reproduce original-asset quota denial through delete, failed upload and expiry.
+- [x] Separate live personal/team capacity from bounded lifecycle history.
+- [x] Add an uploader history allowance while retaining global/pending/byte caps.
+- [x] Preserve active multi-team retention, admitted completion and 30-day purge.
+- [x] Pass 107 focused regressions, including existing routing/session controls.
+- [x] Complete independent candidate review and local backend quality gates.
+- [x] Refresh the five dependencies reported by the inherited Python audit gate.
+- [x] Clear the inherited frontend audit with reviewed compatible package updates.
+- [ ] Obtain release approval before merging or deploying the reviewed fix.
+
+The PR carries the required full CI, coverage and container scan gates before
+integration. Its container candidate also refreshes the pinned Go patch and the
+cached Alpine package layer identified by the inherited image audit failures.

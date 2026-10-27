@@ -56,10 +56,16 @@ async def disaster_detail(
 
 @router.get("/aviation")
 async def aviation_board(
-    user: CurrentUser, session: SessionDep, container: ContainerDep
+    user: CurrentUser, session: SessionDep, container: ContainerDep, fence: FenceDep
 ) -> AviationBoardOut:
-    board = await board_with_baselines(
-        container.aviation(), container.repositories(session).baselines
+    board = await read_board_response(
+        container,
+        fence,
+        lambda: board_with_baselines(
+            container.aviation(),
+            container.repositories(session).baselines,
+            admission_key=f"user:{user.id}",
+        ),
     )
     return AviationBoardOut.from_board(board)
 
