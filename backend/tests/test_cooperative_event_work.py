@@ -124,6 +124,27 @@ async def test_events_rechecks_revocation_after_worker_yields(client, container,
     assert "Test event" not in response.text
 
 
+@pytest.mark.parametrize("path", ["/api/trackers/social", "/api/trackers/aviation"])
+async def test_tracker_boards_recheck_revocation_after_worker_yields(
+    client, container, user, monkeypatch, path
+):
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+
+    async def interrupted_read(query, project, *, admission_key="internal:test"):
+        assert admission_key == f"user:{user.id}"
+        async with container.session_factory() as session:
+            await container.repositories(session).refresh_tokens.revoke_family(
+                container.issuer.verify(token).family_id, container.clock.now()
+            )
+            await session.commit()
+        return project([make_event()])
+
+    monkeypatch.setattr(container.store, "read_cooperatively", interrupted_read)
+    response = await client.get(path, headers=bearer(token))
+    assert response.status_code == 401
+    assert "Test event" not in response.text
+
+
 async def test_scheduler_does_not_publish_observation_pruned_during_grading():
     store = InMemoryEventStore()
     event = make_event()

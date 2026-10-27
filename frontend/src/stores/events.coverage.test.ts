@@ -133,6 +133,31 @@ it('keeps a replacement snapshot when the older maritime request finishes late',
   expect(useEventsStore.getState().list.map((event) => event.id)).toEqual(['replacement']);
 });
 
+it('drops a progressive snapshot after a hard stream gap starts its replacement', async () => {
+  let resolve!: (events: LiveEvent[]) => void;
+  const fetch = vi
+    .spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([liveEvent({ id: 'old-main' })])
+    .mockImplementationOnce(() => new Promise<LiveEvent[]>((done) => (resolve = done)))
+    .mockResolvedValueOnce([liveEvent({ id: 'replacement' })])
+    .mockResolvedValue([]);
+  const old = useEventsStore.getState().load();
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  expect(useEventsStore.getState().byId['old-main']).toBeDefined();
+
+  useEventsStore.getState().handleStreamMessage({
+    event: 'event.resync',
+    data: '{"reason":"stream_gap"}',
+    id: null,
+  });
+  await vi.waitFor(() => expect(useEventsStore.getState().byId.replacement).toBeDefined());
+  resolve([vessel('stale')]);
+  await old;
+  expect(useEventsStore.getState().byId['old-main']).toBeUndefined();
+  expect(useEventsStore.getState().byId.stale).toBeUndefined();
+  expect(useEventsStore.getState().byId.replacement).toBeDefined();
+});
+
 it('discards a maritime snapshot when its pending update journal overflowed', async () => {
   const pending = pendingMaritime();
   const loading = useEventsStore.getState().load();

@@ -110,13 +110,14 @@ def vocabulary(watch: Iterable[str], plans: Sequence[CollectionPlan]) -> tuple[W
 def keyword_counts(events: Sequence[Event], terms: Sequence[WatchedTerm]) -> Mapping[str, int]:
     """Count matching posts, not repeated mentions. Escape configuration before compiling."""
     patterns = {
-        term.key: re.compile(r"(?<!\w)" + re.escape(term.term) + r"(?!\w)") for term in terms
+        term.key: (term.term, re.compile(r"(?<!\w)" + re.escape(term.term) + r"(?!\w)"))
+        for term in terms
     }
     counts = dict.fromkeys(patterns, 0)
     for event in events:
         text = f"{event.title} {event.summary or ''} {' '.join(event.tags)}".casefold()
-        for key, pattern in patterns.items():
-            if pattern.search(text):
+        for key, (literal, pattern) in patterns.items():
+            if literal in text and pattern.search(text):
                 counts[key] += 1
     return counts
 

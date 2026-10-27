@@ -4,3 +4,4 @@ allowBuilds:
   msw: false
 overrides:
   js-yaml: 4.3.2
+  undici: 7.30.1

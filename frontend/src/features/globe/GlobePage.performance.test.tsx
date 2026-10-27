@@ -79,6 +79,7 @@ async function mount() {
   const view = renderApp('/', 'user');
   await screen.findByText('Natural hazards: 1 loaded');
   await waitFor(() => expect(layer('events-disaster')).toBeDefined());
+  await waitFor(() => expect(useEventsStore.getState().loading).toBe(false));
   return view;
 }
 
@@ -99,6 +100,8 @@ describe('globe rendering and motion', () => {
     const map = FakeMap.instances[0]!;
     const zoom = vi.spyOn(map, 'getZoom');
     const overlay = MapboxOverlay.instances[0]!;
+    // The fake map does not emit its initial camera event; establish the current band.
+    act(() => map.fire('move'));
     const original = layer('events-disaster');
     const changes = overlay.setProps.mock.calls.length;
     zoom.mockReturnValue(2.4);

@@ -10,6 +10,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from ase.application.feeds.board_reads import read_events
 from ase.application.ports import Clock
 from ase.application.ports.baselines import BaselineRepository, BaselineSink
 from ase.application.ports.feeds import EventQuery, EventStore
@@ -153,47 +154,32 @@ class AviationService:
     def baseline_since(self) -> datetime:
         return self._clock.now() - timedelta(days=BASELINE_DAYS)
 
-    def board(
-        self, military_means: Mapping[str, float], area_means: Mapping[str, float]
+    async def board(
+        self,
+        military_means: Mapping[str, float],
+        area_means: Mapping[str, float],
+        *,
+        admission_key: str = "internal:aviation",
     ) -> AviationBoard:
-        events = aviation_events(self._store)
-        counts = military_by_country(events)
-        by_country = tuple(
-            sorted(
-                (
-                    CountryActivity(iso, count, military_means.get(iso))
-                    for iso, count in counts.items()
-                ),
-                key=lambda row: (-row.count, row.iso),
-            )[:25]
-        )
-        areas = tuple(
-            AreaActivity(
-                id=area.id,
-                name=area.name,
-                count=len(tagged(events, f"area_{area.id}")),
-                military=len(
-                    [e for e in tagged(events, f"area_{area.id}") if "military" in e.tags]
-                ),
-                baseline=area_means.get(area.id),
-            )
-            for area in self._areas
-        )
-        cells = self.jam_cells()
-        emergencies = sorted(
-            tagged(events, "emergency"), key=lambda e: (-(e.severity or 0), e.title)
-        )
-        return AviationBoard(
-            military_total=len(tagged(events, "military")),
-            interesting=len(tagged(events, "interesting")),
-            ladd=len(tagged(events, "ladd")),
-            pia=len(tagged(events, "pia")),
-            by_country=by_country,
-            emergencies=tuple(emergencies[:50]),
-            areas=areas,
-            jam_amber=sum(1 for cell in cells if cell.level == "amber"),
-            jam_red=sum(1 for cell in cells if cell.level == "red"),
-            jam_updated_at=self._jam.updated_at,
+        # JamMap is mutable and stays on the owning event loop. Only immutable values
+        # and event references cross into the admitted projection worker.
+        cells = tuple(self.jam_cells())
+        updated_at = self._jam.updated_at
+        areas = self._areas
+        military_snapshot = dict(military_means)
+        area_snapshot = dict(area_means)
+        return await read_events(
+            self._store,
+            EventQuery(categories=frozenset({Category.AVIATION}), limit=POOL),
+            lambda events: _aviation_board(
+                events,
+                areas,
+                military_snapshot,
+                area_snapshot,
+                cells,
+                updated_at,
+            ),
+            admission_key=admission_key,
         )
 
     def jam_cells(self) -> list[JamCell]:
@@ -201,13 +187,58 @@ class AviationService:
         return self._jam.cells()
 
 
+def _aviation_board(
+    events: list[Event],
+    watched_areas: tuple[WatchedArea, ...],
+    military_means: Mapping[str, float],
+    area_means: Mapping[str, float],
+    cells: tuple[JamCell, ...],
+    updated_at: datetime | None,
+) -> AviationBoard:
+    counts = military_by_country(events)
+    by_country = tuple(
+        sorted(
+            (CountryActivity(iso, count, military_means.get(iso)) for iso, count in counts.items()),
+            key=lambda row: (-row.count, row.iso),
+        )[:25]
+    )
+    areas = tuple(
+        AreaActivity(
+            id=area.id,
+            name=area.name,
+            count=len(tagged(events, f"area_{area.id}")),
+            military=len([e for e in tagged(events, f"area_{area.id}") if "military" in e.tags]),
+            baseline=area_means.get(area.id),
+        )
+        for area in watched_areas
+    )
+    emergencies = sorted(tagged(events, "emergency"), key=lambda e: (-(e.severity or 0), e.title))
+    return AviationBoard(
+        military_total=len(tagged(events, "military")),
+        interesting=len(tagged(events, "interesting")),
+        ladd=len(tagged(events, "ladd")),
+        pia=len(tagged(events, "pia")),
+        by_country=by_country,
+        emergencies=tuple(emergencies[:50]),
+        areas=areas,
+        jam_amber=sum(1 for cell in cells if cell.level == "amber"),
+        jam_red=sum(1 for cell in cells if cell.level == "red"),
+        jam_updated_at=updated_at,
+    )
+
+
 async def board_with_baselines(
-    service: AviationService, baselines: BaselineRepository
+    service: AviationService,
+    baselines: BaselineRepository,
+    *,
+    admission_key: str = "internal:aviation",
 ) -> AviationBoard:
     """The board with the last month's means from the samples table."""
     since = service.baseline_since
-    return service.board(
-        await baselines.means(KIND_MILITARY, since), await baselines.means(KIND_AREA, since)
+    return await service.board(
+        await baselines.means(KIND_MILITARY, since),
+        await baselines.means(KIND_AREA, since),
+        admission_key=admission_key,
     )
 
 

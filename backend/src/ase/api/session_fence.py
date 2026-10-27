@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.api.deps import ClaimsDep, ContainerDep
 from ase.application.auth.current_session import validate_current_session
 from ase.application.policy import require_admin
-from ase.domain.errors import SessionIdleExpired, Unauthenticated
+from ase.domain.errors import RateLimited, SessionIdleExpired, Unauthenticated
 from ase.domain.users import User
 
 if TYPE_CHECKING:
@@ -37,11 +37,15 @@ class SessionFence:
         self._container = container
         self._claims = claims
         self._idle_deadline: datetime | None = None
+        self._confirmed_generation: int | None = None
 
     async def confirm(
         self, *, session: AsyncSession | None = None, admin_only: bool = False
     ) -> None:
         """Confirm the session is still valid; the token must still be unexpired after."""
+        # A final synchronous check can detect any committed access change made
+        # during this confirmation or a later private read, even with a fixed clock.
+        self._confirmed_generation = self._container.session_signals.generation
         freshness = self._container.session_freshness
         user = freshness.recent(self._claims)
         if user is None:
@@ -59,6 +63,15 @@ class SessionFence:
         if admin_only:
             require_admin(user)
         # The original token can expire while the database reads or close are awaited.
+        self.assert_live()
+
+    def assert_current(self) -> None:
+        """Reject a final release if in-process authority changed since confirmation."""
+        if (
+            self._confirmed_generation is None
+            or self._container.session_signals.generation != self._confirmed_generation
+        ):
+            raise RateLimited(1)
         self.assert_live()
 
     def assert_live(self) -> None:

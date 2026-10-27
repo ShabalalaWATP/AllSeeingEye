@@ -148,7 +148,7 @@ async def test_expiry_and_foreign_report_version_are_not_downloadable(
         assert await SqlOriginalAssetRepository(session).content(UUID(asset["id"])) is None
 
 
-async def test_reservations_count_before_upload_and_deleted_records_remain_bounded(
+async def test_reservations_count_before_upload_and_deleted_records_free_live_slots(
     client,
     container,
     user,
@@ -167,4 +167,4 @@ async def test_reservations_count_before_upload_and_deleted_records_remain_bound
     await client.delete(f"{asset_path(record)}/{second['id']}", headers=headers)
     assert (
         await client.post(asset_path(record), headers=headers, json=reserve_body())
-    ).status_code == 422
+    ).status_code == 201
