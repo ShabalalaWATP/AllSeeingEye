@@ -27,7 +27,9 @@
       "id": "reporting",
       "title": "How to report misuse",
       "paragraphs": [
-        "Report suspected misuse of the installation or its outputs to alexorr@yahoo.co.uk. Say which page, report or account is involved and what you saw. Do not include passwords or private research material."
+        "Anyone, including someone without an account, may report suspected misuse of the installation or its outputs to alexorr@yahoo.co.uk. Include a page URL or record reference, the concern and the outcome you are asking for. Do not send passwords, suspected illegal imagery or private research dossiers, and do not repost harmful material to make a report.",
+        "The operator will acknowledge contactable reports within five working days, triage credible immediate harm promptly, and provide an initial decision or meaningful update within 14 calendar days. Fixing or investigating the underlying issue may take longer; the update will explain the next steps.",
+        "The operator will keep a private case reference, the relevant facts, the action taken and the outcome. Information will be limited to what is needed for handling, review and any applicable retention or legal hold."
       ]
     },
     {
@@ -35,9 +37,9 @@
       "title": "What happens to accounts that break this policy",
       "paragraphs": [
         "The operator may restrict access to investigate misuse or protect the service. An administrator can deactivate an account, which stops it signing in and ends its access to the installation, while personal-data requests continue to be handled through the published procedure.",
-        {
-          "pending": "Any further consequences, such as notice to the account holder, an appeal route or referral of unlawful use to the authorities, need the operator's decision."
-        }
+        "Decisions will be proportionate to the evidence and risk. They may include no action, a supported restriction or removal of material, restoring access where supported, another practicable remedy, or deactivating an account. Removed content may not be recoverable. Where lawful and safe, the operator will explain the reasons to the reporter and affected account holder without disclosing another person's private information.",
+        "You may request a review through the same email address, quoting the case reference if you have one and explaining the concern or new evidence. The operator will reconsider the decision and correct mistakes. Independent review may be unavailable in this one-person operation; this process does not remove any right to contact a competent authority or court.",
+        "The operator may refer suspected unlawful use to an appropriate authority where required or permitted by law. Notice to an affected person may be delayed or withheld where giving it would be unlawful or create a safety or investigation risk."
       ]
     }
   ]

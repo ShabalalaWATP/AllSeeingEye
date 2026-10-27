@@ -23,6 +23,13 @@ export default function AccessibilityPage() {
                 'The operator has not yet confirmed an accessibility contact. This blocks publication.'}
             </p>
           ),
+          enforcement: (
+            <p>
+              <a href="https://saavutettavuusvaatimukset.fi/en/submit-complaint-web-accessibility-or-request-clarification">
+                Traficom accessibility complaints and requests for clarification
+              </a>
+            </p>
+          ),
           preparation: (
             <p>
               Last reviewed on <time dateTime={lastReviewed}>{formatPolicyDate(lastReviewed)}</time>

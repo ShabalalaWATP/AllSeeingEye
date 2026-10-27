@@ -302,11 +302,11 @@ class StructuredDocumentTests(unittest.TestCase):
             ):
                 validate_publication(approve(files))
 
-    def test_shipped_documents_keep_their_decisions_unresolved(self):
+    def test_selected_wording_still_needs_the_unconfirmed_address(self):
         files = candidate()
-        for name in DOCUMENTS:
-            files[name] = (DIRECTORY / name).read_text(encoding="utf-8")
-        with self.assertRaisesRegex(PublicationError, "documents incomplete"):
+        validate_publication(approve(files))
+        files["service.json"] = (DIRECTORY / "service.json").read_text(encoding="utf-8")
+        with self.assertRaisesRegex(PublicationError, "service details incomplete"):
             validate_publication(approve(files))
 
 

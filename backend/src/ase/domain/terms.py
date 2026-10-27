@@ -6,7 +6,7 @@ from ase.domain.errors import AppError
 
 # Bump with every material change to the public /terms or /acceptable-use wording.
 # Signed-in accounts whose accepted version differs are asked to accept again.
-CURRENT_TERMS_VERSION = "2026-10-18"
+CURRENT_TERMS_VERSION = "2026-10-27"
 
 
 class TermsNotAccepted(AppError):

@@ -35,7 +35,7 @@ ACCEPTANCE = "/api/me/terms-acceptance"
 POLICY = Path(__file__).parents[2] / "frontend/src/features/public-policy"
 # The accepted wording: changing either document needs a CURRENT_TERMS_VERSION bump, so
 # accounts are asked again, and then this hash is updated alongside it.
-ACCEPTED_WORDING_SHA256 = "4a6338555333c2fde737c8c1a85002df7bc5d62dd15f116804a9752be5ca6495"
+ACCEPTED_WORDING_SHA256 = "79a61d6c4aeb8a2fcbd436dcf1afea9167a094accad89e19668cb331ddbab294"
 
 
 async def _count(container: Container, model: type, *conditions: object) -> int:

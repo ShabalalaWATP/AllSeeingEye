@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-18",
+  "version": "2026-10-27",
   "sections": [
     {
       "id": "service",
@@ -13,7 +13,7 @@
       "id": "eligibility",
       "title": "Who may use it",
       "paragraphs": [
-        "You must be 18 or over, and you may use the installation only for professional or research purposes.",
+        "You must be 18 or over, and you may use the installation only for professional or research purposes. By requesting an account and accepting these terms, you declare that you meet this rule. This declaration and account approval do not independently verify your age.",
         "Use it only for lawful, proportionate research and respect other people's privacy, intellectual property and source-specific conditions. The Acceptable Use Policy forms part of these terms."
       ]
     },
@@ -46,25 +46,21 @@
       "title": "Liability",
       "paragraphs": [
         "Nothing here removes rights that cannot lawfully be excluded.",
-        {
-          "pending": "Any limitation of the operator's liability, and its extent, needs the operator's decision and legal review."
-        }
+        "These terms do not impose a contractual liability cap. Any liability is determined under applicable law."
       ]
     },
     {
       "id": "governing-law",
       "title": "Governing law",
       "paragraphs": [
-        {
-          "pending": "Governing law and courts. KAN-188 proposes England and Wales, while the privacy notice applies EU GDPR and Finnish law to this installation. The operator must choose, with legal review."
-        }
+        "These terms are governed by the law of Finland. This choice does not remove any mandatory rights or protections that apply to you. You may bring a claim before any court that has jurisdiction under applicable law; these terms do not require an exclusive court."
       ]
     },
     {
       "id": "changes",
       "title": "How changes are notified",
       "paragraphs": [
-        "When these terms or the Acceptable Use Policy change, the version date on this page changes. Signed-in accounts are then asked to review and accept the new version on their next visit before continuing, and each acceptance is recorded with its version and time.",
+        "When these terms or the Acceptable Use Policy change, the version date on this page changes. In the web interface, signed-in accounts are then asked to review and accept the new version on their next visit before continuing. Each acceptance is recorded with its version and time.",
         "Report misuse or access concerns to alexorr@yahoo.co.uk."
       ]
     }

@@ -1,6 +1,6 @@
 {
-  "lastReviewed": "2026-10-18",
-  "nextReview": "2027-04-18",
+  "lastReviewed": "2026-10-27",
+  "nextReview": "2027-04-27",
   "sections": [
     {
       "id": "scope",
@@ -49,18 +49,15 @@
       "title": "Reporting accessibility problems",
       "paragraphs": [
         "When reporting an access barrier, include the page, the task you were trying to complete and the browser or assistive technology involved. Avoid including passwords or private research material.",
-        {
-          "pending": "Expected response time for accessibility reports, for example a reply within a stated number of working days."
-        }
+        "The operator will acknowledge contactable feedback within five working days and respond within 14 calendar days. The response may offer an accessible alternative, describe a planned fix or explain why remediation needs more time."
       ]
     },
     {
       "id": "enforcement",
       "title": "Enforcement and complaints",
       "paragraphs": [
-        {
-          "pending": "Enforcement and complaints route. The privacy notice treats this installation as operated in Finland under EU law. The operator must decide which accessibility enforcement body, if any, applies and how an unresolved complaint is escalated."
-        }
+        "Where this installation falls under Finland's Act on the Provision of Digital Services, you may refer an unresolved accessibility concern, or no reply within 14 days, to Traficom's Digital Accessibility Supervision Unit. Contact the operator first and explain the page, the barrier and the response received, if any.",
+        "This conditional escalation route does not claim that every service or feature falls within the Act. It does not restrict any other right or complaint route available under applicable law."
       ]
     },
     {
@@ -69,6 +66,7 @@
       "paragraphs": [
         "Automated axe-core checks run in the frontend test suite on representative pages through the application's routes, on the shared interface components and on these public policy pages. They run in a simulated browser that cannot check colour contrast, links within text or target size, so contrast is checked separately from the theme colours for every palette.",
         "Browser tests cover selected journeys, including signing in and notifications, but do not run accessibility checks. Targeted manual keyboard checks of specific changes were recorded during development, for example pagination focus on 5 October 2026. No complete manual keyboard or screen reader pass of the whole service has been recorded.",
+        "A page-specific Chromium keyboard review of Terms, Acceptable Use and Accessibility was completed on 27 October 2026. The skip links, forward and reverse tab order, visible focus and the accessibility complaints link were checked, including the accessibility page at 375 px. This was not a whole-service keyboard or screen reader audit.",
         "Passing automated checks does not establish conformance."
       ]
     },

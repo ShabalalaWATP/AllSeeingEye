@@ -33,14 +33,14 @@ Read-only inspection on 11 October 2026 established the following for the runnin
 installation at `allseeingeyeosint.com`, checkout
 `13efceef48efbc6d5f2895e60c55076db5d40e3f`:
 
-| Fact | Evidence and limit |
-| --- | --- |
-| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. Alex separately confirmed the recorded DPA on 14 October. |
-| Resend application email | Running settings use `smtp.resend.com` and encrypted SMTP; KAN-22 also records a delivery check. |
-| OpenAI API | Read-only allowlisted database projections identified enabled `api.openai.com` connections: GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use. Aggregate records establish prior calls; both models do not receive every task. |
-| One account | Aggregate count only, without selecting identity. This does not establish residence, all past uses or a domestic-purpose exemption. |
-| Other recipients | Feeds, conflict screening, Internet Archive capture and browser-push configuration enabled; no installation-wide webhook or enquiry recipient configured. |
-| Log and backup controls | Five 20 MB log files per container; daily backup and weekly drill cron entries without keep/off-site overrides. Size/count rotation is not a universal age limit. No fresh restore test was performed. |
+| Fact                             | Evidence and limit                                                                                                                                                                                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hetzner Cloud, Helsinki, Finland | Host metadata returned `eu-central` and `hel1-dc2`; Hetzner's [location documentation](https://docs.hetzner.com/cloud/general/locations/) identifies Helsinki. Alex separately confirmed the recorded DPA on 14 October.                 |
+| Resend application email         | Running settings use `smtp.resend.com` and encrypted SMTP; KAN-22 also records a delivery check.                                                                                                                                         |
+| OpenAI API                       | Read-only allowlisted database projections identified enabled `api.openai.com` connections: GPT-5.6 Luna globally and GPT-5.6 Sol for user-specific use. Aggregate records establish prior calls; both models do not receive every task. |
+| One account                      | Aggregate count only, without selecting identity. This does not establish residence, all past uses or a domestic-purpose exemption.                                                                                                      |
+| Other recipients                 | Feeds, conflict screening, Internet Archive capture and browser-push configuration enabled; no installation-wide webhook or enquiry recipient configured.                                                                                |
+| Log and backup controls          | Five 20 MB log files per container; daily backup and weekly drill cron entries without keep/off-site overrides. Size/count rotation is not a universal age limit. No fresh restore test was performed.                                   |
 
 No credentials, encrypted keys, identities, prompts or research content were
 selected. No model call or production mutation was made. The running release
@@ -152,3 +152,43 @@ checked in the browser: version 2026-10-14, Finnish details and complaint links,
 no draft banner, and explicit unavailable retention when no API is served.
 Independent review found and resolved the old hard-coded ICO action, then reported
 no remaining blocker. No new coverage measurement or production change was made.
+
+## Delegated Terms and accessibility decisions, 27 October 2026
+
+Alex delegated the outstanding wording decisions to Codex on 27 October. The
+review branch adopts Finnish governing law without exclusive courts, preserves
+mandatory rights and adds no contractual liability cap. The 18+ account rule is a
+declaration, not independent age verification. Terms and AUP version `2026-10-27`
+matches the backend version and the accepted-wording regression hash.
+
+The AUP gives non-users a reporting route, private case references, proportionate
+decisions and reconsideration. Contactable reports receive acknowledgement within
+five working days and an initial decision or meaningful update within 14 calendar
+days. Accessibility feedback has the same acknowledgement target and a response
+within 14 calendar days. Traficom escalation is conditional on the Finnish Act
+applying. The statement retains its partial-compliance and audit limitations.
+
+Sources checked: [Finnish consumer contract guidance](https://www.kkv.fi/en/consumer-affairs/contracts/unfair-contract-terms/),
+[Traficom user rights](https://www.saavutettavuusvaatimukset.fi/en/rights-user-service)
+and [Traficom complaints](https://saavutettavuusvaatimukset.fi/en/submit-complaint-web-accessibility-or-request-clarification).
+These references do not establish this installation's legal scope or certify
+service-wide conformance. KAN-246 retains the operating and children-access review.
+
+`service.businessAddress` remains unconfirmed. The publication validators and
+approval manifest remain unchanged, so the revised draft cannot be published as
+approved. A real applicable address or an evidenced, reviewed personal-installation
+disclosure decision is still needed. The draft's UI consent gate is not an added
+API authorisation boundary. Final acceptance must resolve that scope explicitly.
+Protected controller installation, migration 0096, backup and recovery review,
+current CI and exact-content approval remain prerequisites to release.
+
+Local validation covers 10 backend acceptance cases, 30 policy/dialog UI cases,
+13 Node publication cases and 16 Python publication cases. Both TypeScript
+configurations, targeted lint/format checks and the review production build pass.
+Initial, globe and product bundles remain within the existing budgets. Chromium
+keyboard checks of the three pages verified skip/main focus, Tab and Shift+Tab,
+visible focus and the complaints link, including 375 px without sideways overflow.
+This is targeted page evidence, not a whole-service audit. Independent review
+tightened remedies for unrecoverable content and made appeal references optional,
+then found no further concrete issue or weakened gate in the delta. Published-head
+CI and operator rollout evidence remain tracked on KAN-188/193 and draft PR #215.

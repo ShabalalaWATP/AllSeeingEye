@@ -102,11 +102,11 @@ describe('public policy pages', () => {
     expect(screen.getByText(/Shared team work is preserved/)).toBeInTheDocument();
   });
 
-  it('shows the structured terms while keeping outstanding decisions and approval explicit', async () => {
+  it('shows the selected terms while keeping publication blocked for the unconfirmed address', async () => {
     const { router } = renderApp('/terms', 'anonymous');
     await screen.findByRole('heading', { level: 1, name: 'Terms' });
     expect(screen.getByLabelText('Draft notice')).toHaveTextContent('Publication is blocked');
-    expect(screen.getByText(/Version of/)).toHaveTextContent('Version of 18 October 2026');
+    expect(screen.getByText(/Version of/)).toHaveTextContent('Version of 27 October 2026');
     for (const name of [
       'The service',
       'Who may use it',
@@ -123,7 +123,8 @@ describe('public policy pages', () => {
       screen.getByText(/These access rules do not grant a software redistribution licence/),
     ).toBeInTheDocument();
     const law = screen.getByRole('region', { name: 'Governing law' });
-    expect(law).toHaveTextContent(/Decision needed:.*England and Wales.*This blocks publication/);
+    expect(law).toHaveTextContent('governed by the law of Finland');
+    expect(law).not.toHaveTextContent('Decision needed');
     await act(() => router.navigate('/business'));
     await screen.findByRole('heading', { level: 1, name: 'Business details' });
     expect(screen.getByText('Controller identity')).toBeInTheDocument();
@@ -151,14 +152,14 @@ describe('public policy pages', () => {
     );
     expect(
       screen.getByRole('region', { name: 'What happens to accounts that break this policy' }),
-    ).toHaveTextContent(/deactivate an account.*Decision needed/);
+    ).toHaveTextContent(/deactivate an account.*request a review/);
     expect(within(screen.getByRole('main')).getByRole('link', { name: 'Terms' })).toHaveAttribute(
       'href',
       '/terms',
     );
   });
 
-  it('publishes an honest accessibility statement with dated review and pending decisions', async () => {
+  it('shows an honest accessibility statement with selected response and complaints wording', async () => {
     renderApp('/accessibility', 'anonymous');
     await screen.findByRole('heading', { level: 1, name: 'Accessibility' });
     expect(screen.getByRole('region', { name: 'Technical standard' })).toHaveTextContent(
@@ -173,15 +174,23 @@ describe('public policy pages', () => {
       expect(within(limits).getByText(limit)).toBeInTheDocument();
     const feedback = screen.getByRole('region', { name: 'Reporting accessibility problems' });
     expect(feedback).toHaveTextContent('alexorr@yahoo.co.uk');
-    expect(feedback).toHaveTextContent(/Decision needed: Expected response time/);
+    expect(feedback).toHaveTextContent('respond within 14 calendar days');
     expect(screen.getByRole('region', { name: 'Enforcement and complaints' })).toHaveTextContent(
-      'Decision needed',
+      "Where this installation falls under Finland's Act",
+    );
+    expect(
+      screen.getByRole('link', {
+        name: 'Traficom accessibility complaints and requests for clarification',
+      }),
+    ).toHaveAttribute(
+      'href',
+      'https://saavutettavuusvaatimukset.fi/en/submit-complaint-web-accessibility-or-request-clarification',
     );
     expect(screen.getByRole('region', { name: 'How this service was tested' })).toHaveTextContent(
       /axe-core.*No complete manual keyboard or screen reader pass/,
     );
     expect(screen.getByRole('region', { name: 'Preparation of this statement' })).toHaveTextContent(
-      'Last reviewed on 18 October 2026. The next review is due by 18 April 2027.',
+      'Last reviewed on 27 October 2026. The next review is due by 27 April 2027.',
     );
   });
 

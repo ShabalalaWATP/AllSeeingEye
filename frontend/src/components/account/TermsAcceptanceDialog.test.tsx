@@ -16,7 +16,7 @@ import { TermsAcceptanceDialog } from './TermsAcceptanceDialog';
 
 installDialogStub();
 
-const CURRENT = '2026-10-18';
+const CURRENT = '2026-10-27';
 const status = (accepted: string | null, current = CURRENT): TermsStatus => ({
   current_version: current,
   accepted_version: accepted,
@@ -52,7 +52,7 @@ describe('TermsAcceptanceDialog', () => {
     render(<TermsAcceptanceDialog />);
     const dialog = screen.getByRole('dialog', { name: 'The Terms have changed' });
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog).toHaveAccessibleDescription(/version of 18 October 2026/);
+    expect(dialog).toHaveAccessibleDescription(/version of 27 October 2026/);
     expect(screen.getByRole('heading', { name: 'The Terms have changed' })).toHaveFocus();
     for (const [name, href] of [
       ['Terms (opens in a new tab)', '/terms'],

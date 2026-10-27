@@ -191,12 +191,13 @@ test('structured documents need sections, wording and valid review dates', () =>
       );
 });
 
-test('the shipped documents keep their unresolved decisions visible to the gate', () => {
+test('selected wording still needs a real address and approval for the exact content', () => {
   const state = readPublicationState();
   assert.equal(state.approved, false);
-  for (const name of ['terms.json', 'acceptable-use.json', 'accessibility.json'])
-    assert.ok(state.problems.some((problem) => problem.includes(`decision in ${name}`)));
-  assert.ok(state.problems.includes('Missing service.businessAddress'));
+  assert.deepEqual(state.problems.sort(), [
+    'Missing service.businessAddress',
+    'Unapproved or changed policy content',
+  ]);
 });
 
 test('footer details expose only trimmed operator strings, or null', () => {
