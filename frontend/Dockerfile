@@ -32,7 +32,7 @@ RUN pnpm "$BUILD_COMMAND" && node scripts/precompress.js dist
 FROM caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.
 # Bump for security updates so a cached upgrade layer cannot retain old packages.
-ARG ASE_ALPINE_SECURITY_REFRESH=2026-10-24
+ARG ASE_ALPINE_SECURITY_REFRESH=2026-10-27
 RUN apk upgrade --no-cache \
     && addgroup -S -g 10001 aseweb \
     && adduser -S -D -H -u 10001 -G aseweb aseweb

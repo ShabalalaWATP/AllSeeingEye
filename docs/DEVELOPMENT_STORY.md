@@ -6935,3 +6935,18 @@ fixtures do not establish production latency or GPU performance. All 182 focused
 backend cases pass; frontend and release gates are recorded in PR #229. The
 [measurement record](reviews/2026-10-24-KAN-249-performance.md) includes bounds,
 limitations and the repeatable offline probe. Release approval remains pending.
+
+## 27 October 2026: KAN-249 approved release and image refresh
+
+Alex approved merging PR #229, which was squash-merged as `89f3c0c8` with the
+reviewed tree unchanged and all 40 PR checks passing. Push CI then blocked the
+web image on cached Alpine curl/libcurl 8.22.0-r0. Alpine published 8.23.0-r0
+on 25 October, after the existing 24 October cache refresh. The existing dated
+security-refresh argument advances to 27 October so the normal package upgrade
+layer runs again. This is a one-line packaging correction for the approved
+release, with no application, dependency-manifest, routing, controller or schema
+change. Independent review, the rebuilt image audit and required CI must pass
+before the protected deployment. No live release is claimed by this note.
+
+Sources: [curl advisory](https://curl.se/docs/CVE-2026-92392.html) and
+[Alpine package](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/curl).
