@@ -2,7 +2,8 @@
  * Snapshot requests for the browser mirror. A full load replaces the mirror; after a bulk
  * feed update, a partition refresh replaces only the categories that update touched and
  * keeps every other record as it is. Stream deltas that arrive during either request are
- * journalled and win over the response, so a refresh never restores older data.
+ * journalled and win over the response, so a refresh never restores older data. A first
+ * load publishes its primary page early; a refresh of a complete mirror publishes once.
  */
 import { fetchEvents, fetchStats, type EventsQuery } from '@/lib/api/events';
 import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
@@ -164,11 +165,14 @@ export function createSnapshotLoader(get: Get, set: Set) {
     apply: (request: Request, snapshot: Snapshot, final?: boolean) => void,
   ) {
     const request = begin();
+    // A refresh over a complete mirror publishes once, at the end. Publishing the primary
+    // page first would drop supplement-only records until their request lands again.
+    const atomic = soft && complete;
     set(scope === null ? { loading: true, error: null } : { loading: true });
     try {
       const snapshot = await fetchPrimary(request, scope);
       if (snapshot === null) return;
-      apply(request, snapshot);
+      if (!atomic) apply(request, snapshot);
       if (!isCurrent(request)) return;
       // A short bbox result is the whole scoped query. Global statistics cannot
       // justify another read for this viewport; a full page may still hide sources.
@@ -194,6 +198,7 @@ export function createSnapshotLoader(get: Get, set: Set) {
                 ),
               );
             }
+            if (atomic) return;
             if (progress.events.length > 0 || limitChanged) apply(request, snapshot);
             else {
               const current = get();
@@ -209,7 +214,7 @@ export function createSnapshotLoader(get: Get, set: Set) {
         set({ error: OVERFLOW_ERROR, loaded: true });
         return;
       }
-      if (request.retainedSelection) apply(request, snapshot, true);
+      if (atomic || request.retainedSelection) apply(request, snapshot, true);
       if (!isCurrent(request)) return;
       if (scope === null) complete = true;
       const current = get();
