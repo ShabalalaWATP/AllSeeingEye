@@ -29,7 +29,7 @@ COPY frontend/ ./
 ARG BUILD_COMMAND=build
 RUN pnpm "$BUILD_COMMAND" && node scripts/precompress.js dist
 
-FROM caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+FROM caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
 # Refresh inherited Alpine packages while retaining the reviewed upstream base.
 # Bump for security updates so a cached upgrade layer cannot retain old packages.
 ARG ASE_ALPINE_SECURITY_REFRESH=2026-10-27
