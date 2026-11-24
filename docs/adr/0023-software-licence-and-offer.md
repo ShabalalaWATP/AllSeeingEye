@@ -1,8 +1,26 @@
 # ADR 0023: Software licence and organisational deployment offer
 
-Status: proposed, awaiting Alex's decisions and approval. Prepared 9 October 2026
-for [KAN-164](https://alex-orr.atlassian.net/browse/KAN-164). This document does
+Status: AGPL direction selected on 11 October 2026; adoption and offer approval
+remain pending. Prepared 9 October 2026 for
+[KAN-164](https://alex-orr.atlassian.net/browse/KAN-164). This document does
 not grant rights, change the repository's visibility or approve a public launch.
+
+## Decision update, 11 October 2026
+
+Alex selected open source under AGPL-3.0 with optional paid support. The specific
+candidate below is AGPL-3.0-only. Alex also chose to keep the React Bits eye and
+prepare a request for compatible permission, rather than replace the branding.
+The [adoption proposal](../licenses/AGPL_ADOPTION_PROPOSAL.md) records the
+component/artwork licensing issue and the required distribution/source-delivery
+work. The [permission request](../licenses/REACT_BITS_PERMISSION_REQUEST.md) was
+sent to David Haz's published contact address on 11 October 2026 following Alex's
+explicit instruction. Gmail confirmed submission; permission remains pending.
+No root licence has been adopted.
+
+Legal/trading identity, public business address, contact, initial customer
+countries and installation providers were answered "not decided". Offer details
+and public wording remain draft. KAN-164 and KAN-165 cannot close on the model
+selection alone; the historical alternatives below are retained as context.
 
 ## Current evidence
 
@@ -88,5 +106,7 @@ project licence through its reviewed PR, reconcile README/SECURITY/public copy,
 and link the approved notice and source policies. A licence selection does not
 authorise production deployment or repository visibility changes.
 
-Approval record: pending. No licence or commercial offer has been adopted by this
-change. KAN-164 remains open until the required decisions are supplied.
+Approval record: the AGPL direction and retaining the eye while preparing a
+permission request were selected on 11 October 2026. Licence adoption, compatible
+third-party permission, authority confirmation and the commercial offer remain
+pending. KAN-164 remains open until its complete acceptance criteria are met.

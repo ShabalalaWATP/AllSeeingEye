@@ -1,8 +1,8 @@
 # Security
 
 The All Seeing Eye is a self-hosted research application maintained as a personal
-project. Its public source repository does not imply an approved software licence
-or commercial support offer; those decisions are tracked in
+project. AGPL-3.0 with optional paid support is the selected direction, but licence
+adoption and the commercial offer remain pending. Those decisions are tracked in
 [ADR 0023](docs/adr/0023-software-licence-and-offer.md). It is built on the assumption
 that every byte from the internet, every feed item and every LLM response is
 untrusted. The full design is in `docs/07_SECURITY_BY_DESIGN.md`; this page
